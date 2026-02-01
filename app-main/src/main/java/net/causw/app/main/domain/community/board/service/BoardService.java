@@ -27,6 +27,7 @@ import net.causw.app.main.domain.community.board.service.implementation.BoardCon
 import net.causw.app.main.domain.community.board.service.implementation.BoardConfigWriter;
 import net.causw.app.main.domain.community.board.service.implementation.BoardReader;
 import net.causw.app.main.domain.community.board.service.implementation.BoardWriter;
+import net.causw.app.main.domain.community.board.util.BoardValidator;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 
@@ -45,6 +46,7 @@ public class BoardService {
 	private final BoardConfigSummaryMapper boardConfigSummaryMapper;
 	private final BoardPartMapper boardPartMapper;
 	private final BoardConfigPartMapper boardConfigPartMapper;
+	private final BoardValidator boardValidator;
 
 	/**
 	 * 게시판 검색 조회
@@ -93,6 +95,7 @@ public class BoardService {
 	 */
 	@Transactional
 	public void createBoard(BoardPart board, BoardConfigPart config, List<String> adminUserIds) {
+		boardValidator.validateForCreate(board.name());
 		Board boardEntity = boardPartMapper.toEntity(board);
 		Board savedBoard = boardWriter.save(boardEntity);
 		String boardId = savedBoard.getId();
@@ -112,6 +115,7 @@ public class BoardService {
 	 */
 	@Transactional
 	public void updateBoard(String boardId, BoardPart board, BoardConfigPart config, List<String> adminUserIds) {
+		boardValidator.validateForUpdate(board.name(), boardId);
 		Board boardEntity = boardReader.getById(boardId);
 		BoardConfig boardConfig = boardConfigReader.getByBoardId(boardId);
 
