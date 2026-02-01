@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v2/notifications/log")
 public class NotificationLogController {
 	private final NotificationLogService notificationLogService;
-	//todo 반환 객체 적용 해야함
+
 	@GetMapping("/latest")
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "유저에게 온 최신 알람 조회", description = "유저의 최신 알림을 조회합니다. <br>" +
