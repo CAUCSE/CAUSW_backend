@@ -29,6 +29,7 @@ import net.causw.app.main.domain.community.board.service.BoardService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -49,6 +50,7 @@ public class BoardAdminController {
 	private final BoardOrderUpdateRequestMapper boardOrderUpdateRequestMapper;
 
 	@GetMapping
+	@Operation(summary = "게시판 목록 조회", description = "게시판 목록을 조회한다.")
 	public ApiResponse<BoardConfigListResponse> getBoardAdminList(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@ModelAttribute BoardSearchCondition boardSearchCondition) {
@@ -59,6 +61,7 @@ public class BoardAdminController {
 	}
 
 	@GetMapping("/{boardId}")
+	@Operation(summary = "게시판 설정 조회", description = "특정 게시판의 설정 정보를 조회한다.")
 	public ApiResponse<BoardConfigEditResponse> editBoardAdmin(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable String boardId) {
@@ -69,6 +72,7 @@ public class BoardAdminController {
 	}
 
 	@PostMapping
+	@Operation(summary = "게시판 생성", description = "새로운 게시판을 생성한다.")
 	public ApiResponse<Void> createBoard(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@Valid @RequestBody BoardCreateRequest request) {
@@ -81,6 +85,7 @@ public class BoardAdminController {
 	}
 
 	@PutMapping("/{boardId}")
+	@Operation(summary = "게시판 설정 수정", description = "특정 게시판의 설정 정보를 수정한다.")
 	public ApiResponse<Void> updateBoard(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable String boardId,
@@ -99,6 +104,7 @@ public class BoardAdminController {
 	}
 
 	@DeleteMapping("/{boardId}")
+	@Operation(summary = "게시판 삭제", description = "특정 게시판을 삭제한다.")
 	public ApiResponse<Void> deleteBoard(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable String boardId) {
@@ -109,6 +115,7 @@ public class BoardAdminController {
 	}
 
 	@PatchMapping("/orders")
+	@Operation(summary = "게시판 순서 변경", description = "게시판의 표시 순서를 변경한다.")
 	public ApiResponse<Void> updateBoardOrder(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@Valid @RequestBody BoardOrderUpdateRequest request) {
