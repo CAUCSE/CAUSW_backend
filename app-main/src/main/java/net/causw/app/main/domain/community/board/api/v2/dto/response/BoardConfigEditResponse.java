@@ -3,6 +3,7 @@ package net.causw.app.main.domain.community.board.api.v2.dto.response;
 import java.util.List;
 
 import net.causw.app.main.domain.community.board.entity.BoardReadScope;
+import net.causw.app.main.domain.community.board.entity.BoardVisibility;
 import net.causw.app.main.domain.community.board.entity.BoardWriteScope;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -15,7 +16,7 @@ public record BoardConfigEditResponse(
 	@Schema(description = "읽기 권한 범위", example = "ENROLLED") BoardReadScope readScope,
 	@Schema(description = "쓰기 권한 범위", example = "ONLY_ADMIN") BoardWriteScope writeScope,
 	@Schema(description = "공지 게시판 여부", example = "false") Boolean isNotice,
-	@Schema(description = "게시판 노출 여부", example = "VISIBLE") String visibility,
+	@Schema(description = "게시판 노출 여부", example = "VISIBLE") BoardVisibility visibility,
 	@Schema(description = "게시판 표시 순서", example = "1") Integer displayOrder,
 	@Schema(description = "게시판 관리자 목록") List<AdminResponse> admins) {
 	public record AdminResponse(

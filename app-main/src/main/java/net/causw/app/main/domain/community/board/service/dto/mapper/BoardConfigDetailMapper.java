@@ -20,7 +20,7 @@ public interface BoardConfigDetailMapper {
 	@Mapping(source = "boardConfig.readScope", target = "readScope")
 	@Mapping(source = "boardConfig.writeScope", target = "writeScope")
 	@Mapping(source = "boardConfig.notice", target = "isNotice")
-	@Mapping(target = "visibility", expression = "java(boardConfig != null && boardConfig.getVisibility() != null ? boardConfig.getVisibility().name() : null)")
+	@Mapping(source = "boardConfig.visibility", target = "visibility")
 	@Mapping(source = "boardConfig.displayOrder", target = "displayOrder")
 	@Mapping(source = "admins", target = "admins")
 	BoardConfigDetail fromEntity(Board board, BoardConfig boardConfig, List<User> admins);

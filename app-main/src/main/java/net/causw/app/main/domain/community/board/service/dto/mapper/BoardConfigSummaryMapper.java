@@ -19,10 +19,10 @@ public interface BoardConfigSummaryMapper {
 	@Mapping(source = "board.name", target = "name")
 	@Mapping(source = "board.description", target = "description")
 	@Mapping(source = "boardConfig.anonymous", target = "isAnonymous")
-	@Mapping(target = "readScope", expression = "java(boardConfig != null && boardConfig.getReadScope() != null ? boardConfig.getReadScope().name() : null)")
-	@Mapping(target = "writeScope", expression = "java(boardConfig != null && boardConfig.getWriteScope() != null ? boardConfig.getWriteScope().name() : null)")
+	@Mapping(source = "boardConfig.readScope", target = "readScope")
+	@Mapping(source = "boardConfig.writeScope", target = "writeScope")
 	@Mapping(source = "boardConfig.notice", target = "isNotice")
-	@Mapping(target = "visibility", expression = "java(boardConfig != null && boardConfig.getVisibility() != null ? boardConfig.getVisibility().name() : null)")
+	@Mapping(source = "boardConfig.visibility", target = "visibility")
 	@Mapping(source = "boardConfig.displayOrder", target = "displayOrder")
 	BoardConfigSummary fromEntity(Long no, Board board, BoardConfig boardConfig);
 
