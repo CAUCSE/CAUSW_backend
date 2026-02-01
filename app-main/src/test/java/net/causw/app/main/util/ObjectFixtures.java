@@ -1,10 +1,14 @@
 package net.causw.app.main.util;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
 import org.springframework.test.util.ReflectionTestUtils;
 
+import net.causw.app.main.domain.campus.schedule.entity.Schedule;
+import net.causw.app.main.domain.campus.schedule.entity.enums.ScheduleType;
+import net.causw.app.main.domain.campus.schedule.service.v2.dto.ScheduleDto;
 import net.causw.app.main.domain.campus.semester.entity.Semester;
 import net.causw.app.main.domain.campus.semester.enums.SemesterType;
 import net.causw.app.main.domain.community.board.entity.Board;
@@ -174,5 +178,26 @@ public class ObjectFixtures {
 			false,
 			voteOptions,
 			post);
+	}
+
+	// Schedule 관련 헬퍼 메서드
+	public static Schedule getSchedule(User creator) {
+		return Schedule.of(
+			"중간고사 기간",
+			ScheduleType.ACADEMIC,
+			LocalDateTime.of(2026, 4, 15, 0, 0),
+			LocalDateTime.of(2026, 4, 21, 23, 59),
+			creator);
+	}
+
+	public static ScheduleDto getScheduleDto(User creator) {
+		return ScheduleDto.builder()
+			.id("schedule-id")
+			.title("중간고사 기간")
+			.type(ScheduleType.ACADEMIC)
+			.start(LocalDateTime.of(2026, 4, 15, 0, 0))
+			.end(LocalDateTime.of(2026, 4, 21, 23, 59))
+			.creator(creator)
+			.build();
 	}
 }
