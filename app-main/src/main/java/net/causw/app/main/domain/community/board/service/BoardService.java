@@ -34,6 +34,18 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class BoardService {
 
+	// TODO(v1 미적용): BoardV1Service 대비 미적용 비즈니스 로직
+	// - findAllBoard: 사용자 역할/학적/동아리 기반 게시판 목록 필터링
+	// - mainBoard: 메인 게시판 + 최근 게시글 조회
+	// - checkBoardName: 이름 중복 체크 전용 API (v2는 create/update 시 validator로만 검사)
+	// - applyBoard, findAllBoardApply, findBoardApplyByApplyId, accept, reject: 게시판 신청/승인/거부
+	// - createNoticeBoard: 공지 전용 생성 (v2는 createBoard로 통합)
+	// - updateBoard: ValidatorBucket 기반 권한 검증(동아리/공지 등)
+	// - deleteBoard: 공지 게시판 ADMIN만 삭제 가능, 해당 게시판 게시글 일괄 삭제 처리
+	// - restoreBoard: 게시판 복원(삭제 취소)
+	// - createBoardSubscribe, setBoardSubscribe: 구독 생성/설정
+	// - createNoticeBoardsSubscribe, updateBoardsSubscribe: 학적 인증 이벤트 기반 구독 생성/갱신
+
 	private final BoardReader boardReader;
 	private final BoardConfigReader boardConfigReader;
 	private final BoardWriter boardWriter;

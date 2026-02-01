@@ -121,6 +121,15 @@ public class ObjectFixtures {
 			null);
 	}
 
+	/**
+	 * id가 설정된 Board fixture. 테스트에서 협력 객체 stub 시 일관된 id를 쓰기 위해 사용한다.
+	 */
+	public static Board getBoardWithId(String id) {
+		Board board = getBoard();
+		ReflectionTestUtils.setField(board, "id", id);
+		return board;
+	}
+
 	public static Board getNoticeBoard(boolean isAlumni) {
 		return Board.createNoticeBoard(
 			"noticeBoardName",
@@ -130,6 +139,24 @@ public class ObjectFixtures {
 			false,
 			isAlumni,
 			null);
+	}
+
+	/**
+	 * id가 설정된 공지 게시판 fixture. 테스트에서 협력 객체 stub 시 일관된 id를 쓰기 위해 사용한다.
+	 */
+	public static Board getNoticeBoardWithId(boolean isAlumni, String id) {
+		Board board = getNoticeBoard(isAlumni);
+		ReflectionTestUtils.setField(board, "id", id);
+		return board;
+	}
+
+	/**
+	 * id가 설정된 v2 스타일 Board fixture. BoardService(v2) 등에서 사용한다.
+	 */
+	public static Board getBoardV2WithId(String id) {
+		Board board = Board.createForV2("boardName", "boardDescription");
+		ReflectionTestUtils.setField(board, "id", id);
+		return board;
 	}
 
 	public static Post getPost(User user, Board board) {
