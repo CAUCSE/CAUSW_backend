@@ -74,7 +74,7 @@ public class CeremonyService {
 				}
 			}
 			case ALUMNI -> {
-				if (createCeremonyRequestDTO.getAlumniRelation() == null) {
+				if (createCeremonyRequestDTO.getAlumniName() == null) {
 					throw new BadRequestException(
 						ErrorCode.INVALID_USER_DATA_REQUEST,
 						MessageUtil.CEREMONY_ALUMNI_NAME_REQUIRED);
