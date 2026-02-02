@@ -134,6 +134,53 @@ public class Ceremony extends BaseEntity {
 		this.ceremonyState = CeremonyState.REJECT;
 	}
 
+	public static Ceremony ofV1(
+		User user,
+		String ceremonyCategory,
+		String description,
+		LocalDate startDate,
+		LocalDate endDate,
+		boolean isSetAll,
+		List<String> targetAdmissionYears) {
+		Set<String> targetYearsSet = targetAdmissionYears != null
+			? new HashSet<>(targetAdmissionYears)
+			: new HashSet<>();
+
+		return Ceremony.builder()
+			.user(user)
+			.ceremonyCategory(ceremonyCategory)
+			.startDate(startDate)
+			.endDate(endDate)
+			.description(description)
+			.isSetAll(isSetAll)
+			.targetAdmissionYears(targetYearsSet)
+			.build();
+	}
+
+	public static Ceremony createWithImagesV1(
+		User user,
+		String ceremonyCategory,
+		String description,
+		LocalDate startDate,
+		LocalDate endDate,
+		boolean isSetAll,
+		List<String> targetAdmissionYears,
+		List<UuidFile> ceremonyAttachImageUuidFileList) {
+		Ceremony ceremony = Ceremony.ofV1(
+			user,
+			ceremonyCategory,
+			description,
+			startDate,
+			endDate,
+			isSetAll,
+			targetAdmissionYears);
+		List<CeremonyAttachImage> ceremonyAttachImageList = ceremonyAttachImageUuidFileList.stream()
+			.map(uuidFile -> CeremonyAttachImage.of(ceremony, uuidFile))
+			.toList();
+		ceremony.updateCeremonyAttachImageList(ceremonyAttachImageList);
+		return ceremony;
+	}
+
 	public static Ceremony of(
 		User user,
 		CeremonyType ceremonyType,

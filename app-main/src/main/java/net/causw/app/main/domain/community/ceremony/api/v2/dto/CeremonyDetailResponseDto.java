@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.community.ceremony.api.v1.dto;
+package net.causw.app.main.domain.community.ceremony.api.v2.dto;
 
 import java.time.LocalDate;
 import java.time.LocalTime;

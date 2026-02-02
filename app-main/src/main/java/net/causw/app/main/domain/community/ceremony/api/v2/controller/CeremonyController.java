@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import net.causw.app.main.domain.community.ceremony.api.v1.dto.CeremonyDetailResponseDto;
-import net.causw.app.main.domain.community.ceremony.api.v1.dto.CreateCeremonyRequestDto;
+import net.causw.app.main.domain.community.ceremony.api.v2.dto.CeremonyDetailResponseDto;
+import net.causw.app.main.domain.community.ceremony.api.v2.dto.CreateCeremonyRequestDto;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyContext;
 import net.causw.app.main.domain.community.ceremony.service.CeremonyService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;

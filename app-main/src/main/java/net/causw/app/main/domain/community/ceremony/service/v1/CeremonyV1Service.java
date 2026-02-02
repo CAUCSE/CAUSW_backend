@@ -14,12 +14,12 @@ import org.springframework.web.multipart.MultipartFile;
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.asset.file.service.v1.UuidFileV1Service;
-import net.causw.app.main.domain.community.ceremony.api.v1.dto.CeremonyDetailResponseDto;
 import net.causw.app.main.domain.community.ceremony.api.v1.dto.CeremonyNotificationSettingResponseDto;
+import net.causw.app.main.domain.community.ceremony.api.v1.dto.CeremonyResponseDto;
 import net.causw.app.main.domain.community.ceremony.api.v1.dto.CreateCeremonyNotificationSettingDto;
 import net.causw.app.main.domain.community.ceremony.api.v1.dto.CreateCeremonyRequestDto;
 import net.causw.app.main.domain.community.ceremony.api.v1.dto.UpdateCeremonyStateRequestDto;
-import net.causw.app.main.domain.community.ceremony.api.v1.mapper.CeremonyDtoMapper;
+import net.causw.app.main.domain.community.ceremony.api.v1.mapper.CeremonyDtoV1Mapper;
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyContext;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyState;
@@ -54,7 +54,7 @@ public class CeremonyV1Service {
 
 	@Deprecated
 	@Transactional
-	public CeremonyDetailResponseDto createCeremony(
+	public CeremonyResponseDto createCeremony(
 		User user,
 		@Valid CreateCeremonyRequestDto createCeremonyRequestDTO,
 		List<MultipartFile> imageFileList) {
@@ -86,31 +86,18 @@ public class CeremonyV1Service {
 			? List.of()
 			: uuidFileService.saveFileList(imageFileList, FilePath.USER_ACADEMIC_RECORD_APPLICATION);
 
-		Ceremony ceremony = Ceremony.createWithImages(
+		Ceremony ceremony = Ceremony.createWithImagesV1(
 			user,
-			createCeremonyRequestDTO.getCeremonyType(),
-			createCeremonyRequestDTO.getCeremonyCategory(),
+			createCeremonyRequestDTO.getCategory(),
+			createCeremonyRequestDTO.getDescription(),
 			createCeremonyRequestDTO.getStartDate(),
 			createCeremonyRequestDTO.getEndDate(),
-			createCeremonyRequestDTO.getStartTime(),
-			createCeremonyRequestDTO.getEndTime(),
-			createCeremonyRequestDTO.getRelationType(),
-			createCeremonyRequestDTO.getFamilyRelation(),
-			createCeremonyRequestDTO.getAlumniRelation(),
-			createCeremonyRequestDTO.getAlumniName(),
-			createCeremonyRequestDTO.getAlumniAdmissionYear(),
-			createCeremonyRequestDTO.getContent(),
-			createCeremonyRequestDTO.getAddress(),
-			createCeremonyRequestDTO.getPostalAddress(),
-			createCeremonyRequestDTO.getDetailedAddress(),
-			createCeremonyRequestDTO.getContact(),
-			createCeremonyRequestDTO.getLink(),
 			createCeremonyRequestDTO.getIsSetAll(),
 			targetAdmissionYears,
 			uuidFileList);
 		ceremonyRepository.save(ceremony);
 
-		return CeremonyDtoMapper.INSTANCE.toMyCeremonyDetailResponseDto(ceremony);
+		return CeremonyDtoV1Mapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
 	}
 
 	@Transactional(readOnly = true)
@@ -131,7 +118,7 @@ public class CeremonyV1Service {
 
 	@Deprecated
 	@Transactional(readOnly = true)
-	public CeremonyDetailResponseDto getCeremony(String ceremonyId, CeremonyContext context, User user) {
+	public CeremonyResponseDto getCeremony(String ceremonyId, CeremonyContext context, User user) {
 		Ceremony ceremony = ceremonyRepository.findById(ceremonyId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
@@ -145,21 +132,22 @@ public class CeremonyV1Service {
 						ErrorCode.API_NOT_ACCESSIBLE,
 						MessageUtil.CEREMONY_ACCESS_MY_ONLY);
 				}
-				return CeremonyDtoMapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
+				return CeremonyDtoV1Mapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
 			case ADMIN: // 관리자용 경조사 관리 페이지
 				if (!user.getRoles().contains(Role.ADMIN)) {
 					throw new BadRequestException(
 						ErrorCode.API_NOT_ACCESSIBLE,
 						MessageUtil.CEREMONY_ACCESS_ADMIN_ONLY);
 				}
-				return CeremonyDtoMapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
+				return CeremonyDtoV1Mapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
+			case GENERAL:
 			default:
-				return CeremonyDtoMapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
+				return CeremonyDtoV1Mapper.INSTANCE.toCeremonyResponseDto(ceremony);
 		}
 	}
 
 	@Transactional
-	public CeremonyDetailResponseDto updateUserCeremonyStatus(UpdateCeremonyStateRequestDto updateDto) {
+	public CeremonyResponseDto updateUserCeremonyStatus(UpdateCeremonyStateRequestDto updateDto) {
 		Ceremony ceremony = ceremonyRepository.findById(updateDto.getCeremonyId()).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
@@ -172,16 +160,16 @@ public class CeremonyV1Service {
 			ceremonyNotificationService.sendByAdmissionYear(writerAdmissionYear, updateDto.getCeremonyId());
 		} else { // state가 reject, await, close로 바뀌는 경우 (close는 별도 처리)
 			ceremony.updateNote(updateDto.getRejectMessage());
-			return CeremonyDtoMapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
+			return CeremonyDtoV1Mapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
 		}
 
 		ceremonyRepository.save(ceremony);
 
-		return CeremonyDtoMapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
+		return CeremonyDtoV1Mapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
 	}
 
 	@Transactional
-	public CeremonyDetailResponseDto closeUserCeremonyStatus(User user, String ceremonyId) {
+	public CeremonyResponseDto closeUserCeremonyStatus(User user, String ceremonyId) {
 		Ceremony ceremony = ceremonyRepository.findByIdAndUser(ceremonyId, user).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
@@ -191,7 +179,7 @@ public class CeremonyV1Service {
 
 		ceremonyRepository.save(ceremony);
 
-		return CeremonyDtoMapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
+		return CeremonyDtoV1Mapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
 	}
 
 	@Transactional
@@ -206,7 +194,7 @@ public class CeremonyV1Service {
 			user);
 		ceremonyNotificationSettingRepository.save(ceremonyNotificationSetting);
 
-		return CeremonyDtoMapper.INSTANCE.toCeremonyNotificationSettingResponseDto(ceremonyNotificationSetting);
+		return CeremonyDtoV1Mapper.INSTANCE.toCeremonyNotificationSettingResponseDto(ceremonyNotificationSetting);
 	}
 
 	@EventListener // 기본 경조사 설정 생성 실패시, 학적 인증과 함께 롤백
@@ -232,7 +220,7 @@ public class CeremonyV1Service {
 				() -> new BadRequestException(
 					ErrorCode.ROW_DOES_NOT_EXIST,
 					MessageUtil.CEREMONY_NOTIFICATION_SETTING_NOT_FOUND));
-		return CeremonyDtoMapper.INSTANCE.toCeremonyNotificationSettingResponseDto(ceremonyNotificationSetting);
+		return CeremonyDtoV1Mapper.INSTANCE.toCeremonyNotificationSettingResponseDto(ceremonyNotificationSetting);
 	}
 
 	@Transactional
@@ -254,7 +242,7 @@ public class CeremonyV1Service {
 
 		ceremonyNotificationSettingRepository.save(ceremonyNotificationSetting);
 
-		return CeremonyDtoMapper.INSTANCE.toCeremonyNotificationSettingResponseDto(ceremonyNotificationSetting);
+		return CeremonyDtoV1Mapper.INSTANCE.toCeremonyNotificationSettingResponseDto(ceremonyNotificationSetting);
 
 	}
 
