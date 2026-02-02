@@ -93,11 +93,15 @@ public class BoardService {
 	 */
 	@Transactional
 	public void createBoard(BoardPart board, BoardConfigPart config, List<String> adminUserIds) {
+		// board 관련 검증
 		boardValidator.validateForCreate(board.name());
+
+		// board 생성
 		Board boardEntity = boardPartMapper.toEntity(board);
 		Board savedBoard = boardWriter.save(boardEntity);
-		String boardId = savedBoard.getId();
 
+		// boardConfig 생성
+		String boardId = savedBoard.getId();
 		int displayOrder = boardConfigReader.getNextDisplayOrder();
 		BoardConfig boardConfig = boardConfigPartMapper.toEntity(config, boardId, displayOrder);
 		boardConfigWriter.save(boardConfig);
@@ -113,10 +117,14 @@ public class BoardService {
 	 */
 	@Transactional
 	public void updateBoard(String boardId, BoardPart board, BoardConfigPart config, List<String> adminUserIds) {
+		// board 관련 검증
 		boardValidator.validateForUpdate(board.name(), boardId);
+
+		// board, boardConfig 조회
 		Board boardEntity = boardReader.getById(boardId);
 		BoardConfig boardConfig = boardConfigReader.getByBoardId(boardId);
 
+		// 수정 수행
 		boardWriter.updateBoard(boardEntity, board);
 		boardConfigWriter.updateBoardConfig(boardConfig, config);
 		boardConfigWriter.replaceAdmins(boardId, new HashSet<>(adminUserIds));

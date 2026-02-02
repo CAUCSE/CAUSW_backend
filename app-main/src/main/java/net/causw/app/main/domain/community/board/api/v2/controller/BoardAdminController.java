@@ -28,6 +28,8 @@ import net.causw.app.main.domain.community.board.api.v2.mapper.BoardSearchCondit
 import net.causw.app.main.domain.community.board.service.BoardService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
+import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
+import net.causw.app.main.shared.exception.errorcode.BoardErrorCode;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -91,8 +93,8 @@ public class BoardAdminController {
 		@PathVariable String boardId,
 		@Valid @RequestBody BoardConfigUpdateRequest request) {
 		if (!boardId.equals(request.boardId())) {
-			throw new net.causw.app.main.shared.exception.BaseRunTimeV2Exception(
-				net.causw.app.main.shared.exception.errorcode.BoardErrorCode.BOARD_NOT_FOUND);
+			throw new BaseRunTimeV2Exception(
+				BoardErrorCode.BOARD_NOT_FOUND);
 		}
 		boardService.updateBoard(
 			boardId,
