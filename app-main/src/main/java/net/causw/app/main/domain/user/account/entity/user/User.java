@@ -21,7 +21,7 @@ import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.account.enums.user.GraduationType;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
-import net.causw.app.main.domain.user.auth.service.v2.dto.UserRegisterCommand;
+import net.causw.app.main.domain.user.account.service.v2.dto.UserRegisterDto;
 import net.causw.app.main.shared.entity.BaseEntity;
 
 import jakarta.persistence.*;
@@ -171,16 +171,16 @@ public class User extends BaseEntity {
 			.build();
 	}
 
-	public static User from(UserRegisterCommand command, String encodedPassword) {
+	public static User from(UserRegisterDto dto, String encodedPassword) {
 		return User.builder()
-			.email(command.email())
-			.name(command.name())
+			.email(dto.email())
+			.name(dto.name())
 			.roles(Set.of(Role.NONE))
 			.state(UserState.AWAIT)
 			.password(encodedPassword)
-			.nickname(command.nickname())
+			.nickname(dto.nickname())
 			.academicStatus(AcademicStatus.UNDETERMINED)
-			.phoneNumber(command.phoneNumber())
+			.phoneNumber(dto.phoneNumber())
 			.agreements(TermAgreements.createRequiredAgreements())
 			.isV2(true)
 			.build();
