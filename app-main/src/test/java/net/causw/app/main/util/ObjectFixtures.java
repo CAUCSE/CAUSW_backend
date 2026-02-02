@@ -1,10 +1,14 @@
 package net.causw.app.main.util;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
 import org.springframework.test.util.ReflectionTestUtils;
 
+import net.causw.app.main.domain.campus.schedule.entity.Schedule;
+import net.causw.app.main.domain.campus.schedule.entity.enums.ScheduleType;
+import net.causw.app.main.domain.campus.schedule.service.v2.dto.ScheduleDto;
 import net.causw.app.main.domain.campus.semester.entity.Semester;
 import net.causw.app.main.domain.campus.semester.enums.SemesterType;
 import net.causw.app.main.domain.community.board.entity.Board;
@@ -121,6 +125,15 @@ public class ObjectFixtures {
 			null);
 	}
 
+	/**
+	 * id가 설정된 Board fixture. 테스트에서 협력 객체 stub 시 일관된 id를 쓰기 위해 사용한다.
+	 */
+	public static Board getBoardWithId(String id) {
+		Board board = getBoard();
+		ReflectionTestUtils.setField(board, "id", id);
+		return board;
+	}
+
 	public static Board getNoticeBoard(boolean isAlumni) {
 		return Board.createNoticeBoard(
 			"noticeBoardName",
@@ -130,6 +143,24 @@ public class ObjectFixtures {
 			false,
 			isAlumni,
 			null);
+	}
+
+	/**
+	 * id가 설정된 공지 게시판 fixture. 테스트에서 협력 객체 stub 시 일관된 id를 쓰기 위해 사용한다.
+	 */
+	public static Board getNoticeBoardWithId(boolean isAlumni, String id) {
+		Board board = getNoticeBoard(isAlumni);
+		ReflectionTestUtils.setField(board, "id", id);
+		return board;
+	}
+
+	/**
+	 * id가 설정된 v2 스타일 Board fixture. BoardService(v2) 등에서 사용한다.
+	 */
+	public static Board getBoardV2WithId(String id) {
+		Board board = Board.createForV2("boardName", "boardDescription");
+		ReflectionTestUtils.setField(board, "id", id);
+		return board;
 	}
 
 	public static Post getPost(User user, Board board) {
@@ -174,5 +205,26 @@ public class ObjectFixtures {
 			false,
 			voteOptions,
 			post);
+	}
+
+	// Schedule 관련 헬퍼 메서드
+	public static Schedule getSchedule(User creator) {
+		return Schedule.of(
+			"중간고사 기간",
+			ScheduleType.ACADEMIC,
+			LocalDateTime.of(2026, 4, 15, 0, 0),
+			LocalDateTime.of(2026, 4, 21, 23, 59),
+			creator);
+	}
+
+	public static ScheduleDto getScheduleDto(User creator) {
+		return ScheduleDto.builder()
+			.id("schedule-id")
+			.title("중간고사 기간")
+			.type(ScheduleType.ACADEMIC)
+			.start(LocalDateTime.of(2026, 4, 15, 0, 0))
+			.end(LocalDateTime.of(2026, 4, 21, 23, 59))
+			.creator(creator)
+			.build();
 	}
 }
