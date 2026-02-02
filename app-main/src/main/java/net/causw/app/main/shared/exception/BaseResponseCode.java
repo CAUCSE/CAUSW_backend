@@ -9,4 +9,8 @@ public interface BaseResponseCode {
 	String getMessage();
 
 	HttpStatus getStatus();
+
+	default BaseRunTimeV2Exception toBaseException() {
+		return new BaseRunTimeV2Exception(this);
+	}
 }
