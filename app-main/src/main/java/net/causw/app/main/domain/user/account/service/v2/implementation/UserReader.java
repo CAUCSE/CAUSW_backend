@@ -25,6 +25,11 @@ public class UserReader {
 		return userRepository.findByPhoneNumberAndName(phoneNum, name);
 	}
 
+    public User findByEmailOrElseThrow(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new BaseRunTimeV2Exception(UserErrorCode.INVALID_LOGIN));
+    }
+
 	public void checkEmailDuplication(String email) {
 		Optional<User> emailExist = userRepository.findByEmail(email);
 		if (emailExist.isPresent()) {
