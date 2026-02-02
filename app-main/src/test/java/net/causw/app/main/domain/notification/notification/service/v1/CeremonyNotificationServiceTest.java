@@ -93,7 +93,7 @@ class CeremonyNotificationServiceTest {
 		given(mockCeremony.getUser()).willReturn(mockUser);
 		given(mockCeremony.getStartDate()).willReturn(LocalDate.of(2024, 4, 15));
 		given(mockCeremony.getEndDate()).willReturn(LocalDate.of(2024, 4, 16));
-		given(mockCeremony.getCeremonyCategory()).willReturn("ceremony-category");
+		given(mockCeremony.getCeremonyCategory()).willReturn("결혼식");
 		given(mockCeremony.isSetAll()).willReturn(true);
 		given(ceremonyRepository.findById("ceremony-id")).willReturn(Optional.of(mockCeremony));
 	}
