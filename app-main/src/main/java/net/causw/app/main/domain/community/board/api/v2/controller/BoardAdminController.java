@@ -19,10 +19,7 @@ import net.causw.app.main.domain.community.board.api.v2.dto.request.BoardOrderUp
 import net.causw.app.main.domain.community.board.api.v2.dto.request.BoardSearchCondition;
 import net.causw.app.main.domain.community.board.api.v2.dto.response.BoardConfigEditResponse;
 import net.causw.app.main.domain.community.board.api.v2.dto.response.BoardConfigListResponse;
-import net.causw.app.main.domain.community.board.api.v2.mapper.BoardAdminListMapper;
-import net.causw.app.main.domain.community.board.api.v2.mapper.BoardConfigEditResponseMapper;
-import net.causw.app.main.domain.community.board.api.v2.mapper.BoardConfigUpdateRequestMapper;
-import net.causw.app.main.domain.community.board.api.v2.mapper.BoardCreateRequestMapper;
+import net.causw.app.main.domain.community.board.api.v2.mapper.BoardAdminMapper;
 import net.causw.app.main.domain.community.board.api.v2.mapper.BoardOrderUpdateRequestMapper;
 import net.causw.app.main.domain.community.board.api.v2.mapper.BoardSearchConditionMapper;
 import net.causw.app.main.domain.community.board.service.BoardService;
@@ -44,11 +41,8 @@ import lombok.RequiredArgsConstructor;
 public class BoardAdminController {
 
 	private final BoardService boardService;
-	private final BoardAdminListMapper boardAdminListMapper;
+	private final BoardAdminMapper boardAdminMapper;
 	private final BoardSearchConditionMapper boardSearchConditionMapper;
-	private final BoardConfigEditResponseMapper boardConfigEditResponseMapper;
-	private final BoardConfigUpdateRequestMapper boardConfigUpdateRequestMapper;
-	private final BoardCreateRequestMapper boardCreateRequestMapper;
 	private final BoardOrderUpdateRequestMapper boardOrderUpdateRequestMapper;
 
 	@GetMapping
@@ -56,7 +50,7 @@ public class BoardAdminController {
 	public ApiResponse<BoardConfigListResponse> getBoardAdminList(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@ModelAttribute BoardSearchCondition boardSearchCondition) {
-		BoardConfigListResponse response = boardAdminListMapper.toResponse(
+		BoardConfigListResponse response = boardAdminMapper.toListResponse(
 			boardService.getAllBoardList(boardSearchConditionMapper.toServiceDto(boardSearchCondition)));
 
 		return ApiResponse.success(response);
@@ -67,7 +61,7 @@ public class BoardAdminController {
 	public ApiResponse<BoardConfigEditResponse> editBoardAdmin(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable String boardId) {
-		BoardConfigEditResponse response = boardConfigEditResponseMapper.toResponse(
+		BoardConfigEditResponse response = boardAdminMapper.toEditResponse(
 			boardService.getBoardConfigEditInfo(boardId));
 
 		return ApiResponse.success(response);
@@ -79,8 +73,8 @@ public class BoardAdminController {
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@Valid @RequestBody BoardCreateRequest request) {
 		boardService.createBoard(
-			boardCreateRequestMapper.toBoardPart(request),
-			boardCreateRequestMapper.toBoardConfigPart(request),
+			boardAdminMapper.toBoardPart(request),
+			boardAdminMapper.toBoardConfigPart(request),
 			request.adminUserIds());
 
 		return ApiResponse.success();
@@ -98,8 +92,8 @@ public class BoardAdminController {
 		}
 		boardService.updateBoard(
 			boardId,
-			boardConfigUpdateRequestMapper.toBoardPart(request),
-			boardConfigUpdateRequestMapper.toBoardConfigPart(request),
+			boardAdminMapper.toBoardPart(request),
+			boardAdminMapper.toBoardConfigPart(request),
 			request.adminUserIds());
 
 		return ApiResponse.success();
