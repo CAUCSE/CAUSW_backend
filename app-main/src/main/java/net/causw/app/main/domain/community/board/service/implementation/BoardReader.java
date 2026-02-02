@@ -8,7 +8,6 @@ import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.repository.BoardQueryRepository;
 import net.causw.app.main.domain.community.board.repository.BoardRepository;
 import net.causw.app.main.domain.community.board.service.dto.request.BoardQueryCondition;
-import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.BoardErrorCode;
 
 import lombok.RequiredArgsConstructor;

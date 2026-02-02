@@ -25,7 +25,6 @@ import net.causw.app.main.domain.community.board.api.v2.mapper.BoardSearchCondit
 import net.causw.app.main.domain.community.board.service.BoardAdminService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
-import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.BoardErrorCode;
 
 import io.swagger.v3.oas.annotations.Operation;

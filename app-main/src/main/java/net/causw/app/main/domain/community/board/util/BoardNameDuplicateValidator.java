@@ -3,7 +3,6 @@ package net.causw.app.main.domain.community.board.util;
 import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.community.board.service.implementation.BoardReader;
-import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.BoardErrorCode;
 
 import lombok.RequiredArgsConstructor;
