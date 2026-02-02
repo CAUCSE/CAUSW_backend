@@ -1,7 +1,10 @@
 package net.causw.app.main.domain.user.account.service.v2.implementation;
 
+import java.util.List;
 import java.util.Optional;
 
+import net.causw.app.main.domain.user.account.repository.user.query.UserQueryRepository;
+import net.causw.app.main.domain.user.account.service.dto.request.UserQueryCondition;
 import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
@@ -14,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 @Component
 @RequiredArgsConstructor
 public class UserReader {
+
+    private final UserQueryRepository userQueryRepository;
 	private final UserRepository userRepository;
 
 	public Optional<User> checkUserExistByPhoneNumAndName(String phoneNum, String name) {
@@ -40,5 +45,13 @@ public class UserReader {
 			throw new BaseRunTimeV2Exception(UserErrorCode.NICKNAME_ALREADY_EXIST);
 		}
 	}
+
+    public List<User> getUsersByIds(List<String> userIds) {
+        return userQueryRepository.findByIds(userIds);
+    }
+
+    public List<User> searchByCondition(UserQueryCondition condition) {
+        return userQueryRepository.searchByCondition(condition);
+    }
 
 }

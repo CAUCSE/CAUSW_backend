@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,7 +27,6 @@ import net.causw.app.main.domain.community.board.service.implementation.BoardRea
 import net.causw.app.main.domain.community.board.service.implementation.BoardWriter;
 import net.causw.app.main.domain.community.board.util.BoardValidator;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 
 import lombok.RequiredArgsConstructor;
 
