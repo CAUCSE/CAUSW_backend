@@ -50,7 +50,7 @@ import net.causw.app.main.util.ObjectFixtures;
 class BoardServiceTest {
 
 	@InjectMocks
-	private BoardService boardService;
+	private BoardAdminService boardService;
 
 	@Mock
 	private BoardReader boardReader;

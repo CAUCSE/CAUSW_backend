@@ -22,7 +22,7 @@ import net.causw.app.main.domain.community.board.api.v2.dto.response.BoardConfig
 import net.causw.app.main.domain.community.board.api.v2.mapper.BoardAdminMapper;
 import net.causw.app.main.domain.community.board.api.v2.mapper.BoardOrderUpdateRequestMapper;
 import net.causw.app.main.domain.community.board.api.v2.mapper.BoardSearchConditionMapper;
-import net.causw.app.main.domain.community.board.service.BoardService;
+import net.causw.app.main.domain.community.board.service.BoardAdminService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
@@ -40,7 +40,7 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "관리자 게시판 api", description = "관리자 게시판 관리 API")
 public class BoardAdminController {
 
-	private final BoardService boardService;
+	private final BoardAdminService boardAdminService;
 	private final BoardAdminMapper boardAdminMapper;
 	private final BoardSearchConditionMapper boardSearchConditionMapper;
 	private final BoardOrderUpdateRequestMapper boardOrderUpdateRequestMapper;
@@ -51,7 +51,7 @@ public class BoardAdminController {
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@ModelAttribute BoardSearchCondition boardSearchCondition) {
 		BoardConfigListResponse response = boardAdminMapper.toListResponse(
-			boardService.getAllBoardList(boardSearchConditionMapper.toServiceDto(boardSearchCondition)));
+			boardAdminService.getAllBoardList(boardSearchConditionMapper.toServiceDto(boardSearchCondition)));
 
 		return ApiResponse.success(response);
 	}
@@ -62,7 +62,7 @@ public class BoardAdminController {
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable String boardId) {
 		BoardConfigEditResponse response = boardAdminMapper.toEditResponse(
-			boardService.getBoardConfigEditInfo(boardId));
+			boardAdminService.getBoardConfigEditInfo(boardId));
 
 		return ApiResponse.success(response);
 	}
@@ -72,7 +72,7 @@ public class BoardAdminController {
 	public ApiResponse<Void> createBoard(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@Valid @RequestBody BoardCreateRequest request) {
-		boardService.createBoard(
+		boardAdminService.createBoard(
 			boardAdminMapper.toBoardPart(request),
 			boardAdminMapper.toBoardConfigPart(request),
 			request.adminUserIds());
@@ -90,7 +90,7 @@ public class BoardAdminController {
 			throw new BaseRunTimeV2Exception(
 				BoardErrorCode.BOARD_NOT_FOUND);
 		}
-		boardService.updateBoard(
+		boardAdminService.updateBoard(
 			boardId,
 			boardAdminMapper.toBoardPart(request),
 			boardAdminMapper.toBoardConfigPart(request),
@@ -105,7 +105,7 @@ public class BoardAdminController {
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable String boardId) {
 
-		boardService.deleteBoard(boardId);
+		boardAdminService.deleteBoard(boardId);
 
 		return ApiResponse.success();
 	}
@@ -115,7 +115,7 @@ public class BoardAdminController {
 	public ApiResponse<Void> updateBoardOrder(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@Valid @RequestBody BoardOrderUpdateRequest request) {
-		boardService.updateBoardOrder(boardOrderUpdateRequestMapper.toCommand(request));
+		boardAdminService.updateBoardOrder(boardOrderUpdateRequestMapper.toCommand(request));
 		return ApiResponse.success();
 	}
 }

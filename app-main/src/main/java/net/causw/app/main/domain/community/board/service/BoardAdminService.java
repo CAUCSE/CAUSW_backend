@@ -32,7 +32,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class BoardService {
+public class BoardAdminService {
 
 	// TODO(v1 미적용): BoardV1Service 대비 미적용 비즈니스 로직
 	// - findAllBoard: 사용자 역할/학적/동아리 기반 게시판 목록 필터링
