@@ -32,8 +32,6 @@ import net.causw.app.main.domain.notification.notification.api.v1.dto.CeremonyLi
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
