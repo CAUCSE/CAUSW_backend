@@ -37,12 +37,24 @@ public enum UserState {
 	public void validateSignupPossible() {
 		switch (this) {
 			case ACTIVE, AWAIT, REJECT ->
-				throw new BaseRunTimeV2Exception(UserErrorCode.ALREADY_REGISTERED);
+				throw UserErrorCode.ALREADY_REGISTERED.toBaseException();
 			case DROP ->
-				throw new BaseRunTimeV2Exception(UserErrorCode.USER_DROPPED);
+				throw UserErrorCode.USER_DROPPED.toBaseException();
 			case INACTIVE ->
-				throw new BaseRunTimeV2Exception(UserErrorCode.USER_INACTIVE_CAN_REJOIN);
+				throw UserErrorCode.USER_INACTIVE_CAN_REJOIN.toBaseException();
 			default -> {}
 		}
 	}
+
+    public void validateLoginPossible() {
+        switch (this) {
+            case DELETED ->
+                    throw UserErrorCode.INVALID_LOGIN_USER_DELETED.toBaseException();
+            case DROP ->
+                    throw UserErrorCode.INVALID_LOGIN_USER_DROPPED.toBaseException();
+            case INACTIVE ->
+                    throw UserErrorCode.INVALID_LOGIN_USER_INACTIVE.toBaseException();
+            default -> {}
+        }
+    }
 }

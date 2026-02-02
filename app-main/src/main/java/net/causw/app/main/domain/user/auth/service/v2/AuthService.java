@@ -2,6 +2,7 @@ package net.causw.app.main.domain.user.auth.service.v2;
 
 import java.util.Optional;
 
+import net.causw.app.main.domain.user.auth.util.EmailUserValidator;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -10,20 +11,13 @@ import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.v2.dto.UserRegisterDto;
 import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.v2.implementation.UserWriter;
-import net.causw.app.main.domain.user.account.util.PasswordCorrectValidator;
-import net.causw.app.main.domain.user.account.util.PasswordFormatValidator;
-import net.causw.app.main.domain.user.account.util.PhoneNumberFormatValidator;
-import net.causw.app.main.domain.user.account.util.UserStateValidator;
 import net.causw.app.main.domain.user.auth.api.v2.dto.AuthDtoMapper;
 import net.causw.app.main.domain.user.auth.api.v2.dto.response.AuthResponse;
 import net.causw.app.main.domain.user.auth.service.v2.dto.AuthInternalDto;
-import net.causw.app.main.shared.ValidatorBucket;
 import net.causw.app.main.shared.infra.redis.RedisUtils;
-import net.causw.app.main.shared.util.ConstraintValidator;
 import net.causw.global.constant.StaticValue;
 
 import jakarta.transaction.Transactional;
-import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -32,7 +26,7 @@ public class AuthService {
 
 	private final UserReader userReader;
 	private final UserWriter userWriter;
-	private final Validator validator;
+    private final EmailUserValidator emailUserValidator;
 	private final PasswordEncoder passwordEncoder;
 	private final AuthDtoMapper authDtoMapper;
 	private final JwtTokenProvider jwtTokenProvider;
@@ -51,11 +45,7 @@ public class AuthService {
 
 		// 신규 사용자 생성 및 검증
 		User newUser = User.from(dto, passwordEncoder.encode(dto.password()));
-        ValidatorBucket.of()
-                .consistOf(ConstraintValidator.of(newUser, this.validator))
-                .consistOf(PasswordFormatValidator.of(dto.password()))
-                .consistOf(PhoneNumberFormatValidator.of(dto.phoneNumber()))
-                .validate();
+        emailUserValidator.validateRegister(newUser, dto.password(), dto.phoneNumber());
 		User savedUser = userWriter.save(newUser);
 		return authDtoMapper.toAuthResponse(savedUser, null, savedUser.getProfileUrl());
 	}
@@ -66,13 +56,7 @@ public class AuthService {
 		User user = userReader.findByEmailOrElseThrow(email);
 
 		// 유효성 검증 수행 (비밀번호, 유저 상태)
-		ValidatorBucket.of()
-			.consistOf(PasswordCorrectValidator.of(
-				this.passwordEncoder,
-				user.getPassword(),
-				password))
-			.consistOf(UserStateValidator.of(user.getState()))
-			.validate();
+        emailUserValidator.validateLogin(user, password);
 
 		// 토큰 생성
 		String accessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getRoles(), user.getState());

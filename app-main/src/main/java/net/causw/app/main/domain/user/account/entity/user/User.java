@@ -256,6 +256,10 @@ public class User extends BaseEntity {
 		this.state.validateSignupPossible();
 	}
 
+    public void validateLoginPossible() {
+        this.state.validateLoginPossible();
+    }
+
     public String getProfileUrl() {
         if (this.userProfileImage == null || this.userProfileImage.getUuidFile() == null) {
             return null;

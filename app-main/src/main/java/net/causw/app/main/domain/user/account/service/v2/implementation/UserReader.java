@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
-import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -27,27 +26,27 @@ public class UserReader {
 
     public User findByEmailOrElseThrow(String email) {
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new BaseRunTimeV2Exception(UserErrorCode.INVALID_LOGIN));
+                .orElseThrow(UserErrorCode.INVALID_LOGIN::toBaseException);
     }
 
 	public void checkEmailDuplication(String email) {
 		Optional<User> emailExist = userRepository.findByEmail(email);
 		if (emailExist.isPresent()) {
-			throw new BaseRunTimeV2Exception(UserErrorCode.EMAIL_ALREADY_EXIST);
+			throw UserErrorCode.EMAIL_ALREADY_EXIST.toBaseException();
 		}
 	}
 
 	public void checkPhoneNumDuplication(String phoneNumber) {
 		Optional<User> phoneNumExist = userRepository.findByPhoneNumber(phoneNumber);
 		if (phoneNumExist.isPresent()) {
-			throw new BaseRunTimeV2Exception(UserErrorCode.PHONE_NUMBER_ALREADY_EXIST);
+			throw UserErrorCode.PHONE_NUMBER_ALREADY_EXIST.toBaseException();
 		}
 	}
 
 	public void checkNicknameDuplication(String nickname) {
 		Optional<User> nicknameExist = userRepository.findByNickname(nickname);
 		if (nicknameExist.isPresent()) {
-			throw new BaseRunTimeV2Exception(UserErrorCode.NICKNAME_ALREADY_EXIST);
+			throw UserErrorCode.NICKNAME_ALREADY_EXIST.toBaseException();
 		}
 	}
 
