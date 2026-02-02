@@ -62,7 +62,7 @@ public class CeremonyService {
 
 		List<UuidFile> uuidFileList = (imageFileList == null || imageFileList.isEmpty())
 			? List.of()
-			: uuidFileService.saveFileList(imageFileList, FilePath.USER_ACADEMIC_RECORD_APPLICATION);
+			: uuidFileService.saveFileList(imageFileList, FilePath.CEREMONY);
 
 		// 관계 - 상세 관계 검증
 		switch (createCeremonyRequestDTO.getRelationType()) {
