@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 public record UserListItemResponse(
 
         @Schema(description = "유저 ID", example = "user-1")
-        String userId,
+        String id,
 
         @Schema(description = "이름", example = "홍길동")
         String name,
