@@ -1,6 +1,8 @@
 package net.causw.app.main.domain.user.account.service;
 
+import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.dto.request.UserListCondition;
+import net.causw.app.main.domain.user.account.service.dto.response.UserDetailItem;
 import net.causw.app.main.domain.user.account.service.dto.response.UserListItem;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 
@@ -9,9 +11,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserQueryService {
 
     private final UserReader userReader;
@@ -22,5 +26,10 @@ public class UserQueryService {
     ) {
         return userReader.findUserList(condition, pageable)
                 .map(UserListItem::from);
+    }
+
+    public UserDetailItem getUserDetail(String userId) {
+        User user = userReader.findById(userId);
+        return UserDetailItem.from(user);
     }
 }

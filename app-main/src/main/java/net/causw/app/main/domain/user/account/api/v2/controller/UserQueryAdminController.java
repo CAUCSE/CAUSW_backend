@@ -1,7 +1,9 @@
 package net.causw.app.main.domain.user.account.api.v2.controller;
 
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserListRequest;
+import net.causw.app.main.domain.user.account.api.v2.dto.response.UserDetailResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserListItemResponse;
+import net.causw.app.main.domain.user.account.api.v2.mapper.UserDetailMapper;
 import net.causw.app.main.domain.user.account.api.v2.mapper.UserListMapper;
 import net.causw.app.main.domain.user.account.service.UserQueryService;
 
@@ -10,16 +12,19 @@ import lombok.RequiredArgsConstructor;
 import net.causw.app.main.shared.dto.ApiResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/admin/users")
+@PreAuthorize("@security.hasRole(@Role.ADMIN)")
 public class UserQueryAdminController {
 
     private final UserQueryService userQueryService;
     private final UserListMapper userListMapper;
+    private final UserDetailMapper userDetailMapper;
 
     @GetMapping
     public ApiResponse<Page<UserListItemResponse>> getUsers(
@@ -37,5 +42,13 @@ public class UserQueryAdminController {
                         .map(userListMapper::toResponse);
 
         return ApiResponse.success(response);
+    }
+
+    @GetMapping("/{userId}")
+    public ApiResponse<UserDetailResponse> getUserDetail(
+            @PathVariable String userId
+    ) {
+        var userDetail = userQueryService.getUserDetail(userId);
+        return ApiResponse.success(userDetailMapper.toResponse(userDetail));
     }
 }

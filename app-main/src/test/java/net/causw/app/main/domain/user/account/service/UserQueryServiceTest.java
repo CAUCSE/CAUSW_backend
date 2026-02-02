@@ -1,6 +1,7 @@
 package net.causw.app.main.domain.user.account.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -10,9 +11,17 @@ import java.util.List;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.dto.request.UserListCondition;
+import net.causw.app.main.domain.user.account.service.dto.response.UserDetailItem;
 import net.causw.app.main.domain.user.account.service.dto.response.UserListItem;
+import net.causw.app.main.domain.user.account.enums.user.Department;
+import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.domain.user.account.service.implementation.UserReader;
+import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
+import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 import net.causw.app.main.util.ObjectFixtures;
+
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -23,10 +32,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import net.causw.app.main.domain.user.account.enums.user.Department;
-import net.causw.app.main.domain.user.account.enums.user.UserState;
-import net.causw.app.main.domain.user.account.service.implementation.UserReader;
-
 @ExtendWith(MockitoExtension.class)
 class UserQueryServiceTest {
 
@@ -36,6 +41,9 @@ class UserQueryServiceTest {
     @InjectMocks
     private UserQueryService userQueryService;
 
+    /* =========================
+     * 유저 목록 조회
+     * ========================= */
     @Test
     @DisplayName("유저 목록 조회 조건이 주어지면 페이징된 유저 목록을 반환한다")
     void givenUserListCondition_whenGetUserList_thenReturnPagedUserList() {
@@ -68,11 +76,63 @@ class UserQueryServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getContent()).hasSize(2)
                 .extracting(UserListItem::name)
-                .containsExactly("name", "name"); // ObjectFixtures 기본 name
+                .containsExactly("name", "name");
 
         assertThat(result.getTotalElements()).isEqualTo(2);
         assertThat(result.getNumber()).isEqualTo(0);
 
         verify(userReader).findUserList(condition, pageable);
+    }
+
+    /* =========================
+     * 유저 상세 조회
+     * ========================= */
+    @Nested
+    @DisplayName("유저 상세 조회")
+    class GetUserDetail {
+
+        @Test
+        @DisplayName("사용자가 존재하면 사용자 상세 정보를 반환한다")
+        void givenValidUserId_whenGetUserDetail_thenReturnUserDetail() {
+            // given
+            String userId = "user-1";
+            User user = ObjectFixtures.getCertifiedUserWithId(userId);
+
+            when(userReader.findById(userId)).thenReturn(user);
+
+            // when
+            UserDetailItem result = userQueryService.getUserDetail(userId);
+
+            // then
+            assertThat(result).isNotNull();
+            assertThat(result.id()).isEqualTo(userId);
+            assertThat(result.email()).isEqualTo(user.getEmail());
+            assertThat(result.name()).isEqualTo(user.getName());
+
+            verify(userReader).findById(userId);
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 사용자면 USER_NOT_FOUND 예외가 발생한다")
+        void givenInvalidUserId_whenGetUserDetail_thenThrowUserNotFound() {
+            // given
+            String invalidUserId = "invalid-user-id";
+
+            when(userReader.findById(invalidUserId))
+                    .thenThrow(UserErrorCode.USER_NOT_FOUND.toBaseException());
+
+            // when
+            Throwable throwable = catchThrowable(
+                    () -> userQueryService.getUserDetail(invalidUserId)
+            );
+
+            // then
+            assertThat(throwable)
+                    .isInstanceOf(BaseRunTimeV2Exception.class)
+                    .extracting(e -> ((BaseRunTimeV2Exception) e).getErrorCode())
+                    .isEqualTo(UserErrorCode.USER_NOT_FOUND);
+
+            verify(userReader).findById(invalidUserId);
+        }
     }
 }
