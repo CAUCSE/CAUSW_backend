@@ -114,12 +114,12 @@ public class UserQueryRepository {
 						.orderBy(user.createdAt.desc())
 						.fetch();
 
-		Long total =
-				jpaQueryFactory
-						.select(user.count())
-						.from(user)
-						.where(where)
-						.fetchOne();
+        JPAQuery<Long> countQuery = jpaQueryFactory
+                .select(user.count())
+                .from(user)
+                .where(where);
+
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
 
 		return new PageImpl<>(content, pageable, total == null ? 0 : total);
 	}
