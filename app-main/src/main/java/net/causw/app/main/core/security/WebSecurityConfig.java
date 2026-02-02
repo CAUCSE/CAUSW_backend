@@ -44,7 +44,7 @@ public class WebSecurityConfig {
 	}
 
 	@Bean
-	@Order(2)
+	@Order(1)
 	public SecurityFilterChain securityFilterChainV2(HttpSecurity http) throws Exception {
 		http
 			.securityMatcher("/api/v2/**")
@@ -52,7 +52,7 @@ public class WebSecurityConfig {
 			.formLogin(AbstractHttpConfigurer::disable)
 			.httpBasic(AbstractHttpConfigurer::disable)
 			.csrf(AbstractHttpConfigurer::disable)
-			.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
+			.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
 			.sessionManagement(
 				sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.authorizeHttpRequests(auth -> auth

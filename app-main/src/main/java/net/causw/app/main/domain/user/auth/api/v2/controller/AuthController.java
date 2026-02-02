@@ -26,7 +26,7 @@ public class AuthController {
 
 	@Operation(summary = "이메일 회원가입 V2", description = "이메일을 활용하여 사용자 계정을 생성합니다.")
 	@PostMapping("/signup")
-	public ApiResponse<AuthResponse> EmailSignUp(@RequestBody @Valid EmailSignupRequest request) {
+	public ApiResponse<AuthResponse> emailSignUp(@RequestBody @Valid EmailSignupRequest request) {
 		UserRegisterCommand command = UserRegisterCommand.from(request);
 		return ApiResponse.success(registerUserUseCase.execute(command));
 	}
