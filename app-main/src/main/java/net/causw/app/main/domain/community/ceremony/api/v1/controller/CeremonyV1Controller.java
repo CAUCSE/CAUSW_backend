@@ -32,6 +32,8 @@ import net.causw.app.main.domain.notification.notification.api.v1.dto.CeremonyLi
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -40,7 +42,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/ceremony")
 public class CeremonyV1Controller {
-	private final CeremonyV1Service ceremonyService;
+	private final CeremonyV1Service ceremonyV1Service;
 
 	/**
 	 * 사용자 본인의 경조사 생성
@@ -50,6 +52,7 @@ public class CeremonyV1Controller {
 	 * @return
 	 */
 
+	@Deprecated
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(value = HttpStatus.CREATED)
 	@Operation(summary = "사용자 본인의 경조사 생성", description = "사용자 본인의 경조사 생성합니다.")
@@ -57,7 +60,7 @@ public class CeremonyV1Controller {
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestPart(value = "createCeremonyRequestDTO") @Valid CreateCeremonyRequestDto createCeremonyRequestDTO,
 		@RequestPart(value = "imageFileList", required = false) List<MultipartFile> imageFileList) {
-		return ceremonyService.createCeremony(userDetails.getUser(), createCeremonyRequestDTO, imageFileList);
+		return ceremonyV1Service.createCeremony(userDetails.getUser(), createCeremonyRequestDTO, imageFileList);
 	}
 
 	@GetMapping
@@ -67,7 +70,7 @@ public class CeremonyV1Controller {
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestParam(name = "ceremonyState", defaultValue = "ACCEPT") CeremonyState state,
 		@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum) {
-		return ceremonyService.getUserCeremonyResponses(userDetails.getUser(), state, pageNum);
+		return ceremonyV1Service.getUserCeremonyResponses(userDetails.getUser(), state, pageNum);
 	}
 
 	@GetMapping("/list/await")
@@ -76,9 +79,10 @@ public class CeremonyV1Controller {
 	@Operation(summary = "전체 경조사 승인 대기 목록 조회(관리자용)", description = "전체 경조사 승인 대기 목록을 조회합니다.")
 	public Page<CeremonyListNotificationDto> getAllUserAwaitingCeremonyPage(
 		@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum) {
-		return ceremonyService.getAllUserAwaitingCeremonyPage(pageNum);
+		return ceremonyV1Service.getAllUserAwaitingCeremonyPage(pageNum);
 	}
 
+	@Deprecated
 	@GetMapping("/{ceremonyId}")
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "유저 경조사 정보 상세 보기", description = "유저 경조사 정보를 조회합니다. 접근한 페이지에 따라 Request Param을 다르게 해주세요.</br>"
@@ -91,7 +95,7 @@ public class CeremonyV1Controller {
 		@RequestParam(name = "context") String contextParam,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		CeremonyContext context = CeremonyContext.fromString(contextParam);
-		return ceremonyService.getCeremony(ceremonyId, context, userDetails.getUser());
+		return ceremonyV1Service.getCeremony(ceremonyId, context, userDetails.getUser());
 	}
 
 	@PutMapping("/state")
@@ -100,7 +104,7 @@ public class CeremonyV1Controller {
 	@Operation(summary = "유저 경조사 승인 상태 변경(승인/거부)(관리자용)", description = "유저 경조사 승인 상태를 변경합니다.")
 	public CeremonyResponseDto updateUserCeremonyStatus(
 		@RequestBody @Valid UpdateCeremonyStateRequestDto updateCeremonyStateRequestDto) {
-		return ceremonyService.updateUserCeremonyStatus(updateCeremonyStateRequestDto);
+		return ceremonyV1Service.updateUserCeremonyStatus(updateCeremonyStateRequestDto);
 	}
 
 	@PutMapping("/state/close/{ceremonyId}")
@@ -109,7 +113,7 @@ public class CeremonyV1Controller {
 	public CeremonyResponseDto closeUserCeremonyStatus(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable(name = "ceremonyId") String ceremonyId) {
-		return ceremonyService.closeUserCeremonyStatus(userDetails.getUser(), ceremonyId);
+		return ceremonyV1Service.closeUserCeremonyStatus(userDetails.getUser(), ceremonyId);
 	}
 
 	@PostMapping("/notification-setting")
@@ -118,7 +122,7 @@ public class CeremonyV1Controller {
 	public CeremonyNotificationSettingResponseDto createCeremonyNotificationSetting(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestBody @Valid CreateCeremonyNotificationSettingDto ceremonyNotificationSettingDTO) {
-		return ceremonyService.createCeremonyNotificationSettings(userDetails.getUser(),
+		return ceremonyV1Service.createCeremonyNotificationSettings(userDetails.getUser(),
 			ceremonyNotificationSettingDTO);
 	}
 
@@ -127,7 +131,7 @@ public class CeremonyV1Controller {
 	@Operation(summary = "유저 경조사 알람 설정 조회", description = "유저의 경조사 알람 설정을 조회합니다.")
 	public CeremonyNotificationSettingResponseDto getCeremonyNotificationSetting(
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		return ceremonyService.getCeremonyNotificationSetting(userDetails.getUser());
+		return ceremonyV1Service.getCeremonyNotificationSetting(userDetails.getUser());
 	}
 
 	@PutMapping("/notification-setting")
@@ -136,7 +140,7 @@ public class CeremonyV1Controller {
 	public CeremonyNotificationSettingResponseDto updateCeremonyNotificationSetting(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestBody @Valid CreateCeremonyNotificationSettingDto createCeremonyNotificationSettingDTO) {
-		return ceremonyService.updateUserSettings(userDetails.getUser(), createCeremonyNotificationSettingDTO);
+		return ceremonyV1Service.updateUserSettings(userDetails.getUser(), createCeremonyNotificationSettingDTO);
 	}
 
 }

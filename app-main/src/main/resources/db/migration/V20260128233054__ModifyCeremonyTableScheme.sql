@@ -25,7 +25,7 @@ ALTER TABLE tb_ceremony
 
 -- 5. start_time, end_time,
 --    relation_type, family_relation, alumni_relation, alumni_name, alumni_admission_year,
---    address, post_address, detailed_address, contact, link 칼럼 추가
+--    address, postal_address, detailed_address, contact, link 칼럼 추가
 ALTER TABLE tb_ceremony
     ADD COLUMN start_time TIME NULL,
     ADD COLUMN end_time TIME NULL,
