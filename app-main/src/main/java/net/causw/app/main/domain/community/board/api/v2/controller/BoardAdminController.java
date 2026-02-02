@@ -87,8 +87,7 @@ public class BoardAdminController {
 		@PathVariable String boardId,
 		@Valid @RequestBody BoardConfigUpdateRequest request) {
 		if (!boardId.equals(request.boardId())) {
-			throw new BaseRunTimeV2Exception(
-				BoardErrorCode.BOARD_NOT_FOUND);
+			throw BoardErrorCode.BOARD_NOT_FOUND.toBaseException();
 		}
 		boardAdminService.updateBoard(
 			boardId,

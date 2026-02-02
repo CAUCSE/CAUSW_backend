@@ -24,7 +24,7 @@ public class BoardNameDuplicateValidator {
 	 */
 	public void validateForCreate(String name) {
 		if (boardReader.existsByName(name)) {
-			throw new BaseRunTimeV2Exception(BoardErrorCode.BOARD_NAME_DUPLICATE);
+			throw BoardErrorCode.BOARD_NAME_DUPLICATE.toBaseException();
 		}
 	}
 
@@ -34,7 +34,7 @@ public class BoardNameDuplicateValidator {
 	 */
 	public void validateForUpdate(String name, String excludeBoardId) {
 		if (boardReader.existsByNameExcludingId(name, excludeBoardId)) {
-			throw new BaseRunTimeV2Exception(BoardErrorCode.BOARD_NAME_DUPLICATE);
+			throw BoardErrorCode.BOARD_NAME_DUPLICATE.toBaseException();
 		}
 	}
 }

@@ -37,7 +37,7 @@ public class BoardReader {
 	public Board getById(String boardId) {
 
 		return boardQueryRepository.findById(boardId)
-			.orElseThrow(() -> new BaseRunTimeV2Exception(BoardErrorCode.BOARD_NOT_FOUND));
+			.orElseThrow(BoardErrorCode.BOARD_NOT_FOUND::toBaseException);
 	}
 
 	/**
