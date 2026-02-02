@@ -13,6 +13,7 @@ import net.causw.app.main.domain.user.account.api.v2.mapper.UserSearchListMapper
 import net.causw.app.main.domain.user.account.service.UserQueryService;
 import net.causw.app.main.shared.dto.ApiResponse;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
@@ -27,7 +28,8 @@ public class UserQueryAdminController {
 	private final UserSearchConditionMapper userSearchConditionMapper;
 	private final UserSearchListMapper userSearchListMapper;
 
-	@GetMapping
+	@GetMapping("/search")
+	@Operation(summary = "유저 검색", description = "유저를 검색한다.")
 	public ApiResponse<UserSearchListResponse> searchUsers(
 		@ModelAttribute UserSearchCondition userSearchCondition) {
 		var result = userQueryService.searchUsers(
