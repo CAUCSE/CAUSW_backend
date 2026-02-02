@@ -3,15 +3,16 @@ package net.causw.app.main.domain.user.account.repository.user.query;
 import java.util.List;
 import java.util.Optional;
 
-import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
-import net.causw.app.main.domain.user.account.enums.user.Department;
+import com.querydsl.jpa.impl.JPAQuery;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
+import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.QUser;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 
@@ -76,21 +77,19 @@ public class UserQueryRepository {
 	}
 
 	public Page<User> findUserList(
-			String keyword,
-			UserState state,
-			AcademicStatus academicStatus,
-			Department department,
-			Pageable pageable
-	) {
+		String keyword,
+		UserState state,
+		AcademicStatus academicStatus,
+		Department department,
+		Pageable pageable) {
 		QUser user = QUser.user;
 
 		BooleanBuilder where = new BooleanBuilder();
 
 		if (keyword != null && !keyword.isBlank()) {
 			where.and(
-					user.name.containsIgnoreCase(keyword)
-							.or(user.studentId.containsIgnoreCase(keyword))
-			);
+				user.name.containsIgnoreCase(keyword)
+					.or(user.studentId.containsIgnoreCase(keyword)));
 		}
 
 		if (state != null) {
@@ -105,14 +104,13 @@ public class UserQueryRepository {
 			where.and(user.department.eq(department));
 		}
 
-		List<User> content =
-				jpaQueryFactory
-						.selectFrom(user)
-						.where(where)
-						.offset(pageable.getOffset())
-						.limit(pageable.getPageSize())
-						.orderBy(user.createdAt.desc())
-						.fetch();
+		List<User> content = jpaQueryFactory
+			.selectFrom(user)
+			.where(where)
+			.offset(pageable.getOffset())
+			.limit(pageable.getPageSize())
+			.orderBy(user.createdAt.desc())
+			.fetch();
 
         JPAQuery<Long> countQuery = jpaQueryFactory
                 .select(user.count())
@@ -120,8 +118,6 @@ public class UserQueryRepository {
                 .where(where);
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
-
-		return new PageImpl<>(content, pageable, total == null ? 0 : total);
 	}
 
 }

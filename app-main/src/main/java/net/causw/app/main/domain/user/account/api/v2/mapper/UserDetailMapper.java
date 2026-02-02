@@ -8,27 +8,26 @@ import net.causw.app.main.domain.user.account.service.dto.response.UserDetailIte
 @Component
 public class UserDetailMapper {
 
-    public UserDetailResponse toResponse(UserDetailItem item) {
-        return new UserDetailResponse(
-                item.id(),
-                item.email(),
-                item.name(),
-                item.studentId(),
-                item.admissionYear(),
-                item.roles(),
-                item.profileImageUrl(),
-                item.state(),
-                item.nickname(),
-                item.major(),
-                item.department(),
-                item.academicStatus(),
-                item.currentCompletedSemester(),
-                item.graduationYear(),
-                item.graduationType(),
-                item.phoneNumber(),
-                item.rejectionOrDropReason(),
-                item.createdAt(),
-                item.updatedAt()
-        );
-    }
+	public UserDetailResponse toResponse(UserDetailItem item) {
+		return new UserDetailResponse(
+			item.id(),
+			item.email(),
+			item.name(),
+			item.studentId(),
+			item.admissionYear(),
+			item.roles(),
+			item.profileImageUrl(),
+			item.state(),
+			item.nickname(),
+			item.major(),
+			item.department(),
+			item.academicStatus(),
+			item.currentCompletedSemester(),
+			item.graduationYear(),
+			item.graduationType(),
+			item.phoneNumber(),
+			item.rejectionOrDropReason(),
+			item.createdAt(),
+			item.updatedAt());
+	}
 }

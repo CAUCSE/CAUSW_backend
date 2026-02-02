@@ -5,9 +5,8 @@ import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 
 public record UserListCondition(
-        String keyword,
-        UserState state,
-        AcademicStatus academicStatus,
-        Department department
-) {
+	String keyword,
+	UserState state,
+	AcademicStatus academicStatus,
+	Department department) {
 }
