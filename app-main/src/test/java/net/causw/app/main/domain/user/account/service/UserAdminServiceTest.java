@@ -33,13 +33,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 @ExtendWith(MockitoExtension.class)
-class UserQueryServiceTest {
+class UserAdminServiceTest {
 
     @Mock
     private UserReader userReader;
 
     @InjectMocks
-    private UserQueryService userQueryService;
+    private UserAdminService userAdminService;
 
     /* =========================
      * 유저 목록 조회
@@ -70,7 +70,7 @@ class UserQueryServiceTest {
                 .thenReturn(users);
 
         // when
-        Page<UserListItem> result = userQueryService.getUserList(condition, pageable);
+        Page<UserListItem> result = userAdminService.getUserList(condition, pageable);
 
         // then
         assertThat(result).isNotNull();
@@ -101,7 +101,7 @@ class UserQueryServiceTest {
             when(userReader.findById(userId)).thenReturn(user);
 
             // when
-            UserDetailItem result = userQueryService.getUserDetail(userId);
+            UserDetailItem result = userAdminService.getUserDetail(userId);
 
             // then
             assertThat(result).isNotNull();
@@ -123,7 +123,7 @@ class UserQueryServiceTest {
 
             // when
             Throwable throwable = catchThrowable(
-                    () -> userQueryService.getUserDetail(invalidUserId)
+                    () -> userAdminService.getUserDetail(invalidUserId)
             );
 
             // then

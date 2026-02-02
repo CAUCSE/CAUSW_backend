@@ -5,7 +5,7 @@ import net.causw.app.main.domain.user.account.api.v2.dto.response.UserDetailResp
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserListItemResponse;
 import net.causw.app.main.domain.user.account.api.v2.mapper.UserDetailMapper;
 import net.causw.app.main.domain.user.account.api.v2.mapper.UserListMapper;
-import net.causw.app.main.domain.user.account.service.UserQueryService;
+import net.causw.app.main.domain.user.account.service.UserAdminService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -20,9 +20,9 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/admin/users")
 @PreAuthorize("@security.hasRole(@Role.ADMIN)")
-public class UserQueryAdminController {
+public class UserAdminController {
 
-    private final UserQueryService userQueryService;
+    private final UserAdminService userAdminService;
     private final UserListMapper userListMapper;
     private final UserDetailMapper userDetailMapper;
 
@@ -37,7 +37,7 @@ public class UserQueryAdminController {
         PageRequest pageRequest = PageRequest.of(page, size);
 
         Page<UserListItemResponse> response =
-                userQueryService
+                userAdminService
                         .getUserList(userListMapper.toCondition(request), pageRequest)
                         .map(userListMapper::toResponse);
 
@@ -48,7 +48,7 @@ public class UserQueryAdminController {
     public ApiResponse<UserDetailResponse> getUserDetail(
             @PathVariable String userId
     ) {
-        var userDetail = userQueryService.getUserDetail(userId);
+        var userDetail = userAdminService.getUserDetail(userId);
         return ApiResponse.success(userDetailMapper.toResponse(userDetail));
     }
 }

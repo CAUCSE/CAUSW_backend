@@ -15,11 +15,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
-public class UserQueryService {
+public class UserAdminService {
 
     private final UserReader userReader;
 
+    @Transactional(readOnly = true)
     public Page<UserListItem> getUserList(
             UserListCondition condition,
             Pageable pageable
@@ -28,6 +28,7 @@ public class UserQueryService {
                 .map(UserListItem::from);
     }
 
+    @Transactional(readOnly = true)
     public UserDetailItem getUserDetail(String userId) {
         User user = userReader.findById(userId);
         return UserDetailItem.from(user);
