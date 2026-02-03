@@ -27,7 +27,7 @@ import net.causw.app.main.domain.community.board.api.v1.dto.BoardNameCheckRespon
 import net.causw.app.main.domain.community.board.api.v1.dto.BoardResponseDto;
 import net.causw.app.main.domain.community.board.api.v1.dto.BoardSubscribeResponseDto;
 import net.causw.app.main.domain.community.board.api.v1.dto.BoardUpdateRequestDto;
-import net.causw.app.main.domain.community.board.service.v1.BoardService;
+import net.causw.app.main.domain.community.board.service.v1.BoardV1Service;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.InternalServerException;
@@ -46,7 +46,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/boards")
 public class BoardController {
-	private final BoardService boardService;
+	private final BoardV1Service boardService;
 
 	@GetMapping
 	@ResponseStatus(value = HttpStatus.OK)

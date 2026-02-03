@@ -5,7 +5,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.causw.app.main.shared.dto.ApiResponse;
-import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -19,7 +18,7 @@ public class LockerAdminController {
 	public ApiResponse<Void> getCurrentLockerSchedule() {
 
 		if (true) {
-			throw new BaseRunTimeV2Exception(AuthErrorCode.INVALID_TOKEN);
+			throw AuthErrorCode.INVALID_TOKEN.toBaseException();
 		}
 		return ApiResponse.success();
 	}
