@@ -23,7 +23,6 @@ public class NotificationLogController {
 	private final NotificationLogService notificationLogService;
 
 	@GetMapping("/latest")
-	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "유저에게 온 최신 알람 조회(없을 시 null 반환)", description = "유저의 최신 알림을 조회합니다. <br>" +
 		"해당 api는 홈 화면에서 읽지 않은 최신 알람 1개를 표시할 때 사용됩니다.")
 	public ApiResponse<NotificationResponseDto> getNotificationTop1(
@@ -34,7 +33,6 @@ public class NotificationLogController {
 	}
 
 	@GetMapping("/count")
-	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "유저에게 온 일반, 경조사 알림 중 읽지 않은 알림 총 개수 반환", description = "유저의 읽지 않은 알림 개수를 반환합니다.<br>" +
 		"UI 상에서 10개 이상은 9+로 표기되기 때문에 10개까지 카운팅 되도록 하였습니다.")
 	public ApiResponse<NotificationCountResponseDto> getNotificationLogCount(
