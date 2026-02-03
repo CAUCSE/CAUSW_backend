@@ -12,10 +12,7 @@ import net.causw.app.main.domain.notification.notification.entity.NotificationLo
 import net.causw.app.main.domain.notification.notification.repository.NotificationLogRepository;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.pageable.PageableFactory;
-import net.causw.global.constant.MessageUtil;
 import net.causw.global.constant.StaticValue;
-import net.causw.global.exception.BadRequestException;
-import net.causw.global.exception.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -35,15 +32,6 @@ public class NotificationLogService {
 			.map(log -> NotificationDtoMapper.INSTANCE.toNotificationResponseDto(log.getId(), log.getNotification(),
 				log.getIsRead()))
 			.orElse(null);
-	}
-
-	@Transactional
-	public void readNotification(User user, String id) {
-		NotificationLog notificationLog = notificationLogRepository.findByIdAndUser(id, user).orElseThrow(
-			() -> new BadRequestException(
-				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.NOTIFICATION_LOG_NOT_FOUND));
-		notificationLog.setIsRead(true);
 	}
 
 	@Transactional(readOnly = true)
