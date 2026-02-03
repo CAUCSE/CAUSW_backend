@@ -256,16 +256,16 @@ public class User extends BaseEntity {
 		this.state.validateSignupPossible();
 	}
 
-    public void validateLoginPossible() {
-        this.state.validateLoginPossible();
-    }
+	public void validateLoginPossible() {
+		this.state.validateLoginPossible();
+	}
 
-    public String getProfileUrl() {
-        if (this.userProfileImage == null || this.userProfileImage.getUuidFile() == null) {
-            return null;
-        }
-        return this.userProfileImage.getUuidFile().getFileUrl();
-    }
+	public String getProfileUrl() {
+		if (this.userProfileImage == null || this.userProfileImage.getUuidFile() == null) {
+			return null;
+		}
+		return this.userProfileImage.getUuidFile().getFileUrl();
+	}
 
 	// 신고 관련 메소드
 	public void increaseReportCount() {

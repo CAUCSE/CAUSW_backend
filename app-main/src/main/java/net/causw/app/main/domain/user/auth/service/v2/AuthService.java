@@ -2,7 +2,6 @@ package net.causw.app.main.domain.user.auth.service.v2;
 
 import java.util.Optional;
 
-import net.causw.app.main.domain.user.auth.util.EmailUserValidator;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +13,7 @@ import net.causw.app.main.domain.user.account.service.v2.implementation.UserWrit
 import net.causw.app.main.domain.user.auth.api.v2.dto.AuthDtoMapper;
 import net.causw.app.main.domain.user.auth.api.v2.dto.response.AuthResponse;
 import net.causw.app.main.domain.user.auth.service.v2.dto.AuthInternalDto;
+import net.causw.app.main.domain.user.auth.util.EmailUserValidator;
 import net.causw.app.main.shared.infra.redis.RedisUtils;
 import net.causw.global.constant.StaticValue;
 
@@ -26,7 +26,7 @@ public class AuthService {
 
 	private final UserReader userReader;
 	private final UserWriter userWriter;
-    private final EmailUserValidator emailUserValidator;
+	private final EmailUserValidator emailUserValidator;
 	private final PasswordEncoder passwordEncoder;
 	private final AuthDtoMapper authDtoMapper;
 	private final JwtTokenProvider jwtTokenProvider;
@@ -45,7 +45,7 @@ public class AuthService {
 
 		// 신규 사용자 생성 및 검증
 		User newUser = User.from(dto, passwordEncoder.encode(dto.password()));
-        emailUserValidator.validateRegister(newUser, dto.password(), dto.phoneNumber());
+		emailUserValidator.validateRegister(newUser, dto.password(), dto.phoneNumber());
 		User savedUser = userWriter.save(newUser);
 		return authDtoMapper.toAuthResponse(savedUser, null, savedUser.getProfileUrl());
 	}
@@ -56,7 +56,7 @@ public class AuthService {
 		User user = userReader.findByEmailOrElseThrow(email);
 
 		// 유효성 검증 수행 (비밀번호, 유저 상태)
-        emailUserValidator.validateLogin(user, password);
+		emailUserValidator.validateLogin(user, password);
 
 		// 토큰 생성
 		String accessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getRoles(), user.getState());

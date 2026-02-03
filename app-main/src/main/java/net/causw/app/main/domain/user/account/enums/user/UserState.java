@@ -2,7 +2,6 @@ package net.causw.app.main.domain.user.account.enums.user;
 
 import java.util.Arrays;
 
-import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
@@ -46,15 +45,15 @@ public enum UserState {
 		}
 	}
 
-    public void validateLoginPossible() {
-        switch (this) {
-            case DELETED ->
-                    throw UserErrorCode.INVALID_LOGIN_USER_DELETED.toBaseException();
-            case DROP ->
-                    throw UserErrorCode.INVALID_LOGIN_USER_DROPPED.toBaseException();
-            case INACTIVE ->
-                    throw UserErrorCode.INVALID_LOGIN_USER_INACTIVE.toBaseException();
-            default -> {}
-        }
-    }
+	public void validateLoginPossible() {
+		switch (this) {
+			case DELETED ->
+				throw UserErrorCode.INVALID_LOGIN_USER_DELETED.toBaseException();
+			case DROP ->
+				throw UserErrorCode.INVALID_LOGIN_USER_DROPPED.toBaseException();
+			case INACTIVE ->
+				throw UserErrorCode.INVALID_LOGIN_USER_INACTIVE.toBaseException();
+			default -> {}
+		}
+	}
 }
