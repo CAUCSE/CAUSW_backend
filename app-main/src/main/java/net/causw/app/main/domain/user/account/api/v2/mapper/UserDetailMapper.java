@@ -22,7 +22,6 @@ public class UserDetailMapper {
 			item.major(),
 			item.department(),
 			item.academicStatus(),
-			item.currentCompletedSemester(),
 			item.graduationYear(),
 			item.graduationType(),
 			item.phoneNumber(),

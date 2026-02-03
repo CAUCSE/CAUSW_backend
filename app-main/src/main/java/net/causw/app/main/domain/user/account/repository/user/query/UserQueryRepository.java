@@ -47,7 +47,7 @@ public class UserQueryRepository {
 			.fetch();
 	}
 
-	public Optional<User> findByIdWithRoles(String userId) {
+	public Optional<User> findByIdWithRelations(String userId) {
 		QUser user = QUser.user;
 		User result = jpaQueryFactory.selectFrom(user)
 			.where(user.id.eq(userId))

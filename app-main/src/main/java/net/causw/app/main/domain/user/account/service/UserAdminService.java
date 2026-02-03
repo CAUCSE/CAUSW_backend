@@ -29,7 +29,7 @@ public class UserAdminService {
 
 	@Transactional(readOnly = true)
 	public UserDetailItem getUserDetail(String userId) {
-		User user = userReader.findById(userId);
+		User user = userReader.findDetailById(userId);
 		return UserDetailItem.from(user);
 	}
 }

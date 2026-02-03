@@ -37,11 +37,9 @@ public record UserDetailResponse(
 
 	@Schema(description = "학적 상태", example = "ENROLLED") AcademicStatus academicStatus,
 
-	@Schema(description = "현재 이수 학기 수", example = "6") Integer currentCompletedSemester,
+	@Schema(description = "졸업 연도", example = "2026") Integer graduationYear,
 
-	@Schema(description = "졸업 예정 연도", example = "2026") Integer graduationYear,
-
-	@Schema(description = "졸업 유형", example = "FEBRUARY") GraduationType graduationType,
+	@Schema(description = "졸업 유형(월)", example = "FEBRUARY") GraduationType graduationType,
 
 	@Schema(description = "전화번호", example = "010-1234-5678") String phoneNumber,
 

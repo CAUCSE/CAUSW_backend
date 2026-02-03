@@ -30,8 +30,9 @@ public class UserReader {
 			pageable);
 	}
 
-	public User findById(String userId) {
-		return userRepository.findById(userId)
+	// 상세 조회용 (fetch join)
+	public User findDetailById(String userId) {
+		return userQueryRepository.findByIdWithRelations(userId)
 			.orElseThrow(UserErrorCode.USER_NOT_FOUND::toBaseException);
 	}
 
