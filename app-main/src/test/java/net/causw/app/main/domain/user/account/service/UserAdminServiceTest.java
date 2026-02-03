@@ -96,7 +96,7 @@ class UserAdminServiceTest {
 			String userId = "user-1";
 			User user = ObjectFixtures.getCertifiedUserWithId(userId);
 
-			when(userReader.findById(userId)).thenReturn(user);
+			when(userReader.findDetailById(userId)).thenReturn(user);
 
 			// when
 			UserDetailItem result = userAdminService.getUserDetail(userId);
@@ -107,7 +107,7 @@ class UserAdminServiceTest {
 			assertThat(result.email()).isEqualTo(user.getEmail());
 			assertThat(result.name()).isEqualTo(user.getName());
 
-			verify(userReader).findById(userId);
+			verify(userReader).findDetailById(userId);
 		}
 
 		@Test
@@ -116,7 +116,7 @@ class UserAdminServiceTest {
 			// given
 			String invalidUserId = "invalid-user-id";
 
-			when(userReader.findById(invalidUserId))
+			when(userReader.findDetailById(invalidUserId))
 				.thenThrow(UserErrorCode.USER_NOT_FOUND.toBaseException());
 
 			// when
@@ -129,7 +129,7 @@ class UserAdminServiceTest {
 				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
 				.isEqualTo(UserErrorCode.USER_NOT_FOUND);
 
-			verify(userReader).findById(invalidUserId);
+			verify(userReader).findDetailById(invalidUserId);
 		}
 	}
 }
