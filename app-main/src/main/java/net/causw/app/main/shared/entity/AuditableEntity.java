@@ -1,11 +1,13 @@
 package net.causw.app.main.shared.entity;
 
-import org.hibernate.annotations.UuidGenerator;
+import java.time.LocalDateTime;
+
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
-import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,14 +16,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @MappedSuperclass
 @EntityListeners(value = {AuditingEntityListener.class})
-public class BaseEntity extends AuditableEntity {
+public class AuditableEntity {
 
-	@Id
-	@UuidGenerator
-	@Column(name = "id", nullable = false, unique = true)
-	private String id;
+	@CreatedDate
+	@Column(name = "created_at", updatable = false)
+	private LocalDateTime createdAt;
 
-	protected BaseEntity(String id) {
-		this.id = id;
-	}
+	@LastModifiedDate
+	@Column(name = "updated_at")
+	private LocalDateTime updatedAt;
 }

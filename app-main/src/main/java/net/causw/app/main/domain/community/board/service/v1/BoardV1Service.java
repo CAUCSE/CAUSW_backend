@@ -75,7 +75,7 @@ import lombok.RequiredArgsConstructor;
 @MeasureTime
 @Service
 @RequiredArgsConstructor
-public class BoardService {
+public class BoardV1Service {
 	private final PostRepository postRepository;
 	private final BoardRepository boardRepository;
 	private final UserRepository userRepository;

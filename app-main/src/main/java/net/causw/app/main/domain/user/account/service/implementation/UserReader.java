@@ -9,6 +9,9 @@ import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.app.main.domain.user.account.repository.user.query.UserQueryRepository;
 import net.causw.app.main.domain.user.account.service.dto.request.UserListCondition;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
+import java.util.List;
+
+import net.causw.app.main.domain.user.account.service.dto.request.UserQueryCondition;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,7 +22,15 @@ public class UserReader {
 	private final UserQueryRepository userQueryRepository;
 	private final UserRepository userRepository;
 
-	public Page<User> findUserList(
+	public List<User> getUsersByIds(List<String> userIds) {
+		return userQueryRepository.findByIds(userIds);
+	}
+
+	public List<User> searchByCondition(UserQueryCondition condition) {
+		return userQueryRepository.searchByCondition(condition);
+	}
+  
+  	public Page<User> findUserList(
 		UserListCondition condition,
 		Pageable pageable) {
 		return userQueryRepository.findUserList(
@@ -35,5 +46,5 @@ public class UserReader {
 		return userQueryRepository.findByIdWithRelations(userId)
 			.orElseThrow(UserErrorCode.USER_NOT_FOUND::toBaseException);
 	}
-
+  
 }
