@@ -15,7 +15,8 @@ import net.causw.app.main.domain.community.ceremony.api.v2.dto.CreateCeremonyReq
 import net.causw.app.main.domain.community.ceremony.api.v2.mapper.CeremonyDtoMapper;
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyContext;
-import net.causw.app.main.domain.community.ceremony.repository.CeremonyRepository;
+import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyReader;
+import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyCreator;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
@@ -28,7 +29,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CeremonyService {
 	private final UuidFileService uuidFileService;
-	private final CeremonyRepository ceremonyRepository;
+	private final CeremonyCreator ceremonyCreator;
+	private final CeremonyReader ceremonyReader;
 
 	@Transactional
 	public CeremonyDetailResponseDto createCeremony(
@@ -115,14 +117,14 @@ public class CeremonyService {
 			createCeremonyRequestDTO.getIsSetAll(),
 			targetAdmissionYears,
 			uuidFileList);
-		ceremonyRepository.save(ceremony);
+		ceremonyCreator.save(ceremony);
 
 		return CeremonyDtoMapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
 	}
 
 	@Transactional(readOnly = true)
 	public CeremonyDetailResponseDto getCeremony(String ceremonyId, CeremonyContext context, User user) {
-		Ceremony ceremony = ceremonyRepository.findById(ceremonyId).orElseThrow(
+		Ceremony ceremony = ceremonyReader.findById(ceremonyId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
 				MessageUtil.CEREMONY_NOT_FOUND));
