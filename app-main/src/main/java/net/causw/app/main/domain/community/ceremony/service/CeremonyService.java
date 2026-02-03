@@ -47,7 +47,7 @@ public class CeremonyService {
 					MessageUtil.CEREMONY_TARGET_ADMISSION_YEARS_REQUIRED);
 			}
 
-			// 학번 형식 (숫자 2자리) 검증
+			// 알림 대상 학번 검증
 			for (String admissionYear : createCeremonyRequestDTO.getTargetAdmissionYears()) {
 				if (!admissionYear.matches("^[0-9]{2}$")) {
 					throw new BadRequestException(
@@ -76,6 +76,11 @@ public class CeremonyService {
 				}
 			}
 			case ALUMNI -> {
+				if (createCeremonyRequestDTO.getAlumniRelation() == null) {
+					throw new BadRequestException(
+						ErrorCode.INVALID_USER_DATA_REQUEST,
+						MessageUtil.CEREMONY_ALUMNI_RELATION_REQUIRED);
+				}
 				if (createCeremonyRequestDTO.getAlumniName() == null) {
 					throw new BadRequestException(
 						ErrorCode.INVALID_USER_DATA_REQUEST,
@@ -89,6 +94,7 @@ public class CeremonyService {
 			}
 		}
 
+		// 경조사 종료 시간 설정 시 종료 날짜 입력됐는지 검증
 		if (createCeremonyRequestDTO.getEndDate() == null && createCeremonyRequestDTO.getEndTime() != null) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_USER_DATA_REQUEST,
