@@ -3,7 +3,6 @@ package net.causw.app.main.domain.user.account.repository.user.query;
 import java.util.List;
 import java.util.Optional;
 
-import com.querydsl.jpa.impl.JPAQuery;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
@@ -18,6 +17,7 @@ import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.dto.request.UserQueryCondition;
 
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
@@ -113,8 +113,8 @@ public class UserQueryRepository {
 			.distinct()
 			.fetch();
 	}
-  
-  public Page<User> findUserList(
+
+	public Page<User> findUserList(
 		String keyword,
 		UserState state,
 		AcademicStatus academicStatus,
@@ -150,11 +150,11 @@ public class UserQueryRepository {
 			.orderBy(user.createdAt.desc())
 			.fetch();
 
-        JPAQuery<Long> countQuery = jpaQueryFactory
-                .select(user.count())
-                .from(user)
-                .where(where);
+		JPAQuery<Long> countQuery = jpaQueryFactory
+			.select(user.count())
+			.from(user)
+			.where(where);
 
-        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+		return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
 	}
 }
