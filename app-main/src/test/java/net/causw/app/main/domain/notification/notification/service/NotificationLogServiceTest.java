@@ -61,7 +61,7 @@ class NotificationLogServiceTest {
 
 			// then
 			assertThat(result).isNotNull();
-			assertThat(result.getTitle()).isEqualTo("최신 알림");
+			assertThat(result.title()).isEqualTo("최신 알림");
 			then(notificationLogRepository)
 				.should().findByUserAndIsReadFalseNotification(user, mockPageable);
 		}
@@ -111,7 +111,7 @@ class NotificationLogServiceTest {
 			NotificationCountResponseDto result = notificationLogService.getNotificationLogCount(user);
 
 			// then
-			assertThat(result.getNotificationLogCount()).isEqualTo(2L);
+			assertThat(result.notificationLogCount()).isEqualTo(2L);
 		}
 	}
 }
