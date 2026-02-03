@@ -1,8 +1,6 @@
 package net.causw.app.main.domain.notification.notification.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.*;
@@ -23,9 +21,8 @@ import net.causw.app.main.domain.notification.notification.api.v2.dto.response.N
 import net.causw.app.main.domain.notification.notification.api.v2.dto.response.NotificationResponseDto;
 import net.causw.app.main.domain.notification.notification.entity.Notification;
 import net.causw.app.main.domain.notification.notification.entity.NotificationLog;
-import net.causw.app.main.domain.notification.notification.repository.NotificationLogRepository;
+import net.causw.app.main.domain.notification.notification.service.implementation.NotificationLogReader;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.shared.pageable.PageableFactory;
 import net.causw.app.main.util.ObjectFixtures;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,9 +33,7 @@ class NotificationLogServiceTest {
 	private NotificationLogService notificationLogService;
 
 	@Mock
-	private NotificationLogRepository notificationLogRepository;
-	@Mock
-	private PageableFactory pageableFactory;
+	private NotificationLogReader notificationLogReader;;
 
 	@Nested
 	@DisplayName("getNotificationTop1")
@@ -51,9 +46,7 @@ class NotificationLogServiceTest {
 			User user = ObjectFixtures.getCertifiedUser();
 			Notification notification = ObjectFixtures.getNotification(user);
 			NotificationLog log = NotificationLog.of(user, notification);
-			Pageable mockPageable = mock(Pageable.class);
-			given(pageableFactory.create(any(), any())).willReturn(mockPageable);
-			given(notificationLogRepository.findByUserAndIsReadFalseNotification(user, mockPageable))
+			given(notificationLogReader.findTop1Unread(user))
 				.willReturn(List.of(log));
 
 			// when
@@ -61,9 +54,8 @@ class NotificationLogServiceTest {
 
 			// then
 			assertThat(result).isNotNull();
-			assertThat(result.title()).isEqualTo("최신 알림");
-			then(notificationLogRepository)
-				.should().findByUserAndIsReadFalseNotification(user, mockPageable);
+			assertThat(result.title()).isEqualTo(notification.getTitle());
+			then(notificationLogReader).should().findTop1Unread(user);
 		}
 
 		@Test
@@ -72,8 +64,7 @@ class NotificationLogServiceTest {
 			// given
 			User user = ObjectFixtures.getCertifiedUser();
 			Pageable mockPageable = mock(Pageable.class);
-			given(pageableFactory.create(any(), any())).willReturn(mockPageable);
-			given(notificationLogRepository.findByUserAndIsReadFalseNotification(user, mockPageable))
+			given(notificationLogReader.findTop1Unread(user))
 				.willReturn(Collections.emptyList());
 
 			// when
@@ -81,9 +72,7 @@ class NotificationLogServiceTest {
 
 			// then
 			assertThat(result).isNull();
-			then(notificationLogRepository)
-				.should().findByUserAndIsReadFalseNotification(user, mockPageable);
-			then(pageableFactory).should().create(any(), any());
+			then(notificationLogReader).should().findTop1Unread(user);
 		}
 	}
 
@@ -97,21 +86,19 @@ class NotificationLogServiceTest {
 			// given
 			User user = ObjectFixtures.getCertifiedUser();
 
-			Pageable mockPageable = mock(Pageable.class);
-			given(pageableFactory.create(any(), any())).willReturn(mockPageable);
-
 			Notification notification = ObjectFixtures.getNotification(user);
 			NotificationLog log1 = NotificationLog.of(user, notification);
 			NotificationLog log2 = NotificationLog.of(user, notification);
 
-			given(notificationLogRepository.findUnreadLogsUpToLimit(eq(user), eq(mockPageable)))
+			given(notificationLogReader.findUnreadUpToLimit(user))
 				.willReturn(List.of(log1, log2));
 
 			// when
 			NotificationCountResponseDto result = notificationLogService.getNotificationLogCount(user);
 
 			// then
-			assertThat(result.notificationLogCount()).isEqualTo(2L);
+			assertThat(result.notificationLogCount()).isEqualTo(2);
+			then(notificationLogReader).should().findUnreadUpToLimit(user);
 		}
 	}
 }
