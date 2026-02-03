@@ -9,23 +9,20 @@ import net.causw.app.main.domain.notification.notification.api.v2.dto.response.N
 import net.causw.app.main.domain.notification.notification.api.v2.dto.response.NotificationResponseDto;
 import net.causw.app.main.domain.notification.notification.api.v2.mapper.NotificationDtoMapper;
 import net.causw.app.main.domain.notification.notification.entity.NotificationLog;
-import net.causw.app.main.domain.notification.notification.repository.NotificationLogRepository;
+import net.causw.app.main.domain.notification.notification.service.implementation.NotificationLogReader;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.shared.pageable.PageableFactory;
-import net.causw.global.constant.StaticValue;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class NotificationLogService {
-	private final NotificationLogRepository notificationLogRepository;
-	private final PageableFactory pageableFactory;
+
+	private final NotificationLogReader notificationLogReader;
 
 	@Transactional(readOnly = true)
 	public NotificationResponseDto getNotificationTop1(User user) {
-		List<NotificationLog> notificationLogs = notificationLogRepository.findByUserAndIsReadFalseNotification(
-			user, pageableFactory.create(0, StaticValue.HOME_NOTIFICATION_PAGE_SIZE));
+		List<NotificationLog> notificationLogs = notificationLogReader.findTop1Unread(user);
 
 		return notificationLogs.stream()
 			.findFirst()
@@ -36,8 +33,7 @@ public class NotificationLogService {
 
 	@Transactional(readOnly = true)
 	public NotificationCountResponseDto getNotificationLogCount(User user) {
-		List<NotificationLog> unreadNotificationLogs = notificationLogRepository.findUnreadLogsUpToLimit(user,
-			pageableFactory.create(0, StaticValue.MAX_NOTIFICATION_COUNT));
+		List<NotificationLog> unreadNotificationLogs = notificationLogReader.findUnreadUpToLimit(user);
 
 		return NotificationCountResponseDto.builder()
 			.notificationLogCount(unreadNotificationLogs.size())
