@@ -1,31 +1,16 @@
 package net.causw.app.main.domain.user.account.api.v2.mapper;
 
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
 
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserListRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserListItemResponse;
 import net.causw.app.main.domain.user.account.service.dto.request.UserListCondition;
 import net.causw.app.main.domain.user.account.service.dto.response.UserListItem;
 
-@Component
-public class UserListMapper {
+@Mapper(componentModel = "spring")
+public interface UserListMapper {
 
-	public UserListCondition toCondition(UserListRequest request) {
-		return new UserListCondition(
-			request.keyword(),
-			request.state(),
-			request.academicStatus(),
-			request.department());
-	}
+	UserListCondition toCondition(UserListRequest request);
 
-	public UserListItemResponse toResponse(UserListItem dto) {
-		return new UserListItemResponse(
-			dto.id(),
-			dto.name(),
-			dto.studentId(),
-			dto.department(),
-			dto.state(),
-			dto.academicStatus(),
-			dto.createdAt());
-	}
+	UserListItemResponse toResponse(UserListItem dto);
 }

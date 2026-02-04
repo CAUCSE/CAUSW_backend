@@ -45,6 +45,7 @@ public class UserAdminController {
 	@GetMapping("/{userId}")
 	public ApiResponse<UserDetailResponse> getUserDetail(
 		@PathVariable String userId) {
+
 		var userDetail = userAdminService.getUserDetail(userId);
 		return ApiResponse.success(userDetailMapper.toResponse(userDetail));
 	}
