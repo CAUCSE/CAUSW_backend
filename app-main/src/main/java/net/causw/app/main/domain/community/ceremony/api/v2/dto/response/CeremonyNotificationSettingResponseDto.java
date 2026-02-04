@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.community.ceremony.api.v2.dto;
+package net.causw.app.main.domain.community.ceremony.api.v2.dto.response;
 
 import java.util.Set;
 

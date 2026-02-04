@@ -9,8 +9,8 @@ import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 
 import net.causw.app.main.domain.asset.file.entity.joinEntity.CeremonyAttachImage;
-import net.causw.app.main.domain.community.ceremony.api.v2.dto.CeremonyDetailResponseDto;
-import net.causw.app.main.domain.community.ceremony.api.v2.dto.CeremonyNotificationSettingResponseDto;
+import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonyDetailResponseDto;
+import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonyNotificationSettingResponseDto;
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
 import net.causw.app.main.domain.community.ceremony.enums.AlumniRelation;
 import net.causw.app.main.domain.notification.notification.entity.CeremonyNotificationSetting;
