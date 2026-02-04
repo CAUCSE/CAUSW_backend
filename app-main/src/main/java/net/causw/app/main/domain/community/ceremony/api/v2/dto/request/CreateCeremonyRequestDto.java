@@ -14,6 +14,7 @@ import net.causw.app.main.domain.community.ceremony.enums.RelationType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 
 @Getter
@@ -73,6 +74,7 @@ public class CreateCeremonyRequestDto {
 	private String detailedAddress;
 
 	@Schema(description = "경조사 문의 연락처", example = "010-1234-5678")
+	@Pattern(regexp = "^01(?:0|1|[6-9])-(\\d{3}|\\d{4})-\\d{4}$", message = "전화번호 형식에 맞지 않습니다.")
 	private String contact;
 
 	@Schema(description = "경조사 관련 링크", example = "www.example.com/link")
