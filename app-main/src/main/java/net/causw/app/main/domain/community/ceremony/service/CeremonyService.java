@@ -43,7 +43,7 @@ public class CeremonyService {
 			if (createCeremonyRequestDTO.getTargetAdmissionYears() == null
 				|| createCeremonyRequestDTO.getTargetAdmissionYears().isEmpty()) {
 				throw new BadRequestException(
-					ErrorCode.INVALID_PARAMETER,
+					ErrorCode.INVALID_USER_DATA_REQUEST,
 					MessageUtil.CEREMONY_TARGET_ADMISSION_YEARS_REQUIRED);
 			}
 
@@ -51,7 +51,7 @@ public class CeremonyService {
 			for (String admissionYear : createCeremonyRequestDTO.getTargetAdmissionYears()) {
 				if (!admissionYear.matches("^[0-9]{2}$")) {
 					throw new BadRequestException(
-						ErrorCode.INVALID_PARAMETER,
+						ErrorCode.INVALID_USER_DATA_REQUEST,
 						MessageUtil.CEREMONY_INVALID_ADMISSION_YEAR_FORMAT);
 				}
 			}
