@@ -18,9 +18,7 @@ import net.causw.app.main.domain.community.ceremony.enums.CeremonyContext;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyCreator;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyReader;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.global.constant.MessageUtil;
-import net.causw.global.exception.BadRequestException;
-import net.causw.global.exception.ErrorCode;
+import net.causw.app.main.shared.exception.errorcode.CeremonyErrorCode;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -42,17 +40,13 @@ public class CeremonyService {
 		if (!createCeremonyRequestDTO.getIsSetAll()) {
 			if (createCeremonyRequestDTO.getTargetAdmissionYears() == null
 				|| createCeremonyRequestDTO.getTargetAdmissionYears().isEmpty()) {
-				throw new BadRequestException(
-					ErrorCode.INVALID_USER_DATA_REQUEST,
-					MessageUtil.CEREMONY_TARGET_ADMISSION_YEARS_REQUIRED);
+				throw CeremonyErrorCode.TARGET_ADMISSION_YEARS_REQUIRED.toBaseException();
 			}
 
 			// 알림 대상 학번 검증
 			for (String admissionYear : createCeremonyRequestDTO.getTargetAdmissionYears()) {
 				if (!admissionYear.matches("^[0-9]{2}$")) {
-					throw new BadRequestException(
-						ErrorCode.INVALID_USER_DATA_REQUEST,
-						MessageUtil.CEREMONY_INVALID_ADMISSION_YEAR_FORMAT);
+					throw CeremonyErrorCode.INVALID_ADMISSION_YEARS_FORMAT.toBaseException();
 				}
 			}
 		}
@@ -70,35 +64,25 @@ public class CeremonyService {
 		switch (createCeremonyRequestDTO.getRelationType()) {
 			case FAMILY -> {
 				if (createCeremonyRequestDTO.getFamilyRelation() == null) {
-					throw new BadRequestException(
-						ErrorCode.INVALID_USER_DATA_REQUEST,
-						MessageUtil.CEREMONY_FAMILY_RELATION_REQUIRED);
+					throw CeremonyErrorCode.FAMILY_RELATION_REQUIRED.toBaseException();
 				}
 			}
 			case ALUMNI -> {
 				if (createCeremonyRequestDTO.getAlumniRelation() == null) {
-					throw new BadRequestException(
-						ErrorCode.INVALID_USER_DATA_REQUEST,
-						MessageUtil.CEREMONY_ALUMNI_RELATION_REQUIRED);
+					throw CeremonyErrorCode.ALUMNI_RELATION_REQUIRED.toBaseException();
 				}
 				if (createCeremonyRequestDTO.getAlumniName() == null) {
-					throw new BadRequestException(
-						ErrorCode.INVALID_USER_DATA_REQUEST,
-						MessageUtil.CEREMONY_ALUMNI_NAME_REQUIRED);
+					throw CeremonyErrorCode.ALUMNI_NAME_REQUIRED.toBaseException();
 				}
 				if (createCeremonyRequestDTO.getAlumniAdmissionYear() == null) {
-					throw new BadRequestException(
-						ErrorCode.INVALID_USER_DATA_REQUEST,
-						MessageUtil.CEREMONY_ALUMNI_ADMISSION_YEAR_REQUIRED);
+					throw CeremonyErrorCode.ALUMNI_ADMISSION_YEAR_REQUIRED.toBaseException();
 				}
 			}
 		}
 
 		// 경조사 종료 시간 설정 시 종료 날짜 입력됐는지 검증
 		if (createCeremonyRequestDTO.getEndDate() == null && createCeremonyRequestDTO.getEndTime() != null) {
-			throw new BadRequestException(
-				ErrorCode.INVALID_USER_DATA_REQUEST,
-				MessageUtil.CEREMONY_ENDDATE_REQUIRED);
+			throw CeremonyErrorCode.END_DATE_REQUIRED.toBaseException();
 		}
 
 		Ceremony ceremony = Ceremony.createWithImages(
@@ -131,15 +115,11 @@ public class CeremonyService {
 	@Transactional(readOnly = true)
 	public CeremonyDetailResponseDto getCeremony(String ceremonyId, CeremonyContext context, User user) {
 		Ceremony ceremony = ceremonyReader.findById(ceremonyId).orElseThrow(
-			() -> new BadRequestException(
-				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.CEREMONY_NOT_FOUND));
+			CeremonyErrorCode.CEREMONY_NOT_FOUND::toBaseException);
 
 		if (context == CeremonyContext.MY) {
 			if (!ceremony.getUser().getId().equals(user.getId())) {
-				throw new BadRequestException(
-					ErrorCode.INVALID_PARAMETER,
-					MessageUtil.CEREMONY_ACCESS_MY_ONLY);
+				throw CeremonyErrorCode.ACCESS_ONLY_APPLICANT.toBaseException();
 			}
 			return CeremonyDtoMapper.INSTANCE.toMyCeremonyDetailResponseDto(ceremony);
 		}

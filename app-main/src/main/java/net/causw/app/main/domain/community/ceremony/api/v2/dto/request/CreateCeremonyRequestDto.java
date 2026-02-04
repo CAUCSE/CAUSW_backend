@@ -97,7 +97,7 @@ public class CreateCeremonyRequestDto {
 	}
 
 	// 학번 검증
-	@AssertTrue(message = "학번은 4자리로 입력해야 합니다.")
+	@AssertTrue(message = "학번은 4자리로 입력해야 합니다. (ex. 1972, 2005, 2021)")
 	private boolean isValidAdmissionYear() {
 		if (alumniAdmissionYear != null) {
 			return alumniAdmissionYear.matches("^(19|20)[0-9]{2}$");
