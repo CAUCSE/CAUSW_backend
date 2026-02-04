@@ -11,7 +11,8 @@ import lombok.RequiredArgsConstructor;
 public enum CeremonyErrorCode implements BaseResponseCode {
 	TARGET_ADMISSION_YEARS_REQUIRED(HttpStatus.BAD_REQUEST, "CEREMONY_400_001",
 		"모두에게 알림을 전송하지 않을 경우, 알림을 전송할 대상 학번을 입력해야 합니다."),
-	INVALID_ADMISSION_YEARS_FORMAT(HttpStatus.BAD_REQUEST, "CEREMONY_400_002", "학번은 두 자리로 입력해야 합니다. (ex. 72, 05, 21)"),
+	INVALID_ADMISSION_YEARS_FORMAT(HttpStatus.BAD_REQUEST, "CEREMONY_400_002",
+		"학번은 숫자 두 자리로 입력해야 합니다. (ex. 72, 05, 21)"),
 	FAMILY_RELATION_REQUIRED(HttpStatus.BAD_REQUEST, "CEREMONY_400_003", "관계가 가족인 경우, 상세 관계를 입력해야 합니다."),
 	ALUMNI_RELATION_REQUIRED(HttpStatus.BAD_REQUEST, "CEREMONY_400_004", "관계가 동문인 경우, 상세 관계를 입력해야 합니다."),
 	ALUMNI_NAME_REQUIRED(HttpStatus.BAD_REQUEST, "CEREMONY_400_005", "관계가 동문인 경우, 동문 이름을 입력해야 합니다."),

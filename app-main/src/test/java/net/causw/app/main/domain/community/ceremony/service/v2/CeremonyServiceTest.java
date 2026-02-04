@@ -29,9 +29,8 @@ import net.causw.app.main.domain.community.ceremony.service.CeremonyService;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyCreator;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyReader;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.global.constant.MessageUtil;
-import net.causw.global.exception.BadRequestException;
-import net.causw.global.exception.ErrorCode;
+import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
+import net.causw.app.main.shared.exception.errorcode.CeremonyErrorCode;
 
 @ExtendWith(MockitoExtension.class)
 public class CeremonyServiceTest {
@@ -67,10 +66,10 @@ public class CeremonyServiceTest {
 
 			// when & then
 			assertThatThrownBy(() -> ceremonyService.createCeremony(user, dto, null))
-				.isInstanceOf(BadRequestException.class)
-				.hasMessageContaining(MessageUtil.CEREMONY_TARGET_ADMISSION_YEARS_REQUIRED)
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasMessageContaining(CeremonyErrorCode.TARGET_ADMISSION_YEARS_REQUIRED.getMessage())
 				.extracting("errorCode")
-				.isEqualTo(ErrorCode.INVALID_PARAMETER);
+				.isEqualTo(CeremonyErrorCode.TARGET_ADMISSION_YEARS_REQUIRED);
 
 			verify(ceremonyCreator, times(0)).save(any(Ceremony.class));
 		}
@@ -84,10 +83,10 @@ public class CeremonyServiceTest {
 
 			// when, then
 			assertThatThrownBy(() -> ceremonyService.createCeremony(user, dto, List.of()))
-				.isInstanceOf(BadRequestException.class)
-				.hasMessageContaining(MessageUtil.CEREMONY_TARGET_ADMISSION_YEARS_REQUIRED)
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasMessageContaining(CeremonyErrorCode.TARGET_ADMISSION_YEARS_REQUIRED.getMessage())
 				.extracting("errorCode")
-				.isEqualTo(ErrorCode.INVALID_PARAMETER);
+				.isEqualTo(CeremonyErrorCode.TARGET_ADMISSION_YEARS_REQUIRED);
 
 			verify(ceremonyCreator, times(0)).save(any(Ceremony.class));
 		}
@@ -101,10 +100,10 @@ public class CeremonyServiceTest {
 
 			// when, then
 			assertThatThrownBy(() -> ceremonyService.createCeremony(user, dto, List.of()))
-				.isInstanceOf(BadRequestException.class)
-				.hasMessageContaining(MessageUtil.CEREMONY_INVALID_ADMISSION_YEAR_FORMAT)
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasMessageContaining(CeremonyErrorCode.INVALID_ADMISSION_YEARS_FORMAT.getMessage())
 				.extracting("errorCode")
-				.isEqualTo(ErrorCode.INVALID_PARAMETER);
+				.isEqualTo(CeremonyErrorCode.INVALID_ADMISSION_YEARS_FORMAT);
 
 			verify(ceremonyCreator, times(0)).save(any(Ceremony.class));
 		}
@@ -120,10 +119,10 @@ public class CeremonyServiceTest {
 
 			// when, then
 			assertThatThrownBy(() -> ceremonyService.createCeremony(user, dto, List.of()))
-				.isInstanceOf(BadRequestException.class)
-				.hasMessageContaining(MessageUtil.CEREMONY_FAMILY_RELATION_REQUIRED)
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasMessageContaining(CeremonyErrorCode.FAMILY_RELATION_REQUIRED.getMessage())
 				.extracting("errorCode")
-				.isEqualTo(ErrorCode.INVALID_USER_DATA_REQUEST);
+				.isEqualTo(CeremonyErrorCode.FAMILY_RELATION_REQUIRED);
 
 			verify(ceremonyCreator, times(0)).save(any(Ceremony.class));
 		}
@@ -139,10 +138,10 @@ public class CeremonyServiceTest {
 
 			// when, then
 			assertThatThrownBy(() -> ceremonyService.createCeremony(user, dto, List.of()))
-				.isInstanceOf(BadRequestException.class)
-				.hasMessageContaining(MessageUtil.CEREMONY_ALUMNI_RELATION_REQUIRED)
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasMessageContaining(CeremonyErrorCode.ALUMNI_RELATION_REQUIRED.getMessage())
 				.extracting("errorCode")
-				.isEqualTo(ErrorCode.INVALID_USER_DATA_REQUEST);
+				.isEqualTo(CeremonyErrorCode.ALUMNI_RELATION_REQUIRED);
 
 			verify(ceremonyCreator, times(0)).save(any(Ceremony.class));
 		}
@@ -159,10 +158,10 @@ public class CeremonyServiceTest {
 
 			// when, then
 			assertThatThrownBy(() -> ceremonyService.createCeremony(user, dto, List.of()))
-				.isInstanceOf(BadRequestException.class)
-				.hasMessageContaining(MessageUtil.CEREMONY_ALUMNI_NAME_REQUIRED)
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasMessageContaining(CeremonyErrorCode.ALUMNI_NAME_REQUIRED.getMessage())
 				.extracting("errorCode")
-				.isEqualTo(ErrorCode.INVALID_USER_DATA_REQUEST);
+				.isEqualTo(CeremonyErrorCode.ALUMNI_NAME_REQUIRED);
 
 			verify(ceremonyCreator, times(0)).save(any(Ceremony.class));
 		}
@@ -180,10 +179,10 @@ public class CeremonyServiceTest {
 
 			// when, then
 			assertThatThrownBy(() -> ceremonyService.createCeremony(user, dto, List.of()))
-				.isInstanceOf(BadRequestException.class)
-				.hasMessageContaining(MessageUtil.CEREMONY_ALUMNI_ADMISSION_YEAR_REQUIRED)
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasMessageContaining(CeremonyErrorCode.ALUMNI_ADMISSION_YEAR_REQUIRED.getMessage())
 				.extracting("errorCode")
-				.isEqualTo(ErrorCode.INVALID_USER_DATA_REQUEST);
+				.isEqualTo(CeremonyErrorCode.ALUMNI_ADMISSION_YEAR_REQUIRED);
 
 			verify(ceremonyCreator, times(0)).save(any(Ceremony.class));
 		}
@@ -201,10 +200,10 @@ public class CeremonyServiceTest {
 
 			// when, then
 			assertThatThrownBy(() -> ceremonyService.createCeremony(user, dto, List.of()))
-				.isInstanceOf(BadRequestException.class)
-				.hasMessageContaining(MessageUtil.CEREMONY_ENDDATE_REQUIRED)
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasMessageContaining(CeremonyErrorCode.END_DATE_REQUIRED.getMessage())
 				.extracting("errorCode")
-				.isEqualTo(ErrorCode.INVALID_USER_DATA_REQUEST);
+				.isEqualTo(CeremonyErrorCode.END_DATE_REQUIRED);
 
 			verify(ceremonyCreator, times(0)).save(any(Ceremony.class));
 		}
@@ -239,10 +238,10 @@ public class CeremonyServiceTest {
 
 			// when, then
 			assertThatThrownBy(() -> ceremonyService.getCeremony("ceremonyId", CeremonyContext.GENERAL, user))
-				.isInstanceOf(BadRequestException.class)
-				.hasMessageContaining(MessageUtil.CEREMONY_NOT_FOUND)
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasMessageContaining(CeremonyErrorCode.CEREMONY_NOT_FOUND.getMessage())
 				.extracting("errorCode")
-				.isEqualTo(ErrorCode.ROW_DOES_NOT_EXIST);
+				.isEqualTo(CeremonyErrorCode.CEREMONY_NOT_FOUND);
 
 			verify(ceremonyReader, times(1)).findById("ceremonyId");
 		}
@@ -257,13 +256,12 @@ public class CeremonyServiceTest {
 
 			// when, then
 			assertThatThrownBy(() -> ceremonyService.getCeremony("ceremonyId", CeremonyContext.MY, other))
-				.isInstanceOf(BadRequestException.class)
-				.hasMessageContaining(MessageUtil.CEREMONY_ACCESS_MY_ONLY)
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasMessageContaining(CeremonyErrorCode.ACCESS_ONLY_APPLICANT.getMessage())
 				.extracting("errorCode")
-				.isEqualTo(ErrorCode.INVALID_PARAMETER);
+				.isEqualTo(CeremonyErrorCode.ACCESS_ONLY_APPLICANT);
 
 			verify(ceremonyReader, times(1)).findById("ceremonyId");
 		}
 	}
-
 }
