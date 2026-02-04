@@ -15,13 +15,16 @@ SET ceremony_type =
     END
 WHERE ceremony_type IS NULL;
 
--- 3. ceremony_type에 NOT NULL 적용
+-- 3. ceremony_type에 NOT NULL 적용 / description, ceremony_category, end_date에 NULL 적용
 ALTER TABLE tb_ceremony
-    MODIFY ceremony_type ENUM('CELEBRATION', 'CONDOLENCE') NOT NULL;
+    MODIFY ceremony_type ENUM('CELEBRATION', 'CONDOLENCE') NOT NULL,
+    MODIFY description VARCHAR(255) NULL,
+    MODIFY ceremony_category VARCHAR(31) NULL,
+    MODIFY end_date DATE NULL;
 
 -- 4. ceremony_category ENUM에서 String으로 변경
 ALTER TABLE tb_ceremony
-    MODIFY ceremony_category VARCHAR(50) NOT NULL;
+    MODIFY ceremony_category VARCHAR(31) NOT NULL;
 
 -- 5. start_time, end_time,
 --    relation_type, family_relation, alumni_relation, alumni_name, alumni_admission_year,
