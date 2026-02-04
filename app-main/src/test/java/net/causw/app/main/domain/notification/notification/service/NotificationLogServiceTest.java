@@ -3,7 +3,6 @@ package net.causw.app.main.domain.notification.notification.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
@@ -62,7 +61,7 @@ class NotificationLogServiceTest {
 				.isRead(false)
 				.build();
 
-			given(notificationDtoMapper.toNotificationResponseDto(anyString(), any(), anyBoolean()))
+			given(notificationDtoMapper.toNotificationResponseDto(any(), any(), anyBoolean()))
 				.willReturn(expectedDto);
 
 			// when
