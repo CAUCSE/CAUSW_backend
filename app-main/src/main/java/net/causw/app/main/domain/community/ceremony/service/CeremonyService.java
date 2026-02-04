@@ -37,6 +37,16 @@ public class CeremonyService {
 		@Valid CreateCeremonyRequestDto createCeremonyRequestDTO,
 		List<MultipartFile> imageFileList) {
 
+		// 경조사 종료 시간 설정 시 종료 날짜 또는 시작 시간 입력됐는지 검증
+		if (createCeremonyRequestDTO.getEndTime() != null) {
+			if (createCeremonyRequestDTO.getEndDate() == null) {
+				throw CeremonyErrorCode.END_DATE_REQUIRED.toBaseException();
+			}
+			if (createCeremonyRequestDTO.getStartTime() == null) {
+				throw CeremonyErrorCode.START_TIME_REQUIRED.toBaseException();
+			}
+		}
+
 		// 전체 알림 전송이 false인 경우, 대상 학번이 입력되었는지 검증
 		if (!createCeremonyRequestDTO.getIsSetAll()) {
 			if (createCeremonyRequestDTO.getTargetAdmissionYears() == null
