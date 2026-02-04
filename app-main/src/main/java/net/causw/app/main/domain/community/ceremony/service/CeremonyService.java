@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
@@ -26,6 +27,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Validated
 public class CeremonyService {
 	private final UuidFileService uuidFileService;
 	private final CeremonyCreator ceremonyCreator;
@@ -36,6 +38,34 @@ public class CeremonyService {
 		User user,
 		@Valid CreateCeremonyRequestDto createCeremonyRequestDTO,
 		List<MultipartFile> imageFileList) {
+
+		// 경조사 상세 분류 직접 입력 검증
+		if (createCeremonyRequestDTO.getCeremonyCategory() == CeremonyCategory.ETC) {
+			if (createCeremonyRequestDTO.getCeremonyCustomCategory() == null
+				|| createCeremonyRequestDTO.getCeremonyCustomCategory().isEmpty()) {
+				throw CeremonyErrorCode.CUSTOM_CATEGORY_REQUIRED.toBaseException();
+			}
+		}
+
+		// 관계 - 상세 관계 검증
+		switch (createCeremonyRequestDTO.getRelationType()) {
+			case FAMILY -> {
+				if (createCeremonyRequestDTO.getFamilyRelation() == null) {
+					throw CeremonyErrorCode.FAMILY_RELATION_REQUIRED.toBaseException();
+				}
+			}
+			case ALUMNI -> {
+				if (createCeremonyRequestDTO.getAlumniRelation() == null) {
+					throw CeremonyErrorCode.ALUMNI_RELATION_REQUIRED.toBaseException();
+				}
+				if (createCeremonyRequestDTO.getAlumniName() == null) {
+					throw CeremonyErrorCode.ALUMNI_NAME_REQUIRED.toBaseException();
+				}
+				if (createCeremonyRequestDTO.getAlumniAdmissionYear() == null) {
+					throw CeremonyErrorCode.ALUMNI_ADMISSION_YEAR_REQUIRED.toBaseException();
+				}
+			}
+		}
 
 		// 경조사 종료 시간 설정 시 종료 날짜 또는 시작 시간 입력됐는지 검증
 		if (createCeremonyRequestDTO.getEndTime() != null) {
@@ -70,39 +100,6 @@ public class CeremonyService {
 		List<UuidFile> uuidFileList = (imageFileList == null || imageFileList.isEmpty())
 			? List.of()
 			: uuidFileService.saveFileList(imageFileList, FilePath.CEREMONY);
-
-		// 관계 - 상세 관계 검증
-		switch (createCeremonyRequestDTO.getRelationType()) {
-			case FAMILY -> {
-				if (createCeremonyRequestDTO.getFamilyRelation() == null) {
-					throw CeremonyErrorCode.FAMILY_RELATION_REQUIRED.toBaseException();
-				}
-			}
-			case ALUMNI -> {
-				if (createCeremonyRequestDTO.getAlumniRelation() == null) {
-					throw CeremonyErrorCode.ALUMNI_RELATION_REQUIRED.toBaseException();
-				}
-				if (createCeremonyRequestDTO.getAlumniName() == null) {
-					throw CeremonyErrorCode.ALUMNI_NAME_REQUIRED.toBaseException();
-				}
-				if (createCeremonyRequestDTO.getAlumniAdmissionYear() == null) {
-					throw CeremonyErrorCode.ALUMNI_ADMISSION_YEAR_REQUIRED.toBaseException();
-				}
-			}
-		}
-
-		// 경조사 종료 시간 설정 시 종료 날짜 입력됐는지 검증
-		if (createCeremonyRequestDTO.getEndDate() == null && createCeremonyRequestDTO.getEndTime() != null) {
-			throw CeremonyErrorCode.END_DATE_REQUIRED.toBaseException();
-		}
-
-		// 경조사 상세 분류 직접 입력 검증
-		if (createCeremonyRequestDTO.getCeremonyCategory() == CeremonyCategory.ETC) {
-			if (createCeremonyRequestDTO.getCeremonyCustomCategory() == null
-				|| createCeremonyRequestDTO.getCeremonyCustomCategory().isEmpty()) {
-				throw CeremonyErrorCode.CUSTOM_CATEGORY_REQUIRED.toBaseException();
-			}
-		}
 
 		Ceremony ceremony = Ceremony.createWithImages(
 			user,

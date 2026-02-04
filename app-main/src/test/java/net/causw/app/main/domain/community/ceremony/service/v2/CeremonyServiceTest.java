@@ -23,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.request.CreateCeremonyRequestDto;
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
 import net.causw.app.main.domain.community.ceremony.enums.AlumniRelation;
+import net.causw.app.main.domain.community.ceremony.enums.CeremonyCategory;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyContext;
 import net.causw.app.main.domain.community.ceremony.enums.RelationType;
 import net.causw.app.main.domain.community.ceremony.service.CeremonyService;
@@ -57,63 +58,25 @@ public class CeremonyServiceTest {
 			dto = mock(CreateCeremonyRequestDto.class);
 		}
 
-		@DisplayName("전체 알림 전송이 false인 경우, 대상 학번이 Null이면 실패")
+		@DisplayName("경조사 상세 분류 직접 입력일 때 입력값이 null이면 실패")
 		@Test
-		void givenIsSetAllFalse_whenTargetAdmissionYearsIsNull_thenThrowsException() {
+		void givenCustomCategoryIsNull_whenCategoryIsEtc_then_ThrowsException() {
 			// given
-			given(dto.getIsSetAll()).willReturn(false);
-			given(dto.getTargetAdmissionYears()).willReturn(null);
+			given(dto.getCeremonyCustomCategory()).willReturn(null);
+			given(dto.getCeremonyCategory()).willReturn(CeremonyCategory.ETC);
 
 			// when & then
 			assertThatThrownBy(() -> ceremonyService.createCeremony(user, dto, null))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
-				.hasMessageContaining(CeremonyErrorCode.TARGET_ADMISSION_YEARS_REQUIRED.getMessage())
+				.hasMessageContaining(CeremonyErrorCode.CUSTOM_CATEGORY_REQUIRED.getMessage())
 				.extracting("errorCode")
-				.isEqualTo(CeremonyErrorCode.TARGET_ADMISSION_YEARS_REQUIRED);
-
-			verify(ceremonyCreator, times(0)).save(any(Ceremony.class));
-		}
-
-		@DisplayName("전체 알림 전송이 false인 경우, 대상 학번이 Empty이면 실패")
-		@Test
-		void givenIsSetAllFalse_whenTargetAdmissionYearsIsEmpty_thenThrowsException() {
-			//given
-			given(dto.getIsSetAll()).willReturn(false);
-			given(dto.getTargetAdmissionYears()).willReturn(List.of());
-
-			// when, then
-			assertThatThrownBy(() -> ceremonyService.createCeremony(user, dto, List.of()))
-				.isInstanceOf(BaseRunTimeV2Exception.class)
-				.hasMessageContaining(CeremonyErrorCode.TARGET_ADMISSION_YEARS_REQUIRED.getMessage())
-				.extracting("errorCode")
-				.isEqualTo(CeremonyErrorCode.TARGET_ADMISSION_YEARS_REQUIRED);
-
-			verify(ceremonyCreator, times(0)).save(any(Ceremony.class));
-		}
-
-		@DisplayName("학번 형식이 올바른지 검증 (2자리 숫자)")
-		@Test
-		void givenAlumniAdmissionYear_whenInvalidFormat_thenThrowsException() {
-			// given
-			given(dto.getIsSetAll()).willReturn(false);
-			given(dto.getTargetAdmissionYears()).willReturn(List.of("123"));
-
-			// when, then
-			assertThatThrownBy(() -> ceremonyService.createCeremony(user, dto, List.of()))
-				.isInstanceOf(BaseRunTimeV2Exception.class)
-				.hasMessageContaining(CeremonyErrorCode.INVALID_ADMISSION_YEARS_FORMAT.getMessage())
-				.extracting("errorCode")
-				.isEqualTo(CeremonyErrorCode.INVALID_ADMISSION_YEARS_FORMAT);
-
-			verify(ceremonyCreator, times(0)).save(any(Ceremony.class));
+				.isEqualTo(CeremonyErrorCode.CUSTOM_CATEGORY_REQUIRED);
 		}
 
 		@DisplayName("관계=FAMILY인데 FamilyRelation이 null이면 실패")
 		@Test
 		void givenRelationTypeIsFamily_whenFamilyRelationIsNull_thenThrowsException() {
 			// given
-			given(dto.getIsSetAll()).willReturn(true);
-
 			given(dto.getRelationType()).willReturn(RelationType.FAMILY);
 			given(dto.getFamilyRelation()).willReturn(null);
 
@@ -131,8 +94,6 @@ public class CeremonyServiceTest {
 		@Test
 		void givenRelationTypeIsAlumni_whenAlumniRelationIsNull_thenThrowsException() {
 			// given
-			given(dto.getIsSetAll()).willReturn(true);
-
 			given(dto.getRelationType()).willReturn(RelationType.ALUMNI);
 			given(dto.getAlumniRelation()).willReturn(null);
 
@@ -150,8 +111,6 @@ public class CeremonyServiceTest {
 		@Test
 		void givenRelationTypeIsAlumni_whenAlumniNameIsNull_thenThrowsException() {
 			// given
-			given(dto.getIsSetAll()).willReturn(true);
-
 			given(dto.getRelationType()).willReturn(RelationType.ALUMNI);
 			given(dto.getAlumniRelation()).willReturn(AlumniRelation.ALUMNI);
 			given(dto.getAlumniName()).willReturn(null);
@@ -170,8 +129,6 @@ public class CeremonyServiceTest {
 		@Test
 		void givenRelationTypeIsAlumni_whenAlumniAdmissionYearIsNull_thenThrowsException() {
 			// given
-			given(dto.getIsSetAll()).willReturn(true);
-
 			given(dto.getRelationType()).willReturn(RelationType.ALUMNI);
 			given(dto.getAlumniRelation()).willReturn(AlumniRelation.ALUMNI);
 			given(dto.getAlumniName()).willReturn("동문이름");
@@ -191,8 +148,6 @@ public class CeremonyServiceTest {
 		@Test
 		void givenEndTime_whenEndDateIsNull_thenThrowsException() {
 			// given
-			given(dto.getIsSetAll()).willReturn(true);
-
 			given(dto.getRelationType()).willReturn(RelationType.ME);
 
 			given(dto.getEndDate()).willReturn(null);
@@ -208,7 +163,62 @@ public class CeremonyServiceTest {
 			verify(ceremonyCreator, times(0)).save(any(Ceremony.class));
 		}
 
-		// 전체 알림 전송이 true인 경우, 대상 학번은 빈 리스트(null)로 설정
+		@DisplayName("전체 알림 전송이 false인 경우, 대상 학번이 Null이면 실패")
+		@Test
+		void givenIsSetAllFalse_whenTargetAdmissionYearsIsNull_thenThrowsException() {
+			// given
+			given(dto.getRelationType()).willReturn(RelationType.ME);
+
+			given(dto.getIsSetAll()).willReturn(false);
+			given(dto.getTargetAdmissionYears()).willReturn(null);
+
+			// when & then
+			assertThatThrownBy(() -> ceremonyService.createCeremony(user, dto, null))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasMessageContaining(CeremonyErrorCode.TARGET_ADMISSION_YEARS_REQUIRED.getMessage())
+				.extracting("errorCode")
+				.isEqualTo(CeremonyErrorCode.TARGET_ADMISSION_YEARS_REQUIRED);
+
+			verify(ceremonyCreator, times(0)).save(any(Ceremony.class));
+		}
+
+		@DisplayName("전체 알림 전송이 false인 경우, 대상 학번이 Empty이면 실패")
+		@Test
+		void givenIsSetAllFalse_whenTargetAdmissionYearsIsEmpty_thenThrowsException() {
+			//given
+			given(dto.getRelationType()).willReturn(RelationType.ME);
+
+			given(dto.getIsSetAll()).willReturn(false);
+			given(dto.getTargetAdmissionYears()).willReturn(List.of());
+
+			// when, then
+			assertThatThrownBy(() -> ceremonyService.createCeremony(user, dto, List.of()))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasMessageContaining(CeremonyErrorCode.TARGET_ADMISSION_YEARS_REQUIRED.getMessage())
+				.extracting("errorCode")
+				.isEqualTo(CeremonyErrorCode.TARGET_ADMISSION_YEARS_REQUIRED);
+
+			verify(ceremonyCreator, times(0)).save(any(Ceremony.class));
+		}
+
+		@DisplayName("학번 형식이 올바른지 검증 (2자리 숫자)")
+		@Test
+		void givenAlumniAdmissionYear_whenInvalidFormat_thenThrowsException() {
+			// given
+			given(dto.getRelationType()).willReturn(RelationType.ME);
+
+			given(dto.getIsSetAll()).willReturn(false);
+			given(dto.getTargetAdmissionYears()).willReturn(List.of("123"));
+
+			// when, then
+			assertThatThrownBy(() -> ceremonyService.createCeremony(user, dto, List.of()))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasMessageContaining(CeremonyErrorCode.INVALID_ADMISSION_YEARS_FORMAT.getMessage())
+				.extracting("errorCode")
+				.isEqualTo(CeremonyErrorCode.INVALID_ADMISSION_YEARS_FORMAT);
+
+			verify(ceremonyCreator, times(0)).save(any(Ceremony.class));
+		}
 	}
 
 	@Nested
