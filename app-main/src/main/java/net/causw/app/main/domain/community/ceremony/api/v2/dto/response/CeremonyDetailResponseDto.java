@@ -5,7 +5,6 @@ import java.time.LocalTime;
 import java.util.List;
 
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyState;
-import net.causw.app.main.domain.community.ceremony.enums.CeremonyType;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -23,8 +22,8 @@ public class CeremonyDetailResponseDto {
 	@Schema(description = "경조사 제목", example = "김철수(21학번) 딸 결혼식")
 	private String title;
 
-	@Schema(description = "경조사 분류", example = "CELEBRATION")
-	private CeremonyType type;
+	@Schema(description = "경조사 분류", example = "조사")
+	private String type;
 
 	@Schema(description = "경조사 상세 분류", example = "결혼식")
 	private String category;

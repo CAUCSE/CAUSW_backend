@@ -13,6 +13,7 @@ import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.Ceremony
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonyNotificationSettingResponseDto;
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
 import net.causw.app.main.domain.community.ceremony.enums.AlumniRelation;
+import net.causw.app.main.domain.community.ceremony.enums.CeremonyCategory;
 import net.causw.app.main.domain.notification.notification.entity.CeremonyNotificationSetting;
 
 @Mapper(componentModel = "spring")
@@ -23,8 +24,8 @@ public interface CeremonyDtoMapper {
 	// 경조사 상세 보기
 	@Mapping(target = "id", source = "id")
 	@Mapping(target = "title", source = ".", qualifiedByName = "mapTitle")
-	@Mapping(target = "type", source = "ceremonyType")
-	@Mapping(target = "category", source = "ceremonyCategory")
+	@Mapping(target = "type", source = "ceremonyType.label")
+	@Mapping(target = "category", source = ".", qualifiedByName = "mapCategory")
 	@Mapping(target = "startDate", source = "startDate")
 	@Mapping(target = "endDate", source = "endDate")
 	@Mapping(target = "startTime", source = "startTime")
@@ -47,8 +48,8 @@ public interface CeremonyDtoMapper {
 	// 내 경조사 상세 보기
 	@Mapping(target = "id", source = "id")
 	@Mapping(target = "title", source = ".", qualifiedByName = "mapTitle")
-	@Mapping(target = "type", source = "ceremonyType")
-	@Mapping(target = "category", source = "ceremonyCategory")
+	@Mapping(target = "type", source = "ceremonyType.label")
+	@Mapping(target = "category", source = ".", qualifiedByName = "mapCategory")
 	@Mapping(target = "startDate", source = "startDate")
 	@Mapping(target = "endDate", source = "endDate")
 	@Mapping(target = "startTime", source = "startTime")
@@ -68,6 +69,15 @@ public interface CeremonyDtoMapper {
 	@Mapping(target = "note", source = "note")
 	CeremonyDetailResponseDto toMyCeremonyDetailResponseDto(Ceremony ceremony);
 
+	@Named("mapCategory")
+	static String mapCategory(Ceremony ceremony) {
+		if (ceremony.getCeremonyCategory() == CeremonyCategory.ETC) {
+			return ceremony.getCeremonyCustomCategory();
+		} else {
+			return ceremony.getCeremonyCategory().getLabel();
+		}
+	}
+
 	@Named("mapTitle")
 	static String mapTitle(Ceremony ceremony) {
 		switch (ceremony.getRelationType()) {
@@ -76,27 +86,27 @@ public interface CeremonyDtoMapper {
 					ceremony.getUser().getName(),
 					ceremony.getUser().getAdmissionYear().toString().substring(2, 4),
 					ceremony.getFamilyRelation().getLabel(),
-					ceremony.getCeremonyCategory());
+					mapCategory(ceremony));
 			}
 			case ALUMNI -> {
 				if (ceremony.getAlumniRelation() == AlumniRelation.ALUMNI) {
 					return String.format("%s(%s학번) %s",
 						ceremony.getAlumniName(),
 						ceremony.getAlumniAdmissionYear().substring(2, 4),
-						ceremony.getCeremonyCategory());
+						mapCategory(ceremony));
 				} else {
 					return String.format("%s(%s학번) %s %s",
 						ceremony.getAlumniName(),
 						ceremony.getAlumniAdmissionYear().substring(2, 4),
 						ceremony.getAlumniRelation().getLabel(),
-						ceremony.getCeremonyCategory());
+						mapCategory(ceremony));
 				}
 			}
 			default -> {
 				return String.format("%s(%s학번) %s",
 					ceremony.getUser().getName(),
 					ceremony.getUser().getAdmissionYear().toString().substring(2, 4),
-					ceremony.getCeremonyCategory());
+					mapCategory(ceremony));
 			}
 		}
 	}

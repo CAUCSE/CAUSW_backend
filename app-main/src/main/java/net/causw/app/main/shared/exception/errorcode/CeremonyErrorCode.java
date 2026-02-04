@@ -18,6 +18,7 @@ public enum CeremonyErrorCode implements BaseResponseCode {
 	ALUMNI_NAME_REQUIRED(HttpStatus.BAD_REQUEST, "CEREMONY_400_005", "관계가 동문인 경우, 동문 이름을 입력해야 합니다."),
 	ALUMNI_ADMISSION_YEAR_REQUIRED(HttpStatus.BAD_REQUEST, "CEREMONY_400_006", "관계가 동문인 경우, 동문 입학 년도 4자리를 입력해야 합니다."),
 	END_DATE_REQUIRED(HttpStatus.BAD_REQUEST, "CEREMONY_400_007", "종료 일자를 입력해야 합니다."),
+	CUSTOM_CATEGORY_REQUIRED(HttpStatus.BAD_REQUEST, "CEREMONY_400_008", "분류가 직접 입력인 경우, 상세 분류를 직접 입력해야 합니다."),
 	CEREMONY_NOT_FOUND(HttpStatus.NOT_FOUND, "CEREMONY_404_001", "해당 경조사를 찾을 수 없습니다."),
 	ACCESS_ONLY_APPLICANT(HttpStatus.FORBIDDEN, "CEREMONY_403_001", "본인의 경조사만 조회할 수 있습니다.");
 

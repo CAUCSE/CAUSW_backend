@@ -14,6 +14,7 @@ import net.causw.app.main.domain.community.ceremony.api.v2.dto.request.CreateCer
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonyDetailResponseDto;
 import net.causw.app.main.domain.community.ceremony.api.v2.mapper.CeremonyDtoMapper;
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
+import net.causw.app.main.domain.community.ceremony.enums.CeremonyCategory;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyContext;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyCreator;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyReader;
@@ -85,10 +86,19 @@ public class CeremonyService {
 			throw CeremonyErrorCode.END_DATE_REQUIRED.toBaseException();
 		}
 
+		// 경조사 상세 분류 직접 입력 검증
+		if (createCeremonyRequestDTO.getCeremonyCategory() == CeremonyCategory.ETC) {
+			if (createCeremonyRequestDTO.getCeremonyCustomCategory() == null
+				|| createCeremonyRequestDTO.getCeremonyCustomCategory().isEmpty()) {
+				throw CeremonyErrorCode.CUSTOM_CATEGORY_REQUIRED.toBaseException();
+			}
+		}
+
 		Ceremony ceremony = Ceremony.createWithImages(
 			user,
 			createCeremonyRequestDTO.getCeremonyType(),
 			createCeremonyRequestDTO.getCeremonyCategory(),
+			createCeremonyRequestDTO.getCeremonyCustomCategory(),
 			createCeremonyRequestDTO.getStartDate(),
 			createCeremonyRequestDTO.getEndDate(),
 			createCeremonyRequestDTO.getStartTime(),
