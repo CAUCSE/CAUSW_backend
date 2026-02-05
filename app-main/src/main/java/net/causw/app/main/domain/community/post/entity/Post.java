@@ -41,7 +41,7 @@ import lombok.NoArgsConstructor;
 	@Index(name = "form_id_index", columnList = "form_id")
 })
 public class Post extends BaseEntity {
-	@Column(name = "title", nullable = false)
+	@Column(name = "title", nullable = true)
 	private String title;
 
 	@Lob
