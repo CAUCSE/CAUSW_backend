@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.campus.schedule.api.v2.controller.dto.response;
+package net.causw.app.main.domain.campus.schedule.api.v2.dto.response;
 
 import java.util.List;
 

@@ -56,7 +56,7 @@ import net.causw.app.main.domain.community.post.api.v1.dto.PostsResponseDto;
 import net.causw.app.main.domain.community.post.api.v1.mapper.PostDtoMapper;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
-import net.causw.app.main.domain.community.post.service.v1.PostService;
+import net.causw.app.main.domain.community.post.service.v1.PostV1Service;
 import net.causw.app.main.domain.community.reaction.entity.FavoritePost;
 import net.causw.app.main.domain.community.reaction.entity.LikePost;
 import net.causw.app.main.domain.community.reaction.repository.FavoritePostRepository;
@@ -166,7 +166,7 @@ public class UserService {
 
 	private final UserDtoMapper userDtoMapper;
 	private final PostDtoMapper postDtoMapper;
-	private final PostService postService;
+	private final PostV1Service postV1Service;
 	private final UserBlockEntityService userBlockEntityService;
 	private final UserQueryRepository userQueryRepository;
 	private final WebInvocationPrivilegeEvaluator privilegeEvaluator;
@@ -311,7 +311,7 @@ public class UserService {
 						StatusPolicy.isPostForm(post));
 
 					// 화면에 표시될 작성자 닉네임 설정
-					String displayNickname = postService.getDisplayWriterNickname(
+					String displayNickname = postV1Service.getDisplayWriterNickname(
 						post.getWriter(),
 						post.getIsAnonymous(),
 						post.getWriter() != null ? post.getWriter().getNickname() : null);
@@ -360,7 +360,7 @@ public class UserService {
 						StatusPolicy.isPostForm(post));
 
 					// 화면에 표시될 작성자 닉네임 설정
-					String displayNickname = postService.getDisplayWriterNickname(
+					String displayNickname = postV1Service.getDisplayWriterNickname(
 						post.getWriter(),
 						post.getIsAnonymous(),
 						post.getWriter() != null ? post.getWriter().getNickname() : null);
@@ -412,7 +412,7 @@ public class UserService {
 					StatusPolicy.isPostForm(post));
 
 				// 화면에 표시될 작성자 닉네임 설정
-				String displayNickname = postService.getDisplayWriterNickname(
+				String displayNickname = postV1Service.getDisplayWriterNickname(
 					post.getWriter(),
 					post.getIsAnonymous(),
 					post.getWriter() != null ? post.getWriter().getNickname() : null);
