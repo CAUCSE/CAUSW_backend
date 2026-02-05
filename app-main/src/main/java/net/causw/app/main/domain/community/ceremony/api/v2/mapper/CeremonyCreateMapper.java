@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.community.ceremony.util;
+package net.causw.app.main.domain.community.ceremony.api.v2.mapper;
 
 import java.util.List;
 

@@ -15,11 +15,11 @@ import net.causw.app.main.domain.community.ceremony.api.v2.dto.request.CreateCer
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonyDetailResponseDto;
 import net.causw.app.main.domain.community.ceremony.api.v2.mapper.CeremonyDtoMapper;
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
-import net.causw.app.main.domain.community.ceremony.enums.CeremonyCategory;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyContext;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyCreator;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyReader;
-import net.causw.app.main.domain.community.ceremony.util.CeremonyCreateMapper;
+import net.causw.app.main.domain.community.ceremony.api.v2.mapper.CeremonyCreateMapper;
+import net.causw.app.main.domain.community.ceremony.validation.CeremonyValidator;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.exception.errorcode.CeremonyErrorCode;
 
@@ -34,67 +34,15 @@ public class CeremonyService {
 	private final CeremonyCreator ceremonyCreator;
 	private final CeremonyReader ceremonyReader;
 	private final CeremonyCreateMapper ceremonyCreateMapper;
+	private final CeremonyValidator ceremonyValidator;
 
 	@Transactional
 	public CeremonyDetailResponseDto createCeremony(
 		User user,
 		@Valid CreateCeremonyRequestDto createCeremonyRequestDTO,
 		List<MultipartFile> imageFileList) {
+		ceremonyValidator.validateForCreate(createCeremonyRequestDTO);
 
-		// 경조사 상세 분류 직접 입력 검증
-		if (createCeremonyRequestDTO.getCeremonyCategory() == CeremonyCategory.ETC) {
-			if (createCeremonyRequestDTO.getCeremonyCustomCategory() == null
-				|| createCeremonyRequestDTO.getCeremonyCustomCategory().isEmpty()) {
-				throw CeremonyErrorCode.CUSTOM_CATEGORY_REQUIRED.toBaseException();
-			}
-		}
-
-		// 관계 - 상세 관계 검증
-		switch (createCeremonyRequestDTO.getRelationType()) {
-			case FAMILY -> {
-				if (createCeremonyRequestDTO.getFamilyRelation() == null) {
-					throw CeremonyErrorCode.FAMILY_RELATION_REQUIRED.toBaseException();
-				}
-			}
-			case ALUMNI -> {
-				if (createCeremonyRequestDTO.getAlumniRelation() == null) {
-					throw CeremonyErrorCode.ALUMNI_RELATION_REQUIRED.toBaseException();
-				}
-				if (createCeremonyRequestDTO.getAlumniName() == null) {
-					throw CeremonyErrorCode.ALUMNI_NAME_REQUIRED.toBaseException();
-				}
-				if (createCeremonyRequestDTO.getAlumniAdmissionYear() == null) {
-					throw CeremonyErrorCode.ALUMNI_ADMISSION_YEAR_REQUIRED.toBaseException();
-				}
-			}
-		}
-
-		// 경조사 종료 시간 설정 시 종료 날짜 또는 시작 시간 입력됐는지 검증
-		if (createCeremonyRequestDTO.getEndTime() != null) {
-			if (createCeremonyRequestDTO.getEndDate() == null) {
-				throw CeremonyErrorCode.END_DATE_REQUIRED.toBaseException();
-			}
-			if (createCeremonyRequestDTO.getStartTime() == null) {
-				throw CeremonyErrorCode.START_TIME_REQUIRED.toBaseException();
-			}
-		}
-
-		// 전체 알림 전송이 false인 경우, 대상 학번이 입력되었는지 검증
-		if (!createCeremonyRequestDTO.getIsSetAll()) {
-			if (createCeremonyRequestDTO.getTargetAdmissionYears() == null
-				|| createCeremonyRequestDTO.getTargetAdmissionYears().isEmpty()) {
-				throw CeremonyErrorCode.TARGET_ADMISSION_YEARS_REQUIRED.toBaseException();
-			}
-
-			// 알림 대상 학번 검증
-			for (String admissionYear : createCeremonyRequestDTO.getTargetAdmissionYears()) {
-				if (!admissionYear.matches("^[0-9]{2}$")) {
-					throw CeremonyErrorCode.INVALID_ADMISSION_YEARS_FORMAT.toBaseException();
-				}
-			}
-		}
-
-		// 전체 알림 전송이 true인 경우, 대상 학번은 빈 리스트(null)로 설정
 		List<String> targetAdmissionYears = createCeremonyRequestDTO.getIsSetAll()
 			? new ArrayList<>()
 			: createCeremonyRequestDTO.getTargetAdmissionYears();
@@ -106,7 +54,6 @@ public class CeremonyService {
 		Ceremony ceremony = ceremonyCreateMapper.fromRequest(user, createCeremonyRequestDTO, targetAdmissionYears,
 			uuidFileList);
 		ceremonyCreator.save(ceremony);
-
 		return CeremonyDtoMapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
 	}
 
