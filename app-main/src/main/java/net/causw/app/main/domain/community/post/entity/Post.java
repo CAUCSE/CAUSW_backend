@@ -114,6 +114,36 @@ public class Post extends BaseEntity {
 		return post;
 	}
 
+	public static Post of(
+		String title,
+		String content,
+		User writer,
+		Boolean isAnonymous,
+		Board board,
+		List<UuidFile> postAttachImageUuidFileList) {
+		Post post = Post.builder()
+			.title(title)
+			.content(content)
+			.writer(writer)
+			.isAnonymous(isAnonymous)
+			.isQuestion(false)
+			.board(board)
+			.form(null)
+			.build();
+
+		if (postAttachImageUuidFileList.isEmpty()) {
+			return post;
+		}
+
+		List<PostAttachImage> postAttachImageList = postAttachImageUuidFileList.stream()
+			.map(uuidFile -> PostAttachImage.of(post, uuidFile))
+			.toList();
+
+		post.setPostAttachFileList(postAttachImageList);
+
+		return post;
+	}
+
 	public void update(String title, String content, Form form, List<PostAttachImage> postAttachImageList) {
 		this.title = title;
 		this.content = content;
