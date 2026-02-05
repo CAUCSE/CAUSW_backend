@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import net.causw.app.main.domain.user.academic.api.v2.dto.request.AcademicReturnApplicationListRequest;
 import net.causw.app.main.domain.user.academic.api.v2.dto.response.AcademicReturnApplicationDetailResponse;
 import net.causw.app.main.domain.user.academic.api.v2.dto.response.AcademicReturnApplicationSummaryResponse;
-import net.causw.app.main.domain.user.academic.api.v2.mapper.AcademicReturnApplicationMapper;
+import net.causw.app.main.domain.user.academic.api.v2.mapper.AcademicReturnApplicationListMapper;
 import net.causw.app.main.domain.user.academic.service.AcademicRecordAdminService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
 public class AcademicRecordAdminController {
 
     private final AcademicRecordAdminService academicRecordAdminService;
-    private final AcademicReturnApplicationMapper applicationMapper;
+    private final AcademicReturnApplicationListMapper applicationListMapper;
 
     /**
      * 학적 변경 신청 목록 조회 (검색/필터링)
@@ -36,11 +36,10 @@ public class AcademicRecordAdminController {
             @ParameterObject AcademicReturnApplicationListRequest request
     ) {
         return ApiResponse.success(
-                academicRecordAdminService.getApplications(applicationMapper.toCondition(request))
-                        .map(applicationMapper::toResponse)
+                academicRecordAdminService.getApplications(applicationListMapper.toCondition(request))
+                        .map(applicationListMapper::toResponse)
         );
     }
-
 
     /**
      * 학적 변경 신청 상세 조회

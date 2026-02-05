@@ -2,7 +2,7 @@ package net.causw.app.main.domain.user.academic.service;
 
 import lombok.RequiredArgsConstructor;
 import net.causw.app.main.domain.user.academic.service.dto.request.AcademicReturnApplicationListCondition;
-import net.causw.app.main.domain.user.academic.service.dto.result.AcademicReturnApplicationSummaryResult;
+import net.causw.app.main.domain.user.academic.service.dto.response.AcademicReturnApplicationSummaryResult;
 import net.causw.app.main.domain.user.academic.service.implementation.AcademicRecordApplicationReader;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;

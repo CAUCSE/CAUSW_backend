@@ -3,12 +3,12 @@ package net.causw.app.main.domain.user.academic.api.v2.mapper;
 import net.causw.app.main.domain.user.academic.api.v2.dto.request.AcademicReturnApplicationListRequest;
 import net.causw.app.main.domain.user.academic.api.v2.dto.response.AcademicReturnApplicationSummaryResponse;
 import net.causw.app.main.domain.user.academic.service.dto.request.AcademicReturnApplicationListCondition;
-import net.causw.app.main.domain.user.academic.service.dto.result.AcademicReturnApplicationSummaryResult;
+import net.causw.app.main.domain.user.academic.service.dto.response.AcademicReturnApplicationSummaryResult;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
-public interface AcademicReturnApplicationMapper {
+public interface AcademicReturnApplicationListMapper {
 
 	// Request → Condition
 	@Mapping(target = "page", expression = "java(request.page() != null ? request.page() : 0)")
