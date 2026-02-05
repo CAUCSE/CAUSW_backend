@@ -19,6 +19,7 @@ import net.causw.app.main.domain.community.ceremony.enums.CeremonyCategory;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyContext;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyCreator;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyReader;
+import net.causw.app.main.domain.community.ceremony.util.CeremonyCreateMapper;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.exception.errorcode.CeremonyErrorCode;
 
@@ -32,6 +33,7 @@ public class CeremonyService {
 	private final UuidFileService uuidFileService;
 	private final CeremonyCreator ceremonyCreator;
 	private final CeremonyReader ceremonyReader;
+	private final CeremonyCreateMapper ceremonyCreateMapper;
 
 	@Transactional
 	public CeremonyDetailResponseDto createCeremony(
@@ -101,28 +103,7 @@ public class CeremonyService {
 			? List.of()
 			: uuidFileService.saveFileList(imageFileList, FilePath.CEREMONY);
 
-		Ceremony ceremony = Ceremony.createWithImages(
-			user,
-			createCeremonyRequestDTO.getCeremonyType(),
-			createCeremonyRequestDTO.getCeremonyCategory(),
-			createCeremonyRequestDTO.getCeremonyCustomCategory(),
-			createCeremonyRequestDTO.getStartDate(),
-			createCeremonyRequestDTO.getEndDate(),
-			createCeremonyRequestDTO.getStartTime(),
-			createCeremonyRequestDTO.getEndTime(),
-			createCeremonyRequestDTO.getRelationType(),
-			createCeremonyRequestDTO.getFamilyRelation(),
-			createCeremonyRequestDTO.getAlumniRelation(),
-			createCeremonyRequestDTO.getAlumniName(),
-			createCeremonyRequestDTO.getAlumniAdmissionYear(),
-			createCeremonyRequestDTO.getContent(),
-			createCeremonyRequestDTO.getAddress(),
-			createCeremonyRequestDTO.getPostalAddress(),
-			createCeremonyRequestDTO.getDetailedAddress(),
-			createCeremonyRequestDTO.getContact(),
-			createCeremonyRequestDTO.getLink(),
-			createCeremonyRequestDTO.getIsSetAll(),
-			targetAdmissionYears,
+		Ceremony ceremony = ceremonyCreateMapper.fromRequest(user, createCeremonyRequestDTO, targetAdmissionYears,
 			uuidFileList);
 		ceremonyCreator.save(ceremony);
 
