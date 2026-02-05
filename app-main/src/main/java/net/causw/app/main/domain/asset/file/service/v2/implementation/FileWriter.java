@@ -9,7 +9,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
+import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.asset.file.repository.UuidFileRepository;
+import net.causw.app.main.domain.asset.file.service.v2.util.FileMetadataManager;
 import net.causw.app.main.shared.storage.v2.StorageClient;
 import net.causw.app.main.shared.storage.v2.dto.FileMetadata;
 import net.causw.app.main.shared.storage.v2.dto.StorageResult;
@@ -33,6 +35,20 @@ public class FileWriter {
 
 	private final StorageClient storageClient;
 	private final UuidFileRepository uuidFileRepository;
+
+	@Transactional
+	public UuidFile uploadAndSave(@NotNull final MultipartFile file, @NotNull FilePath filePath) {
+		FileMetadata metadata = FileMetadataManager.createMetadata(file, filePath);
+		return uploadAndSave(file, metadata);
+	}
+
+	@Transactional
+	public List<UuidFile> uploadAndSaveList(@NotNull List<MultipartFile> fileList, @NotNull FilePath filePath) {
+		List<FileMetadata> metadataList = fileList.stream()
+			.map(it -> FileMetadataManager.createMetadata(it, filePath))
+			.toList();
+		return uploadAndSaveList(fileList, metadataList);
+	}
 
 	/**
 	 * 파일 업로드 및 저장
