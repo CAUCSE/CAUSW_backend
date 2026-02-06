@@ -91,17 +91,8 @@ public class CreateCeremonyRequestDto {
 	@Schema(description = "알림 대상 학번", requiredMode = Schema.RequiredMode.REQUIRED, example = "[19, 21, 22]")
 	private List<String> targetAdmissionYears;
 
-	// 시작날짜가 종료날짜보다 이전인지 검증
-	@AssertTrue(message = "시작 날짜는 종료 날짜보다 이전이거나 같아야 합니다.")
-	private boolean isValidDateRange() {
-		if (startDate == null || endDate == null) {
-			return true; // null 체크는 @NotNull에서 처리
-		}
-		return !startDate.isAfter(endDate);
-	}
-
 	// 학번 검증
-	@AssertTrue(message = "학번은 4자리로 입력해야 합니다. (ex. 1972, 2005, 2021)")
+	@AssertTrue(message = "동문 학번은 4자리로 입력해야 합니다. (ex. 1972, 2005, 2021)")
 	private boolean isValidAdmissionYear() {
 		if (alumniAdmissionYear != null) {
 			return alumniAdmissionYear.matches("^(19|20)[0-9]{2}$");

@@ -6,6 +6,7 @@ import net.causw.app.main.domain.community.ceremony.enums.AlumniRelation;
 import net.causw.app.main.domain.community.ceremony.enums.FamilyRelation;
 import net.causw.app.main.domain.community.ceremony.enums.RelationType;
 import net.causw.app.main.shared.exception.errorcode.CeremonyErrorCode;
+import net.causw.app.main.shared.exception.errorcode.GlobalErrorCode;
 
 @Component
 public class CeremonyRelationValidator {
@@ -13,9 +14,18 @@ public class CeremonyRelationValidator {
 	public void validateRelation(RelationType relationType, FamilyRelation familyRelation,
 		AlumniRelation alumniRelation, String alumniName, String alumniAdmissionYear) {
 		switch (relationType) {
+			case ME -> {
+				if (familyRelation != null || alumniRelation != null || alumniName != null
+					|| alumniAdmissionYear != null) {
+					throw GlobalErrorCode.BAD_REQUEST.toBaseException();
+				}
+			}
 			case FAMILY -> {
 				if (familyRelation == null) {
 					throw CeremonyErrorCode.FAMILY_RELATION_REQUIRED.toBaseException();
+				}
+				if (alumniRelation != null || alumniName != null || alumniAdmissionYear != null) {
+					throw GlobalErrorCode.BAD_REQUEST.toBaseException();
 				}
 			}
 			case INSTEAD -> {
@@ -27,6 +37,9 @@ public class CeremonyRelationValidator {
 				}
 				if (alumniAdmissionYear == null) {
 					throw CeremonyErrorCode.ALUMNI_ADMISSION_YEAR_REQUIRED.toBaseException();
+				}
+				if (familyRelation != null) {
+					throw GlobalErrorCode.BAD_REQUEST.toBaseException();
 				}
 			}
 		}

@@ -17,12 +17,14 @@ public class CeremonyValidator {
 
 	public void validateForCreate(CreateCeremonyRequestDto dto) {
 
-		ceremonyCategoryValidator.validateCategory(dto.getCeremonyCategory(), dto.getCeremonyCustomCategory());
+		ceremonyCategoryValidator.validateCustomCategory(dto.getCeremonyCategory(), dto.getCeremonyCustomCategory());
 
 		ceremonyRelationValidator.validateRelation(dto.getRelationType(), dto.getFamilyRelation(),
 			dto.getAlumniRelation(), dto.getAlumniName(), dto.getAlumniAdmissionYear());
 
-		ceremonyDateTimeValidator.validateEndTime(dto.getEndDate(), dto.getEndTime(), dto.getStartTime());
+		ceremonyDateTimeValidator.validateDateTime(dto.getEndDate(), dto.getStartTime(), dto.getEndTime());
+		ceremonyDateTimeValidator.validateDateTimeRange(dto.getStartDate(), dto.getEndDate(), dto.getStartTime(),
+			dto.getEndTime());
 
 		ceremonyNotificationValidator.validateNotificationTarget(dto.getIsSetAll(), dto.getTargetAdmissionYears());
 	}
