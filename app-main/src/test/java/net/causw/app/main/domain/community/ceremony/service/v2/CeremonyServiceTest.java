@@ -2,13 +2,8 @@ package net.causw.app.main.domain.community.ceremony.service.v2;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.mock;
-import static org.mockito.BDDMockito.times;
-import static org.mockito.BDDMockito.verify;
+import static org.mockito.BDDMockito.*;
 
-import java.time.LocalTime;
-import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -20,15 +15,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import net.causw.app.main.domain.asset.file.service.v2.UuidFileService;
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.request.CreateCeremonyRequestDto;
+import net.causw.app.main.domain.community.ceremony.api.v2.mapper.CeremonyCreateMapper;
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
-import net.causw.app.main.domain.community.ceremony.enums.AlumniRelation;
-import net.causw.app.main.domain.community.ceremony.enums.CeremonyCategory;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyContext;
-import net.causw.app.main.domain.community.ceremony.enums.RelationType;
 import net.causw.app.main.domain.community.ceremony.service.CeremonyService;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyCreator;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyReader;
+import net.causw.app.main.domain.community.ceremony.validation.CeremonyValidator;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.CeremonyErrorCode;
@@ -40,10 +35,15 @@ public class CeremonyServiceTest {
 	CeremonyService ceremonyService;
 
 	@Mock
+	UuidFileService uuidFileService;
+	@Mock
 	CeremonyCreator ceremonyCreator;
-
 	@Mock
 	CeremonyReader ceremonyReader;
+	@Mock
+	CeremonyCreateMapper ceremonyCreateMapper;
+	@Mock
+	CeremonyValidator ceremonyValidator;
 
 	@Nested
 	@DisplayName("경조사 생성 테스트")
@@ -58,166 +58,68 @@ public class CeremonyServiceTest {
 			dto = mock(CreateCeremonyRequestDto.class);
 		}
 
-		@DisplayName("경조사 상세 분류 직접 입력일 때 입력값이 null이면 실패")
 		@Test
-		void givenCustomCategoryIsNull_whenCategoryIsEtc_then_ThrowsException() {
+		@DisplayName("경조사 상세 분류가 직접 입력일 때 입력값이 Null이면 Validator가 예외 반환")
+		void givenCategoryValidatorFail_whenCreateCeremony_thenThrowsException() {
 			// given
-			given(dto.getCeremonyCustomCategory()).willReturn(null);
-			given(dto.getCeremonyCategory()).willReturn(CeremonyCategory.ETC);
+			doThrow(CeremonyErrorCode.CUSTOM_CATEGORY_REQUIRED.toBaseException())
+				.when(ceremonyValidator).validateForCreate(dto);
 
 			// when & then
 			assertThatThrownBy(() -> ceremonyService.createCeremony(user, dto, null))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
-				.hasMessageContaining(CeremonyErrorCode.CUSTOM_CATEGORY_REQUIRED.getMessage())
-				.extracting("errorCode")
-				.isEqualTo(CeremonyErrorCode.CUSTOM_CATEGORY_REQUIRED);
+				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.CUSTOM_CATEGORY_REQUIRED);
+			then(uuidFileService).should(never()).saveFileList(any(), any());
+			then(ceremonyCreateMapper).should(never()).fromRequest(any(), any(), any(), any());
+			then(ceremonyCreator).should(never()).save(any());
 		}
 
-		@DisplayName("관계=FAMILY인데 FamilyRelation이 null이면 실패")
 		@Test
-		void givenRelationTypeIsFamily_whenFamilyRelationIsNull_thenThrowsException() {
+		@DisplayName("관계 및 상세 분류 안 맞으면 Validator가 예외 반환")
+		void givenRelationValidatorFail_whenCreateCeremony_thenThrowsException() {
 			// given
-			given(dto.getRelationType()).willReturn(RelationType.FAMILY);
-			given(dto.getFamilyRelation()).willReturn(null);
-
-			// when, then
-			assertThatThrownBy(() -> ceremonyService.createCeremony(user, dto, List.of()))
-				.isInstanceOf(BaseRunTimeV2Exception.class)
-				.hasMessageContaining(CeremonyErrorCode.FAMILY_RELATION_REQUIRED.getMessage())
-				.extracting("errorCode")
-				.isEqualTo(CeremonyErrorCode.FAMILY_RELATION_REQUIRED);
-
-			verify(ceremonyCreator, times(0)).save(any(Ceremony.class));
-		}
-
-		@DisplayName("관계=ALUMNI인데 AlumniRelation이 null이면 실패")
-		@Test
-		void givenRelationTypeIsAlumni_whenAlumniRelationIsNull_thenThrowsException() {
-			// given
-			given(dto.getRelationType()).willReturn(RelationType.ALUMNI);
-			given(dto.getAlumniRelation()).willReturn(null);
-
-			// when, then
-			assertThatThrownBy(() -> ceremonyService.createCeremony(user, dto, List.of()))
-				.isInstanceOf(BaseRunTimeV2Exception.class)
-				.hasMessageContaining(CeremonyErrorCode.ALUMNI_RELATION_REQUIRED.getMessage())
-				.extracting("errorCode")
-				.isEqualTo(CeremonyErrorCode.ALUMNI_RELATION_REQUIRED);
-
-			verify(ceremonyCreator, times(0)).save(any(Ceremony.class));
-		}
-
-		@DisplayName("관계=ALUMNI인데 AlumniName이 null이면 실패")
-		@Test
-		void givenRelationTypeIsAlumni_whenAlumniNameIsNull_thenThrowsException() {
-			// given
-			given(dto.getRelationType()).willReturn(RelationType.ALUMNI);
-			given(dto.getAlumniRelation()).willReturn(AlumniRelation.ALUMNI);
-			given(dto.getAlumniName()).willReturn(null);
-
-			// when, then
-			assertThatThrownBy(() -> ceremonyService.createCeremony(user, dto, List.of()))
-				.isInstanceOf(BaseRunTimeV2Exception.class)
-				.hasMessageContaining(CeremonyErrorCode.ALUMNI_NAME_REQUIRED.getMessage())
-				.extracting("errorCode")
-				.isEqualTo(CeremonyErrorCode.ALUMNI_NAME_REQUIRED);
-
-			verify(ceremonyCreator, times(0)).save(any(Ceremony.class));
-		}
-
-		@DisplayName("관계=ALUMNI인데 AlumniAdmissionYear이 null이면 실패")
-		@Test
-		void givenRelationTypeIsAlumni_whenAlumniAdmissionYearIsNull_thenThrowsException() {
-			// given
-			given(dto.getRelationType()).willReturn(RelationType.ALUMNI);
-			given(dto.getAlumniRelation()).willReturn(AlumniRelation.ALUMNI);
-			given(dto.getAlumniName()).willReturn("동문이름");
-			given(dto.getAlumniAdmissionYear()).willReturn(null);
-
-			// when, then
-			assertThatThrownBy(() -> ceremonyService.createCeremony(user, dto, List.of()))
-				.isInstanceOf(BaseRunTimeV2Exception.class)
-				.hasMessageContaining(CeremonyErrorCode.ALUMNI_ADMISSION_YEAR_REQUIRED.getMessage())
-				.extracting("errorCode")
-				.isEqualTo(CeremonyErrorCode.ALUMNI_ADMISSION_YEAR_REQUIRED);
-
-			verify(ceremonyCreator, times(0)).save(any(Ceremony.class));
-		}
-
-		@DisplayName("EndTime 입력 시 EndDate가 null이면 실패")
-		@Test
-		void givenEndTime_whenEndDateIsNull_thenThrowsException() {
-			// given
-			given(dto.getRelationType()).willReturn(RelationType.ME);
-
-			given(dto.getEndDate()).willReturn(null);
-			given(dto.getEndTime()).willReturn(LocalTime.parse("23:59"));
-
-			// when, then
-			assertThatThrownBy(() -> ceremonyService.createCeremony(user, dto, List.of()))
-				.isInstanceOf(BaseRunTimeV2Exception.class)
-				.hasMessageContaining(CeremonyErrorCode.END_DATE_REQUIRED.getMessage())
-				.extracting("errorCode")
-				.isEqualTo(CeremonyErrorCode.END_DATE_REQUIRED);
-
-			verify(ceremonyCreator, times(0)).save(any(Ceremony.class));
-		}
-
-		@DisplayName("전체 알림 전송이 false인 경우, 대상 학번이 Null이면 실패")
-		@Test
-		void givenIsSetAllFalse_whenTargetAdmissionYearsIsNull_thenThrowsException() {
-			// given
-			given(dto.getRelationType()).willReturn(RelationType.ME);
-
-			given(dto.getIsSetAll()).willReturn(false);
-			given(dto.getTargetAdmissionYears()).willReturn(null);
+			doThrow(CeremonyErrorCode.FAMILY_RELATION_REQUIRED.toBaseException())
+				.when(ceremonyValidator).validateForCreate(dto);
 
 			// when & then
 			assertThatThrownBy(() -> ceremonyService.createCeremony(user, dto, null))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
-				.hasMessageContaining(CeremonyErrorCode.TARGET_ADMISSION_YEARS_REQUIRED.getMessage())
-				.extracting("errorCode")
-				.isEqualTo(CeremonyErrorCode.TARGET_ADMISSION_YEARS_REQUIRED);
-
-			verify(ceremonyCreator, times(0)).save(any(Ceremony.class));
+				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.FAMILY_RELATION_REQUIRED);
+			then(uuidFileService).should(never()).saveFileList(any(), any());
+			then(ceremonyCreateMapper).should(never()).fromRequest(any(), any(), any(), any());
+			then(ceremonyCreator).should(never()).save(any());
 		}
 
-		@DisplayName("전체 알림 전송이 false인 경우, 대상 학번이 Empty이면 실패")
+		@DisplayName("날짜 또는 시간 안 맞으면 Validator가 예외 반환")
 		@Test
-		void givenIsSetAllFalse_whenTargetAdmissionYearsIsEmpty_thenThrowsException() {
-			//given
-			given(dto.getRelationType()).willReturn(RelationType.ME);
-
-			given(dto.getIsSetAll()).willReturn(false);
-			given(dto.getTargetAdmissionYears()).willReturn(List.of());
-
-			// when, then
-			assertThatThrownBy(() -> ceremonyService.createCeremony(user, dto, List.of()))
-				.isInstanceOf(BaseRunTimeV2Exception.class)
-				.hasMessageContaining(CeremonyErrorCode.TARGET_ADMISSION_YEARS_REQUIRED.getMessage())
-				.extracting("errorCode")
-				.isEqualTo(CeremonyErrorCode.TARGET_ADMISSION_YEARS_REQUIRED);
-
-			verify(ceremonyCreator, times(0)).save(any(Ceremony.class));
-		}
-
-		@DisplayName("학번 형식이 올바른지 검증 (2자리 숫자)")
-		@Test
-		void givenAlumniAdmissionYear_whenInvalidFormat_thenThrowsException() {
+		void givenDateTimeValidatorFail_whenCreateCeremony_thenThrowsException() {
 			// given
-			given(dto.getRelationType()).willReturn(RelationType.ME);
+			doThrow(CeremonyErrorCode.START_TIME_REQUIRED.toBaseException())
+				.when(ceremonyValidator).validateForCreate(dto);
 
-			given(dto.getIsSetAll()).willReturn(false);
-			given(dto.getTargetAdmissionYears()).willReturn(List.of("123"));
-
-			// when, then
-			assertThatThrownBy(() -> ceremonyService.createCeremony(user, dto, List.of()))
+			// when & then
+			assertThatThrownBy(() -> ceremonyService.createCeremony(user, dto, null))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
-				.hasMessageContaining(CeremonyErrorCode.INVALID_ADMISSION_YEARS_FORMAT.getMessage())
-				.extracting("errorCode")
-				.isEqualTo(CeremonyErrorCode.INVALID_ADMISSION_YEARS_FORMAT);
+				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.START_TIME_REQUIRED);
+			then(uuidFileService).should(never()).saveFileList(any(), any());
+			then(ceremonyCreateMapper).should(never()).fromRequest(any(), any(), any(), any());
+			then(ceremonyCreator).should(never()).save(any());
+		}
 
-			verify(ceremonyCreator, times(0)).save(any(Ceremony.class));
+		@Test
+		@DisplayName("날짜 또는 시간 안 맞으면 Validator가 예외 반환")
+		void givenNotificationValidatorFail_whenCreateCeremony_thenThrowsException() {
+			// given
+			doThrow(CeremonyErrorCode.TARGET_ADMISSION_YEARS_REQUIRED.toBaseException())
+				.when(ceremonyValidator).validateForCreate(dto);
+
+			// when & then
+			assertThatThrownBy(() -> ceremonyService.createCeremony(user, dto, null))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.TARGET_ADMISSION_YEARS_REQUIRED);
+			then(uuidFileService).should(never()).saveFileList(any(), any());
+			then(ceremonyCreateMapper).should(never()).fromRequest(any(), any(), any(), any());
+			then(ceremonyCreator).should(never()).save(any());
 		}
 	}
 
