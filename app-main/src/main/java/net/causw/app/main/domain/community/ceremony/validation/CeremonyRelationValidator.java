@@ -18,7 +18,7 @@ public class CeremonyRelationValidator {
 					throw CeremonyErrorCode.FAMILY_RELATION_REQUIRED.toBaseException();
 				}
 			}
-			case ALUMNI -> {
+			case INSTEAD -> {
 				if (alumniRelation == null) {
 					throw CeremonyErrorCode.ALUMNI_RELATION_REQUIRED.toBaseException();
 				}

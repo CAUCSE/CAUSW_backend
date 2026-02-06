@@ -88,7 +88,7 @@ public interface CeremonyDtoMapper {
 					ceremony.getFamilyRelation().getLabel(),
 					mapCategory(ceremony));
 			}
-			case ALUMNI -> {
+			case INSTEAD -> {
 				if (ceremony.getAlumniRelation() == AlumniRelation.ALUMNI) {
 					return String.format("%s(%s학번) %s",
 						ceremony.getAlumniName(),
@@ -119,7 +119,7 @@ public interface CeremonyDtoMapper {
 					ceremony.getUser().getName(),
 					ceremony.getFamilyRelation().getLabel());
 			}
-			case ALUMNI -> {
+			case INSTEAD -> {
 				if (ceremony.getAlumniRelation() == AlumniRelation.ALUMNI) {
 					return ceremony.getAlumniName();
 				} else {
