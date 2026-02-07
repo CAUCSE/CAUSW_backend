@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import net.causw.app.main.domain.user.academic.api.v2.dto.request.AcademicReturnApplicationListRequest;
 import net.causw.app.main.domain.user.academic.api.v2.dto.response.AcademicReturnApplicationDetailResponse;
 import net.causw.app.main.domain.user.academic.api.v2.dto.response.AcademicReturnApplicationSummaryResponse;
+import net.causw.app.main.domain.user.academic.api.v2.mapper.AcademicReturnApplicationDetailMapper;
 import net.causw.app.main.domain.user.academic.api.v2.mapper.AcademicReturnApplicationListMapper;
 import net.causw.app.main.domain.user.academic.service.AcademicRecordAdminService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
@@ -26,6 +27,7 @@ public class AcademicRecordAdminController {
 
     private final AcademicRecordAdminService academicRecordAdminService;
     private final AcademicReturnApplicationListMapper applicationListMapper;
+    private final AcademicReturnApplicationDetailMapper applicationDetailMapper;
 
     /**
      * 학적 변경 신청 목록 조회 (검색/필터링)
@@ -44,13 +46,15 @@ public class AcademicRecordAdminController {
     /**
      * 학적 변경 신청 상세 조회
      */
-    @GetMapping("/{recordId}")
+    @GetMapping("/{applicationId}")
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<AcademicReturnApplicationDetailResponse> getApplicationDetail(
-            @PathVariable Long recordId
+            @PathVariable String applicationId
     ) {
         return ApiResponse.success(
-                academicRecordAdminService.getApplicationDetail(recordId)
+                applicationDetailMapper.toResponse(
+                        academicRecordAdminService.getApplicationDetail(applicationId)
+                )
         );
     }
 

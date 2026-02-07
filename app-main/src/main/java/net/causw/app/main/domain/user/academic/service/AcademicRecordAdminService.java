@@ -2,6 +2,7 @@ package net.causw.app.main.domain.user.academic.service;
 
 import lombok.RequiredArgsConstructor;
 import net.causw.app.main.domain.user.academic.service.dto.request.AcademicReturnApplicationListCondition;
+import net.causw.app.main.domain.user.academic.service.dto.response.AcademicReturnApplicationDetailResult;
 import net.causw.app.main.domain.user.academic.service.dto.response.AcademicReturnApplicationSummaryResult;
 import net.causw.app.main.domain.user.academic.service.implementation.AcademicRecordApplicationReader;
 import org.springframework.data.domain.Page;
@@ -18,5 +19,12 @@ public class AcademicRecordAdminService {
     public Page<AcademicReturnApplicationSummaryResult> getApplications(AcademicReturnApplicationListCondition condition) {
         return applicationReader.findReturnApplications(condition)
                 .map(AcademicReturnApplicationSummaryResult::from);
+    }
+
+    @Transactional(readOnly = true)
+    public AcademicReturnApplicationDetailResult getApplicationDetail(String applicationId) {
+        return AcademicReturnApplicationDetailResult.from(
+                applicationReader.findById(applicationId)
+        );
     }
 }
