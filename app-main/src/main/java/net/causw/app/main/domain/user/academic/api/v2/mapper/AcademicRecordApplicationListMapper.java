@@ -1,11 +1,12 @@
 package net.causw.app.main.domain.user.academic.api.v2.mapper;
 
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+
 import net.causw.app.main.domain.user.academic.api.v2.dto.request.AcademicRecordApplicationListRequest;
 import net.causw.app.main.domain.user.academic.api.v2.dto.response.AcademicRecordApplicationSummaryResponse;
 import net.causw.app.main.domain.user.academic.service.dto.request.AcademicRecordApplicationListCondition;
 import net.causw.app.main.domain.user.academic.service.dto.response.AcademicRecordApplicationSummaryResult;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface AcademicRecordApplicationListMapper {

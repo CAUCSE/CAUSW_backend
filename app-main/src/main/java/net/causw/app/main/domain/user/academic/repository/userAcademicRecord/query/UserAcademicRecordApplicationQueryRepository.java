@@ -1,20 +1,23 @@
 package net.causw.app.main.domain.user.academic.repository.userAcademicRecord.query;
 
-import com.querydsl.core.BooleanBuilder;
-import com.querydsl.jpa.impl.JPAQueryFactory;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Repository;
+
 import net.causw.app.main.domain.user.academic.entity.userAcademicRecord.QUserAcademicRecordApplication;
 import net.causw.app.main.domain.user.academic.entity.userAcademicRecord.UserAcademicRecordApplication;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicRecordRequestStatus;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.QUser;
 import net.causw.app.main.domain.user.account.enums.user.Department;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+
+import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
@@ -30,8 +33,7 @@ public class UserAcademicRecordApplicationQueryRepository {
 		AcademicRecordRequestStatus requestStatus,
 		Department department,
 		String keyword,
-		Pageable pageable
-	) {
+		Pageable pageable) {
 		QUserAcademicRecordApplication application = QUserAcademicRecordApplication.userAcademicRecordApplication;
 		QUser user = QUser.user;
 
@@ -55,8 +57,7 @@ public class UserAcademicRecordApplicationQueryRepository {
 		if (keyword != null && !keyword.isBlank()) {
 			predicate.and(
 				user.name.containsIgnoreCase(keyword)
-					.or(user.studentId.containsIgnoreCase(keyword))
-			);
+					.or(user.studentId.containsIgnoreCase(keyword)));
 		}
 
 		// 데이터 조회

@@ -4,10 +4,9 @@ import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.Academic
 import net.causw.app.main.domain.user.account.enums.user.Department;
 
 public record AcademicRecordApplicationListCondition(
-        AcademicRecordRequestStatus requestStatus,
-        Department department,
-        String keyword,
-        int page,
-        int size
-) {
+	AcademicRecordRequestStatus requestStatus,
+	Department department,
+	String keyword,
+	int page,
+	int size) {
 }
