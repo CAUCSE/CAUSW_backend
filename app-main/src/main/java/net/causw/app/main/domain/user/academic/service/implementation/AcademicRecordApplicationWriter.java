@@ -19,16 +19,15 @@ public class AcademicRecordApplicationWriter {
     /**
      * 학적 변경 신청을 승인한다.
      * - Application 상태를 AWAIT → ACCEPT로 변경
-     * - 대상 사용자의 학적 상태 및 학기 정보를 반영
+     * - 대상 사용자의 학적 상태를 반영
      */
     public void approve(UserAcademicRecordApplication application) {
         validateAwaitStatus(application);
 
         User targetUser = application.getUser();
 
-        // 대상 사용자의 학적 상태 및 학기 정보 변경
+        // 대상 사용자의 학적 상태 변경
         targetUser.setAcademicStatus(application.getTargetAcademicStatus());
-        targetUser.setCurrentCompletedSemester(application.getTargetCompletedSemester());
         userRepository.save(targetUser);
 
         // 신청서 상태 변경

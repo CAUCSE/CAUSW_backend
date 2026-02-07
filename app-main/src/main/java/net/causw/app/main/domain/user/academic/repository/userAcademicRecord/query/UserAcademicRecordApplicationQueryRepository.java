@@ -26,7 +26,7 @@ public class UserAcademicRecordApplicationQueryRepository {
 	 * 졸업 -> 재학 복학 신청 목록 조회 (필터링 및 검색 지원)
 	 * - 현재 학적상태가 졸업(GRADUATED)인 사용자가 재학(ENROLLED)으로 변경 신청한 건만 조회
 	 */
-	public Page<UserAcademicRecordApplication> searchReturnApplications(
+	public Page<UserAcademicRecordApplication> searchApplications(
 		AcademicRecordRequestStatus requestStatus,
 		Department department,
 		String keyword,

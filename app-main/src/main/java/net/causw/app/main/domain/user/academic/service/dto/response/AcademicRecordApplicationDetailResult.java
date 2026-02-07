@@ -6,8 +6,9 @@ import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.Academic
 import net.causw.app.main.domain.user.account.enums.user.Department;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
-public record AcademicReturnApplicationSummaryResult(
+public record AcademicRecordApplicationDetailResult(
 		String applicationId,
 		String userId,
 		String userName,
@@ -15,11 +16,21 @@ public record AcademicReturnApplicationSummaryResult(
 		Department department,
 		AcademicStatus currentAcademicStatus,
 		AcademicStatus targetAcademicStatus,
+		Integer targetCompletedSemester,
 		AcademicRecordRequestStatus requestStatus,
-		LocalDateTime createdAt
+		String note,
+		String rejectMessage,
+		List<String> attachImageUrls,
+		LocalDateTime createdAt,
+		LocalDateTime updatedAt
 ) {
-	public static AcademicReturnApplicationSummaryResult from(UserAcademicRecordApplication application) {
-		return new AcademicReturnApplicationSummaryResult(
+	public static AcademicRecordApplicationDetailResult from(UserAcademicRecordApplication application) {
+		List<String> imageUrls = application.getUserAcademicRecordAttachImageList()
+				.stream()
+				.map(attachImage -> attachImage.getUuidFile().getFileUrl())
+				.toList();
+
+		return new AcademicRecordApplicationDetailResult(
 				application.getId(),
 				application.getUser().getId(),
 				application.getUser().getName(),
@@ -27,8 +38,13 @@ public record AcademicReturnApplicationSummaryResult(
 				application.getUser().getDepartment(),
 				application.getUser().getAcademicStatus(),
 				application.getTargetAcademicStatus(),
+				application.getTargetCompletedSemester(),
 				application.getAcademicRecordRequestStatus(),
-				application.getCreatedAt()
+				application.getNote(),
+				application.getRejectMessage(),
+				imageUrls,
+				application.getCreatedAt(),
+				application.getUpdatedAt()
 		);
 	}
 }

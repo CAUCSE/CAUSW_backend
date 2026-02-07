@@ -23,9 +23,9 @@ import org.springframework.data.domain.PageRequest;
 
 import net.causw.app.main.domain.user.academic.entity.userAcademicRecord.UserAcademicRecordApplication;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicRecordRequestStatus;
-import net.causw.app.main.domain.user.academic.service.dto.request.AcademicReturnApplicationListCondition;
-import net.causw.app.main.domain.user.academic.service.dto.response.AcademicReturnApplicationDetailResult;
-import net.causw.app.main.domain.user.academic.service.dto.response.AcademicReturnApplicationSummaryResult;
+import net.causw.app.main.domain.user.academic.service.dto.request.AcademicRecordApplicationListCondition;
+import net.causw.app.main.domain.user.academic.service.dto.response.AcademicRecordApplicationDetailResult;
+import net.causw.app.main.domain.user.academic.service.dto.response.AcademicRecordApplicationSummaryResult;
 import net.causw.app.main.domain.user.academic.service.implementation.AcademicRecordApplicationReader;
 import net.causw.app.main.domain.user.academic.service.implementation.AcademicRecordApplicationWriter;
 import net.causw.app.main.domain.user.academic.service.implementation.AcademicRecordLogCreator;
@@ -54,8 +54,8 @@ class AcademicRecordAdminServiceTest {
         @DisplayName("학적 변경 신청 목록을 조회한다")
         void getApplications_success() {
             // given
-            AcademicReturnApplicationListCondition condition =
-                    new AcademicReturnApplicationListCondition(
+            AcademicRecordApplicationListCondition condition =
+                    new AcademicRecordApplicationListCondition(
                             AcademicRecordRequestStatus.AWAIT,
                             null,
                             null,
@@ -81,15 +81,15 @@ class AcademicRecordAdminServiceTest {
                             1
                     );
 
-            when(applicationReader.findReturnApplications(condition))
+            when(applicationReader.findApplications(condition))
                     .thenReturn(mockPage);
 
             // when
-            Page<AcademicReturnApplicationSummaryResult> result =
+            Page<AcademicRecordApplicationSummaryResult> result =
                     academicRecordAdminService.getApplications(condition);
 
             // then
-            verify(applicationReader).findReturnApplications(condition);
+            verify(applicationReader).findApplications(condition);
             assert result.getTotalElements() == 1;
         }
 
@@ -113,7 +113,7 @@ class AcademicRecordAdminServiceTest {
                     .thenReturn(application);
 
             // when
-            AcademicReturnApplicationDetailResult result =
+            AcademicRecordApplicationDetailResult result =
                     academicRecordAdminService.getApplicationDetail(applicationId);
 
             // then
