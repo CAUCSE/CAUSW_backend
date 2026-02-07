@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.community.post.service.v2;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -41,7 +42,12 @@ public class PostService {
 
 		PostValidator.validateCreate(writer, board, boardConfig, boardAdminIds);
 
-		List<UuidFile> images = fileWriter.uploadAndSaveList(command.images(), FilePath.POST);
+		List<UuidFile> images;
+		if (command.images() != null && !command.images().isEmpty()) {
+			images = fileWriter.uploadAndSaveList(command.images(), FilePath.POST);
+		} else {
+			images = new ArrayList<>();
+		}
 		Post post = PostMapper.fromCreateCommand(command, writer, board, images);
 
 		Post savedPost = postWriter.save(post);
