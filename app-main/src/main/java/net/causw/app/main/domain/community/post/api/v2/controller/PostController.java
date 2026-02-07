@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+
 import net.causw.app.main.domain.community.post.api.v2.dto.request.PostCreateRequest;
 import net.causw.app.main.domain.community.post.api.v2.dto.response.PostCreateResponse;
 import net.causw.app.main.domain.community.post.api.v2.mapper.PostDtoMapper;
@@ -18,9 +21,6 @@ import net.causw.app.main.domain.community.post.service.v2.PostService;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostCreateResult;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
-
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor

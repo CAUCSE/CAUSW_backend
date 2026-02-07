@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import lombok.RequiredArgsConstructor;
+
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.asset.file.service.v2.implementation.FileWriter;
@@ -19,8 +21,6 @@ import net.causw.app.main.domain.community.post.service.v2.implementation.PostWr
 import net.causw.app.main.domain.community.post.service.v2.util.PostMapper;
 import net.causw.app.main.domain.community.post.service.v2.util.PostValidator;
 import net.causw.app.main.domain.user.account.entity.user.User;
-
-import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +45,6 @@ public class PostService {
 		Post post = PostMapper.fromCreateCommand(command, writer, board, images);
 
 		Post savedPost = postWriter.save(post);
-		return PostMapper.toCreateResult(post, images.stream().map(UuidFile::getFileUrl).toList());
+		return PostMapper.toCreateResult(savedPost, images.stream().map(UuidFile::getFileUrl).toList());
 	}
 }
