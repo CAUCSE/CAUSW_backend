@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -40,4 +42,13 @@ public class PostController {
 			.create(postDtoMapper.toCommand(postCreateRequest, userDetails.getUser(), images));
 		return ApiResponse.success(postDtoMapper.toResponse(result));
 	}
+
+	@DeleteMapping("/{postId}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public ApiResponse<Void> delete(
+		@PathVariable String postId,
+		@AuthenticationPrincipal CustomUserDetails userDetails{
+			postService.deletePost(userDetails.getUser(), postId);
+	}
+	)
 }

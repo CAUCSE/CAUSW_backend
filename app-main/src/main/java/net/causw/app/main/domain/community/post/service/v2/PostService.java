@@ -18,6 +18,7 @@ import net.causw.app.main.domain.community.board.service.implementation.BoardRea
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostCreateCommand;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostCreateResult;
+import net.causw.app.main.domain.community.post.service.v2.implementation.PostReader;
 import net.causw.app.main.domain.community.post.service.v2.implementation.PostWriter;
 import net.causw.app.main.domain.community.post.service.v2.util.PostMapper;
 import net.causw.app.main.domain.community.post.service.v2.util.PostValidator;
@@ -27,6 +28,7 @@ import net.causw.app.main.domain.user.account.entity.user.User;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class PostService {
+	private final PostReader postReader;
 	private final PostWriter postWriter;
 	private final BoardReader boardReader;
 	private final FileWriter fileWriter;
@@ -52,5 +54,14 @@ public class PostService {
 
 		Post savedPost = postWriter.save(post);
 		return PostMapper.toCreateResult(savedPost, images.stream().map(UuidFile::getFileUrl).toList());
+	}
+
+	@Transactional
+	public void deletePost(User deleter, String postId) {
+		Post post = postReader.findById(postId);
+		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
+		PostValidator.validateDelete(deleter, post, boardAdminIds);
+		// 소프트 삭제 처리
+		post.setIsDeleted(true);
 	}
 }
