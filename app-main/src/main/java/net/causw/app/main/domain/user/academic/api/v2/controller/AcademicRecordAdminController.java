@@ -3,6 +3,7 @@ package net.causw.app.main.domain.user.academic.api.v2.controller;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import net.causw.app.main.domain.user.academic.api.v2.dto.request.AcademicReturnApplicationRejectRequest;
 import net.causw.app.main.domain.user.academic.api.v2.dto.request.AcademicReturnApplicationListRequest;
 import net.causw.app.main.domain.user.academic.api.v2.dto.response.AcademicReturnApplicationDetailResponse;
 import net.causw.app.main.domain.user.academic.api.v2.dto.response.AcademicReturnApplicationSummaryResponse;
@@ -61,15 +62,15 @@ public class AcademicRecordAdminController {
     /**
      * 학적 변경 신청 승인
      */
-    @PostMapping("/{recordId}/approve")
+    @PostMapping("/{applicationId}/approve")
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<Void> approveApplication(
             @AuthenticationPrincipal CustomUserDetails adminDetails,
-            @PathVariable Long recordId
+            @PathVariable String applicationId
     ) {
         academicRecordAdminService.approve(
                 adminDetails.getUser(),
-                recordId
+                applicationId
         );
         return ApiResponse.success();
     }
@@ -77,16 +78,16 @@ public class AcademicRecordAdminController {
     /**
      * 학적 변경 신청 반려
      */
-    @PostMapping("/{recordId}/reject")
+    @PostMapping("/{applicationId}/reject")
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<Void> rejectApplication(
             @AuthenticationPrincipal CustomUserDetails adminDetails,
-            @PathVariable Long recordId,
-            @RequestBody @Valid AcademicRecordRejectRequestDto requestDto
+            @PathVariable String applicationId,
+            @RequestBody @Valid AcademicReturnApplicationRejectRequest requestDto
     ) {
         academicRecordAdminService.reject(
                 adminDetails.getUser(),
-                recordId,
+                applicationId,
                 requestDto.reason()
         );
         return ApiResponse.success();
