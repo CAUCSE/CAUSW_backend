@@ -11,7 +11,7 @@ import net.causw.app.main.shared.exception.errorcode.CeremonyErrorCode;
 public class CeremonyDateTimeValidator {
 
 	// 날짜, 시간 입력 값 검증 (startDate 입력은 Dto에서 NotNull로 검증)
-	public void validateDateTime(LocalDate endDate, LocalTime startTime, LocalTime endTime) {
+	public void validateDateTime(LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime) {
 		boolean hasStartTime = startTime != null;
 		boolean hasEndTime = endTime != null;
 
@@ -24,6 +24,10 @@ public class CeremonyDateTimeValidator {
 		}
 
 		if (hasEndTime && !hasStartTime) {
+			throw CeremonyErrorCode.START_TIME_REQUIRED.toBaseException();
+		}
+
+		if (endDate.isEqual(startDate) && startTime == null) {
 			throw CeremonyErrorCode.START_TIME_REQUIRED.toBaseException();
 		}
 	}
@@ -40,6 +44,11 @@ public class CeremonyDateTimeValidator {
 
 		if (startTime == null || endTime == null) {
 			return;
+		}
+
+		if ((endDate.isBefore(LocalDate.now()) || endDate.isBefore(LocalDate.now())
+			|| (endDate.isEqual(LocalDate.now()) && endTime.isBefore(LocalTime.now())))) {
+			throw CeremonyErrorCode.DATETIME_BEFORE_TODAY.toBaseException();
 		}
 
 		if (startDate.isEqual(endDate) && endTime.isBefore(startTime)) {

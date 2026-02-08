@@ -19,7 +19,7 @@ public class CeremonyValidator {
 		ceremonyRelationValidator.validateRelation(dto.getRelationType(), dto.getFamilyRelation(),
 			dto.getAlumniRelation(), dto.getAlumniName(), dto.getAlumniAdmissionYear());
 
-		ceremonyDateTimeValidator.validateDateTime(dto.getEndDate(), dto.getStartTime(), dto.getEndTime());
+		ceremonyDateTimeValidator.validateDateTime(dto.getStartDate(), dto.getEndDate(), dto.getStartTime(), dto.getEndTime());
 		ceremonyDateTimeValidator.validateDateTimeRange(dto.getStartDate(), dto.getEndDate(), dto.getStartTime(),
 			dto.getEndTime());
 
