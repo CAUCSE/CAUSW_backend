@@ -1,10 +1,10 @@
 package net.causw.app.main.domain.user.account.api.v2.controller;
 
-import net.causw.app.main.domain.user.account.api.v2.dto.request.UserFcmTokenRequest;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import net.causw.app.main.domain.user.account.api.v1.dto.UserFcmTokenResponseDto;
+import net.causw.app.main.domain.user.account.api.v2.dto.request.UserFcmTokenRequest;
 import net.causw.app.main.domain.user.account.service.UserNotificationService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;

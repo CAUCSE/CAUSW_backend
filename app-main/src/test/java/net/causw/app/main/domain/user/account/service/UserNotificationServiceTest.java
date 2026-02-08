@@ -5,8 +5,6 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
-import net.causw.app.main.domain.user.account.service.implementation.UserPushTokenWriter;
-import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -18,7 +16,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import net.causw.app.main.domain.user.account.api.v1.dto.UserFcmTokenResponseDto;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.service.implementation.UserPushTokenWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
+import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 
@@ -90,7 +90,7 @@ public class UserNotificationServiceTest {
 			// given
 			String expiredToken = "expired_token";
 			doThrow(AuthErrorCode.INVALID_REFRESH_TOKEN.toBaseException())
-					.when(userValidator).validateRefreshToken(userId, expiredToken);
+				.when(userValidator).validateRefreshToken(userId, expiredToken);
 
 			// when & then
 			assertThatThrownBy(() -> userNotificationService.createFcmToken(userId, fcmToken, expiredToken))
