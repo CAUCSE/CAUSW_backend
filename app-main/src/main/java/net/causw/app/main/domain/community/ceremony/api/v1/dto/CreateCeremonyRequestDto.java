@@ -5,8 +5,6 @@ import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
-import net.causw.app.main.domain.community.ceremony.enums.CeremonyCategory;
-
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
@@ -29,9 +27,9 @@ public class CreateCeremonyRequestDto {
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	private LocalDate endDate;
 
-	@Schema(description = "행사 카테고리", requiredMode = Schema.RequiredMode.REQUIRED, example = "MARRIAGE")
+	@Schema(description = "행사 카테고리", requiredMode = Schema.RequiredMode.REQUIRED, example = "결혼식")
 	@NotNull(message = "카테고리는 필수 입력 값입니다.")
-	private CeremonyCategory category;
+	private String category;
 
 	@Schema(description = "모든 학번에게 알림 전송 여부", requiredMode = Schema.RequiredMode.REQUIRED, example = "true")
 	@NotNull(message = "전체 알림 전송 여부는 필수 입력 값입니다.")

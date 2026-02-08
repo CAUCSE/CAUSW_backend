@@ -6,10 +6,7 @@ import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
-import net.causw.app.main.domain.community.ceremony.enums.AlumniRelation;
-import net.causw.app.main.domain.community.ceremony.enums.CeremonyCategory;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyType;
-import net.causw.app.main.domain.community.ceremony.enums.FamilyRelation;
 import net.causw.app.main.domain.community.ceremony.enums.RelationType;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -25,12 +22,9 @@ public class CreateCeremonyRequestDto {
 	@NotNull(message = "분류는 필수 입력 값입니다.")
 	private CeremonyType ceremonyType;
 
-	@Schema(description = "경조사 상세 분류 (enum)", requiredMode = Schema.RequiredMode.REQUIRED, example = "MARRIAGE")
+	@Schema(description = "경조사 상세 분류", requiredMode = Schema.RequiredMode.REQUIRED, example = "결혼식")
 	@NotNull(message = "상세 분류는 필수 입력 값입니다.")
-	private CeremonyCategory ceremonyCategory;
-
-	@Schema(description = "경조사 상세 분류 (직접 입력)", example = "백일 잔치")
-	private String ceremonyCustomCategory;
+	private String ceremonyCategory;
 
 	@Schema(description = "경조사 시작 날짜", requiredMode = Schema.RequiredMode.REQUIRED, example = "2026-01-01")
 	@NotNull(message = "시작 날짜는 필수 입력 값입니다.")
@@ -53,11 +47,11 @@ public class CreateCeremonyRequestDto {
 	@NotNull(message = "관계는 필수 입력 값입니다.")
 	private RelationType relationType;
 
-	@Schema(description = "경조사 신청자-대상자 가족 관계", example = "SON")
-	private FamilyRelation familyRelation;
+	@Schema(description = "경조사 신청자-대상자 가족 관계", example = "아들")
+	private String familyRelation;
 
-	@Schema(description = "경조사 신청자 동문-대상자 관계", example = "SPOUSE")
-	private AlumniRelation alumniRelation;
+	@Schema(description = "경조사 신청자 동문-대상자 관계", example = "아들")
+	private String alumniRelation;
 
 	@Schema(description = "경조사 신청자의 동문 이름", example = "김철수")
 	private String alumniName;

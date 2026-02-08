@@ -3,7 +3,6 @@ package net.causw.app.main.domain.community.ceremony.api.v1.dto;
 import java.time.LocalDate;
 import java.util.List;
 
-import net.causw.app.main.domain.community.ceremony.enums.CeremonyCategory;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyState;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -28,8 +27,8 @@ public class CeremonyResponseDto {
 	@Schema(description = "행사 종료 날짜", example = "2025-05-02")
 	private LocalDate endDate;
 
-	@Schema(description = "행사 카테고리", example = "GRADUATION")
-	private CeremonyCategory category;
+	@Schema(description = "행사 카테고리", example = "졸업식")
+	private String category;
 
 	@Schema(description = "신청한 경조사 상태", example = "AWAIT")
 	private CeremonyState ceremonyState;

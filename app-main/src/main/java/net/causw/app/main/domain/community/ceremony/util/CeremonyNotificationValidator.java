@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.community.ceremony.validation;
+package net.causw.app.main.domain.community.ceremony.util;
 
 import java.util.List;
 

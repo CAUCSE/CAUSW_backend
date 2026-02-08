@@ -21,7 +21,6 @@ public class CeremonyCreateMapper {
 			user,
 			dto.getCeremonyType(),
 			dto.getCeremonyCategory(),
-			dto.getCeremonyCustomCategory(),
 			dto.getStartDate(),
 			dto.getEndDate(),
 			dto.getStartTime(),

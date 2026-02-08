@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.community.ceremony.validation;
+package net.causw.app.main.domain.community.ceremony.util;
 
 import org.springframework.stereotype.Component;
 
@@ -10,14 +10,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CeremonyValidator {
 
-	private final CeremonyCategoryValidator ceremonyCategoryValidator;
 	private final CeremonyRelationValidator ceremonyRelationValidator;
 	private final CeremonyDateTimeValidator ceremonyDateTimeValidator;
 	private final CeremonyNotificationValidator ceremonyNotificationValidator;
 
 	public void validateForCreate(CreateCeremonyRequestDto dto) {
-
-		ceremonyCategoryValidator.validateCustomCategory(dto.getCeremonyCategory(), dto.getCeremonyCustomCategory());
 
 		ceremonyRelationValidator.validateRelation(dto.getRelationType(), dto.getFamilyRelation(),
 			dto.getAlumniRelation(), dto.getAlumniName(), dto.getAlumniAdmissionYear());

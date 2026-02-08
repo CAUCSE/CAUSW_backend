@@ -18,7 +18,7 @@ public class CeremonyNotificationDto {
 			.title(String.format("%s(%s) - %s",
 				ceremony.getUser().getName(),
 				ceremony.getUser().getAdmissionYear().toString(),
-				ceremony.getCeremonyCategory().getLabel()))
+				ceremony.getCeremonyCategory()))
 			.body(String.format("기간 : %s ~ %s",
 				ceremony.getStartDate().toString(),
 				ceremony.getEndDate().toString()))

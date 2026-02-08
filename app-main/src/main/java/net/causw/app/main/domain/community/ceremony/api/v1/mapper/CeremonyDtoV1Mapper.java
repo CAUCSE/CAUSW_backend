@@ -58,7 +58,7 @@ public interface CeremonyDtoV1Mapper {
 		return String.format("%s(%s) - %s",
 			ceremony.getUser().getName(),
 			ceremony.getUser().getAdmissionYear().toString(),
-			ceremony.getCeremonyCategory().getLabel());
+			ceremony.getCeremonyCategory());
 	}
 
 	@Mapping(target = "isNotificationActive", source = "notificationActive")
