@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import net.causw.app.main.core.global.annotation.V1Api;
 import net.causw.app.main.domain.notification.notification.api.v1.dto.NotificationCountResponseDto;
 import net.causw.app.main.domain.notification.notification.api.v1.dto.NotificationResponseDto;
-import net.causw.app.main.domain.notification.notification.service.v1.NotificationLogService;
+import net.causw.app.main.domain.notification.notification.service.v1.NotificationLogV1Service;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,8 +26,8 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/notifications/log")
-public class NotificationLogController {
-	private final NotificationLogService notificationLogService;
+public class NotificationLogV1Controller {
+	private final NotificationLogV1Service notificationLogV1Service;
 
 	@GetMapping("/general")
 	@ResponseStatus(HttpStatus.OK)
@@ -35,7 +35,7 @@ public class NotificationLogController {
 	public Page<NotificationResponseDto> getGeneralNotification(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum) {
-		return notificationLogService.getGeneralNotification(userDetails.getUser(), pageNum);
+		return notificationLogV1Service.getGeneralNotification(userDetails.getUser(), pageNum);
 	}
 
 	@GetMapping("/ceremony")
@@ -44,7 +44,7 @@ public class NotificationLogController {
 	public Page<NotificationResponseDto> getCeremonyNotification(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum) {
-		return notificationLogService.getCeremonyNotification(userDetails.getUser(), pageNum);
+		return notificationLogV1Service.getCeremonyNotification(userDetails.getUser(), pageNum);
 	}
 
 	@GetMapping("/general/top4")
@@ -53,7 +53,7 @@ public class NotificationLogController {
 		"해당 api는 웹상의 사이드 바 형태의 읽지 않은 알람 4개를 표시할 때 사용됩니다.")
 	public List<NotificationResponseDto> getGeneralNotificationTop4(
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		return notificationLogService.getGeneralNotificationTop4(userDetails.getUser());
+		return notificationLogV1Service.getGeneralNotificationTop4(userDetails.getUser());
 	}
 
 	@GetMapping("/ceremony/top4")
@@ -62,7 +62,7 @@ public class NotificationLogController {
 		"해당 api는 웹상의 사이드 바 형태의 읽지 않은 알람 4개를 표시할 때 사용됩니다.")
 	public List<NotificationResponseDto> getCeremonyNotificationTop4(
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		return notificationLogService.getCeremonyNotificationTop4(userDetails.getUser());
+		return notificationLogV1Service.getCeremonyNotificationTop4(userDetails.getUser());
 	}
 
 	@PostMapping("/isRead/{id}")
@@ -72,7 +72,7 @@ public class NotificationLogController {
 	public void readNotification(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable("id") String id) {
-		notificationLogService.readNotification(userDetails.getUser(), id);
+		notificationLogV1Service.readNotification(userDetails.getUser(), id);
 	}
 
 	@GetMapping("/count")
@@ -81,7 +81,7 @@ public class NotificationLogController {
 		"UI 상에서 10개 이상은 9+로 표기되기 때문에 10개까지 카운팅 되도록 하였습니다.")
 	public NotificationCountResponseDto getNotificationLogCount(
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		return notificationLogService.getNotificationLogCount(userDetails.getUser());
+		return notificationLogV1Service.getNotificationLogCount(userDetails.getUser());
 	}
 
 }

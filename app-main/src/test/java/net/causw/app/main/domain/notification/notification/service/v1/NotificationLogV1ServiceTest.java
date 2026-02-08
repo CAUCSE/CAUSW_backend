@@ -35,9 +35,9 @@ import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
 
 @ExtendWith(MockitoExtension.class)
-public class NotificationLogServiceTest {
+public class NotificationLogV1ServiceTest {
 	@InjectMocks
-	private NotificationLogService notificationLogService;
+	private NotificationLogV1Service notificationLogV1Service;
 
 	@Mock
 	private NotificationLogRepository notificationLogRepository;
@@ -78,7 +78,7 @@ public class NotificationLogServiceTest {
 			given(notificationLogRepository.findByUserAndNotificationTypes(mockUser, types, pageable))
 				.willReturn(mockNotificationLogs);
 
-			Page<NotificationResponseDto> result = notificationLogService.getCeremonyNotification(mockUser, 0);
+			Page<NotificationResponseDto> result = notificationLogV1Service.getCeremonyNotification(mockUser, 0);
 
 			assertThat(result).isNotNull();
 			assertThat(result).hasSize(1);
@@ -96,7 +96,7 @@ public class NotificationLogServiceTest {
 			given(notificationLogRepository.findByUserAndNotificationTypes(mockUser, types, pageable))
 				.willReturn(Page.empty(pageable));
 
-			Page<NotificationResponseDto> result = notificationLogService.getCeremonyNotification(mockUser, 0);
+			Page<NotificationResponseDto> result = notificationLogV1Service.getCeremonyNotification(mockUser, 0);
 
 			assertThat(result).isNotNull();
 			assertThat(result).isEmpty();
@@ -134,7 +134,7 @@ public class NotificationLogServiceTest {
 			given(notificationLogRepository.findByUserAndNotificationTypes(mockUser, types, pageable))
 				.willReturn(mockNotificationLogs);
 
-			Page<NotificationResponseDto> result = notificationLogService.getGeneralNotification(mockUser, 0);
+			Page<NotificationResponseDto> result = notificationLogV1Service.getGeneralNotification(mockUser, 0);
 
 			assertThat(result).isNotNull();
 			assertThat(result).hasSize(3);
@@ -152,7 +152,7 @@ public class NotificationLogServiceTest {
 			given(notificationLogRepository.findByUserAndNotificationTypes(mockUser, types, pageable))
 				.willReturn(Page.empty(pageable));
 
-			Page<NotificationResponseDto> result = notificationLogService.getGeneralNotification(mockUser, 0);
+			Page<NotificationResponseDto> result = notificationLogV1Service.getGeneralNotification(mockUser, 0);
 
 			assertThat(result).isNotNull();
 			assertThat(result).isEmpty();
@@ -186,7 +186,7 @@ public class NotificationLogServiceTest {
 			given(notificationLogRepository.findByIdAndUser(notificationLogId, mockUser))
 				.willReturn(java.util.Optional.of(unreadLog));
 
-			notificationLogService.readNotification(mockUser, notificationLogId);
+			notificationLogV1Service.readNotification(mockUser, notificationLogId);
 
 			assertThat(unreadLog.getIsRead()).isTrue();
 			verify(notificationLogRepository).findByIdAndUser(notificationLogId, mockUser);
@@ -199,7 +199,7 @@ public class NotificationLogServiceTest {
 				.willReturn(java.util.Optional.empty());
 
 			org.assertj.core.api.Assertions
-				.assertThatThrownBy(() -> notificationLogService.readNotification(mockUser, "non-existent-id"))
+				.assertThatThrownBy(() -> notificationLogV1Service.readNotification(mockUser, "non-existent-id"))
 				.isInstanceOf(BadRequestException.class)
 				.hasMessageContaining(MessageUtil.NOTIFICATION_LOG_NOT_FOUND);
 
