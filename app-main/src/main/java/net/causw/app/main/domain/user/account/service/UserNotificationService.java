@@ -25,23 +25,23 @@ public class UserNotificationService {
 	private final FcmUtils fcmUtils;
 
 	@Transactional
-	public UserFcmTokenResponseDto getFcmTokenByUser(User user) {
-		User validatedUser = userReader.getUserById(user.getId());
+	public UserFcmTokenResponseDto findFcmTokenByUser(String userId) {
+		User validatedUser = userReader.findUserById(userId);
 		fcmUtils.cleanInvalidFcmTokens(validatedUser);
 		return UserDtoMapper.INSTANCE.toUserFcmTokenResponseDto(validatedUser);
 	}
 
 	@Transactional
-	public UserFcmTokenResponseDto registerFcmToken(User user, String fcmToken, String refreshToken) {
-		User validatedUser = userReader.getUserById(user.getId());
+	public UserFcmTokenResponseDto createFcmToken(String userId, String fcmToken, String refreshToken) {
 		String userIdFromRedis = Optional.ofNullable(redisUtils.getRefreshTokenData(refreshToken))
 			.orElseThrow(AuthErrorCode.INVALID_REFRESH_TOKEN::toBaseException);
 
 		// 1. 유효한 refreshToken인지 검증
-		if (!validatedUser.getId().equals(userIdFromRedis)) {
+		if(!userId.equals(userIdFromRedis)) {
 			throw AuthErrorCode.INVALID_REFRESH_TOKEN.toBaseException();
 		}
 		// 2. fcmToken 최신화
+		User validatedUser = userReader.findUserById(userId);
 		fcmUtils.cleanInvalidFcmTokens(validatedUser);
 		// 3. fcmToken 추가
 		fcmUtils.addFcmToken(validatedUser, refreshToken, fcmToken);

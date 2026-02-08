@@ -1,10 +1,10 @@
 package net.causw.app.main.domain.user.account.api.v2.controller;
 
+import net.causw.app.main.domain.user.account.api.v2.dto.request.UserFcmTokenRequest;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import net.causw.app.main.domain.user.account.api.v1.dto.UserFcmTokenResponseDto;
-import net.causw.app.main.domain.user.account.api.v2.dto.request.UserFcmToken;
 import net.causw.app.main.domain.user.account.service.UserNotificationService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
@@ -25,21 +25,21 @@ public class UserController {
 
 	@PostMapping("/fcm")
 	@Operation(summary = "fcm 토큰 등록 API", description = "유저와 fcm 토큰을 매핑한다.")
-	public ApiResponse<UserFcmTokenResponseDto> registerFcm(
+	public ApiResponse<UserFcmTokenResponseDto> createFcmToken(
 		@CookieValue(name = "refresh_token", required = false) String refreshToken,
 		@AuthenticationPrincipal CustomUserDetails userDetails,
-		@Valid @RequestBody() UserFcmToken body) {
+		@Valid @RequestBody() UserFcmTokenRequest body) {
 		if (refreshToken == null) {
 			throw AuthErrorCode.REFRESH_TOKEN_MISSING.toBaseException();
 		}
 		return ApiResponse
-			.success(userNotificationService.registerFcmToken(userDetails.getUser(), body.fcmToken(), refreshToken));
+			.success(userNotificationService.createFcmToken(userDetails.getUserId(), body.fcmToken(), refreshToken));
 	}
 
 	@GetMapping("/fcm")
 	@Operation(summary = "fcm 토큰 조회 API", description = "유저에게 등록된 fcm 토큰을 조회한다.")
-	public ApiResponse<UserFcmTokenResponseDto> getFcm(@AuthenticationPrincipal CustomUserDetails userDetails) {
-		return ApiResponse.success(userNotificationService.getFcmTokenByUser(userDetails.getUser()));
+	public ApiResponse<UserFcmTokenResponseDto> findFcmToken(@AuthenticationPrincipal CustomUserDetails userDetails) {
+		return ApiResponse.success(userNotificationService.findFcmTokenByUser(userDetails.getUserId()));
 	}
 
 }

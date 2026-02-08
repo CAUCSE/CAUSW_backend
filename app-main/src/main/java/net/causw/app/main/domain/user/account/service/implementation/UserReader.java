@@ -21,12 +21,12 @@ public class UserReader {
 	private final UserQueryRepository userQueryRepository;
 	private final UserRepository userRepository;
 
-	public User getUserById(String userId) {
+	public User findUserById(String userId) {
 		return userRepository.findById(userId)
 			.orElseThrow(UserErrorCode.USER_NOT_FOUND::toBaseException);
 	}
 
-	public List<User> getUsersByIds(List<String> userIds) {
+	public List<User> findUsersByIds(List<String> userIds) {
 		return userQueryRepository.findByIds(userIds);
 	}
 

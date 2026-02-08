@@ -44,11 +44,10 @@ public class UserNotificationServiceTest {
 			// given
 			String userId = "user-123";
 			User mockUser = mock(User.class);
-			given(mockUser.getId()).willReturn(userId);
-			given(userReader.getUserById(userId)).willReturn(mockUser);
+			given(userReader.findUserById(userId)).willReturn(mockUser);
 
 			// when
-			UserFcmTokenResponseDto result = userNotificationService.getFcmTokenByUser(mockUser);
+			UserFcmTokenResponseDto result = userNotificationService.findFcmTokenByUser(userId);
 
 			// then
 			verify(fcmUtils, times(1)).cleanInvalidFcmTokens(mockUser);
@@ -57,7 +56,7 @@ public class UserNotificationServiceTest {
 	}
 
 	@Nested
-	@DisplayName("FCM 토큰 등록 (registerFcmToken)")
+	@DisplayName("FCM 토큰 등록 (createFcmToken)")
 	class RegisterFcmTokenTest {
 
 		private User mockUser;
@@ -68,18 +67,17 @@ public class UserNotificationServiceTest {
 		@BeforeEach
 		void setUp() {
 			mockUser = mock(User.class);
-			given(mockUser.getId()).willReturn(userId);
 		}
 
 		@Test
 		@DisplayName("성공: 리프레시 토큰이 유효하면 토큰을 정리하고 새로 등록한다")
 		void success_register() {
 			// given
-			given(userReader.getUserById(userId)).willReturn(mockUser);
 			given(redisUtils.getRefreshTokenData(validRefreshToken)).willReturn(userId);
+			given(userReader.findUserById(userId)).willReturn(mockUser);
 
 			// when
-			userNotificationService.registerFcmToken(mockUser, fcmToken, validRefreshToken);
+			userNotificationService.createFcmToken(userId, fcmToken, validRefreshToken);
 
 			// then
 			verify(fcmUtils).cleanInvalidFcmTokens(mockUser);
@@ -91,14 +89,15 @@ public class UserNotificationServiceTest {
 		void fail_redis_null() {
 			// given
 			String expiredToken = "expired_token";
-
-			given(userReader.getUserById(userId)).willReturn(mockUser);
 			given(redisUtils.getRefreshTokenData(expiredToken)).willReturn(null);
 
 			// when & then
-			assertThatThrownBy(() -> userNotificationService.registerFcmToken(mockUser, fcmToken, expiredToken))
+			assertThatThrownBy(() -> userNotificationService.createFcmToken(userId, fcmToken, expiredToken))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.hasFieldOrPropertyWithValue("errorCode", AuthErrorCode.INVALID_REFRESH_TOKEN);
+
+			// then
+			verify(userReader, never()).findUserById(anyString());
 		}
 
 		@Test
@@ -106,14 +105,15 @@ public class UserNotificationServiceTest {
 		void fail_user_mismatch() {
 			// given
 			String otherUserId = "user-456";
-
-			given(userReader.getUserById(userId)).willReturn(mockUser);
 			given(redisUtils.getRefreshTokenData(validRefreshToken)).willReturn(otherUserId);
 
 			// when & then
-			assertThatThrownBy(() -> userNotificationService.registerFcmToken(mockUser, fcmToken, validRefreshToken))
+			assertThatThrownBy(() -> userNotificationService.createFcmToken(userId, fcmToken, validRefreshToken))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.hasFieldOrPropertyWithValue("errorCode", AuthErrorCode.INVALID_REFRESH_TOKEN);
+
+			// then
+			verify(userReader, never()).findUserById(anyString());
 		}
 	}
 }
