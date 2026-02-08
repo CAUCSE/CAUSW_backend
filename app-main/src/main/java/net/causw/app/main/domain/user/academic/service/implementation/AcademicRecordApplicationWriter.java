@@ -5,9 +5,9 @@ import org.springframework.stereotype.Component;
 import net.causw.app.main.domain.user.academic.entity.userAcademicRecord.UserAcademicRecordApplication;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicRecordRequestStatus;
 import net.causw.app.main.domain.user.academic.repository.userAcademicRecord.UserAcademicRecordApplicationRepository;
+import net.causw.app.main.domain.user.academic.util.AcademicRecordApplicationValidator;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
-import net.causw.app.main.shared.exception.errorcode.AcademicRecordApplicationErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,7 +24,7 @@ public class AcademicRecordApplicationWriter {
 	 * - 대상 사용자의 학적 상태를 반영
 	 */
 	public void approve(UserAcademicRecordApplication application) {
-		validateAwaitStatus(application);
+		AcademicRecordApplicationValidator.validateAwaitStatus(application);
 
 		User targetUser = application.getUser();
 
@@ -43,7 +43,7 @@ public class AcademicRecordApplicationWriter {
 	 * - 반려 사유 저장
 	 */
 	public void reject(UserAcademicRecordApplication application, String rejectReason) {
-		validateAwaitStatus(application);
+		AcademicRecordApplicationValidator.validateAwaitStatus(application);
 
 		// 반려 사유 저장 및 상태 변경
 		application.setRejectMessage(rejectReason);
@@ -51,9 +51,4 @@ public class AcademicRecordApplicationWriter {
 		applicationRepository.save(application);
 	}
 
-	private void validateAwaitStatus(UserAcademicRecordApplication application) {
-		if (application.getAcademicRecordRequestStatus() != AcademicRecordRequestStatus.AWAIT) {
-			throw AcademicRecordApplicationErrorCode.ACADEMIC_RECORD_APPLICATION_NOT_AWAITING.toBaseException();
-		}
-	}
 }
