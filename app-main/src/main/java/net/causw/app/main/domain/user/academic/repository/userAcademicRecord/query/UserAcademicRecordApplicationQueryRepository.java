@@ -1,12 +1,15 @@
 package net.causw.app.main.domain.user.academic.repository.userAcademicRecord.query;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import net.causw.app.main.domain.asset.file.entity.QUuidFile;
+import net.causw.app.main.domain.asset.file.entity.joinEntity.QUserAcademicRecordApplicationAttachImage;
 import net.causw.app.main.domain.user.academic.entity.userAcademicRecord.QUserAcademicRecordApplication;
 import net.causw.app.main.domain.user.academic.entity.userAcademicRecord.UserAcademicRecordApplication;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicRecordRequestStatus;
@@ -79,5 +82,23 @@ public class UserAcademicRecordApplicationQueryRepository {
 			.fetchOne();
 
 		return new PageImpl<>(content, pageable, total != null ? total : 0L);
+	}
+
+	/**
+	 * 학적 변경 신청 상세 조회 (연관 엔티티 fetch join)
+	 * - user, attachImageList, uuidFile을 한 번의 쿼리로 조회하여 N+1 문제 방지
+	 */
+	public Optional<UserAcademicRecordApplication> findByIdWithDetails(String applicationId) {
+		QUserAcademicRecordApplication application = QUserAcademicRecordApplication.userAcademicRecordApplication;
+		QUserAcademicRecordApplicationAttachImage attachImage = QUserAcademicRecordApplicationAttachImage.userAcademicRecordApplicationAttachImage;
+		QUuidFile uuidFile = QUuidFile.uuidFile;
+
+		return Optional.ofNullable(jpaQueryFactory
+			.selectFrom(application)
+			.leftJoin(application.user).fetchJoin()
+			.leftJoin(application.userAcademicRecordAttachImageList, attachImage).fetchJoin()
+			.leftJoin(attachImage.uuidFile, uuidFile).fetchJoin()
+			.where(application.id.eq(applicationId))
+			.fetchOne());
 	}
 }

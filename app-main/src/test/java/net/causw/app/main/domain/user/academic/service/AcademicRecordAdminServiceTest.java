@@ -99,7 +99,7 @@ class AcademicRecordAdminServiceTest {
 				null,
 				"복학 신청합니다");
 
-			when(applicationReader.findById(applicationId))
+			when(applicationReader.findByIdWithDetails(applicationId))
 				.thenReturn(application);
 
 			// when
@@ -107,7 +107,7 @@ class AcademicRecordAdminServiceTest {
 				.getApplicationDetail(applicationId);
 
 			// then
-			verify(applicationReader).findById(applicationId);
+			verify(applicationReader).findByIdWithDetails(applicationId);
 			assert result.userName().equals(user.getName());
 		}
 
@@ -117,7 +117,7 @@ class AcademicRecordAdminServiceTest {
 			// given
 			String applicationId = "non-existent-id";
 
-			when(applicationReader.findById(applicationId))
+			when(applicationReader.findByIdWithDetails(applicationId))
 				.thenThrow(
 					AcademicRecordApplicationErrorCode.ACADEMIC_RECORD_APPLICATION_NOT_FOUND
 						.toBaseException());

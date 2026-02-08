@@ -42,4 +42,13 @@ public class AcademicRecordApplicationReader {
 		return applicationRepository.findById(applicationId)
 			.orElseThrow(AcademicRecordApplicationErrorCode.ACADEMIC_RECORD_APPLICATION_NOT_FOUND::toBaseException);
 	}
+
+	/**
+	 * ID로 학적 변경 신청을 상세 조회한다.
+	 * - user, attachImageList, uuidFile을 fetch join으로 함께 조회
+	 */
+	public UserAcademicRecordApplication findByIdWithDetails(String applicationId) {
+		return applicationQueryRepository.findByIdWithDetails(applicationId)
+			.orElseThrow(AcademicRecordApplicationErrorCode.ACADEMIC_RECORD_APPLICATION_NOT_FOUND::toBaseException);
+	}
 }

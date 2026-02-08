@@ -39,7 +39,7 @@ public class AcademicRecordAdminService {
 	@Transactional(readOnly = true)
 	public AcademicRecordApplicationDetailResult getApplicationDetail(String applicationId) {
 		return AcademicRecordApplicationDetailResult.from(
-			applicationReader.findById(applicationId));
+			applicationReader.findByIdWithDetails(applicationId));
 	}
 
 	/**
