@@ -50,7 +50,7 @@ public class CreateCeremonyRequestDto {
 	@Schema(description = "경조사 신청자-대상자 가족 관계", example = "아들")
 	private String familyRelation;
 
-	@Schema(description = "경조사 신청자 동문-대상자 관계 (동문 본인인 경우 '동문')", example = "아들")
+	@Schema(description = "경조사 신청자 동문-대상자 관계 (동문 본인인 경우 '본인')", example = "아들")
 	private String alumniRelation;
 
 	@Schema(description = "경조사 신청자의 동문 이름", example = "김철수")
