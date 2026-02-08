@@ -27,7 +27,7 @@ public class CeremonyDateTimeValidator {
 			throw CeremonyErrorCode.START_TIME_REQUIRED.toBaseException();
 		}
 
-		if (endDate.isEqual(startDate) && startTime == null) {
+		if (endDate != null && endDate.isEqual(startDate) && startTime == null) {
 			throw CeremonyErrorCode.START_TIME_REQUIRED.toBaseException();
 		}
 	}
