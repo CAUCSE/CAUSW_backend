@@ -18,7 +18,6 @@ public record AcademicRecordApplicationDetailResponse(
 	@Schema(description = "신청자 학과") Department department,
 	@Schema(description = "현재 학적 상태") AcademicStatus currentAcademicStatus,
 	@Schema(description = "변경 요청 학적 상태") AcademicStatus targetAcademicStatus,
-	@Schema(description = "변경 요청 이수 학기") Integer targetCompletedSemester,
 	@Schema(description = "신청 처리 상태") AcademicRecordRequestStatus requestStatus,
 	@Schema(description = "신청자 메모") String note,
 	@Schema(description = "반려 사유") String rejectMessage,
