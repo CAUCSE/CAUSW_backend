@@ -9,7 +9,6 @@ import java.util.Set;
 
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.CeremonyAttachImage;
-import net.causw.app.main.domain.community.ceremony.enums.CeremonyCategory;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyState;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyType;
 import net.causw.app.main.domain.community.ceremony.enums.RelationType;
@@ -120,7 +119,7 @@ public class Ceremony extends BaseEntity {
 	@Builder.Default
 	private CeremonyState ceremonyState = CeremonyState.AWAIT;
 
-	@Column(name = "note", nullable = true)
+	@Column(name = "note")
 	private String note;
 
 	public void approve() {
