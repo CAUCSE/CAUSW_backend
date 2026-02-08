@@ -25,7 +25,7 @@ import net.causw.app.main.domain.community.ceremony.enums.CeremonyContext;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyState;
 import net.causw.app.main.domain.community.ceremony.repository.CeremonyRepository;
 import net.causw.app.main.domain.notification.notification.api.v1.dto.CeremonyListNotificationDto;
-import net.causw.app.main.domain.notification.notification.api.v1.mapper.NotificationDtoMapper;
+import net.causw.app.main.domain.notification.notification.api.v1.mapper.NotificationDtoV1Mapper;
 import net.causw.app.main.domain.notification.notification.entity.CeremonyNotificationSetting;
 import net.causw.app.main.domain.notification.notification.repository.CeremonyNotificationSettingRepository;
 import net.causw.app.main.domain.notification.notification.service.v1.CeremonyNotificationService;
@@ -105,7 +105,7 @@ public class CeremonyV1Service {
 		Page<Ceremony> ceremonies = ceremonyRepository.findAllByUserAndCeremonyStateOrderByCreatedAtDesc(user, state,
 			pageableFactory.create(pageNum, StaticValue.DEFAULT_PAGE_SIZE));
 
-		return ceremonies.map(NotificationDtoMapper.INSTANCE::toCeremonyListNotificationDto);
+		return ceremonies.map(NotificationDtoV1Mapper.INSTANCE::toCeremonyListNotificationDto);
 	}
 
 	@Transactional(readOnly = true)
@@ -113,7 +113,7 @@ public class CeremonyV1Service {
 		Page<Ceremony> ceremonies = ceremonyRepository.findByCeremonyStateOrderByCreatedAtDesc(CeremonyState.AWAIT,
 			pageableFactory.create(pageNum, StaticValue.DEFAULT_PAGE_SIZE));
 
-		return ceremonies.map(NotificationDtoMapper.INSTANCE::toCeremonyListNotificationDto);
+		return ceremonies.map(NotificationDtoV1Mapper.INSTANCE::toCeremonyListNotificationDto);
 	}
 
 	@Deprecated

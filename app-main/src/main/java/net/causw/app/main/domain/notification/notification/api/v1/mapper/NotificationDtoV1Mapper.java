@@ -12,9 +12,9 @@ import net.causw.app.main.domain.notification.notification.api.v1.dto.Notificati
 import net.causw.app.main.domain.notification.notification.entity.Notification;
 
 @Mapper(componentModel = "spring")
-public interface NotificationDtoMapper {
+public interface NotificationDtoV1Mapper {
 
-	NotificationDtoMapper INSTANCE = Mappers.getMapper(NotificationDtoMapper.class);
+	NotificationDtoV1Mapper INSTANCE = Mappers.getMapper(NotificationDtoV1Mapper.class);
 
 	@Mapping(target = "notificationLogId", source = "notificationLogId")
 	@Mapping(target = "title", source = "notification.title")
