@@ -59,32 +59,45 @@ public class CeremonyServiceTest {
 		}
 
 		@Test
-		@DisplayName("경조사 상세 분류가 직접 입력일 때 입력값이 Null이면 Validator가 예외 반환")
-		void givenCategoryValidatorFail_whenCreateCeremony_thenThrowsException() {
-			// given
-			doThrow(CeremonyErrorCode.CUSTOM_CATEGORY_REQUIRED.toBaseException())
+		@DisplayName("관계 가족 선택 시 상세 관계 선택 안 하면 Validator가 예외 반환")
+		void givenFamilyRelationIsNull_whenCreateCategoryWithRelationIsFamily_thenThrowsException() {
+			//given
+			doThrow(CeremonyErrorCode.FAMILY_RELATION_REQUIRED.toBaseException())
 				.when(ceremonyValidator).validateForCreate(dto);
 
-			// when & then
 			assertThatThrownBy(() -> ceremonyService.createCeremony(user, dto, null))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
-				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.CUSTOM_CATEGORY_REQUIRED);
+				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.FAMILY_RELATION_REQUIRED);
 			then(uuidFileService).should(never()).saveFileList(any(), any());
 			then(ceremonyCreateMapper).should(never()).fromRequest(any(), any(), any(), any());
 			then(ceremonyCreator).should(never()).save(any());
 		}
 
 		@Test
-		@DisplayName("관계 및 상세 분류 안 맞으면 Validator가 예외 반환")
-		void givenRelationValidatorFail_whenCreateCeremony_thenThrowsException() {
-			// given
-			doThrow(CeremonyErrorCode.FAMILY_RELATION_REQUIRED.toBaseException())
+		@DisplayName("관계 동문 선택 시 동문 이름 선택 안 하면 Validator가 예외 반환")
+		void givenAlumniNameIsNull_whenCreateCategoryWithRelationInstead_thenThrowsException() {
+			//given
+			doThrow(CeremonyErrorCode.ALUMNI_NAME_REQUIRED.toBaseException())
 				.when(ceremonyValidator).validateForCreate(dto);
 
-			// when & then
 			assertThatThrownBy(() -> ceremonyService.createCeremony(user, dto, null))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
-				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.FAMILY_RELATION_REQUIRED);
+				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.ALUMNI_NAME_REQUIRED);
+			then(uuidFileService).should(never()).saveFileList(any(), any());
+			then(ceremonyCreateMapper).should(never()).fromRequest(any(), any(), any(), any());
+			then(ceremonyCreator).should(never()).save(any());
+		}
+
+		@Test
+		@DisplayName("관계 동문 선택 시 동문 학번 입력 안 하면 Validator가 예외 반환")
+		void givenAlumniAdmissionYearIsNull_whenCreateCategoryWithRelationInstead_thenThrowsException() {
+			//given
+			doThrow(CeremonyErrorCode.ALUMNI_NAME_REQUIRED.toBaseException())
+				.when(ceremonyValidator).validateForCreate(dto);
+
+			assertThatThrownBy(() -> ceremonyService.createCeremony(user, dto, null))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.ALUMNI_NAME_REQUIRED);
 			then(uuidFileService).should(never()).saveFileList(any(), any());
 			then(ceremonyCreateMapper).should(never()).fromRequest(any(), any(), any(), any());
 			then(ceremonyCreator).should(never()).save(any());
@@ -107,7 +120,7 @@ public class CeremonyServiceTest {
 		}
 
 		@Test
-		@DisplayName("날짜 또는 시간 안 맞으면 Validator가 예외 반환")
+		@DisplayName("알림 설정, 대상 안 맞으면 Validator가 예외 반환")
 		void givenNotificationValidatorFail_whenCreateCeremony_thenThrowsException() {
 			// given
 			doThrow(CeremonyErrorCode.TARGET_ADMISSION_YEARS_REQUIRED.toBaseException())
