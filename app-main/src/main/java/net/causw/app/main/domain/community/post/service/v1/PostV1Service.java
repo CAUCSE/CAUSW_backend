@@ -107,7 +107,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class PostService {
+public class PostV1Service {
 
 	private final PostQueryRepository postQueryRepository;
 	private final PostRepository postRepository;

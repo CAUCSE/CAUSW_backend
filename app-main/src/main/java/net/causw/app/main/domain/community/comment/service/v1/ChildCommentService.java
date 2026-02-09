@@ -26,7 +26,7 @@ import net.causw.app.main.domain.community.comment.repository.CommentRepository;
 import net.causw.app.main.domain.community.comment.repository.LikeChildCommentRepository;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
-import net.causw.app.main.domain.community.post.service.v1.PostService;
+import net.causw.app.main.domain.community.post.service.v1.PostV1Service;
 import net.causw.app.main.domain.notification.notification.service.v1.CommentNotificationService;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;
@@ -61,7 +61,7 @@ public class ChildCommentService {
 	private final LikeChildCommentRepository likeChildCommentRepository;
 	private final Validator validator;
 	private final CommentNotificationService commentNotificationService;
-	private final PostService postService;
+	private final PostV1Service postService;
 
 	@Transactional
 	public ChildCommentResponseDto createChildComment(User creator,

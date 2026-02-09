@@ -26,7 +26,7 @@ import net.causw.app.main.domain.community.post.api.v1.dto.PostResponseDto;
 import net.causw.app.main.domain.community.post.api.v1.dto.PostSubscribeResponseDto;
 import net.causw.app.main.domain.community.post.api.v1.dto.PostUpdateRequestDto;
 import net.causw.app.main.domain.community.post.api.v1.dto.PostUpdateWithFormRequestDto;
-import net.causw.app.main.domain.community.post.service.v1.PostService;
+import net.causw.app.main.domain.community.post.service.v1.PostV1Service;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.InternalServerException;
@@ -44,9 +44,9 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/posts")
-public class PostController {
+public class PostV1Controller {
 
-	private final PostService postService;
+	private final PostV1Service postService;
 
 	@GetMapping(value = "/{id}", produces = "application/json")
 	@ResponseStatus(value = HttpStatus.OK)

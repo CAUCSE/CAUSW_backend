@@ -41,7 +41,7 @@ import net.causw.app.main.domain.community.post.api.v1.dto.PostContentDto;
 import net.causw.app.main.domain.community.post.api.v1.mapper.PostDtoMapper;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.community.post.service.v1.PostEntityService;
-import net.causw.app.main.domain.community.post.service.v1.PostService;
+import net.causw.app.main.domain.community.post.service.v1.PostV1Service;
 import net.causw.app.main.domain.notification.notification.entity.UserBoardSubscribe;
 import net.causw.app.main.domain.notification.notification.repository.UserBoardSubscribeRepository;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
@@ -84,7 +84,7 @@ public class BoardV1Service {
 	private final UserBoardSubscribeRepository userBoardSubscribeRepository;
 	private final BoardApplyRepository boardApplyRepository;
 	private final Validator validator;
-	private final PostService postService;
+	private final PostV1Service postService;
 	private final UserBlockEntityService userBlockEntityService;
 	private final PostEntityService postEntityService;
 

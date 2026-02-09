@@ -63,7 +63,7 @@ import net.causw.global.exception.UnauthorizedException;
 public class PostServiceTest {
 
 	@InjectMocks
-	PostService postService;
+	PostV1Service postService;
 
 	@Mock
 	PostRepository postRepository;
