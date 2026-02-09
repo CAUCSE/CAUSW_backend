@@ -19,7 +19,7 @@ import net.causw.app.main.domain.community.board.entity.BoardVisibility;
 import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
 import net.causw.app.main.domain.community.board.service.implementation.BoardReader;
 import net.causw.app.main.domain.community.post.entity.Post;
-import net.causw.app.main.domain.community.post.repository.query.PostQueryResult;
+import net.causw.app.main.domain.community.post.repository.query.PostCursorResult;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostCreateCommand;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostCreateResult;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostListQuery;
@@ -157,7 +157,7 @@ public class PostService {
 		}
 
 		// 게시글 조회 (Slice 사용)
-		Slice<PostQueryResult> slice = postReader.findPostsWithCursor(
+		Slice<PostCursorResult> slice = postReader.findPostsWithCursor(
 			boardIds,
 			cursorCreatedAt,
 			cursorId,
@@ -165,18 +165,18 @@ public class PostService {
 			keyword);
 
 		// Slice에서 content와 hasNext 추출
-		List<PostQueryResult> posts = slice.getContent();
+		List<PostCursorResult> posts = slice.getContent();
 		boolean hasNext = slice.hasNext();
 
 		// nextCursor 생성 (createdAt|postId 형식, hasNext가 false면 null)
 		String nextCursor = null;
 		if (hasNext && !posts.isEmpty()) {
-			PostQueryResult lastPost = posts.get(posts.size() - 1);
+			PostCursorResult lastPost = posts.get(posts.size() - 1);
 			nextCursor = lastPost.createdAt() + "|" + lastPost.postId();
 		}
 
 		// 게시글 이미지 조회
-		List<String> postIds = posts.stream().map(PostQueryResult::postId).toList();
+		List<String> postIds = posts.stream().map(PostCursorResult::postId).toList();
 		Map<String, List<String>> postImagesMap = postIds.isEmpty()
 			? Map.of()
 			: postReader.findPostImagesByPostIds(postIds);

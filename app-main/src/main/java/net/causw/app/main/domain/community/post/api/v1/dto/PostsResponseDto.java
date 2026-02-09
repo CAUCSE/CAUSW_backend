@@ -46,6 +46,9 @@ public class PostsResponseDto {
 	@Schema(description = "익명글 여부", example = "False")
 	private Boolean isAnonymous;
 
+	@Schema(description = "질문글 여부", example = "False")
+	private Boolean isQuestion;
+
 	@Schema(description = "게시글 생성 시간", example = "2024-01-26T18:40:40.643Z")
 	private LocalDateTime createdAt;
 
@@ -57,6 +60,12 @@ public class PostsResponseDto {
 
 	@Schema(description = "이미지 url", example = "")
 	private String postAttachImage;
+
+	@Schema(description = "투표 포함 여부", example = "false")
+	private Boolean isPostVote;
+
+	@Schema(description = "게시글 신청서 존재 여부", example = "true")
+	private Boolean isPostForm;
 
 	public void updateAnonymousWriterInfo() {
 		if (Boolean.TRUE.equals(this.isAnonymous)) {

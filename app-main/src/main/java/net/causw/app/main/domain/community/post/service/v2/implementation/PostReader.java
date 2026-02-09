@@ -9,8 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
+import net.causw.app.main.domain.community.post.repository.query.PostCursorResult;
 import net.causw.app.main.domain.community.post.repository.query.PostQueryRepository;
-import net.causw.app.main.domain.community.post.repository.query.PostQueryResult;
 import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -49,7 +49,7 @@ public class PostReader {
 	}
 
 	/**
-	 * 커서 기반 페이징으로 게시글 목록을 조회합니다.
+	 * 커서 기반 페이징으로 게시글 목록을 조회합니다. (V2용)
 	 *
 	 * @param boardIds 게시판 ID 목록 (null이면 전체 게시판)
 	 * @param cursorCreatedAt 커서 (마지막 게시글의 createdAt)
@@ -58,7 +58,7 @@ public class PostReader {
 	 * @param keyword 검색 키워드
 	 * @return 게시글 목록 Slice
 	 */
-	public Slice<PostQueryResult> findPostsWithCursor(
+	public Slice<PostCursorResult> findPostsWithCursor(
 		List<String> boardIds,
 		String cursorCreatedAt,
 		String cursorId,

@@ -7,17 +7,15 @@ import net.causw.app.main.domain.user.account.enums.user.UserState;
 import com.querydsl.core.annotations.QueryProjection;
 
 /**
- * V1 페이지 기반 조회용 DTO (title 포함)
+ * V2 커서 기반 페이징 조회용 DTO (title 없음)
  */
-public record PostQueryResult(
+public record PostCursorResult(
 	String postId,
-	String title,
 	String content,
 	long numComment,
 	long numLike,
 	long numFavorite,
 	boolean isAnonymous,
-	boolean isQuestion,
 	String voteId,
 	boolean isDeleted,
 	boolean hasWriter,
@@ -26,12 +24,9 @@ public record PostQueryResult(
 	Integer writerAdmissionYear,
 	UserState writerUserState,
 	String writerProfileImageUrl,
-	String postAttachImage, // 썸네일 이미지 URL
-	boolean isPostVote, // 투표 포함 여부
-	boolean isPostForm, // 신청서 포함 여부
 	LocalDateTime createdAt,
 	LocalDateTime updatedAt) {
 	@QueryProjection
-	public PostQueryResult {
+	public PostCursorResult {
 	} // canonical constructor
 }

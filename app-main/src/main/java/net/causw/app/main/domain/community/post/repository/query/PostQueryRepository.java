@@ -76,7 +76,7 @@ public class PostQueryRepository {
 	}
 
 	/**
-	 * 커서 기반 페이징으로 게시글 목록을 조회합니다.
+	 * 커서 기반 페이징으로 게시글 목록을 조회합니다. (V2용 - title 없음)
 	 *
 	 * @param boardIds 게시판 ID 목록 (null이면 전체 게시판, 빈 리스트면 조회 안함)
 	 * @param cursorCreatedAt 커서 (마지막 게시글의 createdAt)
@@ -85,7 +85,7 @@ public class PostQueryRepository {
 	 * @param keyword 검색 키워드 (content 기준)
 	 * @return 게시글 목록 Slice
 	 */
-	public Slice<PostQueryResult> findPostsWithCursor(
+	public Slice<PostCursorResult> findPostsWithCursor(
 		List<String> boardIds,
 		String cursorCreatedAt,
 		String cursorId,
@@ -117,8 +117,8 @@ public class PostQueryRepository {
 		};
 
 		// 게시글 조회 (size + 1개 조회하여 hasNext 판단)
-		List<PostQueryResult> results = jpaQueryFactory
-			.select(toPostQueryResult(post, writer))
+		List<PostCursorResult> results = jpaQueryFactory
+			.select(toPostCursorResult(post, writer))
 			.from(post)
 			.leftJoin(post.writer, writer)
 			.where(conditions)
@@ -128,7 +128,7 @@ public class PostQueryRepository {
 
 		// hasNext 판단 및 Slice 생성
 		boolean hasNext = results.size() > size;
-		List<PostQueryResult> content = hasNext ? results.subList(0, size) : results;
+		List<PostCursorResult> content = hasNext ? results.subList(0, size) : results;
 
 		return new SliceImpl<>(content, Pageable.ofSize(size), hasNext);
 	}
@@ -162,6 +162,7 @@ public class PostQueryRepository {
 		QComment comment = QComment.comment;
 		QLikePost likePost = QLikePost.likePost;
 		QFavoritePost favoritePost = QFavoritePost.favoritePost;
+		QPostAttachImage postAttachImage = QPostAttachImage.postAttachImage;
 
 		// 숫자 카운트 서브쿼리
 		SubQueryExpression<Long> commentCount = JPAExpressions
@@ -186,7 +187,57 @@ public class PostQueryRepository {
 			.where(writer.eq(post.writer)
 				.and(writer.userProfileImage.isNotNull()));
 
+		// 썸네일 이미지 URL 서브쿼리 (첫 번째 이미지)
+		SubQueryExpression<String> thumbnailUrl = JPAExpressions
+			.select(postAttachImage.uuidFile.fileUrl)
+			.from(postAttachImage)
+			.where(postAttachImage.post.eq(post)
+				.and(postAttachImage.uuidFile.extension.in(FileExtensionType.IMAGE.getExtensionList())))
+			.orderBy(postAttachImage.uuidFile.createdAt.asc())
+			.limit(1);
+
 		return new QPostQueryResult(
+			post.id, post.title, post.content,
+			commentCount, likeCount, favoriteCount,
+			post.isAnonymous, post.isQuestion, post.vote.id, post.isDeleted,
+			writer.isNotNull(), writer.name, writer.nickname, writer.admissionYear, writer.state,
+			writerProfileImageUrl,
+			thumbnailUrl,
+			post.vote.isNotNull(), // isPostVote
+			post.form.isNotNull(), // isPostForm
+			post.createdAt, post.updatedAt);
+	}
+
+	private static QPostCursorResult toPostCursorResult(QPost post, QUser writer) {
+
+		QComment comment = QComment.comment;
+		QLikePost likePost = QLikePost.likePost;
+		QFavoritePost favoritePost = QFavoritePost.favoritePost;
+
+		// 숫자 카운트 서브쿼리
+		SubQueryExpression<Long> commentCount = JPAExpressions
+			.select(comment.count())
+			.from(comment)
+			.where(comment.post.eq(post));
+
+		SubQueryExpression<Long> likeCount = JPAExpressions
+			.select(likePost.count())
+			.from(likePost)
+			.where(likePost.post.eq(post));
+
+		SubQueryExpression<Long> favoriteCount = JPAExpressions
+			.select(favoritePost.count())
+			.from(favoritePost)
+			.where(favoritePost.post.eq(post));
+
+		// 작성자 프로필 이미지 URL 서브쿼리
+		SubQueryExpression<String> writerProfileImageUrl = JPAExpressions.select(
+			writer.userProfileImage.uuidFile.fileUrl)
+			.from(writer)
+			.where(writer.eq(post.writer)
+				.and(writer.userProfileImage.isNotNull()));
+
+		return new QPostCursorResult(
 			post.id, post.content,
 			commentCount, likeCount, favoriteCount,
 			post.isAnonymous, post.vote.id, post.isDeleted,

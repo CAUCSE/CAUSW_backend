@@ -62,6 +62,7 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
 		PostAttachImage thumbnail, Boolean isPostVote, Boolean isPostForm);
 
 	@Mapping(target = "id", source = "queryResult.postId")
+	@Mapping(target = "title", source = "queryResult.title")
 	@Mapping(target = "writerName", source = "queryResult.writerName")
 	@Mapping(target = "writerNickname", source = "queryResult.writerNickname")
 	@Mapping(target = "writerAdmissionYear", source = "queryResult.writerAdmissionYear")
@@ -69,10 +70,13 @@ public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "numLike", source = "queryResult.numLike")
 	@Mapping(target = "numFavorite", source = "queryResult.numFavorite")
 	@Mapping(target = "isAnonymous", source = "queryResult.isAnonymous")
+	@Mapping(target = "isQuestion", source = "queryResult.isQuestion")
 	@Mapping(target = "createdAt", source = "queryResult.createdAt")
 	@Mapping(target = "updatedAt", source = "queryResult.updatedAt")
 	@Mapping(target = "isDeleted", source = "queryResult.isDeleted")
 	@Mapping(target = "postAttachImage", source = "queryResult.postAttachImage")
+	@Mapping(target = "isPostVote", source = "queryResult.isPostVote")
+	@Mapping(target = "isPostForm", source = "queryResult.isPostForm")
 	@Mapping(target = "displayWriterNickname", expression = "java(getDisplayWriterNickname(queryResult.hasWriter(), queryResult.writerUserState(), queryResult.isAnonymous(), queryResult.writerNickname()))")
 	PostsResponseDto toPostsResponseDto(PostQueryResult queryResult);
 
