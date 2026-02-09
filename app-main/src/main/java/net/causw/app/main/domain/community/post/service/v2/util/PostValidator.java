@@ -3,9 +3,6 @@ package net.causw.app.main.domain.community.post.service.v2.util;
 import java.util.List;
 import java.util.Set;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
 import net.causw.app.main.domain.community.board.entity.BoardWriteScope;
@@ -19,6 +16,9 @@ import net.causw.app.main.shared.exception.errorcode.BoardErrorCode;
 import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
 import net.causw.app.main.shared.util.TargetIsDeletedValidator;
 import net.causw.global.constant.StaticValue;
+
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class PostValidator {
@@ -40,6 +40,20 @@ public class PostValidator {
 			}
 		}
 		validateUserAndBoard(deleter, post.getBoard());
+	}
+
+	public static void validateUpdate(User updater, Post post, List<String> adminIds) {
+		validateUserAndBoard(updater, post.getBoard());
+
+		// 게시글이 삭제된 경우
+		if (post.getIsDeleted()) {
+			throw PostErrorCode.POST_NOT_FOUND.toBaseException();
+		}
+
+		// 작성자만 수정 가능 (관리자도 타인의 게시글은 수정 불가)
+		if (!post.getWriter().getId().equals(updater.getId())) {
+			throw PostErrorCode.POST_FORBIDDEN.toBaseException();
+		}
 	}
 
 	public static void validateUserAndBoard(User user, Board board) {

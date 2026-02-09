@@ -7,6 +7,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -14,10 +15,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.domain.community.post.api.v2.dto.request.PostCreateRequest;
+import net.causw.app.main.domain.community.post.api.v2.dto.request.PostUpdateRequest;
 import net.causw.app.main.domain.community.post.api.v2.dto.response.PostCreateResponse;
+import net.causw.app.main.domain.community.post.api.v2.dto.response.PostUpdateResponse;
 import net.causw.app.main.domain.community.post.api.v2.mapper.PostDtoMapper;
 import net.causw.app.main.domain.community.post.service.v2.PostService;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostCreateResult;
+import net.causw.app.main.domain.community.post.service.v2.dto.PostUpdateResult;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 
@@ -50,5 +54,17 @@ public class PostController {
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		postService.deletePost(userDetails.getUser(), postId);
 		return ApiResponse.success();
+	}
+
+	@PutMapping("/{postId}")
+	@ResponseStatus(HttpStatus.OK)
+	public ApiResponse<PostUpdateResponse> update(
+		@PathVariable String postId,
+		@Valid @RequestPart(value = "postUpdateRequest") PostUpdateRequest postUpdateRequest,
+		@RequestPart(value = "attachImageList", required = false) List<MultipartFile> images,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
+		PostUpdateResult result = postService
+			.update(postDtoMapper.toUpdateCommand(postId, postUpdateRequest, userDetails.getUser(), images));
+		return ApiResponse.success(postDtoMapper.toUpdateResponse(result));
 	}
 }

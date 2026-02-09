@@ -50,6 +50,19 @@ public class PostWriter {
 	}
 
 	/**
+	 * Post의 내용과 이미지만 업데이트합니다.
+	 *
+	 * @param post 수정할 Post
+	 * @param content 내용
+	 * @param postAttachImageList 첨부 이미지 리스트
+	 * @return 수정된 Post Entity
+	 */
+	public Post updateContentAndImages(Post post, String content, List<PostAttachImage> postAttachImageList) {
+		post.updateContentAndImages(content, postAttachImageList);
+		return postRepository.save(post);
+	}
+
+	/**
 	 * Post에 Vote를 연결합니다.
 	 *
 	 * @param post Post Entity
