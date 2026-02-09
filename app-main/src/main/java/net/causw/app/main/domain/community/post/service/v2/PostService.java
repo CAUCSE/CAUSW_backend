@@ -2,7 +2,9 @@ package net.causw.app.main.domain.community.post.service.v2;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,16 +15,20 @@ import net.causw.app.main.domain.asset.file.service.v2.implementation.FileReader
 import net.causw.app.main.domain.asset.file.service.v2.implementation.FileWriter;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
+import net.causw.app.main.domain.community.board.entity.BoardVisibility;
 import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
 import net.causw.app.main.domain.community.board.service.implementation.BoardReader;
 import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.repository.query.PostQueryResult;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostCreateCommand;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostCreateResult;
+import net.causw.app.main.domain.community.post.service.v2.dto.PostListQuery;
+import net.causw.app.main.domain.community.post.service.v2.dto.PostListResult;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostUpdateCommand;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostUpdateResult;
 import net.causw.app.main.domain.community.post.service.v2.implementation.PostReader;
 import net.causw.app.main.domain.community.post.service.v2.implementation.PostWriter;
-import net.causw.app.main.domain.community.post.service.v2.util.PostMapper;
+import net.causw.app.main.domain.community.post.service.v2.mapper.PostMapper;
 import net.causw.app.main.domain.community.post.service.v2.util.PostValidator;
 import net.causw.app.main.domain.user.account.entity.user.User;
 
@@ -106,6 +112,84 @@ public class PostService {
 		Post updatedPost = postWriter.updateContentAndImages(post, command.content(), newPostAttachImages);
 
 		return PostMapper.toUpdateResult(updatedPost, newImages.stream().map(UuidFile::getFileUrl).toList());
+	}
+
+	public PostListResult getPosts(PostListQuery query) {
+		User viewer = query.viewer();
+		String boardId = query.boardId();
+		String cursor = query.cursor();
+		Integer size = query.size() != null ? query.size() : 20; // 기본값 20
+		String keyword = query.keyword();
+
+		// cursor 파싱 (createdAt과 postId를 "|"로 구분)
+		String cursorCreatedAt = null;
+		String cursorId = null;
+		if (cursor != null && !cursor.isBlank()) {
+			String[] parts = cursor.split("\\|");
+			if (parts.length == 2) {
+				cursorCreatedAt = parts[0];
+				cursorId = parts[1];
+			}
+		}
+
+		List<String> boardIds = null;
+
+		// 게시판 ID가 지정된 경우
+		if (boardId != null && !boardId.isBlank()) {
+			BoardConfig boardConfig = boardConfigReader.getByBoardId(boardId);
+			List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(boardId);
+
+			// BoardVisibility 체크 - HIDDEN인 경우 조회 불가
+			if (boardConfig.getVisibility() == BoardVisibility.HIDDEN) {
+				// 관리자는 조회 가능
+				if (!boardAdminIds.contains(viewer.getId())) {
+					throw new IllegalArgumentException("게시판이 숨김 처리되어 조회할 수 없습니다.");
+				}
+			}
+
+			// ReadScope 검증
+			PostValidator.validateRead(viewer, boardConfig, boardAdminIds);
+
+			boardIds = List.of(boardId);
+		} else {
+			// 게시판 ID가 지정되지 않은 경우 - 사용자의 AcademicStatus에 따라 접근 가능한 게시판 조회
+			boardIds = boardConfigReader.getAccessibleBoardIdsByAcademicStatus(viewer.getAcademicStatus());
+		}
+
+		// 게시글 조회 (Slice 사용)
+		Slice<PostQueryResult> slice = postReader.findPostsWithCursor(
+			boardIds,
+			cursorCreatedAt,
+			cursorId,
+			size,
+			keyword);
+
+		// Slice에서 content와 hasNext 추출
+		List<PostQueryResult> posts = slice.getContent();
+		boolean hasNext = slice.hasNext();
+
+		// nextCursor 생성 (createdAt|postId 형식, hasNext가 false면 null)
+		String nextCursor = null;
+		if (hasNext && !posts.isEmpty()) {
+			PostQueryResult lastPost = posts.get(posts.size() - 1);
+			nextCursor = lastPost.createdAt() + "|" + lastPost.postId();
+		}
+
+		// 게시글 이미지 조회
+		List<String> postIds = posts.stream().map(PostQueryResult::postId).toList();
+		Map<String, List<String>> postImagesMap = postIds.isEmpty()
+			? Map.of()
+			: postReader.findPostImagesByPostIds(postIds);
+
+		// PostListResult로 변환 (PostMapper 사용)
+		List<PostListResult.PostItem> postItems = posts.stream()
+			.map(result -> {
+				List<String> imageUrls = postImagesMap.getOrDefault(result.postId(), List.of());
+				return PostMapper.toPostListItem(result, imageUrls);
+			})
+			.toList();
+
+		return PostListResult.of(postItems, nextCursor);
 	}
 
 }

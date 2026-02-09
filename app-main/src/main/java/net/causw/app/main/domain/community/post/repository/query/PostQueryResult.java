@@ -8,24 +8,21 @@ import com.querydsl.core.annotations.QueryProjection;
 
 public record PostQueryResult(
 	String postId,
-	String title,
 	String content,
 	long numComment,
 	long numLike,
 	long numFavorite,
 	boolean isAnonymous,
-	boolean isQuestion,
-	boolean isPostVote,
-	boolean isPostForm,
+	String voteId,
 	boolean isDeleted,
 	boolean hasWriter,
 	String writerName,
 	String writerNickname,
 	Integer writerAdmissionYear,
 	UserState writerUserState,
+	String writerProfileImageUrl,
 	LocalDateTime createdAt,
-	LocalDateTime updatedAt,
-	String postAttachImage) {
+	LocalDateTime updatedAt) {
 	@QueryProjection
 	public PostQueryResult {
 	} // canonical constructor

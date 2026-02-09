@@ -1,12 +1,14 @@
-package net.causw.app.main.domain.community.post.service.v2.util;
+package net.causw.app.main.domain.community.post.service.v2.mapper;
 
 import java.util.List;
 
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.repository.query.PostQueryResult;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostCreateCommand;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostCreateResult;
+import net.causw.app.main.domain.community.post.service.v2.dto.PostListResult;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostUpdateResult;
 import net.causw.app.main.domain.user.account.entity.user.User;
 
@@ -50,6 +52,30 @@ public class PostMapper {
 			.updatedAt(post.getUpdatedAt())
 			.boardName(post.getBoard().getName())
 			.build();
+	}
+
+	/**
+	 * PostQueryResult를 PostListResult.PostItem으로 변환합니다.
+	 * 익명 게시판인 경우 닉네임을 "익명"으로, 프로필 사진을 null로 설정합니다.
+	 */
+	public static PostListResult.PostItem toPostListItem(PostQueryResult result, List<String> imageUrls) {
+		String writerNickname = result.isAnonymous() ? "익명" : result.writerNickname();
+		String writerProfileImageUrl = result.isAnonymous() ? null : result.writerProfileImageUrl();
+
+		return PostListResult.PostItem.of(
+			result.postId(),
+			result.content(),
+			result.numComment(),
+			result.numLike(),
+			result.numFavorite(),
+			result.isAnonymous(),
+			result.voteId(),
+			result.isDeleted(),
+			writerNickname,
+			writerProfileImageUrl,
+			result.createdAt(),
+			result.updatedAt(),
+			imageUrls);
 	}
 
 }

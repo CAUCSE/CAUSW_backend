@@ -1,14 +1,14 @@
 package net.causw.app.main.domain.community.post.service.v2.util;
 
 import java.util.List;
-import java.util.Set;
 
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
+import net.causw.app.main.domain.community.board.entity.BoardReadScope;
 import net.causw.app.main.domain.community.board.entity.BoardWriteScope;
 import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.util.UserRoleIsNoneValidator;
 import net.causw.app.main.domain.user.account.util.UserStateValidator;
 import net.causw.app.main.shared.ValidatorBucket;
@@ -31,7 +31,6 @@ public class PostValidator {
 	}
 
 	public static void validateDelete(User deleter, Post post, List<String> adminIds) {
-		Set<Role> roles = deleter.getRoles();
 		if (post.getBoard().getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
 			// 관리자 역할이 없고, 게시글의 작성자가 아니면 오류 발생
 			if (!adminIds.contains(deleter.getId())
@@ -73,6 +72,42 @@ public class PostValidator {
 
 		if (boardAdminIds.contains(creator.getId())) {
 			return;
+		}
+
+		throw BoardErrorCode.BOARD_FORBIDDEN.toBaseException();
+	}
+
+	public static void validateRead(User viewer, BoardConfig boardConfig, List<String> boardAdminIds) {
+		// 게시판 관리자는 무조건 조회 가능
+		if (boardAdminIds.contains(viewer.getId())) {
+			return;
+		}
+
+		BoardReadScope readScope = boardConfig.getReadScope();
+		AcademicStatus academicStatus = viewer.getAcademicStatus();
+
+		// BOTH인 경우 모두 조회 가능
+		if (readScope == BoardReadScope.BOTH) {
+			return;
+		}
+
+		// ENROLLED인 경우 재학생만 가능
+		if (readScope == BoardReadScope.ENROLLED) {
+			if (academicStatus == AcademicStatus.ENROLLED
+				|| academicStatus == AcademicStatus.LEAVE_OF_ABSENCE
+				|| academicStatus == AcademicStatus.SUSPEND
+				|| academicStatus == AcademicStatus.PROFESSOR) {
+				return;
+			}
+			throw BoardErrorCode.BOARD_FORBIDDEN.toBaseException();
+		}
+
+		// GRADUATED인 경우 졸업생만 가능
+		if (readScope == BoardReadScope.GRADUATED) {
+			if (academicStatus == AcademicStatus.GRADUATED) {
+				return;
+			}
+			throw BoardErrorCode.BOARD_FORBIDDEN.toBaseException();
 		}
 
 		throw BoardErrorCode.BOARD_FORBIDDEN.toBaseException();

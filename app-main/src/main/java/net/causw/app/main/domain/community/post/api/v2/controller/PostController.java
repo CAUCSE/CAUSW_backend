@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -15,12 +17,16 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.domain.community.post.api.v2.dto.request.PostCreateRequest;
+import net.causw.app.main.domain.community.post.api.v2.dto.request.PostListCondition;
 import net.causw.app.main.domain.community.post.api.v2.dto.request.PostUpdateRequest;
 import net.causw.app.main.domain.community.post.api.v2.dto.response.PostCreateResponse;
+import net.causw.app.main.domain.community.post.api.v2.dto.response.PostListResponse;
 import net.causw.app.main.domain.community.post.api.v2.dto.response.PostUpdateResponse;
 import net.causw.app.main.domain.community.post.api.v2.mapper.PostDtoMapper;
 import net.causw.app.main.domain.community.post.service.v2.PostService;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostCreateResult;
+import net.causw.app.main.domain.community.post.service.v2.dto.PostListQuery;
+import net.causw.app.main.domain.community.post.service.v2.dto.PostListResult;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostUpdateResult;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
@@ -45,6 +51,16 @@ public class PostController {
 		PostCreateResult result = postService
 			.create(postDtoMapper.toCommand(postCreateRequest, userDetails.getUser(), images));
 		return ApiResponse.success(postDtoMapper.toResponse(result));
+	}
+
+	@GetMapping
+	@ResponseStatus(HttpStatus.OK)
+	public ApiResponse<PostListResponse> getPosts(
+		@ModelAttribute PostListCondition condition,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
+		PostListQuery query = postDtoMapper.toListQuery(condition, userDetails.getUser());
+		PostListResult result = postService.getPosts(query);
+		return ApiResponse.success(postDtoMapper.toListResponse(result));
 	}
 
 	@DeleteMapping("/{postId}")
