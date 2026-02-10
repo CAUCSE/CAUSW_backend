@@ -3,6 +3,7 @@ package net.causw.app.main.domain.community.ceremony.api.v2.mapper;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.mapstruct.InheritConfiguration;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -11,6 +12,7 @@ import org.mapstruct.factory.Mappers;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.CeremonyAttachImage;
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonyDetailResponseDto;
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonyNotificationSettingResponseDto;
+import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonySummaryResponseDto;
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyCategory;
 import net.causw.app.main.domain.notification.notification.entity.CeremonyNotificationSetting;
@@ -21,52 +23,36 @@ public interface CeremonyDtoMapper {
 	CeremonyDtoMapper INSTANCE = Mappers.getMapper(CeremonyDtoMapper.class);
 
 	// 경조사 상세 보기
-	@Mapping(target = "id", source = "id")
 	@Mapping(target = "title", source = ".", qualifiedByName = "mapTitle")
 	@Mapping(target = "type", source = "ceremonyType.label")
 	@Mapping(target = "category", source = ".", qualifiedByName = "mapCategory")
-	@Mapping(target = "startDate", source = "startDate")
-	@Mapping(target = "endDate", source = "endDate")
-	@Mapping(target = "startTime", source = "startTime")
-	@Mapping(target = "endTime", source = "endTime")
 	@Mapping(target = "applicant", source = "user.name")
 	@Mapping(target = "subject", source = ".", qualifiedByName = "mapSubject")
 	@Mapping(target = "content", source = "description")
 	@Mapping(target = "attachedImageUrlList", source = "ceremonyAttachImageList", qualifiedByName = "mapAttachedImages")
-	@Mapping(target = "address", source = "address")
-	@Mapping(target = "postalAddress", source = "postalAddress")
-	@Mapping(target = "detailedAddress", source = "detailedAddress")
-	@Mapping(target = "contact", source = "contact")
-	@Mapping(target = "link", source = "link")
 	@Mapping(target = "isSetAll", source = "ceremony.setAll")
 	@Mapping(target = "targetAdmissionYears", source = "targetAdmissionYears")
 	@Mapping(target = "state", ignore = true)
 	@Mapping(target = "note", ignore = true)
-	CeremonyDetailResponseDto toDetailedCeremonyResponseDto(Ceremony ceremony);
+	CeremonyDetailResponseDto toCeremonyDetailResponseDto(Ceremony ceremony);
 
 	// 내 경조사 상세 보기
-	@Mapping(target = "id", source = "id")
-	@Mapping(target = "title", source = ".", qualifiedByName = "mapTitle")
-	@Mapping(target = "type", source = "ceremonyType.label")
-	@Mapping(target = "category", source = ".", qualifiedByName = "mapCategory")
-	@Mapping(target = "startDate", source = "startDate")
-	@Mapping(target = "endDate", source = "endDate")
-	@Mapping(target = "startTime", source = "startTime")
-	@Mapping(target = "endTime", source = "endTime")
-	@Mapping(target = "applicant", source = "user.name")
-	@Mapping(target = "subject", source = ".", qualifiedByName = "mapSubject")
-	@Mapping(target = "content", source = "description")
-	@Mapping(target = "attachedImageUrlList", source = "ceremonyAttachImageList", qualifiedByName = "mapAttachedImages")
-	@Mapping(target = "address", source = "address")
-	@Mapping(target = "postalAddress", source = "postalAddress")
-	@Mapping(target = "detailedAddress", source = "detailedAddress")
-	@Mapping(target = "contact", source = "contact")
-	@Mapping(target = "link", source = "link")
-	@Mapping(target = "isSetAll", source = "ceremony.setAll")
-	@Mapping(target = "targetAdmissionYears", source = "targetAdmissionYears")
+	@InheritConfiguration(name = "toCeremonyDetailResponseDto")
 	@Mapping(target = "state", source = "ceremonyState")
 	@Mapping(target = "note", source = "note")
 	CeremonyDetailResponseDto toMyCeremonyDetailResponseDto(Ceremony ceremony);
+
+	// 경조사 목록 조회
+	@Mapping(target = "title", source = ".", qualifiedByName = "mapTitle")
+	@Mapping(target = "type", source = "ceremonyType.label")
+	@Mapping(target = "category", source = "ceremonyCategory.label")
+	@Mapping(target = "state", ignore = true)
+	CeremonySummaryResponseDto toCeremonySummaryResponseDto(Ceremony ceremony);
+
+	// 내 경조사 목록 조회
+	@InheritConfiguration(name="toCeremonySummaryResponseDto")
+	@Mapping(target = "state", source = "ceremonyState")
+	CeremonySummaryResponseDto toMyCeremonySummaryResponseDto(Ceremony ceremony);
 
 	@Named("mapCategory")
 	static String mapCategory(Ceremony ceremony) {

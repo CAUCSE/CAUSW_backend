@@ -55,7 +55,7 @@ public class CeremonyService {
 		Ceremony ceremony = ceremonyCreateMapper.fromRequest(user, createCeremonyRequestDTO, targetAdmissionYears,
 			uuidFileList);
 		ceremonyCreator.save(ceremony);
-		return CeremonyDtoMapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
+		return CeremonyDtoMapper.INSTANCE.toCeremonyDetailResponseDto(ceremony);
 	}
 
 	@Transactional(readOnly = true)
@@ -73,6 +73,6 @@ public class CeremonyService {
 		if (ceremony.getCeremonyState() != CeremonyState.ACCEPT) {
 			throw CeremonyErrorCode.CEREMONY_NOT_FOUND.toBaseException();
 		}
-		return CeremonyDtoMapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
+		return CeremonyDtoMapper.INSTANCE.toCeremonyDetailResponseDto(ceremony);
 	}
 }
