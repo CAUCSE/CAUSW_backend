@@ -17,6 +17,7 @@ import net.causw.app.main.domain.community.ceremony.api.v2.mapper.CeremonyCreate
 import net.causw.app.main.domain.community.ceremony.api.v2.mapper.CeremonyDtoMapper;
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyContext;
+import net.causw.app.main.domain.community.ceremony.enums.CeremonyState;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyCreator;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyReader;
 import net.causw.app.main.domain.community.ceremony.util.CeremonyValidator;
@@ -67,6 +68,10 @@ public class CeremonyService {
 				throw CeremonyErrorCode.ACCESS_ONLY_APPLICANT.toBaseException();
 			}
 			return CeremonyDtoMapper.INSTANCE.toMyCeremonyDetailResponseDto(ceremony);
+		}
+
+		if (ceremony.getCeremonyState() != CeremonyState.ACCEPT) {
+			throw CeremonyErrorCode.CEREMONY_NOT_FOUND.toBaseException();
 		}
 		return CeremonyDtoMapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
 	}
