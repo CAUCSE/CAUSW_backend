@@ -39,6 +39,30 @@ ALTER TABLE tb_ceremony
     MODIFY ceremony_type ENUM('CELEBRATION', 'CONDOLENCE') NOT NULL,
     MODIFY relation_type ENUM('ME', 'FAMILY', 'INSTEAD') NOT NULL;
 
+-- 4.5 ceremony_category 정규화 + 한글 매핑
+
+UPDATE tb_ceremony
+SET
+    ceremony_custom_category =
+        CASE
+            WHEN ceremony_category = 'GRADUATION' THEN '졸업식'
+            WHEN ceremony_category = 'ETC' THEN '기타'
+            ELSE ceremony_category
+            END,
+    ceremony_category = 'ETC'
+WHERE ceremony_category NOT IN (
+                                'MARRIAGE',
+                                'FIRST_BIRTHDAY',
+                                'OPENING',
+                                'BIRTHDAY',
+                                'FUNERAL',
+                                'ACCIDENT',
+                                'ILLNESS',
+                                'ETC'
+    )
+   OR ceremony_category IN ('GRADUATION', 'ETC')
+   OR ceremony_category IS NULL;
+
 -- 5. NOT NULL로 변경
 ALTER TABLE tb_ceremony
     MODIFY ceremony_category ENUM('MARRIAGE', 'FIRST_BIRTHDAY', 'OPENING', 'BIRTHDAY', 'FUNERAL', 'ACCIDENT', 'ILLNESS', 'ETC') NOT NULL,
