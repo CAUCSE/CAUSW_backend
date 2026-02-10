@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyState;
+import net.causw.app.main.domain.community.ceremony.enums.CeremonyType;
 
 public interface CeremonyRepository extends JpaRepository<Ceremony, String> {
 
@@ -31,7 +32,7 @@ public interface CeremonyRepository extends JpaRepository<Ceremony, String> {
 		"OR ((c.startDate = :nowDate AND c.endDate = :nowDate) AND c.startTime IS NULL)) " +
 		"ORDER BY c.startTime ASC")
 	Page<Ceremony> findOngoingByTypeOrderByStartedAtAsc(
-		@Param("type") String type, @Param("nowDate") LocalDate nowDate, @Param("nowTime") LocalTime nowTime,
+		@Param("type") CeremonyType type, @Param("nowDate") LocalDate nowDate, @Param("nowTime") LocalTime nowTime,
 		Pageable pageable);
 
 	@Query("SELECT c " +
@@ -41,7 +42,7 @@ public interface CeremonyRepository extends JpaRepository<Ceremony, String> {
 		"OR (c.startDate = :nowDate AND (c.startTime IS NOT NULL AND :nowTime < c.startTime))) " +
 		"ORDER BY c.startDate, c.startTime ASC")
 	Page<Ceremony> findUpcomingByTypeOrderByStartedAtAsc(
-		@Param("type") String type, @Param("nowDate") LocalDate nowDate, @Param("nowTime") LocalTime nowTime,
+		@Param("type") CeremonyType type, @Param("nowDate") LocalDate nowDate, @Param("nowTime") LocalTime nowTime,
 		@Param("toDate") LocalDate toDate, Pageable pageable);
 
 	@Query("SELECT c " +
@@ -51,7 +52,7 @@ public interface CeremonyRepository extends JpaRepository<Ceremony, String> {
 		"OR (c.endDate = :nowDate AND (c.endTime IS NOT NULL AND c.endTime < :nowTime))) " +
 		"ORDER BY c.endDate, c.endTime ASC")
 	Page<Ceremony> findPastByTypeOrderByEndedAtAsc(
-		@Param("type") String type, @Param("nowDate") LocalDate nowDate, @Param("nowTime") LocalTime nowTime,
+		@Param("type") CeremonyType type, @Param("nowDate") LocalDate nowDate, @Param("nowTime") LocalTime nowTime,
 		@Param("fromDate") LocalDate fromDate, Pageable pageable);
 
 	@Query("SELECT c " +

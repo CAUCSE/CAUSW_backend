@@ -23,6 +23,7 @@ import net.causw.app.main.domain.community.ceremony.api.v2.mapper.CeremonyDtoMap
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyContext;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyState;
+import net.causw.app.main.domain.community.ceremony.enums.CeremonyType;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyCreator;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyReader;
 import net.causw.app.main.domain.community.ceremony.util.CeremonyTypeParser;
@@ -99,10 +100,16 @@ public class CeremonyService {
 	public Page<CeremonySummaryResponseDto> getOngoingCeremonyPage(String type, Integer pageNum) {
 		Page<Ceremony> ceremonies;
 		Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_PAGE_SIZE);
+		CeremonyType ceremonyType;
 
-		ceremonies = ceremonyTypeParser.parseTypeOrNull(type) == null ?
-			ceremonyReader.findAllOngoingOrderByStartedAtAsc(LocalDate.now(), LocalTime.now(), pageable)
-			: ceremonyReader.findOngoingByTypeOrderByStartedAtAsc(type, LocalDate.now(), LocalTime.now(), pageable);
+		if (ceremonyTypeParser.parseTypeOrNull(type) == null) {
+			ceremonies = ceremonyReader.findAllOngoingOrderByStartedAtAsc(LocalDate.now(), LocalTime.now(), pageable);
+		}
+		else {
+			ceremonyType = CeremonyType.fromString(type);
+			ceremonies = ceremonyReader.findOngoingByTypeOrderByStartedAtAsc(ceremonyType, LocalDate.now(),
+				LocalTime.now(), pageable);
+		}
 
 		return ceremonies.map(ceremonyDtoMapper::toCeremonySummaryResponseDto);
 	}
@@ -111,12 +118,17 @@ public class CeremonyService {
 	public Page<CeremonySummaryResponseDto> getUpcomingCeremonyPage(String type, Integer days, Integer pageNum) {
 		Page<Ceremony> ceremonies;
 		Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_PAGE_SIZE);
+		CeremonyType ceremonyType;
 
-		ceremonies = ceremonyTypeParser.parseTypeOrNull(type) == null ?
-			ceremonyReader.findAllUpcomingOrderByStartedAtAsc(LocalDate.now(), LocalTime.now(),
-				LocalDate.now().plusDays(days), pageable)
-			: ceremonyReader.findUpcomingByTypeOrderByStartedAtAsc(type, LocalDate.now(), LocalTime.now(),
-			LocalDate.now().plusDays(days), pageable);
+		if (ceremonyTypeParser.parseTypeOrNull(type) == null) {
+			ceremonies = ceremonyReader.findAllUpcomingOrderByStartedAtAsc(LocalDate.now(), LocalTime.now(),
+				LocalDate.now().plusDays(days), pageable);
+		}
+		else {
+			ceremonyType = CeremonyType.fromString(type);
+			ceremonies = ceremonyReader.findUpcomingByTypeOrderByStartedAtAsc(ceremonyType, LocalDate.now(),
+				LocalTime.now(), LocalDate.now().plusDays(days), pageable);
+		}
 
 		return ceremonies.map(ceremonyDtoMapper::toCeremonySummaryResponseDto);
 	}
@@ -125,12 +137,17 @@ public class CeremonyService {
 	public Page<CeremonySummaryResponseDto> getPastCeremonyPage(String type, Integer days, Integer pageNum) {
 		Page<Ceremony> ceremonies;
 		Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_PAGE_SIZE);
+		CeremonyType ceremonyType;
 
-		ceremonies = ceremonyTypeParser.parseTypeOrNull(type) == null ?
-			ceremonyReader.findAllPastOrderByEndedAtAsc(LocalDate.now(), LocalTime.now(),
-				LocalDate.now().minusDays(days), pageable)
-			: ceremonyReader.findPastByTypeOrderByEndedAtAsc(type, LocalDate.now(), LocalTime.now(),
-			LocalDate.now().minusDays(days), pageable);
+		if (ceremonyTypeParser.parseTypeOrNull(type) == null) {
+			ceremonies = ceremonyReader.findAllPastOrderByEndedAtAsc(LocalDate.now(), LocalTime.now(),
+				LocalDate.now().minusDays(days), pageable);
+		}
+		else {
+			ceremonyType = CeremonyType.fromString(type);
+			ceremonies = ceremonyReader.findPastByTypeOrderByEndedAtAsc(ceremonyType, LocalDate.now(), LocalTime.now(),
+				LocalDate.now().minusDays(days), pageable);
+		}
 
 		return ceremonies.map(ceremonyDtoMapper::toCeremonySummaryResponseDto);
 	}

@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyState;
+import net.causw.app.main.domain.community.ceremony.enums.CeremonyType;
 import net.causw.app.main.domain.community.ceremony.repository.CeremonyRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -30,17 +31,17 @@ public class CeremonyReader {
 		return ceremonyRepository.findAllOrderByStartedAtAsc(pageable);
 	}
 
-	public Page<Ceremony> findOngoingByTypeOrderByStartedAtAsc(String type, LocalDate nowDate, LocalTime nowTime,
+	public Page<Ceremony> findOngoingByTypeOrderByStartedAtAsc(CeremonyType type, LocalDate nowDate, LocalTime nowTime,
 		Pageable pageable) {
 		return ceremonyRepository.findOngoingByTypeOrderByStartedAtAsc(type, nowDate, nowTime, pageable);
 	}
 
-	public Page<Ceremony> findUpcomingByTypeOrderByStartedAtAsc(String type, LocalDate nowDate, LocalTime nowTime,
+	public Page<Ceremony> findUpcomingByTypeOrderByStartedAtAsc(CeremonyType type, LocalDate nowDate, LocalTime nowTime,
 		LocalDate toDate, Pageable pageable) {
 		return ceremonyRepository.findUpcomingByTypeOrderByStartedAtAsc(type, nowDate, nowTime, toDate, pageable);
 	}
 
-	public Page<Ceremony> findPastByTypeOrderByEndedAtAsc(String type, LocalDate nowDate, LocalTime nowTime,
+	public Page<Ceremony> findPastByTypeOrderByEndedAtAsc(CeremonyType type, LocalDate nowDate, LocalTime nowTime,
 		LocalDate fromDate, Pageable pageable) {
 		return ceremonyRepository.findPastByTypeOrderByEndedAtAsc(type, nowDate, nowTime, fromDate, pageable);
 	}

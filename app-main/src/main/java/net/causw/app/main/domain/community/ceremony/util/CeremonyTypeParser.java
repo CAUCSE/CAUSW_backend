@@ -16,7 +16,7 @@ public class CeremonyTypeParser {
 		}
 
 		try {
-			return CeremonyType.valueOf(typeParam).getValue().toUpperCase();
+			return CeremonyType.fromString(typeParam).getValue();
 		}
 		catch (IllegalArgumentException e) {
 			throw GlobalErrorCode.BAD_REQUEST.toBaseException();

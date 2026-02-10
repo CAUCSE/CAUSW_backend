@@ -21,7 +21,6 @@ import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.Ceremony
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonySummaryResponseDto;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyContext;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyState;
-import net.causw.app.main.domain.community.ceremony.enums.CeremonyType;
 import net.causw.app.main.domain.community.ceremony.service.CeremonyService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
@@ -74,7 +73,7 @@ public class CeremonyController {
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "진행 중인 경조사 리스트 조회", description = "진행 중인 경조사 리스트를 조회합니다.")
 	public ApiResponse<Page<CeremonySummaryResponseDto>> getOngoingCeremonyPage(
-		@RequestParam(name="type", required = false) String typeParam,
+		@RequestParam(name="type", required = false, defaultValue = "all") String typeParam,
 		@RequestParam(name = "pageNum", required = false, defaultValue = "0") Integer pageNum) {
 		return ApiResponse.success(ceremonyService.getOngoingCeremonyPage(typeParam, pageNum));
 	}
@@ -83,7 +82,7 @@ public class CeremonyController {
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "곧 다가올 경조사 리스트 조회", description = "곧 다가올 경조사 리스트를 조회합니다.")
 	public ApiResponse<Page<CeremonySummaryResponseDto>> getUpcomingCeremonyPage(
-		@RequestParam(name="type", required = false, defaultValue = "") String typeParam,
+		@RequestParam(name = "type", required = false, defaultValue = "all") String typeParam,
 		@RequestParam(name = "days", required = false, defaultValue = "7") @Min(0) @Max(365) Integer days,
 		@RequestParam(name = "pageNum", required = false, defaultValue = "0") Integer pageNum) {
 		return ApiResponse.success(ceremonyService.getUpcomingCeremonyPage(typeParam, days, pageNum));
@@ -93,7 +92,7 @@ public class CeremonyController {
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "지난 경조사 리스트 조회", description = "지난 경조사 리스트를 조회합니다.")
 	public ApiResponse<Page<CeremonySummaryResponseDto>> getPastCeremonyPage(
-		@RequestParam(name = "type", required = false) String typeParam,
+		@RequestParam(name = "type", required = false, defaultValue = "all") String typeParam,
 		@RequestParam(name = "days", required = false,  defaultValue = "7") @Min(0) @Max(365) Integer days,
 		@RequestParam(name = "pageNum", required = false,  defaultValue = "0") Integer pageNum) {
 		return ApiResponse.success(ceremonyService.getPastCeremonyPage(typeParam, days, pageNum));
@@ -103,7 +102,7 @@ public class CeremonyController {
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "내 경조사 리스트 조회", description = "내 경조사 리스트를 조회합니다.")
 	public ApiResponse<Page<CeremonySummaryResponseDto>> getMyCeremonyPage(
-		@RequestParam(name = "state", required = false, defaultValue = "ALL") String stateParam,
+		@RequestParam(name = "state", required = false, defaultValue = "all") String stateParam,
 		@RequestParam(name = "pageNum", required = false, defaultValue = "0") Integer pageNum,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		CeremonyState state = CeremonyState.fromString(stateParam);
