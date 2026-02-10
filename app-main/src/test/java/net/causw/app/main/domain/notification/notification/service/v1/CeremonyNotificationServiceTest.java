@@ -141,7 +141,7 @@ class CeremonyNotificationServiceTest {
 
 		ceremonyNotificationService.sendByAdmissionYear(2023, mockCeremony.getId());
 
-		verify(firebasePushNotificationService).sendNotification(validToken, "테스트 유저(2023) - MARRIAGE",
+		verify(firebasePushNotificationService).sendNotification(validToken, "테스트 유저(2023) - 결혼식",
 			"기간 : 2024-04-15 ~ 2024-04-16");
 		verify(notificationLogRepository).save(any(NotificationLog.class));
 	}

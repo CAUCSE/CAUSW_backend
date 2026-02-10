@@ -28,7 +28,7 @@ public interface NotificationDtoV1Mapper {
 
 	@Mapping(target = "id", source = "id")
 	@Mapping(target = "writer", expression = "java(formatWriter(ceremony))")
-	@Mapping(target = "category", source = "ceremonyCategory")
+	@Mapping(target = "category", source = "ceremonyCategory.label")
 	@Mapping(target = "date", expression = "java(formatDateRange(ceremony))")
 	@Mapping(target = "description", source = "description")
 	@Mapping(target = "createdAt", expression = "java(formatCreatedAt(ceremony))")
