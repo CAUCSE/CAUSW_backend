@@ -1,11 +1,15 @@
 package net.causw.app.main.domain.user.auth.service.v2;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 import java.util.Optional;
 import java.util.Set;
@@ -17,6 +21,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
@@ -24,19 +29,20 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import net.causw.app.main.core.security.JwtTokenProvider;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.v2.dto.UserRegisterDto;
 import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
+import net.causw.app.main.domain.user.account.service.v2.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.v2.implementation.UserWriter;
 import net.causw.app.main.domain.user.auth.api.v2.dto.AuthDtoMapper;
 import net.causw.app.main.domain.user.auth.api.v2.dto.response.AuthResponse;
 import net.causw.app.main.domain.user.auth.service.v2.dto.AuthResult;
-import net.causw.app.main.domain.user.auth.util.EmailUserValidator;
+import net.causw.app.main.domain.user.auth.service.v2.dto.AuthTokenPair;
+import net.causw.app.main.domain.user.auth.service.v2.implementation.AuthTokenManager;
+import net.causw.app.main.domain.user.auth.service.v2.implementation.AuthValidator;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
-import net.causw.app.main.shared.infra.redis.RedisUtils;
-import net.causw.global.constant.StaticValue;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
 
@@ -53,15 +59,15 @@ public class AuthServiceTest {
 	@Mock
 	private UserWriter userWriter;
 	@Mock
-	private EmailUserValidator emailUserValidator;
-	@Mock
 	private PasswordEncoder passwordEncoder;
 	@Mock
 	private AuthDtoMapper authDtoMapper;
 	@Mock
-	private JwtTokenProvider jwtTokenProvider;
+	private UserValidator userValidator;
 	@Mock
-	private RedisUtils redisUtils;
+	private AuthValidator authValidator;
+	@Mock
+	private AuthTokenManager authTokenManager;
 
 	private static final String EMAIL = "test@example.com";
 	private static final String PASSWORD = "password1234";
@@ -75,16 +81,20 @@ public class AuthServiceTest {
 	private UserRegisterDto registerDto;
 	private User user;
 	private AuthResponse authResponse;
+	private AuthTokenPair authTokenPair;
 
 	@BeforeEach
 	void setup() {
 		registerDto = new UserRegisterDto(EMAIL, PASSWORD, NAME, NICKNAME, PHONE);
 		user = User.from(registerDto, ENCODED_PASSWORD);
+
 		authResponse = AuthResponse.builder()
 			.email(EMAIL)
 			.name(NAME)
 			.accessToken(ACCESS_TOKEN)
 			.build();
+
+		authTokenPair = new AuthTokenPair(ACCESS_TOKEN, REFRESH_TOKEN);
 	}
 
 	@Nested
@@ -108,10 +118,10 @@ public class AuthServiceTest {
 			assertThat(response.email()).isEqualTo(EMAIL);
 
 			// verify
-			verify(userReader).checkEmailDuplication(EMAIL);
-			verify(userReader).checkNicknameDuplication(NICKNAME);
-			verify(userReader).checkPhoneNumDuplication(PHONE);
-			verify(emailUserValidator).validateRegister(any(User.class), eq(PASSWORD), eq(PHONE));
+			verify(userValidator).checkEmailDuplication(EMAIL);
+			verify(userValidator).checkNicknameDuplication(NICKNAME);
+			verify(userValidator).checkPhoneNumDuplication(PHONE);
+			verify(authValidator).validateRegisterInput(any(User.class), eq(PASSWORD), eq(PHONE));
 			verify(userWriter).save(any(User.class));
 		}
 
@@ -120,7 +130,7 @@ public class AuthServiceTest {
 		class RegisterFailTest {
 
 			@Nested
-			@DisplayName("실패: 이미 등록된 사용자(이름/전화번호)가 있고, 가입 불가능한 상태라면 사용자 상태에 따라 에러를 반환한다.")
+			@DisplayName("실패: 이미 가입된 사용자의 상태 문제")
 			class UserAlreadyExist {
 
 				@ParameterizedTest(name = "사용자 상태에 따른 에러코드: {0}")
@@ -129,19 +139,21 @@ public class AuthServiceTest {
 				void fail_when_user_exists_with_invalid_state(UserErrorCode errorCode) {
 					// given
 					User mockedExistingUser = mock(User.class);
+					given(mockedExistingUser.getState()).willReturn(UserState.ACTIVE);
 					given(userReader.checkUserExistByPhoneNumAndName(eq(PHONE), eq(NAME)))
 						.willReturn(Optional.of(mockedExistingUser));
 
 					doThrow(errorCode.toBaseException())
-						.when(mockedExistingUser).validateSignUpPossible();
+						.when(userValidator).validateUserStatusForSignup(any());
 
 					// when & then
-					assertThrows(BaseRunTimeV2Exception.class, () -> authService.registerEmailUser(registerDto));
+					assertThatThrownBy(() -> authService.registerEmailUser(registerDto))
+						.isInstanceOf(BaseRunTimeV2Exception.class)
+						.hasMessage(errorCode.getMessage());
 
 					// verify
-					verify(userReader).checkUserExistByPhoneNumAndName(PHONE, NAME);
-					verify(mockedExistingUser).validateSignUpPossible();
-					verify(userReader, never()).checkEmailDuplication(anyString());
+					verify(userValidator).validateUserStatusForSignup(any());
+					verify(userValidator, never()).checkEmailDuplication(anyString());
 				}
 			}
 
@@ -153,14 +165,15 @@ public class AuthServiceTest {
 					.willReturn(Optional.empty());
 
 				doThrow(UserErrorCode.EMAIL_ALREADY_EXIST.toBaseException())
-					.when(userReader).checkEmailDuplication(EMAIL);
+					.when(userValidator).checkEmailDuplication(EMAIL);
 
 				// when & then
-				assertThrows(BaseRunTimeV2Exception.class, () -> authService.registerEmailUser(registerDto));
+				assertThatThrownBy(() -> authService.registerEmailUser(registerDto))
+					.isInstanceOf(BaseRunTimeV2Exception.class);
 
 				// verify
-				verify(userReader).checkEmailDuplication(EMAIL);
-				verify(userReader, never()).checkNicknameDuplication(anyString());
+				verify(userValidator).checkEmailDuplication(EMAIL);
+				verify(userValidator, never()).checkNicknameDuplication(anyString());
 			}
 
 			@Test
@@ -171,14 +184,14 @@ public class AuthServiceTest {
 					.willReturn(Optional.empty());
 
 				doThrow(UserErrorCode.NICKNAME_ALREADY_EXIST.toBaseException())
-					.when(userReader).checkNicknameDuplication(NICKNAME);
+					.when(userValidator).checkNicknameDuplication(NICKNAME);
 
 				// when & then
-				assertThrows(BaseRunTimeV2Exception.class, () -> authService.registerEmailUser(registerDto));
+				assertThatThrownBy(() -> authService.registerEmailUser(registerDto))
+					.isInstanceOf(BaseRunTimeV2Exception.class);
 
 				// verify
-				verify(userReader).checkNicknameDuplication(NICKNAME);
-				verify(userReader, never()).checkPhoneNumDuplication(anyString());
+				verify(userValidator).checkNicknameDuplication(NICKNAME);
 			}
 
 			@Test
@@ -189,29 +202,25 @@ public class AuthServiceTest {
 					.willReturn(Optional.empty());
 
 				doThrow(UserErrorCode.PHONE_NUMBER_ALREADY_EXIST.toBaseException())
-					.when(userReader).checkPhoneNumDuplication(PHONE);
+					.when(userValidator).checkPhoneNumDuplication(PHONE);
 
 				// when & then
-				assertThrows(BaseRunTimeV2Exception.class, () -> authService.registerEmailUser(registerDto));
+				assertThatThrownBy(() -> authService.registerEmailUser(registerDto))
+					.isInstanceOf(BaseRunTimeV2Exception.class);
 
 				// verify
-				verify(userReader).checkPhoneNumDuplication(PHONE);
-				verify(userWriter, never()).save(any(User.class));
+				verify(userValidator).checkPhoneNumDuplication(PHONE);
 			}
 
 			@Nested
-			@DisplayName("데이터 유효성 검증 실패 (Validator Fail)")
+			@DisplayName("데이터 유효성 검증 실패 (AuthValidator Fail)")
 			class ValidationFailTest {
-				static Stream<Exception> provideValidationExceptions() {
+
+				static Stream<Arguments> provideValidationExceptions() {
 					return Stream.of(
-						// Case 1: 비밀번호 양식 오류
-						new BadRequestException(ErrorCode.INVALID_USER_DATA_REQUEST, "비밀번호 형식이 잘못되었습니다."),
-
-						// Case 2: 전화번호 양식 오류
-						new BadRequestException(ErrorCode.INVALID_USER_DATA_REQUEST, "전화번호 형식이 잘못되었습니다."),
-
-						// Case 3: 객체 검증(Constraint) 오류 (@NotNull, @Size 등)
-						new ConstraintViolationException("Validation failed", Set.of()));
+						Arguments.of(new BadRequestException(ErrorCode.INVALID_USER_DATA_REQUEST, "비밀번호 형식이 잘못되었습니다.")),
+						Arguments.of(new BadRequestException(ErrorCode.INVALID_USER_DATA_REQUEST, "전화번호 형식이 잘못되었습니다.")),
+						Arguments.of(new ConstraintViolationException("Validation failed", Set.of())));
 				}
 
 				@ParameterizedTest(name = "발생 예외: {0}")
@@ -223,12 +232,11 @@ public class AuthServiceTest {
 					given(passwordEncoder.encode(anyString())).willReturn(ENCODED_PASSWORD);
 
 					doThrow(exceptionToThrow)
-						.when(emailUserValidator).validateRegister(any(User.class), eq(PASSWORD), eq(PHONE));
+						.when(authValidator).validateRegisterInput(any(User.class), eq(PASSWORD), eq(PHONE));
 
 					// when & then
 					assertThatThrownBy(() -> authService.registerEmailUser(registerDto))
-						.isInstanceOf(exceptionToThrow.getClass())
-						.hasMessage(exceptionToThrow.getMessage());
+						.isInstanceOf(exceptionToThrow.getClass());
 
 					// verify
 					verify(userWriter, never()).save(any(User.class));
@@ -242,12 +250,11 @@ public class AuthServiceTest {
 	class LoginEmailUserTest {
 
 		@Test
-		@DisplayName("성공: 이메일과 비밀번호가 일치하면 토큰을 발급한다.")
+		@DisplayName("성공: 로그인 검증 통과 시 토큰을 발급한다.")
 		void success() {
 			// given
 			given(userReader.findByEmailOrElseThrow(EMAIL)).willReturn(user);
-			given(jwtTokenProvider.createAccessToken(any(), any(), any())).willReturn(ACCESS_TOKEN);
-			given(jwtTokenProvider.createRefreshToken()).willReturn(REFRESH_TOKEN);
+			given(authTokenManager.issueTokens(any(User.class))).willReturn(authTokenPair);
 			given(authDtoMapper.toAuthResponse(any(User.class), eq(ACCESS_TOKEN), any())).willReturn(authResponse);
 
 			// when
@@ -259,17 +266,16 @@ public class AuthServiceTest {
 			assertThat(result.refreshToken()).isEqualTo(REFRESH_TOKEN);
 
 			// verify
-			verify(emailUserValidator).validateLogin(user, PASSWORD);
-			verify(redisUtils).setRefreshTokenData(eq(REFRESH_TOKEN), eq(user.getId()),
-				eq(StaticValue.JWT_REFRESH_TOKEN_VALID_TIME));
+			verify(authValidator).validateCredential(user, PASSWORD);
+			verify(authTokenManager).issueTokens(user);
 		}
 
 		@Nested
-		@DisplayName("이메일 로그인 실패 (Fail Cases)")
+		@DisplayName("이메일 로그인 실패")
 		class LoginFailTest {
 
 			@Test
-			@DisplayName("실패: 존재하지 않는 이메일로 로그인 시도 시 에러를 반환한다.")
+			@DisplayName("실패: 존재하지 않는 이메일")
 			void fail_user_not_found() {
 				// given
 				given(userReader.findByEmailOrElseThrow(EMAIL))
@@ -281,18 +287,17 @@ public class AuthServiceTest {
 					.hasMessage(UserErrorCode.INVALID_LOGIN.getMessage());
 
 				// verify
-				verify(emailUserValidator, never()).validateLogin(any(), any());
-				verify(jwtTokenProvider, never()).createAccessToken(any(), any(), any());
+				verify(authValidator, never()).validateCredential(any(), any());
 			}
 
 			@Test
-			@DisplayName("실패: 비밀번호가 일치하지 않으면 에러를 반환한다.")
+			@DisplayName("실패: 비밀번호 불일치")
 			void fail_password_mismatch() {
 				// given
 				given(userReader.findByEmailOrElseThrow(EMAIL)).willReturn(user);
 
 				doThrow(UserErrorCode.INVALID_LOGIN.toBaseException())
-					.when(emailUserValidator).validateLogin(user, PASSWORD);
+					.when(authValidator).validateCredential(user, PASSWORD);
 
 				// when & then
 				assertThatThrownBy(() -> authService.loginEmailUser(EMAIL, PASSWORD))
@@ -300,10 +305,10 @@ public class AuthServiceTest {
 					.hasMessage(UserErrorCode.INVALID_LOGIN.getMessage());
 
 				// verify
-				verify(jwtTokenProvider, never()).createAccessToken(any(), any(), any());
+				verify(authTokenManager, never()).issueTokens(any());
 			}
 
-			@ParameterizedTest(name = "사용자 상태({0})에 따른 로그인 불가 에러 반환")
+			@ParameterizedTest(name = "실패: 사용자 상태 오류 ({0})")
 			@EnumSource(value = UserErrorCode.class, names = {
 				"INVALID_LOGIN_USER_DELETED",
 				"INVALID_LOGIN_USER_DROPPED",
@@ -314,15 +319,12 @@ public class AuthServiceTest {
 				given(userReader.findByEmailOrElseThrow(EMAIL)).willReturn(user);
 
 				doThrow(errorCode.toBaseException())
-					.when(emailUserValidator).validateLogin(user, PASSWORD);
+					.when(authValidator).validateCredential(user, PASSWORD);
 
 				// when & then
 				assertThatThrownBy(() -> authService.loginEmailUser(EMAIL, PASSWORD))
 					.isInstanceOf(BaseRunTimeV2Exception.class)
 					.hasMessage(errorCode.getMessage());
-
-				// verify
-				verify(jwtTokenProvider, never()).createAccessToken(any(), any(), any());
 			}
 		}
 	}

@@ -29,27 +29,6 @@ public class UserReader {
 			.orElseThrow(UserErrorCode.INVALID_LOGIN::toBaseException);
 	}
 
-	public void checkEmailDuplication(String email) {
-		Optional<User> emailExist = userRepository.findByEmail(email);
-		if (emailExist.isPresent()) {
-			throw UserErrorCode.EMAIL_ALREADY_EXIST.toBaseException();
-		}
-	}
-
-	public void checkPhoneNumDuplication(String phoneNumber) {
-		Optional<User> phoneNumExist = userRepository.findByPhoneNumber(phoneNumber);
-		if (phoneNumExist.isPresent()) {
-			throw UserErrorCode.PHONE_NUMBER_ALREADY_EXIST.toBaseException();
-		}
-	}
-
-	public void checkNicknameDuplication(String nickname) {
-		Optional<User> nicknameExist = userRepository.findByNickname(nickname);
-		if (nicknameExist.isPresent()) {
-			throw UserErrorCode.NICKNAME_ALREADY_EXIST.toBaseException();
-		}
-	}
-
 	public List<User> getUsersByIds(List<String> userIds) {
 		return userQueryRepository.findByIds(userIds);
 	}

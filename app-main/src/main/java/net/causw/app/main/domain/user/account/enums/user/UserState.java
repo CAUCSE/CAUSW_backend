@@ -2,7 +2,6 @@ package net.causw.app.main.domain.user.account.enums.user;
 
 import java.util.Arrays;
 
-import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
 
@@ -30,30 +29,5 @@ public enum UserState {
 				() -> new BadRequestException(
 					ErrorCode.INVALID_REQUEST_USER_STATE,
 					String.format("'%s' is invalid : not supported", value)));
-	}
-
-	// 사용자가 가입 (재가입)이 가능한지 확인하는 메서드
-	public void validateSignupPossible() {
-		switch (this) {
-			case ACTIVE, AWAIT, REJECT ->
-				throw UserErrorCode.ALREADY_REGISTERED.toBaseException();
-			case DROP ->
-				throw UserErrorCode.USER_DROPPED.toBaseException();
-			case INACTIVE ->
-				throw UserErrorCode.USER_INACTIVE_CAN_REJOIN.toBaseException();
-			default -> {}
-		}
-	}
-
-	public void validateLoginPossible() {
-		switch (this) {
-			case DELETED ->
-				throw UserErrorCode.INVALID_LOGIN_USER_DELETED.toBaseException();
-			case DROP ->
-				throw UserErrorCode.INVALID_LOGIN_USER_DROPPED.toBaseException();
-			case INACTIVE ->
-				throw UserErrorCode.INVALID_LOGIN_USER_INACTIVE.toBaseException();
-			default -> {}
-		}
 	}
 }
