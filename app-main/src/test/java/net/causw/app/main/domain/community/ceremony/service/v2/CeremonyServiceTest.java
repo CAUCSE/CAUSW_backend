@@ -20,6 +20,7 @@ import net.causw.app.main.domain.community.ceremony.api.v2.dto.request.CreateCer
 import net.causw.app.main.domain.community.ceremony.api.v2.mapper.CeremonyCreateMapper;
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyContext;
+import net.causw.app.main.domain.community.ceremony.enums.CeremonyState;
 import net.causw.app.main.domain.community.ceremony.service.CeremonyService;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyCreator;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyReader;
@@ -56,6 +57,22 @@ public class CeremonyServiceTest {
 		void setUp() {
 			user = mock(User.class);
 			dto = mock(CreateCeremonyRequestDto.class);
+		}
+
+		@Test
+		@DisplayName("분류 직접 입력일 때 ceremony_custom_category가 입력되지 않으면 예외 반환")
+		void givenCategoryIsETC_whenCreateCategoryWithCustomCategoryIsNull_thenThrowsException() {
+			// given
+			doThrow(CeremonyErrorCode.CUSTOM_CATEGORY_REQUIRED.toBaseException())
+				.when(ceremonyValidator).validateForCreate(dto);
+
+			// when & then
+			assertThatThrownBy(() -> ceremonyService.createCeremony(user, dto, null))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.CUSTOM_CATEGORY_REQUIRED);
+			then(uuidFileService).should(never()).saveFileList(any(), any());
+			then(ceremonyCreateMapper).should(never()).fromRequest(any(), any(), any(), any());
+			then(ceremonyCreator).should(never()).save(any());
 		}
 
 		@Test
@@ -185,6 +202,23 @@ public class CeremonyServiceTest {
 				.hasMessageContaining(CeremonyErrorCode.ACCESS_ONLY_APPLICANT.getMessage())
 				.extracting("errorCode")
 				.isEqualTo(CeremonyErrorCode.ACCESS_ONLY_APPLICANT);
+
+			verify(ceremonyReader, times(1)).findById("ceremonyId");
+		}
+
+		@DisplayName("승인되지 않은 경조사 general 상세 보기면 예외 반환")
+		@Test
+		void givenContextIsGeneral_whenCeremonyStateIsNotAccept_thenThrowsException() {
+			// given
+			given(ceremony.getCeremonyState()).willReturn(CeremonyState.AWAIT);
+			given(ceremonyReader.findById("ceremonyId")).willReturn(Optional.of(ceremony));
+
+			// when, then
+			assertThatThrownBy(() -> ceremonyService.getCeremony("ceremonyId", CeremonyContext.GENERAL, other))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasMessageContaining(CeremonyErrorCode.CEREMONY_NOT_FOUND.getMessage())
+				.extracting("errorCode")
+				.isEqualTo(CeremonyErrorCode.CEREMONY_NOT_FOUND);
 
 			verify(ceremonyReader, times(1)).findById("ceremonyId");
 		}

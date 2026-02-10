@@ -26,6 +26,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
+import net.causw.app.main.domain.community.ceremony.enums.CeremonyCategory;
 import net.causw.app.main.domain.community.ceremony.repository.CeremonyRepository;
 import net.causw.app.main.domain.notification.notification.entity.CeremonyNotificationSetting;
 import net.causw.app.main.domain.notification.notification.entity.Notification;
@@ -93,7 +94,7 @@ class CeremonyNotificationServiceTest {
 		given(mockCeremony.getUser()).willReturn(mockUser);
 		given(mockCeremony.getStartDate()).willReturn(LocalDate.of(2024, 4, 15));
 		given(mockCeremony.getEndDate()).willReturn(LocalDate.of(2024, 4, 16));
-		given(mockCeremony.getCeremonyCategory()).willReturn("결혼식");
+		given(mockCeremony.getCeremonyCategory()).willReturn(CeremonyCategory.MARRIAGE);
 		given(mockCeremony.isSetAll()).willReturn(true);
 		given(ceremonyRepository.findById("ceremony-id")).willReturn(Optional.of(mockCeremony));
 	}
@@ -140,7 +141,7 @@ class CeremonyNotificationServiceTest {
 
 		ceremonyNotificationService.sendByAdmissionYear(2023, mockCeremony.getId());
 
-		verify(firebasePushNotificationService).sendNotification(validToken, "테스트 유저(2023) - 결혼식",
+		verify(firebasePushNotificationService).sendNotification(validToken, "테스트 유저(2023) - MARRIAGE",
 			"기간 : 2024-04-15 ~ 2024-04-16");
 		verify(notificationLogRepository).save(any(NotificationLog.class));
 	}
