@@ -3,6 +3,13 @@ name: 동문네트워크 백엔드 CI 테스트 자동화(dev branch PR 시 작�
 on:
   pull_request:
     branches: [ "dev" ]
+    types: [ opened, synchronize, reopened, ready_for_review, labeled ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'img/**'
+      - '.gitignore'
+      - 'LICENSE'
 
 permissions:
   contents: read
@@ -10,8 +17,38 @@ permissions:
   checks: write
 
 jobs:
+  detect-changes:
+    name: Detect Changed Modules
+    if: ${{ !github.event.pull_request.draft && github.event.action != 'labeled' }}
+    runs-on: ubuntu-22.04
+    outputs:
+      app-main: ${{ steps.filter.outputs.app-main }}
+      app-chat: ${{ steps.filter.outputs.app-chat }}
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      - name: Detect changed paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            app-main:
+              - 'app-main/**'
+              - 'global/**'
+              - 'build.gradle'
+              - 'settings.gradle'
+              - 'gradle/**'
+            app-chat:
+              - 'app-chat/**'
+              - 'global/**'
+              - 'build.gradle'
+              - 'settings.gradle'
+              - 'gradle/**'
+
   migration-test:
     name: Flyway Migration Test in Github Actions
+    if: ${{ !github.event.pull_request.draft && contains(github.event.pull_request.labels.*.name, 'db-change') }}
     runs-on: ubuntu-22.04
 
     services:
@@ -142,6 +179,8 @@ jobs:
 
   junit-test-app-main:
     name: JUnit Test app-main Module
+    needs: [detect-changes]
+    if: ${{ needs.detect-changes.outputs.app-main == 'true' }}
     runs-on: ubuntu-22.04
 
     steps:
@@ -192,6 +231,8 @@ jobs:
 
   junit-test-app-chat:
     name: JUnit Test app-chat Module
+    needs: [detect-changes]
+    if: ${{ needs.detect-changes.outputs.app-chat == 'true' }}
     runs-on: ubuntu-22.04
 
     steps:
@@ -242,9 +283,9 @@ jobs:
 
   junit-test-result-summary:
     name: Report JUnit Test Result Summary
-    if: ${{ always() }}
+    if: ${{ always() && !github.event.pull_request.draft && github.event.action != 'labeled' && (needs.junit-test-app-main.result == 'success' || needs.junit-test-app-main.result == 'failure' || needs.junit-test-app-chat.result == 'success' || needs.junit-test-app-chat.result == 'failure') }}
     runs-on: ubuntu-22.04
-    needs: [junit-test-app-main, junit-test-app-chat]
+    needs: [detect-changes, junit-test-app-main, junit-test-app-chat]
 
     steps:
       # 테스트 결과 아티팩트 다운로드
@@ -259,6 +300,5 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
           files: |
-            combined/app-main-test-results/TEST-*.xml
-            combined/app-chat-test-results/TEST-*.xml
+            combined/**/TEST-*.xml
           check_name: "Test Results Summary"
