@@ -13,8 +13,10 @@ public class CeremonyValidator {
 	private final CeremonyRelationValidator ceremonyRelationValidator;
 	private final CeremonyDateTimeValidator ceremonyDateTimeValidator;
 	private final CeremonyNotificationValidator ceremonyNotificationValidator;
+	private final CeremonyCategoryValidator ceremonyCategoryValidator;
 
 	public void validateForCreate(CreateCeremonyRequestDto dto) {
+		ceremonyCategoryValidator.validateCustomCategory(dto.getCeremonyCategory(), dto.getCeremonyCustomCategory());
 
 		ceremonyRelationValidator.validateRelation(dto.getRelationType(), dto.getFamilyRelation(),
 			dto.getAlumniRelation(), dto.getAlumniName(), dto.getAlumniAdmissionYear());

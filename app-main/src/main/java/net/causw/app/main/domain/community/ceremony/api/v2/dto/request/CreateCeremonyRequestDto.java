@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
+import net.causw.app.main.domain.community.ceremony.enums.CeremonyCategory;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyType;
 import net.causw.app.main.domain.community.ceremony.enums.RelationType;
 
@@ -22,9 +23,12 @@ public class CreateCeremonyRequestDto {
 	@NotNull(message = "분류는 필수 입력 값입니다.")
 	private CeremonyType ceremonyType;
 
-	@Schema(description = "경조사 상세 분류", requiredMode = Schema.RequiredMode.REQUIRED, example = "결혼식")
+	@Schema(description = "경조사 상세 분류 (enum)", requiredMode = Schema.RequiredMode.REQUIRED, example = "MARRIAGE")
 	@NotNull(message = "상세 분류는 필수 입력 값입니다.")
-	private String ceremonyCategory;
+	private CeremonyCategory ceremonyCategory;
+
+	@Schema(description = "경조사 상세 분류 (직접 입력)", example = "졸업식")
+	private String ceremonyCustomCategory;
 
 	@Schema(description = "경조사 시작 날짜", requiredMode = Schema.RequiredMode.REQUIRED, example = "2026-01-01")
 	@NotNull(message = "시작 날짜는 필수 입력 값입니다.")

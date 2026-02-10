@@ -8,7 +8,7 @@ public enum CeremonyCategory {
 	FIRST_BIRTHDAY("돌잔치"),
 	OPENING("개업"),
 	BIRTHDAY("생신잔치"),
-	GRADUATION("졸업식"),
+
 	FUNERAL("장례식"),
 	ACCIDENT("사고"),
 	ILLNESS("투병"),

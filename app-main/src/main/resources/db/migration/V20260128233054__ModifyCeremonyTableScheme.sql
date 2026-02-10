@@ -6,6 +6,7 @@
 --    contact, link
 ALTER TABLE tb_ceremony
     ADD COLUMN ceremony_type ENUM('CELEBRATION', 'CONDOLENCE') NULL AFTER updated_at,
+    ADD COLUMN ceremony_custom_category VARCHAR(50) NULL AFTER ceremony_category,
     ADD COLUMN end_time TIME NULL AFTER start_date,
     ADD COLUMN start_time TIME NULL AFTER end_time,
     ADD COLUMN relation_type ENUM('ME', 'FAMILY', 'ALUMNI') NULL AFTER user_id,
@@ -40,6 +41,6 @@ ALTER TABLE tb_ceremony
 
 -- 5. NOT NULL로 변경
 ALTER TABLE tb_ceremony
-    MODIFY ceremony_category VARCHAR(40) NOT NULL,
+    MODIFY ceremony_category ENUM('MARRIAGE', 'FIRST_BIRTHDAY', 'OPENING', 'BIRTHDAY', 'FUNERAL', 'ACCIDENT', 'ILLNESS', 'ETC') NOT NULL,
     MODIFY description VARCHAR(255) NULL,
     MODIFY end_date DATE NULL;

@@ -9,6 +9,7 @@ import java.util.Set;
 
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.CeremonyAttachImage;
+import net.causw.app.main.domain.community.ceremony.enums.CeremonyCategory;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyState;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyType;
 import net.causw.app.main.domain.community.ceremony.enums.RelationType;
@@ -50,8 +51,12 @@ public class Ceremony extends BaseEntity {
 	@Column(name = "ceremony_type", nullable = false)
 	private CeremonyType ceremonyType;
 
+	@Enumerated(EnumType.STRING)
 	@Column(name = "ceremony_category")
-	private String ceremonyCategory;
+	private CeremonyCategory ceremonyCategory;
+
+	@Column(name = "ceremony_custom_category")
+	private String ceremonyCustomCategory;
 
 	@Column(name = "start_date", nullable = false)
 	private LocalDate startDate;
@@ -132,7 +137,7 @@ public class Ceremony extends BaseEntity {
 
 	public static Ceremony ofV1(
 		User user,
-		String ceremonyCategory,
+		CeremonyCategory ceremonyCategory,
 		String description,
 		LocalDate startDate,
 		LocalDate endDate,
@@ -155,7 +160,7 @@ public class Ceremony extends BaseEntity {
 
 	public static Ceremony createWithImagesV1(
 		User user,
-		String ceremonyCategory,
+		CeremonyCategory ceremonyCategory,
 		String description,
 		LocalDate startDate,
 		LocalDate endDate,
@@ -180,7 +185,8 @@ public class Ceremony extends BaseEntity {
 	public static Ceremony of(
 		User user,
 		CeremonyType ceremonyType,
-		String ceremonyCategory,
+		CeremonyCategory ceremonyCategory,
+		String ceremonyCustomCategory,
 		LocalDate startDate,
 		LocalDate endDate,
 		LocalTime startTime,
@@ -206,6 +212,7 @@ public class Ceremony extends BaseEntity {
 			.user(user)
 			.ceremonyType(ceremonyType)
 			.ceremonyCategory(ceremonyCategory)
+			.ceremonyCustomCategory(ceremonyCustomCategory)
 			.startDate(startDate)
 			.endDate(endDate)
 			.startTime(startTime)
@@ -229,7 +236,8 @@ public class Ceremony extends BaseEntity {
 	public static Ceremony createWithImages(
 		User user,
 		CeremonyType ceremonyType,
-		String ceremonyCategory,
+		CeremonyCategory ceremonyCategory,
+		String ceremonyCustomCategory,
 		LocalDate startDate,
 		LocalDate endDate,
 		LocalTime startTime,
@@ -252,6 +260,7 @@ public class Ceremony extends BaseEntity {
 			user,
 			ceremonyType,
 			ceremonyCategory,
+			ceremonyCustomCategory,
 			startDate,
 			endDate,
 			startTime,
