@@ -31,7 +31,7 @@ import net.causw.app.main.domain.user.account.service.v2.implementation.UserRead
 import net.causw.app.main.domain.user.account.service.v2.implementation.UserWriter;
 import net.causw.app.main.domain.user.auth.api.v2.dto.AuthDtoMapper;
 import net.causw.app.main.domain.user.auth.api.v2.dto.response.AuthResponse;
-import net.causw.app.main.domain.user.auth.service.v2.dto.AuthInternalDto;
+import net.causw.app.main.domain.user.auth.service.v2.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.util.EmailUserValidator;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
@@ -251,7 +251,7 @@ public class AuthServiceTest {
 			given(authDtoMapper.toAuthResponse(any(User.class), eq(ACCESS_TOKEN), any())).willReturn(authResponse);
 
 			// when
-			AuthInternalDto result = authService.loginEmailUser(EMAIL, PASSWORD);
+			AuthResult result = authService.loginEmailUser(EMAIL, PASSWORD);
 
 			// then
 			assertThat(result).isNotNull();

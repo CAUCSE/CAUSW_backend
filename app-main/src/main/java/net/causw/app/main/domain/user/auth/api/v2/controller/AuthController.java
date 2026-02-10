@@ -15,7 +15,7 @@ import net.causw.app.main.domain.user.auth.api.v2.dto.request.EmailLoginRequest;
 import net.causw.app.main.domain.user.auth.api.v2.dto.request.EmailSignupRequest;
 import net.causw.app.main.domain.user.auth.api.v2.dto.response.AuthResponse;
 import net.causw.app.main.domain.user.auth.service.v2.AuthService;
-import net.causw.app.main.domain.user.auth.service.v2.dto.AuthInternalDto;
+import net.causw.app.main.domain.user.auth.service.v2.dto.AuthResult;
 import net.causw.app.main.shared.dto.ApiResponse;
 import net.causw.global.constant.StaticValue;
 
@@ -42,7 +42,7 @@ public class AuthController {
 	@Operation(summary = "이메일 로그인 V2", description = "이메일을 활용하여 사용자 계정에 로그인합니다.")
 	@PostMapping("/login")
 	public ResponseEntity<ApiResponse<AuthResponse>> emailSignIn(@RequestBody @Valid EmailLoginRequest request) {
-		AuthInternalDto dto = authService.loginEmailUser(request.email(), request.password());
+		AuthResult dto = authService.loginEmailUser(request.email(), request.password());
 
 		// 쿠키로 리프레시토큰 반환
 		ResponseCookie cookie = ResponseCookie.from("refresh_token", dto.refreshToken())

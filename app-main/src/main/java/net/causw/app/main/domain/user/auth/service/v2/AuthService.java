@@ -12,7 +12,7 @@ import net.causw.app.main.domain.user.account.service.v2.implementation.UserRead
 import net.causw.app.main.domain.user.account.service.v2.implementation.UserWriter;
 import net.causw.app.main.domain.user.auth.api.v2.dto.AuthDtoMapper;
 import net.causw.app.main.domain.user.auth.api.v2.dto.response.AuthResponse;
-import net.causw.app.main.domain.user.auth.service.v2.dto.AuthInternalDto;
+import net.causw.app.main.domain.user.auth.service.v2.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.util.EmailUserValidator;
 import net.causw.app.main.shared.infra.redis.RedisUtils;
 import net.causw.global.constant.StaticValue;
@@ -51,7 +51,7 @@ public class AuthService {
 	}
 
 	@Transactional
-	public AuthInternalDto loginEmailUser(String email, String password) {
+	public AuthResult loginEmailUser(String email, String password) {
 		// 이메일에 대한 유저가 존재하는지 확인
 		User user = userReader.findByEmailOrElseThrow(email);
 
@@ -62,6 +62,6 @@ public class AuthService {
 		String accessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getRoles(), user.getState());
 		String refreshToken = jwtTokenProvider.createRefreshToken();
 		redisUtils.setRefreshTokenData(refreshToken, user.getId(), StaticValue.JWT_REFRESH_TOKEN_VALID_TIME);
-		return AuthInternalDto.of(authDtoMapper.toAuthResponse(user, accessToken, user.getProfileUrl()), refreshToken);
+		return AuthResult.of(authDtoMapper.toAuthResponse(user, accessToken, user.getProfileUrl()), refreshToken);
 	}
 }
