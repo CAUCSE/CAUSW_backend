@@ -20,16 +20,16 @@ public enum AcademicRecordApplicationErrorCode implements BaseResponseCode {
 
 	@Override
 	public String getCode() {
-		return "";
+		return this.code;
 	}
 
 	@Override
 	public String getMessage() {
-		return "";
+		return this.message;
 	}
 
 	@Override
 	public HttpStatus getStatus() {
-		return null;
+		return this.status;
 	}
 }
