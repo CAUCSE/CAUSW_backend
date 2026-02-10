@@ -50,11 +50,6 @@ public enum FilePath {
 		50 * 1024 * 1024L, // 50MB
 		1,
 		List.of(FileExtensionType.IMAGE)),
-	CEREMONY(
-		"ceremony",
-		50 * 1024 * 1024L,
-		5,
-		List.of(FileExtensionType.IMAGE)),
 	ETC(
 		"etc",
 		100 * 1024 * 1024L, // 100MB

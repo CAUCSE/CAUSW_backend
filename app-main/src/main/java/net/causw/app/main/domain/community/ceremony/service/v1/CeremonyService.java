@@ -19,7 +19,7 @@ import net.causw.app.main.domain.community.ceremony.api.v1.dto.CeremonyResponseD
 import net.causw.app.main.domain.community.ceremony.api.v1.dto.CreateCeremonyNotificationSettingDto;
 import net.causw.app.main.domain.community.ceremony.api.v1.dto.CreateCeremonyRequestDto;
 import net.causw.app.main.domain.community.ceremony.api.v1.dto.UpdateCeremonyStateRequestDto;
-import net.causw.app.main.domain.community.ceremony.api.v1.mapper.CeremonyDtoV1Mapper;
+import net.causw.app.main.domain.community.ceremony.api.v1.mapper.CeremonyDtoMapper;
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyContext;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyState;
@@ -44,7 +44,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class CeremonyV1Service {
+public class CeremonyService {
 	private final CeremonyRepository ceremonyRepository;
 	private final UserRepository userRepository;
 	private final CeremonyNotificationService ceremonyNotificationService;
@@ -52,7 +52,6 @@ public class CeremonyV1Service {
 	private final CeremonyNotificationSettingRepository ceremonyNotificationSettingRepository;
 	private final PageableFactory pageableFactory;
 
-	@Deprecated
 	@Transactional
 	public CeremonyResponseDto createCeremony(
 		User user,
@@ -86,7 +85,7 @@ public class CeremonyV1Service {
 			? List.of()
 			: uuidFileService.saveFileList(imageFileList, FilePath.USER_ACADEMIC_RECORD_APPLICATION);
 
-		Ceremony ceremony = Ceremony.createWithImagesV1(
+		Ceremony ceremony = Ceremony.createWithImages(
 			user,
 			createCeremonyRequestDTO.getCategory(),
 			createCeremonyRequestDTO.getDescription(),
@@ -97,7 +96,7 @@ public class CeremonyV1Service {
 			uuidFileList);
 		ceremonyRepository.save(ceremony);
 
-		return CeremonyDtoV1Mapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
+		return CeremonyDtoMapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
 	}
 
 	@Transactional(readOnly = true)
@@ -116,7 +115,6 @@ public class CeremonyV1Service {
 		return ceremonies.map(NotificationDtoV1Mapper.INSTANCE::toCeremonyListNotificationDto);
 	}
 
-	@Deprecated
 	@Transactional(readOnly = true)
 	public CeremonyResponseDto getCeremony(String ceremonyId, CeremonyContext context, User user) {
 		Ceremony ceremony = ceremonyRepository.findById(ceremonyId).orElseThrow(
@@ -132,17 +130,17 @@ public class CeremonyV1Service {
 						ErrorCode.API_NOT_ACCESSIBLE,
 						MessageUtil.CEREMONY_ACCESS_MY_ONLY);
 				}
-				return CeremonyDtoV1Mapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
+				return CeremonyDtoMapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
 			case ADMIN: // 관리자용 경조사 관리 페이지
 				if (!user.getRoles().contains(Role.ADMIN)) {
 					throw new BadRequestException(
 						ErrorCode.API_NOT_ACCESSIBLE,
 						MessageUtil.CEREMONY_ACCESS_ADMIN_ONLY);
 				}
-				return CeremonyDtoV1Mapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
+				return CeremonyDtoMapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
 			case GENERAL:
 			default:
-				return CeremonyDtoV1Mapper.INSTANCE.toCeremonyResponseDto(ceremony);
+				return CeremonyDtoMapper.INSTANCE.toCeremonyResponseDto(ceremony);
 		}
 	}
 
@@ -160,12 +158,12 @@ public class CeremonyV1Service {
 			ceremonyNotificationService.sendByAdmissionYear(writerAdmissionYear, updateDto.getCeremonyId());
 		} else { // state가 reject, await, close로 바뀌는 경우 (close는 별도 처리)
 			ceremony.updateNote(updateDto.getRejectMessage());
-			return CeremonyDtoV1Mapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
+			return CeremonyDtoMapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
 		}
 
 		ceremonyRepository.save(ceremony);
 
-		return CeremonyDtoV1Mapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
+		return CeremonyDtoMapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
 	}
 
 	@Transactional
@@ -179,7 +177,7 @@ public class CeremonyV1Service {
 
 		ceremonyRepository.save(ceremony);
 
-		return CeremonyDtoV1Mapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
+		return CeremonyDtoMapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
 	}
 
 	@Transactional
@@ -194,7 +192,7 @@ public class CeremonyV1Service {
 			user);
 		ceremonyNotificationSettingRepository.save(ceremonyNotificationSetting);
 
-		return CeremonyDtoV1Mapper.INSTANCE.toCeremonyNotificationSettingResponseDto(ceremonyNotificationSetting);
+		return CeremonyDtoMapper.INSTANCE.toCeremonyNotificationSettingResponseDto(ceremonyNotificationSetting);
 	}
 
 	@EventListener // 기본 경조사 설정 생성 실패시, 학적 인증과 함께 롤백
@@ -220,7 +218,7 @@ public class CeremonyV1Service {
 				() -> new BadRequestException(
 					ErrorCode.ROW_DOES_NOT_EXIST,
 					MessageUtil.CEREMONY_NOTIFICATION_SETTING_NOT_FOUND));
-		return CeremonyDtoV1Mapper.INSTANCE.toCeremonyNotificationSettingResponseDto(ceremonyNotificationSetting);
+		return CeremonyDtoMapper.INSTANCE.toCeremonyNotificationSettingResponseDto(ceremonyNotificationSetting);
 	}
 
 	@Transactional
@@ -242,7 +240,7 @@ public class CeremonyV1Service {
 
 		ceremonyNotificationSettingRepository.save(ceremonyNotificationSetting);
 
-		return CeremonyDtoV1Mapper.INSTANCE.toCeremonyNotificationSettingResponseDto(ceremonyNotificationSetting);
+		return CeremonyDtoMapper.INSTANCE.toCeremonyNotificationSettingResponseDto(ceremonyNotificationSetting);
 
 	}
 

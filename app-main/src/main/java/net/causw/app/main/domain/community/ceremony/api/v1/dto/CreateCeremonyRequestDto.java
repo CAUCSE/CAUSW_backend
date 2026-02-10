@@ -29,7 +29,7 @@ public class CreateCeremonyRequestDto {
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	private LocalDate endDate;
 
-	@Schema(description = "행사 카테고리", requiredMode = Schema.RequiredMode.REQUIRED, example = "결혼식")
+	@Schema(description = "행사 카테고리", requiredMode = Schema.RequiredMode.REQUIRED, example = "MARRIAGE")
 	@NotNull(message = "카테고리는 필수 입력 값입니다.")
 	private CeremonyCategory category;
 

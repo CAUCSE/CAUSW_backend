@@ -15,9 +15,9 @@ import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
 import net.causw.app.main.domain.notification.notification.entity.CeremonyNotificationSetting;
 
 @Mapper(componentModel = "spring")
-public interface CeremonyDtoV1Mapper {
+public interface CeremonyDtoMapper {
 
-	CeremonyDtoV1Mapper INSTANCE = Mappers.getMapper(CeremonyDtoV1Mapper.class);
+	CeremonyDtoMapper INSTANCE = Mappers.getMapper(CeremonyDtoMapper.class);
 
 	// general
 	@Mapping(target = "id", source = "id")
@@ -58,7 +58,7 @@ public interface CeremonyDtoV1Mapper {
 		return String.format("%s(%s) - %s",
 			ceremony.getUser().getName(),
 			ceremony.getUser().getAdmissionYear().toString(),
-			ceremony.getCeremonyCategory());
+			ceremony.getCeremonyCategory().getLabel());
 	}
 
 	@Mapping(target = "isNotificationActive", source = "notificationActive")

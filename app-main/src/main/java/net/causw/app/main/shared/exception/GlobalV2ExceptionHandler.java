@@ -113,29 +113,18 @@ public class GlobalV2ExceptionHandler {
 	public ApiResponse<String> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
 		String message = "잘못된 요청 형식입니다.";
 
-		Throwable cause = ex.getCause();
-		if (cause instanceof JsonMappingException jme) {
-			Throwable rootCause = jme.getCause();
-			if (rootCause instanceof DateTimeParseException dtpe) {
-				String fieldName = jme.getPath().isEmpty()
-					? ""
-					: jme.getPath().get(0).getFieldName();
-				if (fieldName != null) {
-					if (fieldName.toLowerCase().contains("date")) {
-						message = "날짜 형식이 올바르지 않습니다. (yyyy-MM-dd)";
-					} else if (fieldName.toLowerCase().contains("time")) {
-						message = "시간 형식이 올바르지 않습니다. (HH:mm)";
-					} else {
-						message = "날짜/시간 형식이 올바르지 않습니다.";
-					}
-				}
-				log.warn("Invalid datetime format. field={}, value={}", fieldName, dtpe.getParsedString(), dtpe);
+		// 날짜 파싱 에러 체크
+		if (ex.getCause() instanceof JsonMappingException jme) {
+			if (jme.getCause() instanceof DateTimeParseException dtpe) {
+				message = "날짜 형식이 올바르지 않습니다.";
+				log.warn("Invalid date format in request: {}", dtpe.getParsedString(), dtpe);
 			} else {
 				log.warn("JSON mapping error: {}", jme.getMessage(), jme);
 			}
 		} else {
 			log.warn("HTTP message not readable: {}", ex.getMessage(), ex);
 		}
+
 		return ApiResponse.error(GlobalErrorCode.BAD_REQUEST.getCode(), message);
 	}
 
