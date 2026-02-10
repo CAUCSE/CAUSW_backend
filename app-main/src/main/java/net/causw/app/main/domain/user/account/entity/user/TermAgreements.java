@@ -21,10 +21,10 @@ public class TermAgreements {
 	@Column(name = "third_party_agreed_at")
 	private LocalDateTime thirdPartyAgreedAt;
 
-	public TermAgreements(LocalDateTime now) {
-		this.serviceAgreedAt = now;
-		this.privacyAgreedAt = now;
-		this.thirdPartyAgreedAt = now;
+	public TermAgreements(LocalDateTime agreedAt) {
+		this.serviceAgreedAt = agreedAt;
+		this.privacyAgreedAt = agreedAt;
+		this.thirdPartyAgreedAt = agreedAt;
 	}
 
 	public static TermAgreements createRequiredAgreements() {
