@@ -3,7 +3,6 @@ package net.causw.app.main.domain.community.ceremony.api.v2.dto.response;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-import net.causw.app.main.domain.community.ceremony.enums.CeremonyCategory;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyState;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -25,8 +24,8 @@ public class CeremonySummaryResponseDto {
 	@Schema(description = "경조사 분류", example = "조사")
 	private String type;
 
-	@Schema(description = "경조사 상세 분류 (enum)", example = "MARRIAGE, (직접 입력일 경우 ETC)")
-	private CeremonyCategory category;
+	@Schema(description = "경조사 상세 분류", example = "결혼식 (직접 입력일 경우 '직접 입력')")
+	private String category;
 
 	@Schema(description = "경조사 시작 날짜", example = "2026-01-01")
 	private LocalDate startDate;
