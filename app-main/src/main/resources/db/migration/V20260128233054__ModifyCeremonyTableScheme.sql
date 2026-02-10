@@ -9,7 +9,7 @@ ALTER TABLE tb_ceremony
     ADD COLUMN ceremony_custom_category VARCHAR(50) NULL AFTER ceremony_category,
     ADD COLUMN end_time TIME NULL AFTER start_date,
     ADD COLUMN start_time TIME NULL AFTER end_time,
-    ADD COLUMN relation_type ENUM('ME', 'FAMILY', 'ALUMNI') NULL AFTER user_id,
+    ADD COLUMN relation_type ENUM('ME', 'FAMILY', 'INSTEAD') NULL AFTER user_id,
     ADD COLUMN family_relation VARCHAR(20) NULL AFTER relation_type,
     ADD COLUMN alumni_relation VARCHAR(20) NULL AFTER family_relation,
     ADD COLUMN alumni_name VARCHAR(20) NULL AFTER alumni_relation,
@@ -25,8 +25,8 @@ ALTER TABLE tb_ceremony
 UPDATE tb_ceremony
 SET ceremony_type =
     CASE
-        WHEN ceremony_category = 'FUNERAL' THEN '조사'
-        ELSE '경사'
+        WHEN ceremony_category = 'FUNERAL' THEN 'CONDOLENCE'
+        ELSE 'CELEBRATION'
     END
 WHERE ceremony_type IS NULL;
 
