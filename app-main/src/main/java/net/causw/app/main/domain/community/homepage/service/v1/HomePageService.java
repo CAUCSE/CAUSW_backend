@@ -15,7 +15,7 @@ import net.causw.app.main.domain.community.board.api.v1.mapper.BoardDtoMapper;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.repository.BoardRepository;
 import net.causw.app.main.domain.community.homepage.api.v1.dto.HomePageResponseDto;
-import net.causw.app.main.domain.community.post.api.v1.mapper.PostDtoMapper;
+import net.causw.app.main.domain.community.post.api.v1.mapper.PostDtoV1Mapper;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.community.reaction.repository.FavoritePostRepository;
@@ -68,7 +68,7 @@ public class HomePageService {
 				toBoardResponseDto(board, roles),
 				postRepository.findAllByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(board.getId(),
 					pageableFactory.create(0, StaticValue.HOME_POST_PAGE_SIZE))
-					.map(post -> PostDtoMapper.INSTANCE.toPostsResponseDto(
+					.map(post -> PostDtoV1Mapper.INSTANCE.toPostsResponseDto(
 						post,
 						postRepository.countAllCommentByPost_Id(post.getId()),
 						getNumOfPostLikes(post),
@@ -95,7 +95,7 @@ public class HomePageService {
 				toBoardResponseDto(board, roles),
 				postRepository.findAllByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(board.getId(),
 					pageableFactory.create(0, StaticValue.ALUMNI_HOME_POST_PAGE_SIZE))
-					.map(post -> PostDtoMapper.INSTANCE.toPostsResponseDto(
+					.map(post -> PostDtoV1Mapper.INSTANCE.toPostsResponseDto(
 						post,
 						postRepository.countAllCommentByPost_Id(post.getId()),
 						getNumOfPostLikes(post),

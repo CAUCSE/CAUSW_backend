@@ -39,7 +39,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import net.causw.app.main.core.security.JwtTokenProvider;
 import net.causw.app.main.domain.community.post.api.v1.dto.PostsResponseDto;
-import net.causw.app.main.domain.community.post.api.v1.mapper.PostDtoMapper;
+import net.causw.app.main.domain.community.post.api.v1.mapper.PostDtoV1Mapper;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.community.post.service.v1.PostV1Service;
@@ -90,7 +90,7 @@ class UserServiceTest {
 	@Mock
 	PageableFactory pageableFactory;
 	@Mock
-	PostDtoMapper postDtoMapper;
+	PostDtoV1Mapper postDtoMapper;
 	@Mock
 	UserDtoMapper userDtoMapper;
 	@Mock
