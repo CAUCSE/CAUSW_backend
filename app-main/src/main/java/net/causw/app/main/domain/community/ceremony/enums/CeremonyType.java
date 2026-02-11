@@ -1,8 +1,6 @@
 package net.causw.app.main.domain.community.ceremony.enums;
 
-import net.causw.global.constant.MessageUtil;
-import net.causw.global.exception.BadRequestException;
-import net.causw.global.exception.ErrorCode;
+import net.causw.app.main.shared.exception.errorcode.GlobalErrorCode;
 
 import lombok.Getter;
 
@@ -21,9 +19,7 @@ public enum CeremonyType {
 
 	public static CeremonyType fromString(String type) {
 		if (type == null || type.isEmpty()) {
-			throw new BadRequestException(
-				ErrorCode.INVALID_PARAMETER,
-				MessageUtil.CEREMONY_INVALID_CONTEXT_VALUE);
+			throw GlobalErrorCode.BAD_REQUEST.toBaseException();
 		}
 
 		for (CeremonyType ceremonyType : CeremonyType.values()) {
@@ -32,8 +28,6 @@ public enum CeremonyType {
 			}
 		}
 
-		throw new BadRequestException(
-			ErrorCode.INVALID_PARAMETER,
-			MessageUtil.CEREMONY_INVALID_CONTEXT_VALUE);
+		throw GlobalErrorCode.BAD_REQUEST.toBaseException();
 	}
 }
