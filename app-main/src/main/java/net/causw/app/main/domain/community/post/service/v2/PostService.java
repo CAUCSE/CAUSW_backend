@@ -22,6 +22,8 @@ import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.query.PostCursorResult;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostCreateCommand;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostCreateResult;
+import net.causw.app.main.domain.community.post.service.v2.dto.PostDetailQuery;
+import net.causw.app.main.domain.community.post.service.v2.dto.PostDetailResult;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostListQuery;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostListResult;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostUpdateCommand;
@@ -30,6 +32,8 @@ import net.causw.app.main.domain.community.post.service.v2.implementation.PostRe
 import net.causw.app.main.domain.community.post.service.v2.implementation.PostWriter;
 import net.causw.app.main.domain.community.post.service.v2.mapper.PostMapper;
 import net.causw.app.main.domain.community.post.service.v2.util.PostValidator;
+import net.causw.app.main.domain.community.reaction.service.implementation.FavoritePostReader;
+import net.causw.app.main.domain.community.reaction.service.implementation.LikePostReader;
 import net.causw.app.main.domain.user.account.entity.user.User;
 
 import lombok.RequiredArgsConstructor;
@@ -44,6 +48,8 @@ public class PostService {
 	private final FileWriter fileWriter;
 	private final FileReader fileReader;
 	private final BoardConfigReader boardConfigReader;
+	private final LikePostReader likePostReader;
+	private final FavoritePostReader favoritePostReader;
 
 	@Transactional
 	public PostCreateResult create(PostCreateCommand command) {
@@ -118,7 +124,7 @@ public class PostService {
 		User viewer = query.viewer();
 		String boardId = query.boardId();
 		String cursor = query.cursor();
-		Integer size = query.size() != null ? query.size() : 20; // 기본값 20
+		int size = query.size() != null ? query.size() : 20; // 기본값 20
 		String keyword = query.keyword();
 
 		// cursor 파싱 (createdAt과 postId를 "|"로 구분)
@@ -132,7 +138,7 @@ public class PostService {
 			}
 		}
 
-		List<String> boardIds = null;
+		List<String> boardIds;
 
 		// 게시판 ID가 지정된 경우
 		if (boardId != null && !boardId.isBlank()) {
@@ -190,6 +196,65 @@ public class PostService {
 			.toList();
 
 		return PostListResult.of(postItems, nextCursor);
+	}
+
+	public PostDetailResult getPostDetail(PostDetailQuery query) {
+		User viewer = query.viewer();
+		String postId = query.postId();
+
+		// 게시글 조회
+		Post post = postReader.findById(postId);
+		Board board = post.getBoard();
+		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(board.getId());
+
+		// 게시판 접근 권한 검증
+		BoardConfig boardConfig = boardConfigReader.getByBoardId(board.getId());
+
+		// BoardVisibility 체크 - HIDDEN인 경우 조회 불가
+		if (boardConfig.getVisibility() == BoardVisibility.HIDDEN) {
+			// 관리자는 조회 가능
+			if (!boardAdminIds.contains(viewer.getId())) {
+				throw new IllegalArgumentException("게시판이 숨김 처리되어 조회할 수 없습니다.");
+			}
+		}
+
+		// ReadScope 검증
+		PostValidator.validateRead(viewer, boardConfig, boardAdminIds);
+
+		// 게시글 이미지 조회
+		List<String> imageUrls = post.getPostAttachImageList().stream()
+			.map(PostAttachImage::getUuidFile)
+			.map(UuidFile::getFileUrl)
+			.toList();
+
+		// 좋아요, 즐겨찾기 개수 조회
+		Long numComment = 0L; // TODO: 댓글 개수 조회 로직 추가 필요
+		Long numLike = likePostReader.countByPostId(postId);
+		Long numFavorite = favoritePostReader.countByPostId(postId);
+
+		// 사용자의 좋아요, 즐겨찾기 여부
+		Boolean isPostLike = likePostReader.existsByPostIdAndUserId(postId, viewer.getId());
+		Boolean isPostFavorite = favoritePostReader.existsByPostIdAndUserId(postId, viewer.getId());
+
+		// 게시글 작성자 여부
+		boolean isOwner = post.getWriter().getId().equals(viewer.getId());
+
+		// 수정/삭제 가능 여부 (작성자 또는 게시판 관리자)
+		boolean updatable = isOwner || boardAdminIds.contains(viewer.getId());
+		boolean deletable = isOwner || boardAdminIds.contains(viewer.getId());
+
+		// PostMapper를 사용하여 PostDetailResult 생성
+		return PostMapper.toPostDetailResult(
+			post,
+			imageUrls,
+			numComment,
+			numLike,
+			numFavorite,
+			isPostLike,
+			isPostFavorite,
+			isOwner,
+			updatable,
+			deletable);
 	}
 
 }

@@ -21,22 +21,28 @@ import net.causw.app.main.domain.community.post.api.v2.dto.request.PostListCondi
 import net.causw.app.main.domain.community.post.api.v2.dto.request.PostUpdateRequest;
 import net.causw.app.main.domain.community.post.api.v2.dto.response.PostCreateResponse;
 import net.causw.app.main.domain.community.post.api.v2.dto.response.PostListResponse;
+import net.causw.app.main.domain.community.post.api.v2.dto.response.PostResponse;
 import net.causw.app.main.domain.community.post.api.v2.dto.response.PostUpdateResponse;
 import net.causw.app.main.domain.community.post.api.v2.mapper.PostDtoMapper;
 import net.causw.app.main.domain.community.post.service.v2.PostService;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostCreateResult;
+import net.causw.app.main.domain.community.post.service.v2.dto.PostDetailQuery;
+import net.causw.app.main.domain.community.post.service.v2.dto.PostDetailResult;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostListQuery;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostListResult;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostUpdateResult;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/posts")
+@Tag(name = "게시글 API (V2)", description = "게시글 관련 API")
 public class PostController {
 
 	private final PostService postService;
@@ -44,6 +50,7 @@ public class PostController {
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
+	@Operation(summary = "게시글 생성", description = "새로운 게시글을 생성합니다.")
 	public ApiResponse<PostCreateResponse> create(
 		@Valid @RequestPart(value = "postCreateRequest") PostCreateRequest postCreateRequest,
 		@RequestPart(value = "attachImageList", required = false) List<MultipartFile> images,
@@ -55,6 +62,7 @@ public class PostController {
 
 	@GetMapping
 	@ResponseStatus(HttpStatus.OK)
+	@Operation(summary = "게시글 목록 조회", description = "게시글 목록을 커서 기반 페이징으로 조회합니다.")
 	public ApiResponse<PostListResponse> getPosts(
 		@ModelAttribute PostListCondition condition,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -63,8 +71,20 @@ public class PostController {
 		return ApiResponse.success(postDtoMapper.toListResponse(result));
 	}
 
+	@GetMapping("/{postId}")
+	@ResponseStatus(HttpStatus.OK)
+	@Operation(summary = "게시글 단건 조회", description = "특정 게시글의 상세 정보를 조회합니다.")
+	public ApiResponse<PostResponse> getPost(
+		@PathVariable String postId,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
+		PostDetailQuery query = postDtoMapper.toDetailQuery(postId, userDetails.getUser());
+		PostDetailResult result = postService.getPostDetail(query);
+		return ApiResponse.success(postDtoMapper.toDetailResponse(result));
+	}
+
 	@DeleteMapping("/{postId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(summary = "게시글 삭제", description = "게시글을 삭제합니다. (소프트 삭제)")
 	public ApiResponse<Void> delete(
 		@PathVariable String postId,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -74,6 +94,7 @@ public class PostController {
 
 	@PutMapping("/{postId}")
 	@ResponseStatus(HttpStatus.OK)
+	@Operation(summary = "게시글 수정", description = "게시글의 내용과 첨부 이미지를 수정합니다.")
 	public ApiResponse<PostUpdateResponse> update(
 		@PathVariable String postId,
 		@Valid @RequestPart(value = "postUpdateRequest") PostUpdateRequest postUpdateRequest,

@@ -12,9 +12,12 @@ import net.causw.app.main.domain.community.post.api.v2.dto.request.PostListCondi
 import net.causw.app.main.domain.community.post.api.v2.dto.request.PostUpdateRequest;
 import net.causw.app.main.domain.community.post.api.v2.dto.response.PostCreateResponse;
 import net.causw.app.main.domain.community.post.api.v2.dto.response.PostListResponse;
+import net.causw.app.main.domain.community.post.api.v2.dto.response.PostResponse;
 import net.causw.app.main.domain.community.post.api.v2.dto.response.PostUpdateResponse;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostCreateCommand;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostCreateResult;
+import net.causw.app.main.domain.community.post.service.v2.dto.PostDetailQuery;
+import net.causw.app.main.domain.community.post.service.v2.dto.PostDetailResult;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostListQuery;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostListResult;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostUpdateCommand;
@@ -42,4 +45,8 @@ public interface PostDtoMapper {
 	PostListQuery toListQuery(PostListCondition condition, User user);
 
 	PostListResponse toListResponse(PostListResult result);
+
+	PostDetailQuery toDetailQuery(String postId, User user);
+
+	PostResponse toDetailResponse(PostDetailResult result);
 }
