@@ -35,6 +35,7 @@ import net.causw.app.main.domain.community.post.service.v2.mapper.PostMapper;
 import net.causw.app.main.domain.community.post.service.v2.util.PostValidator;
 import net.causw.app.main.domain.community.reaction.service.implementation.FavoritePostReader;
 import net.causw.app.main.domain.community.reaction.service.implementation.LikePostReader;
+import net.causw.app.main.domain.community.vote.service.implementation.VoteWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
 
 import lombok.RequiredArgsConstructor;
@@ -52,6 +53,7 @@ public class PostService {
 	private final LikePostReader likePostReader;
 	private final FavoritePostReader favoritePostReader;
 	private final PostAttachImageWriter postAttachImageWriter;
+	private final VoteWriter voteWriter;
 
 	@Transactional
 	public PostCreateResult create(PostCreateCommand command) {
@@ -80,8 +82,41 @@ public class PostService {
 		Post post = postReader.findById(postId);
 		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
 		PostValidator.validateDelete(deleter, post, boardAdminIds);
+
+		// 게시글에 연결된 이미지 삭제
+		deletePostImages(post);
+
+		// 게시글에 연결된 Vote 삭제
+		if (post.getVote() != null) {
+			voteWriter.delete(post.getVote());
+		}
+
 		// 소프트 삭제 처리
 		post.setIsDeleted(true);
+	}
+
+	/**
+	 * 게시글의 첨부 이미지를 삭제합니다.
+	 * PostAttachImage를 먼저 삭제한 후 UuidFile을 삭제합니다.
+	 *
+	 * @param post 게시글 엔티티
+	 */
+	private void deletePostImages(Post post) {
+		List<PostAttachImage> images = post.getPostAttachImageList();
+		if (images != null && !images.isEmpty()) {
+			// 1. UuidFile ID 목록을 미리 추출 (삭제 전에)
+			List<String> fileIds = images.stream()
+				.map(PostAttachImage::getUuidFile)
+				.map(UuidFile::getId)
+				.toList();
+
+			// 2. PostAttachImage를 즉시 삭제
+			postAttachImageWriter.deleteAllInBatch(images);
+
+			// 3. UuidFile 삭제
+			List<UuidFile> files = fileReader.findByIds(fileIds);
+			fileWriter.deleteList(files);
+		}
 	}
 
 	@Transactional
@@ -93,21 +128,7 @@ public class PostService {
 		PostValidator.validateUpdate(updater, post, boardAdminIds);
 
 		// 기존 이미지 삭제
-		List<PostAttachImage> oldImages = post.getPostAttachImageList();
-		if (oldImages != null && !oldImages.isEmpty()) {
-			List<String> oldFileIds = oldImages.stream()
-				.map(PostAttachImage::getUuidFile)
-				.map(UuidFile::getId)
-				.toList();
-
-			// 2. PostAttachImage를 즉시 삭제 
-			postAttachImageWriter.deleteAllInBatch(oldImages);
-
-			// 3. UuidFile 삭제
-			List<UuidFile> oldFiles = fileReader.findByIds(oldFileIds);
-			fileWriter.deleteList(oldFiles);
-
-		}
+		deletePostImages(post);
 
 		// 새 이미지 업로드 및 저장
 		List<UuidFile> newImages;
