@@ -83,7 +83,7 @@ public class CeremonyController {
 	@Operation(summary = "곧 다가올 경조사 리스트 조회", description = "곧 다가올 경조사 리스트를 조회합니다.")
 	public ApiResponse<Page<CeremonySummaryResponseDto>> getUpcomingCeremonyPage(
 		@RequestParam(name = "type", required = false, defaultValue = "all") String typeParam,
-		@RequestParam(name = "days", required = false, defaultValue = "7") @Min(0) @Max(365) Integer days,
+		@RequestParam(name = "days", required = false, defaultValue = "30") @Min(0) @Max(365) Integer days,
 		@RequestParam(name = "pageNum", required = false, defaultValue = "0") Integer pageNum) {
 		return ApiResponse.success(ceremonyService.getUpcomingCeremonyPage(typeParam, days, pageNum));
 	}
@@ -93,7 +93,7 @@ public class CeremonyController {
 	@Operation(summary = "지난 경조사 리스트 조회", description = "지난 경조사 리스트를 조회합니다.")
 	public ApiResponse<Page<CeremonySummaryResponseDto>> getPastCeremonyPage(
 		@RequestParam(name = "type", required = false, defaultValue = "all") String typeParam,
-		@RequestParam(name = "days", required = false,  defaultValue = "7") @Min(0) @Max(365) Integer days,
+		@RequestParam(name = "days", required = false,  defaultValue = "30") @Min(0) @Max(365) Integer days,
 		@RequestParam(name = "pageNum", required = false,  defaultValue = "0") Integer pageNum) {
 		return ApiResponse.success(ceremonyService.getPastCeremonyPage(typeParam, days, pageNum));
 	}
