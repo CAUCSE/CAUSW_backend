@@ -1,6 +1,5 @@
 package net.causw.app.main.domain.community.ceremony.enums;
 
-
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;

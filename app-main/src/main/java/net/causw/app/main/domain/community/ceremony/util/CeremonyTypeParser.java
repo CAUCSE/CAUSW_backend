@@ -17,8 +17,7 @@ public class CeremonyTypeParser {
 
 		try {
 			return CeremonyType.fromString(typeParam).getValue();
-		}
-		catch (IllegalArgumentException e) {
+		} catch (IllegalArgumentException e) {
 			throw GlobalErrorCode.BAD_REQUEST.toBaseException();
 		}
 	}

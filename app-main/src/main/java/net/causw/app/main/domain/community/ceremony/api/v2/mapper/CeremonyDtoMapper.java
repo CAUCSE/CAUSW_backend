@@ -50,7 +50,7 @@ public interface CeremonyDtoMapper {
 	CeremonySummaryResponseDto toCeremonySummaryResponseDto(Ceremony ceremony);
 
 	// 내 경조사 목록 조회
-	@InheritConfiguration(name="toCeremonySummaryResponseDto")
+	@InheritConfiguration(name = "toCeremonySummaryResponseDto")
 	@Mapping(target = "state", source = "ceremonyState")
 	CeremonySummaryResponseDto toMyCeremonySummaryResponseDto(Ceremony ceremony);
 
