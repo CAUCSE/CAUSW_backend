@@ -16,6 +16,7 @@ public record PostDetailResult(
 	Long numComment,
 	Long numLike,
 	Long numFavorite,
+	String voteId,
 	Boolean isAnonymous,
 	Boolean isOwner,
 	Boolean isPostLike,

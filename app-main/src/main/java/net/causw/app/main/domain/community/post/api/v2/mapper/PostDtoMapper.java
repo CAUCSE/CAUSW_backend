@@ -46,6 +46,7 @@ public interface PostDtoMapper {
 
 	PostListResponse toListResponse(PostListResult result);
 
+	@Mapping(target = "viewer", source = "user")
 	PostDetailQuery toDetailQuery(String postId, User user);
 
 	PostResponse toDetailResponse(PostDetailResult result);

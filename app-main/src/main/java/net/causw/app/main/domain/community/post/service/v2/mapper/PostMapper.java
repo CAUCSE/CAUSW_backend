@@ -121,6 +121,8 @@ public class PostMapper {
 				: null;
 		}
 
+		String voteId = post.getVote() != null ? post.getVote().getId() : null;
+
 		return PostDetailResult.builder()
 			.id(post.getId())
 			.content(post.getContent())
@@ -131,6 +133,7 @@ public class PostMapper {
 			.numComment(numComment)
 			.numLike(numLike)
 			.numFavorite(numFavorite)
+			.voteId(voteId)
 			.isAnonymous(post.getIsAnonymous())
 			.isOwner(isOwner)
 			.isPostLike(isPostLike)

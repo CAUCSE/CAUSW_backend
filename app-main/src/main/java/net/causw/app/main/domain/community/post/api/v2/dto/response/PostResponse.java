@@ -24,6 +24,8 @@ public record PostResponse(
 
 	@Schema(description = "게시글 즐겨찾기 개수", example = "11") Long numFavorite,
 
+	@Schema(description = "게시글에 연결된 투표 ID (투표가 없으면 null)", example = "uuid 형식의 String 값") String voteId,
+
 	@Schema(description = "익명글 여부", example = "False") Boolean isAnonymous,
 
 	@Schema(description = "게시글 작성자 여부", example = "False") Boolean isOwner,
