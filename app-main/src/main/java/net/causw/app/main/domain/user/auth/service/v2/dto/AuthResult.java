@@ -1,11 +1,16 @@
 package net.causw.app.main.domain.user.auth.service.v2.dto;
 
-import net.causw.app.main.domain.user.auth.api.v2.dto.response.AuthResponse;
-
 public record AuthResult(
-	AuthResponse authResponse,
+	String accessToken,
+	String name,
+	String email,
+	String profileImgUrl,
 	String refreshToken) {
-	public static AuthResult of(AuthResponse authResponse, String refreshToken) {
-		return new AuthResult(authResponse, refreshToken);
+	public static AuthResult of(String accessToken,
+		String name,
+		String email,
+		String profileImgUrl,
+		String refreshToken) {
+		return new AuthResult(accessToken, name, email, profileImgUrl, refreshToken);
 	}
 }

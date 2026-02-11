@@ -35,8 +35,6 @@ import net.causw.app.main.domain.user.account.service.v2.dto.UserRegisterDto;
 import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.v2.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.v2.implementation.UserWriter;
-import net.causw.app.main.domain.user.auth.api.v2.dto.AuthDtoMapper;
-import net.causw.app.main.domain.user.auth.api.v2.dto.response.AuthResponse;
 import net.causw.app.main.domain.user.auth.service.v2.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.v2.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.v2.implementation.AuthTokenManager;
@@ -61,8 +59,6 @@ public class AuthServiceTest {
 	@Mock
 	private PasswordEncoder passwordEncoder;
 	@Mock
-	private AuthDtoMapper authDtoMapper;
-	@Mock
 	private UserValidator userValidator;
 	@Mock
 	private AuthValidator authValidator;
@@ -80,20 +76,12 @@ public class AuthServiceTest {
 
 	private UserRegisterDto registerDto;
 	private User user;
-	private AuthResponse authResponse;
 	private AuthTokenPair authTokenPair;
 
 	@BeforeEach
 	void setup() {
 		registerDto = new UserRegisterDto(EMAIL, PASSWORD, NAME, NICKNAME, PHONE);
 		user = User.from(registerDto, ENCODED_PASSWORD);
-
-		authResponse = AuthResponse.builder()
-			.email(EMAIL)
-			.name(NAME)
-			.accessToken(ACCESS_TOKEN)
-			.build();
-
 		authTokenPair = new AuthTokenPair(ACCESS_TOKEN, REFRESH_TOKEN);
 	}
 
@@ -108,14 +96,13 @@ public class AuthServiceTest {
 			given(userReader.checkUserExistByPhoneNumAndName(anyString(), anyString())).willReturn(Optional.empty());
 			given(passwordEncoder.encode(anyString())).willReturn(ENCODED_PASSWORD);
 			given(userWriter.save(any(User.class))).willReturn(user);
-			given(authDtoMapper.toAuthResponse(any(User.class), any(), any())).willReturn(authResponse);
 
 			// when
-			AuthResponse response = authService.registerEmailUser(registerDto);
+			AuthResult result = authService.registerEmailUser(registerDto);
 
 			// then
-			assertThat(response).isNotNull();
-			assertThat(response.email()).isEqualTo(EMAIL);
+			assertThat(result).isNotNull();
+			assertThat(result.email()).isEqualTo(EMAIL);
 
 			// verify
 			verify(userValidator).checkEmailDuplication(EMAIL);
@@ -255,14 +242,13 @@ public class AuthServiceTest {
 			// given
 			given(userReader.findByEmailOrElseThrow(EMAIL)).willReturn(user);
 			given(authTokenManager.issueTokens(any(User.class))).willReturn(authTokenPair);
-			given(authDtoMapper.toAuthResponse(any(User.class), eq(ACCESS_TOKEN), any())).willReturn(authResponse);
 
 			// when
 			AuthResult result = authService.loginEmailUser(EMAIL, PASSWORD);
 
 			// then
 			assertThat(result).isNotNull();
-			assertThat(result.authResponse().accessToken()).isEqualTo(ACCESS_TOKEN);
+			assertThat(result.accessToken()).isEqualTo(ACCESS_TOKEN);
 			assertThat(result.refreshToken()).isEqualTo(REFRESH_TOKEN);
 
 			// verify

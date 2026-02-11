@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.causw.app.main.domain.user.account.service.v2.dto.UserRegisterDto;
+import net.causw.app.main.domain.user.auth.api.v2.dto.AuthDtoMapper;
 import net.causw.app.main.domain.user.auth.api.v2.dto.request.EmailLoginRequest;
 import net.causw.app.main.domain.user.auth.api.v2.dto.request.EmailSignupRequest;
 import net.causw.app.main.domain.user.auth.api.v2.dto.response.AuthResponse;
@@ -30,13 +31,15 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthController {
 
+	private final AuthDtoMapper authDtoMapper;
 	private final AuthService authService;
 
 	@Operation(summary = "이메일 회원가입 V2", description = "이메일을 활용하여 사용자 계정을 생성합니다.")
 	@PostMapping("/signup")
 	public ApiResponse<AuthResponse> emailSignUp(@RequestBody @Valid EmailSignupRequest request) {
 		UserRegisterDto dto = UserRegisterDto.from(request);
-		return ApiResponse.success(authService.registerEmailUser(dto));
+		AuthResult result = authService.registerEmailUser(dto);
+		return ApiResponse.success(authDtoMapper.toAuthResponse(result));
 	}
 
 	@Operation(summary = "이메일 로그인 V2", description = "이메일을 활용하여 사용자 계정에 로그인합니다.")
@@ -54,6 +57,6 @@ public class AuthController {
 			.build();
 
 		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
-			.body(ApiResponse.success(dto.authResponse()));
+			.body(ApiResponse.success(authDtoMapper.toAuthResponse(dto)));
 	}
 }
