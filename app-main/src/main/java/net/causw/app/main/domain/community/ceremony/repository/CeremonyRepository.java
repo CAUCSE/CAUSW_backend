@@ -29,9 +29,9 @@ public interface CeremonyRepository extends JpaRepository<Ceremony, String> {
 		+
 		"OR ((c.startDate = :nowDate AND :nowDate < c.endDate) AND (c.startTime <= :nowTime)) " +
 		"OR ((c.startDate < :nowDate AND c.endDate = :nowDate) AND (:nowTime <= c.endTime)) " +
-		"OR ((c.startDate = :nowDate AND c.endDate = :nowDate) AND c.startTime IS NULL)) " +
-		"ORDER BY c.startTime ASC")
-	Page<Ceremony> findOngoingByTypeOrderByStartedAtAsc(
+		"OR (c.startDate = :nowDate AND c.startTime IS NULL)) " +
+		"ORDER BY c.startDate, c.startTime DESC")
+	Page<Ceremony> findOngoingByTypeOrderByStartedAtDesc(
 		@Param("type") CeremonyType type, @Param("nowDate") LocalDate nowDate, @Param("nowTime") LocalTime nowTime,
 		Pageable pageable);
 
@@ -50,8 +50,8 @@ public interface CeremonyRepository extends JpaRepository<Ceremony, String> {
 		"WHERE (c.ceremonyState = 'ACCEPT' AND c.ceremonyType = :type) " +
 		"AND ((:fromDate <= c.endDate AND c.endDate < :nowDate) " +
 		"OR (c.endDate = :nowDate AND (c.endTime IS NOT NULL AND c.endTime < :nowTime))) " +
-		"ORDER BY c.endDate, c.endTime ASC")
-	Page<Ceremony> findPastByTypeOrderByEndedAtAsc(
+		"ORDER BY c.endDate, c.endTime DESC")
+	Page<Ceremony> findPastByTypeOrderByEndedAtDesc(
 		@Param("type") CeremonyType type, @Param("nowDate") LocalDate nowDate, @Param("nowTime") LocalTime nowTime,
 		@Param("fromDate") LocalDate fromDate, Pageable pageable);
 
@@ -63,9 +63,9 @@ public interface CeremonyRepository extends JpaRepository<Ceremony, String> {
 		+
 		"OR ((c.startDate = :nowDate AND :nowDate < c.endDate) AND (c.startTime <= :nowTime)) " +
 		"OR ((c.startDate < :nowDate AND c.endDate = :nowDate) AND (:nowTime <= c.endTime)) " +
-		"OR ((c.startDate = :nowDate AND c.endDate = :nowDate) AND c.startTime IS NULL)) " +
-		"ORDER BY c.startTime ASC")
-	Page<Ceremony> findAllOngoingOrderByStartedAtAsc(
+		"OR (c.startDate = :nowDate AND c.startTime IS NULL)) " +
+		"ORDER BY c.startDate, c.startTime DESC")
+	Page<Ceremony> findAllOngoingOrderByStartedAtDesc(
 		@Param("nowDate") LocalDate nowDate, @Param("nowTime") LocalTime nowTime, Pageable pageable);
 
 	@Query("SELECT c " +
@@ -83,8 +83,8 @@ public interface CeremonyRepository extends JpaRepository<Ceremony, String> {
 		"WHERE c.ceremonyState = 'ACCEPT' " +
 		"AND ((:fromDate <= c.endDate AND c.endDate < :nowDate) " +
 		"OR (c.endDate = :nowDate AND (c.endTime IS NOT NULL AND c.endTime < :nowTime))) " +
-		"ORDER BY c.endDate, c.endTime ASC")
-	Page<Ceremony> findAllPastOrderByEndedAtAsc(
+		"ORDER BY c.endDate, c.endTime DESC")
+	Page<Ceremony> findAllPastOrderByEndedAtDesc(
 		@Param("nowDate") LocalDate nowDate, @Param("nowTime") LocalTime nowTime, @Param("fromDate") LocalDate fromDate,
 		Pageable pageable);
 

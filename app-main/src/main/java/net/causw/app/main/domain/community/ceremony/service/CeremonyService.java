@@ -103,11 +103,10 @@ public class CeremonyService {
 		CeremonyType ceremonyType;
 
 		if (ceremonyTypeParser.parseTypeOrNull(type) == null) {
-			ceremonies = ceremonyReader.findAllOngoingOrderByStartedAtAsc(LocalDate.now(), LocalTime.now(), pageable);
-		}
-		else {
+			ceremonies = ceremonyReader.findAllOngoingOrderByStartedAtDesc(LocalDate.now(), LocalTime.now(), pageable);
+		} else {
 			ceremonyType = CeremonyType.fromString(type);
-			ceremonies = ceremonyReader.findOngoingByTypeOrderByStartedAtAsc(ceremonyType, LocalDate.now(),
+			ceremonies = ceremonyReader.findOngoingByTypeOrderByStartedAtDesc(ceremonyType, LocalDate.now(),
 				LocalTime.now(), pageable);
 		}
 
@@ -123,8 +122,7 @@ public class CeremonyService {
 		if (ceremonyTypeParser.parseTypeOrNull(type) == null) {
 			ceremonies = ceremonyReader.findAllUpcomingOrderByStartedAtAsc(LocalDate.now(), LocalTime.now(),
 				LocalDate.now().plusDays(days), pageable);
-		}
-		else {
+		} else {
 			ceremonyType = CeremonyType.fromString(type);
 			ceremonies = ceremonyReader.findUpcomingByTypeOrderByStartedAtAsc(ceremonyType, LocalDate.now(),
 				LocalTime.now(), LocalDate.now().plusDays(days), pageable);
@@ -140,12 +138,11 @@ public class CeremonyService {
 		CeremonyType ceremonyType;
 
 		if (ceremonyTypeParser.parseTypeOrNull(type) == null) {
-			ceremonies = ceremonyReader.findAllPastOrderByEndedAtAsc(LocalDate.now(), LocalTime.now(),
+			ceremonies = ceremonyReader.findAllPastOrderByEndedAtDesc(LocalDate.now(), LocalTime.now(),
 				LocalDate.now().minusDays(days), pageable);
-		}
-		else {
+		} else {
 			ceremonyType = CeremonyType.fromString(type);
-			ceremonies = ceremonyReader.findPastByTypeOrderByEndedAtAsc(ceremonyType, LocalDate.now(), LocalTime.now(),
+			ceremonies = ceremonyReader.findPastByTypeOrderByEndedAtDesc(ceremonyType, LocalDate.now(), LocalTime.now(),
 				LocalDate.now().minusDays(days), pageable);
 		}
 
