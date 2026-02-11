@@ -180,13 +180,6 @@ public class PostQueryRepository {
 			.from(favoritePost)
 			.where(favoritePost.post.eq(post));
 
-		// 작성자 프로필 이미지 URL 서브쿼리
-		SubQueryExpression<String> writerProfileImageUrl = JPAExpressions.select(
-			writer.userProfileImage.uuidFile.fileUrl)
-			.from(writer)
-			.where(writer.eq(post.writer)
-				.and(writer.userProfileImage.isNotNull()));
-
 		// 썸네일 이미지 URL 서브쿼리 (첫 번째 이미지)
 		SubQueryExpression<String> thumbnailUrl = JPAExpressions
 			.select(postAttachImage.uuidFile.fileUrl)
@@ -199,13 +192,14 @@ public class PostQueryRepository {
 		return new QPostQueryResult(
 			post.id, post.title, post.content,
 			commentCount, likeCount, favoriteCount,
-			post.isAnonymous, post.isQuestion, post.vote.id, post.isDeleted,
-			writer.isNotNull(), writer.name, writer.nickname, writer.admissionYear, writer.state,
-			writerProfileImageUrl,
-			thumbnailUrl,
+			post.isAnonymous, post.isQuestion,
 			post.vote.isNotNull(), // isPostVote
 			post.form.isNotNull(), // isPostForm
-			post.createdAt, post.updatedAt);
+			post.isDeleted,
+			writer.isNotNull(),
+			writer.name, writer.nickname, writer.admissionYear, writer.state,
+			post.createdAt, post.updatedAt,
+			thumbnailUrl);
 	}
 
 	private static QPostCursorResult toPostCursorResult(QPost post, QUser writer) {

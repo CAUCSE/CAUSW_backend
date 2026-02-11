@@ -18,19 +18,17 @@ public record PostQueryResult(
 	long numFavorite,
 	boolean isAnonymous,
 	boolean isQuestion,
-	String voteId,
+	boolean isPostVote, // 투표 포함 여부
+	boolean isPostForm, // 신청서 포함 여부
 	boolean isDeleted,
 	boolean hasWriter,
 	String writerName,
 	String writerNickname,
 	Integer writerAdmissionYear,
 	UserState writerUserState,
-	String writerProfileImageUrl,
-	String postAttachImage, // 썸네일 이미지 URL
-	boolean isPostVote, // 투표 포함 여부
-	boolean isPostForm, // 신청서 포함 여부
 	LocalDateTime createdAt,
-	LocalDateTime updatedAt) {
+	LocalDateTime updatedAt,
+	String postAttachImage) { // 썸네일 이미지 URL
 	@QueryProjection
 	public PostQueryResult {
 	} // canonical constructor
