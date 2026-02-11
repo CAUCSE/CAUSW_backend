@@ -3,6 +3,7 @@ package net.causw.app.main.domain.community.post.api.v2.controller;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -48,7 +49,7 @@ public class PostController {
 	private final PostService postService;
 	private final PostDtoMapper postDtoMapper;
 
-	@PostMapping
+	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@ResponseStatus(HttpStatus.CREATED)
 	@Operation(summary = "게시글 생성", description = "새로운 게시글을 생성합니다.")
 	public ApiResponse<PostCreateResponse> create(
@@ -92,7 +93,7 @@ public class PostController {
 		return ApiResponse.success();
 	}
 
-	@PutMapping("/{postId}")
+	@PutMapping(value = "/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "게시글 수정", description = "게시글의 내용과 첨부 이미지를 수정합니다.")
 	public ApiResponse<PostUpdateResponse> update(

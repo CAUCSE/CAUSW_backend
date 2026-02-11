@@ -13,6 +13,7 @@ import net.causw.app.main.domain.asset.file.entity.joinEntity.PostAttachImage;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.asset.file.service.v2.implementation.FileReader;
 import net.causw.app.main.domain.asset.file.service.v2.implementation.FileWriter;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.PostAttachImageWriter;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
 import net.causw.app.main.domain.community.board.entity.BoardVisibility;
@@ -50,6 +51,7 @@ public class PostService {
 	private final BoardConfigReader boardConfigReader;
 	private final LikePostReader likePostReader;
 	private final FavoritePostReader favoritePostReader;
+	private final PostAttachImageWriter postAttachImageWriter;
 
 	@Transactional
 	public PostCreateResult create(PostCreateCommand command) {
@@ -97,22 +99,28 @@ public class PostService {
 				.map(PostAttachImage::getUuidFile)
 				.map(UuidFile::getId)
 				.toList();
+
+			// 2. PostAttachImage를 즉시 삭제 
+			postAttachImageWriter.deleteAllInBatch(oldImages);
+
+			// 3. UuidFile 삭제
 			List<UuidFile> oldFiles = fileReader.findByIds(oldFileIds);
 			fileWriter.deleteList(oldFiles);
+
 		}
 
 		// 새 이미지 업로드 및 저장
 		List<UuidFile> newImages;
+		List<PostAttachImage> newPostAttachImages;
 		if (command.images() != null && !command.images().isEmpty()) {
 			newImages = fileWriter.uploadAndSaveList(command.images(), FilePath.POST);
+			newPostAttachImages = newImages.stream()
+				.map(uuidFile -> PostAttachImage.of(post, uuidFile))
+				.toList();
 		} else {
 			newImages = new ArrayList<>();
+			newPostAttachImages = new ArrayList<>();
 		}
-
-		// PostAttachImage 리스트 생성
-		List<PostAttachImage> newPostAttachImages = newImages.stream()
-			.map(uuidFile -> PostAttachImage.of(post, uuidFile))
-			.toList();
 
 		// 게시글 업데이트
 		Post updatedPost = postWriter.updateContentAndImages(post, command.content(), newPostAttachImages);
