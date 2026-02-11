@@ -5,7 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.user.account.service.dto.request.UserQueryCondition;
 import net.causw.app.main.domain.user.account.service.dto.result.UserSearchListResult;
-import net.causw.app.main.domain.user.account.service.implementation.UserReader;
+import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
 
 import lombok.RequiredArgsConstructor;
 
