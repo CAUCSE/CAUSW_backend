@@ -83,14 +83,6 @@ public class PostService {
 		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
 		PostValidator.validateDelete(deleter, post, boardAdminIds);
 
-		// 게시글에 연결된 이미지 삭제
-		deletePostImages(post);
-
-		// 게시글에 연결된 Vote 삭제
-		if (post.getVote() != null) {
-			voteWriter.delete(post.getVote());
-		}
-
 		// 소프트 삭제 처리
 		post.setIsDeleted(true);
 	}
