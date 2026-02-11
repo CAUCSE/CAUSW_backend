@@ -24,10 +24,10 @@ import lombok.NoArgsConstructor;
 public class PostValidator {
 
 	public static void validateCreate(User creator, Board board, BoardConfig boardConfig,
-		List<String> boardAdminIds) {
+		List<String> boardAdminIds, Boolean isAnonymous) {
 		validateUserAndBoard(creator, board);
 		validateWriteScope(creator, boardConfig, boardAdminIds);
-
+		validateAnonymousBoard(boardConfig, isAnonymous);
 	}
 
 	public static void validateDelete(User deleter, Post post, List<String> adminIds) {
@@ -41,7 +41,8 @@ public class PostValidator {
 		validateUserAndBoard(deleter, post.getBoard());
 	}
 
-	public static void validateUpdate(User updater, Post post, List<String> adminIds) {
+	public static void validateUpdate(User updater, Post post, List<String> adminIds, BoardConfig boardConfig,
+		Boolean isAnonymous) {
 		validateUserAndBoard(updater, post.getBoard());
 
 		// 게시글이 삭제된 경우
@@ -53,6 +54,9 @@ public class PostValidator {
 		if (!post.getWriter().getId().equals(updater.getId())) {
 			throw PostErrorCode.POST_FORBIDDEN.toBaseException();
 		}
+
+		// 익명 게시판 검증
+		validateAnonymousBoard(boardConfig, isAnonymous);
 	}
 
 	public static void validateUserAndBoard(User user, Board board) {
@@ -75,6 +79,13 @@ public class PostValidator {
 		}
 
 		throw BoardErrorCode.BOARD_FORBIDDEN.toBaseException();
+	}
+
+	private static void validateAnonymousBoard(BoardConfig boardConfig, Boolean isAnonymous) {
+		// 익명 게시판인데 비익명 게시글을 작성하려고 할 때 에러 발생
+		if (boardConfig.isAnonymous() && Boolean.FALSE.equals(isAnonymous)) {
+			throw PostErrorCode.POST_ANONYMOUS_BOARD_NOT_ALLOWED.toBaseException();
+		}
 	}
 
 	public static void validateRead(User viewer, BoardConfig boardConfig, List<String> boardAdminIds) {

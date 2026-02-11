@@ -63,7 +63,7 @@ public class PostService {
 		BoardConfig boardConfig = boardConfigReader.getByBoardId(command.boardId());
 		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(command.boardId());
 
-		PostValidator.validateCreate(writer, board, boardConfig, boardAdminIds);
+		PostValidator.validateCreate(writer, board, boardConfig, boardAdminIds, command.isAnonymous());
 
 		List<UuidFile> images;
 		if (command.images() != null && !command.images().isEmpty()) {
@@ -115,9 +115,10 @@ public class PostService {
 	public PostUpdateResult update(PostUpdateCommand command) {
 		User updater = command.updater();
 		Post post = postReader.findById(command.postId());
+		BoardConfig boardConfig = boardConfigReader.getByBoardId(post.getBoard().getId());
 		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
 
-		PostValidator.validateUpdate(updater, post, boardAdminIds);
+		PostValidator.validateUpdate(updater, post, boardAdminIds, boardConfig, command.isAnonymous());
 
 		// 기존 이미지 삭제
 		deletePostImages(post);
