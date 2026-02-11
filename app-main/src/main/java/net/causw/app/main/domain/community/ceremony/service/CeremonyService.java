@@ -152,6 +152,9 @@ public class CeremonyService {
 	public Page<CeremonySummaryResponseDto> getMyCeremonyPage(String userId, CeremonyState state, Integer pageNum) {
 		Page<Ceremony> ceremonies;
 		Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_PAGE_SIZE);
+		if (state == CeremonyState.CLOSE) {
+			throw CeremonyErrorCode.CEREMONY_NOT_FOUND.toBaseException();
+		}
 		ceremonies = ceremonyReader.findMyByStateOrderByStartedAtAsc(userId, state, pageable);
 		return ceremonies.map(ceremonyDtoMapper::toMyCeremonySummaryResponseDto);
 	}
