@@ -25,7 +25,9 @@ public record PostCursorResult(
 	UserState writerUserState,
 	String writerProfileImageUrl,
 	LocalDateTime createdAt,
-	LocalDateTime updatedAt) {
+	LocalDateTime updatedAt,
+	String boardId,
+	String boardName) {
 	@QueryProjection
 	public PostCursorResult {
 	} // canonical constructor

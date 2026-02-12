@@ -25,5 +25,6 @@ public record PostDetailResult(
 	Boolean deletable,
 	LocalDateTime createdAt,
 	LocalDateTime updatedAt,
+	String boardId,
 	String boardName) {
 }

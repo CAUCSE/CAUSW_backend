@@ -237,7 +237,8 @@ public class PostQueryRepository {
 			post.isAnonymous, post.vote.id, post.isDeleted,
 			writer.isNotNull(), writer.name, writer.nickname, writer.admissionYear, writer.state,
 			writerProfileImageUrl,
-			post.createdAt, post.updatedAt);
+			post.createdAt, post.updatedAt,
+			post.board.id, post.board.name);
 	}
 
 	/**

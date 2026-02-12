@@ -24,7 +24,9 @@ public record PostListResult(
 		String writerProfileImageUrl, // 익명인 경우 null
 		LocalDateTime createdAt,
 		LocalDateTime updatedAt,
-		List<String> postImageUrls) {
+		List<String> postImageUrls,
+		String boardId,
+		String boardName) {
 		public static PostItem of(
 			String postId,
 			String content,
@@ -38,12 +40,15 @@ public record PostListResult(
 			String writerProfileImageUrl,
 			LocalDateTime createdAt,
 			LocalDateTime updatedAt,
-			List<String> postImageUrls) {
+			List<String> postImageUrls,
+			String boardId,
+			String boardName) {
 			return new PostItem(
 				postId, content, numComment, numLike, numFavorite,
 				isAnonymous, voteId, isDeleted,
 				writerNickname, writerProfileImageUrl,
-				createdAt, updatedAt, postImageUrls);
+				createdAt, updatedAt, postImageUrls,
+				boardId, boardName);
 		}
 	}
 }

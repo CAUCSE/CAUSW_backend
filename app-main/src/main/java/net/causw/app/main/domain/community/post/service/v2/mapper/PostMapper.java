@@ -77,7 +77,9 @@ public class PostMapper {
 			writerProfileImageUrl,
 			result.createdAt(),
 			result.updatedAt(),
-			imageUrls);
+			imageUrls,
+			result.boardId(),
+			result.boardName());
 	}
 
 	/**
@@ -142,6 +144,7 @@ public class PostMapper {
 			.deletable(deletable)
 			.createdAt(post.getCreatedAt())
 			.updatedAt(post.getUpdatedAt())
+			.boardId(post.getBoard().getId())
 			.boardName(post.getBoard().getName())
 			.build();
 	}

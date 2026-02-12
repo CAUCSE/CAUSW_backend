@@ -24,6 +24,8 @@ public record PostListResponse(
 		@Schema(description = "작성자 프로필 이미지 URL (익명인 경우 null)") String writerProfileImageUrl,
 		@Schema(description = "생성일시") LocalDateTime createdAt,
 		@Schema(description = "수정일시") LocalDateTime updatedAt,
-		@Schema(description = "게시물 이미지 URL 목록") List<String> postImageUrls) {
+		@Schema(description = "게시물 이미지 URL 목록") List<String> postImageUrls,
+		@Schema(description = "게시판 ID") String boardId,
+		@Schema(description = "게시판 이름") String boardName) {
 	}
 }

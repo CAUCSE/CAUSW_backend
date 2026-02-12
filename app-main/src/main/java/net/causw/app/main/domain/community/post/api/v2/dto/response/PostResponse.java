@@ -42,5 +42,7 @@ public record PostResponse(
 
 	@Schema(description = "게시글 업데이트 시간", example = "2024-01-26T18:40:40.643Z") LocalDateTime updatedAt,
 
+	@Schema(description = "게시판 ID", example = "uuid 형식의 String 값입니다.") String boardId,
+
 	@Schema(description = "게시판 이름", example = "게시판 이름입니다.") String boardName) {
 }

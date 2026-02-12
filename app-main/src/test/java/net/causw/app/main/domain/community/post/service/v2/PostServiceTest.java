@@ -526,7 +526,9 @@ public class PostServiceTest {
 				UserState.ACTIVE,
 				"profile-url",
 				LocalDateTime.now(),
-				LocalDateTime.now());
+				LocalDateTime.now(),
+				boardId,
+				"테스트 게시판");
 
 			Slice<PostCursorResult> slice = new SliceImpl<>(
 				List.of(postCursorResult),
@@ -547,6 +549,8 @@ public class PostServiceTest {
 				() -> assertThat(result).isNotNull(),
 				() -> assertThat(result.posts()).hasSize(1),
 				() -> assertThat(result.posts().get(0).postId()).isEqualTo("post-id"),
+				() -> assertThat(result.posts().get(0).boardId()).isEqualTo(boardId),
+				() -> assertThat(result.posts().get(0).boardName()).isEqualTo("테스트 게시판"),
 				() -> assertThat(result.nextCursor()).isNull());
 
 			verify(postReader, times(1)).findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(null));
@@ -585,7 +589,9 @@ public class PostServiceTest {
 				UserState.ACTIVE,
 				"profile-url-1",
 				LocalDateTime.now(),
-				LocalDateTime.now());
+				LocalDateTime.now(),
+				boardId,
+				"테스트 게시판");
 
 			PostCursorResult postCursorResult2 = new PostCursorResult(
 				"post-id-2",
@@ -603,7 +609,9 @@ public class PostServiceTest {
 				UserState.ACTIVE,
 				"profile-url-2",
 				LocalDateTime.now(),
-				LocalDateTime.now());
+				LocalDateTime.now(),
+				boardId2,
+				"테스트 게시판2");
 
 			Slice<PostCursorResult> slice = new SliceImpl<>(
 				List.of(postCursorResult1, postCursorResult2),
@@ -626,7 +634,11 @@ public class PostServiceTest {
 				() -> assertThat(result).isNotNull(),
 				() -> assertThat(result.posts()).hasSize(2),
 				() -> assertThat(result.posts().get(0).postId()).isEqualTo("post-id-1"),
+				() -> assertThat(result.posts().get(0).boardId()).isEqualTo(boardId),
+				() -> assertThat(result.posts().get(0).boardName()).isEqualTo("테스트 게시판"),
 				() -> assertThat(result.posts().get(1).postId()).isEqualTo("post-id-2"),
+				() -> assertThat(result.posts().get(1).boardId()).isEqualTo(boardId2),
+				() -> assertThat(result.posts().get(1).boardName()).isEqualTo("테스트 게시판2"),
 				() -> assertThat(result.nextCursor()).isNull());
 
 			verify(boardConfigReader, times(1)).getByBoardId(boardId);
@@ -659,7 +671,9 @@ public class PostServiceTest {
 				UserState.ACTIVE,
 				"profile-url",
 				LocalDateTime.of(2024, 1, 1, 11, 0),
-				LocalDateTime.of(2024, 1, 1, 11, 0));
+				LocalDateTime.of(2024, 1, 1, 11, 0),
+				boardId,
+				"테스트 게시판");
 
 			Slice<PostCursorResult> slice = new SliceImpl<>(
 				List.of(postCursorResult),
@@ -720,7 +734,9 @@ public class PostServiceTest {
 				UserState.ACTIVE,
 				"profile-url",
 				LocalDateTime.now(),
-				LocalDateTime.now());
+				LocalDateTime.now(),
+				boardId,
+				"테스트 게시판");
 
 			Slice<PostCursorResult> slice = new SliceImpl<>(
 				List.of(postCursorResult),
@@ -769,7 +785,9 @@ public class PostServiceTest {
 				UserState.ACTIVE,
 				"profile-url",
 				LocalDateTime.now(),
-				LocalDateTime.now());
+				LocalDateTime.now(),
+				"board-1",
+				"게시판1");
 
 			Slice<PostCursorResult> slice = new SliceImpl<>(
 				List.of(postCursorResult),
@@ -909,7 +927,9 @@ public class PostServiceTest {
 				() -> assertThat(result.isPostFavorite()).isFalse(),
 				() -> assertThat(result.isOwner()).isFalse(),
 				() -> assertThat(result.updatable()).isFalse(),
-				() -> assertThat(result.deletable()).isFalse());
+				() -> assertThat(result.deletable()).isFalse(),
+				() -> assertThat(result.boardId()).isEqualTo(boardId),
+				() -> assertThat(result.boardName()).isNotNull());
 
 			verify(postReader, times(1)).findById(postId);
 		}
