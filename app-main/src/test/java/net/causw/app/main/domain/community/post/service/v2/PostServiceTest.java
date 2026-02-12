@@ -63,6 +63,7 @@ import net.causw.app.main.domain.community.vote.service.implementation.VoteWrite
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.util.ObjectFixtures;
 
 @ExtendWith(MockitoExtension.class)
@@ -505,7 +506,7 @@ public class PostServiceTest {
 		@Test
 		void getPosts_shouldSucceed_forSpecificBoard() {
 			// given
-			PostListQuery query = PostListQuery.of(viewer, boardId, null, 20, null);
+			PostListQuery query = PostListQuery.of(viewer, List.of(boardId), null, 20, null);
 
 			List<String> boardAdminIds = List.of("admin-id");
 
@@ -551,12 +552,94 @@ public class PostServiceTest {
 			verify(postReader, times(1)).findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(null));
 		}
 
+		@DisplayName("여러 게시판의 게시글 목록 조회 성공")
+		@Test
+		void getPosts_shouldSucceed_forMultipleBoards() {
+			// given
+			String boardId2 = "board-id-2";
+			PostListQuery query = PostListQuery.of(viewer, List.of(boardId, boardId2), null, 20, null);
+
+			List<String> boardAdminIds = List.of("admin-id");
+			BoardConfig boardConfig2 = BoardConfig.of(
+				boardId2,
+				false,
+				BoardReadScope.BOTH,
+				BoardWriteScope.ALL_USER,
+				false,
+				BoardVisibility.VISIBLE,
+				10);
+
+			PostCursorResult postCursorResult1 = new PostCursorResult(
+				"post-id-1",
+				"게시판1 게시글 내용",
+				5L,
+				10L,
+				3L,
+				false,
+				null,
+				false,
+				true,
+				"작성자1",
+				"닉네임1",
+				2020,
+				UserState.ACTIVE,
+				"profile-url-1",
+				LocalDateTime.now(),
+				LocalDateTime.now());
+
+			PostCursorResult postCursorResult2 = new PostCursorResult(
+				"post-id-2",
+				"게시판2 게시글 내용",
+				3L,
+				8L,
+				2L,
+				false,
+				null,
+				false,
+				true,
+				"작성자2",
+				"닉네임2",
+				2021,
+				UserState.ACTIVE,
+				"profile-url-2",
+				LocalDateTime.now(),
+				LocalDateTime.now());
+
+			Slice<PostCursorResult> slice = new SliceImpl<>(
+				List.of(postCursorResult1, postCursorResult2),
+				PageRequest.of(0, 20),
+				false);
+
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
+			given(boardConfigReader.getByBoardId(boardId2)).willReturn(boardConfig2);
+			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(boardConfigReader.getAdminIdsByBoardId(boardId2)).willReturn(boardAdminIds);
+			given(postReader.findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(null)))
+				.willReturn(slice);
+			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
+
+			// when
+			PostListResult result = postService.getPosts(query);
+
+			// then
+			assertAll(
+				() -> assertThat(result).isNotNull(),
+				() -> assertThat(result.posts()).hasSize(2),
+				() -> assertThat(result.posts().get(0).postId()).isEqualTo("post-id-1"),
+				() -> assertThat(result.posts().get(1).postId()).isEqualTo("post-id-2"),
+				() -> assertThat(result.nextCursor()).isNull());
+
+			verify(boardConfigReader, times(1)).getByBoardId(boardId);
+			verify(boardConfigReader, times(1)).getByBoardId(boardId2);
+			verify(postReader, times(1)).findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(null));
+		}
+
 		@DisplayName("커서 기반 페이징으로 게시글 목록 조회 성공")
 		@Test
 		void getPosts_shouldSucceed_withCursor() {
 			// given
 			String cursor = "2024-01-01T12:00:00|post-id-1";
-			PostListQuery query = PostListQuery.of(viewer, boardId, cursor, 20, null);
+			PostListQuery query = PostListQuery.of(viewer, List.of(boardId), cursor, 20, null);
 
 			List<String> boardAdminIds = List.of("admin-id");
 
@@ -617,7 +700,7 @@ public class PostServiceTest {
 		void getPosts_shouldSucceed_withKeyword() {
 			// given
 			String keyword = "검색어";
-			PostListQuery query = PostListQuery.of(viewer, boardId, null, 20, keyword);
+			PostListQuery query = PostListQuery.of(viewer, List.of(boardId), null, 20, keyword);
 
 			List<String> boardAdminIds = List.of("admin-id");
 
@@ -723,7 +806,7 @@ public class PostServiceTest {
 				BoardVisibility.HIDDEN,
 				10);
 
-			PostListQuery query = PostListQuery.of(viewer, boardId, null, 20, null);
+			PostListQuery query = PostListQuery.of(viewer, List.of(boardId), null, 20, null);
 			List<String> boardAdminIds = List.of("admin-id");
 
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(hiddenBoardConfig);
@@ -731,15 +814,15 @@ public class PostServiceTest {
 
 			// when & then
 			assertThatThrownBy(() -> postService.getPosts(query))
-				.isInstanceOf(IllegalArgumentException.class)
-				.hasMessageContaining("숨김 처리");
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasMessageContaining("게시판에 대한 권한이 없습니다");
 		}
 
 		@DisplayName("빈 결과 조회 성공")
 		@Test
 		void getPosts_shouldSucceed_withEmptyResult() {
 			// given
-			PostListQuery query = PostListQuery.of(viewer, boardId, null, 20, null);
+			PostListQuery query = PostListQuery.of(viewer, List.of(boardId), null, 20, null);
 			List<String> boardAdminIds = List.of("admin-id");
 
 			Slice<PostCursorResult> emptySlice = new SliceImpl<>(

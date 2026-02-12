@@ -145,7 +145,7 @@ public class PostService {
 
 	public PostListResult getPosts(PostListQuery query) {
 		User viewer = query.viewer();
-		String boardId = query.boardId();
+		List<String> requestedBoardIds = query.boardIds();
 		String cursor = query.cursor();
 		int size = query.size() != null ? query.size() : 20; // 기본값 20
 		String keyword = query.keyword();
@@ -164,15 +164,18 @@ public class PostService {
 		}
 
 		List<String> boardIds;
-		// 게시판 ID가 지정된 경우
-		if (boardId != null && !boardId.isBlank()) {
-			BoardConfig boardConfig = boardConfigReader.getByBoardId(boardId);
-			List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(boardId);
+		// 게시판 ID 목록이 지정된 경우
+		if (requestedBoardIds != null && !requestedBoardIds.isEmpty()) {
+			// 각 게시판에 대한 읽기 권한 검증
+			for (String boardId : requestedBoardIds) {
+				BoardConfig boardConfig = boardConfigReader.getByBoardId(boardId);
+				List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(boardId);
 
-			// ReadScope 검증
-			PostValidator.validateRead(viewer, boardConfig, boardAdminIds);
+				// ReadScope 검증
+				PostValidator.validateRead(viewer, boardConfig, boardAdminIds);
+			}
 
-			boardIds = List.of(boardId);
+			boardIds = requestedBoardIds;
 		} else {
 			// 게시판 ID가 지정되지 않은 경우 - 사용자의 AcademicStatus에 따라 접근 가능한 게시판 조회
 			boardIds = boardConfigReader.getAccessibleBoardIdsByAcademicStatus(viewer.getAcademicStatus());
