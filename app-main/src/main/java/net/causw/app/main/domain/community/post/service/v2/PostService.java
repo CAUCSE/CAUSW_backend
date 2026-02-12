@@ -38,6 +38,7 @@ import net.causw.app.main.domain.community.reaction.service.implementation.LikeP
 import net.causw.app.main.domain.community.vote.service.implementation.VoteWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.exception.errorcode.BoardErrorCode;
+import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -158,6 +159,8 @@ public class PostService {
 			if (parts.length == 2) {
 				cursorCreatedAt = parts[0];
 				cursorId = parts[1];
+			} else {
+				throw PostErrorCode.INVALID_CURSOR_FORMAT.toBaseException();
 			}
 		}
 
