@@ -22,6 +22,15 @@ public class UserReader {
 	private final UserQueryRepository userQueryRepository;
 	private final UserRepository userRepository;
 
+	public User findUserById(String userId) {
+		return userRepository.findById(userId)
+			.orElseThrow(UserErrorCode.USER_NOT_FOUND::toBaseException);
+	}
+
+	public List<User> findUsersByIds(List<String> userIds) {
+		return userQueryRepository.findByIds(userIds);
+	}
+
 	public Optional<User> checkUserExistByPhoneNumAndName(String phoneNum, String name) {
 		return userRepository.findByPhoneNumberAndName(phoneNum, name);
 	}
