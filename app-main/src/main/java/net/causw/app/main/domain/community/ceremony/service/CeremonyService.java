@@ -106,36 +106,34 @@ public class CeremonyService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<CeremonySummaryResponseDto> getUpcomingCeremonyPage(String type, Integer days, Integer pageNum) {
+	public Page<CeremonySummaryResponseDto> getUpcomingCeremonyPage(String type, Integer pageNum) {
 		Page<Ceremony> ceremonies;
 		Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_PAGE_SIZE);
 		CeremonyType ceremonyType;
 
 		if (ceremonyTypeParser.parseTypeOrNull(type) == null) {
-			ceremonies = ceremonyReader.findAllUpcomingOrderByStartedAtAsc(LocalDate.now(), LocalTime.now(),
-				LocalDate.now().plusDays(days), pageable);
+			ceremonies = ceremonyReader.findAllUpcomingOrderByStartedAtAsc(LocalDate.now(), LocalTime.now(), pageable);
 		} else {
 			ceremonyType = CeremonyType.fromString(type);
 			ceremonies = ceremonyReader.findUpcomingByTypeOrderByStartedAtAsc(ceremonyType, LocalDate.now(),
-				LocalTime.now(), LocalDate.now().plusDays(days), pageable);
+				LocalTime.now(), pageable);
 		}
 
 		return ceremonies.map(ceremonyDtoMapper::toCeremonySummaryResponseDto);
 	}
 
 	@Transactional(readOnly = true)
-	public Page<CeremonySummaryResponseDto> getPastCeremonyPage(String type, Integer days, Integer pageNum) {
+	public Page<CeremonySummaryResponseDto> getPastCeremonyPage(String type, Integer pageNum) {
 		Page<Ceremony> ceremonies;
 		Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_PAGE_SIZE);
 		CeremonyType ceremonyType;
 
 		if (ceremonyTypeParser.parseTypeOrNull(type) == null) {
-			ceremonies = ceremonyReader.findAllPastOrderByEndedAtDesc(LocalDate.now(), LocalTime.now(),
-				LocalDate.now().minusDays(days), pageable);
+			ceremonies = ceremonyReader.findAllPastOrderByStartedAtDesc(LocalDate.now(), LocalTime.now(), pageable);
 		} else {
 			ceremonyType = CeremonyType.fromString(type);
-			ceremonies = ceremonyReader.findPastByTypeOrderByEndedAtDesc(ceremonyType, LocalDate.now(), LocalTime.now(),
-				LocalDate.now().minusDays(days), pageable);
+			ceremonies = ceremonyReader.findPastByTypeOrderByStartedAtDesc(ceremonyType, LocalDate.now(), LocalTime.now()
+				, pageable);
 		}
 
 		return ceremonies.map(ceremonyDtoMapper::toCeremonySummaryResponseDto);
@@ -147,7 +145,7 @@ public class CeremonyService {
 		if (state == CeremonyState.CLOSE) {
 			throw CeremonyErrorCode.CEREMONY_NOT_FOUND.toBaseException();
 		}
-		ceremonies = ceremonyReader.findMyByStateOrderByStartedAtAsc(userId, state, pageable);
+		ceremonies = ceremonyReader.findMyByStateOrderByStartedAtDesc(userId, state, pageable);
 		return ceremonies.map(ceremonyDtoMapper::toMyCeremonySummaryResponseDto);
 	}
 }

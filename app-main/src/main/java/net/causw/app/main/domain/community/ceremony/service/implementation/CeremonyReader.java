@@ -27,36 +27,34 @@ public class CeremonyReader {
 		return ceremonyRepository.findById(ceremonyId);
 	}
 
+	public Page<Ceremony> findAllOngoingOrderByStartedAtDesc(LocalDate nowDate, LocalTime nowTime, Pageable pageable) {
+		return ceremonyRepository.findAllOngoingOrderByStartedAtDesc(nowDate, nowTime, pageable);
+	}
+
 	public Page<Ceremony> findOngoingByTypeOrderByStartedAtDesc(CeremonyType type, LocalDate nowDate, LocalTime nowTime,
 		Pageable pageable) {
 		return ceremonyRepository.findOngoingByTypeOrderByStartedAtDesc(type, nowDate, nowTime, pageable);
 	}
 
+	public Page<Ceremony> findAllUpcomingOrderByStartedAtAsc(LocalDate nowDate, LocalTime nowTime, Pageable pageable) {
+		return ceremonyRepository.findAllUpcomingOrderByStartedAtAsc(nowDate, nowTime, pageable);
+	}
+
 	public Page<Ceremony> findUpcomingByTypeOrderByStartedAtAsc(CeremonyType type, LocalDate nowDate, LocalTime nowTime,
-		LocalDate toDate, Pageable pageable) {
-		return ceremonyRepository.findUpcomingByTypeOrderByStartedAtAsc(type, nowDate, nowTime, toDate, pageable);
-	}
-
-	public Page<Ceremony> findPastByTypeOrderByEndedAtDesc(CeremonyType type, LocalDate nowDate, LocalTime nowTime,
-		LocalDate fromDate, Pageable pageable) {
-		return ceremonyRepository.findPastByTypeOrderByEndedAtDesc(type, nowDate, nowTime, fromDate, pageable);
-	}
-
-	public Page<Ceremony> findAllOngoingOrderByStartedAtDesc(LocalDate nowDate, LocalTime nowTime, Pageable pageable) {
-		return ceremonyRepository.findAllOngoingOrderByStartedAtDesc(nowDate, nowTime, pageable);
-	}
-
-	public Page<Ceremony> findAllUpcomingOrderByStartedAtAsc(LocalDate nowDate, LocalTime nowTime, LocalDate toDate,
 		Pageable pageable) {
-		return ceremonyRepository.findAllUpcomingOrderByStartedAtAsc(nowDate, nowTime, toDate, pageable);
+		return ceremonyRepository.findUpcomingByTypeOrderByStartedAtAsc(type, nowDate, nowTime, pageable);
 	}
 
-	public Page<Ceremony> findAllPastOrderByEndedAtDesc(LocalDate nowDate, LocalTime nowTime, LocalDate fromDate,
+	public Page<Ceremony> findAllPastOrderByStartedAtDesc(LocalDate nowDate, LocalTime nowTime, Pageable pageable) {
+		return ceremonyRepository.findAllPastOrderByStartedAtDesc(nowDate, nowTime, pageable);
+	}
+
+	public Page<Ceremony> findPastByTypeOrderByStartedAtDesc(CeremonyType type, LocalDate nowDate, LocalTime nowTime,
 		Pageable pageable) {
-		return ceremonyRepository.findAllPastOrderByEndedAtDesc(nowDate, nowTime, fromDate, pageable);
+		return ceremonyRepository.findPastByTypeOrderByStartedAtDesc(type, nowDate, nowTime, pageable);
 	}
 
-	public Page<Ceremony> findMyByStateOrderByStartedAtAsc(String userId, CeremonyState state, Pageable pageable) {
-		return ceremonyRepository.findMyByStateOrderByStartedAtAsc(userId, state, pageable);
+	public Page<Ceremony> findMyByStateOrderByStartedAtDesc(String userId, CeremonyState state, Pageable pageable) {
+		return ceremonyRepository.findMyByStateOrderByStartedAtDesc(userId, state, pageable);
 	}
 }
