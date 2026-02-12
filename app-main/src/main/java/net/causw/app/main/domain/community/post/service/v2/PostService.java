@@ -37,6 +37,7 @@ import net.causw.app.main.domain.community.reaction.service.implementation.Favor
 import net.causw.app.main.domain.community.reaction.service.implementation.LikePostReader;
 import net.causw.app.main.domain.community.vote.service.implementation.VoteWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.shared.exception.errorcode.BoardErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -171,7 +172,7 @@ public class PostService {
 			if (boardConfig.getVisibility() == BoardVisibility.HIDDEN) {
 				// 관리자는 조회 가능
 				if (!boardAdminIds.contains(viewer.getId())) {
-					throw new IllegalArgumentException("게시판이 숨김 처리되어 조회할 수 없습니다.");
+					throw BoardErrorCode.BOARD_FORBIDDEN.toBaseException();
 				}
 			}
 
