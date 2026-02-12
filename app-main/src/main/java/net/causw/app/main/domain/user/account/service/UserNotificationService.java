@@ -1,7 +1,5 @@
 package net.causw.app.main.domain.user.account.service;
 
-import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
-import net.causw.app.main.domain.user.account.service.v2.implementation.UserValidator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -9,6 +7,8 @@ import net.causw.app.main.domain.user.account.api.v1.dto.UserFcmTokenResponseDto
 import net.causw.app.main.domain.user.account.api.v1.mapper.UserDtoMapper;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserPushTokenWriter;
+import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
+import net.causw.app.main.domain.user.account.service.v2.implementation.UserValidator;
 
 import lombok.RequiredArgsConstructor;
 

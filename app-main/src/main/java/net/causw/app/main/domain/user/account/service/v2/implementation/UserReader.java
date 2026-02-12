@@ -27,13 +27,13 @@ public class UserReader {
 			.orElseThrow(UserErrorCode.USER_NOT_FOUND::toBaseException);
 	}
 
-    public List<User> findUsersByIds(List<String> userIds) {
-        return userQueryRepository.findByIds(userIds);
-    }
+	public List<User> findUsersByIds(List<String> userIds) {
+		return userQueryRepository.findByIds(userIds);
+	}
 
-    public Optional<User> checkUserExistByPhoneNumAndName(String phoneNum, String name) {
-        return userRepository.findByPhoneNumberAndName(phoneNum, name);
-    }
+	public Optional<User> checkUserExistByPhoneNumAndName(String phoneNum, String name) {
+		return userRepository.findByPhoneNumberAndName(phoneNum, name);
+	}
 
 	public User findByEmailOrElseThrow(String email) {
 		return userRepository.findByEmail(email)
