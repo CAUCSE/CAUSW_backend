@@ -89,14 +89,6 @@ public class CeremonyService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<CeremonySummaryResponseDto> getAllCeremonyPage(Integer pageNum) {
-		Page<Ceremony> ceremonies;
-		Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_PAGE_SIZE);
-		ceremonies = ceremonyReader.findAllOrderByStartedAtAsc(pageable);
-		return ceremonies.map(ceremonyDtoMapper::toCeremonySummaryResponseDto);
-	}
-
-	@Transactional(readOnly = true)
 	public Page<CeremonySummaryResponseDto> getOngoingCeremonyPage(String type, Integer pageNum) {
 		Page<Ceremony> ceremonies;
 		Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_PAGE_SIZE);

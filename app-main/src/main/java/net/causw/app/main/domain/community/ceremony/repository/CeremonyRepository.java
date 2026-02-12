@@ -17,12 +17,6 @@ public interface CeremonyRepository extends JpaRepository<Ceremony, String> {
 
 	@Query("SELECT c " +
 		"FROM Ceremony c " +
-		"WHERE (c.ceremonyState = 'ACCEPT') " +
-		"ORDER BY c.startDate, c.startTime ASC")
-	Page<Ceremony> findAllOrderByStartedAtAsc(Pageable pageable);
-
-	@Query("SELECT c " +
-		"FROM Ceremony c " +
 		"WHERE (c.ceremonyState = 'ACCEPT' AND c.ceremonyType = :type)" +
 		"AND ((c.startDate < :nowDate AND :nowDate < c.endDate) " +
 		"OR ((c.startDate = :nowDate AND c.endDate = :nowDate) AND (c.startTime <= :nowTime AND :nowTime <= c.endTime)) "

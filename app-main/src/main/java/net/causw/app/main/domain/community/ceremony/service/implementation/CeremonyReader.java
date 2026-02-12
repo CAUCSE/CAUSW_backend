@@ -27,10 +27,6 @@ public class CeremonyReader {
 		return ceremonyRepository.findById(ceremonyId);
 	}
 
-	public Page<Ceremony> findAllOrderByStartedAtAsc(Pageable pageable) {
-		return ceremonyRepository.findAllOrderByStartedAtAsc(pageable);
-	}
-
 	public Page<Ceremony> findOngoingByTypeOrderByStartedAtDesc(CeremonyType type, LocalDate nowDate, LocalTime nowTime,
 		Pageable pageable) {
 		return ceremonyRepository.findOngoingByTypeOrderByStartedAtDesc(type, nowDate, nowTime, pageable);

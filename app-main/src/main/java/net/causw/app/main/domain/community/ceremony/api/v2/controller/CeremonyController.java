@@ -61,14 +61,6 @@ public class CeremonyController {
 		return ApiResponse.success(ceremonyService.getCeremony(ceremonyId, context, userDetails.getUser()));
 	}
 
-	@GetMapping
-	@ResponseStatus(value = HttpStatus.OK)
-	@Operation(summary = "전체 경조사 리스트 조회", description = "전체 경조사 리스트를 조회합니다.")
-	public ApiResponse<Page<CeremonySummaryResponseDto>> getCeremonyPage(
-		@RequestParam(name = "pageNum", required = false, defaultValue = "0") Integer pageNum) {
-		return ApiResponse.success(ceremonyService.getAllCeremonyPage(pageNum));
-	}
-
 	@GetMapping("/ongoing")
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "진행 중인 경조사 리스트 조회", description = "진행 중인 경조사 리스트를 조회합니다.")
