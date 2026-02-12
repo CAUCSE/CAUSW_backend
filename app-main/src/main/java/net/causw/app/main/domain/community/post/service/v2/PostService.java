@@ -37,7 +37,6 @@ import net.causw.app.main.domain.community.reaction.service.implementation.Favor
 import net.causw.app.main.domain.community.reaction.service.implementation.LikePostReader;
 import net.causw.app.main.domain.community.vote.service.implementation.VoteWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.shared.exception.errorcode.BoardErrorCode;
 import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -165,19 +164,10 @@ public class PostService {
 		}
 
 		List<String> boardIds;
-
 		// 게시판 ID가 지정된 경우
 		if (boardId != null && !boardId.isBlank()) {
 			BoardConfig boardConfig = boardConfigReader.getByBoardId(boardId);
 			List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(boardId);
-
-			// BoardVisibility 체크 - HIDDEN인 경우 조회 불가
-			if (boardConfig.getVisibility() == BoardVisibility.HIDDEN) {
-				// 관리자는 조회 가능
-				if (!boardAdminIds.contains(viewer.getId())) {
-					throw BoardErrorCode.BOARD_FORBIDDEN.toBaseException();
-				}
-			}
 
 			// ReadScope 검증
 			PostValidator.validateRead(viewer, boardConfig, boardAdminIds);

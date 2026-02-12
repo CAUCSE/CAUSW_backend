@@ -5,6 +5,7 @@ import java.util.List;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
 import net.causw.app.main.domain.community.board.entity.BoardReadScope;
+import net.causw.app.main.domain.community.board.entity.BoardVisibility;
 import net.causw.app.main.domain.community.board.entity.BoardWriteScope;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
@@ -92,6 +93,14 @@ public class PostValidator {
 		// 게시판 관리자는 무조건 조회 가능
 		if (boardAdminIds.contains(viewer.getId())) {
 			return;
+		}
+
+		// BoardVisibility 체크 - HIDDEN인 경우 조회 불가
+		if (boardConfig.getVisibility() == BoardVisibility.HIDDEN) {
+			// 관리자는 조회 가능
+			if (!boardAdminIds.contains(viewer.getId())) {
+				throw BoardErrorCode.BOARD_FORBIDDEN.toBaseException();
+			}
 		}
 
 		BoardReadScope readScope = boardConfig.getReadScope();
