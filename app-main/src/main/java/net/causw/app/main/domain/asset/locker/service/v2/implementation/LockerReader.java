@@ -7,7 +7,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.asset.locker.entity.Locker;
 import net.causw.app.main.domain.asset.locker.entity.LockerName;
+import net.causw.app.main.domain.asset.locker.repository.LockerRepository;
 import net.causw.app.main.domain.asset.locker.repository.query.LockerQueryRepository;
+import net.causw.app.main.shared.exception.errorcode.LockerErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -16,7 +18,17 @@ import lombok.RequiredArgsConstructor;
 @Transactional(readOnly = true)
 public class LockerReader {
 
+	private final LockerRepository lockerRepository;
 	private final LockerQueryRepository lockerQueryRepository;
+
+	public Locker findByIdForWrite(String lockerId) {
+		return lockerRepository.findByIdForWrite(lockerId)
+			.orElseThrow(LockerErrorCode.LOCKER_NOT_FOUND::toBaseException);
+	}
+
+	public boolean existsByUserId(String userId) {
+		return lockerRepository.findByUser_Id(userId).isPresent();
+	}
 
 	public Page<Locker> findLockerList(LockerName location, Boolean isActive, Boolean isOccupied, Pageable pageable) {
 		return lockerQueryRepository.findLockerList(location, isActive, isOccupied, pageable);
