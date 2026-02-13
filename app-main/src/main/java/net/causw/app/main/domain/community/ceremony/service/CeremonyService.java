@@ -132,8 +132,8 @@ public class CeremonyService {
 			ceremonies = ceremonyReader.findAllPastOrderByStartedAtDesc(LocalDate.now(), LocalTime.now(), pageable);
 		} else {
 			ceremonyType = CeremonyType.fromString(type);
-			ceremonies = ceremonyReader.findPastByTypeOrderByStartedAtDesc(ceremonyType, LocalDate.now(), LocalTime.now()
-				, pageable);
+			ceremonies = ceremonyReader.findPastByTypeOrderByStartedAtDesc(ceremonyType, LocalDate.now(),
+				LocalTime.now(), pageable);
 		}
 
 		return ceremonies.map(ceremonyDtoMapper::toCeremonySummaryResponseDto);

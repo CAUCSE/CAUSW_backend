@@ -54,8 +54,8 @@ public interface CeremonyRepository extends JpaRepository<Ceremony, String> {
 		ORDER BY c.startDate, c.startTime DESC
 		""")
 	Page<Ceremony> findOngoingByTypeOrderByStartedAtDesc(
-		@Param("type") CeremonyType type, @Param("nowDate") LocalDate nowDate, @Param("nowTime") LocalTime nowTime
-		, Pageable pageable);
+		@Param("type") CeremonyType type, @Param("nowDate") LocalDate nowDate, @Param("nowTime") LocalTime nowTime,
+		Pageable pageable);
 
 	@Query("""
 		SELECT c FROM Ceremony c WHERE c.ceremonyState = 'ACCEPT'
@@ -78,8 +78,8 @@ public interface CeremonyRepository extends JpaRepository<Ceremony, String> {
 		ORDER BY c.startDate, c.startTime ASC
 		""")
 	Page<Ceremony> findUpcomingByTypeOrderByStartedAtAsc(
-		@Param("type") CeremonyType type, @Param("nowDate") LocalDate nowDate, @Param("nowTime") LocalTime nowTime
-		, Pageable pageable);
+		@Param("type") CeremonyType type, @Param("nowDate") LocalDate nowDate, @Param("nowTime") LocalTime nowTime,
+		Pageable pageable);
 
 	@Query("""
 		SELECT c FROM Ceremony c WHERE c.ceremonyState = 'ACCEPT'
@@ -110,13 +110,13 @@ public interface CeremonyRepository extends JpaRepository<Ceremony, String> {
 		ORDER BY c.startDate, c.startTime DESC
 		""")
 	Page<Ceremony> findPastByTypeOrderByStartedAtDesc(
-		@Param("type") CeremonyType type, @Param("nowDate") LocalDate nowDate, @Param("nowTime") LocalTime nowTime
-		, Pageable pageable);
+		@Param("type") CeremonyType type, @Param("nowDate") LocalDate nowDate, @Param("nowTime") LocalTime nowTime,
+		Pageable pageable);
 
 	@Query("SELECT c " +
 		"FROM Ceremony c " +
 		"WHERE (c.user.id = :userId AND (:state IS NULL OR c.ceremonyState = :state)) " +
 		"ORDER BY c.startDate, c.startTime DESC")
-	Page<Ceremony> findMyByStateOrderByStartedAtDesc(@Param("userId") String userId, @Param("state") CeremonyState state
-		, Pageable pageable);
+	Page<Ceremony> findMyByStateOrderByStartedAtDesc(@Param("userId") String userId,
+		@Param("state") CeremonyState state, Pageable pageable);
 }
