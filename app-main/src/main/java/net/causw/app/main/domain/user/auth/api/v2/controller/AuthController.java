@@ -5,10 +5,7 @@ import java.time.Duration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import net.causw.app.main.domain.user.account.service.v2.dto.UserRegisterDto;
 import net.causw.app.main.domain.user.auth.api.v2.dto.AuthDtoMapper;
@@ -58,5 +55,30 @@ public class AuthController {
 
 		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
 			.body(ApiResponse.success(authDtoMapper.toAuthResponse(dto)));
+	}
+
+	@Operation(summary = "토큰 재발급 V2", description = "리프레시토큰을 통해 액세스토큰을 재발급 받습니다.")
+	@PostMapping("/refresh")
+	public ResponseEntity<ApiResponse<AuthResponse>> reissue(
+		@CookieValue(name = "refresh_token", required = false) String refreshToken) {
+		AuthResult dto = authService.updateToken(refreshToken);
+
+		// 쿠키로 리프레시토큰 반환
+		ResponseCookie cookie = ResponseCookie.from("refresh_token", dto.refreshToken())
+			.httpOnly(true)
+			.secure(true)
+			.path("/")
+			.maxAge(Duration.ofMillis(StaticValue.JWT_REFRESH_TOKEN_VALID_TIME))
+			.sameSite("None")
+			.build();
+
+		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
+			.body(ApiResponse.success(authDtoMapper.toAuthResponse(dto)));
+	}
+
+	@Operation(summary = "로그아웃 V2", description = "토큰을 만료시킵니다.")
+	@PostMapping("/logout")
+	public ResponseEntity<ApiResponse<AuthResponse>> logout(@RequestBody @Valid EmailLoginRequest request) {
+		throw new UnsupportedOperationException();
 	}
 }

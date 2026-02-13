@@ -14,6 +14,7 @@ import net.causw.app.main.domain.user.auth.service.v2.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.v2.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.v2.implementation.AuthTokenManager;
 import net.causw.app.main.domain.user.auth.service.v2.implementation.AuthValidator;
+import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -55,7 +56,21 @@ public class AuthService {
 		authValidator.validateCredential(user, password);
 		userValidator.validateUserStatusForLogin(user.getState());
 		// 토큰 생성
-		AuthTokenPair tokens = authTokenManager.issueTokens(user);
+		AuthTokenPair tokens = authTokenManager.issueTokens(user, null);
+		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), user.getProfileUrl(),
+			tokens.refreshToken());
+	}
+
+	@Transactional
+	public AuthResult updateToken(String refreshToken) {
+		if (refreshToken == null) {
+			throw AuthErrorCode.REFRESH_TOKEN_MISSING.toBaseException();
+		}
+		String userId = authTokenManager.getUserIdFromRefreshToken(refreshToken);
+		User user = userReader.findUserById(userId);
+		userValidator.validateUser(user);
+		// 토큰 생성
+		AuthTokenPair tokens = authTokenManager.issueTokens(user, refreshToken);
 		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), user.getProfileUrl(),
 			tokens.refreshToken());
 	}

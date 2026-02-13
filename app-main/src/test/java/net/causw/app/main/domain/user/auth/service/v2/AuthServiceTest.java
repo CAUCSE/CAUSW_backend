@@ -241,7 +241,7 @@ public class AuthServiceTest {
 		void success() {
 			// given
 			given(userReader.findByEmailOrElseThrow(EMAIL)).willReturn(user);
-			given(authTokenManager.issueTokens(any(User.class))).willReturn(authTokenPair);
+			given(authTokenManager.issueTokens(any(User.class), any())).willReturn(authTokenPair);
 
 			// when
 			AuthResult result = authService.loginEmailUser(EMAIL, PASSWORD);
@@ -253,7 +253,7 @@ public class AuthServiceTest {
 
 			// verify
 			verify(authValidator).validateCredential(user, PASSWORD);
-			verify(authTokenManager).issueTokens(user);
+			verify(authTokenManager).issueTokens(user, null);
 		}
 
 		@Nested
@@ -291,7 +291,7 @@ public class AuthServiceTest {
 					.hasMessage(UserErrorCode.INVALID_LOGIN.getMessage());
 
 				// verify
-				verify(authTokenManager, never()).issueTokens(any());
+				verify(authTokenManager, never()).issueTokens(any(), any());
 			}
 
 			@ParameterizedTest(name = "실패: 사용자 상태 오류 ({0})")

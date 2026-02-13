@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
@@ -41,6 +42,24 @@ public class UserValidator {
 			case INACTIVE ->
 				throw UserErrorCode.INVALID_LOGIN_USER_INACTIVE.toBaseException();
 			default -> {}
+		}
+	}
+
+	public void validateUser(User user) {
+		// 유저 상태 검증
+		switch (user.getState()) {
+			case DROP ->
+				throw AuthErrorCode.BLOCKED_USER.toBaseException();
+			case INACTIVE ->
+				throw AuthErrorCode.INACTIVE_USER.toBaseException();
+			case DELETED ->
+				throw AuthErrorCode.DELETED_USER.toBaseException();
+			default -> {}
+		}
+
+		// 유저 역할 검증
+		if (user.getRoles().contains(Role.NONE)) {
+			throw AuthErrorCode.NEED_SIGN_IN.toBaseException();
 		}
 	}
 
