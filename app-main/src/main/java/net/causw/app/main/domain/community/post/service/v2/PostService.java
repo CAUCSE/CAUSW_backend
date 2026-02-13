@@ -37,7 +37,9 @@ import net.causw.app.main.domain.community.reaction.service.implementation.Favor
 import net.causw.app.main.domain.community.reaction.service.implementation.LikePostReader;
 import net.causw.app.main.domain.community.vote.service.implementation.VoteWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.shared.exception.errorcode.BoardErrorCode;
 import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
+import net.causw.global.constant.StaticValue;
 
 import lombok.RequiredArgsConstructor;
 
@@ -147,7 +149,7 @@ public class PostService {
 		User viewer = query.viewer();
 		List<String> requestedBoardIds = query.boardIds();
 		String cursor = query.cursor();
-		int size = query.size() != null ? query.size() : 20; // 기본값 20
+		int size = query.size() != null ? query.size() : StaticValue.DEFAULT_POST_PAGE_SIZE; // 기본값 20
 		String keyword = query.keyword();
 
 		// cursor 파싱 (createdAt과 postId를 "|"로 구분)
@@ -233,7 +235,7 @@ public class PostService {
 		if (boardConfig.getVisibility() == BoardVisibility.HIDDEN) {
 			// 관리자는 조회 가능
 			if (!boardAdminIds.contains(viewer.getId())) {
-				throw new IllegalArgumentException("게시판이 숨김 처리되어 조회할 수 없습니다.");
+				throw BoardErrorCode.BOARD_FORBIDDEN.toBaseException();
 			}
 		}
 

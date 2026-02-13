@@ -1061,8 +1061,7 @@ public class PostServiceTest {
 
 			// when & then
 			assertThatThrownBy(() -> postService.getPostDetail(query))
-				.isInstanceOf(IllegalArgumentException.class)
-				.hasMessageContaining("숨김 처리");
+				.isInstanceOf(BaseRunTimeV2Exception.class);
 		}
 	}
 }
