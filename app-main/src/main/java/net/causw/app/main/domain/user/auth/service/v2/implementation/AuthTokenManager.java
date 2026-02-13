@@ -36,4 +36,11 @@ public class AuthTokenManager {
 			.map(Object::toString)
 			.orElseThrow(AuthErrorCode.INVALID_REFRESH_TOKEN::toBaseException);
 	}
+
+	public void invalidateTokens(String accessToken, String refreshToken) {
+		redisUtils.addToBlacklist(accessToken);
+		if (refreshToken != null) {
+			redisUtils.deleteRefreshTokenData(refreshToken);
+		}
+	}
 }

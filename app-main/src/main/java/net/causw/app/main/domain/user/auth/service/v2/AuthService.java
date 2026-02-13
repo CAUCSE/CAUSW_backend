@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.v2.dto.UserRegisterDto;
+import net.causw.app.main.domain.user.account.service.v2.implementation.UserPushTokenWriter;
 import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.v2.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.v2.implementation.UserWriter;
@@ -29,6 +30,7 @@ public class AuthService {
 	private final UserValidator userValidator;
 	private final AuthValidator authValidator;
 	private final AuthTokenManager authTokenManager;
+	private final UserPushTokenWriter userPushTokenWriter;
 
 	@Transactional
 	public AuthResult registerEmailUser(UserRegisterDto dto) {
@@ -73,5 +75,16 @@ public class AuthService {
 		AuthTokenPair tokens = authTokenManager.issueTokens(user, refreshToken);
 		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), user.getProfileUrl(),
 			tokens.refreshToken());
+	}
+
+	@Transactional
+	public void signOut(String userId, AuthTokenPair tokens, String fcmToken) {
+		if (fcmToken != null) {
+			User user = userReader.findUserById(userId);
+			// fcm 토큰 무효화
+			userPushTokenWriter.removeFcmToken(user, fcmToken);
+		}
+		// jwt 토큰 무효화
+		authTokenManager.invalidateTokens(tokens.accessToken(), tokens.refreshToken());
 	}
 }

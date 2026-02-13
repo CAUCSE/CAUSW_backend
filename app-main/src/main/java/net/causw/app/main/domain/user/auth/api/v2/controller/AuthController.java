@@ -5,15 +5,19 @@ import java.time.Duration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import net.causw.app.main.domain.user.account.service.v2.dto.UserRegisterDto;
 import net.causw.app.main.domain.user.auth.api.v2.dto.AuthDtoMapper;
 import net.causw.app.main.domain.user.auth.api.v2.dto.request.EmailLoginRequest;
 import net.causw.app.main.domain.user.auth.api.v2.dto.request.EmailSignupRequest;
+import net.causw.app.main.domain.user.auth.api.v2.dto.request.SignOutRequest;
 import net.causw.app.main.domain.user.auth.api.v2.dto.response.AuthResponse;
 import net.causw.app.main.domain.user.auth.service.v2.AuthService;
 import net.causw.app.main.domain.user.auth.service.v2.dto.AuthResult;
+import net.causw.app.main.domain.user.auth.service.v2.dto.AuthTokenPair;
+import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 import net.causw.global.constant.StaticValue;
 
@@ -78,7 +82,24 @@ public class AuthController {
 
 	@Operation(summary = "로그아웃 V2", description = "토큰을 만료시킵니다.")
 	@PostMapping("/logout")
-	public ResponseEntity<ApiResponse<AuthResponse>> logout(@RequestBody @Valid EmailLoginRequest request) {
-		throw new UnsupportedOperationException();
+	public ResponseEntity<ApiResponse<String>> logout(
+		@RequestHeader("Authorization") String bearerToken,
+		@CookieValue(name = "refresh_token", required = false) String refreshToken,
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestBody(required = false) SignOutRequest body) {
+		String accessToken = null;
+		if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+			accessToken = bearerToken.substring(7);
+		}
+		AuthTokenPair tokens = AuthTokenPair.of(accessToken, refreshToken);
+		String fcmToken = (body != null) ? body.fcmToken() : null;
+		authService.signOut(userDetails.getUserId(), tokens, fcmToken);
+		// 쿠키에서 refresh_token 제거
+		ResponseCookie cookie = ResponseCookie.from("refresh_token", "")
+			.path("/")
+			.maxAge(0)
+			.build();
+		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
+			.body(ApiResponse.success("로그아웃 성공"));
 	}
 }
