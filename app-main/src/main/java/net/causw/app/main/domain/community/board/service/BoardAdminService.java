@@ -26,7 +26,7 @@ import net.causw.app.main.domain.community.board.service.implementation.BoardRea
 import net.causw.app.main.domain.community.board.service.implementation.BoardWriter;
 import net.causw.app.main.domain.community.board.util.BoardValidator;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.service.implementation.UserReader;
+import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
 
 import lombok.RequiredArgsConstructor;
 
@@ -80,7 +80,7 @@ public class BoardAdminService {
 		Board board = boardReader.getById(boardId);
 		BoardConfig boardConfig = boardConfigReader.getByBoardId(boardId);
 		List<String> adminIds = boardConfigReader.getAdminIdsByBoardId(boardId);
-		List<User> adminUsers = userReader.getUsersByIds(adminIds);
+		List<User> adminUsers = userReader.findUsersByIds(adminIds);
 
 		return boardConfigDetailMapper.fromEntity(board, boardConfig, adminUsers);
 	}

@@ -32,7 +32,18 @@ public interface NotificationLogRepository extends JpaRepository<NotificationLog
 	List<NotificationLog> findByUserAndIsReadFalseNotificationTypes(@Param("user") User user,
 		@Param("types") List<NoticeType> types, Pageable pageable);
 
+	@Query("SELECT nl FROM NotificationLog nl " +
+		"WHERE nl.user.id = :userId " +
+		"AND nl.isRead = false " +
+		"ORDER BY nl.createdAt DESC")
+	List<NotificationLog> findByUserIdAndIsReadFalseNotification(@Param("userId") String userId, Pageable pageable);
+
 	Optional<NotificationLog> findByIdAndUser(String id, User user);
+
+	@Query("SELECT nl FROM NotificationLog nl " +
+		"WHERE nl.user.id = :userId " +
+		"AND nl.isRead = false")
+	List<NotificationLog> findByUserIdUnreadLogsUpToLimit(@Param("userId") String userId, Pageable pageable);
 
 	@Query("SELECT nl FROM NotificationLog nl " +
 		"WHERE nl.user = :user " +
