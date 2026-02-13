@@ -1254,7 +1254,7 @@ public class UserService {
 		List<UuidFile> uuidFileList = uuidFileService.saveFileList(userAdmissionAttachImageList,
 			FilePath.USER_ADMISSION);
 
-		UserAdmission userAdmission = UserAdmission.of(
+		UserAdmission userAdmission = UserAdmission.ofV1(
 			user,
 			uuidFileList,
 			userAdmissionCreateRequestDto.getDescription());

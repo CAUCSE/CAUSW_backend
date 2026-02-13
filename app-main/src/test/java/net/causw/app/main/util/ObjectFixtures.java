@@ -105,7 +105,7 @@ public class ObjectFixtures {
 	}
 
 	public static UserAdmission getUserAdmission() {
-		return UserAdmission.of(
+		return UserAdmission.ofV1(
 			getUser(),
 			List.of(),
 			"description");

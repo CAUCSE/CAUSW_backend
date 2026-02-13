@@ -22,7 +22,11 @@ public enum UserErrorCode implements BaseResponseCode {
 	USER_DROPPED(HttpStatus.CONFLICT, "USER_409_003", "추방된 계정입니다. 재가입 문의는 caucsedongne@gmail.com으로 연락해주세요"),
 	EMAIL_ALREADY_EXIST(HttpStatus.CONFLICT, "USER_409_004", "이미 존재하는 이메일입니다."),
 	PHONE_NUMBER_ALREADY_EXIST(HttpStatus.CONFLICT, "USER_409_005", "이미 존재하는 전화번호입니다."),
-	NICKNAME_ALREADY_EXIST(HttpStatus.CONFLICT, "USER_409_006", "이미 존재하는 닉네임입니다.");
+	NICKNAME_ALREADY_EXIST(HttpStatus.CONFLICT, "USER_409_006", "이미 존재하는 닉네임입니다."),
+	INVALID_USER_STATE_FOR_ADMISSION(HttpStatus.BAD_REQUEST, "USER_400_003", "가입 대기 또는 거부 상태의 사용자만 인증 신청이 가능합니다."),
+	ADMISSION_ALREADY_EXISTS(HttpStatus.CONFLICT, "USER_409_007", "이미 인증 신청이 존재합니다."),
+	ADMISSION_IMAGE_REQUIRED(HttpStatus.BAD_REQUEST, "USER_400_004", "증빙서류 이미지는 1개 이상 필수입니다."),
+	ADMISSION_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_404_002", "인증 신청을 찾을 수 없습니다.");
 
 	private final HttpStatus status;
 	private final String code;
