@@ -14,6 +14,7 @@ import org.springframework.stereotype.Repository;
 
 import net.causw.app.main.domain.asset.file.entity.joinEntity.QPostAttachImage;
 import net.causw.app.main.domain.asset.file.enums.FileExtensionType;
+import net.causw.app.main.domain.community.comment.entity.QChildComment;
 import net.causw.app.main.domain.community.comment.entity.QComment;
 import net.causw.app.main.domain.community.post.entity.QPost;
 import net.causw.app.main.domain.community.reaction.entity.QFavoritePost;
@@ -205,14 +206,20 @@ public class PostQueryRepository {
 	private static QPostCursorResult toPostCursorResult(QPost post, QUser writer) {
 
 		QComment comment = QComment.comment;
+		QChildComment childComment = QChildComment.childComment;
 		QLikePost likePost = QLikePost.likePost;
 		QFavoritePost favoritePost = QFavoritePost.favoritePost;
 
-		// 숫자 카운트 서브쿼리
-		SubQueryExpression<Long> commentCount = JPAExpressions
-			.select(comment.count())
+		// Comment 개수 + ChildComment 개수 (삭제되지 않은 것만)
+		SubQueryExpression<Long> totalCommentCount = JPAExpressions
+			.select(comment.count()
+				.add(JPAExpressions
+					.select(childComment.count())
+					.from(childComment)
+					.where(childComment.parentComment.post.eq(post)
+						.and(childComment.isDeleted.isFalse()))))
 			.from(comment)
-			.where(comment.post.eq(post));
+			.where(comment.post.eq(post).and(comment.isDeleted.isFalse()));
 
 		SubQueryExpression<Long> likeCount = JPAExpressions
 			.select(likePost.count())
@@ -233,7 +240,7 @@ public class PostQueryRepository {
 
 		return new QPostCursorResult(
 			post.id, post.content,
-			commentCount, likeCount, favoriteCount,
+			totalCommentCount, likeCount, favoriteCount,
 			post.isAnonymous, post.vote.id, post.isDeleted,
 			writer.isNotNull(), writer.name, writer.nickname, writer.admissionYear, writer.state,
 			writerProfileImageUrl,
@@ -264,5 +271,34 @@ public class PostQueryRepository {
 				Collectors.mapping(
 					tuple -> tuple.get(postAttachImage.uuidFile.fileUrl),
 					Collectors.toList())));
+	}
+
+	/**
+	 * 특정 게시글의 댓글 개수를 조회합니다. (Comment + ChildComment, 삭제되지 않은 것만)
+	 *
+	 * @param postId 게시글 ID
+	 * @return 댓글 개수 (Comment 개수 + ChildComment 개수)
+	 */
+	public long countCommentsByPostId(String postId) {
+		QComment comment = QComment.comment;
+		QChildComment childComment = QChildComment.childComment;
+
+		// Comment 개수 조회 (삭제되지 않은 것만)
+		Long commentCount = jpaQueryFactory
+			.select(comment.count())
+			.from(comment)
+			.where(comment.post.id.eq(postId)
+				.and(comment.isDeleted.isFalse()))
+			.fetchOne();
+
+		// ChildComment 개수 조회 (삭제되지 않은 것만)
+		Long childCommentCount = jpaQueryFactory
+			.select(childComment.count())
+			.from(childComment)
+			.where(childComment.parentComment.post.id.eq(postId)
+				.and(childComment.isDeleted.isFalse()))
+			.fetchOne();
+
+		return (commentCount != null ? commentCount : 0L) + (childCommentCount != null ? childCommentCount : 0L);
 	}
 }

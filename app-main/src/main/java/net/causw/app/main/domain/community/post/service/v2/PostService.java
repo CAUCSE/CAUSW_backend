@@ -245,8 +245,8 @@ public class PostService {
 		// 게시글 이미지 조회
 		List<String> imageUrls = postReader.findPostImages(postId);
 
-		// 좋아요, 즐겨찾기 개수 조회
-		Long numComment = 0L; // TODO: 댓글 개수 조회 로직 추가 필요
+		// 좋아요, 즐겨찾기, 댓글 개수 조회
+		Long numComment = postReader.countComments(postId);
 		Long numLike = likePostReader.countByPostId(postId);
 		Long numFavorite = favoritePostReader.countByPostId(postId);
 

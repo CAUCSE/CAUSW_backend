@@ -87,4 +87,14 @@ public class PostReader {
 		Map<String, List<String>> result = postQueryRepository.findPostImagesByPostIds(List.of(postId));
 		return result.getOrDefault(postId, List.of());
 	}
+
+	/**
+	 * 특정 게시글의 댓글 개수를 조회합니다. (Comment + ChildComment)
+	 *
+	 * @param postId 게시글 ID
+	 * @return 댓글 개수
+	 */
+	public long countComments(String postId) {
+		return postQueryRepository.countCommentsByPostId(postId);
+	}
 }
