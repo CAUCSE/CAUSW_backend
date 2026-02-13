@@ -243,10 +243,7 @@ public class PostService {
 		PostValidator.validateRead(viewer, boardConfig, boardAdminIds);
 
 		// 게시글 이미지 조회
-		List<String> imageUrls = post.getPostAttachImageList().stream()
-			.map(PostAttachImage::getUuidFile)
-			.map(UuidFile::getFileUrl)
-			.toList();
+		List<String> imageUrls = postReader.findPostImages(postId);
 
 		// 좋아요, 즐겨찾기 개수 조회
 		Long numComment = 0L; // TODO: 댓글 개수 조회 로직 추가 필요

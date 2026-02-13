@@ -76,4 +76,15 @@ public class PostReader {
 	public Map<String, List<String>> findPostImagesByPostIds(List<String> postIds) {
 		return postQueryRepository.findPostImagesByPostIds(postIds);
 	}
+
+	/**
+	 * 단일 게시글의 이미지 URL 목록을 조회합니다.
+	 *
+	 * @param postId 게시글 ID
+	 * @return 이미지 URL 목록
+	 */
+	public List<String> findPostImages(String postId) {
+		Map<String, List<String>> result = postQueryRepository.findPostImagesByPostIds(List.of(postId));
+		return result.getOrDefault(postId, List.of());
+	}
 }
