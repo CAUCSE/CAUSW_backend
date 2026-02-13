@@ -80,7 +80,7 @@ public class BoardAdminService {
 		Board board = boardReader.getById(boardId);
 		BoardConfig boardConfig = boardConfigReader.getByBoardId(boardId);
 		List<String> adminIds = boardConfigReader.getAdminIdsByBoardId(boardId);
-		List<User> adminUsers = userReader.getUsersByIds(adminIds);
+		List<User> adminUsers = userReader.findUsersByIds(adminIds);
 
 		return boardConfigDetailMapper.fromEntity(board, boardConfig, adminUsers);
 	}
