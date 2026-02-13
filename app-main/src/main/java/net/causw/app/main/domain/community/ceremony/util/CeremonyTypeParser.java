@@ -3,7 +3,6 @@ package net.causw.app.main.domain.community.ceremony.util;
 import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyType;
-import net.causw.app.main.shared.exception.errorcode.GlobalErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
