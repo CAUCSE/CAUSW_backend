@@ -53,6 +53,7 @@ public class AuthService {
 		User user = userReader.findByEmailOrElseThrow(email);
 		// 유효성 검증 수행 (비밀번호, 유저 상태)
 		authValidator.validateCredential(user, password);
+		userValidator.validateUserStatusForLogin(user.getState());
 		// 토큰 생성
 		AuthTokenPair tokens = authTokenManager.issueTokens(user);
 		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), user.getProfileUrl(),
