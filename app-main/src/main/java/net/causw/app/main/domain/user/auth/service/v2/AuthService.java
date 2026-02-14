@@ -20,6 +20,11 @@ import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * 사용자 인증 및 인가를 담당하는 서비스입니다.
+ * <p>
+ * 회원가입, 이메일 로그인, 토큰 재발급, 로그아웃 기능을 제공합니다.
+ */
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -32,6 +37,18 @@ public class AuthService {
 	private final AuthTokenManager authTokenManager;
 	private final UserPushTokenWriter userPushTokenWriter;
 
+	/**
+	 * 이메일 기반의 신규 회원을 등록합니다.
+	 * <p>
+	 * 1. 기존 가입 정보(전화번호, 이름) 확인 및 상태 검증<br>
+	 * 2. 이메일, 닉네임, 전화번호 중복 검사<br>
+	 * 3. 비밀번호 암호화 및 신규 유저 생성 후 저장
+	 *
+	 * @param dto 회원가입에 필요한 정보가 담긴 DTO (이메일, 비밀번호, 이름 등)
+	 * @return 가입된 사용자 정보 (토큰은 포함되지 않음)
+	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
+	 * 이미 존재하는 정보(이메일, 닉네임 등)가 있거나, 입력값(비밀번호 등) 형식이 유효하지 않은 경우
+	 */
 	@Transactional
 	public AuthResult registerEmailUser(UserRegisterDto dto) {
 		// 전화번호로 기존 사용자 탐색 및 사용자 상태에 따른 에러 반환
@@ -50,6 +67,16 @@ public class AuthService {
 		return AuthResult.of(null, savedUser.getName(), savedUser.getEmail(), savedUser.getProfileUrl(), null);
 	}
 
+	/**
+	 * 이메일과 비밀번호를 사용하여 로그인합니다.
+	 *
+	 * @param email    사용자 이메일
+	 * @param password 사용자 비밀번호
+	 * @return 액세스 토큰, 리프레시 토큰 및 사용자 기본 정보
+	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
+	 * [INVALID_LOGIN] 비밀번호가 일치하지 않거나,
+	 * [INVALID_LOGIN_USER_...] 로그인 불가능한 상태(탈퇴, 추방, 휴면)인 경우
+	 */
 	@Transactional
 	public AuthResult loginEmailUser(String email, String password) {
 		// 이메일에 대한 유저가 존재하는지 확인
@@ -63,6 +90,18 @@ public class AuthService {
 			tokens.refreshToken());
 	}
 
+	/**
+	 * 리프레시 토큰을 사용하여 액세스 토큰(및 리프레시 토큰)을 재발급합니다.
+	 * <p>
+	 * RTR(Refresh Token Rotation) 정책에 따라 리프레시 토큰도 함께 갱신됩니다.
+	 *
+	 * @param refreshToken 클라이언트(쿠키)로부터 받은 리프레시 토큰
+	 * @return 갱신된 액세스 토큰과 리프레시 토큰 정보 및 사용자 기본 프로필 정보
+	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
+	 * [REFRESH_TOKEN_MISSING] 토큰이 없거나, [INVALID_REFRESH_TOKEN] 유효하지 않은 경우
+	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
+	 * [BLOCKED/INACTIVE_USER] 유저 상태가 활동 불가능한 경우
+	 */
 	@Transactional
 	public AuthResult updateToken(String refreshToken) {
 		if (refreshToken == null) {
@@ -77,6 +116,16 @@ public class AuthService {
 			tokens.refreshToken());
 	}
 
+	/**
+	 * 사용자를 로그아웃 처리합니다.
+	 * <p>
+	 * 1. 해당 기기의 FCM 토큰을 삭제하여 알림 수신을 중단합니다.<br>
+	 * 2. 액세스 토큰을 블랙리스트에 등록하고, 리프레시 토큰을 삭제합니다.
+	 *
+	 * @param userId   로그아웃할 사용자 ID
+	 * @param tokens   만료시킬 액세스 토큰과 리프레시 토큰 쌍
+	 * @param fcmToken 삭제할 FCM 토큰 (null일 경우 생략)
+	 */
 	@Transactional
 	public void signOut(String userId, AuthTokenPair tokens, String fcmToken) {
 		if (fcmToken != null) {
