@@ -79,16 +79,6 @@ public class AdmissionService {
 	}
 
 	/**
-	 * 현재 사용자의 인증 신청을 조회합니다.
-	 */
-	@Transactional(readOnly = true)
-	public AdmissionResult getMyAdmission(User user) {
-		UserAdmission admission = admissionReader.findByUserId(user.getId())
-			.orElseThrow(UserErrorCode.ADMISSION_NOT_FOUND::toBaseException);
-		return AdmissionResult.from(admission);
-	}
-
-	/**
 	 * 사용자의 인증 신청 상태를 조회합니다.
 	 */
 	@Transactional(readOnly = true)
