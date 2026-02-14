@@ -59,7 +59,7 @@ public class LockerAdminController {
 		@PathVariable String id,
 		@RequestBody @Valid LockerAssignRequest request) {
 
-		lockerAdminService.assignLocker(id, request.userId());
+		lockerAdminService.assignLocker(id, request.userId(), request.expiredAt());
 		return ApiResponse.success();
 	}
 

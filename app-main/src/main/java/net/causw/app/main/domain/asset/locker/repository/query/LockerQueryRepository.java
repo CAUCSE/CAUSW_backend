@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.asset.locker.repository.query;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -26,9 +27,11 @@ public class LockerQueryRepository {
 	private final JPAQueryFactory jpaQueryFactory;
 
 	public Page<Locker> findLockerList(
+		String userKeyword,
 		LockerName location,
 		Boolean isActive,
 		Boolean isOccupied,
+		Boolean isExpired,
 		Pageable pageable) {
 
 		QLocker locker = QLocker.locker;
@@ -36,6 +39,13 @@ public class LockerQueryRepository {
 		QUser user = QUser.user;
 
 		BooleanBuilder where = new BooleanBuilder();
+
+		if (userKeyword != null && !userKeyword.isBlank()) {
+			where.and(
+				user.name.containsIgnoreCase(userKeyword)
+					.or(user.email.containsIgnoreCase(userKeyword))
+					.or(user.studentId.containsIgnoreCase(userKeyword)));
+		}
 
 		if (location != null) {
 			where.and(lockerLocation.name.eq(location));
@@ -53,12 +63,22 @@ public class LockerQueryRepository {
 			}
 		}
 
+		if (isExpired != null) {
+			if (isExpired) {
+				where.and(locker.expireDate.isNotNull()
+					.and(locker.expireDate.before(LocalDateTime.now())));
+			} else {
+				where.and(locker.expireDate.isNull()
+					.or(locker.expireDate.goe(LocalDateTime.now())));
+			}
+		}
+
 		List<Locker> content = jpaQueryFactory
 			.selectFrom(locker)
 			.join(locker.location, lockerLocation).fetchJoin()
 			.leftJoin(locker.user, user).fetchJoin()
 			.where(where)
-			.orderBy(locker.lockerNumber.asc())
+			.orderBy(lockerLocation.id.asc(), locker.lockerNumber.asc())
 			.offset(pageable.getOffset())
 			.limit(pageable.getPageSize())
 			.fetch();

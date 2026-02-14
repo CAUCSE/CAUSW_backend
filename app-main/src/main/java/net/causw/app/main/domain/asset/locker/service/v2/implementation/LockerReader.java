@@ -30,7 +30,8 @@ public class LockerReader {
 		return lockerRepository.findByUser_Id(userId).isPresent();
 	}
 
-	public Page<Locker> findLockerList(LockerName location, Boolean isActive, Boolean isOccupied, Pageable pageable) {
-		return lockerQueryRepository.findLockerList(location, isActive, isOccupied, pageable);
+	public Page<Locker> findLockerList(String userKeyword, LockerName location, Boolean isActive, Boolean isOccupied,
+		Boolean isExpired, Pageable pageable) {
+		return lockerQueryRepository.findLockerList(userKeyword, location, isActive, isOccupied, isExpired, pageable);
 	}
 }

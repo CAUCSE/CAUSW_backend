@@ -27,14 +27,16 @@ public class LockerAdminService {
 	@Transactional(readOnly = true)
 	public Page<Locker> getLockerList(LockerListCondition condition, Pageable pageable) {
 		return lockerReader.findLockerList(
+			condition.userKeyword(),
 			condition.location(),
 			condition.isActive(),
 			condition.isOccupied(),
+			condition.isExpired(),
 			pageable);
 	}
 
 	@Transactional
-	public void assignLocker(String lockerId, String userId) {
+	public void assignLocker(String lockerId, String userId, LocalDateTime expiredAt) {
 		Locker locker = lockerReader.findByIdForWrite(lockerId);
 
 		if (LockerStatus.of(locker) != LockerStatus.AVAILABLE) {
@@ -46,7 +48,7 @@ public class LockerAdminService {
 		}
 
 		User user = userReader.findUserById(userId);
-		locker.register(user, null);
+		locker.register(user, expiredAt);
 	}
 
 	@Transactional
