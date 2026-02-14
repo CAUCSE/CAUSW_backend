@@ -4,8 +4,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import net.causw.app.main.domain.asset.file.entity.UuidFile;
+import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.campus.schedule.entity.Schedule;
 import net.causw.app.main.domain.campus.schedule.entity.enums.ScheduleType;
 import net.causw.app.main.domain.campus.schedule.service.v2.dto.ScheduleDto;
@@ -23,14 +27,13 @@ import net.causw.app.main.domain.notification.notification.entity.Notification;
 import net.causw.app.main.domain.notification.notification.enums.NoticeType;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserCreateRequestDto;
-import net.causw.app.main.domain.asset.file.entity.UuidFile;
-import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
 import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.account.enums.user.GraduationType;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.domain.user.account.service.v2.dto.AdmissionCreateCommand;
 import net.causw.global.constant.StaticValue;
 
 public class ObjectFixtures {
@@ -61,6 +64,13 @@ public class ObjectFixtures {
 		User user = getCertifiedUser();
 		ReflectionTestUtils.setField(user, "id", userId);
 
+		return user;
+	}
+
+	public static User getRejectUserWithId(String userId) {
+		User user = getUser();
+		ReflectionTestUtils.setField(user, "id", userId);
+		user.setState(UserState.REJECT);
 		return user;
 	}
 
@@ -122,19 +132,13 @@ public class ObjectFixtures {
 			"description");
 	}
 
+	/**
+	 * v2 스타일 UserAdmission fixture.
+	 */
 	public static UserAdmission getUserAdmission(User user) {
-		UuidFile uuidFile = UuidFile.of(
-			"test-uuid",
-			"user-admission/test-image_test-uuid.png",
-			"https://storage.example.com/user-admission/test-image_test-uuid.png",
-			"test-image",
-			"png",
-			FilePath.USER_ADMISSION);
-		ReflectionTestUtils.setField(uuidFile, "id", "uuid-file-1");
-
 		return UserAdmission.of(
 			user,
-			List.of(uuidFile),
+			List.of(getUuidFile()),
 			"재학증명서 첨부합니다",
 			AcademicStatus.ENROLLED,
 			"20231234",
@@ -146,6 +150,38 @@ public class ObjectFixtures {
 		UserAdmission admission = getUserAdmission(user);
 		ReflectionTestUtils.setField(admission, "id", admissionId);
 		return admission;
+	}
+
+	// ── Admission 관련 요청/파일 fixture ──
+
+	public static AdmissionCreateCommand getAdmissionCreateCommand() {
+		return new AdmissionCreateCommand(
+			"재학증명서 첨부합니다",
+			AcademicStatus.ENROLLED,
+			"20231234",
+			2023,
+			Department.SCHOOL_OF_SW);
+	}
+
+	public static List<MultipartFile> getMockAttachImages() {
+		MockMultipartFile image = new MockMultipartFile(
+			"attachImages",
+			"test-image.png",
+			"image/png",
+			"image-content".getBytes());
+		return List.of(image);
+	}
+
+	public static UuidFile getUuidFile() {
+		UuidFile uuidFile = UuidFile.of(
+			"test-uuid",
+			"user-admission/test-image_test-uuid.png",
+			"https://storage.example.com/user-admission/test-image_test-uuid.png",
+			"test-image",
+			"png",
+			FilePath.USER_ADMISSION);
+		ReflectionTestUtils.setField(uuidFile, "id", "uuid-file-1");
+		return uuidFile;
 	}
 
 	public static Semester getSemester() {
