@@ -32,6 +32,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.v2.dto.UserRegisterDto;
+import net.causw.app.main.domain.user.account.service.v2.implementation.UserPushTokenWriter;
 import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.v2.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.v2.implementation.UserWriter;
@@ -40,6 +41,7 @@ import net.causw.app.main.domain.user.auth.service.v2.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.v2.implementation.AuthTokenManager;
 import net.causw.app.main.domain.user.auth.service.v2.implementation.AuthValidator;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
+import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
@@ -64,7 +66,10 @@ public class AuthServiceTest {
 	private AuthValidator authValidator;
 	@Mock
 	private AuthTokenManager authTokenManager;
+	@Mock
+	private UserPushTokenWriter userPushTokenWriter;
 
+	private static final String USER_ID = "user_id_123";
 	private static final String EMAIL = "test@example.com";
 	private static final String PASSWORD = "password1234";
 	private static final String ENCODED_PASSWORD = "encodedPassword";
@@ -73,6 +78,9 @@ public class AuthServiceTest {
 	private static final String PHONE = "010-1234-5678";
 	private static final String ACCESS_TOKEN = "access_token";
 	private static final String REFRESH_TOKEN = "refresh_token";
+	private static final String NEW_ACCESS_TOKEN = "new_access_token";
+	private static final String NEW_REFRESH_TOKEN = "new_refresh_token";
+	private static final String FCM_TOKEN = "fcm_token";
 
 	private UserRegisterDto registerDto;
 	private User user;
@@ -103,6 +111,8 @@ public class AuthServiceTest {
 			// then
 			assertThat(result).isNotNull();
 			assertThat(result.email()).isEqualTo(EMAIL);
+			assertThat(result.accessToken()).isNull();
+			assertThat(result.refreshToken()).isNull();
 
 			// verify
 			verify(userValidator).checkEmailDuplication(EMAIL);
@@ -253,6 +263,7 @@ public class AuthServiceTest {
 
 			// verify
 			verify(authValidator).validateCredential(user, PASSWORD);
+			verify(userValidator).validateUserStatusForLogin(user.getState());
 			verify(authTokenManager).issueTokens(user, null);
 		}
 
@@ -311,6 +322,89 @@ public class AuthServiceTest {
 				assertThatThrownBy(() -> authService.loginEmailUser(EMAIL, PASSWORD))
 					.isInstanceOf(BaseRunTimeV2Exception.class)
 					.hasMessage(errorCode.getMessage());
+			}
+		}
+
+		@Nested
+		@DisplayName("토큰 재발급 (updateToken)")
+		class UpdateTokenTest {
+
+			@Test
+			@DisplayName("성공: 유효한 리프레시 토큰으로 요청 시 새로운 토큰 쌍을 반환한다.")
+			void success() {
+				// given
+				AuthTokenPair newTokens = new AuthTokenPair(NEW_ACCESS_TOKEN, NEW_REFRESH_TOKEN);
+
+				given(authTokenManager.getUserIdFromRefreshToken(REFRESH_TOKEN)).willReturn(USER_ID);
+				given(userReader.findUserById(USER_ID)).willReturn(user);
+				given(authTokenManager.issueTokens(user, REFRESH_TOKEN)).willReturn(newTokens);
+
+				// when
+				AuthResult result = authService.updateToken(REFRESH_TOKEN);
+
+				// then
+				assertThat(result.accessToken()).isEqualTo(NEW_ACCESS_TOKEN);
+				assertThat(result.refreshToken()).isEqualTo(NEW_REFRESH_TOKEN);
+
+				// verify
+				verify(userValidator).validateUser(user);
+				verify(authTokenManager).issueTokens(user, REFRESH_TOKEN);
+			}
+
+			@Test
+			@DisplayName("실패: 리프레시 토큰이 null인 경우 에러를 반환한다.")
+			void fail_token_missing() {
+				// when & then
+				assertThatThrownBy(() -> authService.updateToken(null))
+					.isInstanceOf(BaseRunTimeV2Exception.class)
+					.hasMessage(AuthErrorCode.REFRESH_TOKEN_MISSING.getMessage());
+
+				verify(authTokenManager, never()).issueTokens(any(), any());
+			}
+
+			@Test
+			@DisplayName("실패: 유효하지 않은 리프레시 토큰(Redis 없음)인 경우 에러를 반환한다.")
+			void fail_invalid_token() {
+				// given
+				given(authTokenManager.getUserIdFromRefreshToken(REFRESH_TOKEN))
+					.willThrow(AuthErrorCode.INVALID_REFRESH_TOKEN.toBaseException());
+
+				// when & then
+				assertThatThrownBy(() -> authService.updateToken(REFRESH_TOKEN))
+					.isInstanceOf(BaseRunTimeV2Exception.class)
+					.hasMessage(AuthErrorCode.INVALID_REFRESH_TOKEN.getMessage());
+			}
+		}
+
+		@Nested
+		@DisplayName("로그아웃 (signOut)")
+		class SignOutTest {
+
+			@Test
+			@DisplayName("성공: FCM 토큰이 있는 경우 FCM 삭제 및 토큰 무효화를 수행한다.")
+			void success_with_fcm() {
+				// given
+				given(userReader.findUserById(USER_ID)).willReturn(user);
+
+				// when
+				authService.signOut(USER_ID, authTokenPair, FCM_TOKEN);
+
+				// verify
+				verify(userReader).findUserById(USER_ID);
+				verify(userPushTokenWriter).removeFcmToken(user, FCM_TOKEN);
+				verify(authTokenManager).invalidateTokens(ACCESS_TOKEN, REFRESH_TOKEN);
+			}
+
+			@Test
+			@DisplayName("성공: FCM 토큰이 없는 경우(null) 토큰 무효화만 수행한다.")
+			void success_without_fcm() {
+				// when
+				authService.signOut(USER_ID, authTokenPair, null);
+
+				// verify
+				verify(userReader, never()).findUserById(anyString());
+				verify(userPushTokenWriter, never()).removeFcmToken(any(), anyString());
+				verify(authTokenManager).invalidateTokens(ACCESS_TOKEN, REFRESH_TOKEN);
 			}
 		}
 	}
