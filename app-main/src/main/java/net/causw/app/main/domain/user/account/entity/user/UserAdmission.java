@@ -2,7 +2,6 @@ package net.causw.app.main.domain.user.account.entity.user;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserAdmissionAttachImage;
@@ -43,21 +42,21 @@ public class UserAdmission extends BaseEntity {
 	@Column(name = "description", nullable = true)
 	private String description;
 
-	// ── v2 확장 필드 (v1 데이터는 null) ──
+	// ── v2 확장 필드: 신청 시 기입한 학적 정보 (v1 데이터는 null) ──
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "target_academic_status", nullable = true)
-	private AcademicStatus targetAcademicStatus;
+	@Column(name = "requested_academic_status", nullable = true)
+	private AcademicStatus requestedAcademicStatus;
 
-	@Column(name = "student_id", nullable = true)
-	private String studentId;
+	@Column(name = "requested_student_id", nullable = true)
+	private String requestedStudentId;
 
-	@Column(name = "admission_year", nullable = true)
-	private Integer admissionYear;
+	@Column(name = "requested_admission_year", nullable = true)
+	private Integer requestedAdmissionYear;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "department", nullable = true)
-	private Department department;
+	@Column(name = "requested_department", nullable = true)
+	private Department requestedDepartment;
 
 	/**
 	 * v1 팩토리 메서드 (기존 호환)
@@ -79,30 +78,24 @@ public class UserAdmission extends BaseEntity {
 	}
 
 	/**
-	 * v2 팩토리 메서드 — 학적 정보를 포함하여 생성합니다.
+	 * v2 팩토리 메서드 — 신청 시 기입한 학적 정보를 포함하여 생성합니다.
 	 * 학적 필드는 코드 레벨에서 not-null을 보장합니다.
 	 */
 	public static UserAdmission of(
 		User requestUser,
 		List<UuidFile> userAdmissionAttachImageUuidFileList,
 		String description,
-		AcademicStatus targetAcademicStatus,
-		String studentId,
-		Integer admissionYear,
-		Department department) {
-
-		Objects.requireNonNull(targetAcademicStatus, "targetAcademicStatus는 필수입니다");
-		Objects.requireNonNull(studentId, "studentId는 필수입니다");
-		Objects.requireNonNull(admissionYear, "admissionYear는 필수입니다");
-		Objects.requireNonNull(department, "department는 필수입니다");
-
+		AcademicStatus requestedAcademicStatus,
+		String requestedStudentId,
+		Integer requestedAdmissionYear,
+		Department requestedDepartment) {
 		UserAdmission userAdmission = UserAdmission.builder()
 			.user(requestUser)
 			.description(description)
-			.targetAcademicStatus(targetAcademicStatus)
-			.studentId(studentId)
-			.admissionYear(admissionYear)
-			.department(department)
+			.requestedAcademicStatus(requestedAcademicStatus)
+			.requestedStudentId(requestedStudentId)
+			.requestedAdmissionYear(requestedAdmissionYear)
+			.requestedDepartment(requestedDepartment)
 			.build();
 
 		List<UserAdmissionAttachImage> userAdmissionAttachImageList = userAdmissionAttachImageUuidFileList.stream()
@@ -112,13 +105,6 @@ public class UserAdmission extends BaseEntity {
 		userAdmission.setUserAdmissionAttachImageList(userAdmissionAttachImageList);
 
 		return userAdmission;
-	}
-
-	/**
-	 * v2 확장 필드가 존재하는지 확인합니다.
-	 */
-	public boolean hasAcademicInfo() {
-		return targetAcademicStatus != null;
 	}
 
 	private void setUserAdmissionAttachImageList(List<UserAdmissionAttachImage> userAdmissionAttachImageList) {

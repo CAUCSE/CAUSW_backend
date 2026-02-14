@@ -23,17 +23,17 @@ public record AdmissionResponse(
 	@Schema(description = "사용자 이메일")
 	String userEmail,
 
-	@Schema(description = "학과(부)")
-	Department department,
+	@Schema(description = "신청 학과(부)")
+	Department requestedDepartment,
 
-	@Schema(description = "입학년도")
-	Integer admissionYear,
+	@Schema(description = "신청 입학년도")
+	Integer requestedAdmissionYear,
 
-	@Schema(description = "학번")
-	String studentId,
+	@Schema(description = "신청 학번")
+	String requestedStudentId,
 
-	@Schema(description = "재학 분류")
-	AcademicStatus targetAcademicStatus,
+	@Schema(description = "신청 재학 분류")
+	AcademicStatus requestedAcademicStatus,
 
 	@Schema(description = "증빙서류 설명")
 	String description,

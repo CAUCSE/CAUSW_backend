@@ -41,7 +41,7 @@ public class UserAdmissionQueryRepository {
 		if (keyword != null && !keyword.isBlank()) {
 			where.and(
 				user.name.containsIgnoreCase(keyword)
-					.or(admission.studentId.containsIgnoreCase(keyword)));
+					.or(admission.requestedStudentId.containsIgnoreCase(keyword)));
 		}
 
 		if (userState != null) {

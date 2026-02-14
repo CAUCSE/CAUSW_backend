@@ -16,19 +16,19 @@ public record AdmissionCreateRequest(
 
 	@Schema(description = "학과(부)", example = "SCHOOL_OF_SW", requiredMode = Schema.RequiredMode.REQUIRED)
 	@NotNull(message = "학과를 선택해 주세요.")
-	Department department,
+	Department requestedDepartment,
 
 	@Schema(description = "입학년도", example = "2021", requiredMode = Schema.RequiredMode.REQUIRED)
 	@NotNull(message = "입학년도를 입력해 주세요.")
-	Integer admissionYear,
+	Integer requestedAdmissionYear,
 
 	@Schema(description = "학번", example = "20210001", requiredMode = Schema.RequiredMode.REQUIRED)
 	@NotBlank(message = "학번을 입력해 주세요.")
-	String studentId,
+	String requestedStudentId,
 
 	@Schema(description = "재학 분류 (ENROLLED: 재적(휴학 포함), GRADUATED: 졸업)", example = "ENROLLED", requiredMode = Schema.RequiredMode.REQUIRED)
 	@NotNull(message = "재학 분류를 선택해 주세요.")
-	AcademicStatus targetAcademicStatus,
+	AcademicStatus requestedAcademicStatus,
 
 	@Schema(description = "증빙서류 설명", example = "재학증명서입니다.")
 	String description) {

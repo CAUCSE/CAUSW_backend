@@ -29,19 +29,19 @@ public class AdmissionWriter {
 		User user,
 		List<UuidFile> attachImageUuidFiles,
 		String description,
-		AcademicStatus targetAcademicStatus,
-		String studentId,
-		Integer admissionYear,
-		Department department) {
+		AcademicStatus requestedAcademicStatus,
+		String requestedStudentId,
+		Integer requestedAdmissionYear,
+		Department requestedDepartment) {
 
 		UserAdmission admission = UserAdmission.of(
 			user,
 			attachImageUuidFiles,
 			description,
-			targetAcademicStatus,
-			studentId,
-			admissionYear,
-			department);
+			requestedAcademicStatus,
+			requestedStudentId,
+			requestedAdmissionYear,
+			requestedDepartment);
 
 		return userAdmissionRepository.save(admission);
 	}

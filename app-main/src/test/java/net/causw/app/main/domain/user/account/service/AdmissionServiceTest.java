@@ -102,8 +102,8 @@ class AdmissionServiceTest {
 			when(userWriter.updateStateToAwait(user)).thenReturn(user);
 			when(admissionWriter.create(
 				eq(user), eq(uuidFiles), eq(command.description()),
-				eq(command.targetAcademicStatus()), eq(command.studentId()),
-				eq(command.admissionYear()), eq(command.department())))
+				eq(command.requestedAcademicStatus()), eq(command.requestedStudentId()),
+				eq(command.requestedAdmissionYear()), eq(command.requestedDepartment())))
 				.thenReturn(admission);
 
 			// when
@@ -114,10 +114,10 @@ class AdmissionServiceTest {
 			assertThat(result.id()).isEqualTo("admission-1");
 			assertThat(result.userName()).isEqualTo(user.getName());
 			assertThat(result.userEmail()).isEqualTo(user.getEmail());
-			assertThat(result.department()).isEqualTo(Department.SCHOOL_OF_SW);
-			assertThat(result.admissionYear()).isEqualTo(2023);
-			assertThat(result.studentId()).isEqualTo("20231234");
-			assertThat(result.targetAcademicStatus()).isEqualTo(AcademicStatus.ENROLLED);
+			assertThat(result.requestedDepartment()).isEqualTo(Department.SCHOOL_OF_SW);
+			assertThat(result.requestedAdmissionYear()).isEqualTo(2023);
+			assertThat(result.requestedStudentId()).isEqualTo("20231234");
+			assertThat(result.requestedAcademicStatus()).isEqualTo(AcademicStatus.ENROLLED);
 			assertThat(result.description()).isEqualTo("재학증명서 첨부합니다");
 
 			verify(admissionValidator).validateAdmissionCreate(user, attachImages);
@@ -125,8 +125,8 @@ class AdmissionServiceTest {
 			verify(userWriter).updateStateToAwait(user);
 			verify(admissionWriter).create(
 				eq(user), eq(uuidFiles), eq(command.description()),
-				eq(command.targetAcademicStatus()), eq(command.studentId()),
-				eq(command.admissionYear()), eq(command.department()));
+				eq(command.requestedAcademicStatus()), eq(command.requestedStudentId()),
+				eq(command.requestedAdmissionYear()), eq(command.requestedDepartment()));
 		}
 
 		@Test
@@ -143,8 +143,8 @@ class AdmissionServiceTest {
 			when(userWriter.updateStateToAwait(user)).thenReturn(user);
 			when(admissionWriter.create(
 				eq(user), eq(uuidFiles), eq(command.description()),
-				eq(command.targetAcademicStatus()), eq(command.studentId()),
-				eq(command.admissionYear()), eq(command.department())))
+				eq(command.requestedAcademicStatus()), eq(command.requestedStudentId()),
+				eq(command.requestedAdmissionYear()), eq(command.requestedDepartment())))
 				.thenReturn(admission);
 
 			// when
@@ -157,8 +157,8 @@ class AdmissionServiceTest {
 			verify(userWriter).updateStateToAwait(user);
 			verify(admissionWriter).create(
 				eq(user), eq(uuidFiles), eq(command.description()),
-				eq(command.targetAcademicStatus()), eq(command.studentId()),
-				eq(command.admissionYear()), eq(command.department()));
+				eq(command.requestedAcademicStatus()), eq(command.requestedStudentId()),
+				eq(command.requestedAdmissionYear()), eq(command.requestedDepartment()));
 		}
 
 		@Test

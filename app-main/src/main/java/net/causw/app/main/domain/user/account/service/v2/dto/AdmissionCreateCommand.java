@@ -5,8 +5,8 @@ import net.causw.app.main.domain.user.account.enums.user.Department;
 
 public record AdmissionCreateCommand(
 	String description,
-	AcademicStatus targetAcademicStatus,
-	String studentId,
-	Integer admissionYear,
-	Department department) {
+	AcademicStatus requestedAcademicStatus,
+	String requestedStudentId,
+	Integer requestedAdmissionYear,
+	Department requestedDepartment) {
 }

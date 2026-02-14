@@ -70,10 +70,10 @@ public class AdmissionService {
 			user,
 			uuidFiles,
 			dto.description(),
-			dto.targetAcademicStatus(),
-			dto.studentId(),
-			dto.admissionYear(),
-			dto.department());
+			dto.requestedAcademicStatus(),
+			dto.requestedStudentId(),
+			dto.requestedAdmissionYear(),
+			dto.requestedDepartment());
 
 		return AdmissionResult.from(admission);
 	}
