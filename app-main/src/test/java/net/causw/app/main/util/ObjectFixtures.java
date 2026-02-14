@@ -23,6 +23,8 @@ import net.causw.app.main.domain.notification.notification.entity.Notification;
 import net.causw.app.main.domain.notification.notification.enums.NoticeType;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserCreateRequestDto;
+import net.causw.app.main.domain.asset.file.entity.UuidFile;
+import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
 import net.causw.app.main.domain.user.account.enums.user.Department;
@@ -46,6 +48,12 @@ public class ObjectFixtures {
 		user.setAcademicStatus(AcademicStatus.ENROLLED);
 		user.setRoles(Set.of(Role.COMMON));
 
+		return user;
+	}
+
+	public static User getUserWithId(String userId) {
+		User user = getUser();
+		ReflectionTestUtils.setField(user, "id", userId);
 		return user;
 	}
 
@@ -104,11 +112,40 @@ public class ObjectFixtures {
 		}
 	}
 
-	public static UserAdmission getUserAdmission() {
+	/**
+	 * v1 스타일 UserAdmission fixture.
+	 */
+	public static UserAdmission getUserAdmissionV1() {
 		return UserAdmission.ofV1(
 			getUser(),
 			List.of(),
 			"description");
+	}
+
+	public static UserAdmission getUserAdmission(User user) {
+		UuidFile uuidFile = UuidFile.of(
+			"test-uuid",
+			"user-admission/test-image_test-uuid.png",
+			"https://storage.example.com/user-admission/test-image_test-uuid.png",
+			"test-image",
+			"png",
+			FilePath.USER_ADMISSION);
+		ReflectionTestUtils.setField(uuidFile, "id", "uuid-file-1");
+
+		return UserAdmission.of(
+			user,
+			List.of(uuidFile),
+			"재학증명서 첨부합니다",
+			AcademicStatus.ENROLLED,
+			"20231234",
+			2023,
+			Department.SCHOOL_OF_SW);
+	}
+
+	public static UserAdmission getUserAdmissionWithId(String admissionId, User user) {
+		UserAdmission admission = getUserAdmission(user);
+		ReflectionTestUtils.setField(admission, "id", admissionId);
+		return admission;
 	}
 
 	public static Semester getSemester() {
