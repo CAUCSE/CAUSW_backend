@@ -14,7 +14,9 @@ import org.springframework.web.bind.annotation.RestController;
 import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.request.LockerAssignRequest;
 import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.request.LockerExtendRequest;
 import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.request.LockerListRequest;
+import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.request.LockerLogListRequest;
 import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.response.LockerListItemResponse;
+import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.response.LockerLogListItemResponse;
 import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.mapper.LockerListMapper;
 import net.causw.app.main.domain.asset.locker.service.v2.LockerAdminService;
 import net.causw.app.main.shared.dto.ApiResponse;
@@ -34,6 +36,24 @@ public class LockerAdminController {
 
 	private final LockerAdminService lockerAdminService;
 	private final LockerListMapper lockerListMapper;
+
+	@GetMapping("/logs")
+	@Operation(summary = "사물함 로그 목록 조회", description = "관리자용 사물함 로그 목록을 페이지네이션으로 조회합니다.")
+	public ApiResponse<PageResponse<LockerLogListItemResponse>> getLockerLogs(
+		@ModelAttribute @Validated LockerLogListRequest request) {
+
+		int page = request.page() != null ? request.page() : 0;
+		int size = request.size() != null ? request.size() : 10;
+
+		PageRequest pageRequest = PageRequest.of(page, size);
+
+		PageResponse<LockerLogListItemResponse> response = PageResponse.from(
+			lockerAdminService
+				.getLockerLogList(lockerListMapper.toCondition(request), pageRequest)
+				.map(lockerListMapper::toResponse));
+
+		return ApiResponse.success(response);
+	}
 
 	@GetMapping
 	@Operation(summary = "사물함 목록 조회", description = "관리자용 사물함 목록을 페이지네이션으로 조회합니다.")
