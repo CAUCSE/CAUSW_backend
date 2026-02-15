@@ -62,7 +62,7 @@ public class UserAdmission extends BaseEntity {
 	 * v1 팩토리 메서드 (기존 호환)
 	 */
 	public static UserAdmission ofV1(User requestUser, List<UuidFile> userAdmissionAttachImageUuidFileList,
-									 String description) {
+		String description) {
 		UserAdmission userAdmission = UserAdmission.builder()
 			.user(requestUser)
 			.description(description)

@@ -42,8 +42,7 @@ public class UserAdminController {
 
 	// ── 회원 관리 ──
 
-	@Operation(summary = "회원 목록 조회 V2",
-		description = "관리자가 회원 목록을 조회합니다. 이름/학번 키워드 검색, 상태/학적/학과 필터링, 페이징을 지원합니다.")
+	@Operation(summary = "회원 목록 조회 V2", description = "관리자가 회원 목록을 조회합니다. 이름/학번 키워드 검색, 상태/학적/학과 필터링, 페이징을 지원합니다.")
 	@GetMapping
 	public ApiResponse<Page<UserListItemResponse>> getUsers(
 		@ModelAttribute @Validated UserListRequest request) {
@@ -60,8 +59,7 @@ public class UserAdminController {
 		return ApiResponse.success(response);
 	}
 
-	@Operation(summary = "회원 상세 조회 V2",
-		description = "관리자가 특정 회원의 상세 정보를 조회합니다.")
+	@Operation(summary = "회원 상세 조회 V2", description = "관리자가 특정 회원의 상세 정보를 조회합니다.")
 	@GetMapping("/{userId}")
 	public ApiResponse<UserDetailResponse> getUserDetail(
 		@PathVariable String userId) {
@@ -72,9 +70,8 @@ public class UserAdminController {
 
 	// ── 재학정보 인증 ──
 
-	@Operation(summary = "재학인증 신청 목록 조회 V2",
-		description = "관리자가 재학인증 신청 목록을 조회합니다. "
-			+ "이름/학번 키워드 검색, 사용자 상태(AWAIT/REJECT) 필터링, 페이징을 지원합니다.")
+	@Operation(summary = "재학인증 신청 목록 조회 V2", description = "관리자가 재학인증 신청 목록을 조회합니다. "
+		+ "이름/학번 키워드 검색, 사용자 상태(AWAIT/REJECT) 필터링, 페이징을 지원합니다.")
 	@GetMapping("/admissions")
 	public ApiResponse<Page<AdmissionListItemResponse>> getAdmissions(
 		@ModelAttribute @Validated AdmissionListRequest request) {
@@ -91,9 +88,8 @@ public class UserAdminController {
 		return ApiResponse.success(response);
 	}
 
-	@Operation(summary = "재학인증 신청 상세 조회 V2",
-		description = "관리자가 특정 재학인증 신청의 상세 정보를 조회합니다. "
-			+ "신청자 정보, 증빙서류 이미지 URL, 재학 분류 등 전체 정보를 확인할 수 있습니다.")
+	@Operation(summary = "재학인증 신청 상세 조회 V2", description = "관리자가 특정 재학인증 신청의 상세 정보를 조회합니다. "
+		+ "신청자 정보, 증빙서류 이미지 URL, 재학 분류 등 전체 정보를 확인할 수 있습니다.")
 	@GetMapping("/admissions/{admissionId}")
 	public ApiResponse<AdmissionResponse> getAdmissionDetail(
 		@PathVariable String admissionId) {
@@ -102,10 +98,9 @@ public class UserAdminController {
 		return ApiResponse.success(admissionDtoMapper.toResponse(result));
 	}
 
-	@Operation(summary = "재학인증 신청 승인 V2",
-		description = "관리자가 재학인증 신청을 승인합니다. "
-			+ "승인 시 신청서에 기재된 학적 정보로 사용자 정보가 업데이트되고, "
-			+ "사용자 상태가 ACTIVE로 변경됩니다.")
+	@Operation(summary = "재학인증 신청 승인 V2", description = "관리자가 재학인증 신청을 승인합니다. "
+		+ "승인 시 신청서에 기재된 학적 정보로 사용자 정보가 업데이트되고, "
+		+ "사용자 상태가 ACTIVE로 변경됩니다.")
 	@PostMapping("/admissions/{admissionId}/approve")
 	public ApiResponse<Void> approveAdmission(
 		@PathVariable String admissionId,
@@ -115,9 +110,8 @@ public class UserAdminController {
 		return ApiResponse.success();
 	}
 
-	@Operation(summary = "재학인증 신청 거절 V2",
-		description = "관리자가 재학인증 신청을 거절합니다. "
-			+ "거절 시 거절 사유가 기록되고, 사용자 상태가 REJECT로 변경됩니다.")
+	@Operation(summary = "재학인증 신청 거절 V2", description = "관리자가 재학인증 신청을 거절합니다. "
+		+ "거절 시 거절 사유가 기록되고, 사용자 상태가 REJECT로 변경됩니다.")
 	@PostMapping("/admissions/{admissionId}/reject")
 	public ApiResponse<Void> rejectAdmission(
 		@PathVariable String admissionId,

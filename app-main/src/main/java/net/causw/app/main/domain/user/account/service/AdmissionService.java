@@ -21,7 +21,6 @@ import net.causw.app.main.domain.user.account.service.v2.implementation.Admissio
 import net.causw.app.main.domain.user.account.service.v2.implementation.AdmissionValidator;
 import net.causw.app.main.domain.user.account.service.v2.implementation.AdmissionWriter;
 import net.causw.app.main.domain.user.account.service.v2.implementation.UserWriter;
-import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 import net.causw.app.main.shared.storage.v2.dto.FileMetadata;
 
 import lombok.RequiredArgsConstructor;

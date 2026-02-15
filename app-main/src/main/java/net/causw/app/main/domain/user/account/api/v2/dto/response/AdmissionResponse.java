@@ -14,39 +14,27 @@ import lombok.Builder;
 @Schema(description = "재학정보 인증 신청 응답 V2")
 public record AdmissionResponse(
 
-	@Schema(description = "신청 ID")
-	String id,
+	@Schema(description = "신청 ID") String id,
 
-	@Schema(description = "사용자 이름")
-	String userName,
+	@Schema(description = "사용자 이름") String userName,
 
-	@Schema(description = "사용자 이메일")
-	String userEmail,
+	@Schema(description = "사용자 이메일") String userEmail,
 
-	@Schema(description = "신청 학과(부)")
-	Department requestedDepartment,
+	@Schema(description = "신청 학과(부)") Department requestedDepartment,
 
-	@Schema(description = "신청 입학년도")
-	Integer requestedAdmissionYear,
+	@Schema(description = "신청 입학년도") Integer requestedAdmissionYear,
 
-	@Schema(description = "신청 학번")
-	String requestedStudentId,
+	@Schema(description = "신청 학번") String requestedStudentId,
 
-	@Schema(description = "신청 재학 분류")
-	AcademicStatus requestedAcademicStatus,
+	@Schema(description = "신청 재학 분류") AcademicStatus requestedAcademicStatus,
 
-	@Schema(description = "증빙서류 설명")
-	String description,
+	@Schema(description = "증빙서류 설명") String description,
 
-	@Schema(description = "첨부 이미지 URL 목록")
-	List<String> attachImageUrls,
+	@Schema(description = "첨부 이미지 URL 목록") List<String> attachImageUrls,
 
-	@Schema(description = "사용자 상태")
-	UserState userState,
+	@Schema(description = "사용자 상태") UserState userState,
 
-	@Schema(description = "신청 시각")
-	LocalDateTime createdAt,
+	@Schema(description = "신청 시각") LocalDateTime createdAt,
 
-	@Schema(description = "수정 시각")
-	LocalDateTime updatedAt) {
+	@Schema(description = "수정 시각") LocalDateTime updatedAt) {
 }

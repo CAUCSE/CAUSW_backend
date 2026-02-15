@@ -319,8 +319,8 @@ class AdmissionAdminServiceTest {
 			admissionAdminService.approveAdmission(admissionId, adminUser);
 
 			// then
-			ArgumentCaptor<CertifiedUserCreatedEvent> eventCaptor =
-				ArgumentCaptor.forClass(CertifiedUserCreatedEvent.class);
+			ArgumentCaptor<CertifiedUserCreatedEvent> eventCaptor = ArgumentCaptor
+				.forClass(CertifiedUserCreatedEvent.class);
 			verify(eventPublisher).publishEvent(eventCaptor.capture());
 
 			CertifiedUserCreatedEvent capturedEvent = eventCaptor.getValue();

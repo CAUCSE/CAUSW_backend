@@ -5,7 +5,6 @@ import java.util.Set;
 
 import org.springframework.stereotype.Component;
 
-import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
 import net.causw.app.main.domain.user.account.enums.user.Role;
