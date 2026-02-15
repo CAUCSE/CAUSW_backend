@@ -862,6 +862,135 @@ public class PostServiceTest {
 				() -> assertThat(result.posts()).isEmpty(),
 				() -> assertThat(result.nextCursor()).isNull());
 		}
+
+		@DisplayName("익명 게시글 목록 조회 시 작성자 정보 보호")
+		@Test
+		void getPosts_shouldSucceed_withAnonymousPost() {
+			// given
+			PostListQuery query = PostListQuery.of(viewer, List.of(boardId), null, 20, null);
+			List<String> boardAdminIds = List.of("admin-id");
+
+			PostCursorResult anonymousPostResult = new PostCursorResult(
+				"post-id",
+				"익명 게시글 내용",
+				5L,
+				10L,
+				3L,
+				true, // 익명 게시글
+				null,
+				false,
+				true,
+				"작성자",
+				"닉네임",
+				2020,
+				UserState.ACTIVE,
+				"profile-url",
+				LocalDateTime.now(),
+				LocalDateTime.now(),
+				boardId,
+				"테스트 게시판");
+
+			Slice<PostCursorResult> slice = new SliceImpl<>(
+				List.of(anonymousPostResult),
+				PageRequest.of(0, 20),
+				false);
+
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
+			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(postReader.findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(null)))
+				.willReturn(slice);
+			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
+
+			// when
+			PostListResult result = postService.getPosts(query);
+
+			// then
+			assertAll(
+				() -> assertThat(result).isNotNull(),
+				() -> assertThat(result.posts()).hasSize(1),
+				() -> assertThat(result.posts().get(0).isAnonymous()).isTrue(),
+				() -> assertThat(result.posts().get(0).writerNickname()).isEqualTo("익명"),
+				() -> assertThat(result.posts().get(0).writerProfileImageUrl()).isNull());
+
+			verify(postReader, times(1)).findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(null));
+		}
+
+		@DisplayName("익명 게시판에서 일반 게시글과 익명 게시글 혼합 조회")
+		@Test
+		void getPosts_shouldSucceed_withMixedAnonymousPosts() {
+			// given
+			PostListQuery query = PostListQuery.of(viewer, List.of(boardId), null, 20, null);
+			List<String> boardAdminIds = List.of("admin-id");
+
+			PostCursorResult normalPostResult = new PostCursorResult(
+				"post-id-1",
+				"일반 게시글 내용",
+				5L,
+				10L,
+				3L,
+				false, // 일반 게시글
+				null,
+				false,
+				true,
+				"작성자1",
+				"닉네임1",
+				2020,
+				UserState.ACTIVE,
+				"profile-url-1",
+				LocalDateTime.now(),
+				LocalDateTime.now(),
+				boardId,
+				"테스트 게시판");
+
+			PostCursorResult anonymousPostResult = new PostCursorResult(
+				"post-id-2",
+				"익명 게시글 내용",
+				3L,
+				8L,
+				2L,
+				true, // 익명 게시글
+				null,
+				false,
+				true,
+				"작성자2",
+				"닉네임2",
+				2021,
+				UserState.ACTIVE,
+				"profile-url-2",
+				LocalDateTime.now(),
+				LocalDateTime.now(),
+				boardId,
+				"테스트 게시판");
+
+			Slice<PostCursorResult> slice = new SliceImpl<>(
+				List.of(normalPostResult, anonymousPostResult),
+				PageRequest.of(0, 20),
+				false);
+
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
+			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(postReader.findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(null)))
+				.willReturn(slice);
+			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
+
+			// when
+			PostListResult result = postService.getPosts(query);
+
+			// then
+			assertAll(
+				() -> assertThat(result).isNotNull(),
+				() -> assertThat(result.posts()).hasSize(2),
+				// 일반 게시글 확인
+				() -> assertThat(result.posts().get(0).isAnonymous()).isFalse(),
+				() -> assertThat(result.posts().get(0).writerNickname()).isEqualTo("닉네임1"),
+				() -> assertThat(result.posts().get(0).writerProfileImageUrl()).isEqualTo("profile-url-1"),
+				// 익명 게시글 확인
+				() -> assertThat(result.posts().get(1).isAnonymous()).isTrue(),
+				() -> assertThat(result.posts().get(1).writerNickname()).isEqualTo("익명"),
+				() -> assertThat(result.posts().get(1).writerProfileImageUrl()).isNull());
+
+			verify(postReader, times(1)).findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(null));
+		}
 	}
 
 	@Nested
