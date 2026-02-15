@@ -64,7 +64,7 @@ public class LockerService {
 	public void returnLocker(String lockerId, User user) {
 		lockerValidator.validateReturnPeriod();
 
-		Locker locker = lockerReader.findByIdForWrite(lockerId);
+		Locker locker = lockerReader.findByI / ㄷdForWrite(lockerId);
 		lockerValidator.validateInUse(locker);
 		lockerValidator.validateOwner(locker, user);
 
