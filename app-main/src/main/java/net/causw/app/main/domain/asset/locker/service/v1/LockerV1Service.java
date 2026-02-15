@@ -57,7 +57,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class LockerService {
+public class LockerV1Service {
 
 	private final LockerRepository lockerRepository;
 	private final UserRepository userRepository;

@@ -18,7 +18,7 @@ public class LockerActionDisable implements LockerAction {
 	public Optional<Locker> updateLockerDomainModel(
 		Locker locker,
 		User user,
-		LockerService lockerService,
+		LockerV1Service lockerV1Service,
 		CommonService commonService) {
 		ValidatorBucket.of()
 			.consistOf(UserRoleValidator.of(user.getRoles(), Set.of()))

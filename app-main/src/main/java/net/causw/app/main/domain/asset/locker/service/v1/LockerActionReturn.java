@@ -24,7 +24,7 @@ public class LockerActionReturn implements LockerAction {
 	public Optional<Locker> updateLockerDomainModel(
 		Locker locker,
 		User user,
-		LockerService lockerService,
+		LockerV1Service lockerV1Service,
 		CommonService commonService) {
 		if (locker.getUser().isEmpty()) {
 			throw new BadRequestException(

@@ -101,4 +101,22 @@ public class LockerAdminController {
 		lockerAdminService.releaseLocker(id);
 		return ApiResponse.success();
 	}
+
+	@PostMapping("/{id}/enable")
+	@Operation(summary = "사물함 활성화", description = "비활성화된 사물함을 활성화합니다.")
+	public ApiResponse<Void> enableLocker(
+		@PathVariable String id) {
+
+		lockerAdminService.enableLocker(id);
+		return ApiResponse.success();
+	}
+
+	@PostMapping("/{id}/disable")
+	@Operation(summary = "사물함 비활성화", description = "활성화된 사물함을 비활성화합니다. 사용자가 있는 경우 함께 해제됩니다.")
+	public ApiResponse<Void> disableLocker(
+		@PathVariable String id) {
+
+		lockerAdminService.disableLocker(id);
+		return ApiResponse.success();
+	}
 }

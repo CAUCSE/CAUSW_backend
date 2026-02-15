@@ -29,7 +29,7 @@ import net.causw.app.main.domain.asset.locker.api.v1.dto.LockerRegisterPeriodReq
 import net.causw.app.main.domain.asset.locker.api.v1.dto.LockerResponseDto;
 import net.causw.app.main.domain.asset.locker.api.v1.dto.LockerUpdateRequestDto;
 import net.causw.app.main.domain.asset.locker.api.v1.dto.LockersResponseDto;
-import net.causw.app.main.domain.asset.locker.service.v1.LockerService;
+import net.causw.app.main.domain.asset.locker.service.v1.LockerV1Service;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,8 +40,8 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/lockers")
-public class LockerController {
-	private final LockerService lockerService;
+public class LockerV1Controller {
+	private final LockerV1Service lockerV1Service;
 
 	@GetMapping(value = "/{lockerId}")
 	@Operation(summary = "사물함 조회 Api", description = "사물함 id를 바탕으로 사물함 정보를 가져오는 Api 입니다.")
@@ -49,7 +49,7 @@ public class LockerController {
 	public LockerResponseDto findById(
 		@PathVariable("lockerId") String lockerId,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		return this.lockerService.findById(lockerId, userDetails.getUser());
+		return this.lockerV1Service.findById(lockerId, userDetails.getUser());
 	}
 
 	@PostMapping(value = "")
@@ -59,7 +59,7 @@ public class LockerController {
 	public LockerResponseDto create(
 		@Valid @RequestBody LockerCreateRequestDto lockerCreateRequestDto,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		return this.lockerService.create(userDetails.getUser(), lockerCreateRequestDto);
+		return this.lockerV1Service.create(userDetails.getUser(), lockerCreateRequestDto);
 	}
 
 	@PutMapping(value = "/{lockerId}")
@@ -70,7 +70,7 @@ public class LockerController {
 		@PathVariable("lockerId") String lockerId,
 		@Valid @RequestBody LockerUpdateRequestDto lockerUpdateRequestDto,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		return this.lockerService.update(
+		return this.lockerV1Service.update(
 			userDetails.getUser(),
 			lockerId,
 			lockerUpdateRequestDto);
@@ -84,7 +84,7 @@ public class LockerController {
 		@PathVariable("lockerId") String lockerId,
 		@Valid @RequestBody LockerMoveRequestDto lockerMoveRequestDto,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		return this.lockerService.move(
+		return this.lockerV1Service.move(
 			userDetails.getUser(),
 			lockerId,
 			lockerMoveRequestDto);
@@ -97,14 +97,14 @@ public class LockerController {
 	public LockerResponseDto delete(
 		@PathVariable("lockerId") String lockerId,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		return this.lockerService.delete(userDetails.getUser(), lockerId);
+		return this.lockerV1Service.delete(userDetails.getUser(), lockerId);
 	}
 
 	@GetMapping(value = "/locations")
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "사물함 층별 사용가능 여부 조회 Api", description = "사물함 층별 개수 정보와 사용 가능 개수를 제공하는 API입니다.")
 	public LockerLocationsResponseDto findAllLocation(@AuthenticationPrincipal CustomUserDetails userDetails) {
-		return this.lockerService.findAllLocation(userDetails.getUser());
+		return this.lockerV1Service.findAllLocation(userDetails.getUser());
 	}
 
 	@GetMapping(value = "/locations/{locationId}")
@@ -113,7 +113,7 @@ public class LockerController {
 	public LockersResponseDto findByLocation(
 		@PathVariable("locationId") String locationId,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		return this.lockerService.findByLocation(locationId, userDetails.getUser());
+		return this.lockerV1Service.findByLocation(locationId, userDetails.getUser());
 	}
 
 	@PostMapping(value = "/locations")
@@ -123,7 +123,7 @@ public class LockerController {
 	public LockerLocationResponseDto createLocation(
 		@Valid @RequestBody LockerLocationCreateRequestDto lockerLocationCreateRequestDto,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		return this.lockerService.createLocation(userDetails.getUser(), lockerLocationCreateRequestDto);
+		return this.lockerV1Service.createLocation(userDetails.getUser(), lockerLocationCreateRequestDto);
 	}
 
 	@PutMapping(value = "/locations/{locationId}")
@@ -134,7 +134,7 @@ public class LockerController {
 		@PathVariable("locationId") String locationId,
 		@Valid @RequestBody LockerLocationUpdateRequestDto lockerLocationUpdateRequestDto,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		return this.lockerService.updateLocation(
+		return this.lockerV1Service.updateLocation(
 			userDetails.getUser(),
 			locationId,
 			lockerLocationUpdateRequestDto);
@@ -147,7 +147,7 @@ public class LockerController {
 	public LockerLocationResponseDto deleteLocation(
 		@PathVariable("locationId") String locationId,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		return this.lockerService.deleteLocation(userDetails.getUser(), locationId);
+		return this.lockerV1Service.deleteLocation(userDetails.getUser(), locationId);
 	}
 
 	@GetMapping(value = "/{lockerId}/log")
@@ -156,7 +156,7 @@ public class LockerController {
 	@PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
 	public List<LockerLogResponseDto> findLog(
 		@PathVariable("lockerId") String lockerId) {
-		return this.lockerService.findLog(lockerId);
+		return this.lockerV1Service.findLog(lockerId);
 	}
 
 	@PostMapping(value = "/expire")
@@ -166,7 +166,7 @@ public class LockerController {
 	public void setExpireDate(
 		@Valid @RequestBody LockerExpiredAtRequestDto lockerExpiredAtRequestDto,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		this.lockerService.setExpireAt(userDetails.getUser(), lockerExpiredAtRequestDto);
+		this.lockerV1Service.setExpireAt(userDetails.getUser(), lockerExpiredAtRequestDto);
 	}
 
 	@PostMapping(value = "/extend-period")
@@ -176,7 +176,7 @@ public class LockerController {
 	public void setExtendPeriod(
 		@Valid @RequestBody LockerExtendPeriodRequestDto lockerExtendPeriodRequestDto,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		this.lockerService.setExtendPeriod(userDetails.getUser(), lockerExtendPeriodRequestDto);
+		this.lockerV1Service.setExtendPeriod(userDetails.getUser(), lockerExtendPeriodRequestDto);
 	}
 
 	@PostMapping(value = "/register-period")
@@ -186,7 +186,7 @@ public class LockerController {
 	public void setRegisterPeriod(
 		@Valid @RequestBody LockerRegisterPeriodRequestDto lockerRegisterPeriodRequestDto,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		this.lockerService.setRegisterPeriod(userDetails.getUser(), lockerRegisterPeriodRequestDto);
+		this.lockerV1Service.setRegisterPeriod(userDetails.getUser(), lockerRegisterPeriodRequestDto);
 	}
 
 	@PostMapping(value = "/createAll")
@@ -194,7 +194,7 @@ public class LockerController {
 	@ResponseStatus(value = HttpStatus.OK)
 	@PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
 	public void createAllLockers(@AuthenticationPrincipal CustomUserDetails userDetails) {
-		this.lockerService.createAllLockers(userDetails.getUser());
+		this.lockerV1Service.createAllLockers(userDetails.getUser());
 	}
 
 	@PostMapping(value = "/return-expired")
@@ -202,6 +202,6 @@ public class LockerController {
 	@ResponseStatus(value = HttpStatus.OK)
 	@PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
 	public void returnExpiredLockers(@AuthenticationPrincipal CustomUserDetails userDetails) {
-		this.lockerService.returnExpiredLockers(userDetails.getUser());
+		this.lockerV1Service.returnExpiredLockers(userDetails.getUser());
 	}
 }

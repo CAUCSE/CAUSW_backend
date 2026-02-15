@@ -28,7 +28,7 @@ public class LockerActionRegister implements LockerAction {
 	public Optional<Locker> updateLockerDomainModel(
 		Locker locker,
 		User user,
-		LockerService lockerService,
+		LockerV1Service lockerV1Service,
 		CommonService commonService) {
 		ValidatorBucket.of()
 			.consistOf(LockerInUseValidator.of(locker.getUser().isPresent()))
@@ -41,8 +41,8 @@ public class LockerActionRegister implements LockerAction {
 				.consistOf(LockerAccessValidator.of(commonService.findByKeyInFlag(LOCKER_ACCESS).orElse(false)))
 				.validate();
 
-			lockerService.findByUserId(user.getId()).ifPresent(existingLocker -> {
-				lockerService.returnAndSaveLocker(existingLocker);
+			lockerV1Service.findByUserId(user.getId()).ifPresent(existingLocker -> {
+				lockerV1Service.returnAndSaveLocker(existingLocker);
 				LockerLog lockerLog = LockerLog.of(
 					existingLocker.getLockerNumber(),
 					existingLocker.getLocation().getName(),
