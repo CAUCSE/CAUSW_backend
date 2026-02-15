@@ -3,10 +3,12 @@ package net.causw.app.main.domain.user.account.api.v2.controller;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import net.causw.app.main.domain.user.account.api.v2.dto.request.AdmissionListRequest;
+import net.causw.app.main.domain.user.account.api.v2.dto.request.AdmissionRejectRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserListRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.AdmissionListItemResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.AdmissionResponse;
@@ -17,10 +19,12 @@ import net.causw.app.main.domain.user.account.api.v2.mapper.UserDetailMapper;
 import net.causw.app.main.domain.user.account.api.v2.mapper.UserListMapper;
 import net.causw.app.main.domain.user.account.service.AdmissionAdminService;
 import net.causw.app.main.domain.user.account.service.UserAdminService;
+import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -96,5 +100,31 @@ public class UserAdminController {
 
 		var result = admissionAdminService.getAdmissionDetail(admissionId);
 		return ApiResponse.success(admissionDtoMapper.toResponse(result));
+	}
+
+	@Operation(summary = "재학인증 신청 승인 V2",
+		description = "관리자가 재학인증 신청을 승인합니다. "
+			+ "승인 시 신청서에 기재된 학적 정보로 사용자 정보가 업데이트되고, "
+			+ "사용자 상태가 ACTIVE로 변경됩니다.")
+	@PostMapping("/admissions/{admissionId}/approve")
+	public ApiResponse<Void> approveAdmission(
+		@PathVariable String admissionId,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
+
+		admissionAdminService.approveAdmission(admissionId, userDetails.getUser());
+		return ApiResponse.success();
+	}
+
+	@Operation(summary = "재학인증 신청 거절 V2",
+		description = "관리자가 재학인증 신청을 거절합니다. "
+			+ "거절 시 거절 사유가 기록되고, 사용자 상태가 REJECT로 변경됩니다.")
+	@PostMapping("/admissions/{admissionId}/reject")
+	public ApiResponse<Void> rejectAdmission(
+		@PathVariable String admissionId,
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestBody @Valid AdmissionRejectRequest request) {
+
+		admissionAdminService.rejectAdmission(admissionId, userDetails.getUser(), request.rejectReason());
+		return ApiResponse.success();
 	}
 }

@@ -23,7 +23,6 @@ public class AdmissionWriter {
 
 	/**
 	 * v2 방식으로 UserAdmission을 생성합니다.
-	 * 학적 정보(학과, 학번, 입학년도, 재학분류)가 포함됩니다.
 	 */
 	public UserAdmission create(
 		User user,
@@ -44,5 +43,12 @@ public class AdmissionWriter {
 			requestedDepartment);
 
 		return userAdmissionRepository.save(admission);
+	}
+
+	/**
+	 * UserAdmission을 삭제합니다.
+	 */
+	public void delete(UserAdmission admission) {
+		userAdmissionRepository.delete(admission);
 	}
 }

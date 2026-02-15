@@ -48,7 +48,7 @@ public class AdmissionReader {
 	}
 
 	/**
-	 * 관리자용: 재학인증 신청 상세를 조회합니다. (첨부 이미지 포함)
+	 * 재학인증 신청 상세를 조회합니다.
 	 */
 	public UserAdmission findAdmissionDetail(String admissionId) {
 		return admissionQueryRepository.findByIdWithDetails(admissionId)
