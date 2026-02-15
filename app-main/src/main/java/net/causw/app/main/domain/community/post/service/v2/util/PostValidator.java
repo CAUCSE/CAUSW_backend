@@ -10,12 +10,12 @@ import net.causw.app.main.domain.community.board.entity.BoardWriteScope;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.util.UserRoleIsNoneValidator;
-import net.causw.app.main.domain.user.account.util.UserStateValidator;
-import net.causw.app.main.shared.ValidatorBucket;
+import net.causw.app.main.domain.user.account.enums.user.Role;
+import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import net.causw.app.main.shared.exception.errorcode.BoardErrorCode;
 import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
-import net.causw.app.main.shared.util.TargetIsDeletedValidator;
+import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 import net.causw.global.constant.StaticValue;
 
 import lombok.AccessLevel;
@@ -61,12 +61,27 @@ public class PostValidator {
 	}
 
 	public static void validateUserAndBoard(User user, Board board) {
-		ValidatorBucket validatorBucket = ValidatorBucket.of();
-		validatorBucket
-			.consistOf(UserStateValidator.of(user.getState()))
-			.consistOf(UserRoleIsNoneValidator.of(user.getRoles()))
-			.consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD));
-		validatorBucket.validate();
+		// User State 검증
+		UserState userState = user.getState();
+		if (userState == UserState.DROP) {
+			throw UserErrorCode.USER_DROPPED.toBaseException();
+		}
+		if (userState == UserState.INACTIVE) {
+			throw UserErrorCode.USER_INACTIVE_CAN_REJOIN.toBaseException();
+		}
+		if (userState == UserState.DELETED) {
+			throw UserErrorCode.USER_DELETED.toBaseException();
+		}
+
+		// User Role 검증 (NONE 역할이 있으면 안됨)
+		if (user.getRoles().contains(Role.NONE)) {
+			throw AuthErrorCode.USER_ROLE_NONE.toBaseException();
+		}
+
+		// Board 삭제 여부 검증
+		if (board.getIsDeleted()) {
+			throw BoardErrorCode.BOARD_DELETED.toBaseException();
+		}
 	}
 
 	private static void validateWriteScope(User creator, BoardConfig boardConfig, List<String> boardAdminIds) {
