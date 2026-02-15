@@ -35,8 +35,8 @@ import net.causw.app.main.domain.community.post.service.v2.util.PostCursorManage
 import net.causw.app.main.domain.community.post.service.v2.util.PostValidator;
 import net.causw.app.main.domain.community.reaction.service.implementation.FavoritePostReader;
 import net.causw.app.main.domain.community.reaction.service.implementation.LikePostReader;
-import net.causw.app.main.domain.community.vote.service.implementation.VoteWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.shared.entity.BaseEntity;
 import net.causw.global.constant.StaticValue;
 
 import lombok.RequiredArgsConstructor;
@@ -48,13 +48,12 @@ public class PostService {
 	private final PostReader postReader;
 	private final PostWriter postWriter;
 	private final BoardReader boardReader;
+	private final BoardConfigReader boardConfigReader;
 	private final FileWriter fileWriter;
 	private final FileReader fileReader;
-	private final BoardConfigReader boardConfigReader;
 	private final LikePostReader likePostReader;
 	private final FavoritePostReader favoritePostReader;
 	private final PostAttachImageWriter postAttachImageWriter;
-	private final VoteWriter voteWriter;
 
 	@Transactional
 	public PostCreateResult create(PostCreateCommand command) {
@@ -66,12 +65,14 @@ public class PostService {
 
 		PostValidator.validateCreate(writer, board, boardConfig, boardAdminIds, command.isAnonymous());
 
+		// 이미지 업로드 (FileWriter 사용)
 		List<UuidFile> images;
 		if (command.images() != null && !command.images().isEmpty()) {
 			images = fileWriter.uploadAndSaveList(command.images(), FilePath.POST);
 		} else {
 			images = new ArrayList<>();
 		}
+
 		Post post = PostMapper.fromCreateCommand(command, writer, board, images);
 
 		Post savedPost = postWriter.save(post);
@@ -96,20 +97,19 @@ public class PostService {
 	 */
 	private void deletePostImages(Post post) {
 		List<PostAttachImage> images = post.getPostAttachImageList();
-		if (images != null && !images.isEmpty()) {
-			// 1. UuidFile ID 목록을 미리 추출 (삭제 전에)
-			List<String> fileIds = images.stream()
-				.map(PostAttachImage::getUuidFile)
-				.map(UuidFile::getId)
-				.toList();
-
-			// 2. PostAttachImage를 즉시 삭제
-			postAttachImageWriter.deleteAllInBatch(images);
-
-			// 3. UuidFile 삭제
-			List<UuidFile> files = fileReader.findByIds(fileIds);
-			fileWriter.deleteList(files);
+		if (images == null || images.isEmpty()) {
+			return;
 		}
+
+		// 1. UuidFile ID 목록을 미리 추출 (PostAttachImageWriter 사용)
+		List<String> fileIds = images.stream().map(BaseEntity::getId).toList();
+
+		// 2. PostAttachImage를 즉시 삭제
+		postAttachImageWriter.deleteAllInBatch(images);
+
+		// 3. UuidFile 삭제 (FileWriter/FileReader 사용)
+		List<UuidFile> files = fileReader.findByIds(fileIds);
+		fileWriter.deleteList(files);
 	}
 
 	@Transactional
@@ -124,23 +124,25 @@ public class PostService {
 		// 기존 이미지 삭제
 		deletePostImages(post);
 
-		// 새 이미지 업로드 및 저장
+		// 새 이미지 업로드
 		List<UuidFile> newImages;
-		List<PostAttachImage> newPostAttachImages;
 		if (command.images() != null && !command.images().isEmpty()) {
 			newImages = fileWriter.uploadAndSaveList(command.images(), FilePath.POST);
-			newPostAttachImages = newImages.stream()
-				.map(uuidFile -> PostAttachImage.of(post, uuidFile))
-				.toList();
 		} else {
 			newImages = new ArrayList<>();
-			newPostAttachImages = new ArrayList<>();
 		}
+
+		// PostAttachImage 엔티티 생성
+		List<PostAttachImage> newPostAttachImages = postAttachImageWriter.createPostAttachImages(newImages, post);
 
 		// 게시글 업데이트
 		Post updatedPost = postWriter.updateContentAndImages(post, command.content(), newPostAttachImages);
 
-		return PostMapper.toUpdateResult(updatedPost, newImages.stream().map(UuidFile::getFileUrl).toList());
+		List<String> imageUrls = newImages.stream()
+			.map(UuidFile::getFileUrl)
+			.toList();
+
+		return PostMapper.toUpdateResult(updatedPost, imageUrls);
 	}
 
 	public PostListResult getPosts(PostListQuery query) {

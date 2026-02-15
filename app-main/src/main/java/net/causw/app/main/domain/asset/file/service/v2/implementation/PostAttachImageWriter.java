@@ -5,8 +5,10 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.PostAttachImage;
 import net.causw.app.main.domain.asset.file.repository.PostAttachImageRepository;
+import net.causw.app.main.domain.community.post.entity.Post;
 
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,19 @@ import lombok.RequiredArgsConstructor;
 public class PostAttachImageWriter {
 	private final PostAttachImageRepository postAttachImageRepository;
 	private final EntityManager entityManager;
+
+	/**
+	 * 업로드된 파일들로 PostAttachImage 엔티티를 생성합니다.
+	 *
+	 * @param uploadedFiles 업로드된 UuidFile 리스트
+	 * @param post 게시글 엔티티
+	 * @return 생성된 PostAttachImage 리스트
+	 */
+	public List<PostAttachImage> createPostAttachImages(List<UuidFile> uploadedFiles, Post post) {
+		return uploadedFiles.stream()
+			.map(uuidFile -> PostAttachImage.of(post, uuidFile))
+			.toList();
+	}
 
 	/**
 	 * PostAttachImage 리스트를 삭제합니다.
