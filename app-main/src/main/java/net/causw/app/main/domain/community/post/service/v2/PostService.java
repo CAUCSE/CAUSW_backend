@@ -16,7 +16,6 @@ import net.causw.app.main.domain.asset.file.service.v2.implementation.FileWriter
 import net.causw.app.main.domain.asset.file.service.v2.implementation.PostAttachImageWriter;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
-import net.causw.app.main.domain.community.board.entity.BoardVisibility;
 import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
 import net.causw.app.main.domain.community.board.service.implementation.BoardReader;
 import net.causw.app.main.domain.community.post.entity.Post;
@@ -37,7 +36,6 @@ import net.causw.app.main.domain.community.reaction.service.implementation.Favor
 import net.causw.app.main.domain.community.reaction.service.implementation.LikePostReader;
 import net.causw.app.main.domain.community.vote.service.implementation.VoteWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.shared.exception.errorcode.BoardErrorCode;
 import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
 import net.causw.global.constant.StaticValue;
 
@@ -230,14 +228,6 @@ public class PostService {
 
 		// 게시판 접근 권한 검증
 		BoardConfig boardConfig = boardConfigReader.getByBoardId(board.getId());
-
-		// BoardVisibility 체크 - HIDDEN인 경우 조회 불가
-		if (boardConfig.getVisibility() == BoardVisibility.HIDDEN) {
-			// 관리자는 조회 가능
-			if (!boardAdminIds.contains(viewer.getId())) {
-				throw BoardErrorCode.BOARD_FORBIDDEN.toBaseException();
-			}
-		}
 
 		// ReadScope 검증
 		PostValidator.validateRead(viewer, boardConfig, boardAdminIds);
