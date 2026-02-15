@@ -1,7 +1,6 @@
 package net.causw.app.main.domain.user.academic.api.v2.controller;
 
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -16,6 +15,7 @@ import net.causw.app.main.domain.user.academic.api.v2.mapper.AcademicRecordAppli
 import net.causw.app.main.domain.user.academic.service.AcademicRecordAdminService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
+import net.causw.app.main.shared.dto.PageResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -37,11 +37,11 @@ public class AcademicRecordAdminController {
 	@Operation(summary = "학적 변경 신청 목록 조회", description = "학적 변경 신청(졸업 → 재학) 목록을 조회합니다. 신청 상태, 학과, 검색 키워드로 필터링할 수 있습니다.")
 	@GetMapping("/applications")
 	@ResponseStatus(HttpStatus.OK)
-	public ApiResponse<Page<AcademicRecordApplicationSummaryResponse>> getApplications(
+	public ApiResponse<PageResponse<AcademicRecordApplicationSummaryResponse>> getApplications(
 		@ParameterObject AcademicRecordApplicationListRequest request) {
 		return ApiResponse.success(
-			academicRecordAdminService.getApplications(applicationListMapper.toCondition(request))
-				.map(applicationListMapper::toResponse));
+			PageResponse.from(academicRecordAdminService.getApplications(applicationListMapper.toCondition(request))
+				.map(applicationListMapper::toResponse)));
 	}
 
 	@Operation(summary = "학적 변경 신청 상세 조회", description = "학적 변경 신청(졸업 → 재학)의 상세 정보를 조회합니다.")
