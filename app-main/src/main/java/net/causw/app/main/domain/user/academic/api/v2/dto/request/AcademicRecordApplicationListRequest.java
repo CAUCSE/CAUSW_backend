@@ -11,9 +11,5 @@ public record AcademicRecordApplicationListRequest(
 
 	@Schema(description = "학과 필터") Department department,
 
-	@Schema(description = "검색 키워드 (이름 또는 학번)") String keyword,
-
-	@Schema(description = "페이지 번호 (0부터 시작)", example = "0") Integer page,
-
-	@Schema(description = "페이지 크기", example = "10") Integer size) {
+	@Schema(description = "검색 키워드 (이름 또는 학번)") String keyword) {
 }

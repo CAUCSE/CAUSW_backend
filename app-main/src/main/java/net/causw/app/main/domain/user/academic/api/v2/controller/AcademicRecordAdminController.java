@@ -1,6 +1,8 @@
 package net.causw.app.main.domain.user.academic.api.v2.controller;
 
 import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -38,10 +40,12 @@ public class AcademicRecordAdminController {
 	@GetMapping("/applications")
 	@ResponseStatus(HttpStatus.OK)
 	public ApiResponse<PageResponse<AcademicRecordApplicationSummaryResponse>> getApplications(
-		@ParameterObject AcademicRecordApplicationListRequest request) {
+		@ParameterObject AcademicRecordApplicationListRequest request,
+		@ParameterObject @PageableDefault(page = 0, size = 10) Pageable pageable) {
 		return ApiResponse.success(
-			PageResponse.from(academicRecordAdminService.getApplications(applicationListMapper.toCondition(request))
-				.map(applicationListMapper::toResponse)));
+			PageResponse.from(
+				academicRecordAdminService.getApplicationList(applicationListMapper.toCondition(request), pageable)
+					.map(applicationListMapper::toResponse)));
 	}
 
 	@Operation(summary = "학적 변경 신청 상세 조회", description = "학적 변경 신청(졸업 → 재학)의 상세 정보를 조회합니다.")

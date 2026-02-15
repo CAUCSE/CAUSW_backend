@@ -1,6 +1,7 @@
 package net.causw.app.main.domain.user.academic.service;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,9 +28,14 @@ public class AcademicRecordAdminService {
 	 * 학적 변경 신청 목록을 조건에 따라 페이징 조회한다.
 	 */
 	@Transactional(readOnly = true)
-	public Page<AcademicRecordApplicationSummaryResult> getApplications(
-		AcademicRecordApplicationListCondition condition) {
-		return applicationReader.findApplications(condition)
+	public Page<AcademicRecordApplicationSummaryResult> getApplicationList(
+		AcademicRecordApplicationListCondition condition,
+		Pageable pageable) {
+		return applicationReader.findApplicationList(
+			condition.requestStatus(),
+			condition.department(),
+			condition.keyword(),
+			pageable)
 			.map(AcademicRecordApplicationSummaryResult::from);
 	}
 

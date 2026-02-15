@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import net.causw.app.main.domain.user.academic.entity.userAcademicRecord.UserAcademicRecordApplication;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicRecordRequestStatus;
@@ -56,9 +57,8 @@ class AcademicRecordAdminServiceTest {
 			AcademicRecordApplicationListCondition condition = new AcademicRecordApplicationListCondition(
 				AcademicRecordRequestStatus.AWAIT,
 				null,
-				null,
-				0,
-				10);
+				null);
+			Pageable pageable = PageRequest.of(0, 10);
 
 			User user = ObjectFixtures.getCertifiedUser();
 
@@ -71,17 +71,26 @@ class AcademicRecordAdminServiceTest {
 
 			Page<UserAcademicRecordApplication> mockPage = new PageImpl<>(
 				List.of(application),
-				PageRequest.of(0, 10),
+				pageable,
 				1);
 
-			when(applicationReader.findApplications(condition))
+			when(applicationReader.findApplicationList(
+				condition.requestStatus(),
+				condition.department(),
+				condition.keyword(),
+				pageable))
 				.thenReturn(mockPage);
 
 			// when
-			Page<AcademicRecordApplicationSummaryResult> result = academicRecordAdminService.getApplications(condition);
+			Page<AcademicRecordApplicationSummaryResult> result = academicRecordAdminService
+				.getApplicationList(condition, pageable);
 
 			// then
-			verify(applicationReader).findApplications(condition);
+			verify(applicationReader).findApplicationList(
+				condition.requestStatus(),
+				condition.department(),
+				condition.keyword(),
+				pageable);
 			assert result.getTotalElements() == 1;
 		}
 
