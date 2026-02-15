@@ -38,7 +38,8 @@ import lombok.NoArgsConstructor;
 @Table(name = "tb_post", indexes = {
 	@Index(name = "board_id_index", columnList = "board_id"),
 	@Index(name = "user_id_index", columnList = "user_id"),
-	@Index(name = "form_id_index", columnList = "form_id")
+	@Index(name = "form_id_index", columnList = "form_id"),
+	@Index(name = "post_cursor_index", columnList = "created_at, id")
 })
 public class Post extends BaseEntity {
 	@Column(name = "title", nullable = true)
