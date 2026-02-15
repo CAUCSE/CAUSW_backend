@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.community.post.repository.query;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -99,8 +100,8 @@ public class PostQueryRepository {
 		BooleanExpression cursorCondition = NO_CONDITION;
 		if (cursorCreatedAt != null && cursorId != null) {
 			// createdAt이 cursor보다 이전이거나, createdAt이 같고 id가 cursor보다 작은 경우
-			cursorCondition = post.createdAt.lt(java.time.LocalDateTime.parse(cursorCreatedAt))
-				.or(post.createdAt.eq(java.time.LocalDateTime.parse(cursorCreatedAt)).and(post.id.lt(cursorId)));
+			cursorCondition = post.createdAt.lt(LocalDateTime.parse(cursorCreatedAt))
+				.or(post.createdAt.eq(LocalDateTime.parse(cursorCreatedAt)).and(post.id.lt(cursorId)));
 		}
 
 		// 게시판 조건
