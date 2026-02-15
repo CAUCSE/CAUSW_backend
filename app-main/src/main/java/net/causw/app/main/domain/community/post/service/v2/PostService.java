@@ -31,12 +31,12 @@ import net.causw.app.main.domain.community.post.service.v2.dto.PostUpdateResult;
 import net.causw.app.main.domain.community.post.service.v2.implementation.PostReader;
 import net.causw.app.main.domain.community.post.service.v2.implementation.PostWriter;
 import net.causw.app.main.domain.community.post.service.v2.mapper.PostMapper;
+import net.causw.app.main.domain.community.post.service.v2.util.PostCursorManager;
 import net.causw.app.main.domain.community.post.service.v2.util.PostValidator;
 import net.causw.app.main.domain.community.reaction.service.implementation.FavoritePostReader;
 import net.causw.app.main.domain.community.reaction.service.implementation.LikePostReader;
 import net.causw.app.main.domain.community.vote.service.implementation.VoteWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
 import net.causw.global.constant.StaticValue;
 
 import lombok.RequiredArgsConstructor;
@@ -150,18 +150,8 @@ public class PostService {
 		int size = query.size() != null ? query.size() : StaticValue.DEFAULT_POST_PAGE_SIZE; // 기본값 20
 		String keyword = query.keyword();
 
-		// cursor 파싱 (createdAt과 postId를 "|"로 구분)
-		String cursorCreatedAt = null;
-		String cursorId = null;
-		if (cursor != null && !cursor.isBlank()) {
-			String[] parts = cursor.split("\\|");
-			if (parts.length == 2) {
-				cursorCreatedAt = parts[0];
-				cursorId = parts[1];
-			} else {
-				throw PostErrorCode.INVALID_CURSOR_FORMAT.toBaseException();
-			}
-		}
+		// 커서 파싱
+		PostCursorManager.ParsedCursor parsedCursor = PostCursorManager.parseCursor(cursor);
 
 		List<String> boardIds;
 		// 게시판 ID 목록이 지정된 경우
@@ -184,8 +174,8 @@ public class PostService {
 		// 게시글 조회 (Slice 사용)
 		Slice<PostCursorResult> slice = postReader.findPostsWithCursor(
 			boardIds,
-			cursorCreatedAt,
-			cursorId,
+			parsedCursor.createdAt(),
+			parsedCursor.postId(),
 			size,
 			keyword);
 
@@ -193,11 +183,11 @@ public class PostService {
 		List<PostCursorResult> posts = slice.getContent();
 		boolean hasNext = slice.hasNext();
 
-		// nextCursor 생성 (createdAt|postId 형식, hasNext가 false면 null)
+		// 다음 커서 생성
 		String nextCursor = null;
 		if (hasNext && !posts.isEmpty()) {
 			PostCursorResult lastPost = posts.get(posts.size() - 1);
-			nextCursor = lastPost.createdAt() + "|" + lastPost.postId();
+			nextCursor = PostCursorManager.createNextCursor(lastPost.createdAt(), lastPost.postId());
 		}
 
 		// 게시글 이미지 조회
