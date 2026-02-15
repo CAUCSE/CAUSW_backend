@@ -29,8 +29,7 @@ public class UserAcademicRecordApplicationQueryRepository {
 	private final JPAQueryFactory jpaQueryFactory;
 
 	/**
-	 * 졸업 -> 재학 복학 신청 목록 조회 (필터링 및 검색 지원)
-	 * - 현재 학적상태가 졸업(GRADUATED)인 사용자가 재학(ENROLLED)으로 변경 신청한 건만 조회
+	 * 졸업(GRADUATED) -> 재학(ENROLLED) 신청 목록 조회 (필터링 및 검색 지원)
 	 */
 	public Page<UserAcademicRecordApplication> searchApplications(
 		AcademicRecordRequestStatus requestStatus,
@@ -40,25 +39,25 @@ public class UserAcademicRecordApplicationQueryRepository {
 		QUserAcademicRecordApplication application = QUserAcademicRecordApplication.userAcademicRecordApplication;
 		QUser user = QUser.user;
 
-		BooleanBuilder predicate = new BooleanBuilder();
+		BooleanBuilder where = new BooleanBuilder();
 
 		// 필수 조건: 졸업 -> 재학 신청
-		predicate.and(application.targetAcademicStatus.eq(AcademicStatus.ENROLLED));
-		predicate.and(user.academicStatus.eq(AcademicStatus.GRADUATED));
+		where.and(application.targetAcademicStatus.eq(AcademicStatus.ENROLLED));
+		where.and(user.academicStatus.eq(AcademicStatus.GRADUATED));
 
 		// 선택 조건: 신청 상태 필터
 		if (requestStatus != null) {
-			predicate.and(application.academicRecordRequestStatus.eq(requestStatus));
+			where.and(application.academicRecordRequestStatus.eq(requestStatus));
 		}
 
 		// 선택 조건: 학과 필터
 		if (department != null) {
-			predicate.and(user.department.eq(department));
+			where.and(user.department.eq(department));
 		}
 
 		// 선택 조건: 키워드 검색 (이름 또는 학번)
 		if (keyword != null && !keyword.isBlank()) {
-			predicate.and(
+			where.and(
 				user.name.containsIgnoreCase(keyword)
 					.or(user.studentId.containsIgnoreCase(keyword)));
 		}
@@ -67,7 +66,7 @@ public class UserAcademicRecordApplicationQueryRepository {
 		List<UserAcademicRecordApplication> content = jpaQueryFactory
 			.selectFrom(application)
 			.join(application.user, user).fetchJoin()
-			.where(predicate)
+			.where(where)
 			.orderBy(application.createdAt.desc())
 			.offset(pageable.getOffset())
 			.limit(pageable.getPageSize())
@@ -78,7 +77,7 @@ public class UserAcademicRecordApplicationQueryRepository {
 			.select(application.count())
 			.from(application)
 			.join(application.user, user)
-			.where(predicate)
+			.where(where)
 			.fetchOne();
 
 		return new PageImpl<>(content, pageable, total != null ? total : 0L);
