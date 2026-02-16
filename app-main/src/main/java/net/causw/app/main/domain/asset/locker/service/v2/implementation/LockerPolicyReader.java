@@ -168,7 +168,7 @@ public class LockerPolicyReader {
 	private boolean isOnExtendPeriod(LocalDateTime targetTime) {
 		LocalDateTime extendStartAt = parseDateTime(StaticValue.EXTEND_START_AT)
 			.orElseThrow(LockerErrorCode.LOCKER_EXTEND_PERIOD_NOT_SET::toBaseException);
-		LocalDateTime extendEndAt = parseDateTime(StaticValue.EXTEND_START_AT)
+		LocalDateTime extendEndAt = parseDateTime(StaticValue.EXTEND_END_AT)
 			.orElseThrow(LockerErrorCode.LOCKER_EXTEND_PERIOD_NOT_SET::toBaseException);
 
 		return (targetTime.equals(extendStartAt) || targetTime.isAfter(extendStartAt))
