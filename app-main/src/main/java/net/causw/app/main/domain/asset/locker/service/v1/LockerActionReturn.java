@@ -43,7 +43,7 @@ public class LockerActionReturn implements LockerAction {
 				.consistOf(LockerAccessValidator.of(commonService.findByKeyInFlag(LOCKER_ACCESS).orElse(false)))
 				.validate();
 
-		locker.returnLocker();
+		locker.returnLockerV1();
 
 		return Optional.of(locker);
 	}

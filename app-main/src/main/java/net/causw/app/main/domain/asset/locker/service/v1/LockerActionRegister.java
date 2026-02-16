@@ -53,7 +53,7 @@ public class LockerActionRegister implements LockerAction {
 			});
 		}
 
-		locker.register(
+		locker.registerV1(
 			user,
 			LocalDateTime.parse(commonService.findByKeyInTextField(StaticValue.EXPIRED_AT).orElseThrow(
 				() -> new InternalServerException(

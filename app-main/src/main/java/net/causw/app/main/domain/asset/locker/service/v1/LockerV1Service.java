@@ -502,7 +502,7 @@ public class LockerV1Service {
 
 	@Transactional
 	public void returnAndSaveLocker(Locker locker) {
-		locker.returnLocker();
+		locker.returnLockerV1();
 		lockerRepository.saveAndFlush(locker);
 		//        lockerRepository.flush();
 	}

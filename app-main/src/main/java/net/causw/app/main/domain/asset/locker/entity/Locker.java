@@ -74,15 +74,25 @@ public class Locker extends BaseEntity {
 		this.location = location;
 	}
 
-	public void register(User user, LocalDateTime expiredAt) {
+	public void registerV1(User user, LocalDateTime expiredAt) {
 		this.user = user;
 		this.isActive = Boolean.FALSE;
 		this.expireDate = expiredAt;
 	}
 
-	public void returnLocker() {
+	public void returnLockerV1() {
 		this.user = null;
 		this.isActive = Boolean.TRUE;
+		this.expireDate = null;
+	}
+
+	public void register(User user, LocalDateTime expiredAt) {
+		this.user = user;
+		this.expireDate = expiredAt;
+	}
+
+	public void returnLocker() {
+		this.user = null;
 		this.expireDate = null;
 	}
 

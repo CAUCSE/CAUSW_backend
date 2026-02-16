@@ -45,7 +45,7 @@ public class LockerService {
 
 	/**
 	 * 사물함 신청 (일반 유저용)
-	 * 1. LOCKER_ACCESS 플래그 확인
+	 * 1. 사물함 신청 기간 검증
 	 * 2. 사물함 상태 검증 (비어있고, 활성화된 상태)
 	 * 3. 기존 사물함 보유 시 자동 반납
 	 * 4. 글로벌 만료일(EXPIRE_DATE) 기반으로 신청
@@ -58,6 +58,7 @@ public class LockerService {
 		User user = userReader.findUserById(userId);
 		lockerValidator.validateRegisterPeriod();
 
+		// 사물함 상태 검증
 		Locker locker = lockerReader.findByIdForWrite(lockerId);
 		lockerValidator.validateRegisterAvailable(locker);
 
@@ -67,13 +68,14 @@ public class LockerService {
 			lockerLogWriter.logReturn(existingLocker, user);
 		});
 
+		// 사물함 신청
 		locker.register(user, lockerPolicyReader.findExpireDate());
 		lockerLogWriter.logRegister(locker, user);
 	}
 
 	/**
 	 * 사물함 반납 (일반 유저용)
-	 * 1. LOCKER_ACCESS 플래그 확인
+	 * 1. 사물함 신청 기간 검증
 	 * 2. 사물함 사용중 상태 검증
 	 * 3. 소유자 검증
 	 * 4. 반납
@@ -83,13 +85,16 @@ public class LockerService {
 	 */
 	@Transactional
 	public void returnLocker(String lockerId, String userId) {
+		// 사물함 신청 기간 검증
 		User user = userReader.findUserById(userId);
 		lockerValidator.validateReturnPeriod();
 
+		// 사물함 사용중 및 보유 상태 검증
 		Locker locker = lockerReader.findByIdForWrite(lockerId);
 		lockerValidator.validateInUse(locker);
 		lockerValidator.validateOwner(locker, user);
 
+		// 사물함 반납
 		locker.returnLocker();
 		lockerLogWriter.logReturn(locker, user);
 	}
