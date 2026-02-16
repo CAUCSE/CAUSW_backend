@@ -17,11 +17,11 @@ public record LockerPolicyExtendPeriodRequest(
 
 	@AssertTrue(message = "연장 종료일시는 연장 시작일시 이후여야 합니다.")
 	private boolean isExtendEndAfterStart() {
-		return extendStartAt == null || extendEndAt == null || extendEndAt.isAfter(extendStartAt);
+		return extendEndAt.isAfter(extendStartAt);
 	}
 
 	@AssertTrue(message = "다음 만료일시는 연장 종료일시 이후여야 합니다.")
 	private boolean isNextExpiredAfterExtendEnd() {
-		return extendEndAt == null || nextExpiredAt == null || nextExpiredAt.isAfter(extendEndAt);
+		return nextExpiredAt.isAfter(extendEndAt);
 	}
 }

@@ -17,11 +17,11 @@ public record LockerPolicyRegisterPeriodRequest(
 
 	@AssertTrue(message = "신청 종료일시는 신청 시작일시 이후여야 합니다.")
 	private boolean isRegisterEndAfterStart() {
-		return registerStartAt == null || registerEndAt == null || registerEndAt.isAfter(registerStartAt);
+		return registerEndAt.isAfter(registerStartAt);
 	}
 
 	@AssertTrue(message = "만료일시는 신청 종료일시 이후여야 합니다.")
 	private boolean isExpiredAfterRegisterEnd() {
-		return registerEndAt == null || expiredAt == null || expiredAt.isAfter(registerEndAt);
+		return expiredAt.isAfter(registerEndAt);
 	}
 }
