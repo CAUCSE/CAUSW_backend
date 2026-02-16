@@ -63,7 +63,8 @@ public class AdmissionValidator {
 
 	/**
 	 * 재학인증 승인 전, 유저 정보(이메일/닉네임/전화번호/학번)가
-	 * 다른 ACTIVE 사용자와 중복되지 않는지 검증합니다.
+	 * 다른 ACTIVE 또는 INACTIVE 사용자와 중복되지 않는지 검증합니다.
+	 * DROP 상태의 사용자와 중복되는 경우 별도의 에러를 반환합니다.
 	 */
 	public void validateNoDuplicateBeforeAccept(UserAdmission admission) {
 		User user = admission.getUser();
@@ -87,8 +88,12 @@ public class AdmissionValidator {
 
 	private void validateFieldNotDuplicate(Optional<User> found, User currentUser, UserErrorCode errorCode) {
 		found.ifPresent(existingUser -> {
-			if (!existingUser.getId().equals(currentUser.getId()) && existingUser.getState() == UserState.ACTIVE) {
-				throw errorCode.toBaseException();
+			if (!existingUser.getId().equals(currentUser.getId())) {
+				if (existingUser.getState() == UserState.ACTIVE || existingUser.getState() == UserState.INACTIVE) {
+					throw errorCode.toBaseException();
+				} else if (existingUser.getState() == UserState.DROP) {
+					throw UserErrorCode.USER_DROPPED.toBaseException();
+				}
 			}
 		});
 	}
