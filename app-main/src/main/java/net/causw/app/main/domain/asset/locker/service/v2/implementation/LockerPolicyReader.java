@@ -3,12 +3,12 @@ package net.causw.app.main.domain.asset.locker.service.v2.implementation;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-import net.causw.app.main.shared.exception.errorcode.LockerErrorCode;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.etc.flag.service.v2.implementation.FlagReader;
 import net.causw.app.main.domain.etc.textfield.service.v2.implementation.TextFieldReader;
+import net.causw.app.main.shared.exception.errorcode.LockerErrorCode;
 import net.causw.global.constant.StaticValue;
 
 import lombok.RequiredArgsConstructor;
@@ -151,12 +151,12 @@ public class LockerPolicyReader {
 	 */
 	private boolean isOnRegisterPeriod(LocalDateTime targetTime) {
 		LocalDateTime registerStartAt = parseDateTime(StaticValue.REGISTER_START_AT)
-				.orElseThrow(LockerErrorCode.LOCKER_REGISTER_PERIOD_NOT_SET::toBaseException);
+			.orElseThrow(LockerErrorCode.LOCKER_REGISTER_PERIOD_NOT_SET::toBaseException);
 		LocalDateTime registerEndAt = parseDateTime(StaticValue.REGISTER_END_AT)
-				.orElseThrow(LockerErrorCode.LOCKER_REGISTER_PERIOD_NOT_SET::toBaseException);
+			.orElseThrow(LockerErrorCode.LOCKER_REGISTER_PERIOD_NOT_SET::toBaseException);
 
 		return (targetTime.equals(registerStartAt) || targetTime.isAfter(registerStartAt))
-				&& (targetTime.equals(registerEndAt)   || targetTime.isBefore(registerEndAt));
+			&& (targetTime.equals(registerEndAt) || targetTime.isBefore(registerEndAt));
 	}
 
 	/**
@@ -165,13 +165,13 @@ public class LockerPolicyReader {
 	 * @return 연장 가능 기간 내라면 true, 아니면 false
 	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception 연장 기간이 설정되지 않은 경우
 	 */
- 	private boolean isOnExtendPeriod(LocalDateTime targetTime) {
+	private boolean isOnExtendPeriod(LocalDateTime targetTime) {
 		LocalDateTime extendStartAt = parseDateTime(StaticValue.EXTEND_START_AT)
-				.orElseThrow(LockerErrorCode.LOCKER_EXTEND_PERIOD_NOT_SET::toBaseException);
+			.orElseThrow(LockerErrorCode.LOCKER_EXTEND_PERIOD_NOT_SET::toBaseException);
 		LocalDateTime extendEndAt = parseDateTime(StaticValue.EXTEND_START_AT)
-				.orElseThrow(LockerErrorCode.LOCKER_EXTEND_PERIOD_NOT_SET::toBaseException);
+			.orElseThrow(LockerErrorCode.LOCKER_EXTEND_PERIOD_NOT_SET::toBaseException);
 
 		return (targetTime.equals(extendStartAt) || targetTime.isAfter(extendStartAt))
-				&& (targetTime.equals(extendEndAt)   || targetTime.isBefore(extendEndAt));
+			&& (targetTime.equals(extendEndAt) || targetTime.isBefore(extendEndAt));
 	}
 }
