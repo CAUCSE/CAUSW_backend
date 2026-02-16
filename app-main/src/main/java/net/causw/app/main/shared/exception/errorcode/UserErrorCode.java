@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 public enum UserErrorCode implements BaseResponseCode {
 	INVALID_PASSWORD_REQUEST(HttpStatus.BAD_REQUEST, "USER_400_001", "비밀번호 형식이 잘못되었습니다."),
 	INVALID_PHONE_NUMBER_REQUEST(HttpStatus.BAD_REQUEST, "USER_400_002", "전화번호 형식이 잘못되었습니다."),
+	INVALID_LOGIN_SOCIAL_USER(HttpStatus.BAD_REQUEST, "USER_400_003", "소셜 로그인으로 가입된 계정입니다."),
 	INVALID_LOGIN(HttpStatus.UNAUTHORIZED, "USER_401_001", "이메일 또는 비밀번호가 잘못되었습니다."),
 	INVALID_LOGIN_USER_DELETED(HttpStatus.FORBIDDEN, "USER_403_001", "삭제된 계정입니다. 회원가입 페이지에서 새로운 정보로 가입해주세요."),
 	INVALID_LOGIN_USER_INACTIVE(HttpStatus.FORBIDDEN, "USER_403_002", "탈퇴한 계정입니다. 계정 복구를 진행해주세요"),

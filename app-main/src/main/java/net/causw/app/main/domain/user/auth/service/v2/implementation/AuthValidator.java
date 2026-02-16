@@ -33,6 +33,9 @@ public class AuthValidator {
 	 * 로그인 시 자격 증명 검증
 	 */
 	public void validateCredential(User user, String inputPassword) {
+		if (user.getPassword() == null) {
+			throw UserErrorCode.INVALID_LOGIN_SOCIAL_USER.toBaseException();
+		}
 		if (!passwordEncoder.matches(inputPassword, user.getPassword())) {
 			throw UserErrorCode.INVALID_LOGIN.toBaseException();
 		}
