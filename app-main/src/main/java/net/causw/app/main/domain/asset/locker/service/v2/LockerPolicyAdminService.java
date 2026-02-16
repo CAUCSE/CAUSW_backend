@@ -9,6 +9,7 @@ import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.respon
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerPolicyReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerPolicyWriter;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -32,17 +33,20 @@ public class LockerPolicyAdminService {
 	}
 
 	@Transactional
-	public void updateExpireDate(LocalDateTime expiredAt) {
-		lockerPolicyWriter.updateExpireDate(expiredAt);
-	}
-
-	@Transactional
-	public void updateRegisterPeriod(LocalDateTime start, LocalDateTime end) {
-		lockerPolicyWriter.updateRegisterPeriod(start, end);
+	public void updateRegisterPeriod(LocalDateTime start, LocalDateTime end, LocalDateTime expiredAt) {
+		lockerPolicyWriter.updateRegisterPeriod(start, end, expiredAt);
 	}
 
 	@Transactional
 	public void updateExtendPeriod(LocalDateTime start, LocalDateTime end, LocalDateTime nextExpireDate) {
 		lockerPolicyWriter.updateExtendPeriod(start, end, nextExpireDate);
 	}
+
+	public void updateRegisterStatus(@NotNull boolean status) {
+		lockerPolicyWriter.updateRegisterStatus(status);
+	}
+
+    public void updateExtendStatus(@NotNull boolean status) {
+        lockerPolicyWriter.updateExtendStatus(status);
+    }
 }

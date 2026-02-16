@@ -1,15 +1,17 @@
 package net.causw.app.main.domain.asset.locker.api.v2.controller.admin;
 
+import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.request.LockerPolicyExtendStatusRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.request.LockerPolicyExpireDateRequest;
 import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.request.LockerPolicyExtendPeriodRequest;
 import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.request.LockerPolicyRegisterPeriodRequest;
+import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.request.LockerPolicyRegisterStatusRequest;
 import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.response.LockerPolicyResponse;
 import net.causw.app.main.domain.asset.locker.service.v2.LockerPolicyAdminService;
 import net.causw.app.main.shared.dto.ApiResponse;
@@ -34,21 +36,22 @@ public class LockerPolicyAdminController {
 		return ApiResponse.success(lockerPolicyAdminService.getPolicy());
 	}
 
-	@PutMapping("/expire-date")
-	@Operation(summary = "사물함 만료일 설정", description = "사물함 만료일을 설정합니다.")
-	public ApiResponse<Void> updateExpireDate(
-		@RequestBody @Valid LockerPolicyExpireDateRequest request) {
-
-		lockerPolicyAdminService.updateExpireDate(request.expiredAt());
-		return ApiResponse.success();
-	}
-
 	@PutMapping("/register-period")
 	@Operation(summary = "사물함 신청 기간 설정", description = "사물함 신청 시작일과 종료일을 설정합니다.")
 	public ApiResponse<Void> updateRegisterPeriod(
 		@RequestBody @Valid LockerPolicyRegisterPeriodRequest request) {
 
-		lockerPolicyAdminService.updateRegisterPeriod(request.registerStartAt(), request.registerEndAt());
+		lockerPolicyAdminService.updateRegisterPeriod(request.registerStartAt(), request.registerEndAt(),
+			request.expiredAt());
+		return ApiResponse.success();
+	}
+
+	@PutMapping("/register-status")
+	@Operation(summary = "사물함 신청 상태 설정", description = "사물함 신청 가능 상태를 설정합니다.")
+	public ApiResponse<Void> updateRegisterStatus(
+		@RequestBody @Validated LockerPolicyRegisterStatusRequest request) {
+
+		lockerPolicyAdminService.updateRegisterStatus(request.status());
 		return ApiResponse.success();
 	}
 
@@ -59,6 +62,15 @@ public class LockerPolicyAdminController {
 
 		lockerPolicyAdminService.updateExtendPeriod(request.extendStartAt(), request.extendEndAt(),
 			request.nextExpiredAt());
+		return ApiResponse.success();
+	}
+
+	@PutMapping("/extend-status")
+	@Operation(summary = "사물함 연장 상태 설정", description = "사물함 연장 가능 상태를 설정합니다.")
+	public ApiResponse<Void> updateExtendStatus(
+			@RequestBody @Validated LockerPolicyExtendStatusRequest request) {
+
+		lockerPolicyAdminService.updateExtendStatus(request.status());
 		return ApiResponse.success();
 	}
 }
