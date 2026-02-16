@@ -119,4 +119,5 @@ public class LockerAdminController {
 		lockerAdminService.disableLocker(id);
 		return ApiResponse.success();
 	}
+
 }
