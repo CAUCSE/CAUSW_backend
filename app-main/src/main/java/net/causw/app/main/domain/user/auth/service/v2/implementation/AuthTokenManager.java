@@ -23,4 +23,10 @@ public class AuthTokenManager {
 		redisUtils.setRefreshTokenData(refreshToken, user.getId(), StaticValue.JWT_REFRESH_TOKEN_VALID_TIME);
 		return new AuthTokenPair(accessToken, refreshToken);
 	}
+
+	public String createRefreshToken(String userId) {
+		String refreshToken = jwtTokenProvider.createRefreshToken();
+		redisUtils.setRefreshTokenData(refreshToken, userId, StaticValue.JWT_REFRESH_TOKEN_VALID_TIME);
+		return refreshToken;
+	}
 }

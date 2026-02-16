@@ -23,6 +23,9 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.CorsUtils;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import net.causw.app.main.domain.user.auth.handler.OAuth2SuccessHandler;
+import net.causw.app.main.domain.user.auth.service.v2.CustomOAuth2UserService;
+
 import lombok.RequiredArgsConstructor;
 
 @Configuration
@@ -34,6 +37,8 @@ public class WebSecurityConfig {
 	private final JwtTokenProvider jwtTokenProvider;
 	private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 	private final CustomAuthorizationManager authorizationManager;
+	private final CustomOAuth2UserService customOAuth2UserService;
+	private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
 	@Value("${app.cors.allowed-origins:http://localhost:3000}")
 	private String corsAllowedOrigins;
@@ -47,7 +52,7 @@ public class WebSecurityConfig {
 	@Order(1)
 	public SecurityFilterChain securityFilterChainV2(HttpSecurity http) throws Exception {
 		http
-			.securityMatcher("/api/v2/**")
+			.securityMatcher("/api/v2/**", "/oauth2/**", "/login/oauth2/**")
 			.cors(cors -> cors.configurationSource(corsConfigurationSourceV2()))
 			.formLogin(AbstractHttpConfigurer::disable)
 			.httpBasic(AbstractHttpConfigurer::disable)
@@ -57,9 +62,13 @@ public class WebSecurityConfig {
 				sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.authorizeHttpRequests(auth -> auth
 				.requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
-				.requestMatchers("/api/v2/auth/**").permitAll()
+				.requestMatchers("/api/v2/auth/**", "/oauth2/**", "/login/oauth2/**").permitAll()
 				.requestMatchers("/api/v2/admin/**").hasRole("ADMIN")
 				.anyRequest().authenticated())
+			.oauth2Login(oauth2 -> oauth2
+				.userInfoEndpoint(userInfo -> userInfo
+					.userService(customOAuth2UserService))
+				.successHandler(oAuth2SuccessHandler))
 			.exceptionHandling(exceptionHandling -> exceptionHandling
 				.authenticationEntryPoint(customAuthenticationEntryPoint))
 			.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);

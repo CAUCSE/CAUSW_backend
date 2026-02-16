@@ -7,7 +7,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
+import net.causw.app.main.domain.user.account.entity.user.SocialAccount;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.enums.user.SocialType;
+import net.causw.app.main.domain.user.account.repository.user.SocialAccountRepository;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.app.main.domain.user.account.repository.user.query.UserQueryRepository;
 import net.causw.app.main.domain.user.account.service.dto.request.UserListCondition;
@@ -21,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 public class UserReader {
 	private final UserQueryRepository userQueryRepository;
 	private final UserRepository userRepository;
+	private final SocialAccountRepository socialAccountRepository;
 
 	public User findUserById(String userId) {
 		return userRepository.findById(userId)
@@ -38,6 +42,10 @@ public class UserReader {
 	public User findByEmailOrElseThrow(String email) {
 		return userRepository.findByEmail(email)
 			.orElseThrow(UserErrorCode.INVALID_LOGIN::toBaseException);
+	}
+
+	public Optional<User> findByEmail(String email) {
+		return userRepository.findByEmail(email);
 	}
 
 	public List<User> getUsersByIds(List<String> userIds) {
@@ -63,5 +71,10 @@ public class UserReader {
 	public User findDetailById(String userId) {
 		return userQueryRepository.findByIdWithRelations(userId)
 			.orElseThrow(UserErrorCode.USER_NOT_FOUND::toBaseException);
+	}
+
+	public Optional<User> findBySocialTypeAndSocialId(SocialType socialType, String socialId) {
+		return socialAccountRepository.findBySocialIdAndSocialType(socialId, socialType)
+			.map(SocialAccount::getUser);
 	}
 }
