@@ -1,6 +1,5 @@
 package net.causw.app.main.domain.asset.locker.api.v2.controller.admin;
 
-import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.request.LockerPolicyExtendStatusRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.request.LockerPolicyExtendPeriodRequest;
+import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.request.LockerPolicyExtendStatusRequest;
 import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.request.LockerPolicyRegisterPeriodRequest;
 import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.request.LockerPolicyRegisterStatusRequest;
 import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.response.LockerPolicyResponse;
@@ -68,7 +68,7 @@ public class LockerPolicyAdminController {
 	@PutMapping("/extend-status")
 	@Operation(summary = "사물함 연장 상태 설정", description = "사물함 연장 가능 상태를 설정합니다.")
 	public ApiResponse<Void> updateExtendStatus(
-			@RequestBody @Validated LockerPolicyExtendStatusRequest request) {
+		@RequestBody @Validated LockerPolicyExtendStatusRequest request) {
 
 		lockerPolicyAdminService.updateExtendStatus(request.status());
 		return ApiResponse.success();
