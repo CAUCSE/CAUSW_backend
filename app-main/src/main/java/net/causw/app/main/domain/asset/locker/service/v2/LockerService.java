@@ -1,27 +1,47 @@
 package net.causw.app.main.domain.asset.locker.service.v2;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.asset.locker.entity.Locker;
+import net.causw.app.main.domain.asset.locker.entity.LockerLocation;
+import net.causw.app.main.domain.asset.locker.service.v2.dto.result.LockerLocationResult;
+import net.causw.app.main.domain.asset.locker.service.v2.dto.result.MyLockerResult;
+import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerLocationReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerLogWriter;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerPolicyReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerValidator;
+import net.causw.app.main.domain.asset.locker.util.LockerAggregator;
+import net.causw.app.main.domain.asset.locker.util.LockerMapper;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * 일반 유저용 사물함 서비스.
+ *
+ * <p>사물함 신청·반납·연장과 조회 기능을 제공한다.
+ * 정책(신청/연장 기간) 검증은 {@link LockerValidator}에 위임하고,
+ * 조회 결과 매핑은 {@link LockerMapper}·{@link LockerAggregator}에 위임한다.</p>
+ *
+ * @see LockerAdminService 관리자용 사물함 서비스
+ * @see LockerPolicyAdminService 사물함 정책 관리 서비스
+ */
 @Service
 @RequiredArgsConstructor
 public class LockerService {
 
 	private final LockerReader lockerReader;
+	private final LockerLocationReader lockerLocationReader;
 	private final LockerPolicyReader lockerPolicyReader;
 	private final LockerLogWriter lockerLogWriter;
 	private final LockerValidator lockerValidator;
+	private final UserReader userReader;
 
 	/**
 	 * 사물함 신청 (일반 유저용)
@@ -31,10 +51,11 @@ public class LockerService {
 	 * 4. 글로벌 만료일(EXPIRE_DATE) 기반으로 신청
 	 *
 	 * @param lockerId 신청할 사물함 ID
-	 * @param user 신청 유저
+	 * @param userId 신청 유저 아이디
 	 */
 	@Transactional
-	public void registerLocker(String lockerId, User user) {
+	public void registerLocker(String lockerId, String userId) {
+		User user = userReader.findUserById(userId);
 		lockerValidator.validateRegisterPeriod();
 
 		Locker locker = lockerReader.findByIdForWrite(lockerId);
@@ -58,10 +79,11 @@ public class LockerService {
 	 * 4. 반납
 	 *
 	 * @param lockerId 반납할 사물함 ID
-	 * @param user 반납 유저
+	 * @param userId 반납 유저 아이디
 	 */
 	@Transactional
-	public void returnLocker(String lockerId, User user) {
+	public void returnLocker(String lockerId, String userId) {
+		User user = userReader.findUserById(userId);
 		lockerValidator.validateReturnPeriod();
 
 		Locker locker = lockerReader.findByIdForWrite(lockerId);
@@ -81,12 +103,15 @@ public class LockerService {
 	 * 5. NEXT_EXPIRED_AT 기반으로 연장
 	 *
 	 * @param lockerId 연장할 사물함 ID
-	 * @param user 연장 유저
+	 * @param userId 연장 유저 아이디
 	 */
 	@Transactional
-	public void extendLocker(String lockerId, User user) {
+	public void extendLocker(String lockerId, String userId) {
+		User user = userReader.findUserById(userId);
+		// 현재 연장가능기간인지 확인
 		lockerValidator.validateExtendPeriod();
 
+		// 선택한 사물함에 대해서 사용중인지, 본인이 소유중인지 검증
 		Locker locker = lockerReader.findByIdForWrite(lockerId);
 		lockerValidator.validateInUse(locker);
 		lockerValidator.validateOwner(locker, user);
@@ -96,5 +121,48 @@ public class LockerService {
 
 		locker.extendExpireDate(nextExpireDate);
 		lockerLogWriter.logExtend(locker, user);
+	}
+
+	/**
+	 * 현재 유저의 사물함 정보를 조회한다.
+	 *
+	 * @param userId 조회 유저 ID
+	 * @return 사물함 보유 시 상세 정보, 미보유 시 빈 결과
+	 */
+	@Transactional(readOnly = true)
+	public MyLockerResult findMyLocker(String userId) {
+		var user = userReader.findUserById(userId);
+
+		return lockerReader.findByUserId(user.getId())
+			.map(LockerMapper::toMyLockerResult)
+			.orElse(MyLockerResult.empty());
+	}
+
+	/**
+	 * 특정 층의 사물함 목록을 조회한다.
+	 *
+	 * <p>각 사물함의 상태를 유저 기준으로 계산하며({@code MINE} 포함),
+	 * 현재 정책 상태와 유저 가능 액션 정보를 함께 반환한다.</p>
+	 *
+	 * @param locationId 층 위치 ID
+	 * @param userId 조회 유저 ID
+	 * @return 층 정보, 정책, 집계, 사물함 목록, 액션 정보를 포함한 결과
+	 */
+	@Transactional(readOnly = true)
+	public LockerLocationResult findByLocation(String locationId, String userId) {
+		LockerLocation location = lockerLocationReader.findById(locationId);
+		List<Locker> lockers = lockerReader.findByLocationIdWithUser(locationId);
+
+		boolean canApplyPolicy = lockerPolicyReader.isRegisterPeriod();
+		boolean canExtendPolicy = lockerPolicyReader.isExtendPeriod();
+
+		List<LockerLocationResult.LockerItemResult> lockerItems = LockerMapper.toLockerItemResults(lockers, userId);
+		boolean userHasLockerInThisLocation = LockerAggregator.hasUserLockerInItems(lockerItems);
+		boolean userHasAnyLocker = lockerReader.existsByUserId(userId);
+
+		return LockerMapper.toLocationResult(
+			location, lockers, lockerItems,
+			canApplyPolicy, canExtendPolicy,
+			userHasAnyLocker, userHasLockerInThisLocation);
 	}
 }

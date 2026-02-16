@@ -1,11 +1,11 @@
 package net.causw.app.main.domain.asset.locker.service.v2.implementation;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.asset.locker.entity.Locker;
 import net.causw.app.main.domain.asset.locker.entity.LockerName;
@@ -33,6 +33,14 @@ public class LockerReader {
 
 	public Optional<Locker> findByUserId(String userId) {
 		return lockerRepository.findByUser_Id(userId);
+	}
+
+	public List<Locker> findByLocationId(String locationId) {
+		return lockerRepository.findByLocation_IdOrderByLockerNumberAsc(locationId);
+	}
+
+	public List<Locker> findByLocationIdWithUser(String locationId) {
+		return lockerRepository.findByLocationIdWithUser(locationId);
 	}
 
 	public Page<Locker> findLockerList(String userKeyword, LockerName location, Boolean isActive, Boolean isOccupied,

@@ -31,6 +31,9 @@ public interface LockerRepository extends JpaRepository<Locker, String> {
 
 	List<Locker> findByLocation_IdOrderByLockerNumberAsc(String locationId);
 
+	@Query("SELECT l FROM Locker l LEFT JOIN FETCH l.user WHERE l.location.id = :locationId ORDER BY l.lockerNumber ASC")
+	List<Locker> findByLocationIdWithUser(@Param("locationId") String locationId);
+
 	long countByLocationIdAndIsActiveIsTrueAndUserIdIsNull(String locationId);
 
 	long countByLocationId(String locationId);

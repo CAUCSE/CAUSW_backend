@@ -7,6 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum LockerStatus {
 	AVAILABLE("사용 가능"),
+	MINE("내 사물함"),
 	IN_USE("사용중"),
 	DISABLED("비활성");
 
@@ -20,5 +21,14 @@ public enum LockerStatus {
 			return AVAILABLE;
 		}
 		return DISABLED;
+	}
+
+	public static LockerStatus of(Locker locker, String userId) {
+		LockerStatus base = of(locker);
+		if (base == IN_USE
+			&& locker.getUser().map(u -> u.getId().equals(userId)).orElse(false)) {
+			return MINE;
+		}
+		return base;
 	}
 }

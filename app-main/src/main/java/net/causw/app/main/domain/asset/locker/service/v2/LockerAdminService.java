@@ -20,6 +20,16 @@ import net.causw.app.main.domain.user.account.service.v2.implementation.UserRead
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * 관리자용 사물함 서비스.
+ *
+ * <p>사물함 배정·회수·연장·활성화·비활성화 등 관리자 전용 기능을 제공한다.
+ * 일반 유저의 신청/반납과 달리 정책 기간 제약 없이 동작하며,
+ * 모든 변경에 대해 관리자 로그를 기록한다.</p>
+ *
+ * @see LockerService 일반 유저용 사물함 서비스
+ * @see LockerPolicyAdminService 사물함 정책 관리 서비스
+ */
 @Service
 @RequiredArgsConstructor
 public class LockerAdminService {

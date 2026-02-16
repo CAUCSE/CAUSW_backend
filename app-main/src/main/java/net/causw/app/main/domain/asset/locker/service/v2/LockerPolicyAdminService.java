@@ -13,6 +13,15 @@ import net.causw.app.main.shared.exception.errorcode.LockerErrorCode;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * 사물함 정책 관리 서비스.
+ *
+ * <p>사물함 신청·연장 기간 설정 및 상태(활성/비활성) 전환을 담당한다.
+ * 신청과 연장은 동시에 활성화할 수 없으며, 상태 전환 시 상호 배타 검증을 수행한다.</p>
+ *
+ * @see LockerService 일반 유저용 사물함 서비스
+ * @see LockerAdminService 관리자용 사물함 서비스
+ */
 @Service
 @RequiredArgsConstructor
 public class LockerPolicyAdminService {
@@ -20,6 +29,11 @@ public class LockerPolicyAdminService {
 	private final LockerPolicyReader lockerPolicyReader;
 	private final LockerPolicyWriter lockerPolicyWriter;
 
+	/**
+	 * 현재 사물함 정책 상태를 조회한다.
+	 *
+	 * @return 만료일, 신청/연장 기간, 신청/연장 활성 상태를 포함한 정책 정보
+	 */
 	@Transactional(readOnly = true)
 	public LockerPolicyResponse getPolicy() {
 		return new LockerPolicyResponse(
@@ -33,16 +47,38 @@ public class LockerPolicyAdminService {
 			lockerPolicyReader.isExtendPeriod());
 	}
 
+	/**
+	 * 사물함 신청 기간을 설정한다.
+	 *
+	 * @param start 신청 시작일시
+	 * @param end 신청 종료일시
+	 * @param expiredAt 신청된 사물함의 만료일시
+	 */
 	@Transactional
 	public void updateRegisterPeriod(LocalDateTime start, LocalDateTime end, LocalDateTime expiredAt) {
 		lockerPolicyWriter.updateRegisterPeriod(start, end, expiredAt);
 	}
 
+	/**
+	 * 사물함 연장 기간을 설정한다.
+	 *
+	 * @param start 연장 시작일시
+	 * @param end 연장 종료일시
+	 * @param nextExpireDate 연장 후 새 만료일시
+	 */
 	@Transactional
 	public void updateExtendPeriod(LocalDateTime start, LocalDateTime end, LocalDateTime nextExpireDate) {
 		lockerPolicyWriter.updateExtendPeriod(start, end, nextExpireDate);
 	}
 
+	/**
+	 * 사물함 신청 활성 상태를 변경한다.
+	 *
+	 * <p>연장이 활성화된 상태에서는 신청을 활성화할 수 없다.</p>
+	 *
+	 * @param status 활성화 여부
+	 * @throws net.causw.app.main.shared.exception.BaseException 연장이 이미 활성 상태인 경우
+	 */
 	@Transactional
 	public void updateRegisterStatus(@NotNull boolean status) {
 		if (status && lockerPolicyReader.isExtendPeriod()) {
@@ -51,6 +87,14 @@ public class LockerPolicyAdminService {
 		lockerPolicyWriter.updateRegisterStatus(status);
 	}
 
+	/**
+	 * 사물함 연장 활성 상태를 변경한다.
+	 *
+	 * <p>신청이 활성화된 상태에서는 연장을 활성화할 수 없다.</p>
+	 *
+	 * @param status 활성화 여부
+	 * @throws net.causw.app.main.shared.exception.BaseException 신청이 이미 활성 상태인 경우
+	 */
 	@Transactional
 	public void updateExtendStatus(@NotNull boolean status) {
 		if (status && lockerPolicyReader.isRegisterPeriod()) {

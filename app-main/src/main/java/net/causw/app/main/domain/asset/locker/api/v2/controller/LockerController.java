@@ -1,11 +1,15 @@
 package net.causw.app.main.domain.asset.locker.api.v2.controller;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.causw.app.main.domain.asset.locker.api.v2.controller.dto.response.LockerLocationResponse;
+import net.causw.app.main.domain.asset.locker.api.v2.controller.dto.response.MyLockerResponse;
+import net.causw.app.main.domain.asset.locker.api.v2.mapper.LockerResponseMapper;
 import net.causw.app.main.domain.asset.locker.service.v2.LockerService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
@@ -21,6 +25,26 @@ import lombok.RequiredArgsConstructor;
 public class LockerController {
 
 	private final LockerService lockerService;
+	private final LockerResponseMapper lockerResponseMapper;
+
+	@GetMapping("/me")
+	@Operation(summary = "내 사물함 조회", description = "현재 로그인한 유저의 사물함 정보를 조회합니다.")
+	public ApiResponse<MyLockerResponse> findMyLocker(
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
+
+		return ApiResponse.success(
+			lockerResponseMapper.toMyLockerResponse(lockerService.findMyLocker(userDetails.getUserId())));
+	}
+
+	@GetMapping("/locations/{locationId}")
+	@Operation(summary = "층별 사물함 조회", description = "특정 층의 사물함 목록과 정책/액션 정보를 조회합니다.")
+	public ApiResponse<LockerLocationResponse> findByLocation(
+		@PathVariable String locationId,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
+
+		return ApiResponse.success(
+			lockerResponseMapper.toLocationResponse(lockerService.findByLocation(locationId, userDetails.getUserId())));
+	}
 
 	@PostMapping("/{id}/register")
 	@Operation(summary = "사물함 신청", description = "사물함을 신청합니다. 기존 사물함 보유 시 자동 반납됩니다.")
@@ -28,7 +52,7 @@ public class LockerController {
 		@PathVariable String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-		lockerService.registerLocker(id, userDetails.getUser());
+		lockerService.registerLocker(id, userDetails.getUserId());
 		return ApiResponse.success();
 	}
 
@@ -38,7 +62,7 @@ public class LockerController {
 		@PathVariable String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-		lockerService.returnLocker(id, userDetails.getUser());
+		lockerService.returnLocker(id, userDetails.getUserId());
 		return ApiResponse.success();
 	}
 
@@ -48,7 +72,7 @@ public class LockerController {
 		@PathVariable String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-		lockerService.extendLocker(id, userDetails.getUser());
+		lockerService.extendLocker(id, userDetails.getUserId());
 		return ApiResponse.success();
 	}
 }
