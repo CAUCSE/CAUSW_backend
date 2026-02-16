@@ -328,33 +328,8 @@ class AdmissionAdminServiceTest {
 		}
 
 		@Test
-		@DisplayName("중복 검증(이메일)에 실패하면 예외가 발생하고 이후 단계가 실행되지 않는다")
-		void givenDuplicateEmail_whenApprove_thenThrowAndStopProcess() {
-			// given
-			String admissionId = "admission-1";
-			User targetUser = ObjectFixtures.getUserWithId("user-1");
-			User adminUser = ObjectFixtures.getCertifiedUserWithId("admin-1");
-			UserAdmission admission = ObjectFixtures.getUserAdmissionWithId(admissionId, targetUser);
-
-			when(admissionReader.findAdmissionDetail(admissionId)).thenReturn(admission);
-			doThrow(UserErrorCode.EMAIL_ALREADY_EXIST.toBaseException())
-				.when(admissionValidator).validateNoDuplicateBeforeAccept(admission);
-
-			// when & then
-			assertThatThrownBy(() -> admissionAdminService.approveAdmission(admissionId, adminUser))
-				.isInstanceOf(BaseRunTimeV2Exception.class)
-				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
-				.isEqualTo(UserErrorCode.EMAIL_ALREADY_EXIST);
-
-			verify(userWriter, never()).approveAdmission(targetUser, admission);
-			verifyNoInteractions(eventPublisher);
-			verify(admissionLogWriter, never()).createAcceptLog(admission, adminUser);
-			verify(admissionWriter, never()).delete(admission);
-		}
-
-		@Test
-		@DisplayName("중복 검증(학번)에 실패하면 예외가 발생한다")
-		void givenDuplicateStudentId_whenApprove_thenThrowException() {
+		@DisplayName("학번 중복 검증에 실패하면 예외가 발생하고 이후 단계가 실행되지 않는다")
+		void givenDuplicateStudentId_whenApprove_thenThrowAndStopProcess() {
 			// given
 			String admissionId = "admission-1";
 			User targetUser = ObjectFixtures.getUserWithId("user-1");
@@ -371,7 +346,10 @@ class AdmissionAdminServiceTest {
 				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
 				.isEqualTo(UserErrorCode.STUDENT_ID_ALREADY_EXIST);
 
+			verify(userWriter, never()).approveAdmission(targetUser, admission);
 			verifyNoInteractions(eventPublisher);
+			verify(admissionLogWriter, never()).createAcceptLog(admission, adminUser);
+			verify(admissionWriter, never()).delete(admission);
 		}
 
 		@Test

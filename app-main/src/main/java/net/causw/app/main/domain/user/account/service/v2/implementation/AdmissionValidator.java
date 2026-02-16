@@ -1,7 +1,6 @@
 package net.causw.app.main.domain.user.account.service.v2.implementation;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -62,35 +61,22 @@ public class AdmissionValidator {
 	}
 
 	/**
-	 * 재학인증 승인 전, 유저 정보(이메일/닉네임/전화번호/학번)가
-	 * 다른 ACTIVE 또는 INACTIVE 사용자와 중복되지 않는지 검증합니다.
-	 * DROP 상태의 사용자와 중복되는 경우 별도의 에러를 반환합니다.
+	 * 재학인증 승인 전, 신청서에 기입된 학번이 다른 사용자와 중복되지 않는지 검증합니다.
+	 *
+	 * 이메일/닉네임/연락처는 회원가입 시점에 검증이 이루어지며,
+	 * 재학인증 과정에서 변경되지 않으므로 승인 시점에 재검증하지 않습니다.
 	 */
 	public void validateNoDuplicateBeforeAccept(UserAdmission admission) {
-		User user = admission.getUser();
-
-		validateFieldNotDuplicate(
-			userRepository.findByEmail(user.getEmail()), user, UserErrorCode.EMAIL_ALREADY_EXIST);
-
-		validateFieldNotDuplicate(
-			userRepository.findByNickname(user.getNickname()), user, UserErrorCode.NICKNAME_ALREADY_EXIST);
-
-		validateFieldNotDuplicate(
-			userRepository.findByPhoneNumber(user.getPhoneNumber()), user, UserErrorCode.PHONE_NUMBER_ALREADY_EXIST);
-
-		// 학번은 신청서의 requested 필드 기준으로 검증
 		String requestedStudentId = admission.getRequestedStudentId();
-		if (requestedStudentId != null) {
-			validateFieldNotDuplicate(
-				userRepository.findByStudentId(requestedStudentId), user, UserErrorCode.STUDENT_ID_ALREADY_EXIST);
+		if (requestedStudentId == null) {
+			return;
 		}
-	}
 
-	private void validateFieldNotDuplicate(Optional<User> found, User currentUser, UserErrorCode errorCode) {
-		found.ifPresent(existingUser -> {
+		User currentUser = admission.getUser();
+		userRepository.findByStudentId(requestedStudentId).ifPresent(existingUser -> {
 			if (!existingUser.getId().equals(currentUser.getId())) {
 				if (existingUser.getState() == UserState.ACTIVE || existingUser.getState() == UserState.INACTIVE) {
-					throw errorCode.toBaseException();
+					throw UserErrorCode.STUDENT_ID_ALREADY_EXIST.toBaseException();
 				} else if (existingUser.getState() == UserState.DROP) {
 					throw UserErrorCode.USER_DROPPED.toBaseException();
 				}
