@@ -16,7 +16,8 @@ public enum UserState {
 	INACTIVE("INACTIVE", "탈퇴"),
 	REJECT("REJECT", "가입 거부"),
 	DROP("DROP", "추방"),
-	DELETED("DELETED", "삭제됨");
+	DELETED("DELETED", "삭제됨"),
+	GUEST("GUEST", "소셜로그인 대기자");
 
 	private final String value;
 	private final String description;

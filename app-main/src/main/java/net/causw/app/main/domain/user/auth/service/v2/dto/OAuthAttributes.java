@@ -1,0 +1,68 @@
+package net.causw.app.main.domain.user.auth.service.v2.dto;
+
+import java.util.Map;
+
+import net.causw.app.main.domain.user.account.enums.user.SocialType;
+
+import lombok.Builder;
+
+@Builder
+public record OAuthAttributes(
+	Map<String, Object> attributes,
+	String nameAttributeKey,
+	String name,
+	String email,
+	String picture,
+	SocialType socialType,
+	String socialId) {
+	public static OAuthAttributes of(String registrationId, String userNameAttributeName,
+		Map<String, Object> attributes) {
+		SocialType socialType = SocialType.from(registrationId);
+
+		return switch (socialType) {
+			case APPLE -> ofApple(userNameAttributeName, attributes);
+			case KAKAO -> ofKakao("id", attributes);
+			default -> ofGoogle(userNameAttributeName, attributes);
+		};
+	}
+
+	private static OAuthAttributes ofGoogle(String userNameAttributeName, Map<String, Object> attributes) {
+		return OAuthAttributes.builder()
+			.name((String)attributes.get("name"))
+			.email((String)attributes.get("email"))
+			.picture((String)attributes.get("picture"))
+			.attributes(attributes)
+			.nameAttributeKey(userNameAttributeName)
+			.socialType(SocialType.GOOGLE)
+			.socialId(String.valueOf(attributes.get(userNameAttributeName)))
+			.build();
+	}
+
+	private static OAuthAttributes ofKakao(String userNameAttributeName, Map<String, Object> attributes) {
+		Map<String, Object> kakaoAccount = (Map<String, Object>)attributes.get("kakao_account");
+		Map<String, Object> kakaoProfile = (Map<String, Object>)kakaoAccount.get("profile");
+
+		return OAuthAttributes.builder()
+			.name((String)kakaoProfile.get("nickname"))
+			.email((String)kakaoAccount.get("email"))
+			.picture((String)kakaoProfile.get("profile_image_url"))
+			.attributes(attributes)
+			.nameAttributeKey(userNameAttributeName)
+			.socialType(SocialType.KAKAO)
+			.socialId(String.valueOf(attributes.get(userNameAttributeName)))
+			.build();
+	}
+
+	private static OAuthAttributes ofApple(String userNameAttributeName, Map<String, Object> attributes) {
+		// 애플은 이름을 잘 안 주기 때문에 없을 경우 email로 대체
+		return OAuthAttributes.builder()
+			.name((String)attributes.get("email"))
+			.email((String)attributes.get("email"))
+			.picture(null)
+			.attributes(attributes)
+			.nameAttributeKey(userNameAttributeName)
+			.socialType(SocialType.APPLE)
+			.socialId(String.valueOf(attributes.get(userNameAttributeName)))
+			.build();
+	}
+}
