@@ -43,8 +43,8 @@ public class LockerPolicyAdminService {
 			lockerPolicyReader.findExtendStartDate().orElse(null),
 			lockerPolicyReader.findExtendEndDate().orElse(null),
 			lockerPolicyReader.findNextExpireDateOptional().orElse(null),
-			lockerPolicyReader.isRegisterPeriod(),
-			lockerPolicyReader.isExtendPeriod());
+			lockerPolicyReader.getLockerAccessStatusFlag(),
+			lockerPolicyReader.getLockerExtendStatusFlag());
 	}
 
 	/**
@@ -81,7 +81,7 @@ public class LockerPolicyAdminService {
 	 */
 	@Transactional
 	public void updateRegisterStatus(@NotNull boolean status) {
-		if (status && lockerPolicyReader.isExtendPeriod()) {
+		if (status && lockerPolicyReader.getLockerExtendStatusFlag()) {
 			throw LockerErrorCode.LOCKER_EXTEND_ALREADY_ACTIVE.toBaseException();
 		}
 		lockerPolicyWriter.updateRegisterStatus(status);
@@ -97,7 +97,7 @@ public class LockerPolicyAdminService {
 	 */
 	@Transactional
 	public void updateExtendStatus(@NotNull boolean status) {
-		if (status && lockerPolicyReader.isRegisterPeriod()) {
+		if (status && lockerPolicyReader.getLockerAccessStatusFlag()) {
 			throw LockerErrorCode.LOCKER_REGISTER_ALREADY_ACTIVE.toBaseException();
 		}
 		lockerPolicyWriter.updateExtendStatus(status);

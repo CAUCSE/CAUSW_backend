@@ -25,8 +25,8 @@ public class LockerValidator {
 	/**
 	 * 사물함 신청 기간 검증
 	 */
-	public void validateRegisterPeriod() {
-		if (!lockerPolicyReader.isRegisterPeriod()) {
+	public void validateRegisterPeriod(LocalDateTime time) {
+		if (!lockerPolicyReader.isRegisterActive(time)) {
 			throw LockerErrorCode.LOCKER_REGISTER_NOT_ALLOWED.toBaseException();
 		}
 	}
@@ -34,8 +34,8 @@ public class LockerValidator {
 	/**
 	 * 사물함 반납 기간 검증
 	 */
-	public void validateReturnPeriod() {
-		if (!lockerPolicyReader.isReturnPeriod()) {
+	public void validateReturnPeriod(LocalDateTime time) {
+		if (!lockerPolicyReader.isRegisterActive(time)) {
 			throw LockerErrorCode.LOCKER_RETURN_NOT_ALLOWED.toBaseException();
 		}
 	}
@@ -43,8 +43,8 @@ public class LockerValidator {
 	/**
 	 * 사물함 연장 기간 검증
 	 */
-	public void validateExtendPeriod() {
-		if (!lockerPolicyReader.isExtendPeriod()) {
+	public void validateExtendPeriod(LocalDateTime time) {
+		if (!lockerPolicyReader.isExtendActive(time)) {
 			throw LockerErrorCode.LOCKER_EXTEND_NOT_ALLOWED.toBaseException();
 		}
 	}

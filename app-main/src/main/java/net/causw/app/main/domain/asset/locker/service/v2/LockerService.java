@@ -56,7 +56,7 @@ public class LockerService {
 	@Transactional
 	public void registerLocker(String lockerId, String userId) {
 		User user = userReader.findUserById(userId);
-		lockerValidator.validateRegisterPeriod();
+		lockerValidator.validateRegisterPeriod(LocalDateTime.now());
 
 		// 사물함 상태 검증
 		Locker locker = lockerReader.findByIdForWrite(lockerId);
@@ -87,7 +87,7 @@ public class LockerService {
 	public void returnLocker(String lockerId, String userId) {
 		// 사물함 신청 기간 검증
 		User user = userReader.findUserById(userId);
-		lockerValidator.validateReturnPeriod();
+		lockerValidator.validateReturnPeriod(LocalDateTime.now());
 
 		// 사물함 사용중 및 보유 상태 검증
 		Locker locker = lockerReader.findByIdForWrite(lockerId);
@@ -101,7 +101,7 @@ public class LockerService {
 
 	/**
 	 * 사물함 연장 (일반 유저용)
-	 * 1. LOCKER_EXTEND 플래그 확인
+	 * 1. 연장 가능 상태 및 연장기간 확인
 	 * 2. 사물함 사용중 상태 검증
 	 * 3. 소유자 검증
 	 * 4. 이미 연장 여부 검증
@@ -114,7 +114,7 @@ public class LockerService {
 	public void extendLocker(String lockerId, String userId) {
 		User user = userReader.findUserById(userId);
 		// 현재 연장가능기간인지 확인
-		lockerValidator.validateExtendPeriod();
+		lockerValidator.validateExtendPeriod(LocalDateTime.now());
 
 		// 선택한 사물함에 대해서 사용중인지, 본인이 소유중인지 검증
 		Locker locker = lockerReader.findByIdForWrite(lockerId);
@@ -158,8 +158,8 @@ public class LockerService {
 		LockerLocation location = lockerLocationReader.findById(locationId);
 		List<Locker> lockers = lockerReader.findByLocationIdWithUser(locationId);
 
-		boolean canApplyPolicy = lockerPolicyReader.isRegisterPeriod();
-		boolean canExtendPolicy = lockerPolicyReader.isExtendPeriod();
+		boolean canApplyPolicy = lockerPolicyReader.isRegisterActive(LocalDateTime.now());
+		boolean canExtendPolicy = lockerPolicyReader.isExtendActive(LocalDateTime.now());
 
 		List<LockerLocationResult.LockerItemResult> lockerItems = LockerMapper.toLockerItemResults(lockers, userId);
 
