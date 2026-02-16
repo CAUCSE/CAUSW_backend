@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.request.LockerAssignRequest;
+import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.request.LockerAssignRequestDto;
 import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.request.LockerExtendRequest;
 import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.request.LockerListRequest;
 import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.request.LockerLogListRequest;
@@ -80,7 +80,7 @@ public class LockerAdminController {
 	@Operation(summary = "사물함 배정", description = "비어 있는 사물함에 사용자를 배정합니다.")
 	public ApiResponse<Void> assignLocker(
 		@PathVariable String id,
-		@RequestBody @Valid LockerAssignRequest request,
+		@RequestBody @Valid LockerAssignRequestDto request,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
 		lockerAdminService.assignLocker(id, request.userId(), request.expiredAt(), userDetails.getUserId());
