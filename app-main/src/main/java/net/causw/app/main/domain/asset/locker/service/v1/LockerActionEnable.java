@@ -25,7 +25,7 @@ public class LockerActionEnable implements LockerAction {
 			.consistOf(LockerIsActiveValidator.of(locker.getIsActive()))
 			.validate();
 
-		locker.activate();
+		locker.enable();
 
 		return Optional.of(locker);
 	}

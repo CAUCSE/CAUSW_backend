@@ -140,7 +140,7 @@ public class LockerAdminService {
 
 		lockerValidator.validateEnableable(locker);
 
-		locker.activate();
+		locker.enable();
 		lockerLogWriter.logEnable(locker, admin);
 	}
 
@@ -156,7 +156,12 @@ public class LockerAdminService {
 
 		lockerValidator.validateDisableable(locker);
 
-		locker.deactivate();
+		locker.getUser().ifPresent(
+				user -> {
+					locker.returnLocker();
+					lockerLogWriter.logAdminRelease(locker, admin);
+				});
+		locker.disable();
 		lockerLogWriter.logDisable(locker, admin);
 	}
 }

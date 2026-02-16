@@ -100,11 +100,11 @@ public class Locker extends BaseEntity {
 		this.expireDate = expiredAt;
 	}
 
-	public void activate() {
+	public void enable() {
 		this.isActive = true;
 	}
 
-	public void deactivate() {
+	public void disable() {
 		this.isActive = false;
 		this.user = null;
 	}

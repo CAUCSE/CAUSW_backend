@@ -162,12 +162,9 @@ public class LockerService {
 		boolean canExtendPolicy = lockerPolicyReader.isExtendPeriod();
 
 		List<LockerLocationResult.LockerItemResult> lockerItems = LockerMapper.toLockerItemResults(lockers, userId);
-		boolean userHasLockerInThisLocation = LockerAggregator.hasUserLockerInItems(lockerItems);
-		boolean userHasAnyLocker = lockerReader.existsByUserId(userId);
 
 		return LockerMapper.toLocationResult(
 			location, lockers, lockerItems,
-			canApplyPolicy, canExtendPolicy,
-			userHasAnyLocker, userHasLockerInThisLocation);
+			canApplyPolicy, canExtendPolicy);
 	}
 }

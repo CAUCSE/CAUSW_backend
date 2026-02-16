@@ -13,8 +13,4 @@ public class LockerAggregator {
 			.filter(l -> LockerStatus.of(l) == LockerStatus.AVAILABLE)
 			.count();
 	}
-
-	public static boolean hasUserLockerInItems(List<LockerLocationResult.LockerItemResult> items) {
-		return items.stream().anyMatch(item -> item.status() == LockerStatus.MINE);
-	}
 }

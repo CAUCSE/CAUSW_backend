@@ -32,14 +32,13 @@ public class LockerMapper {
 		List<Locker> lockers,
 		List<LockerLocationResult.LockerItemResult> lockerItems,
 		boolean canApplyPolicy,
-		boolean canExtendPolicy,
-		boolean userHasAnyLocker,
-		boolean userHasLockerInThisLocation) {
+		boolean canExtendPolicy) {
 
 		return LockerLocationResult.builder()
 			.floor(LockerLocationResult.FloorResult.builder()
 				.locationId(location.getId())
 				.locationName(location.getName())
+				.locationDescription(location.getDescription())
 				.build())
 			.currentPolicy(LockerLocationResult.PolicyResult.builder()
 				.canApply(canApplyPolicy)
@@ -50,11 +49,6 @@ public class LockerMapper {
 				.availableCount(LockerAggregator.countAvailable(lockers))
 				.build())
 			.lockers(lockerItems)
-			.actions(LockerLocationResult.ActionResult.builder()
-				.canApply(canApplyPolicy && !userHasAnyLocker)
-				.canReturn(canApplyPolicy && userHasLockerInThisLocation)
-				.canExtend(canExtendPolicy && userHasLockerInThisLocation)
-				.build())
 			.build();
 	}
 }

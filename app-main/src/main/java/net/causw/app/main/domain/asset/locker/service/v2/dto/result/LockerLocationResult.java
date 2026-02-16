@@ -11,11 +11,10 @@ public record LockerLocationResult(
 	FloorResult floor,
 	PolicyResult currentPolicy,
 	SummaryResult summary,
-	List<LockerItemResult> lockers,
-	ActionResult actions) {
+	List<LockerItemResult> lockers) {
 
 	@Builder
-	public record FloorResult(String locationId, String locationName) {
+	public record FloorResult(String locationId, String locationName, String locationDescription) {
 	}
 
 	@Builder
@@ -28,9 +27,5 @@ public record LockerLocationResult(
 
 	@Builder
 	public record LockerItemResult(String lockerId, String number, LockerStatus status) {
-	}
-
-	@Builder
-	public record ActionResult(boolean canApply, boolean canReturn, boolean canExtend) {
 	}
 }
