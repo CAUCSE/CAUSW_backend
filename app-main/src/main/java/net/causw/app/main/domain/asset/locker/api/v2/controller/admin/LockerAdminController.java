@@ -1,7 +1,9 @@
 package net.causw.app.main.domain.asset.locker.api.v2.controller.admin;
 
+import net.causw.global.constant.StaticValue;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -19,6 +21,7 @@ import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.respon
 import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.response.LockerLogListItemResponse;
 import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.mapper.LockerListMapper;
 import net.causw.app.main.domain.asset.locker.service.v2.LockerAdminService;
+import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 import net.causw.app.main.shared.dto.PageResponse;
 
@@ -43,7 +46,7 @@ public class LockerAdminController {
 		@ModelAttribute @Validated LockerLogListRequest request) {
 
 		int page = request.page() != null ? request.page() : 0;
-		int size = request.size() != null ? request.size() : 10;
+		int size = request.size() != null ? request.size() : StaticValue.DEFAULT_PAGE_SIZE;
 
 		PageRequest pageRequest = PageRequest.of(page, size);
 
@@ -77,9 +80,10 @@ public class LockerAdminController {
 	@Operation(summary = "사물함 배정", description = "비어 있는 사물함에 사용자를 배정합니다.")
 	public ApiResponse<Void> assignLocker(
 		@PathVariable String id,
-		@RequestBody @Valid LockerAssignRequest request) {
+		@RequestBody @Valid LockerAssignRequest request,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-		lockerAdminService.assignLocker(id, request.userId(), request.expiredAt());
+		lockerAdminService.assignLocker(id, request.userId(), request.expiredAt(), userDetails.getUserId());
 		return ApiResponse.success();
 	}
 
@@ -87,36 +91,40 @@ public class LockerAdminController {
 	@Operation(summary = "사물함 만료일 연장", description = "사용중인 사물함의 만료일을 연장합니다.")
 	public ApiResponse<Void> extendLocker(
 		@PathVariable String id,
-		@RequestBody @Valid LockerExtendRequest request) {
+		@RequestBody @Valid LockerExtendRequest request,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-		lockerAdminService.extendLocker(id, request.expiredAt());
+		lockerAdminService.extendLocker(id, request.expiredAt(), userDetails.getUserId());
 		return ApiResponse.success();
 	}
 
 	@PostMapping("/{id}/release")
 	@Operation(summary = "사물함 회수", description = "사용중인 사물함을 회수합니다.")
 	public ApiResponse<Void> releaseLocker(
-		@PathVariable String id) {
+		@PathVariable String id,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-		lockerAdminService.releaseLocker(id);
+		lockerAdminService.releaseLocker(id, userDetails.getUserId());
 		return ApiResponse.success();
 	}
 
 	@PostMapping("/{id}/enable")
 	@Operation(summary = "사물함 활성화", description = "비활성화된 사물함을 활성화합니다.")
 	public ApiResponse<Void> enableLocker(
-		@PathVariable String id) {
+		@PathVariable String id,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-		lockerAdminService.enableLocker(id);
+		lockerAdminService.enableLocker(id, userDetails.getUserId());
 		return ApiResponse.success();
 	}
 
 	@PostMapping("/{id}/disable")
 	@Operation(summary = "사물함 비활성화", description = "활성화된 사물함을 비활성화합니다. 사용자가 있는 경우 함께 해제됩니다.")
 	public ApiResponse<Void> disableLocker(
-		@PathVariable String id) {
+		@PathVariable String id,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-		lockerAdminService.disableLocker(id);
+		lockerAdminService.disableLocker(id, userDetails.getUserId());
 		return ApiResponse.success();
 	}
 

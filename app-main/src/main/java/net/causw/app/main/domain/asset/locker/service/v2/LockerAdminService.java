@@ -73,68 +73,80 @@ public class LockerAdminService {
 	 * @param expiredAt 만료일
 	 */
 	@Transactional
-	public void assignLocker(String lockerId, String userId, LocalDateTime expiredAt) {
+	public void assignLocker(String lockerId, String userId, LocalDateTime expiredAt, String adminId) {
 		Locker locker = lockerReader.findByIdForWrite(lockerId);
+		User admin = userReader.findUserById(adminId);
 
 		lockerValidator.validateAssignable(locker);
 		lockerValidator.validateUserNotHavingLocker(userId);
 
 		User user = userReader.findUserById(userId);
 		locker.register(user, expiredAt);
+		lockerLogWriter.logAdminAssign(locker, admin);
 	}
 
 	/**
 	 * 사물함 연장
 	 * @param lockerId 사물함 아이디
 	 * @param expiredAt 연장예정 배정일
+	 * @param adminId 관리자 아이디
 	 */
 	@Transactional
-	public void extendLocker(String lockerId, LocalDateTime expiredAt) {
+	public void extendLocker(String lockerId, LocalDateTime expiredAt, String adminId) {
 		Locker locker = lockerReader.findByIdForWrite(lockerId);
+		User admin = userReader.findUserById(adminId);
 
 		lockerValidator.validateInUse(locker);
 
 		locker.extendExpireDate(expiredAt);
+		lockerLogWriter.logAdminExtend(locker, admin);
 	}
 
 	/**
 	 * 사물함 회수
 	 * @param lockerId 사물함 아이디
+	 * @param adminId 관리자 아이디
 	 */
 	@Transactional
-	public void releaseLocker(String lockerId) {
+	public void releaseLocker(String lockerId, String adminId) {
 		Locker locker = lockerReader.findByIdForWrite(lockerId);
+		User admin = userReader.findUserById(adminId);
 
 		lockerValidator.validateInUse(locker);
 
 		locker.returnLocker();
+		lockerLogWriter.logAdminRelease(locker, admin);
 	}
 
 	/**
 	 * 사물함 활성화
 	 * @param lockerId 사물함 아이디
+	 * @param adminId 관리자 아이디
 	 */
 	@Transactional
-	public void enableLocker(String lockerId) {
+	public void enableLocker(String lockerId, String adminId) {
 		Locker locker = lockerReader.findByIdForWrite(lockerId);
+		User admin = userReader.findUserById(adminId);
 
 		lockerValidator.validateEnableable(locker);
 
 		locker.activate();
-		lockerLogWriter.logEnable(locker);
+		lockerLogWriter.logEnable(locker, admin);
 	}
 
 	/**
 	 * 사물함 비활성화
 	 * @param lockerId 사물함 아이디
+	 * @param adminId 관리자 아이디
 	 */
 	@Transactional
-	public void disableLocker(String lockerId) {
+	public void disableLocker(String lockerId, String adminId) {
 		Locker locker = lockerReader.findByIdForWrite(lockerId);
+		User admin = userReader.findUserById(adminId);
 
 		lockerValidator.validateDisableable(locker);
 
 		locker.deactivate();
-		lockerLogWriter.logDisable(locker);
+		lockerLogWriter.logDisable(locker, admin);
 	}
 }

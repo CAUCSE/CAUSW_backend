@@ -1,6 +1,7 @@
 package net.causw.app.main.domain.asset.locker.service.v2.implementation;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,9 +30,9 @@ public class LockerPolicyWriter {
 	 * @param expiredAt 신청시 만료일
 	 */
 	public void updateRegisterPeriod(LocalDateTime start, LocalDateTime end, LocalDateTime expiredAt) {
-		setOrUpdateTextField(StaticValue.REGISTER_START_AT, start.toString());
-		setOrUpdateTextField(StaticValue.REGISTER_END_AT, end.toString());
-		setOrUpdateTextField(StaticValue.EXPIRED_AT, expiredAt.toString());
+		setOrUpdateTextFieldDateTime(StaticValue.REGISTER_START_AT, start);
+		setOrUpdateTextFieldDateTime(StaticValue.REGISTER_END_AT, end);
+		setOrUpdateTextFieldDateTime(StaticValue.EXPIRED_AT, expiredAt);
 	}
 
 	/**
@@ -41,9 +42,9 @@ public class LockerPolicyWriter {
 	 * @param nextExpireDate 연장시 만료일
 	 */
 	public void updateExtendPeriod(LocalDateTime start, LocalDateTime end, LocalDateTime nextExpireDate) {
-		setOrUpdateTextField(StaticValue.EXTEND_START_AT, start.toString());
-		setOrUpdateTextField(StaticValue.EXTEND_END_AT, end.toString());
-		setOrUpdateTextField(StaticValue.NEXT_EXPIRED_AT, nextExpireDate.toString());
+		setOrUpdateTextFieldDateTime(StaticValue.EXTEND_START_AT, start);
+		setOrUpdateTextFieldDateTime(StaticValue.EXTEND_END_AT, end);
+		setOrUpdateTextFieldDateTime(StaticValue.NEXT_EXPIRED_AT, nextExpireDate);
 	}
 
 	/**
@@ -67,11 +68,11 @@ public class LockerPolicyWriter {
 	 * @param key 키
 	 * @param value 값
 	 */
-	private void setOrUpdateTextField(String key, String value) {
+	private void setOrUpdateTextFieldDateTime(String key, LocalDateTime value) {
 		textFieldRepository.findByKey(key)
 			.ifPresentOrElse(
-				textField -> textField.setValue(value),
-				() -> textFieldRepository.save(TextField.of(key, value)));
+				textField -> textField.setValue(value.format(StaticValue.LOCKER_DATE_TIME_FORMATTER)),
+				() -> textFieldRepository.save(TextField.of(key, value.format(StaticValue.LOCKER_DATE_TIME_FORMATTER))));
 	}
 
 	/**

@@ -17,7 +17,6 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class LockerReader {
 
 	private final LockerRepository lockerRepository;
