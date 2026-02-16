@@ -151,7 +151,7 @@ public class LockerService {
 	 *
 	 * @param locationId 층 위치 ID
 	 * @param userId 조회 유저 ID
-	 * @return 층 정보, 정책, 집계, 사물함 목록, 액션 정보를 포함한 결과
+	 * @return 층 정보, 정책, 집계, 사물함 목록을 포함한 결과
 	 */
 	@Transactional(readOnly = true)
 	public LockerLocationResult findByLocation(String locationId, String userId) {
@@ -163,8 +163,6 @@ public class LockerService {
 
 		List<LockerLocationResult.LockerItemResult> lockerItems = LockerMapper.toLockerItemResults(lockers, userId);
 
-		return LockerMapper.toLocationResult(
-			location, lockers, lockerItems,
-			canApplyPolicy, canExtendPolicy);
+		return LockerMapper.toLocationResult(location, lockers, lockerItems, canApplyPolicy, canExtendPolicy);
 	}
 }

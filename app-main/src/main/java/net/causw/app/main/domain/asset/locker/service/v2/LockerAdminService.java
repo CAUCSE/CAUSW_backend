@@ -157,10 +157,10 @@ public class LockerAdminService {
 		lockerValidator.validateDisableable(locker);
 
 		locker.getUser().ifPresent(
-				user -> {
-					locker.returnLocker();
-					lockerLogWriter.logAdminRelease(locker, admin);
-				});
+			user -> {
+				locker.returnLocker();
+				lockerLogWriter.logAdminRelease(locker, admin);
+			});
 		locker.disable();
 		lockerLogWriter.logDisable(locker, admin);
 	}

@@ -4,7 +4,6 @@ import java.util.List;
 
 import net.causw.app.main.domain.asset.locker.entity.Locker;
 import net.causw.app.main.domain.asset.locker.entity.LockerStatus;
-import net.causw.app.main.domain.asset.locker.service.v2.dto.result.LockerLocationResult;
 
 public class LockerAggregator {
 
