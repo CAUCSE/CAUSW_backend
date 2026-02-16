@@ -1,7 +1,6 @@
 package net.causw.app.main.domain.user.account.api.v2.mapper;
 
 import org.mapstruct.Mapper;
-import org.mapstruct.factory.Mappers;
 
 import net.causw.app.main.domain.user.account.api.v2.dto.request.AdmissionCreateRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.AdmissionListRequest;
@@ -16,9 +15,7 @@ import net.causw.app.main.domain.user.account.service.v2.dto.AdmissionStateResul
 @Mapper(componentModel = "spring")
 public interface AdmissionDtoMapper {
 
-	AdmissionDtoMapper INSTANCE = Mappers.getMapper(AdmissionDtoMapper.class);
-
-	// ── 유저 ──
+	// ── 유저 플로우 ──
 
 	AdmissionCreateCommand toCreateCommand(AdmissionCreateRequest request);
 
@@ -26,7 +23,7 @@ public interface AdmissionDtoMapper {
 
 	AdmissionStateResponse toStateResponse(AdmissionStateResult dto);
 
-	// ── 관리자 ──
+	// ── 관리자 플로우 ──
 
 	AdmissionListCondition toCondition(AdmissionListRequest request);
 
