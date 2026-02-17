@@ -36,7 +36,6 @@ import net.causw.app.main.domain.community.post.service.v2.util.PostValidator;
 import net.causw.app.main.domain.community.reaction.service.implementation.FavoritePostReader;
 import net.causw.app.main.domain.community.reaction.service.implementation.LikePostReader;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.shared.entity.BaseEntity;
 import net.causw.global.constant.StaticValue;
 
 import lombok.RequiredArgsConstructor;
@@ -102,7 +101,7 @@ public class PostService {
 		}
 
 		// 1. UuidFile ID 목록을 미리 추출 (PostAttachImageWriter 사용)
-		List<String> fileIds = images.stream().map(BaseEntity::getId).toList();
+		List<String> fileIds = images.stream().map(it -> it.getUuidFile().getId()).toList();
 
 		// 2. PostAttachImage를 즉시 삭제
 		postAttachImageWriter.deleteAllInBatch(images);
