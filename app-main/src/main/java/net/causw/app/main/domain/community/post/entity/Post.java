@@ -42,6 +42,7 @@ import lombok.NoArgsConstructor;
 	@Index(name = "post_cursor_index", columnList = "created_at, id")
 })
 public class Post extends BaseEntity {
+	@Deprecated
 	@Column(name = "title", nullable = true)
 	private String title;
 
