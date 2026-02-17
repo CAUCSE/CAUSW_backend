@@ -29,7 +29,9 @@ public enum LockerErrorCode implements BaseResponseCode {
 	LOCKER_REGISTER_ALREADY_ACTIVE(HttpStatus.CONFLICT, "LOCKER_409_009", "사물함 신청이 활성화된 상태에서는 연장을 활성화할 수 없습니다."),
 	LOCKER_EXTEND_ALREADY_ACTIVE(HttpStatus.CONFLICT, "LOCKER_409_010", "사물함 연장이 활성화된 상태에서는 신청을 활성화할 수 없습니다."),
 	LOCKER_PERIOD_START_AFTER_END(HttpStatus.BAD_REQUEST, "LOCKER_400_001", "기간 시작일은 종료일보다 앞서야 합니다."),
-	LOCKER_PERIOD_END_AFTER_EXPIRE(HttpStatus.BAD_REQUEST, "LOCKER_400_002", "만료일은 기간 종료일보다 뒤여야 합니다.");
+	LOCKER_PERIOD_END_AFTER_EXPIRE(HttpStatus.BAD_REQUEST, "LOCKER_400_002", "만료일은 기간 종료일보다 뒤여야 합니다."),
+	LOCKER_REGISTER_ACTIVE_CANNOT_UPDATE_PERIOD(HttpStatus.CONFLICT, "LOCKER_409_011", "신청 가능 상태가 활성화된 동안에는 신청 기간·만료일을 수정할 수 없습니다."),
+	LOCKER_EXTEND_ACTIVE_CANNOT_UPDATE_PERIOD(HttpStatus.CONFLICT, "LOCKER_409_012", "연장 가능 상태가 활성화된 동안에는 연장 기간을 수정할 수 없습니다.");
 
 	private final HttpStatus status;
 	private final String code;

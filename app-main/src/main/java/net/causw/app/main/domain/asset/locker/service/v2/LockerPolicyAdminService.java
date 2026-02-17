@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.response.LockerPolicyResponse;
+import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerPeriodResolver;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerPolicyReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerPolicyWriter;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerValidator;
@@ -30,6 +31,7 @@ public class LockerPolicyAdminService {
 	private final LockerPolicyReader lockerPolicyReader;
 	private final LockerPolicyWriter lockerPolicyWriter;
 	private final LockerValidator lockerValidator;
+	private final LockerPeriodResolver lockerPeriodResolver;
 
 	/**
 	 * 현재 사물함 정책 상태를 조회한다.
@@ -51,6 +53,7 @@ public class LockerPolicyAdminService {
 
 	/**
 	 * 사물함 신청 기간을 설정한다.
+	 * <p>신청 가능 상태가 활성화 중일 때는 수정할 수 없다.</p>
 	 *
 	 * @param start 신청 시작일시
 	 * @param end 신청 종료일시
@@ -58,12 +61,16 @@ public class LockerPolicyAdminService {
 	 */
 	@Transactional
 	public void updateRegisterPeriod(LocalDateTime start, LocalDateTime end, LocalDateTime expiredAt) {
+		if (lockerPeriodResolver.isRegisterActive(LocalDateTime.now())) {
+			throw LockerErrorCode.LOCKER_REGISTER_ACTIVE_CANNOT_UPDATE_PERIOD.toBaseException();
+		}
 		lockerValidator.validatePeriodOrder(start, end, expiredAt);
 		lockerPolicyWriter.updateRegisterPeriod(start, end, expiredAt);
 	}
 
 	/**
 	 * 사물함 연장 기간을 설정한다.
+	 * <p>연장 가능 상태가 활성화 중일 때는 수정할 수 없다.</p>
 	 *
 	 * @param start 연장 시작일시
 	 * @param end 연장 종료일시
@@ -71,6 +78,9 @@ public class LockerPolicyAdminService {
 	 */
 	@Transactional
 	public void updateExtendPeriod(LocalDateTime start, LocalDateTime end, LocalDateTime nextExpireDate) {
+		if (lockerPeriodResolver.isExtendActive(LocalDateTime.now())) {
+			throw LockerErrorCode.LOCKER_EXTEND_ACTIVE_CANNOT_UPDATE_PERIOD.toBaseException();
+		}
 		lockerValidator.validatePeriodOrder(start, end, nextExpireDate);
 		lockerPolicyWriter.updateExtendPeriod(start, end, nextExpireDate);
 	}

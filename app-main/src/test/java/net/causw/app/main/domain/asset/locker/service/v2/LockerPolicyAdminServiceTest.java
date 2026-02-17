@@ -2,6 +2,7 @@ package net.causw.app.main.domain.asset.locker.service.v2;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -18,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.response.LockerPolicyResponse;
+import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerPeriodResolver;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerPolicyReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerPolicyWriter;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerValidator;
@@ -37,6 +39,8 @@ class LockerPolicyAdminServiceTest {
 	private LockerPolicyWriter lockerPolicyWriter;
 	@Mock
 	private LockerValidator lockerValidator;
+	@Mock
+	private LockerPeriodResolver lockerPeriodResolver;
 
 	@Nested
 	@DisplayName("getPolicy")
@@ -109,18 +113,37 @@ class LockerPolicyAdminServiceTest {
 	class UpdateRegisterPeriod {
 
 		@Test
-		@DisplayName("성공: 신청 기간과 만료일을 업데이트 한다")
-		void givenValidPeriod_whenUpdateRegisterPeriod_thenDelegatesToWriter() {
+		@DisplayName("성공: 신청 가능 상태가 비활성일 때 신청 기간과 만료일을 업데이트 한다")
+		void givenRegisterInactive_whenUpdateRegisterPeriod_thenDelegatesToWriter() {
 			// given
 			LocalDateTime start = LocalDateTime.now();
 			LocalDateTime end = LocalDateTime.now().plusDays(7);
 			LocalDateTime expiredAt = LocalDateTime.now().plusDays(30);
+			when(lockerPeriodResolver.isRegisterActive(any(LocalDateTime.class))).thenReturn(false);
 
 			// when
 			lockerPolicyAdminService.updateRegisterPeriod(start, end, expiredAt);
 
 			// then
+			verify(lockerPeriodResolver).isRegisterActive(any(LocalDateTime.class));
 			verify(lockerPolicyWriter).updateRegisterPeriod(start, end, expiredAt);
+		}
+
+		@Test
+		@DisplayName("실패: 신청 가능 상태가 활성화 중이면 신청 기간·만료일 수정 시 예외를 발생시킨다")
+		void givenRegisterActive_whenUpdateRegisterPeriod_thenThrowsRegisterActiveCannotUpdatePeriod() {
+			// given
+			LocalDateTime start = LocalDateTime.now();
+			LocalDateTime end = LocalDateTime.now().plusDays(7);
+			LocalDateTime expiredAt = LocalDateTime.now().plusDays(30);
+			when(lockerPeriodResolver.isRegisterActive(any(LocalDateTime.class))).thenReturn(true);
+
+			// when & then
+			assertThatThrownBy(() -> lockerPolicyAdminService.updateRegisterPeriod(start, end, expiredAt))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasMessage(LockerErrorCode.LOCKER_REGISTER_ACTIVE_CANNOT_UPDATE_PERIOD.getMessage());
+			verify(lockerPolicyWriter, never()).updateRegisterPeriod(start, end, expiredAt);
+			verify(lockerValidator, never()).validatePeriodOrder(any(), any(), any());
 		}
 
 		@Test
@@ -130,7 +153,7 @@ class LockerPolicyAdminServiceTest {
 			LocalDateTime start = LocalDateTime.now().plusDays(7);
 			LocalDateTime end = LocalDateTime.now();
 			LocalDateTime expiredAt = LocalDateTime.now().plusDays(30);
-
+			when(lockerPeriodResolver.isRegisterActive(any(LocalDateTime.class))).thenReturn(false);
 			doThrow(LockerErrorCode.LOCKER_PERIOD_START_AFTER_END.toBaseException())
 				.when(lockerValidator).validatePeriodOrder(start, end, expiredAt);
 
@@ -148,7 +171,7 @@ class LockerPolicyAdminServiceTest {
 			LocalDateTime start = LocalDateTime.now();
 			LocalDateTime end = LocalDateTime.now().plusDays(7);
 			LocalDateTime expiredAt = LocalDateTime.now().plusDays(5);
-
+			when(lockerPeriodResolver.isRegisterActive(any(LocalDateTime.class))).thenReturn(false);
 			doThrow(LockerErrorCode.LOCKER_PERIOD_END_AFTER_EXPIRE.toBaseException())
 				.when(lockerValidator).validatePeriodOrder(start, end, expiredAt);
 
@@ -165,18 +188,37 @@ class LockerPolicyAdminServiceTest {
 	class UpdateExtendPeriod {
 
 		@Test
-		@DisplayName("성공: 연장 기간과 다음 만료일을 업데이트 한다")
-		void givenValidPeriod_whenUpdateExtendPeriod_thenDelegatesToWriter() {
+		@DisplayName("성공: 연장 가능 상태가 비활성일 때 연장 기간과 다음 만료일을 업데이트 한다")
+		void givenExtendInactive_whenUpdateExtendPeriod_thenDelegatesToWriter() {
 			// given
 			LocalDateTime start = LocalDateTime.now();
 			LocalDateTime end = LocalDateTime.now().plusDays(7);
 			LocalDateTime nextExpire = LocalDateTime.now().plusDays(60);
+			when(lockerPeriodResolver.isExtendActive(any(LocalDateTime.class))).thenReturn(false);
 
 			// when
 			lockerPolicyAdminService.updateExtendPeriod(start, end, nextExpire);
 
 			// then
+			verify(lockerPeriodResolver).isExtendActive(any(LocalDateTime.class));
 			verify(lockerPolicyWriter).updateExtendPeriod(start, end, nextExpire);
+		}
+
+		@Test
+		@DisplayName("실패: 연장 가능 상태가 활성화 중이면 연장 기간 수정 시 예외를 발생시킨다")
+		void givenExtendActive_whenUpdateExtendPeriod_thenThrowsExtendActiveCannotUpdatePeriod() {
+			// given
+			LocalDateTime start = LocalDateTime.now();
+			LocalDateTime end = LocalDateTime.now().plusDays(7);
+			LocalDateTime nextExpire = LocalDateTime.now().plusDays(60);
+			when(lockerPeriodResolver.isExtendActive(any(LocalDateTime.class))).thenReturn(true);
+
+			// when & then
+			assertThatThrownBy(() -> lockerPolicyAdminService.updateExtendPeriod(start, end, nextExpire))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasMessage(LockerErrorCode.LOCKER_EXTEND_ACTIVE_CANNOT_UPDATE_PERIOD.getMessage());
+			verify(lockerPolicyWriter, never()).updateExtendPeriod(start, end, nextExpire);
+			verify(lockerValidator, never()).validatePeriodOrder(any(), any(), any());
 		}
 
 		@Test
@@ -186,7 +228,7 @@ class LockerPolicyAdminServiceTest {
 			LocalDateTime start = LocalDateTime.now().plusDays(7);
 			LocalDateTime end = LocalDateTime.now();
 			LocalDateTime nextExpire = LocalDateTime.now().plusDays(60);
-
+			when(lockerPeriodResolver.isExtendActive(any(LocalDateTime.class))).thenReturn(false);
 			doThrow(LockerErrorCode.LOCKER_PERIOD_START_AFTER_END.toBaseException())
 				.when(lockerValidator).validatePeriodOrder(start, end, nextExpire);
 
@@ -204,7 +246,7 @@ class LockerPolicyAdminServiceTest {
 			LocalDateTime start = LocalDateTime.now();
 			LocalDateTime end = LocalDateTime.now().plusDays(7);
 			LocalDateTime nextExpire = LocalDateTime.now().plusDays(5);
-
+			when(lockerPeriodResolver.isExtendActive(any(LocalDateTime.class))).thenReturn(false);
 			doThrow(LockerErrorCode.LOCKER_PERIOD_END_AFTER_EXPIRE.toBaseException())
 				.when(lockerValidator).validatePeriodOrder(start, end, nextExpire);
 
