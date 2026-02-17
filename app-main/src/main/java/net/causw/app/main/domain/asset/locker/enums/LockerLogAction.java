@@ -2,26 +2,30 @@ package net.causw.app.main.domain.asset.locker.enums;
 
 import java.util.Arrays;
 
+import lombok.Getter;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
 
 public enum LockerLogAction {
-	ENABLE("ENABLE"),
-	DISABLE("DISABLE"),
-	REGISTER("REGISTER"),
-	RETURN("RETURN"),
-	EXTEND("EXTEND"),
-	ADMIN_ASSIGN("ADMIN_ASSIGN"),
-	ADMIN_EXTEND("ADMIN_EXTEND"),
-	ADMIN_RELEASE("ADMIN_RELEASE");
+	ENABLE("ENABLE", "사물함 활성화"),
+	DISABLE("DISABLE", "사물함 비활성화"),
+	REGISTER("REGISTER", "사물함 신청"),
+	RETURN("RETURN", "사물함 반납"),
+	EXTEND("EXTEND", "사물함 연장"),
+	ADMIN_ASSIGN("ADMIN_ASSIGN", "관리자 사물함 배정"),
+	ADMIN_EXTEND("ADMIN_EXTEND", "관리자 사물함 연장"),
+	ADMIN_RELEASE("ADMIN_RELEASE", "관리자 사물함 회수");
 
 	private final String value;
+	@Getter
+    private final String description;
 
-	LockerLogAction(String value) {
+	LockerLogAction(String value, String description) {
 		this.value = value;
+		this.description = description;
 	}
 
-	public static LockerLogAction of(String value) {
+    public static LockerLogAction of(String value) {
 		return Arrays.stream(values())
 			.filter(v -> value.equalsIgnoreCase(v.value))
 			.findFirst()
