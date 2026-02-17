@@ -2,6 +2,7 @@ package net.causw.app.main.domain.user.account.repository.user;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
@@ -82,4 +83,6 @@ public interface UserRepository extends JpaRepository<User, String> {
 
 	@Query("SELECT u.id FROM User u")
 	List<String> findAllIds();
+
+	Optional<User> findByIdAndRolesContaining(String id, Role role);
 }

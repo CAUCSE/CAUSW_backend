@@ -3,6 +3,7 @@ package net.causw.app.main.domain.asset.locker.repository.query;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
@@ -26,7 +27,7 @@ public class LockerQueryRepository {
 
 	private final JPAQueryFactory jpaQueryFactory;
 
-	public Page<Locker> findLockerList(
+	public Page<Locker> findLockers(
 		String userKeyword,
 		LockerName location,
 		Boolean isActive,
@@ -38,6 +39,39 @@ public class LockerQueryRepository {
 		QLockerLocation lockerLocation = QLockerLocation.lockerLocation;
 		QUser user = QUser.user;
 
+		BooleanBuilder predicate = getSearchCondition(userKeyword, location, isActive, isOccupied, isExpired, user, lockerLocation, locker);
+
+		List<Locker> content = jpaQueryFactory
+			.selectFrom(locker)
+			.join(locker.location, lockerLocation).fetchJoin()
+			.leftJoin(locker.user, user).fetchJoin()
+			.where(predicate)
+			.orderBy(lockerLocation.id.asc(), locker.lockerNumber.asc())
+			.offset(pageable.getOffset())
+			.limit(pageable.getPageSize())
+			.fetch();
+
+		JPAQuery<Long> countQuery = jpaQueryFactory
+			.select(locker.count())
+			.from(locker)
+			.join(locker.location, lockerLocation)
+			.leftJoin(locker.user, user)
+			.where(predicate);
+
+		return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+	}
+
+	public List<Locker> findAllExpiredLockers(LocalDateTime targetTime) {
+		QLocker locker = QLocker.locker;
+
+		return jpaQueryFactory
+				.selectFrom(locker)
+				.where(locker.expireDate.before(targetTime))
+				.fetch();
+	}
+
+	@NotNull
+	private static BooleanBuilder getSearchCondition(String userKeyword, LockerName location, Boolean isActive, Boolean isOccupied, Boolean isExpired, QUser user, QLockerLocation lockerLocation, QLocker locker) {
 		BooleanBuilder where = new BooleanBuilder();
 
 		if (userKeyword != null && !userKeyword.isBlank()) {
@@ -72,24 +106,6 @@ public class LockerQueryRepository {
 					.or(locker.expireDate.goe(LocalDateTime.now())));
 			}
 		}
-
-		List<Locker> content = jpaQueryFactory
-			.selectFrom(locker)
-			.join(locker.location, lockerLocation).fetchJoin()
-			.leftJoin(locker.user, user).fetchJoin()
-			.where(where)
-			.orderBy(lockerLocation.id.asc(), locker.lockerNumber.asc())
-			.offset(pageable.getOffset())
-			.limit(pageable.getPageSize())
-			.fetch();
-
-		JPAQuery<Long> countQuery = jpaQueryFactory
-			.select(locker.count())
-			.from(locker)
-			.join(locker.location, lockerLocation)
-			.leftJoin(locker.user, user)
-			.where(where);
-
-		return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+		return where;
 	}
 }

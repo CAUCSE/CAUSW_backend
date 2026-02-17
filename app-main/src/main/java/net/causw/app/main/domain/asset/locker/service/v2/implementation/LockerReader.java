@@ -1,7 +1,9 @@
 package net.causw.app.main.domain.asset.locker.service.v2.implementation;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.locks.Lock;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -45,6 +47,10 @@ public class LockerReader {
 
 	public Page<Locker> findLockerList(String userKeyword, LockerName location, Boolean isActive, Boolean isOccupied,
 		Boolean isExpired, Pageable pageable) {
-		return lockerQueryRepository.findLockerList(userKeyword, location, isActive, isOccupied, isExpired, pageable);
+		return lockerQueryRepository.findLockers(userKeyword, location, isActive, isOccupied, isExpired, pageable);
 	}
+
+    public List<Locker> findExpiredLockers(LocalDateTime targetTime) {
+        return lockerQueryRepository.findAllExpiredLockers(targetTime);
+    }
 }

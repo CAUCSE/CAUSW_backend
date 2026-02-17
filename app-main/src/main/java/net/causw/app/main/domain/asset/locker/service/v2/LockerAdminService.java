@@ -85,7 +85,7 @@ public class LockerAdminService {
 	@Transactional
 	public void assignLocker(String lockerId, String userId, LocalDateTime expiredAt, String adminId) {
 		Locker locker = lockerReader.findByIdForWrite(lockerId);
-		User admin = userReader.findUserById(adminId);
+		User admin = userReader.findAdminUserById(adminId);
 
 		lockerValidator.validateAssignable(locker);
 		lockerValidator.validateUserNotHavingLocker(userId);
@@ -104,7 +104,7 @@ public class LockerAdminService {
 	@Transactional
 	public void extendLocker(String lockerId, LocalDateTime expiredAt, String adminId) {
 		Locker locker = lockerReader.findByIdForWrite(lockerId);
-		User admin = userReader.findUserById(adminId);
+		User admin = userReader.findAdminUserById(adminId);
 
 		lockerValidator.validateInUse(locker);
 
@@ -120,7 +120,7 @@ public class LockerAdminService {
 	@Transactional
 	public void releaseLocker(String lockerId, String adminId) {
 		Locker locker = lockerReader.findByIdForWrite(lockerId);
-		User admin = userReader.findUserById(adminId);
+		User admin = userReader.findAdminUserById(adminId);
 
 		lockerValidator.validateInUse(locker);
 
@@ -136,7 +136,7 @@ public class LockerAdminService {
 	@Transactional
 	public void enableLocker(String lockerId, String adminId) {
 		Locker locker = lockerReader.findByIdForWrite(lockerId);
-		User admin = userReader.findUserById(adminId);
+		User admin = userReader.findAdminUserById(adminId);
 
 		lockerValidator.validateEnableable(locker);
 
@@ -152,7 +152,7 @@ public class LockerAdminService {
 	@Transactional
 	public void disableLocker(String lockerId, String adminId) {
 		Locker locker = lockerReader.findByIdForWrite(lockerId);
-		User admin = userReader.findUserById(adminId);
+		User admin = userReader.findAdminUserById(adminId);
 
 		lockerValidator.validateDisableable(locker);
 
@@ -164,4 +164,14 @@ public class LockerAdminService {
 		locker.disable();
 		lockerLogWriter.logDisable(locker, admin);
 	}
+
+    public void releaseExpiredLocker(String adminId) {
+		User admin = userReader.findAdminUserById(adminId);
+
+		var expiredLockers = lockerReader.findExpiredLockers(LocalDateTime.now());
+		expiredLockers.forEach(locker -> {
+			locker.returnLocker();
+			lockerLogWriter.logAdminRelease(locker, admin);
+		});
+    }
 }

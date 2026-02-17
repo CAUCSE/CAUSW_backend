@@ -3,6 +3,7 @@ package net.causw.app.main.domain.user.account.service.v2.implementation;
 import java.util.List;
 import java.util.Optional;
 
+import net.causw.app.main.domain.user.account.enums.user.Role;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
@@ -26,6 +27,13 @@ public class UserReader {
 		return userRepository.findById(userId)
 			.orElseThrow(UserErrorCode.USER_NOT_FOUND::toBaseException);
 	}
+
+	public User findAdminUserById(String userId) {
+		// todo: roles Conataining 검색에 성능 이슈 있는지 체크 필요
+		return userRepository.findByIdAndRolesContaining(userId, Role.ADMIN)
+				.orElseThrow(UserErrorCode.USER_NOT_FOUND::toBaseException);
+	}
+
 
 	public List<User> findUsersByIds(List<String> userIds) {
 		return userQueryRepository.findByIds(userIds);
