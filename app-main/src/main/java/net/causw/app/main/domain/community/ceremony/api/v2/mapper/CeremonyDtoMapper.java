@@ -7,7 +7,6 @@ import org.mapstruct.InheritConfiguration;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
-import org.mapstruct.factory.Mappers;
 
 import net.causw.app.main.domain.asset.file.entity.joinEntity.CeremonyAttachImage;
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonyDetailResponseDto;
@@ -19,8 +18,6 @@ import net.causw.app.main.domain.notification.notification.entity.CeremonyNotifi
 
 @Mapper(componentModel = "spring")
 public interface CeremonyDtoMapper {
-
-	CeremonyDtoMapper INSTANCE = Mappers.getMapper(CeremonyDtoMapper.class);
 
 	// 경조사 상세 보기
 	@Mapping(target = "title", source = ".", qualifiedByName = "mapTitle")
