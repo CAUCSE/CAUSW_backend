@@ -52,56 +52,59 @@ public class LockerPeriodResolver {
 	/**
 	 * 현재 시각 기준으로 사물함 기간 상태(phase)를 판별한다.
 	 *
-	 * <p>판별 우선순위: APPLY → EXTEND → READY → CLOSED</p>
+	 * <p>신청/연장 flag는 상호배타(동시 ON 불가)이므로,
+	 * ON인 flag의 기간만 확인하여 READY/활성/CLOSED를 결정한다.</p>
 	 *
 	 * @param now 기준 시각
 	 * @return 현재 phase와 해당 기간의 startAt/endAt
 	 */
 	public LockerPeriodStatusResult resolveCurrentPhase(LocalDateTime now) {
-		boolean lockerAccessFlag = lockerPolicyReader.getLockerAccessStatusFlag();
-		boolean lockerExtendFlag = lockerPolicyReader.getLockerExtendStatusFlag();
-		Optional<LocalDateTime> registerStart = lockerPolicyReader.findRegisterStartDate();
-		Optional<LocalDateTime> registerEnd = lockerPolicyReader.findRegisterEndDate();
-		Optional<LocalDateTime> extendStart = lockerPolicyReader.findExtendStartDate();
-		Optional<LocalDateTime> extendEnd = lockerPolicyReader.findExtendEndDate();
-
-		// APPLY: flag ON + 신청 기간 중
-		if (lockerAccessFlag && isOnPeriod(now, registerStart, registerEnd)) {
-			return LockerPeriodStatusResult.builder()
-				.phase(LockerPeriodPhase.APPLY)
-				.startAt(registerStart.get())
-				.endAt(registerEnd.get())
-				.build();
+		if (lockerPolicyReader.getLockerAccessStatusFlag()) {
+			return resolvePhase(now, LockerPeriodPhase.APPLY,
+				lockerPolicyReader.findRegisterStartDate(),
+				lockerPolicyReader.findRegisterEndDate());
 		}
 
-		// EXTEND: flag ON + 연장 기간 중
-		if (lockerExtendFlag && isOnPeriod(now, extendStart, extendEnd)) {
-			return LockerPeriodStatusResult.builder()
-				.phase(LockerPeriodPhase.EXTEND)
-				.startAt(extendStart.get())
-				.endAt(extendEnd.get())
-				.build();
+		if (lockerPolicyReader.getLockerExtendStatusFlag()) {
+			return resolvePhase(now, LockerPeriodPhase.EXTEND,
+				lockerPolicyReader.findExtendStartDate(),
+				lockerPolicyReader.findExtendEndDate());
 		}
 
-		// READY: 신청 기간 전이거나, flag OFF로 아직 활성화되지 않은 상태
-		if (registerStart.isPresent() && now.isBefore(registerStart.get())) {
-			return LockerPeriodStatusResult.builder()
-				.phase(LockerPeriodPhase.READY)
-				.startAt(registerStart.get())
-				.endAt(registerEnd.orElse(null))
-				.build();
+		return closed();
+	}
+
+	/**
+	 * 주어진 기간에 대해 now 위치를 판단하여 READY / activePhase / CLOSED를 반환한다.
+	 */
+	private LockerPeriodStatusResult resolvePhase(
+		LocalDateTime now, LockerPeriodPhase activePhase,
+		Optional<LocalDateTime> start, Optional<LocalDateTime> end) {
+
+		if (start.isEmpty() || end.isEmpty()) {
+			return closed();
 		}
 
-		// READY: 신청 끝 ~ 연장 시작 사이
-		if (extendStart.isPresent() && now.isBefore(extendStart.get())) {
+		if (now.isBefore(start.get())) {
 			return LockerPeriodStatusResult.builder()
 				.phase(LockerPeriodPhase.READY)
-				.startAt(extendStart.get())
-				.endAt(extendEnd.orElse(null))
+				.startAt(start.get())
+				.endAt(end.get())
 				.build();
 		}
 
-		// CLOSED: 모든 기간이 종료되었거나, 기간 중이지만 flag가 OFF인 경우
+		if (!now.isAfter(end.get())) {
+			return LockerPeriodStatusResult.builder()
+				.phase(activePhase)
+				.startAt(start.get())
+				.endAt(end.get())
+				.build();
+		}
+
+		return closed();
+	}
+
+	private LockerPeriodStatusResult closed() {
 		return LockerPeriodStatusResult.builder()
 			.phase(LockerPeriodPhase.CLOSED)
 			.startAt(null)
