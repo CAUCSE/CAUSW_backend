@@ -1,8 +1,8 @@
 -- Migration: AddDescriptionToLockerLocation
 
-ALTER TABLE TB_LOCKER_LOCATION
+ALTER TABLE tb_local_location
 ADD COLUMN description VARCHAR(255) NULL;
 
-UPDATE TB_LOCKER_LOCATION SET description = '2층' WHERE name = 'SECOND';
-UPDATE TB_LOCKER_LOCATION SET description = '3층' WHERE name = 'THIRD';
-UPDATE TB_LOCKER_LOCATION SET description = '4층' WHERE name = 'FOURTH';
+UPDATE tb_local_location SET description = '2층' WHERE name = 'SECOND';
+UPDATE tb_local_location SET description = '3층' WHERE name = 'THIRD';
+UPDATE tb_local_location SET description = '4층' WHERE name = 'FOURTH';
