@@ -334,7 +334,7 @@ public class CeremonyServiceTest {
 				.extracting("errorCode")
 				.isEqualTo(CeremonyErrorCode.CEREMONY_NOT_FOUND);
 
-			then(ceremonyReader).should(never()).findMyByStateOrderByStartedAtDesc(any(), any(), any());
+			then(ceremonyReader).should(never()).findByUserIdAndCeremonyStateOrderByStartedAtDesc(any(), any(), any());
 		}
 
 		@Test
@@ -346,7 +346,8 @@ public class CeremonyServiceTest {
 			Page<Ceremony> ceremonyPage = new PageImpl<>(List.of(c1, c2));
 
 			given(
-				ceremonyReader.findMyByStateOrderByStartedAtDesc(eq("userId"), eq(CeremonyState.ACCEPT), eq(pageable)))
+				ceremonyReader.findByUserIdAndCeremonyStateOrderByStartedAtDesc(eq("userId"), eq(CeremonyState.ACCEPT),
+					eq(pageable)))
 				.willReturn(ceremonyPage);
 
 			given(ceremonyDtoMapper.toMyCeremonySummaryResponseDto(any(Ceremony.class)))
@@ -360,7 +361,7 @@ public class CeremonyServiceTest {
 			assertThat(result.getTotalElements()).isEqualTo(2);
 
 			then(ceremonyReader).should(times(1))
-				.findMyByStateOrderByStartedAtDesc(eq("userId"), eq(CeremonyState.ACCEPT), eq(pageable));
+				.findByUserIdAndCeremonyStateOrderByStartedAtDesc(eq("userId"), eq(CeremonyState.ACCEPT), eq(pageable));
 			then(ceremonyDtoMapper).should(times(2)).toMyCeremonySummaryResponseDto(any(Ceremony.class));
 		}
 	}

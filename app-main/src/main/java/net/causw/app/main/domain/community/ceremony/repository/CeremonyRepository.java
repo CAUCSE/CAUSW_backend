@@ -113,11 +113,6 @@ public interface CeremonyRepository extends JpaRepository<Ceremony, String> {
 		@Param("type") CeremonyType type, @Param("nowDate") LocalDate nowDate, @Param("nowTime") LocalTime nowTime,
 		Pageable pageable);
 
-	@Query("""
-		SELECT c FROM Ceremony c
-		WHERE c.user.id = :userId AND c.ceremonyState = :state
-		ORDER BY c.startDate, c.startTime DESC
-		""")
-	Page<Ceremony> findMyByStateOrderByStartedAtDesc(@Param("userId") String userId,
-		@Param("state") CeremonyState state, Pageable pageable);
+	Page<Ceremony> findByUser_IdAndCeremonyStateOrderByStartDateDescStartTimeDesc(String userId,
+		CeremonyState ceremonyState, Pageable pageable);
 }

@@ -54,7 +54,9 @@ public class CeremonyReader {
 		return ceremonyRepository.findPastByTypeOrderByStartedAtDesc(type, nowDate, nowTime, pageable);
 	}
 
-	public Page<Ceremony> findMyByStateOrderByStartedAtDesc(String userId, CeremonyState state, Pageable pageable) {
-		return ceremonyRepository.findMyByStateOrderByStartedAtDesc(userId, state, pageable);
+	public Page<Ceremony> findByUserIdAndCeremonyStateOrderByStartedAtDesc(String userId, CeremonyState state,
+		Pageable pageable) {
+		return ceremonyRepository.findByUser_IdAndCeremonyStateOrderByStartDateDescStartTimeDesc(userId, state,
+			pageable);
 	}
 }

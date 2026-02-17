@@ -146,7 +146,7 @@ public class CeremonyService {
 		if (state == CeremonyState.CLOSE) {
 			throw CeremonyErrorCode.CEREMONY_NOT_FOUND.toBaseException();
 		}
-		ceremonies = ceremonyReader.findMyByStateOrderByStartedAtDesc(userId, state, pageable);
+		ceremonies = ceremonyReader.findByUserIdAndCeremonyStateOrderByStartedAtDesc(userId, state, pageable);
 		return ceremonies.map(ceremonyDtoMapper::toMyCeremonySummaryResponseDto);
 	}
 }
