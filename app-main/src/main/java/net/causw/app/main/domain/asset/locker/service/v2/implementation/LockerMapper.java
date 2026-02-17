@@ -4,7 +4,6 @@ import java.util.List;
 
 import net.causw.app.main.domain.asset.locker.entity.Locker;
 import net.causw.app.main.domain.asset.locker.entity.LockerLocation;
-import net.causw.app.main.domain.asset.locker.entity.LockerStatus;
 import net.causw.app.main.domain.asset.locker.service.v2.dto.result.LockerFloorListResult;
 import net.causw.app.main.domain.asset.locker.service.v2.dto.result.LockerLocationResult;
 import net.causw.app.main.domain.asset.locker.service.v2.dto.result.MyLockerResult;
@@ -23,7 +22,7 @@ public class LockerMapper {
 			.map(locker -> LockerLocationResult.LockerItemResult.builder()
 				.lockerId(locker.getId())
 				.number(String.valueOf(locker.getLockerNumber()))
-				.status(LockerStatus.of(locker, userId))
+				.status(locker.getStatus(userId))
 				.build())
 			.toList();
 	}

@@ -10,7 +10,7 @@ public class LockerAggregator {
 
 	public static long countAvailable(List<Locker> lockers) {
 		return lockers.stream()
-			.filter(l -> LockerStatus.of(l) == LockerStatus.AVAILABLE)
+			.filter(l -> l.getStatus() == LockerStatus.AVAILABLE)
 			.count();
 	}
 

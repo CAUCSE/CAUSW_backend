@@ -64,7 +64,7 @@ class LockerAdminServiceTest {
 	}
 
 	private Locker createLocker(String id, long number, LockerLocation location, User user, LocalDateTime expiredAt, boolean isActive) {
-        return spy(ObjectFixtures.getLockerWithId(id, number, isActive, user, location, expiredAt));
+		return spy(ObjectFixtures.getLockerWithId(id, number, isActive, user, location, expiredAt));
 	}
 
 	@Nested

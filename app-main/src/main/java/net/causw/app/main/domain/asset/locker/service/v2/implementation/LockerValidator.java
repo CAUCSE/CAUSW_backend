@@ -54,7 +54,7 @@ public class LockerValidator {
 	 * 사물함이 비어있고(AVAILABLE) 활성화된 상태인지 확인
 	 */
 	public void validateRegisterAvailable(Locker locker) {
-		LockerStatus status = LockerStatus.of(locker);
+		LockerStatus status = locker.getStatus();
 		if (status == LockerStatus.IN_USE) {
 			throw LockerErrorCode.LOCKER_IN_USE.toBaseException();
 		}
@@ -104,7 +104,7 @@ public class LockerValidator {
 	 * 사물함 배정 가능 상태 검증 (관리자용)
 	 */
 	public void validateAssignable(Locker locker) {
-		if (LockerStatus.of(locker) != LockerStatus.AVAILABLE) {
+		if (locker.getStatus() != LockerStatus.AVAILABLE) {
 			throw LockerErrorCode.LOCKER_NOT_AVAILABLE.toBaseException();
 		}
 	}
@@ -122,7 +122,7 @@ public class LockerValidator {
 	 * 사물함 사용중 상태 검증 (연장, 회수, 반납)
 	 */
 	public void validateInUse(Locker locker) {
-		if (LockerStatus.of(locker) != LockerStatus.IN_USE) {
+		if (locker.getStatus() != LockerStatus.IN_USE) {
 			throw LockerErrorCode.LOCKER_NOT_IN_USE.toBaseException();
 		}
 	}
@@ -132,7 +132,7 @@ public class LockerValidator {
 	 * 이미 활성 상태가 아닌지 확인
 	 */
 	public void validateEnableable(Locker locker) {
-		if (Boolean.TRUE.equals(locker.getIsActive())) {
+		if (locker.isEnabled()) {
 			throw LockerErrorCode.LOCKER_ALREADY_ACTIVE.toBaseException();
 		}
 	}
@@ -142,7 +142,7 @@ public class LockerValidator {
 	 * 이미 비활성 상태가 아닌지 확인
 	 */
 	public void validateDisableable(Locker locker) {
-		if (!Boolean.TRUE.equals(locker.getIsActive())) {
+		if (!locker.isEnabled()) {
 			throw LockerErrorCode.LOCKER_ALREADY_DISABLED.toBaseException();
 		}
 	}

@@ -9,17 +9,16 @@ import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.respon
 import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.response.LockerLogListItemResponse;
 import net.causw.app.main.domain.asset.locker.entity.Locker;
 import net.causw.app.main.domain.asset.locker.entity.LockerLog;
-import net.causw.app.main.domain.asset.locker.entity.LockerStatus;
 import net.causw.app.main.domain.asset.locker.service.v2.dto.LockerListCondition;
 import net.causw.app.main.domain.asset.locker.service.v2.dto.LockerLogListCondition;
 
-@Mapper(componentModel = "spring", imports = LockerStatus.class)
+@Mapper(componentModel = "spring")
 public interface LockerListMapper {
 
 	LockerListCondition toCondition(LockerListRequest request);
 
 	@Mapping(target = "location", expression = "java(locker.getLocation().getDescription())")
-	@Mapping(target = "status", expression = "java(LockerStatus.of(locker))")
+	@Mapping(target = "status", expression = "java(locker.getStatus())")
 	@Mapping(target = "user", expression = "java(locker.getUser().map(u -> u.getName() + \"(\" + u.getStudentId() + \")\").orElse(null))")
 	LockerListItemResponse toResponse(Locker locker);
 

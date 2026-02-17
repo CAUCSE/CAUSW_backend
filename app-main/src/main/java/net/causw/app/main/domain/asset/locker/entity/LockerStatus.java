@@ -13,7 +13,7 @@ public enum LockerStatus {
 
 	private final String description;
 
-	public static LockerStatus of(Locker locker) {
+	static LockerStatus of(Locker locker) {
 		if (locker.getUser().isPresent()) {
 			return IN_USE;
 		}
@@ -23,7 +23,7 @@ public enum LockerStatus {
 		return DISABLED;
 	}
 
-	public static LockerStatus of(Locker locker, String userId) {
+	static LockerStatus of(Locker locker, String userId) {
 		LockerStatus base = of(locker);
 		if (base == IN_USE
 			&& locker.getUser().map(u -> u.getId().equals(userId)).orElse(false)) {

@@ -113,4 +113,16 @@ public class Locker extends BaseEntity {
 		this.location = lockerLocation;
 	}
 
+	public LockerStatus getStatus() {
+		return LockerStatus.of(this);
+	}
+
+	public LockerStatus getStatus(String userId) {
+		return LockerStatus.of(this, userId);
+	}
+
+	public boolean isEnabled() {
+		return Boolean.TRUE.equals(this.isActive);
+	}
+
 }
