@@ -89,26 +89,26 @@ public class PostService {
 	}
 
 	/**
-	 * 게시글의 첨부 이미지를 삭제합니다.
-	 * PostAttachImage를 먼저 삭제한 후 UuidFile을 삭제합니다.
+	 * 게시글의 첨부 이미지 DB 정보를 삭제하고, 실제 파일 삭제를 위한 파일 ID 목록을 반환합니다.
+	 * 실제 파일 삭제는 트랜잭션 커밋 후에 수행되어야 합니다.
 	 *
 	 * @param post 게시글 엔티티
+	 * @return 삭제할 파일 ID 목록
 	 */
-	private void deletePostImages(Post post) {
+	private List<String> deletePostAttachImages(Post post) {
 		List<PostAttachImage> images = post.getPostAttachImageList();
 		if (images == null || images.isEmpty()) {
-			return;
+			return List.of();
 		}
 
-		// 1. UuidFile ID 목록을 미리 추출 (PostAttachImageWriter 사용)
+		// 1. UuidFile ID 목록을 미리 추출
 		List<String> fileIds = images.stream().map(it -> it.getUuidFile().getId()).toList();
 
-		// 2. PostAttachImage를 즉시 삭제
+		// 2. PostAttachImage 삭제
 		postAttachImageWriter.deleteAllInBatch(images);
 
-		// 3. UuidFile 삭제 (FileWriter/FileReader 사용)
-		List<UuidFile> files = fileReader.findByIds(fileIds);
-		fileWriter.deleteList(files);
+		// 4. 실제 파일 삭제를 위한 파일 ID 반환
+		return fileIds;
 	}
 
 	@Transactional
@@ -120,8 +120,8 @@ public class PostService {
 
 		PostValidator.validateUpdate(updater, post, boardAdminIds, boardConfig, command.isAnonymous());
 
-		// 기존 이미지 삭제
-		deletePostImages(post);
+		// 기존 이미지 DB 정보 삭제 (파일 ID 목록 반환)
+		List<String> deletedFileIds = deletePostAttachImages(post);
 
 		// 새 이미지 업로드
 		List<UuidFile> newImages;
@@ -141,7 +141,15 @@ public class PostService {
 			.map(UuidFile::getFileUrl)
 			.toList();
 
-		return PostMapper.toUpdateResult(updatedPost, imageUrls);
+		PostUpdateResult result = PostMapper.toUpdateResult(updatedPost, imageUrls);
+
+		// 트랜잭션 커밋 후 실제 스토리지 파일 삭제 (DB 작업이 성공한 경우에만)
+		if (!deletedFileIds.isEmpty()) {
+			List<UuidFile> files = fileReader.findByIds(deletedFileIds);
+			fileWriter.deleteList(files);
+		}
+
+		return result;
 	}
 
 	public PostListResult getPosts(PostListQuery query) {

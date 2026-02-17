@@ -177,14 +177,13 @@ public class FileWriter {
 		String fileId = file.getId();
 
 		try {
-			// 1. 스토리지에서 삭제
-			storageClient.delete(fileKey);
-			log.debug("File deleted from storage. FileKey: {}", fileKey);
-
-			// 2. DB에서 삭제
+			// 1. DB에서 삭제
 			uuidFileRepository.delete(file);
 			log.info("File deleted successfully. FileId: {}, FileKey: {}", fileId, fileKey);
 
+			// 2. 스토리지에서 삭제
+			storageClient.delete(fileKey);
+			log.debug("File deleted from storage. FileKey: {}", fileKey);
 		} catch (Exception e) {
 			log.error("Failed to delete file. FileId: {}, FileKey: {}", fileId, fileKey, e);
 			throw e;
