@@ -6,6 +6,9 @@ import java.util.Set;
 
 import org.springframework.test.util.ReflectionTestUtils;
 
+import net.causw.app.main.domain.asset.locker.entity.Locker;
+import net.causw.app.main.domain.asset.locker.entity.LockerLocation;
+import net.causw.app.main.domain.asset.locker.entity.LockerName;
 import net.causw.app.main.domain.campus.schedule.entity.Schedule;
 import net.causw.app.main.domain.campus.schedule.entity.enums.ScheduleType;
 import net.causw.app.main.domain.campus.schedule.service.v2.dto.ScheduleDto;
@@ -29,9 +32,6 @@ import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.account.enums.user.GraduationType;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
-import net.causw.app.main.domain.asset.locker.entity.Locker;
-import net.causw.app.main.domain.asset.locker.entity.LockerLocation;
-import net.causw.app.main.domain.asset.locker.entity.LockerName;
 import net.causw.global.constant.StaticValue;
 
 public class ObjectFixtures {
@@ -269,8 +269,7 @@ public class ObjectFixtures {
 		Boolean isActive,
 		User user,
 		LockerLocation location,
-		LocalDateTime expireDate
-	) {
+		LocalDateTime expireDate) {
 		return Locker.of(lockerNumber, isActive, user, location, expireDate);
 	}
 
@@ -283,8 +282,7 @@ public class ObjectFixtures {
 		Boolean isActive,
 		User user,
 		LockerLocation location,
-		LocalDateTime expireDate
-	) {
+		LocalDateTime expireDate) {
 		Locker locker = getLocker(lockerNumber, isActive, user, location, expireDate);
 		ReflectionTestUtils.setField(locker, "id", id);
 		return locker;

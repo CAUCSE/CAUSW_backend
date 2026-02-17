@@ -22,8 +22,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
 import net.causw.app.main.domain.asset.locker.entity.Locker;
-import net.causw.app.main.domain.asset.locker.entity.LockerLog;
 import net.causw.app.main.domain.asset.locker.entity.LockerLocation;
+import net.causw.app.main.domain.asset.locker.entity.LockerLog;
 import net.causw.app.main.domain.asset.locker.entity.LockerName;
 import net.causw.app.main.domain.asset.locker.service.v2.dto.LockerListCondition;
 import net.causw.app.main.domain.asset.locker.service.v2.dto.LockerLogListCondition;
@@ -32,9 +32,9 @@ import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerLo
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerValidator;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.LockerErrorCode;
-import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
 import net.causw.app.main.util.ObjectFixtures;
 
 @ExtendWith(MockitoExtension.class)
@@ -63,7 +63,8 @@ class LockerAdminServiceTest {
 		return ObjectFixtures.getLockerLocationWithId(name, id);
 	}
 
-	private Locker createLocker(String id, long number, LockerLocation location, User user, LocalDateTime expiredAt, boolean isActive) {
+	private Locker createLocker(String id, long number, LockerLocation location, User user, LocalDateTime expiredAt,
+		boolean isActive) {
 		return spy(ObjectFixtures.getLockerWithId(id, number, isActive, user, location, expiredAt));
 	}
 
@@ -76,14 +77,12 @@ class LockerAdminServiceTest {
 		void givenSearchCondition_whenGetLockerLogList_thenDelegatesToReader() {
 			// given
 			LockerLogListCondition condition = new LockerLogListCondition(
-				"keyword", null, null, null
-			);
+				"keyword", null, null, null);
 			PageRequest pageRequest = PageRequest.of(0, 10);
 
 			Page<LockerLog> expectedPage = new PageImpl<>(List.of());
 			when(lockerLogReader.findLockerLogList(
-				anyString(), any(), any(), any(), any()
-			)).thenReturn(expectedPage);
+				anyString(), any(), any(), any(), any())).thenReturn(expectedPage);
 
 			// when
 			Page<LockerLog> result = lockerAdminService.getLockerLogList(condition, pageRequest);
@@ -95,8 +94,7 @@ class LockerAdminServiceTest {
 				condition.action(),
 				condition.lockerLocationName(),
 				condition.lockerNumber(),
-				pageRequest
-			);
+				pageRequest);
 		}
 	}
 
@@ -109,14 +107,12 @@ class LockerAdminServiceTest {
 		void givenSearchCondition_whenGetLockerList_thenDelegatesToReader() {
 			// given
 			LockerListCondition condition = new LockerListCondition(
-				"keyword", null, true, false, null
-			);
+				"keyword", null, true, false, null);
 			PageRequest pageRequest = PageRequest.of(0, 10);
 
 			Page<Locker> expectedPage = new PageImpl<>(List.of());
 			when(lockerReader.findLockerList(
-				anyString(), any(), any(), any(), any(), any()
-			)).thenReturn(expectedPage);
+				anyString(), any(), any(), any(), any(), any())).thenReturn(expectedPage);
 
 			// when
 			Page<Locker> result = lockerAdminService.getLockerList(condition, pageRequest);
@@ -129,8 +125,7 @@ class LockerAdminServiceTest {
 				condition.isActive(),
 				condition.isOccupied(),
 				condition.isExpired(),
-				pageRequest
-			);
+				pageRequest);
 		}
 	}
 
@@ -408,8 +403,10 @@ class LockerAdminServiceTest {
 
 			User admin = createUser(adminId);
 			LockerLocation location = createLocation("loc-1", LockerName.SECOND);
-			Locker locker1 = createLocker("locker-1", 1L, location, createUser("user-1"), LocalDateTime.now().minusDays(1), true);
-			Locker locker2 = createLocker("locker-2", 2L, location, createUser("user-2"), LocalDateTime.now().minusDays(1), true);
+			Locker locker1 = createLocker("locker-1", 1L, location, createUser("user-1"),
+				LocalDateTime.now().minusDays(1), true);
+			Locker locker2 = createLocker("locker-2", 2L, location, createUser("user-2"),
+				LocalDateTime.now().minusDays(1), true);
 
 			when(userReader.findAdminUserById(adminId)).thenReturn(admin);
 			when(lockerReader.findExpiredLockers(any(LocalDateTime.class)))
@@ -429,4 +426,3 @@ class LockerAdminServiceTest {
 		}
 	}
 }
-

@@ -35,9 +35,9 @@ import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerPo
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerValidator;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.LockerErrorCode;
-import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
 import net.causw.app.main.util.ObjectFixtures;
 
 @ExtendWith(MockitoExtension.class)
@@ -70,7 +70,8 @@ class LockerServiceTest {
 		return ObjectFixtures.getLockerLocationWithId(name, id);
 	}
 
-	private Locker createLocker(String id, long number, LockerLocation location, User user, LocalDateTime expiredAt, boolean isActive) {
+	private Locker createLocker(String id, long number, LockerLocation location, User user, LocalDateTime expiredAt,
+		boolean isActive) {
 		return spy(ObjectFixtures.getLockerWithId(id, number, isActive, user, location, expiredAt));
 	}
 
@@ -117,7 +118,8 @@ class LockerServiceTest {
 
 			User user = createUser(userId);
 			LockerLocation location = createLocation("loc-1", LockerName.SECOND);
-			Locker existingLocker = createLocker("locker-existing", 1L, location, user, LocalDateTime.now().plusDays(1), true);
+			Locker existingLocker = createLocker("locker-existing", 1L, location, user, LocalDateTime.now().plusDays(1),
+				true);
 			Locker newLocker = createLocker("locker-new", 2L, location, null, null, true);
 			LocalDateTime expiredAt = LocalDateTime.now().plusDays(30);
 
@@ -284,8 +286,7 @@ class LockerServiceTest {
 			LockerPeriodStatusResult expected = new LockerPeriodStatusResult(
 				LockerPeriodPhase.APPLY,
 				LocalDateTime.now().minusDays(1),
-				LocalDateTime.now().plusDays(1)
-			);
+				LocalDateTime.now().plusDays(1));
 
 			when(lockerPeriodResolver.resolveCurrentPhase(any(LocalDateTime.class))).thenReturn(expected);
 
@@ -371,4 +372,3 @@ class LockerServiceTest {
 		}
 	}
 }
-
