@@ -73,7 +73,7 @@ class LockerServiceTest {
 	}
 
 	private Locker createLocker(String id, long number, LockerLocation location, User user, LocalDateTime expiredAt, boolean isActive) {
-		return ObjectFixtures.getLockerWithId(id, number, isActive, user, location, expiredAt);
+		return org.mockito.Mockito.spy(ObjectFixtures.getLockerWithId(id, number, isActive, user, location, expiredAt));
 	}
 
 	@Nested
@@ -88,7 +88,7 @@ class LockerServiceTest {
 			String userId = "user-1";
 
 			User user = createUser(userId);
-			LockerLocation location = createLocation("loc-1", LockerName.B2);
+			LockerLocation location = createLocation("loc-1", LockerName.SECOND);
 			Locker locker = createLocker("locker-1", 1L, location, null, null, true);
 			LocalDateTime expiredAt = LocalDateTime.now().plusDays(30);
 
@@ -118,7 +118,7 @@ class LockerServiceTest {
 			String userId = "user-2";
 
 			User user = createUser(userId);
-			LockerLocation location = createLocation("loc-1", LockerName.B2);
+			LockerLocation location = createLocation("loc-1", LockerName.SECOND);
 			Locker existingLocker = createLocker("locker-existing", 1L, location, user, LocalDateTime.now().plusDays(1), true);
 			Locker newLocker = createLocker("locker-new", 2L, location, null, null, true);
 			LocalDateTime expiredAt = LocalDateTime.now().plusDays(30);
@@ -176,7 +176,7 @@ class LockerServiceTest {
 			String userId = "user-1";
 
 			User user = createUser(userId);
-			LockerLocation location = createLocation("loc-1", LockerName.B2);
+			LockerLocation location = createLocation("loc-1", LockerName.SECOND);
 			Locker locker = createLocker("locker-1", 1L, location, user, LocalDateTime.now().plusDays(1), true);
 
 			when(userReader.findUserById(userId)).thenReturn(user);
@@ -230,7 +230,7 @@ class LockerServiceTest {
 			String userId = "user-1";
 
 			User user = createUser(userId);
-			LockerLocation location = createLocation("loc-1", LockerName.B2);
+			LockerLocation location = createLocation("loc-1", LockerName.SECOND);
 			Locker locker = createLocker("locker-1", 1L, location, user, LocalDateTime.now().plusDays(1), true);
 			LocalDateTime nextExpireDate = LocalDateTime.now().plusDays(30);
 

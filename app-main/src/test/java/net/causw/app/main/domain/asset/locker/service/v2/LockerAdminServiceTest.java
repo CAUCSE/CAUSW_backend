@@ -66,7 +66,7 @@ class LockerAdminServiceTest {
 	}
 
 	private Locker createLocker(String id, long number, LockerLocation location, User user, LocalDateTime expiredAt, boolean isActive) {
-		return ObjectFixtures.getLockerWithId(id, number, isActive, user, location, expiredAt);
+		return org.mockito.Mockito.spy(ObjectFixtures.getLockerWithId(id, number, isActive, user, location, expiredAt));
 	}
 
 	@Nested
@@ -151,7 +151,7 @@ class LockerAdminServiceTest {
 
 			User admin = createUser(adminId);
 			User user = createUser(userId);
-			LockerLocation location = createLocation("loc-1", LockerName.B2);
+			LockerLocation location = createLocation("loc-1", LockerName.SECOND);
 			Locker locker = createLocker("locker-1", 1L, location, null, null, true);
 
 			when(lockerReader.findByIdForWrite(lockerId)).thenReturn(locker);
@@ -178,7 +178,7 @@ class LockerAdminServiceTest {
 			String adminId = "admin-1";
 
 			User admin = createUser(adminId);
-			LockerLocation location = createLocation("loc-1", LockerName.B2);
+			LockerLocation location = createLocation("loc-1", LockerName.SECOND);
 			Locker locker = createLocker("locker-1", 1L, location, null, null, true);
 
 			when(lockerReader.findByIdForWrite(lockerId)).thenReturn(locker);
@@ -212,7 +212,7 @@ class LockerAdminServiceTest {
 			LocalDateTime newExpireAt = LocalDateTime.now().plusDays(30);
 
 			User admin = createUser(adminId);
-			LockerLocation location = createLocation("loc-1", LockerName.B2);
+			LockerLocation location = createLocation("loc-1", LockerName.SECOND);
 			Locker locker = createLocker("locker-1", 1L, location, null, null, true);
 
 			when(lockerReader.findByIdForWrite(lockerId)).thenReturn(locker);
@@ -235,7 +235,7 @@ class LockerAdminServiceTest {
 			String adminId = "admin-1";
 
 			User admin = createUser(adminId);
-			LockerLocation location = createLocation("loc-1", LockerName.B2);
+			LockerLocation location = createLocation("loc-1", LockerName.SECOND);
 			Locker locker = createLocker("locker-1", 1L, location, null, null, true);
 
 			when(lockerReader.findByIdForWrite(lockerId)).thenReturn(locker);
@@ -350,7 +350,7 @@ class LockerAdminServiceTest {
 
 			User admin = createUser(adminId);
 			User currentUser = createUser("user-current");
-			LockerLocation location = createLocation("loc-1", LockerName.B2);
+			LockerLocation location = createLocation("loc-1", LockerName.SECOND);
 			Locker locker = createLocker("locker-1", 1L, location, currentUser, LocalDateTime.now().plusDays(1), true);
 
 			when(lockerReader.findByIdForWrite(lockerId)).thenReturn(locker);
@@ -378,7 +378,7 @@ class LockerAdminServiceTest {
 			String adminId = "admin-1";
 
 			User admin = createUser(adminId);
-			LockerLocation location = createLocation("loc-1", LockerName.B2);
+			LockerLocation location = createLocation("loc-1", LockerName.SECOND);
 			Locker locker = createLocker("locker-1", 1L, location, null, null, true);
 			when(lockerReader.findByIdForWrite(lockerId)).thenReturn(locker);
 			when(userReader.findAdminUserById(adminId)).thenReturn(admin);
@@ -409,7 +409,7 @@ class LockerAdminServiceTest {
 			String adminId = "admin-1";
 
 			User admin = createUser(adminId);
-			LockerLocation location = createLocation("loc-1", LockerName.B2);
+			LockerLocation location = createLocation("loc-1", LockerName.SECOND);
 			Locker locker1 = createLocker("locker-1", 1L, location, createUser("user-1"), LocalDateTime.now().minusDays(1), true);
 			Locker locker2 = createLocker("locker-2", 2L, location, createUser("user-2"), LocalDateTime.now().minusDays(1), true);
 
