@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 @Transactional(readOnly = true)
 public class LockerValidator {
 
-	private final LockerPolicyReader lockerPolicyReader;
+	private final LockerPeriodResolver lockerPeriodResolver;
 	private final LockerReader lockerReader;
 
 	// ==================== User용 검증 ====================
@@ -26,7 +26,7 @@ public class LockerValidator {
 	 * 사물함 신청 기간 검증
 	 */
 	public void validateRegisterPeriod(LocalDateTime time) {
-		if (!lockerPolicyReader.isRegisterActive(time)) {
+		if (!lockerPeriodResolver.isRegisterActive(time)) {
 			throw LockerErrorCode.LOCKER_REGISTER_NOT_ALLOWED.toBaseException();
 		}
 	}
@@ -35,7 +35,7 @@ public class LockerValidator {
 	 * 사물함 반납 기간 검증
 	 */
 	public void validateReturnPeriod(LocalDateTime time) {
-		if (!lockerPolicyReader.isRegisterActive(time)) {
+		if (!lockerPeriodResolver.isRegisterActive(time)) {
 			throw LockerErrorCode.LOCKER_RETURN_NOT_ALLOWED.toBaseException();
 		}
 	}
@@ -44,7 +44,7 @@ public class LockerValidator {
 	 * 사물함 연장 기간 검증
 	 */
 	public void validateExtendPeriod(LocalDateTime time) {
-		if (!lockerPolicyReader.isExtendActive(time)) {
+		if (!lockerPeriodResolver.isExtendActive(time)) {
 			throw LockerErrorCode.LOCKER_EXTEND_NOT_ALLOWED.toBaseException();
 		}
 	}

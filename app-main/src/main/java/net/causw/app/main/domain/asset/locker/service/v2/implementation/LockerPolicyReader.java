@@ -6,8 +6,6 @@ import java.util.Optional;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.domain.asset.locker.enums.LockerPeriodPhase;
-import net.causw.app.main.domain.asset.locker.service.v2.dto.result.LockerPeriodStatusResult;
 import net.causw.app.main.domain.etc.flag.service.v2.implementation.FlagReader;
 import net.causw.app.main.domain.etc.textfield.service.v2.implementation.TextFieldReader;
 import net.causw.app.main.shared.exception.errorcode.LockerErrorCode;
@@ -15,6 +13,12 @@ import net.causw.global.constant.StaticValue;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * 사물함 정책 값 조회를 담당한다.
+ *
+ * <p>flag, 날짜 텍스트필드 등 정책 원시 값만 읽는다.
+ * 기간 판별 로직은 {@link LockerPeriodResolver}에서 수행한다.</p>
+ */
 @Component
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -22,30 +26,6 @@ public class LockerPolicyReader {
 
 	private final FlagReader flagReader;
 	private final TextFieldReader textFieldReader;
-
-	/**
-	 * 사물함이 특정 일시에 대해 신청 가능한 상태인지 확인
-	 * @param targetTime 특정 일시
-	 * @return 신청 가능 여부
-	 */
-	public boolean isRegisterActive(LocalDateTime targetTime) {
-		boolean lockerAccess = flagReader.findValueByKey(StaticValue.LOCKER_ACCESS);
-		boolean onRegisterPeriod = isOnRegisterPeriod(targetTime);
-
-		return lockerAccess && onRegisterPeriod;
-	}
-
-	/**
-	 * 사물함이 특정 일시에 대해 연장 가능한 상태인지 확인
-	 * @param targetTime 특정 일시
-	 * @return 연장 가능 여부
-	 */
-	public boolean isExtendActive(LocalDateTime targetTime) {
-		boolean lockerExtend = flagReader.findValueByKey(StaticValue.LOCKER_EXTEND);
-		boolean onExtendPeriod = isOnExtendPeriod(targetTime);
-
-		return lockerExtend && onExtendPeriod;
-	}
 
 	/**
 	 * 사물함 신청 가능 상태 flag 반환
@@ -136,66 +116,6 @@ public class LockerPolicyReader {
 	}
 
 	/**
-	 * 현재 시각 기준으로 사물함 기간 상태(phase)를 판별한다.
-	 *
-	 * <p>판별 우선순위: APPLY → EXTEND → READY → CLOSED</p>
-	 *
-	 * @param now 기준 시각
-	 * @return 현재 phase와 해당 기간의 startAt/endAt
-	 */
-	public LockerPeriodStatusResult resolveCurrentPhase(LocalDateTime now) {
-		boolean lockerAccessFlag = getLockerAccessStatusFlag();
-		boolean lockerExtendFlag = getLockerExtendStatusFlag();
-		Optional<LocalDateTime> registerStart = findRegisterStartDate();
-		Optional<LocalDateTime> registerEnd = findRegisterEndDate();
-		Optional<LocalDateTime> extendStart = findExtendStartDate();
-		Optional<LocalDateTime> extendEnd = findExtendEndDate();
-
-		// APPLY: flag ON + 신청 기간 중
-		if (lockerAccessFlag && isOnPeriod(now, registerStart, registerEnd)) {
-			return LockerPeriodStatusResult.builder()
-				.phase(LockerPeriodPhase.APPLY)
-				.startAt(registerStart.get())
-				.endAt(registerEnd.get())
-				.build();
-		}
-
-		// EXTEND: flag ON + 연장 기간 중
-		if (lockerExtendFlag && isOnPeriod(now, extendStart, extendEnd)) {
-			return LockerPeriodStatusResult.builder()
-				.phase(LockerPeriodPhase.EXTEND)
-				.startAt(extendStart.get())
-				.endAt(extendEnd.get())
-				.build();
-		}
-
-		// READY: 신청 기간 전이거나, flag OFF로 아직 활성화되지 않은 상태
-		if (registerStart.isPresent() && now.isBefore(registerStart.get())) {
-			return LockerPeriodStatusResult.builder()
-				.phase(LockerPeriodPhase.READY)
-				.startAt(registerStart.get())
-				.endAt(registerEnd.orElse(null))
-				.build();
-		}
-
-		// READY: 신청 끝 ~ 연장 시작 사이
-		if (extendStart.isPresent() && now.isBefore(extendStart.get())) {
-			return LockerPeriodStatusResult.builder()
-				.phase(LockerPeriodPhase.READY)
-				.startAt(extendStart.get())
-				.endAt(extendEnd.orElse(null))
-				.build();
-		}
-
-		// CLOSED: 모든 기간이 종료되었거나, 기간 중이지만 flag가 OFF인 경우
-		return LockerPeriodStatusResult.builder()
-			.phase(LockerPeriodPhase.CLOSED)
-			.startAt(null)
-			.endAt(null)
-			.build();
-	}
-
-	/**
 	 * 텍스트 필드에 저장된 문자열 값을 LocalDateTime으로 파싱
 	 * @param key 텍스트 필드 키
 	 * @return 파싱된 LocalDateTime(Optional), 값이 없으면 empty
@@ -203,51 +123,5 @@ public class LockerPolicyReader {
 	private Optional<LocalDateTime> parseDateTime(String key) {
 		return textFieldReader.findValueByKey(key)
 			.map(value -> LocalDateTime.parse(value, StaticValue.LOCKER_DATE_TIME_FORMATTER));
-	}
-
-	/**
-	 * 주어진 시각이 사물함 신청 가능 기간 내에 포함되는지 여부를 확인
-	 * @param targetTime 확인할 시각
-	 * @return 신청 가능 기간 내라면 true, 아니면 false
-	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception 신청 기간이 설정되지 않은 경우
-	 */
-	private boolean isOnRegisterPeriod(LocalDateTime targetTime) {
-		Optional<LocalDateTime> start = findRegisterStartDate();
-		Optional<LocalDateTime> end = findRegisterEndDate();
-
-		if (start.isEmpty() || end.isEmpty()) {
-			throw LockerErrorCode.LOCKER_REGISTER_PERIOD_NOT_SET.toBaseException();
-		}
-
-		return isOnPeriod(targetTime, start, end);
-	}
-
-	/**
-	 * 주어진 시각이 사물함 연장 가능 기간 내에 포함되는지 여부를 확인
-	 * @param targetTime 확인할 시각
-	 * @return 연장 가능 기간 내라면 true, 아니면 false
-	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception 연장 기간이 설정되지 않은 경우
-	 */
-	private boolean isOnExtendPeriod(LocalDateTime targetTime) {
-		Optional<LocalDateTime> start = findExtendStartDate();
-		Optional<LocalDateTime> end = findExtendEndDate();
-
-		if (start.isEmpty() || end.isEmpty()) {
-			throw LockerErrorCode.LOCKER_EXTEND_PERIOD_NOT_SET.toBaseException();
-		}
-
-		return isOnPeriod(targetTime, start, end);
-	}
-
-	/**
-	 * 주어진 시각이 [start, end] 범위 내에 포함되는지 확인한다.
-	 * start 또는 end가 비어있으면 false를 반환한다.
-	 */
-	private boolean isOnPeriod(LocalDateTime targetTime,
-		Optional<LocalDateTime> start, Optional<LocalDateTime> end) {
-		if (start.isEmpty() || end.isEmpty()) {
-			return false;
-		}
-		return !targetTime.isBefore(start.get()) && !targetTime.isAfter(end.get());
 	}
 }

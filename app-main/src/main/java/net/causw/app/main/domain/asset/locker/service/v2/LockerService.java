@@ -16,6 +16,7 @@ import net.causw.app.main.domain.asset.locker.service.v2.dto.result.LockerPeriod
 import net.causw.app.main.domain.asset.locker.service.v2.dto.result.MyLockerResult;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerLocationReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerLogWriter;
+import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerPeriodResolver;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerPolicyReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerValidator;
@@ -30,7 +31,7 @@ import lombok.RequiredArgsConstructor;
  *
  * <p>사물함 신청·반납·연장과 조회 기능을 제공한다.
  * 정책(신청/연장 기간) 검증은 {@link LockerValidator}에 위임하고,
- * 조회 결과 매핑은 {@link LockerMapper}·{@link LockerAggregator}에 위임한다.</p>
+ * 조회 결과 매핑은 {@link LockerMapper}에 위임한다.</p>
  *
  * @see LockerAdminService 관리자용 사물함 서비스
  * @see LockerPolicyAdminService 사물함 정책 관리 서비스
@@ -42,6 +43,7 @@ public class LockerService {
 	private final LockerReader lockerReader;
 	private final LockerLocationReader lockerLocationReader;
 	private final LockerPolicyReader lockerPolicyReader;
+	private final LockerPeriodResolver lockerPeriodResolver;
 	private final LockerLogWriter lockerLogWriter;
 	private final LockerValidator lockerValidator;
 	private final UserReader userReader;
@@ -138,7 +140,7 @@ public class LockerService {
 	 */
 	@Transactional(readOnly = true)
 	public LockerPeriodStatusResult findCurrentPeriodStatus() {
-		return lockerPolicyReader.resolveCurrentPhase(LocalDateTime.now());
+		return lockerPeriodResolver.resolveCurrentPhase(LocalDateTime.now());
 	}
 
 	/**
@@ -195,8 +197,8 @@ public class LockerService {
 		LockerLocation location = lockerLocationReader.findById(locationId);
 		List<Locker> lockers = lockerReader.findByLocationIdWithUser(locationId);
 
-		boolean canApplyPolicy = lockerPolicyReader.isRegisterActive(LocalDateTime.now());
-		boolean canExtendPolicy = lockerPolicyReader.isExtendActive(LocalDateTime.now());
+		boolean canApplyPolicy = lockerPeriodResolver.isRegisterActive(LocalDateTime.now());
+		boolean canExtendPolicy = lockerPeriodResolver.isExtendActive(LocalDateTime.now());
 
 		List<LockerLocationResult.LockerItemResult> lockerItems = LockerMapper.toLockerItemResults(lockers, userId);
 
