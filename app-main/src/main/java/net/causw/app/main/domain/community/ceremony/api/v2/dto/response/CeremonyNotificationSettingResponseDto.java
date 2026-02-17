@@ -4,23 +4,16 @@ import java.util.Set;
 
 import net.causw.app.main.domain.notification.notification.entity.CeremonyNotificationSetting;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
+public record CeremonyNotificationSettingResponseDto(
+	boolean isNotificationActive,
+	boolean isSetAll,
+	Set<String> subscribedAdmissionYears) {
 
-@Getter
-@Builder
-@AllArgsConstructor
-public class CeremonyNotificationSettingResponseDto {
-	private boolean isNotificationActive;
-	private boolean isSetAll;
-	private Set<String> subscribedAdmissionYears;
-
-	public static CeremonyNotificationSettingResponseDto from(CeremonyNotificationSetting ceremonyNotificationSetting) {
-		return CeremonyNotificationSettingResponseDto.builder()
-			.isNotificationActive(ceremonyNotificationSetting.isNotificationActive())
-			.subscribedAdmissionYears(ceremonyNotificationSetting.getSubscribedAdmissionYears())
-			.isSetAll(ceremonyNotificationSetting.isSetAll())
-			.build();
+	public static CeremonyNotificationSettingResponseDto from(
+		CeremonyNotificationSetting ceremonyNotificationSetting) {
+		return new CeremonyNotificationSettingResponseDto(
+			ceremonyNotificationSetting.isNotificationActive(),
+			ceremonyNotificationSetting.isSetAll(),
+			ceremonyNotificationSetting.getSubscribedAdmissionYears());
 	}
 }

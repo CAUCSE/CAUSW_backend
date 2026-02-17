@@ -55,7 +55,7 @@ public class CeremonyController {
 		"general : 경조사 상세 보기</br>")
 	public ApiResponse<CeremonyDetailResponseDto> getCeremonyDetail(
 		@PathVariable("ceremonyId") String ceremonyId,
-		@RequestParam(name = "context") String contextParam,
+		@RequestParam(name = "context", required = false, defaultValue = "general") String contextParam,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		CeremonyContext context = CeremonyContext.fromString(contextParam);
 		return ApiResponse.success(ceremonyService.getCeremony(ceremonyId, context, userDetails.getUser()));
