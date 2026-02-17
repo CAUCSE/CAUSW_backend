@@ -28,11 +28,9 @@ import net.causw.app.main.domain.community.ceremony.api.v2.mapper.CeremonyDtoMap
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyContext;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyState;
-import net.causw.app.main.domain.community.ceremony.enums.CeremonyType;
 import net.causw.app.main.domain.community.ceremony.service.CeremonyService;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyCreator;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyReader;
-import net.causw.app.main.domain.community.ceremony.util.CeremonyTypeParser;
 import net.causw.app.main.domain.community.ceremony.util.CeremonyValidator;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
@@ -56,8 +54,6 @@ public class CeremonyServiceTest {
 	CeremonyCreateMapper ceremonyCreateMapper;
 	@Mock
 	CeremonyDtoMapper ceremonyDtoMapper;
-	@Mock
-	CeremonyTypeParser ceremonyTypeParser;
 	@Mock
 	CeremonyValidator ceremonyValidator;
 	@Mock
@@ -254,45 +250,40 @@ public class CeremonyServiceTest {
 		}
 
 		@Test
-		@DisplayName("경조사 리스트 조회 시 type이 null/empty/ALL로 파싱되면 성공")
-		void givenTypeAll_whenGetOngoing_thenCallsFindAllOngoing() {
-			// given
-			given(ceremonyTypeParser.parseTypeOrNull(any())).willReturn(null);
-
+		@DisplayName("경조사 리스트 조회 시 type이 null/empty/ALL이어도 성공(서비스는 그대로 reader에 전달)")
+		void givenTypeNullOrEmptyOrAll_whenGetOngoing_thenCallsReaderAndMaps() {
 			Ceremony c1 = mock(Ceremony.class);
 			Ceremony c2 = mock(Ceremony.class);
 			Page<Ceremony> ceremonyPage = new PageImpl<>(List.of(c1, c2));
-			given(ceremonyReader.findOngoingOrderByStartedAtDesc(any(), any(), eq(pageable)))
-				.willReturn(ceremonyPage);
 
+			// given
+			given(ceremonyReader.findOngoingOrderByStartedAtDesc(isNull(), any(), any(), eq(pageable)))
+				.willReturn(ceremonyPage);
 			given(ceremonyDtoMapper.toCeremonySummaryResponseDto(any(Ceremony.class)))
 				.willReturn(mock(CeremonySummaryResponseDto.class));
 
 			// when
-			Page<CeremonySummaryResponseDto> result = ceremonyService.getOngoingCeremonyPage("ALL", 1);
+			Page<CeremonySummaryResponseDto> result = ceremonyService.getOngoingCeremonyPage(null, 1);
 
 			// then
 			assertThat(result.getTotalElements()).isEqualTo(2);
 
-			then(ceremonyTypeParser).should(times(1)).parseTypeOrNull("ALL");
-			then(ceremonyReader).should(times(1)).findOngoingOrderByStartedAtDesc(any(), any(), eq(pageable));
-			then(ceremonyReader).should(never()).findOngoingByTypeOrderByStartedAtDesc(any(), any(), any(), any());
-
-			then(ceremonyDtoMapper).should(times(2)).toCeremonySummaryResponseDto(any(Ceremony.class));
+			then(pageableFactory).should(times(1)).create(eq(1), eq(StaticValue.DEFAULT_PAGE_SIZE));
+			then(ceremonyReader).should(times(1))
+				.findOngoingOrderByStartedAtDesc(isNull(), any(), any(), eq(pageable));
+			then(ceremonyDtoMapper).should(times(2))
+				.toCeremonySummaryResponseDto(any(Ceremony.class));
 		}
 
 		@Test
-		@DisplayName("경조사 리스트 조회 시 type이 유효하면 성공")
-		void givenValidType_whenGetOngoing_thenCallsFindOngoingByType() {
-			// given
-			given(ceremonyTypeParser.parseTypeOrNull("celebration")).willReturn("celebration");
-
+		@DisplayName("경조사 리스트 조회 시 type이 존재하면 성공(서비스는 그대로 reader에 전달)")
+		void givenValidType_whenGetOngoing_thenCallsReaderWithTypeAndMaps() {
 			Ceremony c1 = mock(Ceremony.class);
 			Page<Ceremony> ceremonyPage = new PageImpl<>(List.of(c1));
-			given(ceremonyReader.findOngoingByTypeOrderByStartedAtDesc(eq(CeremonyType.CELEBRATION), any(), any(),
-				eq(pageable)))
-				.willReturn(ceremonyPage);
 
+			// given
+			given(ceremonyReader.findOngoingOrderByStartedAtDesc(eq("celebration"), any(), any(), eq(pageable)))
+				.willReturn(ceremonyPage);
 			given(ceremonyDtoMapper.toCeremonySummaryResponseDto(any(Ceremony.class)))
 				.willReturn(mock(CeremonySummaryResponseDto.class));
 
@@ -302,26 +293,30 @@ public class CeremonyServiceTest {
 			// then
 			assertThat(result.getTotalElements()).isEqualTo(1);
 
-			then(ceremonyTypeParser).should(times(1)).parseTypeOrNull("celebration");
+			then(pageableFactory).should(times(1)).create(eq(0), eq(StaticValue.DEFAULT_PAGE_SIZE));
 			then(ceremonyReader).should(times(1))
-				.findOngoingByTypeOrderByStartedAtDesc(eq(CeremonyType.CELEBRATION), any(), any(), eq(pageable));
-			then(ceremonyReader).should(never()).findOngoingOrderByStartedAtDesc(any(), any(), any());
-
-			then(ceremonyDtoMapper).should(times(1)).toCeremonySummaryResponseDto(any(Ceremony.class));
+				.findOngoingOrderByStartedAtDesc(eq("celebration"), any(), any(), eq(pageable));
+			then(ceremonyDtoMapper).should(times(1))
+				.toCeremonySummaryResponseDto(any(Ceremony.class));
 		}
 
 		@Test
-		@DisplayName("경조사 리스트 조회 시 type이 이상하면 예외 반환")
-		void givenInvalidType_whenGetOngoing_thenThrowsBadRequest() {
-			// given: parser가 null이 아니게 만들어서 fromString 타도록 유도
-			given(ceremonyTypeParser.parseTypeOrNull("nope")).willReturn("nope");
+		@DisplayName("경조사 리스트 조회 시 reader가 예외를 던지면 그대로 전파")
+		void givenReaderThrows_whenGetOngoing_thenThrows() {
+			// given
+			given(ceremonyReader.findOngoingOrderByStartedAtDesc(eq("nope"), any(), any(), eq(pageable)))
+				.willThrow(new RuntimeException("boom"));
 
 			// when & then
 			assertThatThrownBy(() -> ceremonyService.getOngoingCeremonyPage("nope", 0))
-				.isInstanceOf(RuntimeException.class); // GlobalErrorCode.BAD_REQUEST.toBaseException()의 실제 타입에 맞게 교체 권장
+				.isInstanceOf(RuntimeException.class)
+				.hasMessageContaining("boom");
 
-			then(ceremonyReader).should(never()).findOngoingOrderByStartedAtDesc(any(), any(), any());
-			then(ceremonyReader).should(never()).findOngoingByTypeOrderByStartedAtDesc(any(), any(), any(), any());
+			then(pageableFactory).should(times(1)).create(eq(0), eq(StaticValue.DEFAULT_PAGE_SIZE));
+			then(ceremonyReader).should(times(1))
+				.findOngoingOrderByStartedAtDesc(eq("nope"), any(), any(), eq(pageable));
+
+			then(ceremonyDtoMapper).shouldHaveNoInteractions();
 		}
 
 		@Test
@@ -334,20 +329,19 @@ public class CeremonyServiceTest {
 				.extracting("errorCode")
 				.isEqualTo(CeremonyErrorCode.CEREMONY_NOT_FOUND);
 
-			then(ceremonyReader).should(never()).findByUserIdAndCeremonyStateOrderByStartedAtDesc(any(), any(), any());
+			then(ceremonyReader).shouldHaveNoInteractions();
 		}
 
 		@Test
 		@DisplayName("내 경조사 리스트 조회 시 CLOSE가 아니면 성공")
 		void givenStateAccept_whenGetMy_thenMapsToMySummary() {
-			// given
 			Ceremony c1 = mock(Ceremony.class);
 			Ceremony c2 = mock(Ceremony.class);
 			Page<Ceremony> ceremonyPage = new PageImpl<>(List.of(c1, c2));
 
-			given(
-				ceremonyReader.findByUserIdAndCeremonyStateOrderByStartedAtDesc(eq("userId"), eq(CeremonyState.ACCEPT),
-					eq(pageable)))
+			// given
+			given(ceremonyReader.findByUserIdAndCeremonyStateOrderByStartedAtDesc(
+				eq("userId"), eq(CeremonyState.ACCEPT), eq(pageable)))
 				.willReturn(ceremonyPage);
 
 			given(ceremonyDtoMapper.toMyCeremonySummaryResponseDto(any(Ceremony.class)))
@@ -360,10 +354,11 @@ public class CeremonyServiceTest {
 			// then
 			assertThat(result.getTotalElements()).isEqualTo(2);
 
+			then(pageableFactory).should(times(1)).create(eq(1), eq(StaticValue.DEFAULT_PAGE_SIZE));
 			then(ceremonyReader).should(times(1))
 				.findByUserIdAndCeremonyStateOrderByStartedAtDesc(eq("userId"), eq(CeremonyState.ACCEPT), eq(pageable));
-			then(ceremonyDtoMapper).should(times(2)).toMyCeremonySummaryResponseDto(any(Ceremony.class));
+			then(ceremonyDtoMapper).should(times(2))
+				.toMyCeremonySummaryResponseDto(any(Ceremony.class));
 		}
 	}
-
 }
