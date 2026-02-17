@@ -36,12 +36,28 @@ public class FileWriter {
 	private final StorageClient storageClient;
 	private final UuidFileRepository uuidFileRepository;
 
+	/**
+	 * 파일 업로드 및 저장
+	 * FilePath만 지정하면 메타데이터를 자동 생성하여 업로드
+	 *
+	 * @param file     업로드할 파일
+	 * @param filePath 파일 저장 경로
+	 * @return 저장된 파일 엔티티
+	 */
 	@Transactional
 	public UuidFile uploadAndSave(@NotNull final MultipartFile file, @NotNull FilePath filePath) {
 		FileMetadata metadata = FileMetadataManager.createMetadata(file, filePath);
 		return uploadAndSave(file, metadata);
 	}
 
+	/**
+	 * 파일 목록 업로드 및 저장
+	 * FilePath만 지정하면 메타데이터를 자동 생성하여 업로드
+	 *
+	 * @param fileList 업로드할 파일 목록
+	 * @param filePath 파일 저장 경로
+	 * @return 저장된 파일 엔티티 목록
+	 */
 	@Transactional
 	public List<UuidFile> uploadAndSaveList(@NotNull List<MultipartFile> fileList, @NotNull FilePath filePath) {
 		List<FileMetadata> metadataList = fileList.stream()
