@@ -83,6 +83,21 @@ public class LockerValidator {
 		}
 	}
 
+	// ==================== 정책 기간 검증 ====================
+
+	/**
+	 * 기간 설정의 선후관계를 검증한다.
+	 * start < end < expiredAt 순서여야 한다.
+	 */
+	public void validatePeriodOrder(LocalDateTime start, LocalDateTime end, LocalDateTime expiredAt) {
+		if (!start.isBefore(end)) {
+			throw LockerErrorCode.LOCKER_PERIOD_START_AFTER_END.toBaseException();
+		}
+		if (!end.isBefore(expiredAt)) {
+			throw LockerErrorCode.LOCKER_PERIOD_END_AFTER_EXPIRE.toBaseException();
+		}
+	}
+
 	// ==================== Admin용 검증 ====================
 
 	/**

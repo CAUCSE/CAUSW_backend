@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.response.LockerPolicyResponse;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerPolicyReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerPolicyWriter;
+import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerValidator;
 import net.causw.app.main.shared.exception.errorcode.LockerErrorCode;
 
 import jakarta.validation.constraints.NotNull;
@@ -28,6 +29,7 @@ public class LockerPolicyAdminService {
 
 	private final LockerPolicyReader lockerPolicyReader;
 	private final LockerPolicyWriter lockerPolicyWriter;
+	private final LockerValidator lockerValidator;
 
 	/**
 	 * 현재 사물함 정책 상태를 조회한다.
@@ -56,6 +58,7 @@ public class LockerPolicyAdminService {
 	 */
 	@Transactional
 	public void updateRegisterPeriod(LocalDateTime start, LocalDateTime end, LocalDateTime expiredAt) {
+		lockerValidator.validatePeriodOrder(start, end, expiredAt);
 		lockerPolicyWriter.updateRegisterPeriod(start, end, expiredAt);
 	}
 
@@ -68,6 +71,7 @@ public class LockerPolicyAdminService {
 	 */
 	@Transactional
 	public void updateExtendPeriod(LocalDateTime start, LocalDateTime end, LocalDateTime nextExpireDate) {
+		lockerValidator.validatePeriodOrder(start, end, nextExpireDate);
 		lockerPolicyWriter.updateExtendPeriod(start, end, nextExpireDate);
 	}
 
