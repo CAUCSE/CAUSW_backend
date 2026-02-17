@@ -50,7 +50,7 @@ public class BoardConfigQueryRepository {
 	}
 
 	/**
-	 * 사용자 상태에 따라 접근 가능한 게시판 ID 목록을 조회합니다.
+	 * 사용자 학적 상태에 따라 접근 가능한 게시판 ID 목록을 조회합니다.
 	 * VISIBLE이고 사용자의 ReadScope에 맞는 게시판만 조회합니다.
 	 *
 	 * @param academicStatus 사용자 상태
