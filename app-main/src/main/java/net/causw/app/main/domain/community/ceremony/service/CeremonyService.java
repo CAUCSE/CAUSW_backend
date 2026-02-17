@@ -139,6 +139,7 @@ public class CeremonyService {
 		return ceremonies.map(ceremonyDtoMapper::toCeremonySummaryResponseDto);
 	}
 
+	@Transactional(readOnly = true)
 	public Page<CeremonySummaryResponseDto> getMyCeremonyPage(String userId, CeremonyState state, Integer pageNum) {
 		Page<Ceremony> ceremonies;
 		Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_PAGE_SIZE);
