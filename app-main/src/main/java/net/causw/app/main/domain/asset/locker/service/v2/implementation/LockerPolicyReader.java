@@ -144,14 +144,15 @@ public class LockerPolicyReader {
 	 * @return 현재 phase와 해당 기간의 startAt/endAt
 	 */
 	public LockerPeriodStatusResult resolveCurrentPhase(LocalDateTime now) {
+		boolean lockerAccessFlag = getLockerAccessStatusFlag();
+		boolean lockerExtendFlag = getLockerExtendStatusFlag();
 		Optional<LocalDateTime> registerStart = findRegisterStartDate();
 		Optional<LocalDateTime> registerEnd = findRegisterEndDate();
 		Optional<LocalDateTime> extendStart = findExtendStartDate();
 		Optional<LocalDateTime> extendEnd = findExtendEndDate();
 
-		// APPLY: 신청 기간 중인지 확인
-		if (registerStart.isPresent() && registerEnd.isPresent()
-			&& !now.isBefore(registerStart.get()) && !now.isAfter(registerEnd.get())) {
+		// APPLY: flag ON + 신청 기간 중
+		if (lockerAccessFlag && isOnPeriod(now, registerStart, registerEnd)) {
 			return LockerPeriodStatusResult.builder()
 				.phase(LockerPeriodPhase.APPLY)
 				.startAt(registerStart.get())
@@ -159,9 +160,8 @@ public class LockerPolicyReader {
 				.build();
 		}
 
-		// EXTEND: 연장 기간 중인지 확인
-		if (extendStart.isPresent() && extendEnd.isPresent()
-			&& !now.isBefore(extendStart.get()) && !now.isAfter(extendEnd.get())) {
+		// EXTEND: flag ON + 연장 기간 중
+		if (lockerExtendFlag && isOnPeriod(now, extendStart, extendEnd)) {
 			return LockerPeriodStatusResult.builder()
 				.phase(LockerPeriodPhase.EXTEND)
 				.startAt(extendStart.get())
@@ -169,7 +169,7 @@ public class LockerPolicyReader {
 				.build();
 		}
 
-		// READY: 신청 기간 전인지 확인
+		// READY: 신청 기간 전이거나, flag OFF로 아직 활성화되지 않은 상태
 		if (registerStart.isPresent() && now.isBefore(registerStart.get())) {
 			return LockerPeriodStatusResult.builder()
 				.phase(LockerPeriodPhase.READY)
@@ -178,7 +178,7 @@ public class LockerPolicyReader {
 				.build();
 		}
 
-		// READY: 신청 끝 ~ 연장 시작 사이인지 확인
+		// READY: 신청 끝 ~ 연장 시작 사이
 		if (extendStart.isPresent() && now.isBefore(extendStart.get())) {
 			return LockerPeriodStatusResult.builder()
 				.phase(LockerPeriodPhase.READY)
@@ -187,7 +187,7 @@ public class LockerPolicyReader {
 				.build();
 		}
 
-		// CLOSED: 모든 기간이 종료된 상태
+		// CLOSED: 모든 기간이 종료되었거나, 기간 중이지만 flag가 OFF인 경우
 		return LockerPeriodStatusResult.builder()
 			.phase(LockerPeriodPhase.CLOSED)
 			.startAt(null)
@@ -212,13 +212,14 @@ public class LockerPolicyReader {
 	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception 신청 기간이 설정되지 않은 경우
 	 */
 	private boolean isOnRegisterPeriod(LocalDateTime targetTime) {
-		LocalDateTime registerStartAt = parseDateTime(StaticValue.REGISTER_START_AT)
-			.orElseThrow(LockerErrorCode.LOCKER_REGISTER_PERIOD_NOT_SET::toBaseException);
-		LocalDateTime registerEndAt = parseDateTime(StaticValue.REGISTER_END_AT)
-			.orElseThrow(LockerErrorCode.LOCKER_REGISTER_PERIOD_NOT_SET::toBaseException);
+		Optional<LocalDateTime> start = findRegisterStartDate();
+		Optional<LocalDateTime> end = findRegisterEndDate();
 
-		return (targetTime.equals(registerStartAt) || targetTime.isAfter(registerStartAt))
-			&& (targetTime.equals(registerEndAt) || targetTime.isBefore(registerEndAt));
+		if (start.isEmpty() || end.isEmpty()) {
+			throw LockerErrorCode.LOCKER_REGISTER_PERIOD_NOT_SET.toBaseException();
+		}
+
+		return isOnPeriod(targetTime, start, end);
 	}
 
 	/**
@@ -228,12 +229,25 @@ public class LockerPolicyReader {
 	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception 연장 기간이 설정되지 않은 경우
 	 */
 	private boolean isOnExtendPeriod(LocalDateTime targetTime) {
-		LocalDateTime extendStartAt = parseDateTime(StaticValue.EXTEND_START_AT)
-			.orElseThrow(LockerErrorCode.LOCKER_EXTEND_PERIOD_NOT_SET::toBaseException);
-		LocalDateTime extendEndAt = parseDateTime(StaticValue.EXTEND_END_AT)
-			.orElseThrow(LockerErrorCode.LOCKER_EXTEND_PERIOD_NOT_SET::toBaseException);
+		Optional<LocalDateTime> start = findExtendStartDate();
+		Optional<LocalDateTime> end = findExtendEndDate();
 
-		return (targetTime.equals(extendStartAt) || targetTime.isAfter(extendStartAt))
-			&& (targetTime.equals(extendEndAt) || targetTime.isBefore(extendEndAt));
+		if (start.isEmpty() || end.isEmpty()) {
+			throw LockerErrorCode.LOCKER_EXTEND_PERIOD_NOT_SET.toBaseException();
+		}
+
+		return isOnPeriod(targetTime, start, end);
+	}
+
+	/**
+	 * 주어진 시각이 [start, end] 범위 내에 포함되는지 확인한다.
+	 * start 또는 end가 비어있으면 false를 반환한다.
+	 */
+	private boolean isOnPeriod(LocalDateTime targetTime,
+		Optional<LocalDateTime> start, Optional<LocalDateTime> end) {
+		if (start.isEmpty() || end.isEmpty()) {
+			return false;
+		}
+		return !targetTime.isBefore(start.get()) && !targetTime.isAfter(end.get());
 	}
 }
