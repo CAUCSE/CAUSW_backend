@@ -262,7 +262,7 @@ public class CeremonyServiceTest {
 			Ceremony c1 = mock(Ceremony.class);
 			Ceremony c2 = mock(Ceremony.class);
 			Page<Ceremony> ceremonyPage = new PageImpl<>(List.of(c1, c2));
-			given(ceremonyReader.findAllOngoingOrderByStartedAtDesc(any(), any(), eq(pageable)))
+			given(ceremonyReader.findOngoingOrderByStartedAtDesc(any(), any(), eq(pageable)))
 				.willReturn(ceremonyPage);
 
 			given(ceremonyDtoMapper.toCeremonySummaryResponseDto(any(Ceremony.class)))
@@ -275,7 +275,7 @@ public class CeremonyServiceTest {
 			assertThat(result.getTotalElements()).isEqualTo(2);
 
 			then(ceremonyTypeParser).should(times(1)).parseTypeOrNull("ALL");
-			then(ceremonyReader).should(times(1)).findAllOngoingOrderByStartedAtDesc(any(), any(), eq(pageable));
+			then(ceremonyReader).should(times(1)).findOngoingOrderByStartedAtDesc(any(), any(), eq(pageable));
 			then(ceremonyReader).should(never()).findOngoingByTypeOrderByStartedAtDesc(any(), any(), any(), any());
 
 			then(ceremonyDtoMapper).should(times(2)).toCeremonySummaryResponseDto(any(Ceremony.class));
@@ -305,7 +305,7 @@ public class CeremonyServiceTest {
 			then(ceremonyTypeParser).should(times(1)).parseTypeOrNull("celebration");
 			then(ceremonyReader).should(times(1))
 				.findOngoingByTypeOrderByStartedAtDesc(eq(CeremonyType.CELEBRATION), any(), any(), eq(pageable));
-			then(ceremonyReader).should(never()).findAllOngoingOrderByStartedAtDesc(any(), any(), any());
+			then(ceremonyReader).should(never()).findOngoingOrderByStartedAtDesc(any(), any(), any());
 
 			then(ceremonyDtoMapper).should(times(1)).toCeremonySummaryResponseDto(any(Ceremony.class));
 		}
@@ -320,7 +320,7 @@ public class CeremonyServiceTest {
 			assertThatThrownBy(() -> ceremonyService.getOngoingCeremonyPage("nope", 0))
 				.isInstanceOf(RuntimeException.class); // GlobalErrorCode.BAD_REQUEST.toBaseException()의 실제 타입에 맞게 교체 권장
 
-			then(ceremonyReader).should(never()).findAllOngoingOrderByStartedAtDesc(any(), any(), any());
+			then(ceremonyReader).should(never()).findOngoingOrderByStartedAtDesc(any(), any(), any());
 			then(ceremonyReader).should(never()).findOngoingByTypeOrderByStartedAtDesc(any(), any(), any(), any());
 		}
 
