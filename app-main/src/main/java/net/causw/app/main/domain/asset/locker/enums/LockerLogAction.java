@@ -2,9 +2,10 @@ package net.causw.app.main.domain.asset.locker.enums;
 
 import java.util.Arrays;
 
-import lombok.Getter;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
+
+import lombok.Getter;
 
 public enum LockerLogAction {
 	ENABLE("ENABLE", "사물함 활성화"),
@@ -18,14 +19,14 @@ public enum LockerLogAction {
 
 	private final String value;
 	@Getter
-    private final String description;
+	private final String description;
 
 	LockerLogAction(String value, String description) {
 		this.value = value;
 		this.description = description;
 	}
 
-    public static LockerLogAction of(String value) {
+	public static LockerLogAction of(String value) {
 		return Arrays.stream(values())
 			.filter(v -> value.equalsIgnoreCase(v.value))
 			.findFirst()

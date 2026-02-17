@@ -22,6 +22,6 @@ public class LockerLocationReader {
 	}
 
 	public List<LockerLocation> findAll() {
-		return lockerLocationRepository.findAll();
+		return lockerLocationRepository.findAllOrderByCreatedAt();
 	}
 }
