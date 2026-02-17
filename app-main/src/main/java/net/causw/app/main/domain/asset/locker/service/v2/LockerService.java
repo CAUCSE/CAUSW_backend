@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.asset.locker.entity.Locker;
 import net.causw.app.main.domain.asset.locker.entity.LockerLocation;
+import net.causw.app.main.domain.asset.locker.service.v2.dto.result.LockerFloorListResult;
 import net.causw.app.main.domain.asset.locker.service.v2.dto.result.LockerLocationResult;
 import net.causw.app.main.domain.asset.locker.service.v2.dto.result.MyLockerResult;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerLocationReader;
@@ -15,7 +16,6 @@ import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerLo
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerPolicyReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerValidator;
-import net.causw.app.main.domain.asset.locker.util.LockerAggregator;
 import net.causw.app.main.domain.asset.locker.util.LockerMapper;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
@@ -126,6 +126,27 @@ public class LockerService {
 
 		locker.extendExpireDate(nextExpireDate);
 		lockerLogWriter.logExtend(locker, user);
+	}
+
+	/**
+	 * 전체 층의 사물함 요약 정보를 조회한다.
+	 *
+	 * @return 전체 집계 및 층별 사물함 요약 목록
+	 */
+	@Transactional(readOnly = true)
+	public LockerFloorListResult findAllFloors() {
+		List<LockerLocation> locations = lockerLocationReader.findAll();
+		boolean canApply = lockerPolicyReader.isRegisterActive(LocalDateTime.now());
+
+		List<LockerFloorListResult.FloorItemResult> floorItems = locations.stream()
+			.map(location -> LockerMapper.toFloorItemResult(
+				location,
+				lockerReader.countByLocationId(location.getId()),
+				lockerReader.countAvailableByLocationId(location.getId()),
+				canApply))
+			.toList();
+
+		return LockerMapper.toFloorListResult(floorItems);
 	}
 
 	/**

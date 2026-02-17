@@ -50,7 +50,15 @@ public class LockerReader {
 		return lockerQueryRepository.findLockers(userKeyword, location, isActive, isOccupied, isExpired, pageable);
 	}
 
-    public List<Locker> findExpiredLockers(LocalDateTime targetTime) {
-        return lockerQueryRepository.findAllExpiredLockers(targetTime);
-    }
+	public List<Locker> findExpiredLockers(LocalDateTime targetTime) {
+		return lockerQueryRepository.findAllExpiredLockers(targetTime);
+	}
+
+	public long countByLocationId(String locationId) {
+		return lockerRepository.countByLocationId(locationId);
+	}
+
+	public long countAvailableByLocationId(String locationId) {
+		return lockerRepository.countByLocationIdAndIsActiveIsTrueAndUserIdIsNull(locationId);
+	}
 }

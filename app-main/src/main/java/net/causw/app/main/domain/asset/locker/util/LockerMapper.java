@@ -5,6 +5,7 @@ import java.util.List;
 import net.causw.app.main.domain.asset.locker.entity.Locker;
 import net.causw.app.main.domain.asset.locker.entity.LockerLocation;
 import net.causw.app.main.domain.asset.locker.entity.LockerStatus;
+import net.causw.app.main.domain.asset.locker.service.v2.dto.result.LockerFloorListResult;
 import net.causw.app.main.domain.asset.locker.service.v2.dto.result.LockerLocationResult;
 import net.causw.app.main.domain.asset.locker.service.v2.dto.result.MyLockerResult;
 
@@ -25,6 +26,30 @@ public class LockerMapper {
 				.status(LockerStatus.of(locker, userId))
 				.build())
 			.toList();
+	}
+
+	public static LockerFloorListResult.FloorItemResult toFloorItemResult(
+		LockerLocation location, long totalCount, long availableCount, boolean canApply) {
+
+		return LockerFloorListResult.FloorItemResult.builder()
+			.locationId(location.getId())
+			.floorName(location.getDescription())
+			.totalCount(totalCount)
+			.availableCount(availableCount)
+			.isAppliable(canApply)
+			.build();
+	}
+
+	public static LockerFloorListResult toFloorListResult(
+		List<LockerFloorListResult.FloorItemResult> floorItems) {
+
+		return LockerFloorListResult.builder()
+			.summary(LockerFloorListResult.SummaryResult.builder()
+				.totalCount(LockerAggregator.sumTotalCount(floorItems))
+				.availableCount(LockerAggregator.sumAvailableCount(floorItems))
+				.build())
+			.floors(floorItems)
+			.build();
 	}
 
 	public static LockerLocationResult toLocationResult(

@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.causw.app.main.domain.asset.locker.api.v2.controller.dto.response.LockerFloorListResponse;
 import net.causw.app.main.domain.asset.locker.api.v2.controller.dto.response.LockerLocationResponse;
 import net.causw.app.main.domain.asset.locker.api.v2.controller.dto.response.MyLockerResponse;
 import net.causw.app.main.domain.asset.locker.api.v2.mapper.LockerResponseMapper;
@@ -26,6 +27,14 @@ public class LockerController {
 
 	private final LockerService lockerService;
 	private final LockerResponseMapper lockerResponseMapper;
+
+	@GetMapping("/locations")
+	@Operation(summary = "전체 층 리스트 조회", description = "전체 사물함 층별 요약 정보를 조회합니다.")
+	public ApiResponse<LockerFloorListResponse> findAllFloors() {
+
+		return ApiResponse.success(
+			lockerResponseMapper.toFloorListResponse(lockerService.findAllFloors()));
+	}
 
 	@GetMapping("/me")
 	@Operation(summary = "내 사물함 조회", description = "현재 로그인한 유저의 사물함 정보를 조회합니다.")

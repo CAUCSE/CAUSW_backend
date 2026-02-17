@@ -3,8 +3,10 @@ package net.causw.app.main.domain.asset.locker.api.v2.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import net.causw.app.main.domain.asset.locker.api.v2.controller.dto.response.LockerFloorListResponse;
 import net.causw.app.main.domain.asset.locker.api.v2.controller.dto.response.LockerLocationResponse;
 import net.causw.app.main.domain.asset.locker.api.v2.controller.dto.response.MyLockerResponse;
+import net.causw.app.main.domain.asset.locker.service.v2.dto.result.LockerFloorListResult;
 import net.causw.app.main.domain.asset.locker.service.v2.dto.result.LockerLocationResult;
 import net.causw.app.main.domain.asset.locker.service.v2.dto.result.MyLockerResult;
 
@@ -23,4 +25,6 @@ public interface LockerResponseMapper {
 	LockerLocationResponse.SummaryInfo toSummaryInfo(LockerLocationResult.SummaryResult result);
 
 	LockerLocationResponse.LockerItem toLockerItem(LockerLocationResult.LockerItemResult result);
+
+	LockerFloorListResponse toFloorListResponse(LockerFloorListResult result);
 }
