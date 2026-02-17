@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.asset.locker.util;
+package net.causw.app.main.domain.asset.locker.service.v2.implementation;
 
 import java.util.List;
 
