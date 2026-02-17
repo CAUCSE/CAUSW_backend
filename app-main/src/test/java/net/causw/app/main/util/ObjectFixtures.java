@@ -29,6 +29,9 @@ import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.account.enums.user.GraduationType;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.domain.asset.locker.entity.Locker;
+import net.causw.app.main.domain.asset.locker.entity.LockerLocation;
+import net.causw.app.main.domain.asset.locker.entity.LockerName;
 import net.causw.global.constant.StaticValue;
 
 public class ObjectFixtures {
@@ -238,5 +241,52 @@ public class ObjectFixtures {
 			.end(LocalDateTime.of(2026, 4, 21, 23, 59))
 			.creator(creator)
 			.build();
+	}
+
+	// Locker 관련 헬퍼 메서드
+
+	/**
+	 * id가 설정되지 않은 기본 LockerLocation fixture.
+	 */
+	public static LockerLocation getLockerLocation(LockerName name) {
+		return LockerLocation.of(name);
+	}
+
+	/**
+	 * id가 설정된 LockerLocation fixture.
+	 */
+	public static LockerLocation getLockerLocationWithId(LockerName name, String id) {
+		LockerLocation location = getLockerLocation(name);
+		ReflectionTestUtils.setField(location, "id", id);
+		return location;
+	}
+
+	/**
+	 * id가 설정되지 않은 기본 Locker fixture.
+	 */
+	public static Locker getLocker(
+		Long lockerNumber,
+		Boolean isActive,
+		User user,
+		LockerLocation location,
+		LocalDateTime expireDate
+	) {
+		return Locker.of(lockerNumber, isActive, user, location, expireDate);
+	}
+
+	/**
+	 * id가 설정된 Locker fixture.
+	 */
+	public static Locker getLockerWithId(
+		String id,
+		Long lockerNumber,
+		Boolean isActive,
+		User user,
+		LockerLocation location,
+		LocalDateTime expireDate
+	) {
+		Locker locker = getLocker(lockerNumber, isActive, user, location, expireDate);
+		ReflectionTestUtils.setField(locker, "id", id);
+		return locker;
 	}
 }
