@@ -5,9 +5,11 @@ import org.mapstruct.Mapping;
 
 import net.causw.app.main.domain.asset.locker.api.v2.controller.dto.response.LockerFloorListResponse;
 import net.causw.app.main.domain.asset.locker.api.v2.controller.dto.response.LockerLocationResponse;
+import net.causw.app.main.domain.asset.locker.api.v2.controller.dto.response.LockerPeriodStatusResponse;
 import net.causw.app.main.domain.asset.locker.api.v2.controller.dto.response.MyLockerResponse;
 import net.causw.app.main.domain.asset.locker.service.v2.dto.result.LockerFloorListResult;
 import net.causw.app.main.domain.asset.locker.service.v2.dto.result.LockerLocationResult;
+import net.causw.app.main.domain.asset.locker.service.v2.dto.result.LockerPeriodStatusResult;
 import net.causw.app.main.domain.asset.locker.service.v2.dto.result.MyLockerResult;
 
 @Mapper(componentModel = "spring")
@@ -27,4 +29,6 @@ public interface LockerResponseMapper {
 	LockerLocationResponse.LockerItem toLockerItem(LockerLocationResult.LockerItemResult result);
 
 	LockerFloorListResponse toFloorListResponse(LockerFloorListResult result);
+
+	LockerPeriodStatusResponse toPeriodStatusResponse(LockerPeriodStatusResult result);
 }

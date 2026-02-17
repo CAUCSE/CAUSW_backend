@@ -165,7 +165,7 @@ public class LockerAdminService {
 		lockerLogWriter.logDisable(locker, admin);
 	}
 
-    public void releaseExpiredLocker(String adminId) {
+	public void releaseExpiredLocker(String adminId) {
 		User admin = userReader.findAdminUserById(adminId);
 
 		var expiredLockers = lockerReader.findExpiredLockers(LocalDateTime.now());
@@ -173,5 +173,5 @@ public class LockerAdminService {
 			locker.returnLocker();
 			lockerLogWriter.logAdminRelease(locker, admin);
 		});
-    }
+	}
 }

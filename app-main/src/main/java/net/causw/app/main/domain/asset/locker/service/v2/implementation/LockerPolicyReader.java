@@ -6,6 +6,8 @@ import java.util.Optional;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.domain.asset.locker.enums.LockerPeriodPhase;
+import net.causw.app.main.domain.asset.locker.service.v2.dto.result.LockerPeriodStatusResult;
 import net.causw.app.main.domain.etc.flag.service.v2.implementation.FlagReader;
 import net.causw.app.main.domain.etc.textfield.service.v2.implementation.TextFieldReader;
 import net.causw.app.main.shared.exception.errorcode.LockerErrorCode;
@@ -131,6 +133,66 @@ public class LockerPolicyReader {
 	 */
 	public Optional<LocalDateTime> findExtendEndDate() {
 		return parseDateTime(StaticValue.EXTEND_END_AT);
+	}
+
+	/**
+	 * 현재 시각 기준으로 사물함 기간 상태(phase)를 판별한다.
+	 *
+	 * <p>판별 우선순위: APPLY → EXTEND → READY → CLOSED</p>
+	 *
+	 * @param now 기준 시각
+	 * @return 현재 phase와 해당 기간의 startAt/endAt
+	 */
+	public LockerPeriodStatusResult resolveCurrentPhase(LocalDateTime now) {
+		Optional<LocalDateTime> registerStart = findRegisterStartDate();
+		Optional<LocalDateTime> registerEnd = findRegisterEndDate();
+		Optional<LocalDateTime> extendStart = findExtendStartDate();
+		Optional<LocalDateTime> extendEnd = findExtendEndDate();
+
+		// APPLY: 신청 기간 중인지 확인
+		if (registerStart.isPresent() && registerEnd.isPresent()
+			&& !now.isBefore(registerStart.get()) && !now.isAfter(registerEnd.get())) {
+			return LockerPeriodStatusResult.builder()
+				.phase(LockerPeriodPhase.APPLY)
+				.startAt(registerStart.get())
+				.endAt(registerEnd.get())
+				.build();
+		}
+
+		// EXTEND: 연장 기간 중인지 확인
+		if (extendStart.isPresent() && extendEnd.isPresent()
+			&& !now.isBefore(extendStart.get()) && !now.isAfter(extendEnd.get())) {
+			return LockerPeriodStatusResult.builder()
+				.phase(LockerPeriodPhase.EXTEND)
+				.startAt(extendStart.get())
+				.endAt(extendEnd.get())
+				.build();
+		}
+
+		// READY: 신청 기간 전인지 확인
+		if (registerStart.isPresent() && now.isBefore(registerStart.get())) {
+			return LockerPeriodStatusResult.builder()
+				.phase(LockerPeriodPhase.READY)
+				.startAt(registerStart.get())
+				.endAt(registerEnd.orElse(null))
+				.build();
+		}
+
+		// READY: 신청 끝 ~ 연장 시작 사이인지 확인
+		if (extendStart.isPresent() && now.isBefore(extendStart.get())) {
+			return LockerPeriodStatusResult.builder()
+				.phase(LockerPeriodPhase.READY)
+				.startAt(extendStart.get())
+				.endAt(extendEnd.orElse(null))
+				.build();
+		}
+
+		// CLOSED: 모든 기간이 종료된 상태
+		return LockerPeriodStatusResult.builder()
+			.phase(LockerPeriodPhase.CLOSED)
+			.startAt(null)
+			.endAt(null)
+			.build();
 	}
 
 	/**

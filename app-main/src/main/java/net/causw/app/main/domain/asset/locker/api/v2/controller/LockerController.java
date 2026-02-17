@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import net.causw.app.main.domain.asset.locker.api.v2.controller.dto.response.LockerFloorListResponse;
 import net.causw.app.main.domain.asset.locker.api.v2.controller.dto.response.LockerLocationResponse;
+import net.causw.app.main.domain.asset.locker.api.v2.controller.dto.response.LockerPeriodStatusResponse;
 import net.causw.app.main.domain.asset.locker.api.v2.controller.dto.response.MyLockerResponse;
 import net.causw.app.main.domain.asset.locker.api.v2.mapper.LockerResponseMapper;
 import net.causw.app.main.domain.asset.locker.service.v2.LockerService;
@@ -27,6 +28,14 @@ public class LockerController {
 
 	private final LockerService lockerService;
 	private final LockerResponseMapper lockerResponseMapper;
+
+	@GetMapping("/period-status")
+	@Operation(summary = "현재 기간 정책 조회", description = "현재 사물함 기간 정책 상태(READY/APPLY/EXTEND/CLOSED)를 조회합니다.")
+	public ApiResponse<LockerPeriodStatusResponse> findCurrentPeriodStatus() {
+
+		return ApiResponse.success(
+			lockerResponseMapper.toPeriodStatusResponse(lockerService.findCurrentPeriodStatus()));
+	}
 
 	@GetMapping("/locations")
 	@Operation(summary = "전체 층 리스트 조회", description = "전체 사물함 층별 요약 정보를 조회합니다.")

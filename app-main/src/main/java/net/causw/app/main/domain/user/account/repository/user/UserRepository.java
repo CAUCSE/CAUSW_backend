@@ -2,7 +2,6 @@ package net.causw.app.main.domain.user.account.repository.user;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;

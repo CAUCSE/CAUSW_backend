@@ -12,6 +12,7 @@ import net.causw.app.main.domain.asset.locker.entity.LockerLocation;
 import net.causw.app.main.domain.asset.locker.repository.dto.LockerCountByLocation;
 import net.causw.app.main.domain.asset.locker.service.v2.dto.result.LockerFloorListResult;
 import net.causw.app.main.domain.asset.locker.service.v2.dto.result.LockerLocationResult;
+import net.causw.app.main.domain.asset.locker.service.v2.dto.result.LockerPeriodStatusResult;
 import net.causw.app.main.domain.asset.locker.service.v2.dto.result.MyLockerResult;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerLocationReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerLogWriter;
@@ -128,6 +129,16 @@ public class LockerService {
 
 		locker.extendExpireDate(nextExpireDate);
 		lockerLogWriter.logExtend(locker, user);
+	}
+
+	/**
+	 * 현재 사물함 기간 정책 상태를 조회한다.
+	 *
+	 * @return 현재 phase와 해당 기간의 시작/종료 일시
+	 */
+	@Transactional(readOnly = true)
+	public LockerPeriodStatusResult findCurrentPeriodStatus() {
+		return lockerPolicyReader.resolveCurrentPhase(LocalDateTime.now());
 	}
 
 	/**

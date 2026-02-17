@@ -79,7 +79,7 @@ public class LockerAdminController {
 	@PostMapping("/release-all-expired")
 	@Operation(summary = "만료된 사물함 일괄 회수", description = "만료된 사물함을 일괄 회수합니다.")
 	public ApiResponse<Void> releaseExpiredLocker(
-			@AuthenticationPrincipal CustomUserDetails userDetails) {
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
 		lockerAdminService.releaseExpiredLocker(userDetails.getUserId());
 		return ApiResponse.success();

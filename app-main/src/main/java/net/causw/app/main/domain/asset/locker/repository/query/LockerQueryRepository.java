@@ -39,7 +39,8 @@ public class LockerQueryRepository {
 		QLockerLocation lockerLocation = QLockerLocation.lockerLocation;
 		QUser user = QUser.user;
 
-		BooleanBuilder predicate = getSearchCondition(userKeyword, location, isActive, isOccupied, isExpired, user, lockerLocation, locker);
+		BooleanBuilder predicate = getSearchCondition(userKeyword, location, isActive, isOccupied, isExpired, user,
+			lockerLocation, locker);
 
 		List<Locker> content = jpaQueryFactory
 			.selectFrom(locker)
@@ -65,13 +66,14 @@ public class LockerQueryRepository {
 		QLocker locker = QLocker.locker;
 
 		return jpaQueryFactory
-				.selectFrom(locker)
-				.where(locker.expireDate.before(targetTime))
-				.fetch();
+			.selectFrom(locker)
+			.where(locker.expireDate.before(targetTime))
+			.fetch();
 	}
 
 	@NotNull
-	private static BooleanBuilder getSearchCondition(String userKeyword, LockerName location, Boolean isActive, Boolean isOccupied, Boolean isExpired, QUser user, QLockerLocation lockerLocation, QLocker locker) {
+	private static BooleanBuilder getSearchCondition(String userKeyword, LockerName location, Boolean isActive,
+		Boolean isOccupied, Boolean isExpired, QUser user, QLockerLocation lockerLocation, QLocker locker) {
 		BooleanBuilder where = new BooleanBuilder();
 
 		if (userKeyword != null && !userKeyword.isBlank()) {
