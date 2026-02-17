@@ -4,9 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -73,7 +71,7 @@ class LockerServiceTest {
 	}
 
 	private Locker createLocker(String id, long number, LockerLocation location, User user, LocalDateTime expiredAt, boolean isActive) {
-		return org.mockito.Mockito.spy(ObjectFixtures.getLockerWithId(id, number, isActive, user, location, expiredAt));
+		return spy(ObjectFixtures.getLockerWithId(id, number, isActive, user, location, expiredAt));
 	}
 
 	@Nested
@@ -150,7 +148,7 @@ class LockerServiceTest {
 			when(userReader.findUserById(userId)).thenReturn(user);
 
 			BaseRunTimeV2Exception exception = LockerErrorCode.LOCKER_REGISTER_NOT_ALLOWED.toBaseException();
-			org.mockito.Mockito.doThrow(exception)
+			doThrow(exception)
 				.when(lockerValidator)
 				.validateRegisterPeriod(any(LocalDateTime.class));
 
@@ -205,7 +203,7 @@ class LockerServiceTest {
 			when(userReader.findUserById(userId)).thenReturn(user);
 
 			BaseRunTimeV2Exception exception = LockerErrorCode.LOCKER_RETURN_NOT_ALLOWED.toBaseException();
-			org.mockito.Mockito.doThrow(exception)
+			doThrow(exception)
 				.when(lockerValidator)
 				.validateReturnPeriod(any(LocalDateTime.class));
 
@@ -262,7 +260,7 @@ class LockerServiceTest {
 			when(userReader.findUserById(userId)).thenReturn(user);
 
 			BaseRunTimeV2Exception exception = LockerErrorCode.LOCKER_EXTEND_NOT_ALLOWED.toBaseException();
-			org.mockito.Mockito.doThrow(exception)
+			doThrow(exception)
 				.when(lockerValidator)
 				.validateExtendPeriod(any(LocalDateTime.class));
 
@@ -330,7 +328,7 @@ class LockerServiceTest {
 		@DisplayName("성공: 전체 층 조회 시 리더를 통해 데이터를 조회한다")
 		void givenNothing_whenFindAllFloors_thenUsesReadersAndBuildsResult() {
 			// given
-			LockerLocation location = org.mockito.Mockito.mock(LockerLocation.class);
+			LockerLocation location = mock(LockerLocation.class);
 			when(location.getId()).thenReturn("loc-1");
 
 			when(lockerLocationReader.findAll()).thenReturn(List.of(location));
@@ -353,8 +351,8 @@ class LockerServiceTest {
 			String locationId = "loc-1";
 			String userId = "user-1";
 
-			LockerLocation location = org.mockito.Mockito.mock(LockerLocation.class);
-			Locker locker = org.mockito.Mockito.mock(Locker.class);
+			LockerLocation location = mock(LockerLocation.class);
+			Locker locker = mock(Locker.class);
 
 			when(lockerLocationReader.findById(locationId)).thenReturn(location);
 			when(lockerReader.findByLocationIdWithUser(locationId)).thenReturn(List.of(locker));

@@ -4,9 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -66,7 +64,7 @@ class LockerAdminServiceTest {
 	}
 
 	private Locker createLocker(String id, long number, LockerLocation location, User user, LocalDateTime expiredAt, boolean isActive) {
-		return org.mockito.Mockito.spy(ObjectFixtures.getLockerWithId(id, number, isActive, user, location, expiredAt));
+        return spy(ObjectFixtures.getLockerWithId(id, number, isActive, user, location, expiredAt));
 	}
 
 	@Nested
@@ -185,7 +183,7 @@ class LockerAdminServiceTest {
 			when(userReader.findAdminUserById(adminId)).thenReturn(admin);
 
 			BaseRunTimeV2Exception exception = LockerErrorCode.LOCKER_USER_ALREADY_HAS_LOCKER.toBaseException();
-			org.mockito.Mockito.doThrow(exception)
+			doThrow(exception)
 				.when(lockerValidator)
 				.validateUserNotHavingLocker(userId);
 
@@ -242,7 +240,7 @@ class LockerAdminServiceTest {
 			when(userReader.findAdminUserById(adminId)).thenReturn(admin);
 
 			BaseRunTimeV2Exception exception = LockerErrorCode.LOCKER_NOT_IN_USE.toBaseException();
-			org.mockito.Mockito.doThrow(exception)
+			doThrow(exception)
 				.when(lockerValidator)
 				.validateInUse(locker);
 
@@ -267,8 +265,8 @@ class LockerAdminServiceTest {
 			String lockerId = "locker-1";
 			String adminId = "admin-1";
 
-			Locker locker = org.mockito.Mockito.mock(Locker.class);
-			User admin = org.mockito.Mockito.mock(User.class);
+			Locker locker = mock(Locker.class);
+			User admin = mock(User.class);
 
 			when(lockerReader.findByIdForWrite(lockerId)).thenReturn(locker);
 			when(userReader.findAdminUserById(adminId)).thenReturn(admin);
@@ -289,14 +287,14 @@ class LockerAdminServiceTest {
 			String lockerId = "locker-1";
 			String adminId = "admin-1";
 
-			Locker locker = org.mockito.Mockito.mock(Locker.class);
-			User admin = org.mockito.Mockito.mock(User.class);
+			Locker locker = mock(Locker.class);
+			User admin = mock(User.class);
 
 			when(lockerReader.findByIdForWrite(lockerId)).thenReturn(locker);
 			when(userReader.findAdminUserById(adminId)).thenReturn(admin);
 
 			BaseRunTimeV2Exception exception = LockerErrorCode.LOCKER_NOT_IN_USE.toBaseException();
-			org.mockito.Mockito.doThrow(exception)
+			doThrow(exception)
 				.when(lockerValidator)
 				.validateInUse(locker);
 
@@ -321,8 +319,8 @@ class LockerAdminServiceTest {
 			String lockerId = "locker-1";
 			String adminId = "admin-1";
 
-			Locker locker = org.mockito.Mockito.mock(Locker.class);
-			User admin = org.mockito.Mockito.mock(User.class);
+			Locker locker = mock(Locker.class);
+			User admin = mock(User.class);
 
 			when(lockerReader.findByIdForWrite(lockerId)).thenReturn(locker);
 			when(userReader.findAdminUserById(adminId)).thenReturn(admin);
