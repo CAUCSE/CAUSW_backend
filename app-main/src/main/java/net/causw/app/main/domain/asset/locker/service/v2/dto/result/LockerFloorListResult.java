@@ -18,7 +18,6 @@ public record LockerFloorListResult(
 		String locationId,
 		String floorName,
 		long totalCount,
-		long availableCount,
-		boolean isAppliable) {
+		long availableCount) {
 	}
 }

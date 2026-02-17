@@ -21,7 +21,6 @@ public record LockerFloorListResponse(
 		@Schema(description = "층 ID", example = "location-uuid-1234") String locationId,
 		@Schema(description = "층 이름", example = "2층") String floorName,
 		@Schema(description = "전체 사물함 수", example = "136") long totalCount,
-		@Schema(description = "잔여 사물함 수", example = "68") long availableCount,
-		@Schema(description = "신청 가능 여부", example = "true") boolean isAppliable) {
+		@Schema(description = "잔여 사물함 수", example = "68") long availableCount) {
 	}
 }

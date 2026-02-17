@@ -29,14 +29,13 @@ public class LockerMapper {
 	}
 
 	public static LockerFloorListResult.FloorItemResult toFloorItemResult(
-		LockerLocation location, long totalCount, long availableCount, boolean canApply) {
+		LockerLocation location, long totalCount, long availableCount) {
 
 		return LockerFloorListResult.FloorItemResult.builder()
 			.locationId(location.getId())
 			.floorName(location.getDescription())
 			.totalCount(totalCount)
 			.availableCount(availableCount)
-			.isAppliable(canApply)
 			.build();
 	}
 

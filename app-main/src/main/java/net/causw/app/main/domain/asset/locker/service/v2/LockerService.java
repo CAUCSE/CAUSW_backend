@@ -2,12 +2,14 @@ package net.causw.app.main.domain.asset.locker.service.v2;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.asset.locker.entity.Locker;
 import net.causw.app.main.domain.asset.locker.entity.LockerLocation;
+import net.causw.app.main.domain.asset.locker.repository.dto.LockerCountByLocation;
 import net.causw.app.main.domain.asset.locker.service.v2.dto.result.LockerFloorListResult;
 import net.causw.app.main.domain.asset.locker.service.v2.dto.result.LockerLocationResult;
 import net.causw.app.main.domain.asset.locker.service.v2.dto.result.MyLockerResult;
@@ -135,15 +137,18 @@ public class LockerService {
 	 */
 	@Transactional(readOnly = true)
 	public LockerFloorListResult findAllFloors() {
+		// 전체 층 조회
 		List<LockerLocation> locations = lockerLocationReader.findAll();
-		boolean canApply = lockerPolicyReader.isRegisterActive(LocalDateTime.now());
+		// 전체 층 집계 정보 조회(전체 개수, 사용가능 개수)
+		Map<String, LockerCountByLocation> countsByLocation = lockerReader.countGroupByLocation();
+		LockerCountByLocation empty = new LockerCountByLocation("", 0, 0);
 
+		// 층별 집계정보 분배
 		List<LockerFloorListResult.FloorItemResult> floorItems = locations.stream()
-			.map(location -> LockerMapper.toFloorItemResult(
-				location,
-				lockerReader.countByLocationId(location.getId()),
-				lockerReader.countAvailableByLocationId(location.getId()),
-				canApply))
+			.map(location -> {
+				LockerCountByLocation counts = countsByLocation.getOrDefault(location.getId(), empty);
+				return LockerMapper.toFloorItemResult(location, counts.totalCount(), counts.availableCount());
+			})
 			.toList();
 
 		return LockerMapper.toFloorListResult(floorItems);
