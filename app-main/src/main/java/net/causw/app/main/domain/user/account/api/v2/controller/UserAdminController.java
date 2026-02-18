@@ -1,7 +1,8 @@
 package net.causw.app.main.domain.user.account.api.v2.controller;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
@@ -45,15 +46,11 @@ public class UserAdminController {
 	@Operation(summary = "회원 목록 조회 V2", description = "관리자가 회원 목록을 조회합니다. 이름/학번 키워드 검색, 상태/학적/학과 필터링, 페이징을 지원합니다.")
 	@GetMapping
 	public ApiResponse<Page<UserListItemResponse>> getUsers(
-		@ModelAttribute @Validated UserListRequest request) {
-		// page/size 안 보내면 기본값
-		int page = request.page() != null ? request.page() : 0;
-		int size = request.size() != null ? request.size() : 10;
-
-		PageRequest pageRequest = PageRequest.of(page, size);
+		@ModelAttribute @Validated UserListRequest request,
+		@PageableDefault(page = 0, size = 10) Pageable pageable) {
 
 		Page<UserListItemResponse> response = userAdminService
-			.getUserList(userListMapper.toCondition(request), pageRequest)
+			.getUserList(userListMapper.toCondition(request), pageable)
 			.map(userListMapper::toResponse);
 
 		return ApiResponse.success(response);
@@ -74,15 +71,11 @@ public class UserAdminController {
 		+ "이름/학번 키워드 검색, 사용자 상태(AWAIT/REJECT) 필터링, 페이징을 지원합니다.")
 	@GetMapping("/admissions")
 	public ApiResponse<Page<AdmissionListItemResponse>> getAdmissions(
-		@ModelAttribute @Validated AdmissionListRequest request) {
-
-		int page = request.page() != null ? request.page() : 0;
-		int size = request.size() != null ? request.size() : 10;
-
-		PageRequest pageRequest = PageRequest.of(page, size);
+		@ModelAttribute @Validated AdmissionListRequest request,
+		@PageableDefault(page = 0, size = 10) Pageable pageable) {
 
 		Page<AdmissionListItemResponse> response = admissionAdminService
-			.getAdmissionList(admissionDtoMapper.toCondition(request), pageRequest)
+			.getAdmissionList(admissionDtoMapper.toCondition(request), pageable)
 			.map(admissionDtoMapper::toListItemResponse);
 
 		return ApiResponse.success(response);
