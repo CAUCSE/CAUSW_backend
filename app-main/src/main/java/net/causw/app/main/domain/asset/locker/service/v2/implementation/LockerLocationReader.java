@@ -9,9 +9,11 @@ import net.causw.app.main.domain.asset.locker.repository.LockerLocationRepositor
 import net.causw.app.main.shared.exception.errorcode.LockerErrorCode;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class LockerLocationReader {
 
 	private final LockerLocationRepository lockerLocationRepository;
