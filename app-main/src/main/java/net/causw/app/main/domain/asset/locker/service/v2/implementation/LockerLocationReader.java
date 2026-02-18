@@ -3,13 +3,13 @@ package net.causw.app.main.domain.asset.locker.service.v2.implementation;
 import java.util.List;
 
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.asset.locker.entity.LockerLocation;
 import net.causw.app.main.domain.asset.locker.repository.LockerLocationRepository;
 import net.causw.app.main.shared.exception.errorcode.LockerErrorCode;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
