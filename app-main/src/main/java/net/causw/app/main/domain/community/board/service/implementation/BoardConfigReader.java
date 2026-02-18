@@ -1,12 +1,15 @@
 package net.causw.app.main.domain.community.board.service.implementation;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
+import net.causw.app.main.domain.community.board.entity.BoardReadScope;
 import net.causw.app.main.domain.community.board.repository.BoardAdminQueryRepository;
 import net.causw.app.main.domain.community.board.repository.BoardConfigQueryRepository;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
@@ -72,6 +75,12 @@ public class BoardConfigReader {
 	 * @return 게시판 ID 목록
 	 */
 	public List<String> getAccessibleBoardIdsByAcademicStatus(AcademicStatus academicStatus) {
-		return boardConfigQueryRepository.findAccessibleBoardIdsByUserState(academicStatus);
+		Set<BoardReadScope> scopes = new HashSet<>();
+		scopes.add(BoardReadScope.BOTH);
+		switch (academicStatus) {
+			case GRADUATED -> scopes.add(BoardReadScope.GRADUATED);
+			case ENROLLED -> scopes.add(BoardReadScope.ENROLLED);
+		}
+		return boardConfigQueryRepository.findBoardsByReadScopes(scopes);
 	}
 }
