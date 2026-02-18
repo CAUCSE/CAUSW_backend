@@ -156,11 +156,12 @@ public class LockerAdminService {
 
 		lockerValidator.validateDisableable(locker);
 
-		locker.getUser().ifPresent(
-			user -> {
-				locker.returnLocker();
-				lockerLogWriter.logAdminRelease(locker, admin);
-			});
+		// locker user 존재할 시에 반환
+		if (locker.getUser().isPresent()) {
+			locker.returnLocker();
+			lockerLogWriter.logAdminRelease(locker, admin);
+		}
+
 		locker.disable();
 		lockerLogWriter.logDisable(locker, admin);
 	}
