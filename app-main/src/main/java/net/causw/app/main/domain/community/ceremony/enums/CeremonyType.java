@@ -6,15 +6,13 @@ import lombok.Getter;
 
 @Getter
 public enum CeremonyType {
-	CELEBRATION("경사", "celebration"),
-	CONDOLENCE("조사", "condolence");
+	CELEBRATION("경사"),
+	CONDOLENCE("조사");
 
 	private final String label;
-	private final String value;
 
-	CeremonyType(String label, String value) {
+	CeremonyType(String label) {
 		this.label = label;
-		this.value = value;
 	}
 
 	public static CeremonyType fromString(String type) {
@@ -23,7 +21,7 @@ public enum CeremonyType {
 		}
 
 		for (CeremonyType ceremonyType : CeremonyType.values()) {
-			if (ceremonyType.value.equalsIgnoreCase(type)) {
+			if (ceremonyType.name().equalsIgnoreCase(type)) {
 				return ceremonyType;
 			}
 		}

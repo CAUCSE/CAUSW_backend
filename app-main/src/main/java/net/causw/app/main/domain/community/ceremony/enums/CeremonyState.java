@@ -6,16 +6,10 @@ import lombok.Getter;
 
 @Getter
 public enum CeremonyState {
-	ACCEPT("accept"), // 승인
-	REJECT("reject"), // 거절
-	AWAIT("await"), // 대기
-	CLOSE("close"); // 종료
-
-	private final String value;
-
-	CeremonyState(String value) {
-		this.value = value;
-	}
+	ACCEPT, // 승인
+	REJECT, // 거절
+	AWAIT, // 대기
+	CLOSE; // 종료
 
 	public static CeremonyState fromString(String state) {
 		if (state == null || state.isEmpty()) {
@@ -23,7 +17,7 @@ public enum CeremonyState {
 		}
 
 		for (CeremonyState ceremonyState : CeremonyState.values()) {
-			if (ceremonyState.value.equalsIgnoreCase(state)) {
+			if (ceremonyState.name().equalsIgnoreCase(state)) {
 				return ceremonyState;
 			}
 		}

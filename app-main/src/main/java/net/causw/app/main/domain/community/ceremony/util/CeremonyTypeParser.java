@@ -14,6 +14,6 @@ public class CeremonyTypeParser {
 			return null;
 		}
 
-		return CeremonyType.fromString(typeParam).getValue();
+		return CeremonyType.fromString(typeParam).name();
 	}
 }
