@@ -13,41 +13,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step A: 업데이트 전 상태 스냅샷
-      - name: Snapshot BEFORE d-day update
-        id: before
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const pulls = await github.rest.pulls.list({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              state: "open",
-              base: "dev"
-            });
-
-            const before = {};
-            for (const pr of pulls.data) {
-              const d = pr.labels.find(l => /^D-\d+$/.test(l.name));
-              if (d) before[pr.number] = d.name;
-            }
-
-            return before;
-
-      # Step B: D-n 라벨 업데이트
+      # Step A: D-n 라벨 업데이트
       - name: Update D-n Labels
         uses: naver/d-day-labeler@latest
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      # Step C: 업데이트 후 상태 + diff 판단
-      - name: Detect D-2→D-1 / D-1→D-0
+      # Step B: 현재 D-1 / D-0 PR 감지 (상태 기준)
+      - name: Detect D-1 / D-0 PRs
         id: detect
         uses: actions/github-script@v7
         with:
           script: |
-            const before = JSON.parse(`${{ steps.before.outputs.result }}`);
-
             const pulls = await github.rest.pulls.list({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -58,28 +35,24 @@ jobs:
             const notify = [];
 
             for (const pr of pulls.data) {
-              const afterLabel = pr.labels.find(l => /^D-\d+$/.test(l.name));
-              if (!afterLabel) continue;
+              const dLabel = pr.labels.find(l => /^D-\d+$/.test(l.name));
+              if (!dLabel) continue;
 
-              const after = afterLabel.name;
-              const prev = before[pr.number];
+              const label = dLabel.name;
 
-              if (
-                (prev === "D-2" && after === "D-1") ||
-                (prev === "D-1" && after === "D-0")
-              ) {
+              if (label === "D-1" || label === "D-0") {
                 notify.push({
                   number: pr.number,
                   title: pr.title,
                   url: pr.html_url,
-                  prefix: after === "D-0" ? "🚨 [D-0]" : "⏳ [D-1]"
+                  prefix: label === "D-0" ? "🚨 [D-0]" : "⏳ [D-1]"
                 });
               }
             }
 
             return notify;
 
-      # Discord 알림
+      # Step C: Discord 알림
       - name: Send Discord notification
         if: ${{ steps.detect.outputs.result != '[]' }}
         env:
