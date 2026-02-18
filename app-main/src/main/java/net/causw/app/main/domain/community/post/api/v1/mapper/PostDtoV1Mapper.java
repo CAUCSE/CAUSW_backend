@@ -39,9 +39,9 @@ import net.causw.global.constant.StaticValue;
 @interface CommonPostWriterMappings{}
 
 @Mapper(componentModel = "spring")
-public interface PostDtoMapper extends UuidFileToUrlDtoMapper {
+public interface PostDtoV1Mapper extends UuidFileToUrlDtoMapper {
 
-	PostDtoMapper INSTANCE = Mappers.getMapper(PostDtoMapper.class);
+	PostDtoV1Mapper INSTANCE = Mappers.getMapper(PostDtoV1Mapper.class);
 
 	// Dto writerName 필드에 post.writer.name을 삽입한다는 의미입니다.
 	@Mapping(target = "id", source = "post.id")

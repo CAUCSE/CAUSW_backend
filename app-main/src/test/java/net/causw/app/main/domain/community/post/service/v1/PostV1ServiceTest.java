@@ -60,10 +60,10 @@ import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.UnauthorizedException;
 
 @ExtendWith(MockitoExtension.class)
-public class PostServiceTest {
+public class PostV1ServiceTest {
 
 	@InjectMocks
-	PostService postService;
+	PostV1Service postV1Service;
 
 	@Mock
 	PostRepository postRepository;
@@ -124,7 +124,7 @@ public class PostServiceTest {
 			when(likePostRepository.existsByPostIdAndUserId(postId, user.getId())).thenReturn(false);
 
 			// When
-			postService.likePost(user, postId);
+			postV1Service.likePost(user, postId);
 
 			// Then
 			verify(likePostRepository, times(1)).save(any(LikePost.class));
@@ -143,7 +143,7 @@ public class PostServiceTest {
 			when(postRepository.findById(postId)).thenReturn(Optional.of(post));
 
 			// When & Then
-			assertThatThrownBy(() -> postService.likePost(user, postId))
+			assertThatThrownBy(() -> postV1Service.likePost(user, postId))
 				.isInstanceOf(UnauthorizedException.class)
 				.extracting("errorCode")
 				.isEqualTo(ErrorCode.DELETED_USER);
@@ -165,7 +165,7 @@ public class PostServiceTest {
 			when(likePostRepository.existsByPostIdAndUserId(postId, user.getId())).thenReturn(true);
 
 			// When & Then
-			assertThatThrownBy(() -> postService.likePost(user, postId))
+			assertThatThrownBy(() -> postV1Service.likePost(user, postId))
 				.isInstanceOf(BadRequestException.class)
 				.hasMessageContaining(MessageUtil.POST_ALREADY_LIKED)
 				.extracting("errorCode")
@@ -206,7 +206,7 @@ public class PostServiceTest {
 			when(likePostRepository.existsByPostIdAndUserId(postId, user.getId())).thenReturn(true);
 
 			// When
-			postService.cancelLikePost(user, postId);
+			postV1Service.cancelLikePost(user, postId);
 
 			// Then
 			verify(likePostRepository, times(1)).deleteLikeByPostIdAndUserId(postId, user.getId());
@@ -225,7 +225,7 @@ public class PostServiceTest {
 			when(postRepository.findById(postId)).thenReturn(Optional.of(post));
 
 			// When & Then
-			assertThatThrownBy(() -> postService.cancelLikePost(user, postId))
+			assertThatThrownBy(() -> postV1Service.cancelLikePost(user, postId))
 				.isInstanceOf(UnauthorizedException.class)
 				.extracting("errorCode")
 				.isEqualTo(ErrorCode.DELETED_USER);
@@ -247,7 +247,7 @@ public class PostServiceTest {
 			when(likePostRepository.existsByPostIdAndUserId(postId, user.getId())).thenReturn(false);
 
 			// When & Then
-			assertThatThrownBy(() -> postService.cancelLikePost(user, postId))
+			assertThatThrownBy(() -> postV1Service.cancelLikePost(user, postId))
 				.isInstanceOf(BadRequestException.class)
 				.hasMessageContaining(MessageUtil.POST_NOT_LIKED)
 				.extracting("errorCode")
@@ -323,7 +323,7 @@ public class PostServiceTest {
 			user.setState(state);
 
 			// when & then
-			assertThatThrownBy(() -> postService.findAllPost(user, boardId, keyword, pageNum))
+			assertThatThrownBy(() -> postV1Service.findAllPost(user, boardId, keyword, pageNum))
 				.isInstanceOf(UnauthorizedException.class);
 		}
 
@@ -335,7 +335,7 @@ public class PostServiceTest {
 			board.setIsDeleted(true);
 
 			//when & then
-			assertThatThrownBy(() -> postService.findAllPost(user, boardId, keyword, pageNum))
+			assertThatThrownBy(() -> postV1Service.findAllPost(user, boardId, keyword, pageNum))
 				.isInstanceOf(BadRequestException.class)
 				.extracting("errorCode")
 				.isEqualTo(ErrorCode.TARGET_DELETED);
@@ -374,7 +374,7 @@ public class PostServiceTest {
 				.willReturn(postPage);
 
 			// when
-			BoardPostsResponseDto result = postService.findAllPost(user, boardId, keyword, pageNum);
+			BoardPostsResponseDto result = postV1Service.findAllPost(user, boardId, keyword, pageNum);
 
 			// then
 			Page<PostsResponseDto> searchedPagedPost = result.getPost();
@@ -398,7 +398,7 @@ public class PostServiceTest {
 				eq(boardId), eq(false), eq(Set.of()), eq(keyword), eq(pageable))).willReturn(emptyPage);
 
 			// when
-			BoardPostsResponseDto result = postService.findAllPost(user, boardId, keyword, pageNum);
+			BoardPostsResponseDto result = postV1Service.findAllPost(user, boardId, keyword, pageNum);
 
 			// then
 			Page<PostsResponseDto> searchedPagedPost = result.getPost();
@@ -417,7 +417,7 @@ public class PostServiceTest {
 				eq(pageable))).willReturn(postPage);
 
 			//when
-			BoardPostsResponseDto result = postService.findAllPost(user, boardId, keyword, pageNum);
+			BoardPostsResponseDto result = postV1Service.findAllPost(user, boardId, keyword, pageNum);
 
 			//then
 			Page<PostsResponseDto> searchedPagedPost = result.getPost();
@@ -455,7 +455,7 @@ public class PostServiceTest {
 				eq(boardId), eq(true), eq(Set.of()), eq(keyword), eq(pageable))).willReturn(postPage);
 
 			//when
-			BoardPostsResponseDto result = postService.findAllPost(user, boardId, keyword, pageNum);
+			BoardPostsResponseDto result = postV1Service.findAllPost(user, boardId, keyword, pageNum);
 
 			//then
 			Page<PostsResponseDto> searchedPagedPost = result.getPost();

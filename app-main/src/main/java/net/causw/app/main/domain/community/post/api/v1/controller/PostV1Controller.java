@@ -26,7 +26,7 @@ import net.causw.app.main.domain.community.post.api.v1.dto.PostResponseDto;
 import net.causw.app.main.domain.community.post.api.v1.dto.PostSubscribeResponseDto;
 import net.causw.app.main.domain.community.post.api.v1.dto.PostUpdateRequestDto;
 import net.causw.app.main.domain.community.post.api.v1.dto.PostUpdateWithFormRequestDto;
-import net.causw.app.main.domain.community.post.service.v1.PostService;
+import net.causw.app.main.domain.community.post.service.v1.PostV1Service;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.InternalServerException;
@@ -44,9 +44,9 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/posts")
-public class PostController {
+public class PostV1Controller {
 
-	private final PostService postService;
+	private final PostV1Service postV1Service;
 
 	@GetMapping(value = "/{id}", produces = "application/json")
 	@ResponseStatus(value = HttpStatus.OK)
@@ -71,7 +71,7 @@ public class PostController {
 	public PostResponseDto findPostById(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		return this.postService.findPostById(userDetails.getUser(), id);
+		return this.postV1Service.findPostById(userDetails.getUser(), id);
 	}
 
 	@GetMapping
@@ -99,7 +99,7 @@ public class PostController {
 		@RequestParam(name = "keyword", defaultValue = "") String keyword,
 		@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum, // PageNation
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		return this.postService.findAllPost(userDetails.getUser(), boardId, keyword, pageNum);
+		return this.postV1Service.findAllPost(userDetails.getUser(), boardId, keyword, pageNum);
 	}
 
 	@GetMapping("/app/notice")
@@ -108,7 +108,7 @@ public class PostController {
 	public BoardPostsResponseDto findAllAppNotice(
 		@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		return this.postService.findAllAppNotice(userDetails.getUser(), pageNum);
+		return this.postV1Service.findAllAppNotice(userDetails.getUser(), pageNum);
 	}
 
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -136,7 +136,7 @@ public class PostController {
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestPart(value = "postCreateRequestDto") @Valid PostCreateRequestDto postCreateRequestDto,
 		@RequestPart(value = "attachImageList", required = false) List<MultipartFile> attachImageList) {
-		return this.postService.createPost(userDetails.getUser(), postCreateRequestDto, attachImageList);
+		return this.postV1Service.createPost(userDetails.getUser(), postCreateRequestDto, attachImageList);
 	}
 
 	@PostMapping(value = "/form", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -164,7 +164,7 @@ public class PostController {
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestPart(value = "postCreateWithFormRequestDto") @Valid PostCreateWithFormRequestDto postCreateWithFormRequestDto,
 		@RequestPart(value = "attachImageList", required = false) List<MultipartFile> attachImageList) {
-		return this.postService.createPostWithForm(userDetails.getUser(), postCreateWithFormRequestDto,
+		return this.postV1Service.createPostWithForm(userDetails.getUser(), postCreateWithFormRequestDto,
 			attachImageList);
 	}
 
@@ -194,7 +194,7 @@ public class PostController {
 	public void deletePost(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		postService.deletePost(userDetails.getUser(), id);
+		postV1Service.deletePost(userDetails.getUser(), id);
 	}
 
 	/**
@@ -237,7 +237,7 @@ public class PostController {
 		@RequestPart(value = "postUpdateRequestDto") @Valid PostUpdateRequestDto postUpdateRequestDto,
 		@RequestPart(value = "attachImageList", required = false) List<MultipartFile> attachImageList) {
 
-		postService.updatePost(
+		postV1Service.updatePost(
 			userDetails.getUser(),
 			id,
 			postUpdateRequestDto,
@@ -275,7 +275,7 @@ public class PostController {
 		@PathVariable("id") String id,
 		@RequestPart(value = "postUpdateWithFormRequestDto") @Valid PostUpdateWithFormRequestDto postUpdateWithFormRequestDto,
 		@RequestPart(value = "attachImageList", required = false) List<MultipartFile> attachImageList) {
-		postService.updatePostWithForm(userDetails.getUser(), id, postUpdateWithFormRequestDto, attachImageList);
+		postV1Service.updatePostWithForm(userDetails.getUser(), id, postUpdateWithFormRequestDto, attachImageList);
 	}
 
 	@PutMapping(value = "/{id}/restore")
@@ -307,7 +307,7 @@ public class PostController {
 	public void restorePost(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		postService.restorePost(
+		postV1Service.restorePost(
 			userDetails.getUser(),
 			id);
 	}
@@ -329,7 +329,7 @@ public class PostController {
 	public void likePost(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		this.postService.likePost(userDetails.getUser(), id);
+		this.postV1Service.likePost(userDetails.getUser(), id);
 	}
 
 	@DeleteMapping(value = "/{id}/like")
@@ -349,7 +349,7 @@ public class PostController {
 	public void cancelLikePost(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		this.postService.cancelLikePost(userDetails.getUser(), id);
+		this.postV1Service.cancelLikePost(userDetails.getUser(), id);
 	}
 
 	@PostMapping(value = "/{id}/favorite")
@@ -370,7 +370,7 @@ public class PostController {
 	public void favoritePost(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		this.postService.favoritePost(userDetails.getUser(), id);
+		this.postV1Service.favoritePost(userDetails.getUser(), id);
 	}
 
 	@DeleteMapping(value = "/{id}/favorite")
@@ -392,7 +392,7 @@ public class PostController {
 	public void cancelFavoritePost(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		this.postService.cancelFavoritePost(userDetails.getUser(), id);
+		this.postV1Service.cancelFavoritePost(userDetails.getUser(), id);
 	}
 
 	@PostMapping("/subscribe/{id}")
@@ -401,7 +401,7 @@ public class PostController {
 	public PostSubscribeResponseDto subscribePost(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable("id") String id) {
-		return postService.setPostSubscribe(userDetails.getUser(), id, true);
+		return postV1Service.setPostSubscribe(userDetails.getUser(), id, true);
 	}
 
 	@DeleteMapping("/subscribe/{id}")
@@ -410,7 +410,7 @@ public class PostController {
 	public PostSubscribeResponseDto unsubscribePost(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable("id") String id) {
-		return postService.setPostSubscribe(userDetails.getUser(), id, false);
+		return postV1Service.setPostSubscribe(userDetails.getUser(), id, false);
 	}
 
 }

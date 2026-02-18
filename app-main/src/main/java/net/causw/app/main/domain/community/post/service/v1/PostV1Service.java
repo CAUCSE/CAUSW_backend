@@ -54,7 +54,7 @@ import net.causw.app.main.domain.community.post.api.v1.dto.PostSubscribeResponse
 import net.causw.app.main.domain.community.post.api.v1.dto.PostUpdateRequestDto;
 import net.causw.app.main.domain.community.post.api.v1.dto.PostUpdateWithFormRequestDto;
 import net.causw.app.main.domain.community.post.api.v1.dto.PostsResponseDto;
-import net.causw.app.main.domain.community.post.api.v1.mapper.PostDtoMapper;
+import net.causw.app.main.domain.community.post.api.v1.mapper.PostDtoV1Mapper;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.community.post.repository.query.PostQueryRepository;
@@ -107,7 +107,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class PostService {
+public class PostV1Service {
 
 	private final PostQueryRepository postQueryRepository;
 	private final PostRepository postRepository;
@@ -190,7 +190,7 @@ public class PostService {
 		// 게시글 목록 조회 (필터링 및 페이징 적용)
 		Page<PostsResponseDto> posts = postQueryRepository
 			.findPostsByBoardWithFilters(boardId, includeDeleted, blockedUserIds, keyword, pageable)
-			.map(PostDtoMapper.INSTANCE::toPostsResponseDto);
+			.map(PostDtoV1Mapper.INSTANCE::toPostsResponseDto);
 
 		// 게시판 정보와 게시글 목록을 DTO로 변환
 		return toBoardPostsResponseDto(
@@ -214,7 +214,7 @@ public class PostService {
 		boolean includeDeleted = false;
 		Page<PostsResponseDto> posts = postQueryRepository
 			.findPostsByBoardWithFilters(board.getId(), includeDeleted, blockedUserIds, null, pageable)
-			.map(PostDtoMapper.INSTANCE::toPostsResponseDto);
+			.map(PostDtoV1Mapper.INSTANCE::toPostsResponseDto);
 
 		return toBoardPostsResponseDto(
 			board,
@@ -754,7 +754,7 @@ public class PostService {
 			})
 			.orElseGet(() -> userPostSubscribeRepository.save(UserPostSubscribe.of(user, post, isSubscribed)));
 
-		return PostDtoMapper.INSTANCE.toPostSubscribeResponseDto(subscription);
+		return PostDtoV1Mapper.INSTANCE.toPostSubscribeResponseDto(subscription);
 	}
 
 	/**
@@ -925,7 +925,7 @@ public class PostService {
 
 	// DtoMapper methods
 	private PostCreateResponseDto toPostCreateResponseDto(Post post) {
-		return PostDtoMapper.INSTANCE.toPostCreateResponseDto(post);
+		return PostDtoV1Mapper.INSTANCE.toPostCreateResponseDto(post);
 	}
 
 	private BoardPostsResponseDto toBoardPostsResponseDto(Board board, Set<Role> userRoles, Boolean isFavorite,
@@ -934,7 +934,7 @@ public class PostService {
 		Boolean writable = userRoles.stream()
 			.map(Role::getValue)
 			.anyMatch(roles::contains);
-		return PostDtoMapper.INSTANCE.toBoardPostsResponseDto(
+		return PostDtoV1Mapper.INSTANCE.toBoardPostsResponseDto(
 			board,
 			userRoles,
 			writable,
@@ -944,7 +944,7 @@ public class PostService {
 	}
 
 	private PostResponseDto toPostResponseDtoExtended(Post post, User user) {
-		PostResponseDto postResponseDto = PostDtoMapper.INSTANCE.toPostResponseDtoExtended(
+		PostResponseDto postResponseDto = PostDtoV1Mapper.INSTANCE.toPostResponseDtoExtended(
 			post,
 			getNumOfComments(post),
 			getNumOfPostLikes(post),

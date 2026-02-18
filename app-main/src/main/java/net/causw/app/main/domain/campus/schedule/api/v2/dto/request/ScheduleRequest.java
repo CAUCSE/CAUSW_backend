@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.campus.schedule.api.v2.controller.dto.request;
+package net.causw.app.main.domain.campus.schedule.api.v2.dto.request;
 
 import java.time.LocalDateTime;
 

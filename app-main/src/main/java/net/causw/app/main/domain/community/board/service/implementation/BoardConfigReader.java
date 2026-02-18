@@ -1,14 +1,18 @@
 package net.causw.app.main.domain.community.board.service.implementation;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
+import net.causw.app.main.domain.community.board.entity.BoardReadScope;
 import net.causw.app.main.domain.community.board.repository.BoardAdminQueryRepository;
 import net.causw.app.main.domain.community.board.repository.BoardConfigQueryRepository;
+import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.BoardConfigErrorCode;
 
@@ -61,5 +65,22 @@ public class BoardConfigReader {
 	public int getNextDisplayOrder() {
 
 		return boardConfigQueryRepository.findMaxDisplayOrder() + 10;
+	}
+
+	/**
+	 * 사용자 상태에 따라 접근 가능한 게시판 ID 목록을 조회합니다.
+	 * VISIBLE이고 사용자의 ReadScope에 맞는 게시판만 조회합니다.
+	 *
+	 * @param academicStatus 사용자 상태
+	 * @return 게시판 ID 목록
+	 */
+	public List<String> getAccessibleBoardIdsByAcademicStatus(AcademicStatus academicStatus) {
+		Set<BoardReadScope> scopes = new HashSet<>();
+		scopes.add(BoardReadScope.BOTH);
+		switch (academicStatus) {
+			case GRADUATED -> scopes.add(BoardReadScope.GRADUATED);
+			case ENROLLED -> scopes.add(BoardReadScope.ENROLLED);
+		}
+		return boardConfigQueryRepository.findBoardsByReadScopes(scopes);
 	}
 }
