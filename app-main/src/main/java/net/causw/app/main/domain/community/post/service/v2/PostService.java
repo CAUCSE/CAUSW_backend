@@ -303,7 +303,7 @@ public class PostService {
 			throw new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.POST_NOT_LIKED);
 		}
 
-		likePostWriter.deleteLikePost(postId, userId);
+		likePostWriter.deleteLikePost(userId, postId);
 	}
 
 }
