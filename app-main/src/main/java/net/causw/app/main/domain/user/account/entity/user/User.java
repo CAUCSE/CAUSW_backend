@@ -248,8 +248,8 @@ public class User extends BaseEntity {
 		this.rejectionOrDropReason = null; // 거절 사유 초기화
 	}
 
-	public void removeFcmToken(String targetToken) {
-		this.fcmTokens.remove(targetToken);
+	public boolean removeFcmToken(String targetToken) {
+		return this.fcmTokens.remove(targetToken);
 	}
 
 	public String getProfileUrl() {

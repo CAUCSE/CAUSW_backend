@@ -16,7 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import net.causw.app.main.domain.user.account.api.v1.dto.UserFcmTokenResponseDto;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.service.implementation.UserPushTokenWriter;
+import net.causw.app.main.domain.user.account.service.v2.implementation.UserPushTokenWriter;
 import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.v2.implementation.UserValidator;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
