@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.asset.locker.service.v2.implementation;
+package net.causw.app.main.domain.asset.locker.util;
 
 import java.util.List;
 
@@ -7,6 +7,7 @@ import net.causw.app.main.domain.asset.locker.entity.LockerLocation;
 import net.causw.app.main.domain.asset.locker.service.v2.dto.result.LockerFloorListResult;
 import net.causw.app.main.domain.asset.locker.service.v2.dto.result.LockerLocationResult;
 import net.causw.app.main.domain.asset.locker.service.v2.dto.result.MyLockerResult;
+import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerAggregator;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
