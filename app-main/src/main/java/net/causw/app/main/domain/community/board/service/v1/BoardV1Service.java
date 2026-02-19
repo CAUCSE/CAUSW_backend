@@ -84,11 +84,7 @@ public class BoardV1Service {
 	private final UserBoardSubscribeRepository userBoardSubscribeRepository;
 	private final BoardApplyRepository boardApplyRepository;
 	private final Validator validator;
-<<<<<<< HEAD
-	private final PostV1Service postService;
-=======
 	private final PostV1Service postV1Service;
->>>>>>> 7bd4ea2091aaa0b61cf9603e28ce21ce76fcb0d8
 	private final UserBlockEntityService userBlockEntityService;
 	private final PostEntityService postEntityService;
 

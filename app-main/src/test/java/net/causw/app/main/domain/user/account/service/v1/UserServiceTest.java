@@ -98,11 +98,7 @@ class UserServiceTest {
 	@Mock
 	FavoritePostRepository favoritePostRepository;
 	@Mock
-<<<<<<< HEAD
-	PostV1Service postService;
-=======
 	PostV1Service postV1Service;
->>>>>>> 7bd4ea2091aaa0b61cf9603e28ce21ce76fcb0d8
 
 	@Mock
 	HttpServletResponse response;

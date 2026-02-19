@@ -46,11 +46,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/posts")
 public class PostV1Controller {
 
-<<<<<<< HEAD
-	private final PostV1Service postService;
-=======
 	private final PostV1Service postV1Service;
->>>>>>> 7bd4ea2091aaa0b61cf9603e28ce21ce76fcb0d8
 
 	@GetMapping(value = "/{id}", produces = "application/json")
 	@ResponseStatus(value = HttpStatus.OK)

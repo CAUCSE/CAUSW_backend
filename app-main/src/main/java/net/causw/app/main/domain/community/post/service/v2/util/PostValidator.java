@@ -12,17 +12,32 @@ import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.Academic
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.domain.user.account.util.UserStateIsDeletedValidator;
+import net.causw.app.main.shared.ValidatorBucket;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import net.causw.app.main.shared.exception.errorcode.BoardErrorCode;
 import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 import net.causw.global.constant.StaticValue;
+import net.causw.global.exception.BadRequestException;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class PostValidator {
+
+	/**
+	 * 게시글의 글쓴이가 삭제된 사용자인지 유효성 검사
+	 * @param post 게시글
+	 * @throws BadRequestException 작성자가 삭제된 사용자인 경우
+	 */
+	public static void validateWriterNotDeleted(Post post) {
+		ValidatorBucket validatorBucket = ValidatorBucket.of();
+		validatorBucket
+			.consistOf(UserStateIsDeletedValidator.of(post.getWriter().getState()))
+			.validate();
+	}
 
 	public static void validateCreate(User creator, Board board, BoardConfig boardConfig,
 		List<String> boardAdminIds, Boolean isAnonymous) {

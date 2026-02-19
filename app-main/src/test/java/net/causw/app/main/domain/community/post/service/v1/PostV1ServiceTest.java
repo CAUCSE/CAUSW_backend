@@ -63,11 +63,7 @@ import net.causw.global.exception.UnauthorizedException;
 public class PostV1ServiceTest {
 
 	@InjectMocks
-<<<<<<< HEAD:app-main/src/test/java/net/causw/app/main/domain/community/post/service/v1/PostServiceTest.java
-	PostV1Service postService;
-=======
 	PostV1Service postV1Service;
->>>>>>> 7bd4ea2091aaa0b61cf9603e28ce21ce76fcb0d8:app-main/src/test/java/net/causw/app/main/domain/community/post/service/v1/PostV1ServiceTest.java
 
 	@Mock
 	PostRepository postRepository;

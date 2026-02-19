@@ -18,10 +18,10 @@ import net.causw.app.main.domain.community.comment.service.implementation.LikeCo
 import net.causw.app.main.domain.community.comment.service.implementation.LikeCommentWriter;
 import net.causw.app.main.domain.community.comment.util.CommentValidator;
 import net.causw.app.main.domain.community.post.entity.Post;
-import net.causw.app.main.domain.community.post.service.implementation.PostReader;
+import net.causw.app.main.domain.community.post.service.v2.implementation.PostReader;
 import net.causw.app.main.domain.notification.notification.service.v1.PostNotificationService;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.service.implementation.UserReader;
+import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
 import net.causw.app.main.domain.user.relation.service.v1.UserBlockEntityService;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
@@ -46,8 +46,8 @@ public class CommentService {
 
 	@Transactional
 	public CommentResponseDto createComment(String creatorId, CommentCreateRequestDto commentCreateDto) {
-		Post post = postReader.getPost(commentCreateDto.postId());
-		User creator = userReader.getUser(creatorId);
+		Post post = postReader.findById(commentCreateDto.postId());
+		User creator = userReader.findUserById(creatorId);
 		Comment comment = Comment.of(commentCreateDto.content(), false, commentCreateDto.isAnonymous(), creator,
 			post);
 
@@ -66,8 +66,8 @@ public class CommentService {
 
 	@Transactional(readOnly = true)
 	public Page<CommentResponseDto> findAllComments(String userId, String postId, Integer pageNum) {
-		Post post = postReader.getPost(postId);
-		User user = userReader.getUser(userId);
+		Post post = postReader.findById(postId);
+		User user = userReader.findUserById(userId);
 
 		commentValidator.validateForFind(user, post);
 
@@ -84,9 +84,9 @@ public class CommentService {
 		String updaterId,
 		String commentId,
 		CommentUpdateRequestDto commentUpdateRequestDto) {
-		User updater = userReader.getUser(updaterId);
+		User updater = userReader.findUserById(updaterId);
 		Comment comment = commentReader.getComment(commentId);
-		Post post = postReader.getPost(comment.getPost().getId());
+		Post post = postReader.findById(comment.getPost().getId());
 
 		commentValidator.validateForUpdate(updater, post, comment);
 
@@ -99,9 +99,9 @@ public class CommentService {
 
 	@Transactional
 	public CommentResponseDto deleteComment(String deleterId, String commentId) {
-		User deleter = userReader.getUser(deleterId);
+		User deleter = userReader.findUserById(deleterId);
 		Comment comment = commentReader.getComment(commentId);
-		Post post = postReader.getPost(comment.getPost().getId());
+		Post post = postReader.findById(comment.getPost().getId());
 
 		commentValidator.validateForDelete(deleter, post, comment);
 
@@ -114,7 +114,7 @@ public class CommentService {
 
 	@Transactional
 	public void likeComment(String userId, String commentId) {
-		User user = userReader.getUser(userId);
+		User user = userReader.findUserById(userId);
 		Comment comment = commentReader.getComment(commentId);
 
 		commentValidator.validateWriterNotDeleted(comment);
@@ -129,7 +129,7 @@ public class CommentService {
 
 	@Transactional
 	public void cancelLikeComment(String userId, String commentId) {
-		User user = userReader.getUser(userId);
+		User user = userReader.findUserById(userId);
 		Comment comment = commentReader.getComment(commentId);
 
 		commentValidator.validateWriterNotDeleted(comment);

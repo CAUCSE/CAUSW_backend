@@ -165,13 +165,8 @@ public class UserService {
 	private final UserRoleService userRoleService;
 
 	private final UserDtoMapper userDtoMapper;
-<<<<<<< HEAD
-	private final PostDtoMapper postDtoMapper;
-	private final PostV1Service postService;
-=======
-	private final PostDtoV1Mapper postDtoMapper;
+	private final PostDtoV1Mapper postDtoV1Mapper;
 	private final PostV1Service postV1Service;
->>>>>>> 7bd4ea2091aaa0b61cf9603e28ce21ce76fcb0d8
 	private final UserBlockEntityService userBlockEntityService;
 	private final UserQueryRepository userQueryRepository;
 	private final WebInvocationPrivilegeEvaluator privilegeEvaluator;
@@ -355,7 +350,7 @@ public class UserService {
 			likePostPage
 				.map(likePost -> {
 					Post post = likePost.getPost();
-					PostsResponseDto dto = postDtoMapper.toPostsResponseDto(
+					PostsResponseDto dto = postDtoV1Mapper.toPostsResponseDto(
 						post,
 						getNumOfComment(post),
 						getNumOfPostLikes(post),

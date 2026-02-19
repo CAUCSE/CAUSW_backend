@@ -73,11 +73,7 @@ public class CommentV1Service {
 	private final Validator validator;
 	private final UserCommentSubscribeRepository userCommentSubscribeRepository;
 	private final PostNotificationService postNotificationService;
-<<<<<<< HEAD:app-main/src/main/java/net/causw/app/main/domain/community/comment/service/v1/CommentV1Service.java
-	private final PostV1Service postService;
-=======
 	private final PostV1Service postV1Service;
->>>>>>> 7bd4ea2091aaa0b61cf9603e28ce21ce76fcb0d8:app-main/src/main/java/net/causw/app/main/domain/community/comment/service/v1/CommentService.java
 	private final UserBlockEntityService userBlockEntityService;
 
 	@Transactional

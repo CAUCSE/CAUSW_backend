@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.community.post.service.implementation;
+package net.causw.app.main.domain.community.reaction.service.implementation;
 
 import org.springframework.stereotype.Component;
 
@@ -6,7 +6,7 @@ import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.reaction.entity.LikePost;
 import net.causw.app.main.domain.community.reaction.repository.LikePostRepository;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.service.implementation.UserReader;
+import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,7 +22,7 @@ public class LikePostWriter {
 	 */
 	public void saveLikePost(String userId, Post post) {
 
-		User user = userReader.getUser(userId);
+		User user = userReader.findUserById(userId);
 
 		LikePost likePost = LikePost.of(post, user);
 		likePostRepository.save(likePost);

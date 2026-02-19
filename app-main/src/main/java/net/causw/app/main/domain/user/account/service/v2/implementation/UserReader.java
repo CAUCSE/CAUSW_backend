@@ -13,8 +13,6 @@ import net.causw.app.main.domain.user.account.repository.user.query.UserQueryRep
 import net.causw.app.main.domain.user.account.service.dto.request.UserListCondition;
 import net.causw.app.main.domain.user.account.service.dto.request.UserQueryCondition;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
-import net.causw.global.exception.BadRequestException;
-import net.causw.global.exception.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,11 +22,6 @@ public class UserReader {
 	private final UserQueryRepository userQueryRepository;
 	private final UserRepository userRepository;
 
-<<<<<<< HEAD:app-main/src/main/java/net/causw/app/main/domain/user/account/service/implementation/UserReader.java
-	public User getUser(String userId) {
-		return userRepository.findById(userId)
-			.orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, "사용자를 찾을 수 없습니다."));
-=======
 	public User findUserById(String userId) {
 		return userRepository.findById(userId)
 			.orElseThrow(UserErrorCode.USER_NOT_FOUND::toBaseException);
@@ -45,7 +38,7 @@ public class UserReader {
 	public User findByEmailOrElseThrow(String email) {
 		return userRepository.findByEmail(email)
 			.orElseThrow(UserErrorCode.INVALID_LOGIN::toBaseException);
->>>>>>> 7bd4ea2091aaa0b61cf9603e28ce21ce76fcb0d8:app-main/src/main/java/net/causw/app/main/domain/user/account/service/v2/implementation/UserReader.java
+
 	}
 
 	public List<User> getUsersByIds(List<String> userIds) {
