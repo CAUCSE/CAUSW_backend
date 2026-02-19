@@ -19,6 +19,7 @@ import net.causw.app.main.domain.user.auth.service.v2.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.v2.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
+import net.causw.app.main.shared.util.AuthorizationExtractor;
 import net.causw.global.constant.StaticValue;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -64,7 +65,10 @@ public class AuthController {
 	@Operation(summary = "토큰 재발급 V2", description = "리프레시토큰을 통해 액세스토큰을 재발급 받습니다.")
 	@PostMapping("/refresh")
 	public ResponseEntity<ApiResponse<AuthResponse>> reissue(
-		@CookieValue(name = "refresh_token", required = false) String refreshToken) {
+		@CookieValue(name = "refresh_token", required = false) String refreshToken,
+		@RequestHeader(value = "Authorization", required = false) String authHeader) {
+		// CSRF 방어 로직
+		AuthorizationExtractor.validate(authHeader);
 		AuthResult dto = authService.updateToken(refreshToken);
 
 		// 쿠키로 리프레시토큰 반환
@@ -87,17 +91,17 @@ public class AuthController {
 		@CookieValue(name = "refresh_token", required = false) String refreshToken,
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestBody(required = false) SignOutRequest body) {
-		String accessToken = null;
-		if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-			accessToken = bearerToken.substring(7);
-		}
+		String accessToken = AuthorizationExtractor.extract(bearerToken);
 		AuthTokenPair tokens = AuthTokenPair.of(accessToken, refreshToken);
 		String fcmToken = (body != null) ? body.fcmToken() : null;
 		authService.signOut(userDetails.getUserId(), tokens, fcmToken);
 		// 쿠키에서 refresh_token 제거
 		ResponseCookie cookie = ResponseCookie.from("refresh_token", "")
+			.httpOnly(true)
+			.secure(true)
 			.path("/")
 			.maxAge(0)
+			.sameSite("None")
 			.build();
 		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
 			.body(ApiResponse.success("로그아웃 성공"));

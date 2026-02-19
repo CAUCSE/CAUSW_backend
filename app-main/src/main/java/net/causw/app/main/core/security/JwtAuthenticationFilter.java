@@ -8,6 +8,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import net.causw.app.main.shared.util.AuthorizationExtractor;
 import net.causw.global.exception.UnauthorizedException;
 
 import jakarta.servlet.FilterChain;
@@ -27,7 +28,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	protected void doFilterInternal(@NotNull HttpServletRequest request,
 		@NotNull HttpServletResponse response,
 		@NotNull FilterChain chain) throws ServletException, IOException {
-		String token = jwtTokenProvider.resolveToken(request);
+		String token = AuthorizationExtractor.extract(request);
 
 		if (StringUtils.hasText(token)) {
 			try {
