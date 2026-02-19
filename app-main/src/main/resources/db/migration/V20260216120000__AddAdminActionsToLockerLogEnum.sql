@@ -1,0 +1,2 @@
+-- Migration: AddAdminActionsToLockerLogEnum
+ALTER TABLE tb_locker_log MODIFY COLUMN action ENUM('ENABLE', 'DISABLE', 'REGISTER', 'RETURN', 'EXTEND', 'ADMIN_ASSIGN', 'ADMIN_EXTEND', 'ADMIN_RELEASE') NOT NULL;

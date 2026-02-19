@@ -10,6 +10,6 @@ public interface LockerAction {
 	Optional<Locker> updateLockerDomainModel(
 		Locker locker,
 		User user,
-		LockerService lockerService,
+		LockerV1Service lockerV1Service,
 		CommonService commonService);
 }
