@@ -28,6 +28,7 @@ import net.causw.app.main.domain.community.ceremony.service.implementation.Cerem
 import net.causw.app.main.domain.community.ceremony.util.CeremonyValidator;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.exception.errorcode.CeremonyErrorCode;
+import net.causw.app.main.shared.exception.errorcode.GlobalErrorCode;
 import net.causw.app.main.shared.pageable.PageableFactory;
 import net.causw.global.constant.StaticValue;
 
@@ -123,7 +124,7 @@ public class CeremonyService {
 		Page<Ceremony> ceremonies;
 		Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_PAGE_SIZE);
 		if (state == CeremonyState.CLOSE) {
-			throw CeremonyErrorCode.CEREMONY_NOT_FOUND.toBaseException();
+			throw GlobalErrorCode.BAD_REQUEST.toBaseException();
 		}
 		ceremonies = ceremonyReader.findByUserIdAndCeremonyStateOrderByStartedAtDesc(userId, state, pageable);
 		return ceremonies.map(ceremonyDtoMapper::toMyCeremonySummaryResponseDto);
