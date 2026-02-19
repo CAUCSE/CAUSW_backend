@@ -71,8 +71,10 @@ public class AuthTokenManager {
 	 * @param refreshToken 삭제할 리프레시 토큰 (null일 경우 생략 가능)
 	 */
 	public void invalidateTokens(String accessToken, String refreshToken) {
-		redisUtils.addToBlacklist(accessToken);
-		if (refreshToken != null) {
+		if (accessToken != null && !accessToken.isBlank()) {
+			redisUtils.addToBlacklist(accessToken);
+		}
+		if (refreshToken != null && !refreshToken.isBlank()) {
 			redisUtils.deleteRefreshTokenData(refreshToken);
 		}
 	}
