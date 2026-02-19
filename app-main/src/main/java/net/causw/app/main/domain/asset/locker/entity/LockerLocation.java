@@ -24,6 +24,9 @@ public class LockerLocation extends BaseEntity {
 	@Column(name = "name", unique = true, nullable = false)
 	private LockerName name;
 
+	@Column(name = "description")
+	private String description;
+
 	public static LockerLocation of(LockerName name) {
 		return LockerLocation.builder()
 			.name(name)
@@ -32,6 +35,10 @@ public class LockerLocation extends BaseEntity {
 
 	public void update(LockerName name) {
 		this.name = name;
+	}
+
+	public void updateDescription(String description) {
+		this.description = description;
 	}
 
 	public String getName() {

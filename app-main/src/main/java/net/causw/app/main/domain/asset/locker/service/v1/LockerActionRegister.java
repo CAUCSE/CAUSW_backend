@@ -8,9 +8,9 @@ import java.util.Optional;
 import net.causw.app.main.domain.asset.locker.entity.Locker;
 import net.causw.app.main.domain.asset.locker.entity.LockerLog;
 import net.causw.app.main.domain.asset.locker.enums.LockerLogAction;
-import net.causw.app.main.domain.asset.locker.util.LockerAccessValidator;
-import net.causw.app.main.domain.asset.locker.util.LockerInUseValidator;
-import net.causw.app.main.domain.asset.locker.util.LockerIsDeactivatedValidator;
+import net.causw.app.main.domain.asset.locker.service.v1.validators.LockerAccessValidator;
+import net.causw.app.main.domain.asset.locker.service.v1.validators.LockerInUseValidator;
+import net.causw.app.main.domain.asset.locker.service.v1.validators.LockerIsDeactivatedValidator;
 import net.causw.app.main.domain.etc.textfield.service.v1.CommonService;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;
@@ -28,7 +28,7 @@ public class LockerActionRegister implements LockerAction {
 	public Optional<Locker> updateLockerDomainModel(
 		Locker locker,
 		User user,
-		LockerService lockerService,
+		LockerV1Service lockerV1Service,
 		CommonService commonService) {
 		ValidatorBucket.of()
 			.consistOf(LockerInUseValidator.of(locker.getUser().isPresent()))
@@ -41,8 +41,8 @@ public class LockerActionRegister implements LockerAction {
 				.consistOf(LockerAccessValidator.of(commonService.findByKeyInFlag(LOCKER_ACCESS).orElse(false)))
 				.validate();
 
-			lockerService.findByUserId(user.getId()).ifPresent(existingLocker -> {
-				lockerService.returnAndSaveLocker(existingLocker);
+			lockerV1Service.findByUserId(user.getId()).ifPresent(existingLocker -> {
+				lockerV1Service.returnAndSaveLocker(existingLocker);
 				LockerLog lockerLog = LockerLog.of(
 					existingLocker.getLockerNumber(),
 					existingLocker.getLocation().getName(),
@@ -53,7 +53,7 @@ public class LockerActionRegister implements LockerAction {
 			});
 		}
 
-		locker.register(
+		locker.registerV1(
 			user,
 			LocalDateTime.parse(commonService.findByKeyInTextField(StaticValue.EXPIRED_AT).orElseThrow(
 				() -> new InternalServerException(
