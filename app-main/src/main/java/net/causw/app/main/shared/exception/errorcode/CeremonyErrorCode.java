@@ -23,6 +23,7 @@ public enum CeremonyErrorCode implements BaseResponseCode {
 	DATETIME_BEFORE_TODAY(HttpStatus.BAD_REQUEST, "CEREMONY_400_010", "이미 끝난 경조사는 신청할 수 없습니다."),
 	CUSTOM_CATEGORY_REQUIRED(HttpStatus.BAD_REQUEST, "CEREMONY_400_011", "분류가 직접 입력인 경우, 상세 분류를 직접 입력해야 합니다."),
 	DATETIME_END_AFTER_START(HttpStatus.BAD_REQUEST, "CEREMONY_400_012", "시작 일시는 종료 일시 이전이어야 합니다."),
+	INVALID_CEREMONY_STATE(HttpStatus.BAD_REQUEST, "CEREMONY_400_013", "부적절한 state입니다."),
 	ACCESS_ONLY_APPLICANT(HttpStatus.FORBIDDEN, "CEREMONY_403_001", "본인의 경조사만 조회할 수 있습니다."),
 	CEREMONY_NOT_FOUND(HttpStatus.NOT_FOUND, "CEREMONY_404_001", "해당 경조사를 찾을 수 없습니다.");
 

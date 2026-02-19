@@ -35,7 +35,6 @@ import net.causw.app.main.domain.community.ceremony.util.CeremonyValidator;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.CeremonyErrorCode;
-import net.causw.app.main.shared.exception.errorcode.GlobalErrorCode;
 import net.causw.app.main.shared.pageable.PageableFactory;
 import net.causw.global.constant.StaticValue;
 
@@ -326,9 +325,9 @@ public class CeremonyServiceTest {
 			// when & then
 			assertThatThrownBy(() -> ceremonyService.getMyCeremonyPage("userId", CeremonyState.CLOSE, 0))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
-				.hasMessageContaining(GlobalErrorCode.BAD_REQUEST.getMessage())
+				.hasMessageContaining(CeremonyErrorCode.INVALID_CEREMONY_STATE.getMessage())
 				.extracting("errorCode")
-				.isEqualTo(GlobalErrorCode.BAD_REQUEST);
+				.isEqualTo(CeremonyErrorCode.INVALID_CEREMONY_STATE);
 
 			then(ceremonyReader).shouldHaveNoInteractions();
 		}
