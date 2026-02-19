@@ -13,7 +13,6 @@ import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
 import net.causw.app.main.domain.community.ceremony.entity.QCeremony;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyState;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyType;
-import net.causw.app.main.domain.community.ceremony.util.CeremonyTypeParser;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -26,7 +25,6 @@ import lombok.RequiredArgsConstructor;
 public class CeremonyQueryRepository {
 
 	private final JPAQueryFactory jpaQueryFactory;
-	private final CeremonyTypeParser ceremonyTypeParser;
 
 	public Page<Ceremony> findOngoingOrderByStartedAtDesc(
 		String type, LocalDate nowDate, LocalTime nowTime, Pageable pageable) {
@@ -100,7 +98,7 @@ public class CeremonyQueryRepository {
 
 	private BooleanExpression baseCondition(String type, QCeremony ceremony) {
 		BooleanExpression condition = ceremony.ceremonyState.eq(CeremonyState.ACCEPT);
-		String parsedType = ceremonyTypeParser.parseTypeOrNull(type);
+		String parsedType = CeremonyType.parseTypeOrNull(type);
 
 		if (parsedType != null) {
 			CeremonyType ceremonyType = CeremonyType.fromString(parsedType);
