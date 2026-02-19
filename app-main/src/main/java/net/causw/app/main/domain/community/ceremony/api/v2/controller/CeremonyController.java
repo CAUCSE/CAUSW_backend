@@ -2,7 +2,6 @@ package net.causw.app.main.domain.community.ceremony.api.v2.controller;
 
 import java.util.List;
 
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -24,6 +23,7 @@ import net.causw.app.main.domain.community.ceremony.enums.CeremonyState;
 import net.causw.app.main.domain.community.ceremony.service.CeremonyService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
+import net.causw.app.main.shared.dto.PageResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -64,38 +64,39 @@ public class CeremonyController {
 	@GetMapping("/ongoing")
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "진행 중인 경조사 리스트 조회", description = "진행 중인 경조사 리스트를 조회합니다.")
-	public ApiResponse<Page<CeremonySummaryResponseDto>> getOngoingCeremonyPage(
+	public ApiResponse<PageResponse<CeremonySummaryResponseDto>> getOngoingCeremonyPage(
 		@RequestParam(name = "type", required = false, defaultValue = "all") String typeParam,
 		@RequestParam(name = "pageNum", required = false, defaultValue = "0") Integer pageNum) {
-		return ApiResponse.success(ceremonyService.getOngoingCeremonyPage(typeParam, pageNum));
+		return ApiResponse.success(PageResponse.from(ceremonyService.getOngoingCeremonyPage(typeParam, pageNum)));
 	}
 
 	@GetMapping("/upcoming")
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "곧 다가올 경조사 리스트 조회", description = "곧 다가올 경조사 리스트를 조회합니다.")
-	public ApiResponse<Page<CeremonySummaryResponseDto>> getUpcomingCeremonyPage(
+	public ApiResponse<PageResponse<CeremonySummaryResponseDto>> getUpcomingCeremonyPage(
 		@RequestParam(name = "type", required = false, defaultValue = "all") String typeParam,
 		@RequestParam(name = "pageNum", required = false, defaultValue = "0") Integer pageNum) {
-		return ApiResponse.success(ceremonyService.getUpcomingCeremonyPage(typeParam, pageNum));
+		return ApiResponse.success(PageResponse.from(ceremonyService.getUpcomingCeremonyPage(typeParam, pageNum)));
 	}
 
 	@GetMapping("/past")
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "지난 경조사 리스트 조회", description = "지난 경조사 리스트를 조회합니다.")
-	public ApiResponse<Page<CeremonySummaryResponseDto>> getPastCeremonyPage(
+	public ApiResponse<PageResponse<CeremonySummaryResponseDto>> getPastCeremonyPage(
 		@RequestParam(name = "type", required = false, defaultValue = "all") String typeParam,
 		@RequestParam(name = "pageNum", required = false, defaultValue = "0") Integer pageNum) {
-		return ApiResponse.success(ceremonyService.getPastCeremonyPage(typeParam, pageNum));
+		return ApiResponse.success(PageResponse.from(ceremonyService.getPastCeremonyPage(typeParam, pageNum)));
 	}
 
 	@GetMapping("/my")
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "내 경조사 리스트 조회", description = "내 경조사 리스트를 조회합니다.")
-	public ApiResponse<Page<CeremonySummaryResponseDto>> getMyCeremonyPage(
+	public ApiResponse<PageResponse<CeremonySummaryResponseDto>> getMyCeremonyPage(
 		@RequestParam(name = "state") String stateParam,
 		@RequestParam(name = "pageNum", required = false, defaultValue = "0") Integer pageNum,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		CeremonyState state = CeremonyState.fromString(stateParam);
-		return ApiResponse.success(ceremonyService.getMyCeremonyPage(userDetails.getUserId(), state, pageNum));
+		return ApiResponse
+			.success(PageResponse.from(ceremonyService.getMyCeremonyPage(userDetails.getUserId(), state, pageNum)));
 	}
 }
