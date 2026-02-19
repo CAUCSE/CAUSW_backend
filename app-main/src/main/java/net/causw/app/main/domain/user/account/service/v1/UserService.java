@@ -53,7 +53,7 @@ import net.causw.app.main.domain.community.board.repository.BoardRepository;
 import net.causw.app.main.domain.community.comment.repository.ChildCommentRepository;
 import net.causw.app.main.domain.community.comment.repository.CommentRepository;
 import net.causw.app.main.domain.community.post.api.v1.dto.PostsResponseDto;
-import net.causw.app.main.domain.community.post.api.v1.mapper.PostDtoMapper;
+import net.causw.app.main.domain.community.post.api.v1.mapper.PostDtoV1Mapper;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.community.post.service.v1.PostV1Service;
@@ -165,8 +165,13 @@ public class UserService {
 	private final UserRoleService userRoleService;
 
 	private final UserDtoMapper userDtoMapper;
+<<<<<<< HEAD
 	private final PostDtoMapper postDtoMapper;
 	private final PostV1Service postService;
+=======
+	private final PostDtoV1Mapper postDtoMapper;
+	private final PostV1Service postV1Service;
+>>>>>>> 7bd4ea2091aaa0b61cf9603e28ce21ce76fcb0d8
 	private final UserBlockEntityService userBlockEntityService;
 	private final UserQueryRepository userQueryRepository;
 	private final WebInvocationPrivilegeEvaluator privilegeEvaluator;
@@ -271,7 +276,7 @@ public class UserService {
 			requestUser,
 			this.postRepository.findByUserId(requestUser.getId(),
 				this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
-				.map(post -> PostDtoMapper.INSTANCE.toPostsResponseDto(
+				.map(post -> PostDtoV1Mapper.INSTANCE.toPostsResponseDto(
 					post,
 					getNumOfComment(post),
 					getNumOfPostLikes(post),
@@ -301,7 +306,7 @@ public class UserService {
 			favoritePostPage
 				.map(favoritePost -> {
 					Post post = favoritePost.getPost();
-					PostsResponseDto dto = PostDtoMapper.INSTANCE.toPostsResponseDto(
+					PostsResponseDto dto = PostDtoV1Mapper.INSTANCE.toPostsResponseDto(
 						post,
 						getNumOfComment(post),
 						getNumOfPostLikes(post),
@@ -311,7 +316,7 @@ public class UserService {
 						StatusPolicy.isPostForm(post));
 
 					// 화면에 표시될 작성자 닉네임 설정
-					String displayNickname = postService.getDisplayWriterNickname(
+					String displayNickname = postV1Service.getDisplayWriterNickname(
 						post.getWriter(),
 						post.getIsAnonymous(),
 						post.getWriter() != null ? post.getWriter().getNickname() : null);
@@ -360,7 +365,7 @@ public class UserService {
 						StatusPolicy.isPostForm(post));
 
 					// 화면에 표시될 작성자 닉네임 설정
-					String displayNickname = postService.getDisplayWriterNickname(
+					String displayNickname = postV1Service.getDisplayWriterNickname(
 						post.getWriter(),
 						post.getIsAnonymous(),
 						post.getWriter() != null ? post.getWriter().getNickname() : null);
@@ -402,7 +407,7 @@ public class UserService {
 		return UserDtoMapper.INSTANCE.toUserPostsResponseDto(
 			requestUser,
 			combinedPostsPage.map(post -> {
-				PostsResponseDto dto = PostDtoMapper.INSTANCE.toPostsResponseDto(
+				PostsResponseDto dto = PostDtoV1Mapper.INSTANCE.toPostsResponseDto(
 					post,
 					getNumOfComment(post),
 					getNumOfPostLikes(post),
@@ -412,7 +417,7 @@ public class UserService {
 					StatusPolicy.isPostForm(post));
 
 				// 화면에 표시될 작성자 닉네임 설정
-				String displayNickname = postService.getDisplayWriterNickname(
+				String displayNickname = postV1Service.getDisplayWriterNickname(
 					post.getWriter(),
 					post.getIsAnonymous(),
 					post.getWriter() != null ? post.getWriter().getNickname() : null);

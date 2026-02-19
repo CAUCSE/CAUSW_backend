@@ -62,7 +62,7 @@ public class ChildCommentController {
 		@Valid @RequestBody ChildCommentCreateRequestDto childCommentCreateRequestDto,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-		return this.childCommentService.createChildComment(userDetails.getUser(), childCommentCreateRequestDto);
+		return childCommentService.createChildComment(userDetails.getUser(), childCommentCreateRequestDto);
 	}
 
 	@PutMapping(value = "/{id}")
@@ -95,7 +95,7 @@ public class ChildCommentController {
 		@PathVariable("id") String id,
 		@Valid @RequestBody ChildCommentUpdateRequestDto childCommentUpdateRequestDto,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		return this.childCommentService.updateChildComment(userDetails.getUser(), id, childCommentUpdateRequestDto);
+		return childCommentService.updateChildComment(userDetails.getUser(), id, childCommentUpdateRequestDto);
 	}
 
 	@DeleteMapping(value = "/{id}")
@@ -127,7 +127,7 @@ public class ChildCommentController {
 	public ChildCommentResponseDto deleteChildComment(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		return this.childCommentService.deleteChildComment(userDetails.getUser(), id);
+		return childCommentService.deleteChildComment(userDetails.getUser(), id);
 	}
 
 	@PostMapping(value = "/{id}/like")
@@ -147,7 +147,7 @@ public class ChildCommentController {
 	public void likeChildComment(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		this.childCommentService.likeChildComment(userDetails.getUser(), id);
+		childCommentService.likeChildComment(userDetails.getUser(), id);
 	}
 
 	@DeleteMapping(value = "/{id}/like")
@@ -167,6 +167,6 @@ public class ChildCommentController {
 	public void cancelLikeChildComment(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		this.childCommentService.cancelLikeChildComment(userDetails.getUser(), id);
+		childCommentService.cancelLikeChildComment(userDetails.getUser(), id);
 	}
 }

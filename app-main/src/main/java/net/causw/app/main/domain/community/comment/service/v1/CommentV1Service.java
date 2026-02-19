@@ -73,7 +73,11 @@ public class CommentV1Service {
 	private final Validator validator;
 	private final UserCommentSubscribeRepository userCommentSubscribeRepository;
 	private final PostNotificationService postNotificationService;
+<<<<<<< HEAD:app-main/src/main/java/net/causw/app/main/domain/community/comment/service/v1/CommentV1Service.java
 	private final PostV1Service postService;
+=======
+	private final PostV1Service postV1Service;
+>>>>>>> 7bd4ea2091aaa0b61cf9603e28ce21ce76fcb0d8:app-main/src/main/java/net/causw/app/main/domain/community/comment/service/v1/CommentService.java
 	private final UserBlockEntityService userBlockEntityService;
 
 	@Transactional
@@ -282,7 +286,7 @@ public class CommentV1Service {
 		// 화면에 표시될 닉네임 설정
 		User writer = comment.getWriter();
 		commentResponseDto.setDisplayWriterNickname(
-			postService.getDisplayWriterNickname(writer, commentResponseDto.getIsAnonymous(),
+			postV1Service.getDisplayWriterNickname(writer, commentResponseDto.getIsAnonymous(),
 				commentResponseDto.getWriterNickname()));
 
 		if (comment.getIsAnonymous()) {
@@ -308,7 +312,7 @@ public class CommentV1Service {
 		// 화면에 표시될 닉네임 설정
 		User writer = childComment.getWriter();
 		childCommentResponseDto.setDisplayWriterNickname(
-			postService.getDisplayWriterNickname(writer, childCommentResponseDto.getIsAnonymous(),
+			postV1Service.getDisplayWriterNickname(writer, childCommentResponseDto.getIsAnonymous(),
 				childCommentResponseDto.getWriterNickname()));
 
 		if (childCommentResponseDto.getIsAnonymous()) {

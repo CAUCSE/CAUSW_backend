@@ -61,7 +61,7 @@ public class ChildCommentService {
 	private final LikeChildCommentRepository likeChildCommentRepository;
 	private final Validator validator;
 	private final CommentNotificationService commentNotificationService;
-	private final PostV1Service postService;
+	private final PostV1Service postV1Service;
 
 	@Transactional
 	public ChildCommentResponseDto createChildComment(User creator,
@@ -253,7 +253,7 @@ public class ChildCommentService {
 		// 화면에 표시될 닉네임 설정
 		User writer = childComment.getWriter();
 		childCommentResponseDto.setDisplayWriterNickname(
-			postService.getDisplayWriterNickname(writer, childCommentResponseDto.getIsAnonymous(),
+			postV1Service.getDisplayWriterNickname(writer, childCommentResponseDto.getIsAnonymous(),
 				childCommentResponseDto.getWriterNickname()));
 
 		if (childCommentResponseDto.getIsAnonymous()) {

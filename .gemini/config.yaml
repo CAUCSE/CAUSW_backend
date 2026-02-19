@@ -8,6 +8,5 @@ code_review:
     summary: true
     code_review: true
 ignore_patterns:
-  - '.github/'
   - '.gradle/'
   - '.idea/'

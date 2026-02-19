@@ -38,7 +38,7 @@ import net.causw.app.main.domain.community.board.entity.BoardApplyStatus;
 import net.causw.app.main.domain.community.board.repository.BoardApplyRepository;
 import net.causw.app.main.domain.community.board.repository.BoardRepository;
 import net.causw.app.main.domain.community.post.api.v1.dto.PostContentDto;
-import net.causw.app.main.domain.community.post.api.v1.mapper.PostDtoMapper;
+import net.causw.app.main.domain.community.post.api.v1.mapper.PostDtoV1Mapper;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.community.post.service.v1.PostEntityService;
 import net.causw.app.main.domain.community.post.service.v1.PostV1Service;
@@ -84,7 +84,11 @@ public class BoardV1Service {
 	private final UserBoardSubscribeRepository userBoardSubscribeRepository;
 	private final BoardApplyRepository boardApplyRepository;
 	private final Validator validator;
+<<<<<<< HEAD
 	private final PostV1Service postService;
+=======
+	private final PostV1Service postV1Service;
+>>>>>>> 7bd4ea2091aaa0b61cf9603e28ce21ce76fcb0d8
 	private final UserBlockEntityService userBlockEntityService;
 	private final PostEntityService postEntityService;
 
@@ -180,13 +184,13 @@ public class BoardV1Service {
 					.getContent()
 					.stream()
 					.map(post -> {
-						PostContentDto postContentDto = PostDtoMapper.INSTANCE.toPostContentDto(post);
+						PostContentDto postContentDto = PostDtoV1Mapper.INSTANCE.toPostContentDto(post);
 						postContentDto.updateAnonymousPostContent();
 
 						// 화면에 표시될 작성자 닉네임 설정
 						User writer = post.getWriter();
 						postContentDto.setDisplayWriterNickname(
-							postService.getDisplayWriterNickname(writer, postContentDto.getIsAnonymous(),
+							postV1Service.getDisplayWriterNickname(writer, postContentDto.getIsAnonymous(),
 								postContentDto.getWriterNickname()));
 
 						return postContentDto;

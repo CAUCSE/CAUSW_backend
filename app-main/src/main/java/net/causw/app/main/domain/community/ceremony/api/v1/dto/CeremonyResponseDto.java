@@ -28,7 +28,7 @@ public class CeremonyResponseDto {
 	@Schema(description = "행사 종료 날짜", example = "2025-05-02")
 	private LocalDate endDate;
 
-	@Schema(description = "행사 카테고리", example = "GRADUATION")
+	@Schema(description = "행사 카테고리", example = "졸업식")
 	private CeremonyCategory category;
 
 	@Schema(description = "신청한 경조사 상태", example = "AWAIT")
