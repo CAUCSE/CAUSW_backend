@@ -82,4 +82,6 @@ public interface UserRepository extends JpaRepository<User, String> {
 
 	@Query("SELECT u.id FROM User u")
 	List<String> findAllIds();
+
+	Optional<User> findByIdAndRolesContaining(String id, Role role);
 }

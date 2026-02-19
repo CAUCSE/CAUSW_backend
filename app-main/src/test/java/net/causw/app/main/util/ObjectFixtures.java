@@ -6,6 +6,9 @@ import java.util.Set;
 
 import org.springframework.test.util.ReflectionTestUtils;
 
+import net.causw.app.main.domain.asset.locker.entity.Locker;
+import net.causw.app.main.domain.asset.locker.entity.LockerLocation;
+import net.causw.app.main.domain.asset.locker.entity.LockerName;
 import net.causw.app.main.domain.campus.schedule.entity.Schedule;
 import net.causw.app.main.domain.campus.schedule.entity.enums.ScheduleType;
 import net.causw.app.main.domain.campus.schedule.service.v2.dto.ScheduleDto;
@@ -19,6 +22,8 @@ import net.causw.app.main.domain.community.vote.entity.Vote;
 import net.causw.app.main.domain.community.vote.entity.VoteOption;
 import net.causw.app.main.domain.finance.usercouncilfee.entity.CouncilFeeFakeUser;
 import net.causw.app.main.domain.finance.usercouncilfee.entity.UserCouncilFee;
+import net.causw.app.main.domain.notification.notification.entity.Notification;
+import net.causw.app.main.domain.notification.notification.enums.NoticeType;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserCreateRequestDto;
 import net.causw.app.main.domain.user.account.entity.user.User;
@@ -207,6 +212,16 @@ public class ObjectFixtures {
 			post);
 	}
 
+	public static Notification getNotification(User user) {
+		return Notification.of(
+			user,
+			"최신 알림",
+			"알림 내용",
+			NoticeType.POST,
+			"target-1",
+			null);
+	}
+
 	// Schedule 관련 헬퍼 메서드
 	public static Schedule getSchedule(User creator) {
 		return Schedule.of(
@@ -226,5 +241,50 @@ public class ObjectFixtures {
 			.end(LocalDateTime.of(2026, 4, 21, 23, 59))
 			.creator(creator)
 			.build();
+	}
+
+	// Locker 관련 헬퍼 메서드
+
+	/**
+	 * id가 설정되지 않은 기본 LockerLocation fixture.
+	 */
+	public static LockerLocation getLockerLocation(LockerName name) {
+		return LockerLocation.of(name);
+	}
+
+	/**
+	 * id가 설정된 LockerLocation fixture.
+	 */
+	public static LockerLocation getLockerLocationWithId(LockerName name, String id) {
+		LockerLocation location = getLockerLocation(name);
+		ReflectionTestUtils.setField(location, "id", id);
+		return location;
+	}
+
+	/**
+	 * id가 설정되지 않은 기본 Locker fixture.
+	 */
+	public static Locker getLocker(
+		Long lockerNumber,
+		Boolean isActive,
+		User user,
+		LockerLocation location,
+		LocalDateTime expireDate) {
+		return Locker.of(lockerNumber, isActive, user, location, expireDate);
+	}
+
+	/**
+	 * id가 설정된 Locker fixture.
+	 */
+	public static Locker getLockerWithId(
+		String id,
+		Long lockerNumber,
+		Boolean isActive,
+		User user,
+		LockerLocation location,
+		LocalDateTime expireDate) {
+		Locker locker = getLocker(lockerNumber, isActive, user, location, expireDate);
+		ReflectionTestUtils.setField(locker, "id", id);
+		return locker;
 	}
 }

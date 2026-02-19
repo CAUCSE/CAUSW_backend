@@ -21,20 +21,10 @@ import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.account.enums.user.GraduationType;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.domain.user.account.service.v2.dto.UserRegisterDto;
 import net.causw.app.main.shared.entity.BaseEntity;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.CollectionTable;
-import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -65,7 +55,7 @@ public class User extends BaseEntity {
 	@Column(name = "student_id", unique = true, nullable = true)
 	private String studentId;
 
-	@Column(name = "admission_year", nullable = false)
+	@Column(name = "admission_year", nullable = true)
 	private Integer admissionYear;
 
 	// 새로 추가한 필드들
@@ -114,6 +104,9 @@ public class User extends BaseEntity {
 	@Column(name = "state", nullable = false)
 	@Enumerated(EnumType.STRING)
 	private UserState state;
+
+	@Embedded
+	private TermAgreements agreements;
 
 	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
 	private Locker locker;
@@ -177,6 +170,22 @@ public class User extends BaseEntity {
 					userCreateRequestDto.getDepartment()))
 			.academicStatus(AcademicStatus.UNDETERMINED)
 			.phoneNumber(userCreateRequestDto.getPhoneNumber())
+			.agreements(TermAgreements.createRequiredAgreements())
+			.isV2(true)
+			.build();
+	}
+
+	public static User from(UserRegisterDto dto, String encodedPassword) {
+		return User.builder()
+			.email(dto.email())
+			.name(dto.name())
+			.roles(Set.of(Role.NONE))
+			.state(UserState.AWAIT)
+			.password(encodedPassword)
+			.nickname(dto.nickname())
+			.academicStatus(AcademicStatus.UNDETERMINED)
+			.phoneNumber(dto.phoneNumber())
+			.agreements(TermAgreements.createRequiredAgreements())
 			.isV2(true)
 			.build();
 	}
@@ -197,6 +206,7 @@ public class User extends BaseEntity {
 			.department(graduatedUserCommand.department())
 			.academicStatus(AcademicStatus.GRADUATED)
 			.phoneNumber(graduatedUserCommand.phoneNumber())
+			.agreements(TermAgreements.createRequiredAgreements())
 			.isV2(true)
 			.build();
 	}
@@ -222,6 +232,7 @@ public class User extends BaseEntity {
 		this.nickname = nickname;
 		this.major = major;
 		this.department = department;
+		this.agreements = TermAgreements.createRequiredAgreements();
 	}
 
 	public void updateRejectionOrDropReason(String reason) {
@@ -243,6 +254,13 @@ public class User extends BaseEntity {
 
 	public void removeFcmToken(String targetToken) {
 		this.fcmTokens.remove(targetToken);
+	}
+
+	public String getProfileUrl() {
+		if (this.userProfileImage == null || this.userProfileImage.getUuidFile() == null) {
+			return null;
+		}
+		return this.userProfileImage.getUuidFile().getFileUrl();
 	}
 
 	// 신고 관련 메소드

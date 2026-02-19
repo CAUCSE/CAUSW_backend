@@ -41,7 +41,7 @@ import net.causw.app.main.domain.community.board.service.implementation.BoardRea
 import net.causw.app.main.domain.community.board.service.implementation.BoardWriter;
 import net.causw.app.main.domain.community.board.util.BoardValidator;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.service.implementation.UserReader;
+import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.BoardErrorCode;
 import net.causw.app.main.util.ObjectFixtures;
@@ -144,7 +144,7 @@ class BoardServiceTest {
 			given(boardReader.getById(boardId)).willReturn(board);
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(adminIds);
-			given(userReader.getUsersByIds(adminIds)).willReturn(adminUsers);
+			given(userReader.findUsersByIds(adminIds)).willReturn(adminUsers);
 			given(boardConfigDetailMapper.fromEntity(board, boardConfig, adminUsers)).willReturn(detail);
 
 			// when
@@ -155,7 +155,7 @@ class BoardServiceTest {
 			then(boardReader).should().getById(boardId);
 			then(boardConfigReader).should().getByBoardId(boardId);
 			then(boardConfigReader).should().getAdminIdsByBoardId(boardId);
-			then(userReader).should().getUsersByIds(adminIds);
+			then(userReader).should().findUsersByIds(adminIds);
 			then(boardConfigDetailMapper).should().fromEntity(board, boardConfig, adminUsers);
 		}
 	}
