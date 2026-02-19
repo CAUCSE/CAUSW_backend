@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.community.ceremony.enums;
 
-import net.causw.app.main.shared.exception.errorcode.GlobalErrorCode;
+import net.causw.app.main.shared.exception.errorcode.CeremonyErrorCode;
 
 import lombok.Getter;
 
@@ -17,14 +17,14 @@ public enum CeremonyType {
 
 	public static CeremonyType fromString(String type) {
 		if (type == null || type.isEmpty()) {
-			throw GlobalErrorCode.BAD_REQUEST.toBaseException();
+			throw CeremonyErrorCode.INVALID_CEREMONY_TYPE.toBaseException();
 		}
 		for (CeremonyType ceremonyType : CeremonyType.values()) {
 			if (ceremonyType.name().equalsIgnoreCase(type)) {
 				return ceremonyType;
 			}
 		}
-		throw GlobalErrorCode.BAD_REQUEST.toBaseException();
+		throw CeremonyErrorCode.INVALID_CEREMONY_TYPE.toBaseException();
 	}
 
 	public static String parseTypeOrNull(String typeParam) {

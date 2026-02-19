@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.community.ceremony.enums;
 
-import net.causw.app.main.shared.exception.errorcode.GlobalErrorCode;
+import net.causw.app.main.shared.exception.errorcode.CeremonyErrorCode;
 
 import lombok.Getter;
 
@@ -13,7 +13,7 @@ public enum CeremonyState {
 
 	public static CeremonyState fromString(String state) {
 		if (state == null || state.isEmpty()) {
-			throw GlobalErrorCode.BAD_REQUEST.toBaseException();
+			throw CeremonyErrorCode.INVALID_CEREMONY_STATE.toBaseException();
 		}
 
 		for (CeremonyState ceremonyState : CeremonyState.values()) {
@@ -22,6 +22,6 @@ public enum CeremonyState {
 			}
 		}
 
-		throw GlobalErrorCode.BAD_REQUEST.toBaseException();
+		throw CeremonyErrorCode.INVALID_CEREMONY_STATE.toBaseException();
 	}
 }
