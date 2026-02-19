@@ -35,6 +35,7 @@ import net.causw.app.main.domain.community.ceremony.util.CeremonyValidator;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.CeremonyErrorCode;
+import net.causw.app.main.shared.exception.errorcode.GlobalErrorCode;
 import net.causw.app.main.shared.pageable.PageableFactory;
 import net.causw.global.constant.StaticValue;
 
@@ -124,12 +125,12 @@ public class CeremonyServiceTest {
 		@DisplayName("관계 동문 선택 시 동문 학번 입력 안 하면 Validator가 예외 반환")
 		void givenAlumniAdmissionYearIsNull_whenCreateCategoryWithRelationInstead_thenThrowsException() {
 			//given
-			doThrow(CeremonyErrorCode.ALUMNI_NAME_REQUIRED.toBaseException())
+			doThrow(CeremonyErrorCode.ALUMNI_ADMISSION_YEAR_REQUIRED.toBaseException())
 				.when(ceremonyValidator).validateForCreate(dto);
 
 			assertThatThrownBy(() -> ceremonyService.createCeremony(user, dto, null))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
-				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.ALUMNI_NAME_REQUIRED);
+				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.ALUMNI_ADMISSION_YEAR_REQUIRED);
 			then(uuidFileService).should(never()).saveFileList(any(), any());
 			then(ceremonyCreateMapper).should(never()).fromRequest(any(), any(), any(), any());
 			then(ceremonyCreator).should(never()).save(any());
@@ -325,9 +326,9 @@ public class CeremonyServiceTest {
 			// when & then
 			assertThatThrownBy(() -> ceremonyService.getMyCeremonyPage("userId", CeremonyState.CLOSE, 0))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
-				.hasMessageContaining(CeremonyErrorCode.CEREMONY_NOT_FOUND.getMessage())
+				.hasMessageContaining(GlobalErrorCode.BAD_REQUEST.getMessage())
 				.extracting("errorCode")
-				.isEqualTo(CeremonyErrorCode.CEREMONY_NOT_FOUND);
+				.isEqualTo(GlobalErrorCode.BAD_REQUEST);
 
 			then(ceremonyReader).shouldHaveNoInteractions();
 		}
