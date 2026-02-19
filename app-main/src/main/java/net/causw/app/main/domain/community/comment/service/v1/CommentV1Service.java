@@ -61,7 +61,7 @@ import lombok.RequiredArgsConstructor;
 @MeasureTime
 @Service
 @RequiredArgsConstructor
-public class CommentService {
+public class CommentV1Service {
 
 	private final CommentRepository commentRepository;
 	private final PostRepository postRepository;
