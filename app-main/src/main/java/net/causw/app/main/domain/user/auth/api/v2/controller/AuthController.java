@@ -5,19 +5,21 @@ import java.time.Duration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 import net.causw.app.main.domain.user.account.service.v2.dto.UserRegisterDto;
 import net.causw.app.main.domain.user.auth.api.v2.dto.AuthDtoMapper;
 import net.causw.app.main.domain.user.auth.api.v2.dto.request.EmailLoginRequest;
 import net.causw.app.main.domain.user.auth.api.v2.dto.request.EmailSignupRequest;
+import net.causw.app.main.domain.user.auth.api.v2.dto.request.SignOutRequest;
 import net.causw.app.main.domain.user.auth.api.v2.dto.response.AuthResponse;
 import net.causw.app.main.domain.user.auth.service.v2.AuthService;
 import net.causw.app.main.domain.user.auth.service.v2.dto.AuthResult;
+import net.causw.app.main.domain.user.auth.service.v2.dto.AuthTokenPair;
+import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
+import net.causw.app.main.shared.util.AuthorizationExtractor;
 import net.causw.global.constant.StaticValue;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -58,5 +60,50 @@ public class AuthController {
 
 		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
 			.body(ApiResponse.success(authDtoMapper.toAuthResponse(dto)));
+	}
+
+	@Operation(summary = "토큰 재발급 V2", description = "리프레시토큰을 통해 액세스토큰을 재발급 받습니다.")
+	@PostMapping("/refresh")
+	public ResponseEntity<ApiResponse<AuthResponse>> reissue(
+		@CookieValue(name = "refresh_token", required = false) String refreshToken,
+		@RequestHeader(value = "Authorization", required = false) String authHeader) {
+		// CSRF 방어 로직
+		AuthorizationExtractor.validate(authHeader);
+		AuthResult dto = authService.updateToken(refreshToken);
+
+		// 쿠키로 리프레시토큰 반환
+		ResponseCookie cookie = ResponseCookie.from("refresh_token", dto.refreshToken())
+			.httpOnly(true)
+			.secure(true)
+			.path("/")
+			.maxAge(Duration.ofMillis(StaticValue.JWT_REFRESH_TOKEN_VALID_TIME))
+			.sameSite("None")
+			.build();
+
+		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
+			.body(ApiResponse.success(authDtoMapper.toAuthResponse(dto)));
+	}
+
+	@Operation(summary = "로그아웃 V2", description = "토큰을 만료시킵니다.")
+	@PostMapping("/logout")
+	public ResponseEntity<ApiResponse<String>> logout(
+		@RequestHeader("Authorization") String bearerToken,
+		@CookieValue(name = "refresh_token", required = false) String refreshToken,
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestBody(required = false) SignOutRequest body) {
+		String accessToken = AuthorizationExtractor.extract(bearerToken);
+		AuthTokenPair tokens = AuthTokenPair.of(accessToken, refreshToken);
+		String fcmToken = (body != null) ? body.fcmToken() : null;
+		authService.signOut(userDetails.getUserId(), tokens, fcmToken);
+		// 쿠키에서 refresh_token 제거
+		ResponseCookie cookie = ResponseCookie.from("refresh_token", "")
+			.httpOnly(true)
+			.secure(true)
+			.path("/")
+			.maxAge(0)
+			.sameSite("None")
+			.build();
+		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
+			.body(ApiResponse.success("로그아웃 성공"));
 	}
 }

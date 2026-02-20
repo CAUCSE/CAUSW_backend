@@ -23,7 +23,7 @@ import net.causw.app.main.domain.community.ceremony.api.v1.mapper.CeremonyDtoV1M
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyContext;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyState;
-import net.causw.app.main.domain.community.ceremony.repository.CeremonyRepository;
+import net.causw.app.main.domain.community.ceremony.repository.v1.CeremonyV1Repository;
 import net.causw.app.main.domain.notification.notification.api.v1.dto.CeremonyListNotificationDto;
 import net.causw.app.main.domain.notification.notification.api.v1.mapper.NotificationDtoV1Mapper;
 import net.causw.app.main.domain.notification.notification.entity.CeremonyNotificationSetting;
@@ -45,7 +45,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class CeremonyV1Service {
-	private final CeremonyRepository ceremonyRepository;
+	private final CeremonyV1Repository ceremonyV1Repository;
 	private final UserRepository userRepository;
 	private final CeremonyNotificationService ceremonyNotificationService;
 	private final UuidFileV1Service uuidFileService;
@@ -95,14 +95,14 @@ public class CeremonyV1Service {
 			createCeremonyRequestDTO.getIsSetAll(),
 			targetAdmissionYears,
 			uuidFileList);
-		ceremonyRepository.save(ceremony);
+		ceremonyV1Repository.save(ceremony);
 
 		return CeremonyDtoV1Mapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
 	}
 
 	@Transactional(readOnly = true)
 	public Page<CeremonyListNotificationDto> getUserCeremonyResponses(User user, CeremonyState state, Integer pageNum) {
-		Page<Ceremony> ceremonies = ceremonyRepository.findAllByUserAndCeremonyStateOrderByCreatedAtDesc(user, state,
+		Page<Ceremony> ceremonies = ceremonyV1Repository.findAllByUserAndCeremonyStateOrderByCreatedAtDesc(user, state,
 			pageableFactory.create(pageNum, StaticValue.DEFAULT_PAGE_SIZE));
 
 		return ceremonies.map(NotificationDtoV1Mapper.INSTANCE::toCeremonyListNotificationDto);
@@ -110,7 +110,7 @@ public class CeremonyV1Service {
 
 	@Transactional(readOnly = true)
 	public Page<CeremonyListNotificationDto> getAllUserAwaitingCeremonyPage(Integer pageNum) {
-		Page<Ceremony> ceremonies = ceremonyRepository.findByCeremonyStateOrderByCreatedAtDesc(CeremonyState.AWAIT,
+		Page<Ceremony> ceremonies = ceremonyV1Repository.findByCeremonyStateOrderByCreatedAtDesc(CeremonyState.AWAIT,
 			pageableFactory.create(pageNum, StaticValue.DEFAULT_PAGE_SIZE));
 
 		return ceremonies.map(NotificationDtoV1Mapper.INSTANCE::toCeremonyListNotificationDto);
@@ -119,7 +119,7 @@ public class CeremonyV1Service {
 	@Deprecated
 	@Transactional(readOnly = true)
 	public CeremonyResponseDto getCeremony(String ceremonyId, CeremonyContext context, User user) {
-		Ceremony ceremony = ceremonyRepository.findById(ceremonyId).orElseThrow(
+		Ceremony ceremony = ceremonyV1Repository.findById(ceremonyId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
 				MessageUtil.CEREMONY_NOT_FOUND));
@@ -148,7 +148,7 @@ public class CeremonyV1Service {
 
 	@Transactional
 	public CeremonyResponseDto updateUserCeremonyStatus(UpdateCeremonyStateRequestDto updateDto) {
-		Ceremony ceremony = ceremonyRepository.findById(updateDto.getCeremonyId()).orElseThrow(
+		Ceremony ceremony = ceremonyV1Repository.findById(updateDto.getCeremonyId()).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
 				MessageUtil.CEREMONY_NOT_FOUND));
@@ -163,21 +163,21 @@ public class CeremonyV1Service {
 			return CeremonyDtoV1Mapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
 		}
 
-		ceremonyRepository.save(ceremony);
+		ceremonyV1Repository.save(ceremony);
 
 		return CeremonyDtoV1Mapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
 	}
 
 	@Transactional
 	public CeremonyResponseDto closeUserCeremonyStatus(User user, String ceremonyId) {
-		Ceremony ceremony = ceremonyRepository.findByIdAndUser(ceremonyId, user).orElseThrow(
+		Ceremony ceremony = ceremonyV1Repository.findByIdAndUser(ceremonyId, user).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
 				MessageUtil.CEREMONY_NOT_FOUND));
 
 		ceremony.updateCeremonyState(CeremonyState.CLOSE);
 
-		ceremonyRepository.save(ceremony);
+		ceremonyV1Repository.save(ceremony);
 
 		return CeremonyDtoV1Mapper.INSTANCE.toDetailedCeremonyResponseDto(ceremony);
 	}

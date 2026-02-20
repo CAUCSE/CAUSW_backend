@@ -2,10 +2,13 @@ package net.causw.app.main.domain.community.board.repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.stereotype.Repository;
 
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
+import net.causw.app.main.domain.community.board.entity.BoardReadScope;
+import net.causw.app.main.domain.community.board.entity.BoardVisibility;
 import net.causw.app.main.domain.community.board.entity.QBoardConfig;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -43,5 +46,23 @@ public class BoardConfigQueryRepository {
 			.from(boardConfig)
 			.fetchOne();
 		return max != null ? max : 0;
+	}
+
+	/**
+	 * 사용자 학적 상태에 따라 접근 가능한 게시판 ID 목록을 조회합니다.
+	 * VISIBLE이고 사용자의 ReadScope에 맞는 게시판만 조회합니다.
+	 *
+	 * @param boardReadScopes 조회할 boardReadScope 집합
+	 * @return 게시판 ID 목록
+	 */
+	public List<String> findBoardsByReadScopes(Set<BoardReadScope> boardReadScopes) {
+		QBoardConfig boardConfig = QBoardConfig.boardConfig;
+
+		return jpaQueryFactory
+			.select(boardConfig.boardId)
+			.from(boardConfig)
+			.where(boardConfig.visibility.eq(BoardVisibility.VISIBLE)
+				.and(boardConfig.readScope.in(boardReadScopes)))
+			.fetch();
 	}
 }

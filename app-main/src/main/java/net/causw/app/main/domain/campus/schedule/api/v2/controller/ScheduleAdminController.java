@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import net.causw.app.main.domain.campus.schedule.api.v2.controller.dto.request.ScheduleRequest;
-import net.causw.app.main.domain.campus.schedule.api.v2.controller.dto.response.ScheduleResponse;
-import net.causw.app.main.domain.campus.schedule.api.v2.controller.mapper.ScheduleDtoMapper;
+import net.causw.app.main.domain.campus.schedule.api.v2.dto.request.ScheduleRequest;
+import net.causw.app.main.domain.campus.schedule.api.v2.dto.response.ScheduleResponse;
+import net.causw.app.main.domain.campus.schedule.api.v2.mapper.ScheduleDtoMapper;
 import net.causw.app.main.domain.campus.schedule.service.v2.ScheduleService;
 import net.causw.app.main.domain.campus.schedule.service.v2.dto.ScheduleDto;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;

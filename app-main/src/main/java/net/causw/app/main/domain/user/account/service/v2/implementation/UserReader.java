@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.user.account.entity.user.SocialAccount;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.SocialType;
 import net.causw.app.main.domain.user.account.repository.user.SocialAccountRepository;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
@@ -28,6 +29,12 @@ public class UserReader {
 
 	public User findUserById(String userId) {
 		return userRepository.findById(userId)
+			.orElseThrow(UserErrorCode.USER_NOT_FOUND::toBaseException);
+	}
+
+	public User findAdminUserById(String userId) {
+		// todo: roles Conataining 검색에 성능 이슈 있는지 체크 필요
+		return userRepository.findByIdAndRolesContaining(userId, Role.ADMIN)
 			.orElseThrow(UserErrorCode.USER_NOT_FOUND::toBaseException);
 	}
 

@@ -62,6 +62,7 @@ public class WebSecurityConfig {
 				sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.authorizeHttpRequests(auth -> auth
 				.requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
+				.requestMatchers("/api/v2/auth/logout").authenticated()
 				.requestMatchers("/api/v2/auth/**", "/oauth2/**", "/login/oauth2/**").permitAll()
 				.requestMatchers("/api/v2/admin/**").hasRole("ADMIN")
 				.anyRequest().authenticated())

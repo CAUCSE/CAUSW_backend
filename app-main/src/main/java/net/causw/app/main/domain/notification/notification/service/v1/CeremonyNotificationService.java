@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
-import net.causw.app.main.domain.community.ceremony.repository.CeremonyRepository;
+import net.causw.app.main.domain.community.ceremony.repository.v1.CeremonyV1Repository;
 import net.causw.app.main.domain.notification.notification.api.v1.dto.CeremonyNotificationDto;
 import net.causw.app.main.domain.notification.notification.entity.CeremonyNotificationSetting;
 import net.causw.app.main.domain.notification.notification.entity.Notification;
@@ -40,7 +40,7 @@ public class CeremonyNotificationService implements NotificationService {
 	private final NotificationRepository notificationRepository;
 	private final NotificationLogRepository notificationLogRepository;
 	private final FcmUtils fcmUtils;
-	private final CeremonyRepository ceremonyRepository;
+	private final CeremonyV1Repository ceremonyV1Repository;
 	private final UserBlockEntityService userBlockEntityService;
 
 	@Override
@@ -69,7 +69,7 @@ public class CeremonyNotificationService implements NotificationService {
 	@Async("asyncExecutor")
 	@Transactional
 	public void sendByAdmissionYear(Integer admissionYear, String ceremonyId) {
-		Ceremony ceremony = ceremonyRepository.findById(ceremonyId).orElseThrow(
+		Ceremony ceremony = ceremonyV1Repository.findById(ceremonyId).orElseThrow(
 			() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
 				MessageUtil.CEREMONY_NOT_FOUND));

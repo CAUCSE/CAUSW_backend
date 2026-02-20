@@ -1,9 +1,11 @@
 package net.causw.app.main.domain.community.ceremony.service.v2;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.*;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -14,10 +16,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import net.causw.app.main.domain.asset.file.service.v2.UuidFileService;
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.request.CreateCeremonyRequestDto;
+import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonySummaryResponseDto;
 import net.causw.app.main.domain.community.ceremony.api.v2.mapper.CeremonyCreateMapper;
+import net.causw.app.main.domain.community.ceremony.api.v2.mapper.CeremonyDtoMapper;
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyContext;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyState;
@@ -28,6 +35,8 @@ import net.causw.app.main.domain.community.ceremony.util.CeremonyValidator;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.CeremonyErrorCode;
+import net.causw.app.main.shared.pageable.PageableFactory;
+import net.causw.global.constant.StaticValue;
 
 @ExtendWith(MockitoExtension.class)
 public class CeremonyServiceTest {
@@ -44,7 +53,13 @@ public class CeremonyServiceTest {
 	@Mock
 	CeremonyCreateMapper ceremonyCreateMapper;
 	@Mock
+	CeremonyDtoMapper ceremonyDtoMapper;
+	@Mock
 	CeremonyValidator ceremonyValidator;
+	@Mock
+	PageableFactory pageableFactory;
+
+	Pageable pageable;
 
 	@Nested
 	@DisplayName("경조사 생성 테스트")
@@ -109,12 +124,12 @@ public class CeremonyServiceTest {
 		@DisplayName("관계 동문 선택 시 동문 학번 입력 안 하면 Validator가 예외 반환")
 		void givenAlumniAdmissionYearIsNull_whenCreateCategoryWithRelationInstead_thenThrowsException() {
 			//given
-			doThrow(CeremonyErrorCode.ALUMNI_NAME_REQUIRED.toBaseException())
+			doThrow(CeremonyErrorCode.ALUMNI_ADMISSION_YEAR_REQUIRED.toBaseException())
 				.when(ceremonyValidator).validateForCreate(dto);
 
 			assertThatThrownBy(() -> ceremonyService.createCeremony(user, dto, null))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
-				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.ALUMNI_NAME_REQUIRED);
+				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.ALUMNI_ADMISSION_YEAR_REQUIRED);
 			then(uuidFileService).should(never()).saveFileList(any(), any());
 			then(ceremonyCreateMapper).should(never()).fromRequest(any(), any(), any(), any());
 			then(ceremonyCreator).should(never()).save(any());
@@ -221,6 +236,129 @@ public class CeremonyServiceTest {
 				.isEqualTo(CeremonyErrorCode.CEREMONY_NOT_FOUND);
 
 			verify(ceremonyReader, times(1)).findById("ceremonyId");
+		}
+	}
+
+	@Nested
+	@DisplayName("경조사 조회 리스트 테스트")
+	class GetOngoingCeremonyPageTest {
+
+		@BeforeEach
+		void setUp() {
+			pageable = mock(Pageable.class);
+			given(pageableFactory.create(anyInt(), eq(StaticValue.DEFAULT_PAGE_SIZE))).willReturn(pageable);
+		}
+
+		@Test
+		@DisplayName("경조사 리스트 조회 시 type이 null/empty/ALL이어도 성공(서비스는 그대로 reader에 전달)")
+		void givenTypeNullOrEmptyOrAll_whenGetOngoing_thenCallsReaderAndMaps() {
+			Ceremony c1 = mock(Ceremony.class);
+			Ceremony c2 = mock(Ceremony.class);
+			Page<Ceremony> ceremonyPage = new PageImpl<>(List.of(c1, c2));
+
+			// given
+			given(ceremonyReader.findOngoingOrderByStartedAtDesc(isNull(), any(), any(), eq(pageable)))
+				.willReturn(ceremonyPage);
+			given(ceremonyDtoMapper.toCeremonySummaryResponseDto(any(Ceremony.class)))
+				.willReturn(mock(CeremonySummaryResponseDto.class));
+
+			// when
+			Page<CeremonySummaryResponseDto> result = ceremonyService.getOngoingCeremonyPage(null, 1);
+
+			// then
+			assertThat(result.getTotalElements()).isEqualTo(2);
+
+			then(pageableFactory).should(times(1)).create(eq(1), eq(StaticValue.DEFAULT_PAGE_SIZE));
+			then(ceremonyReader).should(times(1))
+				.findOngoingOrderByStartedAtDesc(isNull(), any(), any(), eq(pageable));
+			then(ceremonyDtoMapper).should(times(2))
+				.toCeremonySummaryResponseDto(any(Ceremony.class));
+		}
+
+		@Test
+		@DisplayName("경조사 리스트 조회 시 type이 존재하면 성공(서비스는 그대로 reader에 전달)")
+		void givenValidType_whenGetOngoing_thenCallsReaderWithTypeAndMaps() {
+			Ceremony c1 = mock(Ceremony.class);
+			Page<Ceremony> ceremonyPage = new PageImpl<>(List.of(c1));
+
+			// given
+			given(ceremonyReader.findOngoingOrderByStartedAtDesc(eq("celebration"), any(), any(), eq(pageable)))
+				.willReturn(ceremonyPage);
+			given(ceremonyDtoMapper.toCeremonySummaryResponseDto(any(Ceremony.class)))
+				.willReturn(mock(CeremonySummaryResponseDto.class));
+
+			// when
+			Page<CeremonySummaryResponseDto> result = ceremonyService.getOngoingCeremonyPage("celebration", 0);
+
+			// then
+			assertThat(result.getTotalElements()).isEqualTo(1);
+
+			then(pageableFactory).should(times(1)).create(eq(0), eq(StaticValue.DEFAULT_PAGE_SIZE));
+			then(ceremonyReader).should(times(1))
+				.findOngoingOrderByStartedAtDesc(eq("celebration"), any(), any(), eq(pageable));
+			then(ceremonyDtoMapper).should(times(1))
+				.toCeremonySummaryResponseDto(any(Ceremony.class));
+		}
+
+		@Test
+		@DisplayName("경조사 리스트 조회 시 reader가 예외를 던지면 그대로 전파")
+		void givenReaderThrows_whenGetOngoing_thenThrows() {
+			// given
+			given(ceremonyReader.findOngoingOrderByStartedAtDesc(eq("nope"), any(), any(), eq(pageable)))
+				.willThrow(new RuntimeException("boom"));
+
+			// when & then
+			assertThatThrownBy(() -> ceremonyService.getOngoingCeremonyPage("nope", 0))
+				.isInstanceOf(RuntimeException.class)
+				.hasMessageContaining("boom");
+
+			then(pageableFactory).should(times(1)).create(eq(0), eq(StaticValue.DEFAULT_PAGE_SIZE));
+			then(ceremonyReader).should(times(1))
+				.findOngoingOrderByStartedAtDesc(eq("nope"), any(), any(), eq(pageable));
+
+			then(ceremonyDtoMapper).shouldHaveNoInteractions();
+		}
+
+		@Test
+		@DisplayName("내 경조사 리스트 조회 시 state가 CLOSE면 예외 반환")
+		void givenStateClose_whenGetMy_thenThrowsException() {
+			// when & then
+			assertThatThrownBy(() -> ceremonyService.getMyCeremonyPage("userId", CeremonyState.CLOSE, 0))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasMessageContaining(CeremonyErrorCode.INVALID_CEREMONY_STATE.getMessage())
+				.extracting("errorCode")
+				.isEqualTo(CeremonyErrorCode.INVALID_CEREMONY_STATE);
+
+			then(ceremonyReader).shouldHaveNoInteractions();
+		}
+
+		@Test
+		@DisplayName("내 경조사 리스트 조회 시 CLOSE가 아니면 성공")
+		void givenStateAccept_whenGetMy_thenMapsToMySummary() {
+			Ceremony c1 = mock(Ceremony.class);
+			Ceremony c2 = mock(Ceremony.class);
+			Page<Ceremony> ceremonyPage = new PageImpl<>(List.of(c1, c2));
+
+			// given
+			given(ceremonyReader.findByUserIdAndCeremonyStateOrderByStartedAtDesc(
+				eq("userId"), eq(CeremonyState.ACCEPT), eq(pageable)))
+				.willReturn(ceremonyPage);
+
+			given(ceremonyDtoMapper.toMyCeremonySummaryResponseDto(any(Ceremony.class)))
+				.willReturn(mock(CeremonySummaryResponseDto.class));
+
+			// when
+			Page<CeremonySummaryResponseDto> result = ceremonyService.getMyCeremonyPage("userId", CeremonyState.ACCEPT,
+				1);
+
+			// then
+			assertThat(result.getTotalElements()).isEqualTo(2);
+
+			then(pageableFactory).should(times(1)).create(eq(1), eq(StaticValue.DEFAULT_PAGE_SIZE));
+			then(ceremonyReader).should(times(1))
+				.findByUserIdAndCeremonyStateOrderByStartedAtDesc(eq("userId"), eq(CeremonyState.ACCEPT), eq(pageable));
+			then(ceremonyDtoMapper).should(times(2))
+				.toMyCeremonySummaryResponseDto(any(Ceremony.class));
 		}
 	}
 }

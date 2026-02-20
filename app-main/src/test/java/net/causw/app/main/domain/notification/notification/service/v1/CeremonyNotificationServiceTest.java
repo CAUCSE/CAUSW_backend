@@ -27,7 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyCategory;
-import net.causw.app.main.domain.community.ceremony.repository.CeremonyRepository;
+import net.causw.app.main.domain.community.ceremony.repository.v1.CeremonyV1Repository;
 import net.causw.app.main.domain.notification.notification.entity.CeremonyNotificationSetting;
 import net.causw.app.main.domain.notification.notification.entity.Notification;
 import net.causw.app.main.domain.notification.notification.entity.NotificationLog;
@@ -64,7 +64,7 @@ class CeremonyNotificationServiceTest {
 	private NotificationLogRepository notificationLogRepository;
 
 	@Mock
-	private CeremonyRepository ceremonyRepository;
+	private CeremonyV1Repository ceremonyV1Repository;
 
 	@Mock
 	private FcmUtils fcmUtils;
@@ -96,7 +96,7 @@ class CeremonyNotificationServiceTest {
 		given(mockCeremony.getEndDate()).willReturn(LocalDate.of(2024, 4, 16));
 		given(mockCeremony.getCeremonyCategory()).willReturn(CeremonyCategory.MARRIAGE);
 		given(mockCeremony.isSetAll()).willReturn(true);
-		given(ceremonyRepository.findById("ceremony-id")).willReturn(Optional.of(mockCeremony));
+		given(ceremonyV1Repository.findById("ceremony-id")).willReturn(Optional.of(mockCeremony));
 	}
 
 	@Test
