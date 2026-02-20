@@ -67,8 +67,8 @@ public class AdmissionAdminService {
 		// User + AttachImageList 모두 fetch join — 검증·업데이트·로그 생성에서 전부 사용됨
 		UserAdmission admission = admissionReader.findAdmissionDetail(admissionId);
 
-		// 승인 전 중복 체크
-		admissionValidator.validateNoDuplicateBeforeAccept(admission);
+		// 승인 전 학번 중복 체크
+		admissionValidator.validateStudentIdNotDuplicated(admission.getRequestedStudentId());
 
 		// 유저 정보 업데이트 + 상태 변경 + 역할 변경 + 학적 상태 확정
 		User targetUser = admission.getUser();

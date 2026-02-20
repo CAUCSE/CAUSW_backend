@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
@@ -100,7 +101,7 @@ class AdmissionServiceTest {
 			assertThat(result.requestedAcademicStatus()).isEqualTo(AcademicStatus.ENROLLED);
 			assertThat(result.description()).isEqualTo("재학증명서 첨부합니다");
 
-			verify(admissionValidator).validateAdmissionCreate(user, attachImages);
+			verify(admissionValidator).validateAdmissionCreate(user, command.requestedStudentId(), attachImages);
 			verify(fileWriter).uploadAndSaveList(anyList(), eq(FilePath.USER_ADMISSION));
 			verify(userWriter).updateStateToAwait(user);
 			verify(admissionWriter).create(
@@ -150,7 +151,7 @@ class AdmissionServiceTest {
 			List<MultipartFile> attachImages = ObjectFixtures.getMockAttachImages();
 
 			doThrow(UserErrorCode.INVALID_USER_STATE_FOR_ADMISSION.toBaseException())
-				.when(admissionValidator).validateAdmissionCreate(user, attachImages);
+				.when(admissionValidator).validateAdmissionCreate(eq(user), anyString(), eq(attachImages));
 
 			// when & then
 			assertThatThrownBy(() -> admissionService.createAdmission(user, command, attachImages))
@@ -158,7 +159,7 @@ class AdmissionServiceTest {
 				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
 				.isEqualTo(UserErrorCode.INVALID_USER_STATE_FOR_ADMISSION);
 
-			verify(admissionValidator).validateAdmissionCreate(user, attachImages);
+			verify(admissionValidator).validateAdmissionCreate(eq(user), anyString(), eq(attachImages));
 			verify(fileWriter, never()).uploadAndSaveList(anyList(), any(FilePath.class));
 			verify(admissionWriter, never()).create(any(), any(), any(), any(), any(), any(), any());
 		}
@@ -172,7 +173,7 @@ class AdmissionServiceTest {
 			List<MultipartFile> attachImages = ObjectFixtures.getMockAttachImages();
 
 			doThrow(UserErrorCode.ADMISSION_ALREADY_EXISTS.toBaseException())
-				.when(admissionValidator).validateAdmissionCreate(user, attachImages);
+				.when(admissionValidator).validateAdmissionCreate(eq(user), anyString(), eq(attachImages));
 
 			// when & then
 			assertThatThrownBy(() -> admissionService.createAdmission(user, command, attachImages))
@@ -180,7 +181,29 @@ class AdmissionServiceTest {
 				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
 				.isEqualTo(UserErrorCode.ADMISSION_ALREADY_EXISTS);
 
-			verify(admissionValidator).validateAdmissionCreate(user, attachImages);
+			verify(admissionValidator).validateAdmissionCreate(eq(user), anyString(), eq(attachImages));
+			verify(fileWriter, never()).uploadAndSaveList(anyList(), any(FilePath.class));
+			verify(admissionWriter, never()).create(any(), any(), any(), any(), any(), any(), any());
+		}
+
+		@Test
+		@DisplayName("요청 학번이 다른 ACTIVE/INACTIVE 사용자와 중복되면 예외가 발생한다")
+		void givenDuplicateStudentId_whenCreateAdmission_thenThrowStudentIdAlreadyExistException() {
+			// given
+			User user = ObjectFixtures.getUserWithId("user-6");
+			AdmissionCreateCommand command = ObjectFixtures.getAdmissionCreateCommand();
+			List<MultipartFile> attachImages = ObjectFixtures.getMockAttachImages();
+
+			doThrow(UserErrorCode.STUDENT_ID_ALREADY_EXIST.toBaseException())
+				.when(admissionValidator).validateAdmissionCreate(eq(user), anyString(), eq(attachImages));
+
+			// when & then
+			assertThatThrownBy(() -> admissionService.createAdmission(user, command, attachImages))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
+				.isEqualTo(UserErrorCode.STUDENT_ID_ALREADY_EXIST);
+
+			verify(admissionValidator).validateAdmissionCreate(eq(user), anyString(), eq(attachImages));
 			verify(fileWriter, never()).uploadAndSaveList(anyList(), any(FilePath.class));
 			verify(admissionWriter, never()).create(any(), any(), any(), any(), any(), any(), any());
 		}
@@ -194,7 +217,7 @@ class AdmissionServiceTest {
 			List<MultipartFile> emptyImages = List.of();
 
 			doThrow(UserErrorCode.ADMISSION_IMAGE_REQUIRED.toBaseException())
-				.when(admissionValidator).validateAdmissionCreate(user, emptyImages);
+				.when(admissionValidator).validateAdmissionCreate(eq(user), anyString(), eq(emptyImages));
 
 			// when & then
 			assertThatThrownBy(() -> admissionService.createAdmission(user, command, emptyImages))
@@ -202,7 +225,7 @@ class AdmissionServiceTest {
 				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
 				.isEqualTo(UserErrorCode.ADMISSION_IMAGE_REQUIRED);
 
-			verify(admissionValidator).validateAdmissionCreate(user, emptyImages);
+			verify(admissionValidator).validateAdmissionCreate(eq(user), anyString(), eq(emptyImages));
 			verify(fileWriter, never()).uploadAndSaveList(anyList(), any(FilePath.class));
 			verify(admissionWriter, never()).create(any(), any(), any(), any(), any(), any(), any());
 		}

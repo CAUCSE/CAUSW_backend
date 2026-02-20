@@ -38,6 +38,7 @@ public class AdmissionService {
 	 * - 사용자 상태가 AWAIT 또는 REJECT인 경우만 신청 가능
 	 * - 기존 신청이 존재하지 않아야 함
 	 * - 첨부 이미지 1개 이상 필수
+	 * - 요청 학번이 다른 ACTIVE/INACTIVE/DROP 사용자와 중복되지 않아야 함
 	 */
 	@Transactional
 	public AdmissionResult createAdmission(
@@ -46,7 +47,7 @@ public class AdmissionService {
 		List<MultipartFile> attachImages) {
 
 		// 인증 신청 생성 검증
-		admissionValidator.validateAdmissionCreate(user, attachImages);
+		admissionValidator.validateAdmissionCreate(user, dto.requestedStudentId(), attachImages);
 
 		// 이미지 파일 업로드
 		List<UuidFile> uuidFiles = fileWriter.uploadAndSaveList(attachImages, FilePath.USER_ADMISSION);

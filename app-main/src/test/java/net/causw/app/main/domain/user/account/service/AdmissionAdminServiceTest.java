@@ -2,7 +2,6 @@ package net.causw.app.main.domain.user.account.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -289,7 +288,6 @@ class AdmissionAdminServiceTest {
 			UserAdmission admission = ObjectFixtures.getUserAdmissionWithId(admissionId, targetUser);
 
 			when(admissionReader.findAdmissionDetail(admissionId)).thenReturn(admission);
-			doNothing().when(admissionValidator).validateNoDuplicateBeforeAccept(admission);
 			when(userWriter.approveAdmission(targetUser, admission)).thenReturn(targetUser);
 
 			// when
@@ -297,7 +295,7 @@ class AdmissionAdminServiceTest {
 
 			// then
 			verify(admissionReader).findAdmissionDetail(admissionId);
-			verify(admissionValidator).validateNoDuplicateBeforeAccept(admission);
+			verify(admissionValidator).validateStudentIdNotDuplicated(admission.getRequestedStudentId());
 			verify(userWriter).approveAdmission(targetUser, admission);
 			verify(admissionLogWriter).createAcceptLog(admission, adminUser);
 			verify(admissionWriter).delete(admission);
@@ -338,7 +336,7 @@ class AdmissionAdminServiceTest {
 
 			when(admissionReader.findAdmissionDetail(admissionId)).thenReturn(admission);
 			doThrow(UserErrorCode.STUDENT_ID_ALREADY_EXIST.toBaseException())
-				.when(admissionValidator).validateNoDuplicateBeforeAccept(admission);
+				.when(admissionValidator).validateStudentIdNotDuplicated(admission.getRequestedStudentId());
 
 			// when & then
 			assertThatThrownBy(() -> admissionAdminService.approveAdmission(admissionId, adminUser))

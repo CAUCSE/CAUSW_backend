@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
@@ -26,11 +25,13 @@ public class AdmissionValidator {
 	 * - 사용자 상태가 AWAIT 또는 REJECT인 경우만 신청 가능
 	 * - 기존 신청이 존재하지 않아야 함
 	 * - 첨부 이미지 1개 이상 필수
+	 * - 요청 학번이 다른 ACTIVE/INACTIVE/DROP 사용자와 중복되지 않아야 함
 	 */
-	public void validateAdmissionCreate(User user, List<MultipartFile> attachImages) {
+	public void validateAdmissionCreate(User user, String requestedStudentId, List<MultipartFile> attachImages) {
 		validateUserStateForAdmission(user);
-		validateNoDuplicateAdmission(user);
+		validateNoExistingAdmission(user);
 		validateAttachImages(attachImages);
+		validateStudentIdNotDuplicated(requestedStudentId);
 	}
 
 	/**
@@ -45,7 +46,7 @@ public class AdmissionValidator {
 	/**
 	 * 기존 신청이 존재하지 않는지 검증합니다.
 	 */
-	public void validateNoDuplicateAdmission(User user) {
+	public void validateNoExistingAdmission(User user) {
 		if (admissionReader.existsByUserId(user.getId())) {
 			throw UserErrorCode.ADMISSION_ALREADY_EXISTS.toBaseException();
 		}
@@ -61,25 +62,18 @@ public class AdmissionValidator {
 	}
 
 	/**
-	 * 재학인증 승인 전, 신청서에 기입된 학번이 다른 사용자와 중복되지 않는지 검증합니다.
-	 *
-	 * 이메일/닉네임/연락처는 회원가입 시점에 검증이 이루어지며,
-	 * 재학인증 과정에서 변경되지 않으므로 승인 시점에 재검증하지 않습니다.
+	 * 요청 학번이 이미 ACTIVE/INACTIVE 사용자에게 할당되어 있거나,
+	 * DROP 상태의 사용자가 사용 중이면 예외를 발생시킵니다.
 	 */
-	public void validateNoDuplicateBeforeAccept(UserAdmission admission) {
-		String requestedStudentId = admission.getRequestedStudentId();
+	public void validateStudentIdNotDuplicated(String requestedStudentId) {
 		if (requestedStudentId == null) {
 			return;
 		}
 
-		User currentUser = admission.getUser();
 		userRepository.findByStudentId(requestedStudentId).ifPresent(existingUser -> {
-			if (!existingUser.getId().equals(currentUser.getId())) {
-				if (existingUser.getState() == UserState.ACTIVE || existingUser.getState() == UserState.INACTIVE) {
-					throw UserErrorCode.STUDENT_ID_ALREADY_EXIST.toBaseException();
-				} else if (existingUser.getState() == UserState.DROP) {
-					throw UserErrorCode.USER_DROPPED.toBaseException();
-				}
+			UserState state = existingUser.getState();
+			if (state == UserState.ACTIVE || state == UserState.INACTIVE || state == UserState.DROP) {
+				throw UserErrorCode.STUDENT_ID_ALREADY_EXIST.toBaseException();
 			}
 		});
 	}
