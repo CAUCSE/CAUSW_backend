@@ -1,6 +1,5 @@
 package net.causw.app.main.domain.user.account.api.v2.controller;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,6 +21,7 @@ import net.causw.app.main.domain.user.account.service.AdmissionAdminService;
 import net.causw.app.main.domain.user.account.service.UserAdminService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
+import net.causw.app.main.shared.dto.PageResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -45,13 +45,14 @@ public class UserAdminController {
 
 	@Operation(summary = "회원 목록 조회 V2", description = "관리자가 회원 목록을 조회합니다. 이름/학번 키워드 검색, 상태/학적/학과 필터링, 페이징을 지원합니다.")
 	@GetMapping
-	public ApiResponse<Page<UserListItemResponse>> getUsers(
+	public ApiResponse<PageResponse<UserListItemResponse>> getUsers(
 		@ModelAttribute @Validated UserListRequest request,
 		@PageableDefault(page = 0, size = 10) Pageable pageable) {
 
-		Page<UserListItemResponse> response = userAdminService
-			.getUserList(userListMapper.toCondition(request), pageable)
-			.map(userListMapper::toResponse);
+		PageResponse<UserListItemResponse> response = PageResponse.from(
+			userAdminService
+				.getUserList(userListMapper.toCondition(request), pageable)
+				.map(userListMapper::toResponse));
 
 		return ApiResponse.success(response);
 	}
@@ -70,13 +71,14 @@ public class UserAdminController {
 	@Operation(summary = "재학인증 신청 목록 조회 V2", description = "관리자가 재학인증 신청 목록을 조회합니다. "
 		+ "이름/학번 키워드 검색, 사용자 상태(AWAIT/REJECT) 필터링, 페이징을 지원합니다.")
 	@GetMapping("/admissions")
-	public ApiResponse<Page<AdmissionListItemResponse>> getAdmissions(
+	public ApiResponse<PageResponse<AdmissionListItemResponse>> getAdmissions(
 		@ModelAttribute @Validated AdmissionListRequest request,
 		@PageableDefault(page = 0, size = 10) Pageable pageable) {
 
-		Page<AdmissionListItemResponse> response = admissionAdminService
-			.getAdmissionList(admissionDtoMapper.toCondition(request), pageable)
-			.map(admissionDtoMapper::toListItemResponse);
+		PageResponse<AdmissionListItemResponse> response = PageResponse.from(
+			admissionAdminService
+				.getAdmissionList(admissionDtoMapper.toCondition(request), pageable)
+				.map(admissionDtoMapper::toListItemResponse));
 
 		return ApiResponse.success(response);
 	}
