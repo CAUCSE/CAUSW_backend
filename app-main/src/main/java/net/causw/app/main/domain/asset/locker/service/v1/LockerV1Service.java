@@ -31,8 +31,8 @@ import net.causw.app.main.domain.asset.locker.enums.LockerLogAction;
 import net.causw.app.main.domain.asset.locker.repository.LockerLocationRepository;
 import net.causw.app.main.domain.asset.locker.repository.LockerLogRepository;
 import net.causw.app.main.domain.asset.locker.repository.LockerRepository;
-import net.causw.app.main.domain.asset.locker.util.LockerExpiredAtValidator;
-import net.causw.app.main.domain.asset.locker.util.LockerInUseValidator;
+import net.causw.app.main.domain.asset.locker.service.v1.validators.LockerExpiredAtValidator;
+import net.causw.app.main.domain.asset.locker.service.v1.validators.LockerInUseValidator;
 import net.causw.app.main.domain.etc.flag.entity.Flag;
 import net.causw.app.main.domain.etc.flag.repository.FlagRepository;
 import net.causw.app.main.domain.etc.textfield.service.v1.CommonService;
@@ -57,7 +57,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class LockerService {
+public class LockerV1Service {
 
 	private final LockerRepository lockerRepository;
 	private final UserRepository userRepository;
@@ -502,7 +502,7 @@ public class LockerService {
 
 	@Transactional
 	public void returnAndSaveLocker(Locker locker) {
-		locker.returnLocker();
+		locker.returnLockerV1();
 		lockerRepository.saveAndFlush(locker);
 		//        lockerRepository.flush();
 	}

@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.asset.locker.util;
+package net.causw.app.main.domain.asset.locker.service.v1.validators;
 
 import net.causw.app.main.shared.AbstractValidator;
 import net.causw.global.exception.BadRequestException;

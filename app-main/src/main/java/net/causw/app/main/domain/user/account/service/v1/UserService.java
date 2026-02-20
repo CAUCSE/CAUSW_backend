@@ -935,7 +935,7 @@ public class UserService {
 		//사용중인 사물함이 있을경우 사물함 반환처리
 		this.lockerRepository.findByUser_Id(deleteUser.getId())
 			.ifPresent(locker -> {
-				locker.returnLocker();
+				locker.returnLockerV1();
 				this.lockerRepository.save(locker);
 
 				LockerLog lockerLog = LockerLog.of(
@@ -991,7 +991,7 @@ public class UserService {
 
 		this.lockerRepository.findByUser_Id(user.getId())
 			.ifPresent(locker -> {
-				locker.returnLocker();
+				locker.returnLockerV1();
 				this.lockerRepository.save(locker);
 
 				LockerLog lockerLog = LockerLog.of(
@@ -1071,7 +1071,7 @@ public class UserService {
 
 		lockerRepository.findByUser_Id(userId)
 			.ifPresent(locker -> {
-				locker.returnLocker();
+				locker.returnLockerV1();
 				this.lockerRepository.save(locker);
 
 				LockerLog lockerLog = LockerLog.of(
