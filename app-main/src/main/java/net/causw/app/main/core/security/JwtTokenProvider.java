@@ -79,6 +79,11 @@ public class JwtTokenProvider {
 		return parseClaims(token).getSubject();
 	}
 
+	/**
+	 * @deprecated JWT 의존성 분리를 위해 사용이 중단되었습니다.
+	 * 대신 {@link net.causw.app.main.shared.util.AuthorizationExtractor#extract(HttpServletRequest)}를 사용해 주세요.
+	 */
+	@Deprecated
 	public String resolveToken(HttpServletRequest request) {
 		String bearerToken = request.getHeader("Authorization");
 

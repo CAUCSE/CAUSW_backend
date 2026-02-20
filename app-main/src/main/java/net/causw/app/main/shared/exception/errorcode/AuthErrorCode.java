@@ -3,6 +3,7 @@ package net.causw.app.main.shared.exception.errorcode;
 import org.springframework.http.HttpStatus;
 
 import net.causw.app.main.shared.exception.BaseResponseCode;
+import net.causw.global.constant.StaticValue;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +13,14 @@ public enum AuthErrorCode implements BaseResponseCode {
 
 	INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH_401_001", "유효하지 않은 토큰입니다"),
 	INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH_401_002", "유효하지 않은 리프레시토큰입니다"),
-	REFRESH_TOKEN_MISSING(HttpStatus.UNAUTHORIZED, "AUTH_401_003", "토큰 값이 존재하지 않습니다.");
+	REFRESH_TOKEN_MISSING(HttpStatus.UNAUTHORIZED, "AUTH_401_003", "토큰 값이 존재하지 않습니다."),
+	NEED_SIGN_IN(HttpStatus.UNAUTHORIZED, "AUTH_401_004", "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요."),
+	USER_ROLE_NONE(HttpStatus.UNAUTHORIZED, "AUTH_401_005", "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요."),
+	BLOCKED_USER(HttpStatus.UNAUTHORIZED, "AUTH_401_006",
+		"추방된 계정입니다. 재가입 문의는 " + StaticValue.ADMIN_EMAIL + "으로 연락해주세요"),
+	INACTIVE_USER(HttpStatus.UNAUTHORIZED, "AUTH_401_007", "탈퇴한 계정입니다. 계정 복구를 진행해주세요"),
+	DELETED_USER(HttpStatus.UNAUTHORIZED, "AUTH_401_008", "삭제된 계정입니다. 회원가입 페이지에서 새로운 정보로 가입해주세요."),
+	NO_PERMISSION_FOR_RESOURCE(HttpStatus.FORBIDDEN, "AUTH_403_001", "해당 자원에 대한 접근 또는 조작 권한이 없습니다.");
 
 	private final HttpStatus status;
 	private final String code;

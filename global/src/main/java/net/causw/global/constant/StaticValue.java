@@ -12,6 +12,7 @@ public class StaticValue {
 	public static final Integer CAU_SW_START_YEAR = 1972;
 	public static final Integer CAU_AI_START_YEAR = 2021;
 	public static final Integer MAX_NUM_FILE_ATTACHMENTS = 3;
+	public static final String ADMIN_EMAIL = "caucsedongne@gmail.com";
 
 	// Pagination
 	public static final Integer DEFAULT_PAGE_SIZE = 20;

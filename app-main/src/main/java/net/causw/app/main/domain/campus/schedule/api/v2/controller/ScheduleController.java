@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import net.causw.app.main.domain.campus.schedule.api.v2.controller.dto.response.ScheduleListResponse;
-import net.causw.app.main.domain.campus.schedule.api.v2.controller.dto.response.ScheduleResponse;
-import net.causw.app.main.domain.campus.schedule.api.v2.controller.mapper.ScheduleDtoMapper;
+import net.causw.app.main.domain.campus.schedule.api.v2.dto.response.ScheduleListResponse;
+import net.causw.app.main.domain.campus.schedule.api.v2.dto.response.ScheduleResponse;
+import net.causw.app.main.domain.campus.schedule.api.v2.mapper.ScheduleDtoMapper;
 import net.causw.app.main.domain.campus.schedule.entity.enums.ScheduleType;
 import net.causw.app.main.domain.campus.schedule.service.v2.ScheduleService;
 import net.causw.app.main.domain.campus.schedule.service.v2.dto.ScheduleDto;
