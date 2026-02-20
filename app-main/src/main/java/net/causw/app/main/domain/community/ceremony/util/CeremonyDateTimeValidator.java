@@ -46,8 +46,8 @@ public class CeremonyDateTimeValidator {
 			return;
 		}
 
-		if ((endDate.isBefore(LocalDate.now()) || endDate.isBefore(LocalDate.now())
-			|| (endDate.isEqual(LocalDate.now()) && endTime.isBefore(LocalTime.now())))) {
+		if (endDate.isBefore(LocalDate.now()) || (endDate.isEqual(LocalDate.now())
+			&& endTime.isBefore(LocalTime.now()))) {
 			throw CeremonyErrorCode.DATETIME_BEFORE_TODAY.toBaseException();
 		}
 
