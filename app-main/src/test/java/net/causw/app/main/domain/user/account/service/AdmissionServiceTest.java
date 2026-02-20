@@ -6,29 +6,24 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
+import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.asset.file.service.v2.implementation.FileWriter;
-import net.causw.app.main.domain.asset.file.service.v2.util.FileMetadataManager;
-import net.causw.app.main.domain.asset.file.service.v2.util.FileValidator;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
@@ -73,21 +68,6 @@ class AdmissionServiceTest {
 	@DisplayName("createAdmission - 재학정보 인증 신청 생성")
 	class CreateAdmission {
 
-		private MockedStatic<FileValidator> fileValidatorMock;
-		private MockedStatic<FileMetadataManager> fileMetadataManagerMock;
-
-		@BeforeEach
-		void setUp() {
-			fileValidatorMock = mockStatic(FileValidator.class);
-			fileMetadataManagerMock = mockStatic(FileMetadataManager.class);
-		}
-
-		@AfterEach
-		void tearDown() {
-			fileValidatorMock.close();
-			fileMetadataManagerMock.close();
-		}
-
 		@Test
 		@DisplayName("AWAIT 상태의 사용자가 유효한 요청을 하면 인증 신청이 생성된다")
 		void givenAwaitUser_whenCreateAdmission_thenSuccess() {
@@ -98,7 +78,7 @@ class AdmissionServiceTest {
 			List<UuidFile> uuidFiles = List.of(ObjectFixtures.getUuidFile());
 			UserAdmission admission = ObjectFixtures.getUserAdmissionWithId("admission-1", user);
 
-			when(fileWriter.uploadAndSaveList(anyList(), anyList())).thenReturn(uuidFiles);
+			when(fileWriter.uploadAndSaveList(anyList(), any(FilePath.class))).thenReturn(uuidFiles);
 			when(userWriter.updateStateToAwait(user)).thenReturn(user);
 			when(admissionWriter.create(
 				eq(user), eq(uuidFiles), eq(command.description()),
@@ -121,7 +101,7 @@ class AdmissionServiceTest {
 			assertThat(result.description()).isEqualTo("재학증명서 첨부합니다");
 
 			verify(admissionValidator).validateAdmissionCreate(user, attachImages);
-			verify(fileWriter).uploadAndSaveList(anyList(), anyList());
+			verify(fileWriter).uploadAndSaveList(anyList(), eq(FilePath.USER_ADMISSION));
 			verify(userWriter).updateStateToAwait(user);
 			verify(admissionWriter).create(
 				eq(user), eq(uuidFiles), eq(command.description()),
@@ -139,7 +119,7 @@ class AdmissionServiceTest {
 			List<UuidFile> uuidFiles = List.of(ObjectFixtures.getUuidFile());
 			UserAdmission admission = ObjectFixtures.getUserAdmissionWithId("admission-1", user);
 
-			when(fileWriter.uploadAndSaveList(anyList(), anyList())).thenReturn(uuidFiles);
+			when(fileWriter.uploadAndSaveList(anyList(), any(FilePath.class))).thenReturn(uuidFiles);
 			when(userWriter.updateStateToAwait(user)).thenReturn(user);
 			when(admissionWriter.create(
 				eq(user), eq(uuidFiles), eq(command.description()),
@@ -179,7 +159,7 @@ class AdmissionServiceTest {
 				.isEqualTo(UserErrorCode.INVALID_USER_STATE_FOR_ADMISSION);
 
 			verify(admissionValidator).validateAdmissionCreate(user, attachImages);
-			verify(fileWriter, never()).uploadAndSaveList(anyList(), anyList());
+			verify(fileWriter, never()).uploadAndSaveList(anyList(), any(FilePath.class));
 			verify(admissionWriter, never()).create(any(), any(), any(), any(), any(), any(), any());
 		}
 
@@ -201,7 +181,7 @@ class AdmissionServiceTest {
 				.isEqualTo(UserErrorCode.ADMISSION_ALREADY_EXISTS);
 
 			verify(admissionValidator).validateAdmissionCreate(user, attachImages);
-			verify(fileWriter, never()).uploadAndSaveList(anyList(), anyList());
+			verify(fileWriter, never()).uploadAndSaveList(anyList(), any(FilePath.class));
 			verify(admissionWriter, never()).create(any(), any(), any(), any(), any(), any(), any());
 		}
 
@@ -223,7 +203,7 @@ class AdmissionServiceTest {
 				.isEqualTo(UserErrorCode.ADMISSION_IMAGE_REQUIRED);
 
 			verify(admissionValidator).validateAdmissionCreate(user, emptyImages);
-			verify(fileWriter, never()).uploadAndSaveList(anyList(), anyList());
+			verify(fileWriter, never()).uploadAndSaveList(anyList(), any(FilePath.class));
 			verify(admissionWriter, never()).create(any(), any(), any(), any(), any(), any(), any());
 		}
 

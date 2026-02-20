@@ -1,7 +1,6 @@
 package net.causw.app.main.domain.user.account.service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,8 +9,6 @@ import org.springframework.web.multipart.MultipartFile;
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.asset.file.service.v2.implementation.FileWriter;
-import net.causw.app.main.domain.asset.file.service.v2.util.FileMetadataManager;
-import net.causw.app.main.domain.asset.file.service.v2.util.FileValidator;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
 import net.causw.app.main.domain.user.account.service.v2.dto.AdmissionCreateCommand;
@@ -21,7 +18,6 @@ import net.causw.app.main.domain.user.account.service.v2.implementation.Admissio
 import net.causw.app.main.domain.user.account.service.v2.implementation.AdmissionValidator;
 import net.causw.app.main.domain.user.account.service.v2.implementation.AdmissionWriter;
 import net.causw.app.main.domain.user.account.service.v2.implementation.UserWriter;
-import net.causw.app.main.shared.storage.v2.dto.FileMetadata;
 
 import lombok.RequiredArgsConstructor;
 
@@ -52,14 +48,8 @@ public class AdmissionService {
 		// 인증 신청 생성 검증
 		admissionValidator.validateAdmissionCreate(user, attachImages);
 
-		// 파일 검증 및 업로드
-		FileValidator.validateFileList(attachImages, FilePath.USER_ADMISSION);
-
-		List<FileMetadata> metadataList = attachImages.stream()
-			.map(file -> FileMetadataManager.createMetadata(file, FilePath.USER_ADMISSION))
-			.collect(Collectors.toList());
-
-		List<UuidFile> uuidFiles = fileWriter.uploadAndSaveList(attachImages, metadataList);
+		// 이미지 파일 업로드
+		List<UuidFile> uuidFiles = fileWriter.uploadAndSaveList(attachImages, FilePath.USER_ADMISSION);
 
 		// 사용자 상태를 AWAIT으로 설정 (REJECT에서 재신청 시)
 		userWriter.updateStateToAwait(user);
