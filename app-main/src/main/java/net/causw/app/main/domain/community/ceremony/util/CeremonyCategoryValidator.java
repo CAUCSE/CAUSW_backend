@@ -4,7 +4,6 @@ import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyCategory;
 import net.causw.app.main.shared.exception.errorcode.CeremonyErrorCode;
-import net.causw.app.main.shared.exception.errorcode.GlobalErrorCode;
 
 @Component
 public class CeremonyCategoryValidator {
@@ -16,7 +15,7 @@ public class CeremonyCategoryValidator {
 			}
 		} else {
 			if (ceremonyCustomCategory != null) {
-				throw GlobalErrorCode.BAD_REQUEST.toBaseException();
+				throw CeremonyErrorCode.CUSTOM_CATEGORY_NOT_NULL.toBaseException();
 			}
 		}
 	}
