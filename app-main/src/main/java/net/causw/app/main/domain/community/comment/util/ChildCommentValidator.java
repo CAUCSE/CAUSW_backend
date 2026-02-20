@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
+import net.causw.app.main.domain.community.comment.entity.ChildComment;
 import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.user.account.entity.user.User;
@@ -20,53 +21,44 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class CommentValidator {
+public class ChildCommentValidator {
 
 	private final Validator validator;
 
 	/**
-	 * 댓글 생성 시 필요한 모든 검증 로직을 수행합니다.
+	 * 대댓글 생성 시 필요한 모든 검증 로직을 수행합니다.
 	 */
-	public void validateForCreate(User creator, Post post, Comment comment) {
+	public void validateForCreate(User creator, Post post, Comment parentComment, ChildComment childComment) {
 		this.validateCreatorAndPostStatus(creator, post);
 
-		ConstraintValidator.of(comment, this.validator).validate();
+		ConstraintValidator.of(childComment, this.validator).validate();
+		UserStateIsDeletedValidator.of(parentComment.getWriter().getState());
 	}
 
 	/**
-	 * 댓글 리스트 조회 시 필요한 모든 검증 로직을 수행합니다.
+	 * 대댓글 수정 시 필요한 모든 검증 로직을 수행합니다.
 	 */
-	public void validateForFind(User creator, Post post) {
-		this.validateCreatorAndPostStatus(creator, post);
-	}
-
-	/**
-	 * 댓글 수정 시 필요한 모든 검증 로직을 수행합니다.
-	 */
-	public void validateForUpdate(User updater, Post post, Comment comment) {
+	public void validateForUpdate(User updater, Post post, ChildComment childComment) {
 		this.validateCreatorAndPostStatus(updater, post);
 
-		TargetIsDeletedValidator.of(comment.getIsDeleted(), StaticValue.DOMAIN_COMMENT).validate();
+		TargetIsDeletedValidator.of(childComment.getIsDeleted(), StaticValue.DOMAIN_CHILD_COMMENT).validate();
 
-		ConstraintValidator.of(comment, this.validator).validate();
+		ConstraintValidator.of(childComment, this.validator).validate();
 
 		ContentsAdminValidator.of(
 			updater.getRoles(),
 			updater.getId(),
-			comment.getWriter().getId(),
+			childComment.getWriter().getId(),
 			List.of()).validate();
 	}
 
 	/**
-	 * 댓글 삭제 시 필요한 검증 로직을 수행합니다.
+	 * 대댓글 삭제 시 필요한 검증 로직을 수행합니다.
 	 */
-	public void validateForDelete(User deleter, Post post, Comment comment) {
+	public void validateForDelete(User deleter, Post post, ChildComment childComment) {
 		this.validateCreatorAndPostStatus(deleter, post);
 
-		TargetIsDeletedValidator.of(comment.getIsDeleted(), StaticValue.DOMAIN_COMMENT).validate();
-
-		UserStateValidator.of(deleter.getState()).validate();
-		UserRoleIsNoneValidator.of(deleter.getRoles()).validate();
+		TargetIsDeletedValidator.of(childComment.getIsDeleted(), StaticValue.DOMAIN_COMMENT).validate();
 	}
 
 	/**
@@ -82,8 +74,7 @@ public class CommentValidator {
 		TargetIsDeletedValidator.of(post.getIsDeleted(), StaticValue.DOMAIN_POST).validate();
 	}
 
-	public void validateWriterNotDeleted(Comment comment) {
-		UserStateIsDeletedValidator.of(comment.getWriter().getState()).validate();
+	public void validateWriterNotDeleted(ChildComment childComment) {
+		UserStateIsDeletedValidator.of(childComment.getWriter().getState()).validate();
 	}
-
 }
