@@ -9,6 +9,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 
 import net.causw.app.main.domain.asset.file.entity.joinEntity.CeremonyAttachImage;
+import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonyAdminListResponseDto;
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonyDetailResponseDto;
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonyNotificationSettingResponseDto;
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonySummaryResponseDto;
@@ -50,6 +51,19 @@ public interface CeremonyDtoMapper {
 	@InheritConfiguration(name = "toCeremonySummaryResponseDto")
 	@Mapping(target = "state", source = "ceremonyState")
 	CeremonySummaryResponseDto toMyCeremonySummaryResponseDto(Ceremony ceremony);
+
+	// 관리자 경조사 목록 조회
+	@Mapping(target = "applicantName", source = "user.name")
+	@Mapping(target = "applicantStudentId", source = "user.studentId")
+	@Mapping(target = "state", source = "ceremonyState")
+	@Mapping(target = "category", source = ".", qualifiedByName = "mapCategory")
+	CeremonyAdminListResponseDto toAdminCeremonyListResponseDto(Ceremony ceremony);
+
+	// 관리자 경조사 상세 조회
+	@InheritConfiguration(name = "toCeremonyDetailResponseDto")
+	@Mapping(target = "state", source = "ceremonyState")
+	@Mapping(target = "note", source = "note")
+	CeremonyDetailResponseDto toAdminCeremonyDetailResponseDto(Ceremony ceremony);
 
 	@Named("mapCategory")
 	static String mapCategory(Ceremony ceremony) {

@@ -14,6 +14,7 @@ import net.causw.app.main.domain.community.ceremony.entity.QCeremony;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyState;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyType;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -84,6 +85,40 @@ public class CeremonyQueryRepository {
 			.selectFrom(ceremony)
 			.where(condition)
 			.orderBy(ceremony.startDate.desc(), ceremony.startTime.desc())
+			.offset(pageable.getOffset())
+			.limit(pageable.getPageSize())
+			.fetch();
+
+		JPAQuery<Long> countQuery = jpaQueryFactory
+			.select(ceremony.count())
+			.from(ceremony)
+			.where(condition);
+
+		return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+	}
+
+	// 관리자 경조사 목록 조회: fromDate~toDate 범위 내 경조사 시작일 필터링, state별 필터링 (각 조건은 nullable하여 동적 적용)
+	public Page<Ceremony> findAllForAdmin(
+		LocalDate fromDate, LocalDate toDate, CeremonyState state, Pageable pageable) {
+
+		QCeremony ceremony = QCeremony.ceremony;
+		BooleanBuilder condition = new BooleanBuilder();
+
+		if (state != null) {
+			condition.and(ceremony.ceremonyState.eq(state));
+		}
+		if (fromDate != null) {
+			condition.and(ceremony.startDate.goe(fromDate));
+		}
+		if (toDate != null) {
+			condition.and(ceremony.startDate.loe(toDate));
+		}
+
+		List<Ceremony> content = jpaQueryFactory
+			.selectFrom(ceremony)
+			.join(ceremony.user).fetchJoin()
+			.where(condition)
+			.orderBy(ceremony.createdAt.desc())
 			.offset(pageable.getOffset())
 			.limit(pageable.getPageSize())
 			.fetch();
