@@ -61,4 +61,20 @@ public class UserController {
 		return ApiResponse.success(authDtoMapper.toAuthResponse(dto));
 	}
 
+	@GetMapping("/check-nickname")
+	@Operation(summary = "닉네임 중복 체크 API", description = "닉네임이 중복인지 확인합니다.")
+	public ApiResponse<Void> checkNicknameDuplication(
+		@RequestParam String nickname) {
+		userAccountService.checkNicknameDuplication(nickname);
+		return ApiResponse.success();
+	}
+
+	@GetMapping("/check-phone")
+	@Operation(summary = "전화번호 중복 체크 API", description = "전화번호가 중복인지 확인합니다.")
+	public ApiResponse<Void> checkPhoneNumDuplication(
+		@RequestParam String phoneNumber) {
+		userAccountService.checkPhoneNumDuplication(phoneNumber);
+		return ApiResponse.success();
+	}
+
 }

@@ -53,4 +53,32 @@ public class UserAccountService {
 			updatedUser.getProfileUrl(),
 			tokens.refreshToken());
 	}
+
+	/**
+	 * 사용자가 입력한 닉네임이 DB에 이미 존재하는지 확인합니다.
+	 * <p>
+	 * 중복된 닉네임이 있을 경우 NICKNAME_DUPLICATED 예외를 발생시킵니다.
+	 * </p>
+	 *
+	 * @param nickname 검사할 닉네임
+	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception 닉네임이 중복된 경우
+	 */
+	@Transactional(readOnly = true)
+	public void checkNicknameDuplication(String nickname) {
+		userValidator.checkNicknameDuplication(nickname);
+	}
+
+	/**
+	 * 사용자가 입력한 전화번호가 DB에 이미 존재하는지 확인합니다.
+	 * <p>
+	 * 중복된 전화번호가 있을 경우 PHONE_NUMBER_DUPLICATED 예외를 발생시킵니다.
+	 * </p>
+	 *
+	 * @param phoneNumber 검사할 전화번호
+	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception 전화번호가 중복된 경우
+	 */
+	@Transactional(readOnly = true)
+	public void checkPhoneNumDuplication(String phoneNumber) {
+		userValidator.checkPhoneNumDuplication(phoneNumber);
+	}
 }

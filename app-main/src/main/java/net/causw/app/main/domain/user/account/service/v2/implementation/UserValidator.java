@@ -10,6 +10,7 @@ import net.causw.app.main.domain.user.account.enums.user.SocialType;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.repository.user.SocialAccountRepository;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
+import net.causw.app.main.domain.user.account.util.PhoneNumberFormatValidator;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 import net.causw.app.main.shared.infra.redis.RedisUtils;
@@ -134,6 +135,7 @@ public class UserValidator {
 	 * [PHONE_NUMBER_ALREADY_EXIST] 이미 존재하는 전화번호인 경우
 	 */
 	public void checkPhoneNumDuplication(String phoneNumber) {
+		PhoneNumberFormatValidator.of(phoneNumber).validate();
 		Optional<User> phoneNumExist = userRepository.findByPhoneNumber(phoneNumber);
 		if (phoneNumExist.isPresent()) {
 			throw UserErrorCode.PHONE_NUMBER_ALREADY_EXIST.toBaseException();
