@@ -23,6 +23,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.CorsUtils;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import net.causw.app.main.domain.user.auth.handler.OAuth2FailureHandler;
 import net.causw.app.main.domain.user.auth.handler.OAuth2SuccessHandler;
 import net.causw.app.main.domain.user.auth.service.v2.CustomOAuth2UserService;
 
@@ -39,6 +40,7 @@ public class WebSecurityConfig {
 	private final CustomAuthorizationManager authorizationManager;
 	private final CustomOAuth2UserService customOAuth2UserService;
 	private final OAuth2SuccessHandler oAuth2SuccessHandler;
+	private final OAuth2FailureHandler oAuth2FailureHandler;
 
 	@Value("${app.cors.allowed-origins:http://localhost:3000}")
 	private String corsAllowedOrigins;
@@ -69,7 +71,8 @@ public class WebSecurityConfig {
 			.oauth2Login(oauth2 -> oauth2
 				.userInfoEndpoint(userInfo -> userInfo
 					.userService(customOAuth2UserService))
-				.successHandler(oAuth2SuccessHandler))
+				.successHandler(oAuth2SuccessHandler)
+				.failureHandler(oAuth2FailureHandler))
 			.exceptionHandling(exceptionHandling -> exceptionHandling
 				.authenticationEntryPoint(customAuthenticationEntryPoint))
 			.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);

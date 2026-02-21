@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.user.auth.service.v2;
 
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
@@ -15,6 +16,7 @@ import net.causw.app.main.domain.user.account.service.v2.implementation.UserVali
 import net.causw.app.main.domain.user.account.service.v2.implementation.UserWriter;
 import net.causw.app.main.domain.user.auth.service.v2.dto.CustomOAuth2User;
 import net.causw.app.main.domain.user.auth.service.v2.dto.OAuthAttributes;
+import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -32,22 +34,27 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 	public CustomOAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
 		OAuth2UserService<OAuth2UserRequest, OAuth2User> delegate = new DefaultOAuth2UserService();
 		OAuth2User oAuth2User = delegate.loadUser(userRequest);
-		// 1. 소셜 서비스 구분
-		String registrationId = userRequest.getClientRegistration().getRegistrationId();
-		// 2. 소셜 고유 식별자 키
-		String userNameAttributeName = userRequest.getClientRegistration()
-			.getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName();
-		// 3. 데이터를 담을 DTO 생성
-		OAuthAttributes attributes = OAuthAttributes.of(registrationId, userNameAttributeName,
-			oAuth2User.getAttributes());
-		// 4. 유저 로그인 또는 회원가입 처리
-		User user = saveOrUpdate(attributes);
-		userValidator.validateUserStatusForLogin(user.getState());
-		// 5. 시큐리티 세션에 담길 유저 객체 반환
-		return new CustomOAuth2User(
-			user,
-			attributes.attributes(),
-			attributes.nameAttributeKey());
+
+		try {
+			// 1. 소셜 서비스 구분
+			String registrationId = userRequest.getClientRegistration().getRegistrationId();
+			// 2. 소셜 고유 식별자 키
+			String userNameAttributeName = userRequest.getClientRegistration()
+				.getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName();
+			// 3. 데이터를 담을 DTO 생성
+			OAuthAttributes attributes = OAuthAttributes.of(registrationId, userNameAttributeName,
+				oAuth2User.getAttributes());
+			// 4. 유저 로그인 또는 회원가입 처리
+			User user = saveOrUpdate(attributes);
+			userValidator.validateUserStatusForLogin(user.getState());
+			// 5. 시큐리티 세션에 담길 유저 객체 반환
+			return new CustomOAuth2User(
+				user,
+				attributes.attributes(),
+				attributes.nameAttributeKey());
+		} catch (BaseRunTimeV2Exception e) {
+			throw new InternalAuthenticationServiceException(e.getMessage(), e);
+		}
 	}
 
 	private User saveOrUpdate(OAuthAttributes attributes) {
