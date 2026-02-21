@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -15,6 +14,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
+import net.causw.app.main.domain.user.auth.service.v2.dto.CustomOAuth2User;
 import net.causw.app.main.domain.user.auth.service.v2.implementation.AuthTokenManager;
 import net.causw.global.constant.StaticValue;
 
@@ -36,8 +36,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 		Authentication authentication) throws IOException {
 
 		// 1. Principal에서 유저 정보 추출
-		OAuth2User oAuth2User = (OAuth2User)authentication.getPrincipal();
-		String email = (String)oAuth2User.getAttributes().get("email");
+		CustomOAuth2User oAuth2User = (CustomOAuth2User)authentication.getPrincipal();
+		String email = oAuth2User.getEmail();
 
 		// 2. DB에서 실제 유저 엔티티 조회
 		User user = userReader.findByEmailOrElseThrow(email);
@@ -65,13 +65,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
 	private String determineTargetUrl(UserState state) {
 		// GUEST 상태라면 추가 정보 입력 페이지로, 아니면 메인으로
-		if (state == UserState.GUEST) {
-			return UriComponentsBuilder.fromUriString(baseUrl)
-				.queryParam("isFirstLogin", true)
-				.build().toUriString();
-		}
+		boolean isFirstLogin = (state == UserState.GUEST);
 		return UriComponentsBuilder.fromUriString(baseUrl)
-			.queryParam("isFirstLogin", false)
+			.queryParam("isFirstLogin", isFirstLogin)
 			.build().toUriString();
 	}
 }

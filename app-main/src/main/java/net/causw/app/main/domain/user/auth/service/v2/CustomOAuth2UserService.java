@@ -1,13 +1,9 @@
 package net.causw.app.main.domain.user.auth.service.v2;
 
-import java.util.Collections;
-
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
-import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,7 +13,9 @@ import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.v2.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.v2.implementation.UserWriter;
+import net.causw.app.main.domain.user.auth.service.v2.dto.CustomOAuth2User;
 import net.causw.app.main.domain.user.auth.service.v2.dto.OAuthAttributes;
+import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -31,7 +29,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
 	@Override
 	@Transactional
-	public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
+	public CustomOAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
 		OAuth2UserService<OAuth2UserRequest, OAuth2User> delegate = new DefaultOAuth2UserService();
 		OAuth2User oAuth2User = delegate.loadUser(userRequest);
 		// 1. 소셜 서비스 구분
@@ -46,8 +44,8 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 		User user = saveOrUpdate(attributes);
 		userValidator.validateUserStatusForLogin(user.getState());
 		// 5. 시큐리티 세션에 담길 유저 객체 반환
-		return new DefaultOAuth2User(
-			Collections.singleton(new SimpleGrantedAuthority(user.getState().name())),
+		return new CustomOAuth2User(
+			user,
 			attributes.attributes(),
 			attributes.nameAttributeKey());
 	}
@@ -60,6 +58,10 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 				return userReader.findByEmail(attributes.email())
 					.map(existingUser -> {
 						// 2-1. 기존 유저가 있다면 소셜 계정만 새로 연결 (계정 통합)
+						if (!attributes.isEmailVerified()) {
+							throw AuthErrorCode.UNVERIFIED_SOCIAL_EMAIL.toBaseException();
+						}
+						userValidator.checkAccountExistByUserAndSocialType(existingUser, attributes.socialType());
 						userValidator.validateUserStatusForSignup(existingUser.getState());
 						createAndSaveSocialAccount(attributes, existingUser);
 						return existingUser;

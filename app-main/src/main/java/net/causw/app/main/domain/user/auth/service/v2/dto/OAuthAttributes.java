@@ -14,15 +14,16 @@ public record OAuthAttributes(
 	String email,
 	String picture,
 	SocialType socialType,
-	String socialId) {
+	String socialId,
+	boolean isEmailVerified) {
 	public static OAuthAttributes of(String registrationId, String userNameAttributeName,
 		Map<String, Object> attributes) {
 		SocialType socialType = SocialType.from(registrationId);
 
 		return switch (socialType) {
+			case GOOGLE -> ofGoogle(userNameAttributeName, attributes);
 			case APPLE -> ofApple(userNameAttributeName, attributes);
-			case KAKAO -> ofKakao("id", attributes);
-			default -> ofGoogle(userNameAttributeName, attributes);
+			case KAKAO -> ofKakao(userNameAttributeName, attributes);
 		};
 	}
 
@@ -35,6 +36,7 @@ public record OAuthAttributes(
 			.nameAttributeKey(userNameAttributeName)
 			.socialType(SocialType.GOOGLE)
 			.socialId(String.valueOf(attributes.get(userNameAttributeName)))
+			.isEmailVerified((boolean)attributes.getOrDefault("email_verified", false))
 			.build();
 	}
 
@@ -50,10 +52,12 @@ public record OAuthAttributes(
 			.nameAttributeKey(userNameAttributeName)
 			.socialType(SocialType.KAKAO)
 			.socialId(String.valueOf(attributes.get(userNameAttributeName)))
+			.isEmailVerified((boolean)attributes.getOrDefault("is_email_verified", false))
 			.build();
 	}
 
 	private static OAuthAttributes ofApple(String userNameAttributeName, Map<String, Object> attributes) {
+		boolean isVerified = Boolean.parseBoolean(String.valueOf(attributes.getOrDefault("email_verified", "false")));
 		// 애플은 이름을 잘 안 주기 때문에 없을 경우 email로 대체
 		return OAuthAttributes.builder()
 			.name((String)attributes.get("email"))
@@ -63,6 +67,7 @@ public record OAuthAttributes(
 			.nameAttributeKey(userNameAttributeName)
 			.socialType(SocialType.APPLE)
 			.socialId(String.valueOf(attributes.get(userNameAttributeName)))
+			.isEmailVerified(isVerified)
 			.build();
 	}
 }

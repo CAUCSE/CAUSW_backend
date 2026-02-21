@@ -4,9 +4,12 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
+import net.causw.app.main.domain.user.account.entity.user.SocialAccount;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;
+import net.causw.app.main.domain.user.account.enums.user.SocialType;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.domain.user.account.repository.user.SocialAccountRepository;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
@@ -24,6 +27,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserValidator {
 	private final UserRepository userRepository;
+	private final SocialAccountRepository socialAccountRepository;
 	private final RedisUtils redisUtils;
 
 	/**
@@ -154,6 +158,13 @@ public class UserValidator {
 		Optional<User> nicknameExist = userRepository.findByNickname(nickname);
 		if (nicknameExist.isPresent()) {
 			throw UserErrorCode.NICKNAME_ALREADY_EXIST.toBaseException();
+		}
+	}
+
+	public void checkAccountExistByUserAndSocialType(User user, SocialType socialType) {
+		Optional<SocialAccount> isExist = socialAccountRepository.findByUserAndSocialType(user, socialType);
+		if (isExist.isPresent()) {
+			throw AuthErrorCode.ALREADY_LINKED_SOCIAL_PROVIDER.toBaseException();
 		}
 	}
 }
