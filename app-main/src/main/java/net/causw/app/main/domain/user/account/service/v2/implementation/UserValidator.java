@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.user.account.entity.user.SocialAccount;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.SocialType;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.repository.user.SocialAccountRepository;
@@ -75,12 +74,11 @@ public class UserValidator {
 	}
 
 	/**
-	 * 인증 과정(토큰 재발급 등)에서 유저의 유효성(상태 및 권한)을 검증합니다.
+	 * 인증 과정(토큰 재발급 등)에서 유저의 유효성(상태)을 검증합니다.
 	 *
 	 * @param user 검증할 사용자 엔티티
 	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
 	 * [BLOCKED_USER] 추방된 유저, [INACTIVE_USER] 휴면 유저, [DELETED_USER] 탈퇴한 유저인 경우
-	 * [NEED_SIGN_IN] 유저에게 부여된 권한(Role)이 없는 경우 (Role.NONE)
 	 */
 	public void validateUser(User user) {
 		// 유저 상태 검증
@@ -92,11 +90,6 @@ public class UserValidator {
 			case DELETED ->
 				throw AuthErrorCode.DELETED_USER.toBaseException();
 			default -> {}
-		}
-
-		// 유저 역할 검증
-		if (user.getRoles().contains(Role.NONE)) {
-			throw AuthErrorCode.NEED_SIGN_IN.toBaseException();
 		}
 	}
 

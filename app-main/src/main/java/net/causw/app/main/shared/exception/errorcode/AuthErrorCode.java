@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 public enum AuthErrorCode implements BaseResponseCode {
 
 	UNSUPPORTED_SOCIAL_PROVIDER(HttpStatus.BAD_REQUEST, "AUTH_400_001", "지원하지 않는 소셜 로그인입니다."),
+	INVALID_REGISTRATION_STATUS(HttpStatus.BAD_REQUEST, "AUTH_400_002", "현재 계정 상태로는 수행할 수 없는 요청입니다."),
 	INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH_401_001", "유효하지 않은 토큰입니다"),
 	INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH_401_002", "유효하지 않은 리프레시토큰입니다"),
 	REFRESH_TOKEN_MISSING(HttpStatus.UNAUTHORIZED, "AUTH_401_003", "토큰 값이 존재하지 않습니다."),

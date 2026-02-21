@@ -247,6 +247,14 @@ public class User extends BaseEntity {
 		this.agreements = TermAgreements.createRequiredAgreements();
 	}
 
+	public void updateRegisterInformation(String name, String nickname, String phoneNumber) {
+		this.name = name;
+		this.nickname = nickname;
+		this.phoneNumber = phoneNumber;
+		this.state = UserState.AWAIT;
+		this.agreements = TermAgreements.createRequiredAgreements();
+	}
+
 	public void updateRejectionOrDropReason(String reason) {
 		this.rejectionOrDropReason = reason;
 	}
