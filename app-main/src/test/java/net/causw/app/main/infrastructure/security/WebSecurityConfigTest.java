@@ -14,6 +14,7 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +36,10 @@ import net.causw.app.main.core.security.WebSecurityConfig;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.domain.user.auth.handler.OAuth2FailureHandler;
+import net.causw.app.main.domain.user.auth.handler.OAuth2SuccessHandler;
 import net.causw.app.main.domain.user.auth.service.v1.SecurityService;
+import net.causw.app.main.domain.user.auth.service.v2.CustomOAuth2UserService;
 import net.causw.app.main.util.DummyController;
 import net.causw.app.main.util.WithMockCustomUser;
 
@@ -49,6 +53,12 @@ public class WebSecurityConfigTest {
 
 	@MockBean
 	private JwtTokenProvider jwtTokenProvider;
+	@MockBean
+	private CustomOAuth2UserService customOAuth2UserService;
+	@MockBean
+	private OAuth2SuccessHandler oAuth2SuccessHandler;
+	@MockBean
+	private OAuth2FailureHandler oAuth2FailureHandler;
 
 	@Nested
 	@DisplayName("AuthorizeHttpRequests 테스트")
@@ -188,6 +198,35 @@ public class WebSecurityConfigTest {
 			dummyPath = resolved.toString();
 
 			return dummyPath;
+		}
+	}
+
+	@Nested
+	@DisplayName("V2 API 권한 테스트")
+	class V2ApiSecurityTest {
+
+		@Test
+		@WithAnonymousUser
+		@DisplayName("/api/v2/auth/** 경로는 인증 없이 접근 허용")
+		void shouldAllowV2AuthAccess_WhenAnonymous() throws Exception {
+			mockMvc.perform(MockMvcRequestBuilders.get("/api/v2/auth/login"))
+				.andExpect(status().isNotFound());
+		}
+
+		@Test
+		@WithAnonymousUser
+		@DisplayName("/api/v2/admin/** 경로는 비로그인 시 접근 거부")
+		void shouldRejectV2AdminAccess_WhenAnonymous() throws Exception {
+			mockMvc.perform(MockMvcRequestBuilders.get("/api/v2/admin/test"))
+				.andExpect(status().isUnauthorized());
+		}
+
+		@Test
+		@WithMockUser(roles = "ADMIN")
+		@DisplayName("/api/v2/admin/** 경로는 ADMIN 권한 보유 시 접근 허용")
+		void shouldAllowV2AdminAccess_WhenAdmin() throws Exception {
+			mockMvc.perform(MockMvcRequestBuilders.get("/api/v2/admin/test"))
+				.andExpect(status().isNotFound());
 		}
 	}
 }
