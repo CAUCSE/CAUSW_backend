@@ -66,6 +66,10 @@ public class UserAcademicRecordLog extends BaseEntity {
 	@Column(name = "graduation_year", nullable = true)
 	private Integer graduationYear;
 
+	/**
+	 * @deprecated v2부터 사용되지 않음.
+	 * 기존 데이터 호환을 위해 컬럼은 유지하지만 신규 비즈니스 로직에는 사용하지 않는다.
+	 */
 	@Enumerated(EnumType.STRING)
 	@Column(name = "graduation_type", nullable = true)
 	private GraduationType graduationType;
