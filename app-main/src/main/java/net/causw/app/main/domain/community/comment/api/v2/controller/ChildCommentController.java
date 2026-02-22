@@ -1,6 +1,5 @@
 package net.causw.app.main.domain.community.comment.api.v2.controller;
 
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;

@@ -23,8 +23,6 @@ import net.causw.app.main.shared.dto.ApiResponse;
 import net.causw.app.main.shared.dto.PageResponse;
 import net.causw.global.constant.StaticValue;
 
-import com.google.protobuf.Api;
-
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
