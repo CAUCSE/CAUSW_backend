@@ -35,10 +35,8 @@ public class ChildCommentController {
 		@Valid @RequestBody ChildCommentCreateRequestDto childCommentCreateRequestDto,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-		ChildCommentResponseDto response = childCommentService.createChildComment(userDetails.getUser().getId(),
-			childCommentCreateRequestDto);
-
-		return ApiResponse.success(response);
+		return ApiResponse.success(
+			childCommentService.createChildComment(userDetails.getUser().getId(), childCommentCreateRequestDto));
 	}
 
 	@PutMapping(value = "/{id}")
@@ -49,10 +47,8 @@ public class ChildCommentController {
 		@Valid @RequestBody ChildCommentUpdateRequestDto childCommentUpdateRequestDto,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-		ChildCommentResponseDto response = childCommentService.updateChildComment(userDetails.getUser().getId(), id,
-			childCommentUpdateRequestDto);
-
-		return ApiResponse.success(response);
+		return ApiResponse.success(
+			childCommentService.updateChildComment(userDetails.getUser().getId(), id, childCommentUpdateRequestDto));
 	}
 
 	@DeleteMapping(value = "/{id}")
@@ -62,9 +58,7 @@ public class ChildCommentController {
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-		ChildCommentResponseDto response = childCommentService.deleteChildComment(userDetails.getUser().getId(), id);
-
-		return ApiResponse.success(response);
+		return ApiResponse.success(childCommentService.deleteChildComment(userDetails.getUser().getId(), id));
 	}
 
 	@PostMapping(value = "/{id}/like")

@@ -56,10 +56,8 @@ public class CommentController {
 		@Valid @RequestBody CommentCreateRequestDto commentCreateRequestDto,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-		CommentResponseDto response = commentService.createComment(userDetails.getUser().getId(),
-			commentCreateRequestDto);
-
-		return ApiResponse.success(response);
+		return ApiResponse.success(
+			commentService.createComment(userDetails.getUser().getId(), commentCreateRequestDto));
 	}
 
 	@PutMapping(value = "/{id}")
@@ -70,10 +68,8 @@ public class CommentController {
 		@Valid @RequestBody CommentUpdateRequestDto commentUpdateRequestDto,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-		CommentResponseDto response = commentService.updateComment(userDetails.getUser().getId(), id,
-			commentUpdateRequestDto);
-
-		return ApiResponse.success(response);
+		return ApiResponse.success(
+			commentService.updateComment(userDetails.getUser().getId(), id, commentUpdateRequestDto));
 	}
 
 	@DeleteMapping(value = "/{id}")
@@ -83,9 +79,7 @@ public class CommentController {
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-		CommentResponseDto response = commentService.deleteComment(userDetails.getUser().getId(), id);
-
-		return ApiResponse.success(response);
+		return ApiResponse.success(commentService.deleteComment(userDetails.getUser().getId(), id));
 	}
 
 	@PostMapping(value = "/{id}/like")
