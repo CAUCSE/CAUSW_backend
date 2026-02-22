@@ -4,6 +4,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.community.board.entity.Board;
@@ -16,7 +17,6 @@ import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.StatusPolicy;
 import net.causw.app.main.shared.pageable.PageableFactory;
 import net.causw.global.constant.MessageUtil;
-import net.causw.global.constant.StaticValue;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
 
@@ -99,10 +99,8 @@ public class CommentReader {
 	 * @param postId 게시글id
 	 * @return Page<Comment>
 	 */
-	public Page<Comment> getComments(String postId, Integer pageNum) {
-		Page<Comment> comments = commentRepository.findByPost_IdOrderByCreatedAt(
-			postId,
-			pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE));
+	public Page<Comment> getComments(String postId, Pageable pageable) {
+		Page<Comment> comments = commentRepository.findByPost_IdOrderByCreatedAt(postId, pageable);
 		comments.forEach(
 			comment -> comment.setChildCommentList(childCommentReader.getChildComments(comment.getId())));
 

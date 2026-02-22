@@ -3,6 +3,7 @@ package net.causw.app.main.domain.community.comment.service;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -65,7 +66,7 @@ public class CommentService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<CommentResponseDto> findAllComments(String userId, String postId, Integer pageNum) {
+	public Page<CommentResponseDto> findAllComments(String userId, String postId, Pageable pageable) {
 		Post post = postReader.findById(postId);
 		User user = userReader.findUserById(userId);
 
@@ -73,7 +74,7 @@ public class CommentService {
 
 		Set<String> blockedUserIds = userBlockEntityService.findBlockeeUserIdsByBlocker(user);
 
-		Page<Comment> comments = commentReader.getComments(postId, pageNum);
+		Page<Comment> comments = commentReader.getComments(postId, pageable);
 
 		return comments
 			.map(comment -> commentReader.getCommentDetailForList(comment, user, post.getBoard(), blockedUserIds));
