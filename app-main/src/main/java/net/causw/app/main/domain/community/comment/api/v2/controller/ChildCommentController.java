@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.community.comment.api.v2.controller;
 
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -70,18 +71,20 @@ public class ChildCommentController {
 	@PostMapping(value = "/{id}/like")
 	@ResponseStatus(HttpStatus.CREATED)
 	@Operation(summary = "대댓글 좋아요 저장 API", description = "특정 유저가 특정 대댓글에 좋아요를 누른 걸 저장하는 Api 입니다.")
-	public void likeChildComment(
+	public ApiResponse<Void> likeChildComment(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		childCommentService.likeChildComment(userDetails.getUser().getId(), id);
+		return ApiResponse.success();
 	}
 
 	@DeleteMapping(value = "/{id}/like")
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "대댓글 좋아요 취소 API", description = "특정 유저가 특정 대댓글에 좋아요를 누른 걸 취소하는 Api 입니다.")
-	public void cancelLikeChildComment(
+	public ApiResponse<Void> cancelLikeChildComment(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		childCommentService.cancelLikeChildComment(userDetails.getUser().getId(), id);
+		return ApiResponse.success();
 	}
 }

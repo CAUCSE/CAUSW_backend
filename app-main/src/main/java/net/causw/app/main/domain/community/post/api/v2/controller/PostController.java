@@ -51,20 +51,22 @@ public class PostController {
 
 	@PostMapping(value = "/{id}/like")
 	@ResponseStatus(value = HttpStatus.CREATED)
-	@Operation(summary = "게시글 좋아요 저장 API(완료)", description = "특정 유저가 특정 게시글에 좋아요를 누른 걸 저장하는 Api 입니다.")
-	public void likePost(
+	@Operation(summary = "게시글 좋아요 저장 API", description = "특정 유저가 특정 게시글에 좋아요를 누른 걸 저장하는 Api 입니다.")
+	public ApiResponse<Void> likePost(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		this.postService.likePost(userDetails.getUser().getId(), id);
+		return ApiResponse.success();
 	}
 
 	@DeleteMapping(value = "/{id}/like")
 	@ResponseStatus(value = HttpStatus.OK)
-	@Operation(summary = "게시글 좋아요 취소 API(완료)", description = "특정 유저가 특정 게시글에 좋아요를 누른 걸 취소하는 Api 입니다.")
-	public void cancelLikePost(
+	@Operation(summary = "게시글 좋아요 취소 API", description = "특정 유저가 특정 게시글에 좋아요를 누른 걸 취소하는 Api 입니다.")
+	public ApiResponse<Void> cancelLikePost(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		this.postService.cancelLikePost(userDetails.getUser().getId(), id);
+		return ApiResponse.success();
 	}
 
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

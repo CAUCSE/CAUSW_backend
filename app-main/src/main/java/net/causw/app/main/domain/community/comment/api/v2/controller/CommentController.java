@@ -23,6 +23,8 @@ import net.causw.app.main.shared.dto.ApiResponse;
 import net.causw.app.main.shared.dto.PageResponse;
 import net.causw.global.constant.StaticValue;
 
+import com.google.protobuf.Api;
+
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -91,19 +93,21 @@ public class CommentController {
 	@PostMapping(value = "/{id}/like")
 	@ResponseStatus(HttpStatus.CREATED)
 	@Operation(summary = "댓글 좋아요 저장 API", description = "특정 유저가 특정 댓글에 좋아요를 누른 걸 저장하는 Api 입니다.")
-	public void likeComment(
+	public ApiResponse<Void> likeComment(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		commentService.likeComment(userDetails.getUser().getId(), id);
+		return ApiResponse.success();
 	}
 
 	@DeleteMapping(value = "/{id}/like")
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "댓글 좋아요 취소 API", description = "특정 유저가 특정 댓글에 좋아요를 누른 걸 취소하는 Api 입니다.")
-	public void cancelLikeComment(
+	public ApiResponse<Void> cancelLikeComment(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		commentService.cancelLikeComment(userDetails.getUser().getId(), id);
+		return ApiResponse.success();
 	}
 
 }
