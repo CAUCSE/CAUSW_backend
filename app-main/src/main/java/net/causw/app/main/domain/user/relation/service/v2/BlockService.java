@@ -1,0 +1,70 @@
+package net.causw.app.main.domain.user.relation.service.v2;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.service.v2.implementation.PostReader;
+import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.relation.entity.userBlock.UserBlock;
+import net.causw.app.main.domain.user.relation.service.v2.dto.BlockCreateCommand;
+import net.causw.app.main.domain.user.relation.service.v2.dto.BlockCreateResult;
+import net.causw.app.main.domain.user.relation.service.v2.implementation.BlockReader;
+import net.causw.app.main.domain.user.relation.service.v2.implementation.BlockWriter;
+import net.causw.app.main.domain.user.relation.service.v2.util.BlockValidator;
+import net.causw.app.main.shared.exception.errorcode.BlockErrorCode;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class BlockService {
+
+	private final BlockReader blockReader;
+	private final BlockWriter blockWriter;
+	private final PostReader postReader;
+
+	@Transactional
+	public BlockCreateResult createBlock(BlockCreateCommand command) {
+		User blocker = command.blocker();
+		Post post = postReader.findByIdAndNotDeleted(command.postId());
+		User blocked = post.getWriter();  // 게시글 작성자를 서버에서 직접 도출
+
+		// 차단 대상이 게시글 작성자인지 데이터 무결성 검증
+		if (!post.getWriter().getId().equals(blocked.getId())) {
+			throw BlockErrorCode.BLOCK_TARGET_NOT_POST_WRITER.toBaseException();
+		}
+
+		boolean alreadyBlocked = blockReader.existsByBlockerAndBlocked(blocker, blocked);
+		BlockValidator.validateCreate(blocker, blocked, alreadyBlocked, post.getIsAnonymous());
+
+		// 익명 게시글 + 이미 차단: 익명성 보호를 위해 신원 없이 성공 응답 반환
+		if (post.getIsAnonymous() && alreadyBlocked) {
+			return BlockCreateResult.builder().build();
+		}
+
+		UserBlock userBlock = UserBlock.createForPost(
+			blocker.getId(),
+			blocked.getId(),
+			post.getId(),
+			post.getIsAnonymous(),
+			post.getContent());
+		UserBlock saved = blockWriter.save(userBlock);
+
+		// 익명 게시글이면 응답에서 신원 정보 제외
+		if (post.getIsAnonymous()) {
+			return BlockCreateResult.builder()
+				.blockId(saved.getId())
+				.createdAt(saved.getCreatedAt())
+				.build();
+		}
+
+		return BlockCreateResult.builder()
+			.blockId(saved.getId())
+			.blockedUserId(blocked.getId())
+			.blockedUserName(blocked.getNickname())
+			.createdAt(saved.getCreatedAt())
+			.build();
+	}
+}
