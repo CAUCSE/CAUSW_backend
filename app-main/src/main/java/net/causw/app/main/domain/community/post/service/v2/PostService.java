@@ -37,10 +37,8 @@ import net.causw.app.main.domain.community.reaction.service.implementation.Favor
 import net.causw.app.main.domain.community.reaction.service.implementation.LikePostReader;
 import net.causw.app.main.domain.community.reaction.service.implementation.LikePostWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.global.constant.MessageUtil;
+import net.causw.app.main.shared.exception.errorcode.LikePostErrorCode;
 import net.causw.global.constant.StaticValue;
-import net.causw.global.exception.BadRequestException;
-import net.causw.global.exception.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -282,7 +280,7 @@ public class PostService {
 		PostValidator.validateWriterNotDeleted(post);
 
 		if (likePostReader.existsByPostIdAndUserId(userId, postId)) {
-			throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.POST_ALREADY_LIKED);
+			throw LikePostErrorCode.POST_ALREADY_LIKED.toBaseException();
 		}
 
 		likePostWriter.saveLikePost(userId, post);
@@ -300,7 +298,7 @@ public class PostService {
 		PostValidator.validateWriterNotDeleted(post);
 
 		if (!likePostReader.existsByPostIdAndUserId(userId, postId)) {
-			throw new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.POST_NOT_LIKED);
+			throw LikePostErrorCode.POST_NOT_LIKE.toBaseException();
 		}
 
 		likePostWriter.deleteLikePost(userId, postId);
