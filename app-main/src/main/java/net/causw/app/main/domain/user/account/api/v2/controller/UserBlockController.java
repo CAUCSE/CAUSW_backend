@@ -21,14 +21,14 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v2/blocks")
-@Tag(name = "Block Public v2", description = "유저 차단 관련 API")
+@RequestMapping("/api/v2/posts/{postId}")
+@Tag(name = "차단 API (V2)", description = "유저 차단 관련 API")
 public class UserBlockController {
 
 	private final BlockService blockService;
 	private final BlockDtoMapper blockDtoMapper;
 
-	@PostMapping("/by-post/{postId}")
+	@PostMapping("/block")
 	@ResponseStatus(HttpStatus.CREATED)
 	@Operation(summary = "게시글 작성자 차단", description = "게시글을 통해 작성자를 차단합니다. 익명 게시글의 경우 응답에서 신원 정보를 반환하지 않습니다.")
 	public ApiResponse<BlockResponseDto> createBlock(
