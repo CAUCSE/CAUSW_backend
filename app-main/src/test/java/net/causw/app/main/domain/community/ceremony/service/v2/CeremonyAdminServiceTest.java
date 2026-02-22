@@ -25,6 +25,8 @@ import net.causw.app.main.domain.community.ceremony.enums.CeremonyState;
 import net.causw.app.main.domain.community.ceremony.service.CeremonyAdminService;
 import net.causw.app.main.domain.community.ceremony.service.dto.CeremonyAdminListCondition;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyReader;
+import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyWriter;
+import net.causw.app.main.domain.community.ceremony.util.CeremonyValidator;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.CeremonyErrorCode;
 
@@ -36,6 +38,12 @@ class CeremonyAdminServiceTest {
 
 	@Mock
 	CeremonyReader ceremonyReader;
+
+	@Mock
+	CeremonyWriter ceremonyWriter;
+
+	@Mock
+	CeremonyValidator ceremonyValidator;
 
 	@Nested
 	@DisplayName("관리자 경조사 목록 조회 테스트")
@@ -148,6 +156,114 @@ class CeremonyAdminServiceTest {
 				.isEqualTo(CeremonyErrorCode.CEREMONY_NOT_FOUND);
 
 			then(ceremonyReader).should(times(1)).findById("nonExistId");
+		}
+	}
+
+	@Nested
+	@DisplayName("관리자 경조사 승인 테스트")
+	class ApproveTest {
+
+		@Test
+		@DisplayName("대기 중인 경조사를 승인하면 validator 검증 후 writer.approve가 호출된다")
+		void givenAwaitingCeremony_whenApprove_thenValidatesAndDelegates() {
+			// given
+			Ceremony ceremony = mock(Ceremony.class);
+			given(ceremonyReader.findById("ceremonyId")).willReturn(Optional.of(ceremony));
+
+			// when
+			ceremonyAdminService.approve("ceremonyId");
+
+			// then
+			then(ceremonyValidator).should(times(1)).validateAwaiting(ceremony);
+			then(ceremonyWriter).should(times(1)).approve(ceremony);
+		}
+
+		@Test
+		@DisplayName("존재하지 않는 경조사를 승인하면 CEREMONY_NOT_FOUND 예외를 던진다")
+		void givenNonExistingCeremony_whenApprove_thenThrowsNotFound() {
+			// given
+			given(ceremonyReader.findById("nonExistId")).willReturn(Optional.empty());
+
+			// when & then
+			assertThatThrownBy(() -> ceremonyAdminService.approve("nonExistId"))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.extracting("errorCode")
+				.isEqualTo(CeremonyErrorCode.CEREMONY_NOT_FOUND);
+
+			then(ceremonyValidator).shouldHaveNoInteractions();
+			then(ceremonyWriter).shouldHaveNoInteractions();
+		}
+
+		@Test
+		@DisplayName("이미 처리된 경조사를 승인하면 validator가 CEREMONY_ALREADY_PROCESSED 예외를 던진다")
+		void givenAlreadyAcceptedCeremony_whenApprove_thenValidatorThrows() {
+			// given
+			Ceremony ceremony = mock(Ceremony.class);
+			given(ceremonyReader.findById("ceremonyId")).willReturn(Optional.of(ceremony));
+			willThrow(CeremonyErrorCode.CEREMONY_ALREADY_PROCESSED.toBaseException())
+				.given(ceremonyValidator).validateAwaiting(ceremony);
+
+			// when & then
+			assertThatThrownBy(() -> ceremonyAdminService.approve("ceremonyId"))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.extracting("errorCode")
+				.isEqualTo(CeremonyErrorCode.CEREMONY_ALREADY_PROCESSED);
+
+			then(ceremonyWriter).shouldHaveNoInteractions();
+		}
+	}
+
+	@Nested
+	@DisplayName("관리자 경조사 거절 테스트")
+	class RejectTest {
+
+		@Test
+		@DisplayName("대기 중인 경조사를 거절하면 validator 검증 후 writer.reject가 호출된다")
+		void givenAwaitingCeremony_whenReject_thenValidatesAndDelegates() {
+			// given
+			Ceremony ceremony = mock(Ceremony.class);
+			given(ceremonyReader.findById("ceremonyId")).willReturn(Optional.of(ceremony));
+
+			// when
+			ceremonyAdminService.reject("ceremonyId", "요건에 부합하지 않습니다.");
+
+			// then
+			then(ceremonyValidator).should(times(1)).validateAwaiting(ceremony);
+			then(ceremonyWriter).should(times(1)).reject(ceremony, "요건에 부합하지 않습니다.");
+		}
+
+		@Test
+		@DisplayName("존재하지 않는 경조사를 거절하면 CEREMONY_NOT_FOUND 예외를 던진다")
+		void givenNonExistingCeremony_whenReject_thenThrowsNotFound() {
+			// given
+			given(ceremonyReader.findById("nonExistId")).willReturn(Optional.empty());
+
+			// when & then
+			assertThatThrownBy(() -> ceremonyAdminService.reject("nonExistId", "사유"))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.extracting("errorCode")
+				.isEqualTo(CeremonyErrorCode.CEREMONY_NOT_FOUND);
+
+			then(ceremonyValidator).shouldHaveNoInteractions();
+			then(ceremonyWriter).shouldHaveNoInteractions();
+		}
+
+		@Test
+		@DisplayName("이미 처리된 경조사를 거절하면 validator가 CEREMONY_ALREADY_PROCESSED 예외를 던진다")
+		void givenAlreadyRejectedCeremony_whenReject_thenValidatorThrows() {
+			// given
+			Ceremony ceremony = mock(Ceremony.class);
+			given(ceremonyReader.findById("ceremonyId")).willReturn(Optional.of(ceremony));
+			willThrow(CeremonyErrorCode.CEREMONY_ALREADY_PROCESSED.toBaseException())
+				.given(ceremonyValidator).validateAwaiting(ceremony);
+
+			// when & then
+			assertThatThrownBy(() -> ceremonyAdminService.reject("ceremonyId", "사유"))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.extracting("errorCode")
+				.isEqualTo(CeremonyErrorCode.CEREMONY_ALREADY_PROCESSED);
+
+			then(ceremonyWriter).shouldHaveNoInteractions();
 		}
 	}
 }

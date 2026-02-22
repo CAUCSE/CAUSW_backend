@@ -7,11 +7,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.request.CeremonyAdminListRequest;
+import net.causw.app.main.domain.community.ceremony.api.v2.dto.request.CeremonyRejectRequest;
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonyAdminListResponseDto;
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonyDetailResponseDto;
 import net.causw.app.main.domain.community.ceremony.api.v2.mapper.CeremonyDtoMapper;
@@ -23,6 +26,7 @@ import net.causw.app.main.shared.dto.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @Tag(name = "관리자 경조사 API V2", description = "관리자 경조사 관리 API V2")
@@ -57,5 +61,24 @@ public class CeremonyAdminController {
 		return ApiResponse.success(
 			ceremonyDtoMapper.toAdminCeremonyDetailResponseDto(
 				ceremonyAdminService.getCeremonyDetail(ceremonyId)));
+	}
+
+	@PostMapping("/{ceremonyId}/approve")
+	@ResponseStatus(HttpStatus.OK)
+	@Operation(summary = "경조사 승인", description = "대기 중인 경조사를 승인합니다.")
+	public ApiResponse<Void> approve(
+		@Parameter(description = "경조사 ID") @PathVariable("ceremonyId") String ceremonyId) {
+		ceremonyAdminService.approve(ceremonyId);
+		return ApiResponse.success();
+	}
+
+	@PostMapping("/{ceremonyId}/reject")
+	@ResponseStatus(HttpStatus.OK)
+	@Operation(summary = "경조사 거절", description = "대기 중인 경조사를 거절합니다.")
+	public ApiResponse<Void> reject(
+		@Parameter(description = "경조사 ID") @PathVariable("ceremonyId") String ceremonyId,
+		@RequestBody @Valid CeremonyRejectRequest request) {
+		ceremonyAdminService.reject(ceremonyId, request.rejectReason());
+		return ApiResponse.success();
 	}
 }
