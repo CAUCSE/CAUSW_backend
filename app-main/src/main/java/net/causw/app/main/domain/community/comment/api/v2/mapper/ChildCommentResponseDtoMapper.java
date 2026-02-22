@@ -16,7 +16,7 @@ import net.causw.global.constant.StaticValue;
 public interface ChildCommentResponseDtoMapper {
 
 	@Mapping(target = "writerName", expression = "java(childComment.getIsAnonymous() ? null : childComment.getWriter().getName())")
-	@Mapping(target = "writerNickname", expression = "java(childComment.getIsAnonymous() ? null : childComment.getWriter().getNickName())")
+	@Mapping(target = "writerNickname", expression = "java(childComment.getIsAnonymous() ? null : childComment.getWriter().getNickname())")
 	@Mapping(target = "displayWriterNickname", expression = "java(mapDisplayNicknameForChildComment(childComment, childComment.getWriter().getNickname()))")
 	@Mapping(target = "writerAdmissionYear", expression = "java(childComment.getIsAnonymous() ? null : childComment.getWriter().getAdmissionYear())")
 	@Mapping(target = "writerProfileImage", expression = "java(mapProfileImageForChildComment(childComment))")
