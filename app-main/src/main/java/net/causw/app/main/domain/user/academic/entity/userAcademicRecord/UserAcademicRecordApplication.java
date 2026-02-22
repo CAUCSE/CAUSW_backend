@@ -50,6 +50,10 @@ public class UserAcademicRecordApplication extends BaseEntity {
 	@Column(name = "target_academic_status", nullable = false)
 	private AcademicStatus targetAcademicStatus;
 
+	/**
+	 * @deprecated v2부터 사용되지 않음.
+	 * 기존 데이터 호환을 위해 컬럼은 유지하지만 신규 비즈니스 로직에는 사용하지 않는다.
+	 */
 	@Column(name = "target_completed_semester", nullable = true)
 	private Integer targetCompletedSemester;
 
