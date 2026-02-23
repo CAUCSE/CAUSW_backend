@@ -1,7 +1,6 @@
 package net.causw.app.main.domain.asset.locker.service.v2.implementation;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
@@ -17,8 +16,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import net.causw.app.main.domain.asset.locker.enums.LockerPeriodPhase;
 import net.causw.app.main.domain.asset.locker.service.v2.dto.result.LockerPeriodStatusResult;
-import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
-import net.causw.app.main.shared.exception.errorcode.LockerErrorCode;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("LockerPeriodResolver 단위 테스트")
@@ -96,7 +93,7 @@ class LockerPeriodResolverTest {
 
 			// when & then
 			assertThat(lockerPeriodResolver.isRegisterActive(target))
-					.isFalse();
+				.isFalse();
 		}
 	}
 
@@ -163,7 +160,7 @@ class LockerPeriodResolverTest {
 
 			// when & then
 			assertThat(lockerPeriodResolver.isExtendActive(target))
-					.isFalse();
+				.isFalse();
 		}
 	}
 

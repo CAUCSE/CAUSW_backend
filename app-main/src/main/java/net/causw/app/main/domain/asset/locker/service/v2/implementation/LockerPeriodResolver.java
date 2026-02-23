@@ -8,7 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.asset.locker.enums.LockerPeriodPhase;
 import net.causw.app.main.domain.asset.locker.service.v2.dto.result.LockerPeriodStatusResult;
-import net.causw.app.main.shared.exception.errorcode.LockerErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -121,7 +120,7 @@ public class LockerPeriodResolver {
 		Optional<LocalDateTime> end = lockerPolicyReader.findRegisterEndDate();
 
 		if (start.isEmpty() || end.isEmpty()) {
-//			throw LockerErrorCode.LOCKER_REGISTER_PERIOD_NOT_SET.toBaseException();
+			//			throw LockerErrorCode.LOCKER_REGISTER_PERIOD_NOT_SET.toBaseException();
 			return false;
 		}
 
