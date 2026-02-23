@@ -20,5 +20,7 @@ public record AdmissionCreateRequest(
 
 	@Schema(description = "재학 분류 (ENROLLED: 재적(휴학 포함), GRADUATED: 졸업)", example = "ENROLLED", requiredMode = Schema.RequiredMode.REQUIRED) @NotNull(message = "재학 분류를 선택해 주세요.") AcademicStatus requestedAcademicStatus,
 
+	@Schema(description = "졸업연도 (재학 분류가 GRADUATED인 경우 필수)", example = "2025") Integer graduationYear,
+
 	@Schema(description = "증빙서류 설명", example = "재학증명서입니다.") String description) {
 }

@@ -84,7 +84,8 @@ class AdmissionServiceTest {
 			when(admissionWriter.create(
 				eq(user), eq(uuidFiles), eq(command.description()),
 				eq(command.requestedAcademicStatus()), eq(command.requestedStudentId()),
-				eq(command.requestedAdmissionYear()), eq(command.requestedDepartment())))
+				eq(command.requestedAdmissionYear()), eq(command.requestedDepartment()),
+				eq(command.graduationYear())))
 				.thenReturn(admission);
 
 			// when
@@ -101,13 +102,15 @@ class AdmissionServiceTest {
 			assertThat(result.requestedAcademicStatus()).isEqualTo(AcademicStatus.ENROLLED);
 			assertThat(result.description()).isEqualTo("재학증명서 첨부합니다");
 
-			verify(admissionValidator).validateAdmissionCreate(user, command.requestedStudentId(), attachImages);
+			verify(admissionValidator).validateAdmissionCreate(user, command.requestedStudentId(),
+				command.requestedAcademicStatus(), command.graduationYear(), attachImages);
 			verify(fileWriter).uploadAndSaveList(anyList(), eq(FilePath.USER_ADMISSION));
 			verify(userWriter).updateStateToAwait(user);
 			verify(admissionWriter).create(
 				eq(user), eq(uuidFiles), eq(command.description()),
 				eq(command.requestedAcademicStatus()), eq(command.requestedStudentId()),
-				eq(command.requestedAdmissionYear()), eq(command.requestedDepartment()));
+				eq(command.requestedAdmissionYear()), eq(command.requestedDepartment()),
+				eq(command.graduationYear()));
 		}
 
 		@Test
@@ -125,7 +128,8 @@ class AdmissionServiceTest {
 			when(admissionWriter.create(
 				eq(user), eq(uuidFiles), eq(command.description()),
 				eq(command.requestedAcademicStatus()), eq(command.requestedStudentId()),
-				eq(command.requestedAdmissionYear()), eq(command.requestedDepartment())))
+				eq(command.requestedAdmissionYear()), eq(command.requestedDepartment()),
+				eq(command.graduationYear())))
 				.thenReturn(admission);
 
 			// when
@@ -139,7 +143,8 @@ class AdmissionServiceTest {
 			verify(admissionWriter).create(
 				eq(user), eq(uuidFiles), eq(command.description()),
 				eq(command.requestedAcademicStatus()), eq(command.requestedStudentId()),
-				eq(command.requestedAdmissionYear()), eq(command.requestedDepartment()));
+				eq(command.requestedAdmissionYear()), eq(command.requestedDepartment()),
+				eq(command.graduationYear()));
 		}
 
 		@Test
@@ -151,7 +156,7 @@ class AdmissionServiceTest {
 			List<MultipartFile> attachImages = ObjectFixtures.getMockAttachImages();
 
 			doThrow(UserErrorCode.INVALID_USER_STATE_FOR_ADMISSION.toBaseException())
-				.when(admissionValidator).validateAdmissionCreate(eq(user), anyString(), eq(attachImages));
+				.when(admissionValidator).validateAdmissionCreate(eq(user), anyString(), any(), any(), eq(attachImages));
 
 			// when & then
 			assertThatThrownBy(() -> admissionService.createAdmission(user, command, attachImages))
@@ -159,9 +164,9 @@ class AdmissionServiceTest {
 				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
 				.isEqualTo(UserErrorCode.INVALID_USER_STATE_FOR_ADMISSION);
 
-			verify(admissionValidator).validateAdmissionCreate(eq(user), anyString(), eq(attachImages));
+			verify(admissionValidator).validateAdmissionCreate(eq(user), anyString(), any(), any(), eq(attachImages));
 			verify(fileWriter, never()).uploadAndSaveList(anyList(), any(FilePath.class));
-			verify(admissionWriter, never()).create(any(), any(), any(), any(), any(), any(), any());
+			verify(admissionWriter, never()).create(any(), any(), any(), any(), any(), any(), any(), any());
 		}
 
 		@Test
@@ -173,7 +178,7 @@ class AdmissionServiceTest {
 			List<MultipartFile> attachImages = ObjectFixtures.getMockAttachImages();
 
 			doThrow(UserErrorCode.ADMISSION_ALREADY_EXISTS.toBaseException())
-				.when(admissionValidator).validateAdmissionCreate(eq(user), anyString(), eq(attachImages));
+				.when(admissionValidator).validateAdmissionCreate(eq(user), anyString(), any(), any(), eq(attachImages));
 
 			// when & then
 			assertThatThrownBy(() -> admissionService.createAdmission(user, command, attachImages))
@@ -181,9 +186,9 @@ class AdmissionServiceTest {
 				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
 				.isEqualTo(UserErrorCode.ADMISSION_ALREADY_EXISTS);
 
-			verify(admissionValidator).validateAdmissionCreate(eq(user), anyString(), eq(attachImages));
+			verify(admissionValidator).validateAdmissionCreate(eq(user), anyString(), any(), any(), eq(attachImages));
 			verify(fileWriter, never()).uploadAndSaveList(anyList(), any(FilePath.class));
-			verify(admissionWriter, never()).create(any(), any(), any(), any(), any(), any(), any());
+			verify(admissionWriter, never()).create(any(), any(), any(), any(), any(), any(), any(), any());
 		}
 
 		@Test
@@ -195,7 +200,7 @@ class AdmissionServiceTest {
 			List<MultipartFile> attachImages = ObjectFixtures.getMockAttachImages();
 
 			doThrow(UserErrorCode.STUDENT_ID_ALREADY_EXIST.toBaseException())
-				.when(admissionValidator).validateAdmissionCreate(eq(user), anyString(), eq(attachImages));
+				.when(admissionValidator).validateAdmissionCreate(eq(user), anyString(), any(), any(), eq(attachImages));
 
 			// when & then
 			assertThatThrownBy(() -> admissionService.createAdmission(user, command, attachImages))
@@ -203,9 +208,9 @@ class AdmissionServiceTest {
 				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
 				.isEqualTo(UserErrorCode.STUDENT_ID_ALREADY_EXIST);
 
-			verify(admissionValidator).validateAdmissionCreate(eq(user), anyString(), eq(attachImages));
+			verify(admissionValidator).validateAdmissionCreate(eq(user), anyString(), any(), any(), eq(attachImages));
 			verify(fileWriter, never()).uploadAndSaveList(anyList(), any(FilePath.class));
-			verify(admissionWriter, never()).create(any(), any(), any(), any(), any(), any(), any());
+			verify(admissionWriter, never()).create(any(), any(), any(), any(), any(), any(), any(), any());
 		}
 
 		@Test
@@ -217,7 +222,7 @@ class AdmissionServiceTest {
 			List<MultipartFile> emptyImages = List.of();
 
 			doThrow(UserErrorCode.ADMISSION_IMAGE_REQUIRED.toBaseException())
-				.when(admissionValidator).validateAdmissionCreate(eq(user), anyString(), eq(emptyImages));
+				.when(admissionValidator).validateAdmissionCreate(eq(user), anyString(), any(), any(), eq(emptyImages));
 
 			// when & then
 			assertThatThrownBy(() -> admissionService.createAdmission(user, command, emptyImages))
@@ -225,9 +230,9 @@ class AdmissionServiceTest {
 				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
 				.isEqualTo(UserErrorCode.ADMISSION_IMAGE_REQUIRED);
 
-			verify(admissionValidator).validateAdmissionCreate(eq(user), anyString(), eq(emptyImages));
+			verify(admissionValidator).validateAdmissionCreate(eq(user), anyString(), any(), any(), eq(emptyImages));
 			verify(fileWriter, never()).uploadAndSaveList(anyList(), any(FilePath.class));
-			verify(admissionWriter, never()).create(any(), any(), any(), any(), any(), any(), any());
+			verify(admissionWriter, never()).create(any(), any(), any(), any(), any(), any(), any(), any());
 		}
 
 	}

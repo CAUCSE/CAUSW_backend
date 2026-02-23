@@ -58,6 +58,9 @@ public class UserAdmission extends BaseEntity {
 	@Column(name = "requested_department", nullable = true)
 	private Department requestedDepartment;
 
+	@Column(name = "requested_graduation_year", nullable = true)
+	private Integer requestedGraduationYear;
+
 	/**
 	 * v1 팩토리 메서드 (기존 호환)
 	 */
@@ -88,7 +91,8 @@ public class UserAdmission extends BaseEntity {
 		AcademicStatus requestedAcademicStatus,
 		String requestedStudentId,
 		Integer requestedAdmissionYear,
-		Department requestedDepartment) {
+		Department requestedDepartment,
+		Integer requestedGraduationYear) {
 		UserAdmission userAdmission = UserAdmission.builder()
 			.user(requestUser)
 			.description(description)
@@ -96,6 +100,7 @@ public class UserAdmission extends BaseEntity {
 			.requestedStudentId(requestedStudentId)
 			.requestedAdmissionYear(requestedAdmissionYear)
 			.requestedDepartment(requestedDepartment)
+			.requestedGraduationYear(requestedGraduationYear)
 			.build();
 
 		List<UserAdmissionAttachImage> userAdmissionAttachImageList = userAdmissionAttachImageUuidFileList.stream()

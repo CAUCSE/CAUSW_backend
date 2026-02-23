@@ -38,7 +38,8 @@ public class AdmissionLogWriter {
 			admission.getRequestedAcademicStatus(),
 			admission.getRequestedStudentId(),
 			admission.getRequestedAdmissionYear(),
-			admission.getRequestedDepartment());
+			admission.getRequestedDepartment(),
+			admission.getRequestedGraduationYear());
 
 		return userAdmissionLogRepository.save(log);
 	}
@@ -59,7 +60,8 @@ public class AdmissionLogWriter {
 			admission.getRequestedAcademicStatus(),
 			admission.getRequestedStudentId(),
 			admission.getRequestedAdmissionYear(),
-			admission.getRequestedDepartment());
+			admission.getRequestedDepartment(),
+			admission.getRequestedGraduationYear());
 
 		return userAdmissionLogRepository.save(log);
 	}

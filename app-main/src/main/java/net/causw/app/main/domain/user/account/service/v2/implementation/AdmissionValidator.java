@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
+import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
@@ -27,11 +28,14 @@ public class AdmissionValidator {
 	 * - 첨부 이미지 1개 이상 필수
 	 * - 요청 학번이 다른 ACTIVE/INACTIVE/DROP 사용자와 중복되지 않아야 함
 	 */
-	public void validateAdmissionCreate(User user, String requestedStudentId, List<MultipartFile> attachImages) {
+	public void validateAdmissionCreate(User user, String requestedStudentId,
+		AcademicStatus requestedAcademicStatus, Integer graduationYear,
+		List<MultipartFile> attachImages) {
 		validateUserStateForAdmission(user);
 		validateNoExistingAdmission(user);
 		validateAttachImages(attachImages);
 		validateStudentIdNotDuplicated(requestedStudentId);
+		validateGraduationYear(requestedAcademicStatus, graduationYear);
 	}
 
 	/**
@@ -58,6 +62,15 @@ public class AdmissionValidator {
 	public void validateAttachImages(List<MultipartFile> attachImages) {
 		if (attachImages == null || attachImages.isEmpty()) {
 			throw UserErrorCode.ADMISSION_IMAGE_REQUIRED.toBaseException();
+		}
+	}
+
+	/**
+	 * 졸업자(GRADUATED)인 경우 졸업연도가 필수인지 검증합니다.
+	 */
+	public void validateGraduationYear(AcademicStatus requestedAcademicStatus, Integer graduationYear) {
+		if (requestedAcademicStatus == AcademicStatus.GRADUATED && graduationYear == null) {
+			throw UserErrorCode.GRADUATION_YEAR_REQUIRED.toBaseException();
 		}
 	}
 

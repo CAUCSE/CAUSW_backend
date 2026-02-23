@@ -47,7 +47,8 @@ public class AdmissionService {
 		List<MultipartFile> attachImages) {
 
 		// 인증 신청 생성 검증
-		admissionValidator.validateAdmissionCreate(user, dto.requestedStudentId(), attachImages);
+		admissionValidator.validateAdmissionCreate(user, dto.requestedStudentId(),
+			dto.requestedAcademicStatus(), dto.graduationYear(), attachImages);
 
 		// 이미지 파일 업로드
 		List<UuidFile> uuidFiles = fileWriter.uploadAndSaveList(attachImages, FilePath.USER_ADMISSION);
@@ -63,7 +64,8 @@ public class AdmissionService {
 			dto.requestedAcademicStatus(),
 			dto.requestedStudentId(),
 			dto.requestedAdmissionYear(),
-			dto.requestedDepartment());
+			dto.requestedDepartment(),
+			dto.graduationYear());
 
 		return AdmissionResult.from(admission);
 	}

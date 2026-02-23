@@ -8,5 +8,6 @@ public record AdmissionCreateCommand(
 	AcademicStatus requestedAcademicStatus,
 	String requestedStudentId,
 	Integer requestedAdmissionYear,
-	Department requestedDepartment) {
+	Department requestedDepartment,
+	Integer graduationYear) {
 }

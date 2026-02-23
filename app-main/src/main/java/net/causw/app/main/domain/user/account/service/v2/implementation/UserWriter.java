@@ -44,6 +44,7 @@ public class UserWriter {
 		user.setAdmissionYear(admission.getRequestedAdmissionYear());
 		user.setDepartment(admission.getRequestedDepartment());
 		user.setAcademicStatus(admission.getRequestedAcademicStatus());
+		user.setGraduationYear(admission.getRequestedGraduationYear());
 
 		// 상태를 ACTIVE로 변경
 		user.setState(UserState.ACTIVE);

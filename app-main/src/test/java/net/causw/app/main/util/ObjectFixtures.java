@@ -146,7 +146,8 @@ public class ObjectFixtures {
 			AcademicStatus.ENROLLED,
 			"20231234",
 			2023,
-			Department.SCHOOL_OF_SW);
+			Department.SCHOOL_OF_SW,
+			null);
 	}
 
 	public static UserAdmission getUserAdmissionWithId(String admissionId, User user) {
@@ -163,7 +164,8 @@ public class ObjectFixtures {
 			AcademicStatus.ENROLLED,
 			"20231234",
 			2023,
-			Department.SCHOOL_OF_SW);
+			Department.SCHOOL_OF_SW,
+			null);
 	}
 
 	public static List<MultipartFile> getMockAttachImages() {

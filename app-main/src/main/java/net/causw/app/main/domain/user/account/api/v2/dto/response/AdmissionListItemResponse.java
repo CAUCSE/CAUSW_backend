@@ -25,6 +25,8 @@ public record AdmissionListItemResponse(
 
 	@Schema(description = "신청 재학 분류") AcademicStatus requestedAcademicStatus,
 
+	@Schema(description = "신청 졸업연도 (졸업자인 경우)") Integer requestedGraduationYear,
+
 	@Schema(description = "사용자 상태") UserState userState,
 
 	@Schema(description = "신청 시각") LocalDateTime createdAt) {

@@ -31,7 +31,8 @@ public class AdmissionWriter {
 		AcademicStatus requestedAcademicStatus,
 		String requestedStudentId,
 		Integer requestedAdmissionYear,
-		Department requestedDepartment) {
+		Department requestedDepartment,
+		Integer requestedGraduationYear) {
 
 		UserAdmission admission = UserAdmission.of(
 			user,
@@ -40,7 +41,8 @@ public class AdmissionWriter {
 			requestedAcademicStatus,
 			requestedStudentId,
 			requestedAdmissionYear,
-			requestedDepartment);
+			requestedDepartment,
+			requestedGraduationYear);
 
 		return userAdmissionRepository.save(admission);
 	}

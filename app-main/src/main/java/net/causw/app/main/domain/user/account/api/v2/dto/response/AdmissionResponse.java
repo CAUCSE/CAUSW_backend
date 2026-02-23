@@ -28,6 +28,8 @@ public record AdmissionResponse(
 
 	@Schema(description = "신청 재학 분류") AcademicStatus requestedAcademicStatus,
 
+	@Schema(description = "신청 졸업연도 (졸업자인 경우)") Integer requestedGraduationYear,
+
 	@Schema(description = "증빙서류 설명") String description,
 
 	@Schema(description = "첨부 이미지 URL 목록") List<String> attachImageUrls,
