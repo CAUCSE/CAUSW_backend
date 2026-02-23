@@ -156,7 +156,8 @@ class AdmissionServiceTest {
 			List<MultipartFile> attachImages = ObjectFixtures.getMockAttachImages();
 
 			doThrow(UserErrorCode.INVALID_USER_STATE_FOR_ADMISSION.toBaseException())
-				.when(admissionValidator).validateAdmissionCreate(eq(user), anyString(), any(), any(), eq(attachImages));
+				.when(admissionValidator)
+				.validateAdmissionCreate(eq(user), anyString(), any(), any(), eq(attachImages));
 
 			// when & then
 			assertThatThrownBy(() -> admissionService.createAdmission(user, command, attachImages))
@@ -178,7 +179,8 @@ class AdmissionServiceTest {
 			List<MultipartFile> attachImages = ObjectFixtures.getMockAttachImages();
 
 			doThrow(UserErrorCode.ADMISSION_ALREADY_EXISTS.toBaseException())
-				.when(admissionValidator).validateAdmissionCreate(eq(user), anyString(), any(), any(), eq(attachImages));
+				.when(admissionValidator)
+				.validateAdmissionCreate(eq(user), anyString(), any(), any(), eq(attachImages));
 
 			// when & then
 			assertThatThrownBy(() -> admissionService.createAdmission(user, command, attachImages))
@@ -200,7 +202,8 @@ class AdmissionServiceTest {
 			List<MultipartFile> attachImages = ObjectFixtures.getMockAttachImages();
 
 			doThrow(UserErrorCode.STUDENT_ID_ALREADY_EXIST.toBaseException())
-				.when(admissionValidator).validateAdmissionCreate(eq(user), anyString(), any(), any(), eq(attachImages));
+				.when(admissionValidator)
+				.validateAdmissionCreate(eq(user), anyString(), any(), any(), eq(attachImages));
 
 			// when & then
 			assertThatThrownBy(() -> admissionService.createAdmission(user, command, attachImages))
