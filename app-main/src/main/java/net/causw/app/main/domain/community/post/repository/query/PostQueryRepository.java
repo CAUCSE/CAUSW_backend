@@ -182,24 +182,24 @@ public class PostQueryRepository {
 			.from(favoritePost)
 			.where(favoritePost.post.eq(post));
 
-		// 썸네일 이미지 URL 서브쿼리 (첫 번째 이미지)
-		SubQueryExpression<String> thumbnailUrl = JPAExpressions
-			.select(postAttachImage.uuidFile.fileUrl)
+		// 문자열 서브쿼리 (썸네일 URL)
+		SubQueryExpression<String> thumbnailUrl = JPAExpressions.select(
+			postAttachImage.uuidFile.fileUrl)
 			.from(postAttachImage)
 			.where(postAttachImage.post.eq(post)
-				.and(postAttachImage.uuidFile.extension.in(FileExtensionType.IMAGE.getExtensionList())))
-			.orderBy(postAttachImage.uuidFile.createdAt.asc())
-			.limit(1);
+				.and(postAttachImage.uuidFile.extension.in(
+					FileExtensionType.IMAGE.getExtensionList()))
+				.and(postAttachImage.uuidFile.createdAt.eq(
+					JPAExpressions.select(postAttachImage.uuidFile.createdAt.min())
+						.from(postAttachImage)
+						.where(postAttachImage.post.eq(post)))));
 
 		return new QPostQueryResult(
 			post.id, post.title, post.content,
 			commentCount, likeCount, favoriteCount,
-			post.isAnonymous, post.isQuestion,
-			post.vote.isNotNull(), // isPostVote
-			post.form.isNotNull(), // isPostForm
+			post.isAnonymous, post.isQuestion, post.vote.isNotNull(), post.form.isNotNull(),
 			post.isDeleted,
-			writer.isNotNull(),
-			writer.name, writer.nickname, writer.admissionYear, writer.state,
+			writer.isNotNull(), writer.name, writer.nickname, writer.admissionYear, writer.state,
 			post.createdAt, post.updatedAt,
 			thumbnailUrl);
 	}
