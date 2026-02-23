@@ -84,7 +84,7 @@ class LockerPeriodResolverTest {
 
 		@Test
 		@DisplayName("신청 flag ON 이고 신청 기간이 설정되지 않았으면 false를 반환한다.")
-		void givenFlagOnAndPeriodNotSet_whenCheck_thenThrow() {
+		void givenFlagOnAndPeriodNotSet_whenCheck_thenFalse() {
 			// given
 			LocalDateTime target = LocalDateTime.of(2026, 6, 3, 12, 0);
 			when(lockerPolicyReader.getLockerAccessStatusFlag()).thenReturn(true);
@@ -151,7 +151,7 @@ class LockerPeriodResolverTest {
 
 		@Test
 		@DisplayName("연장 flag ON 이고 연장 기간이 설정되지 않았으면 false를 반환한다")
-		void givenFlagOnAndPeriodNotSet_whenCheck_thenThrow() {
+		void givenFlagOnAndPeriodNotSet_whenCheck_thenFalse() {
 			// given
 			LocalDateTime target = LocalDateTime.of(2026, 6, 3, 12, 0);
 			when(lockerPolicyReader.getLockerExtendStatusFlag()).thenReturn(true);
