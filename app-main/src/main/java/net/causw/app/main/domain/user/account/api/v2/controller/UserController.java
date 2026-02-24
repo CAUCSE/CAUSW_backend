@@ -57,7 +57,8 @@ public class UserController {
 		if (refreshToken == null) {
 			throw AuthErrorCode.REFRESH_TOKEN_MISSING.toBaseException();
 		}
-		AuthResult dto = userAccountService.completeRegistration(userDetails.getUserId(), body, refreshToken);
+		AuthResult dto = userAccountService.completeRegistration(userDetails.getUserId(), body.nickname(),
+			body.phoneNumber(), body.name(), refreshToken);
 		return ApiResponse.success(authDtoMapper.toAuthResponse(dto));
 	}
 

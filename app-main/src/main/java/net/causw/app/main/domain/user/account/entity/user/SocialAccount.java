@@ -29,7 +29,7 @@ public class SocialAccount extends BaseEntity {
 	@Column(name = "email", nullable = false)
 	private String email;
 
-	public static SocialAccount from(SocialType socialType, String socialId, String email, User user) {
+	public static SocialAccount of(SocialType socialType, String socialId, String email, User user) {
 		return SocialAccount.builder()
 			.socialId(socialId)
 			.socialType(socialType)

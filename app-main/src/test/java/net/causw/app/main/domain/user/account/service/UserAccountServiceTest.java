@@ -69,7 +69,7 @@ class UserAccountServiceTest {
 		verify(userReader).findUserById(userId);
 		verify(userValidator).checkNicknameDuplication(nickname);
 		verify(userValidator).checkPhoneNumDuplication(phoneNumber);
-		verify(guestUser).updateRegisterInformation(name, nickname, phoneNumber);
+		verify(guestUser).submitRegistration(name, nickname, phoneNumber);
 		verify(userWriter).save(guestUser);
 		verify(authTokenManager).issueTokens(guestUser, refreshToken);
 	}
