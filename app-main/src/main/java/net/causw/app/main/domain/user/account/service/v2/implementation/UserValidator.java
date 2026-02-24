@@ -4,7 +4,6 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
-import net.causw.app.main.domain.user.account.entity.user.SocialAccount;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.SocialType;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
@@ -179,8 +178,8 @@ public class UserValidator {
 	}
 
 	public void checkAccountExistByUserAndSocialType(User user, SocialType socialType) {
-		Optional<SocialAccount> isExist = socialAccountRepository.findByUserAndSocialType(user, socialType);
-		if (isExist.isPresent()) {
+		Boolean isExist = socialAccountRepository.existsByUserAndSocialType(user, socialType);
+		if (isExist) {
 			throw AuthErrorCode.ALREADY_LINKED_SOCIAL_PROVIDER.toBaseException();
 		}
 	}
