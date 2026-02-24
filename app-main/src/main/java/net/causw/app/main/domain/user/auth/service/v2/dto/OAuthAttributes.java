@@ -45,14 +45,14 @@ public record OAuthAttributes(
 		Map<String, Object> kakaoProfile = (Map<String, Object>)kakaoAccount.get("profile");
 
 		return OAuthAttributes.builder()
-			.name((String)kakaoProfile.get("nickname"))
+			.name((String)kakaoAccount.get("name"))
 			.email((String)kakaoAccount.get("email"))
 			.picture((String)kakaoProfile.get("profile_image_url"))
 			.attributes(attributes)
 			.nameAttributeKey(userNameAttributeName)
 			.socialType(SocialType.KAKAO)
 			.socialId(String.valueOf(attributes.get(userNameAttributeName)))
-			.isEmailVerified((boolean)attributes.getOrDefault("is_email_verified", false))
+			.isEmailVerified((boolean)kakaoAccount.getOrDefault("is_email_verified", false))
 			.build();
 	}
 
