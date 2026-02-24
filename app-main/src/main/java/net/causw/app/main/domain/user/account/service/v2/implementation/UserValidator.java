@@ -54,6 +54,28 @@ public class UserValidator {
 	}
 
 	/**
+	 * 기존 계정에 소셜 계정을 통합(연동)하기 전, 유저의 상태가 유효한지 검증합니다.
+	 * <p>
+	 * 정상적인 활동 상태(ACTIVE)나 대기 상태인 경우 검증을 통과하며,
+	 * 탈퇴 또는 비활성화 상태인 경우 연동을 차단하고 예외를 발생시킵니다.
+	 * </p>
+	 *
+	 * @param state 검증할 유저의 현재 상태
+	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
+	 * [USER_DROPPED] 추방된 회원인 경우,
+	 * [USER_INACTIVE_CAN_REJOIN] 휴면 계정인 경우 (재가입 절차 필요)
+	 */
+	public void validateUserStatusForIntegration(UserState state) {
+		switch (state) {
+			case DROP ->
+				throw UserErrorCode.USER_DROPPED.toBaseException();
+			case INACTIVE ->
+				throw UserErrorCode.USER_INACTIVE_CAN_REJOIN.toBaseException();
+			default -> {}
+		}
+	}
+
+	/**
 	 * 로그인 시도 시, 해당 사용자가 로그인이 가능한 상태인지 확인합니다.
 	 *
 	 * @param state 검사할 사용자 상태

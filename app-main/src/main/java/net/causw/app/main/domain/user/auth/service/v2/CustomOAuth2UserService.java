@@ -69,7 +69,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 							throw AuthErrorCode.UNVERIFIED_SOCIAL_EMAIL.toBaseException();
 						}
 						userValidator.checkAccountExistByUserAndSocialType(existingUser, attributes.socialType());
-						userValidator.validateUserStatusForSignup(existingUser.getState());
+						userValidator.validateUserStatusForIntegration(existingUser.getState());
 						createAndSaveSocialAccount(attributes, existingUser);
 						return existingUser;
 					})
