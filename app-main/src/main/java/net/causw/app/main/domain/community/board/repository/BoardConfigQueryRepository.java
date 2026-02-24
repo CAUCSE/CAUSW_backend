@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import com.querydsl.core.types.dsl.BooleanExpression;
 import org.springframework.stereotype.Repository;
 
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
@@ -61,7 +62,7 @@ public class BoardConfigQueryRepository {
 		return jpaQueryFactory
 			.select(boardConfig.boardId)
 			.from(boardConfig)
-			.where(boardConfig.visibility.eq(BoardVisibility.VISIBLE)
+			.where(visible(boardConfig)
 				.and(boardConfig.readScope.in(boardReadScopes)))
 			.fetch();
 	}
@@ -73,10 +74,17 @@ public class BoardConfigQueryRepository {
 	 *
 	 */
 	public List<BoardConfig> findAllByIsNoticeTrueAndReadScopeIn(Set<BoardReadScope> readScopes) {
+		QBoardConfig boardConfig = QBoardConfig.boardConfig;
 		return jpaQueryFactory
-			.selectFrom(QBoardConfig.boardConfig)
-			.where(QBoardConfig.boardConfig.isNotice.eq(true)
-				.and(QBoardConfig.boardConfig.readScope.in(readScopes)))
+			.selectFrom(boardConfig)
+			.where(boardConfig.isNotice.eq(true)
+				.and(boardConfig.readScope.in(readScopes))
+					.and(visible(boardConfig))
+			)
 			.fetch();
+	}
+
+	private static BooleanExpression visible(QBoardConfig boardConfig) {
+		return boardConfig.visibility.eq(BoardVisibility.VISIBLE);
 	}
 }
