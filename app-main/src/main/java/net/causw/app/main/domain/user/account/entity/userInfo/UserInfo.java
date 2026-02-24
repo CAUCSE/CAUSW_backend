@@ -3,6 +3,7 @@ package net.causw.app.main.domain.user.account.entity.userInfo;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.entity.BaseEntity;
@@ -63,7 +64,7 @@ public class UserInfo extends BaseEntity {
 	@CollectionTable(name = "tb_user_tech_stack", joinColumns = @JoinColumn(name = "user_info_id"))
 	@Column(name = "tech_stack")
 	@Builder.Default
-	private LinkedHashSet<String> userTechStack = new LinkedHashSet<>();
+	private Set<String> userTechStack = new LinkedHashSet<>();
 
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "userInfo", fetch = FetchType.LAZY)
 	@Builder.Default
@@ -77,13 +78,13 @@ public class UserInfo extends BaseEntity {
 	@CollectionTable(name = "tb_user_interest_tech", joinColumns = @JoinColumn(name = "user_info_id"))
 	@Column(name = "interest_tech")
 	@Builder.Default
-	private LinkedHashSet<String> userInterestTech = new LinkedHashSet<>();
+	private Set<String> userInterestTech = new LinkedHashSet<>();
 
 	@ElementCollection
 	@CollectionTable(name = "tb_user_interest_domain", joinColumns = @JoinColumn(name = "user_info_id"))
 	@Column(name = "interest_domain")
 	@Builder.Default
-	private LinkedHashSet<String> userInterestDomain = new LinkedHashSet<>();
+	private Set<String> userInterestDomain = new LinkedHashSet<>();
 
 	public static UserInfo of(User user) {
 		return UserInfo.builder()

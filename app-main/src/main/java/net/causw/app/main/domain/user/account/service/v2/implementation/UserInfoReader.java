@@ -1,0 +1,27 @@
+package net.causw.app.main.domain.user.account.service.v2.implementation;
+
+import java.util.Optional;
+
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
+import net.causw.app.main.domain.user.account.repository.userInfo.UserInfoRepository;
+
+import lombok.RequiredArgsConstructor;
+
+@Component
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class UserInfoReader {
+
+	private final UserInfoRepository userInfoRepository;
+
+	public Optional<UserInfo> findById(String userInfoId) {
+		return userInfoRepository.findById(userInfoId);
+	}
+
+	public Optional<UserInfo> findByUserId(String userId) {
+		return userInfoRepository.findByUserId(userId);
+	}
+}

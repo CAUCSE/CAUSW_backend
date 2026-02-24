@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class UserInfoService {
+public class UserInfoV1Service {
 	private final UserInfoRepository userInfoRepository;
 	private final UserInfoQueryRepository userInfoQueryRepository;
 

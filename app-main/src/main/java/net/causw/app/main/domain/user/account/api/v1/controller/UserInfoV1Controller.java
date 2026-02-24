@@ -38,7 +38,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/v1/users-info")
 @RequiredArgsConstructor
-public class UserInfoController {
+public class UserInfoV1Controller {
 
 	private final SearchUserInfoListUseCaseService searchUserInfoListUseCaseService;
 	private final GetUserInfoUseCaseService getUserInfoUseCaseService;

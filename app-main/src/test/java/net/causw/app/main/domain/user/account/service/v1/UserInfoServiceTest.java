@@ -34,11 +34,11 @@ import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.NotFoundException;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("UserInfoService 테스트")
-class UserInfoServiceTest {
+@DisplayName("UserInfoV1Service 테스트")
+class UserInfoV1ServiceTest {
 
 	@InjectMocks
-	private UserInfoService userInfoService;
+	private UserInfoV1Service userInfoV1Service;
 
 	@Mock
 	private UserInfoRepository userInfoRepository;
@@ -68,7 +68,7 @@ class UserInfoServiceTest {
 				.willReturn(Optional.of(testUserInfo));
 
 			// when
-			UserInfo result = userInfoService.getUserInfoByUser(testUser);
+			UserInfo result = userInfoV1Service.getUserInfoByUser(testUser);
 
 			// then
 			assertThat(result).isNotNull();
@@ -84,7 +84,7 @@ class UserInfoServiceTest {
 				.willReturn(Optional.empty());
 
 			// when & then
-			assertThatThrownBy(() -> userInfoService.getUserInfoByUser(testUser))
+			assertThatThrownBy(() -> userInfoV1Service.getUserInfoByUser(testUser))
 				.isInstanceOf(NotFoundException.class)
 				.hasFieldOrPropertyWithValue("errorCode", ErrorCode.ROW_DOES_NOT_EXIST);
 
@@ -111,7 +111,7 @@ class UserInfoServiceTest {
 				.willReturn(expectedPage);
 
 			// when
-			Page<UserInfo> result = userInfoService.searchUserInfo(pageable, condition);
+			Page<UserInfo> result = userInfoV1Service.searchUserInfo(pageable, condition);
 
 			// then
 			assertThat(result).isNotNull();
@@ -143,7 +143,7 @@ class UserInfoServiceTest {
 				.willReturn(Optional.of(testUserInfo));
 
 			// when
-			UserInfo result = userInfoService.getOrCreateUserInfoFromUser(testUser);
+			UserInfo result = userInfoV1Service.getOrCreateUserInfoFromUser(testUser);
 
 			// then
 			assertThat(result).isNotNull();
@@ -164,7 +164,7 @@ class UserInfoServiceTest {
 				.willReturn(newUserInfo);
 
 			// when
-			UserInfo result = userInfoService.getOrCreateUserInfoFromUser(testUser);
+			UserInfo result = userInfoV1Service.getOrCreateUserInfoFromUser(testUser);
 
 			// then
 			assertThat(result).isNotNull();
