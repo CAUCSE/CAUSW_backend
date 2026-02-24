@@ -12,6 +12,7 @@ import net.causw.app.main.domain.community.board.entity.BoardConfig;
 import net.causw.app.main.domain.community.board.entity.BoardReadScope;
 import net.causw.app.main.domain.community.board.repository.BoardAdminQueryRepository;
 import net.causw.app.main.domain.community.board.repository.BoardConfigQueryRepository;
+import net.causw.app.main.domain.community.board.repository.BoardConfigRepository;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.BoardConfigErrorCode;
@@ -23,7 +24,30 @@ import lombok.RequiredArgsConstructor;
 public class BoardConfigReader {
 	private final BoardConfigQueryRepository boardConfigQueryRepository;
 	private final BoardAdminQueryRepository boardAdminQueryRepository;
+	private final BoardConfigRepository boardConfigRepository;
 
+	/**
+	 * 알림 설정 가능하게 설정된 게시판 리스트 확인
+	 * @return 알림 설정 가능하게 설정된 게시판 리스트
+	 */
+	public List<BoardConfig> findAllNoticeConfigsByReadScope(Set<BoardReadScope> readScopes) {
+		return boardConfigQueryRepository.findAllByIsNoticeTrueAndReadScopeIn(readScopes);
+	}
+
+	/**
+	 * 게시판 ID로 해당 게시판이 공지사항 게시판으로 설정되어 있는지 여부 조회
+	 * @param boardId 게시판 ID
+	 * @return 해당 게시판이 공지사항 게시판으로 설정되어 있는지 여부
+	 */
+	public boolean existsByBoardIdAndIsNotice(String boardId) {
+		return boardConfigRepository.existsByBoardIdAndIsNoticeTrue(boardId);
+	}
+
+	/**
+	 * 게시판 ID 목록에 해당하는 설정을 조회하여 리스트로 반환.
+	 * @param boardIds 게시판 ID 목록
+	 * @return 게시판 ID 목록에 해당하는 설정 리스트
+	 */
 	public List<BoardConfig> getAllBoardConfigInBoardIds(List<String> boardIds) {
 		return boardConfigQueryRepository.findByBoardIdsIn(boardIds);
 	}

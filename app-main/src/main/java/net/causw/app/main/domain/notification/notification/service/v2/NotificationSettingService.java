@@ -1,21 +1,22 @@
 package net.causw.app.main.domain.notification.notification.service.v2;
 
-import java.util.List;
-import java.util.Map;
-
+import net.causw.app.main.domain.notification.notification.service.v2.dto.OfficialBoardSetting;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.community.board.entity.Board;
-import net.causw.app.main.domain.notification.notification.enums.UserNotificationSettingKey;
 import net.causw.app.main.domain.notification.notification.service.v2.dto.NotificationSettingResult;
 import net.causw.app.main.domain.notification.notification.service.v2.dto.UpdateNotificationSettingCommand;
+import net.causw.app.main.domain.notification.notification.service.v2.dto.UserNotificationSettingMap;
 import net.causw.app.main.domain.notification.notification.service.v2.implementation.NotificationSettingReader;
 import net.causw.app.main.domain.notification.notification.service.v2.implementation.NotificationSettingWriter;
+import net.causw.app.main.domain.notification.notification.service.v2.implementation.OfficialBoardSettingReader;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
 
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +25,7 @@ public class NotificationSettingService {
 
 	private final NotificationSettingReader notificationSettingReader;
 	private final NotificationSettingWriter notificationSettingWriter;
+	private final OfficialBoardSettingReader officialBoardSettingReader;
 	private final UserReader userReader;
 
 	/**
@@ -32,26 +34,12 @@ public class NotificationSettingService {
 	 */
 	public NotificationSettingResult getAllSettings(String userId) {
 		User user = userReader.findUserById(userId);
-		Map<UserNotificationSettingKey, Boolean> settingMap = notificationSettingReader.findSettingMap(userId);
+		UserNotificationSettingMap settingMap = notificationSettingReader.findSettingMap(userId);
 
-		NotificationSettingResult.CommunitySettings community = new NotificationSettingResult.CommunitySettings(
-			settingMap.get(UserNotificationSettingKey.COMMUNITY_LIKE_ON_MY_POST),
-			settingMap.get(UserNotificationSettingKey.COMMUNITY_COMMENT_ON_MY_POST),
-			settingMap.get(UserNotificationSettingKey.COMMUNITY_REPLY_ON_MY_COMMENT)
-		);
+		// 공지사항 게시판 리스트와 유저의 구독 상태를 조회한다.
+		List<OfficialBoardSetting> officialBoardSettings = officialBoardSettingReader.findAll(user);
 
-		NotificationSettingResult.CeremonySettings ceremony = new NotificationSettingResult.CeremonySettings(
-			settingMap.get(UserNotificationSettingKey.CEREMONY_NOTIFICATION_ENABLED)
-		);
-
-		NotificationSettingResult.ServiceSettings service = new NotificationSettingResult.ServiceSettings(
-			settingMap.get(UserNotificationSettingKey.SERVICE_NOTICE_ENABLED)
-		);
-
-		List<NotificationSettingResult.OfficialBoardSetting> officialBoards =
-			notificationSettingReader.findOfficialBoardSettings(user);
-
-		return new NotificationSettingResult(community, ceremony, service, officialBoards);
+		return NotificationSettingResult.from(settingMap, officialBoardSettings);
 	}
 
 	/**
@@ -59,7 +47,7 @@ public class NotificationSettingService {
 	 */
 	@Transactional
 	public void updateUserSettings(String userId, UpdateNotificationSettingCommand command) {
-		Map<UserNotificationSettingKey, Boolean> settingMap = command.toSettingMap();
+		UserNotificationSettingMap settingMap = command.toSettingMap();
 		if (settingMap.isEmpty()) {
 			return;
 		}
@@ -73,7 +61,7 @@ public class NotificationSettingService {
 	@Transactional
 	public void updateOfficialBoardSubscribe(String userId, String boardId, boolean subscribed) {
 		User user = userReader.findUserById(userId);
-		Board board = notificationSettingReader.findNoticeBoardOrThrow(boardId);
+		Board board = officialBoardSettingReader.findNoticeBoardOrThrow(boardId);
 		notificationSettingWriter.upsertBoardSubscribe(user, board, subscribed);
 	}
 }

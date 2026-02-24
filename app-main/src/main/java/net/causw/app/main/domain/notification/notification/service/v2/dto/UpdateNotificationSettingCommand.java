@@ -16,7 +16,7 @@ public record UpdateNotificationSettingCommand(
 	/**
 	 * null이 아닌 필드만 Map으로 변환한다 (부분 업데이트).
 	 */
-	public Map<UserNotificationSettingKey, Boolean> toSettingMap() {
+	public UserNotificationSettingMap toSettingMap() {
 		Map<UserNotificationSettingKey, Boolean> map = new EnumMap<>(UserNotificationSettingKey.class);
 		if (likeOnMyPost != null) {
 			map.put(UserNotificationSettingKey.COMMUNITY_LIKE_ON_MY_POST, likeOnMyPost);
@@ -33,6 +33,6 @@ public record UpdateNotificationSettingCommand(
 		if (serviceNoticeEnabled != null) {
 			map.put(UserNotificationSettingKey.SERVICE_NOTICE_ENABLED, serviceNoticeEnabled);
 		}
-		return map;
+		return UserNotificationSettingMap.ofPartial(map);
 	}
 }

@@ -65,4 +65,18 @@ public class BoardConfigQueryRepository {
 				.and(boardConfig.readScope.in(boardReadScopes)))
 			.fetch();
 	}
+
+	/**
+	 * 공지사항 게시판 중에서 사용자의 ReadScope에 맞는 게시판 설정을 조회합니다.
+	 * @param readScopes 조회할 boardReadScope 집합
+	 * @return 공지사항 게시판 설정 목록
+	 *
+	 */
+    public List<BoardConfig> findAllByIsNoticeTrueAndReadScopeIn(Set<BoardReadScope> readScopes) {
+        return jpaQueryFactory
+			.selectFrom(QBoardConfig.boardConfig)
+			.where(QBoardConfig.boardConfig.isNotice.eq(true)
+				.and(QBoardConfig.boardConfig.readScope.in(readScopes)))
+			.fetch();
+    }
 }

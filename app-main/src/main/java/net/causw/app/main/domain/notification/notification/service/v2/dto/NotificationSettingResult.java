@@ -2,6 +2,8 @@ package net.causw.app.main.domain.notification.notification.service.v2.dto;
 
 import java.util.List;
 
+import net.causw.app.main.domain.notification.notification.enums.UserNotificationSettingKey;
+
 public record NotificationSettingResult(
 	CommunitySettings community,
 	CeremonySettings ceremony,
@@ -19,9 +21,19 @@ public record NotificationSettingResult(
 
 	public record ServiceSettings(boolean noticeEnabled) {}
 
-	public record OfficialBoardSetting(
-		String boardId,
-		String name,
-		boolean subscribed
-	) {}
+	public static NotificationSettingResult from(
+		UserNotificationSettingMap settingMap,
+		List<OfficialBoardSetting> officialBoards
+	) {
+		return new NotificationSettingResult(
+			new CommunitySettings(
+				settingMap.get(UserNotificationSettingKey.COMMUNITY_LIKE_ON_MY_POST),
+				settingMap.get(UserNotificationSettingKey.COMMUNITY_COMMENT_ON_MY_POST),
+				settingMap.get(UserNotificationSettingKey.COMMUNITY_REPLY_ON_MY_COMMENT)
+			),
+			new CeremonySettings(settingMap.get(UserNotificationSettingKey.CEREMONY_NOTIFICATION_ENABLED)),
+			new ServiceSettings(settingMap.get(UserNotificationSettingKey.SERVICE_NOTICE_ENABLED)),
+			officialBoards
+		);
+	}
 }
