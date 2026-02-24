@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.notification.notification.service.v2.implementation;
 
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -35,5 +36,14 @@ public class NotificationSettingReader {
 				UserNotificationSetting::isEnabled));
 
 		return UserNotificationSettingMap.ofFull(storedMap);
+	}
+
+	/**
+	 * DB에서 userId로 설정을 모두 조회하여 List로 반환한다.
+	 * @param userId 조회할 유저의 ID
+	 * @return List<UserNotificationSetting>: userId에 대한 전체 알림 설정 리스트
+	 */
+	public List<UserNotificationSetting> findAllByUserId(String userId) {
+		return userNotificationSettingRepository.findAllByUserId(userId);
 	}
 }
