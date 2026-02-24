@@ -16,7 +16,7 @@ CREATE TABLE tb_user_social_account
         CHECK (social_type IN ('GOOGLE', 'APPLE', 'KAKAO')),
 
     CONSTRAINT UK_social_type_and_id
-        UNIQUE (social_type, social_id), -- 같은 소셜 타입 내 중복 방지
+        UNIQUE (social_id, social_type), -- 같은 소셜 타입 내 중복 방지
 
     CONSTRAINT FK_social_account_to_user
         FOREIGN KEY (user_id) REFERENCES tb_user (id)
