@@ -42,7 +42,7 @@ public class AdmissionValidator {
 	 * 사용자 상태가 인증 신청 가능한 상태인지 검증합니다.
 	 */
 	public void validateUserStateForAdmission(User user) {
-		if (!(user.getState() == UserState.AWAIT || user.getState() == UserState.REJECT)) {
+		if (!user.canApplyAdmission()) {
 			throw UserErrorCode.INVALID_USER_STATE_FOR_ADMISSION.toBaseException();
 		}
 	}

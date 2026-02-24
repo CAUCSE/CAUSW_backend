@@ -235,6 +235,11 @@ public class User extends BaseEntity {
 		this.rejectionOrDropReason = reason;
 	}
 
+	// 재학 인증 신청시(UserAdmission 생성 시) 해당 유저가 신청 가능한 상태인지 확인
+	public boolean canApplyAdmission() {
+		return this.state == UserState.AWAIT || this.state == UserState.REJECT;
+	}
+
 	public void markAsAwait() {
 		this.state = UserState.AWAIT;
 		this.rejectionOrDropReason = null; // 거절 사유 초기화
