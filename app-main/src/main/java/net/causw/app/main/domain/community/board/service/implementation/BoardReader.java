@@ -74,7 +74,8 @@ public class BoardReader {
 			return List.of(BoardReadScope.BOTH);
 		}
 		return switch (academicStatus) {
-			case ENROLLED, LEAVE_OF_ABSENCE, SUSPEND, PROFESSOR -> List.of(BoardReadScope.BOTH, BoardReadScope.ENROLLED);
+			case ENROLLED, LEAVE_OF_ABSENCE, SUSPEND, PROFESSOR ->
+				List.of(BoardReadScope.BOTH, BoardReadScope.ENROLLED);
 			case GRADUATED -> List.of(BoardReadScope.BOTH, BoardReadScope.GRADUATED);
 			default -> List.of(BoardReadScope.BOTH);
 		};

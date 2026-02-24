@@ -4,12 +4,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import net.causw.app.main.domain.community.board.entity.BoardReadScope;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
+import net.causw.app.main.domain.community.board.entity.BoardReadScope;
 import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
 import net.causw.app.main.domain.community.board.service.implementation.BoardReader;
 import net.causw.app.main.domain.notification.notification.service.v2.dto.OfficialBoardSetting;
@@ -48,7 +48,8 @@ public class OfficialBoardSettingReader {
 
 		List<BoardReadScope> boardReadScopes = boardReader.getReadeScopesByAcademicStatus(user.getAcademicStatus());
 
-		List<String> boardIds = boardConfigReader.findAllNoticeConfigsByReadScope(new HashSet<>(boardReadScopes)).stream()
+		List<String> boardIds = boardConfigReader.findAllNoticeConfigsByReadScope(new HashSet<>(boardReadScopes))
+			.stream()
 			.map(BoardConfig::getBoardId)
 			.toList();
 		if (boardIds.isEmpty()) {

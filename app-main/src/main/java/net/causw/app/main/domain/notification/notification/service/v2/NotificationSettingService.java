@@ -1,11 +1,13 @@
 package net.causw.app.main.domain.notification.notification.service.v2;
 
-import net.causw.app.main.domain.notification.notification.service.v2.dto.OfficialBoardSetting;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.notification.notification.service.v2.dto.NotificationSettingResult;
+import net.causw.app.main.domain.notification.notification.service.v2.dto.OfficialBoardSetting;
 import net.causw.app.main.domain.notification.notification.service.v2.dto.UpdateNotificationSettingCommand;
 import net.causw.app.main.domain.notification.notification.service.v2.dto.UserNotificationSettingMap;
 import net.causw.app.main.domain.notification.notification.service.v2.implementation.NotificationSettingReader;
@@ -15,8 +17,6 @@ import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
 
 import lombok.RequiredArgsConstructor;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor

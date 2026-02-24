@@ -72,11 +72,11 @@ public class BoardConfigQueryRepository {
 	 * @return 공지사항 게시판 설정 목록
 	 *
 	 */
-    public List<BoardConfig> findAllByIsNoticeTrueAndReadScopeIn(Set<BoardReadScope> readScopes) {
-        return jpaQueryFactory
+	public List<BoardConfig> findAllByIsNoticeTrueAndReadScopeIn(Set<BoardReadScope> readScopes) {
+		return jpaQueryFactory
 			.selectFrom(QBoardConfig.boardConfig)
 			.where(QBoardConfig.boardConfig.isNotice.eq(true)
 				.and(QBoardConfig.boardConfig.readScope.in(readScopes)))
 			.fetch();
-    }
+	}
 }

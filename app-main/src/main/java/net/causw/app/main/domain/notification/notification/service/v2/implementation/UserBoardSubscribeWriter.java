@@ -22,7 +22,6 @@ public class UserBoardSubscribeWriter {
 			.ifPresentOrElse(
 				existing -> existing.setIsSubscribed(subscribed),
 				() -> userBoardSubscribeRepository.save(
-					UserBoardSubscribe.of(user, board, subscribed))
-			);
+					UserBoardSubscribe.of(user, board, subscribed)));
 	}
 }

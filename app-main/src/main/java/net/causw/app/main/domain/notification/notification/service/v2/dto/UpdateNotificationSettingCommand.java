@@ -10,8 +10,7 @@ public record UpdateNotificationSettingCommand(
 	Boolean commentOnMyPost,
 	Boolean replyOnMyComment,
 	Boolean ceremonyEnabled,
-	Boolean serviceNoticeEnabled
-) {
+	Boolean serviceNoticeEnabled) {
 
 	/**
 	 * null이 아닌 필드만 Map으로 변환한다 (부분 업데이트).

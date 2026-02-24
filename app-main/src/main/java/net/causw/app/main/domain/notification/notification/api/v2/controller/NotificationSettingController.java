@@ -29,10 +29,8 @@ public class NotificationSettingController {
 	private final NotificationSettingService notificationSettingService;
 
 	@GetMapping
-	@Operation(
-		summary = "알림 설정 전체 조회",
-		description = "개인별 고정 토글(커뮤니티/경조사/서비스 공지)과 공식계정 게시판 구독 목록을 한 번에 반환합니다. "
-			+ "DB에 저장된 값이 없으면 서버 기본값을 반환합니다.")
+	@Operation(summary = "알림 설정 전체 조회", description = "개인별 고정 토글(커뮤니티/경조사/서비스 공지)과 공식계정 게시판 구독 목록을 한 번에 반환합니다. "
+		+ "DB에 저장된 값이 없으면 서버 기본값을 반환합니다.")
 	public ApiResponse<NotificationSettingResponse> getAllSettings(
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
@@ -42,10 +40,8 @@ public class NotificationSettingController {
 	}
 
 	@PatchMapping
-	@Operation(
-		summary = "개인별 알림 설정 수정",
-		description = "요청에 포함된 토글만 업데이트합니다(부분 업데이트). "
-			+ "포함되지 않은 필드는 변경되지 않습니다.")
+	@Operation(summary = "개인별 알림 설정 수정", description = "요청에 포함된 토글만 업데이트합니다(부분 업데이트). "
+		+ "포함되지 않은 필드는 변경되지 않습니다.")
 	public ApiResponse<Void> updateUserSettings(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestBody UpdateNotificationSettingRequest request) {
@@ -56,9 +52,7 @@ public class NotificationSettingController {
 	}
 
 	@PatchMapping("/official-boards/{boardId}")
-	@Operation(
-		summary = "공식계정 게시판 구독 수정",
-		description = "is_notice=true 인 게시판의 구독 상태를 수정합니다.")
+	@Operation(summary = "공식계정 게시판 구독 수정", description = "is_notice=true 인 게시판의 구독 상태를 수정합니다.")
 	public ApiResponse<Void> updateOfficialBoardSubscribe(
 		@PathVariable String boardId,
 		@AuthenticationPrincipal CustomUserDetails userDetails,

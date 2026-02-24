@@ -1,8 +1,9 @@
 package net.causw.app.main.domain.community.board.entity;
 
+import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 
 /**
  * ENROLLED	재학생

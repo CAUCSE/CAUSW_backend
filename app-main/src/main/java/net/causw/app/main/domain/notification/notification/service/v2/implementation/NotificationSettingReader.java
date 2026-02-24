@@ -28,12 +28,11 @@ public class NotificationSettingReader {
 	 * @return UserNotificationSettingMap: userId에 대한 전체 알림 설정 맵 (저장된 값이 없는 키는 enum의 defaultEnabled로 채워짐)
 	 */
 	public UserNotificationSettingMap findSettingMap(String userId) {
-		Map<UserNotificationSettingKey, Boolean> storedMap =
-			userNotificationSettingRepository.findAllByUserId(userId).stream()
-				.collect(Collectors.toMap(
-					UserNotificationSetting::getSettingKey,
-					UserNotificationSetting::isEnabled)
-				);
+		Map<UserNotificationSettingKey, Boolean> storedMap = userNotificationSettingRepository.findAllByUserId(userId)
+			.stream()
+			.collect(Collectors.toMap(
+				UserNotificationSetting::getSettingKey,
+				UserNotificationSetting::isEnabled));
 
 		return UserNotificationSettingMap.ofFull(storedMap);
 	}

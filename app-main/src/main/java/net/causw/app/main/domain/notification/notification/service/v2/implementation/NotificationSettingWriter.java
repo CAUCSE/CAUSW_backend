@@ -23,17 +23,14 @@ public class NotificationSettingWriter {
 	 * 요청에 포함된 키만 upsert한다 (부분 업데이트).
 	 */
 	public void upsertSettings(String userId, UserNotificationSettingMap settingMap) {
-		settingMap.forEach((key, value) ->
-			userNotificationSettingRepository
-				.findByUserIdAndSettingKey(userId, key)
-				.ifPresentOrElse(
-					// db에 존재 시 update
-					existing -> existing.updateEnabled(value),
-					// db에 존재하지 않을시, insert
-					() -> userNotificationSettingRepository.save(
-						UserNotificationSetting.of(userId, key, value))
-				)
-		);
+		settingMap.forEach((key, value) -> userNotificationSettingRepository
+			.findByUserIdAndSettingKey(userId, key)
+			.ifPresentOrElse(
+				// db에 존재 시 update
+				existing -> existing.updateEnabled(value),
+				// db에 존재하지 않을시, insert
+				() -> userNotificationSettingRepository.save(
+					UserNotificationSetting.of(userId, key, value))));
 	}
 
 	/**

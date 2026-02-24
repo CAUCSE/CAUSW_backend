@@ -1,5 +1,8 @@
 package net.causw.app.main.domain.notification.notification.entity;
 
+import net.causw.app.main.domain.notification.notification.enums.UserNotificationSettingKey;
+import net.causw.app.main.shared.entity.BaseEntity;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -10,8 +13,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.causw.app.main.domain.notification.notification.enums.UserNotificationSettingKey;
-import net.causw.app.main.shared.entity.BaseEntity;
 
 @Getter
 @Entity
@@ -38,8 +39,7 @@ public class UserNotificationSetting extends BaseEntity {
 	public static UserNotificationSetting of(
 		String userId,
 		UserNotificationSettingKey settingKey,
-		boolean enabled
-	) {
+		boolean enabled) {
 		return UserNotificationSetting.builder()
 			.userId(userId)
 			.settingKey(settingKey)
