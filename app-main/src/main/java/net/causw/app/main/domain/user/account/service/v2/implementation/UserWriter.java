@@ -1,14 +1,9 @@
 package net.causw.app.main.domain.user.account.service.v2.implementation;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
-import net.causw.app.main.domain.user.account.enums.user.Role;
-import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -39,22 +34,7 @@ public class UserWriter {
 	 * - User.role = COMMON
 	 */
 	public User approveAdmission(User user, UserAdmission admission) {
-		// requested 필드로 사용자 학적 정보 업데이트
-		user.setStudentId(admission.getRequestedStudentId());
-		user.setAdmissionYear(admission.getRequestedAdmissionYear());
-		user.setDepartment(admission.getRequestedDepartment());
-		user.setAcademicStatus(admission.getRequestedAcademicStatus());
-		user.setGraduationYear(admission.getRequestedGraduationYear());
-
-		// 상태를 ACTIVE로 변경
-		user.setState(UserState.ACTIVE);
-		user.setRejectionOrDropReason(null);
-
-		// 역할을 COMMON으로 변경
-		Set<Role> roles = new HashSet<>();
-		roles.add(Role.COMMON);
-		user.setRoles(roles);
-
+		user.approveAdmission(admission);
 		return this.userRepository.save(user);
 	}
 
@@ -64,8 +44,7 @@ public class UserWriter {
 	 * - User.rejectOrDropReason 기록
 	 */
 	public User rejectAdmission(User user, String rejectReason) {
-		user.setState(UserState.REJECT);
-		user.updateRejectionOrDropReason(rejectReason);
+		user.rejectAdmission(rejectReason);
 		return this.userRepository.save(user);
 	}
 }
