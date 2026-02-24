@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import com.querydsl.core.types.dsl.BooleanExpression;
 import org.springframework.stereotype.Repository;
 
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
@@ -12,6 +11,7 @@ import net.causw.app.main.domain.community.board.entity.BoardReadScope;
 import net.causw.app.main.domain.community.board.entity.BoardVisibility;
 import net.causw.app.main.domain.community.board.entity.QBoardConfig;
 
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
@@ -79,8 +79,7 @@ public class BoardConfigQueryRepository {
 			.selectFrom(boardConfig)
 			.where(boardConfig.isNotice.eq(true)
 				.and(boardConfig.readScope.in(readScopes))
-					.and(visible(boardConfig))
-			)
+				.and(visible(boardConfig)))
 			.fetch();
 	}
 

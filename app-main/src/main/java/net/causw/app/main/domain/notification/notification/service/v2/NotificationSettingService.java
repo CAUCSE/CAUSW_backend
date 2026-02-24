@@ -3,7 +3,6 @@ package net.causw.app.main.domain.notification.notification.service.v2;
 import java.util.List;
 import java.util.Set;
 
-import net.causw.app.main.domain.user.account.service.v2.implementation.UserValidator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +17,7 @@ import net.causw.app.main.domain.notification.notification.service.v2.implementa
 import net.causw.app.main.domain.notification.notification.service.v2.implementation.UserBoardSubscribeReader;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
+import net.causw.app.main.domain.user.account.service.v2.implementation.UserValidator;
 
 import lombok.RequiredArgsConstructor;
 

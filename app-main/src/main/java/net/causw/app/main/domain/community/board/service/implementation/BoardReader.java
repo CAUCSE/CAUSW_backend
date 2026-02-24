@@ -12,7 +12,6 @@ import net.causw.app.main.domain.community.board.repository.BoardQueryRepository
 import net.causw.app.main.domain.community.board.repository.BoardRepository;
 import net.causw.app.main.domain.community.board.service.dto.request.BoardQueryCondition;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
-import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.exception.errorcode.BoardConfigErrorCode;
 import net.causw.app.main.shared.exception.errorcode.BoardErrorCode;
 
@@ -24,7 +23,6 @@ public class BoardReader {
 	private final BoardQueryRepository boardQueryRepository;
 	private final BoardRepository boardRepository;
 	private final BoardConfigReader boardConfigReader;
-
 
 	public List<Board> findAllByIdsNotDeleted(List<String> boardIds) {
 		return boardQueryRepository.findAllByIdsNotDeleted(boardIds);

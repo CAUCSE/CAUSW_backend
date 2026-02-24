@@ -75,7 +75,7 @@ public class BoardQueryRepository {
 	 * @param boardIds 게시판 아이디 목록
 	 * @return 게시판 엔티티 목록
 	 */
-    public List<Board> findAllByIdsNotDeleted(List<String> boardIds) {
+	public List<Board> findAllByIdsNotDeleted(List<String> boardIds) {
 		QBoard board = QBoard.board;
 
 		return jpaQueryFactory
@@ -83,7 +83,7 @@ public class BoardQueryRepository {
 			.where(board.id.in(boardIds))
 			.where(notDeleted())
 			.fetch();
-    }
+	}
 
 	public BooleanExpression notDeleted() {
 		QBoard board = QBoard.board;
