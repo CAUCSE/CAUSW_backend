@@ -1,5 +1,5 @@
 CREATE TABLE tb_user_notification_setting (
-    id          VARCHAR(255) NOT NULL PRIMARY KEY,
+    id          BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
     created_at  DATETIME(6)  NULL,
     updated_at  DATETIME(6)  NULL,
     user_id     VARCHAR(255) NOT NULL,
