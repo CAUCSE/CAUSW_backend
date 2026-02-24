@@ -29,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 @RestController("UserControllerV2")
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/users")
-@Tag(name = "User v2", description = "계정관리 API")
+@Tag(name = "User Public v2", description = "일반 사용자를 위한 사용자 정보 조회 및 수정 API")
 public class UserController {
 
 	private final UserNotificationService userNotificationService;

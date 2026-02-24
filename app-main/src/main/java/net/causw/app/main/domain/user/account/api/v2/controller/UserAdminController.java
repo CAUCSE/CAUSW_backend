@@ -32,7 +32,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/admin/users")
 @PreAuthorize("@security.hasRole(@Role.ADMIN)")
-@Tag(name = "User Admin v2", description = "관리자 회원/재학인증 관리 API")
+@Tag(name = "User Admin v2", description = "관리자 권한으로 사용자 계정을 관리하는 API")
 public class UserAdminController {
 
 	private final UserAdminService userAdminService;
