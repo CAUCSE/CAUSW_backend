@@ -1,16 +1,21 @@
 package net.causw.app.main.domain.user.account.entity.userInfo;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.entity.BaseEntity;
+import net.causw.app.main.shared.exception.errorcode.UserInfoErrorCode;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
@@ -35,24 +40,50 @@ public class UserInfo extends BaseEntity {
 	@JoinColumn(name = "user_id", nullable = false)
 	private User user;
 
+	@Column(name = "job", nullable = true)
+	private String job;
+
 	@Column(name = "description", nullable = true)
 	private String description;
 
-	@Column(name = "job", nullable = true)
-	private String job;
+	@Column(name = "is_phone_number_visible", nullable = false)
+	@Builder.Default
+	private boolean isPhoneNumberVisible = false;
+
+	@Column(name = "is_message_visible", nullable = false)
+	@Builder.Default
+	private boolean isMessageVisible = false;
 
 	@Column(name = "social_links", columnDefinition = "TEXT")
 	@Convert(converter = SocialLinksConverter.class)
 	@Builder.Default
 	private List<String> socialLinks = new ArrayList<>();
 
-	@Column(name = "is_phone_number_visible")
+	@ElementCollection
+	@CollectionTable(name = "tb_user_tech_stack", joinColumns = @JoinColumn(name = "user_info_id"))
+	@Column(name = "tech_stack")
 	@Builder.Default
-	private Boolean isPhoneNumberVisible = false;
+	private LinkedHashSet<String> userTechStack = new LinkedHashSet<>();
 
-	@OneToMany(mappedBy = "userInfo", fetch = FetchType.LAZY)
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "userInfo", fetch = FetchType.LAZY)
 	@Builder.Default
 	private List<UserCareer> userCareer = new ArrayList<>();
+
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "userInfo", fetch = FetchType.LAZY)
+	@Builder.Default
+	private List<UserProject> userProject = new ArrayList<>();
+
+	@ElementCollection
+	@CollectionTable(name = "tb_user_interest_tech", joinColumns = @JoinColumn(name = "user_info_id"))
+	@Column(name = "interest_tech")
+	@Builder.Default
+	private LinkedHashSet<String> userInterestTech = new LinkedHashSet<>();
+
+	@ElementCollection
+	@CollectionTable(name = "tb_user_interest_domain", joinColumns = @JoinColumn(name = "user_info_id"))
+	@Column(name = "interest_domain")
+	@Builder.Default
+	private LinkedHashSet<String> userInterestDomain = new LinkedHashSet<>();
 
 	public static UserInfo of(User user) {
 		return UserInfo.builder()
@@ -60,7 +91,7 @@ public class UserInfo extends BaseEntity {
 			.build();
 	}
 
-	public void update(
+	public void updateV1(
 		String description,
 		String job,
 		List<String> socialLinks,
@@ -75,5 +106,31 @@ public class UserInfo extends BaseEntity {
 		this.job = job;
 		this.isPhoneNumberVisible = isPhoneNumberVisible;
 		this.socialLinks = socialLinks;
+	}
+
+	public void update(
+		String description,
+		String job,
+		List<String> socialLinks,
+		boolean isPhoneNumberVisible,
+		boolean isMessageVisible,
+		LinkedHashSet<String> userTechStack,
+		List<UserCareer> userCareer,
+		List<UserProject> userProject,
+		LinkedHashSet<String> userInterestTech,
+		LinkedHashSet<String> userInterestDomain) {
+		if (socialLinks.size() > 10) {
+			throw UserInfoErrorCode.TOO_MUCH_SOCIAL_LINK.toBaseException();
+		}
+
+		this.description = description;
+		this.job = job;
+		this.isPhoneNumberVisible = isPhoneNumberVisible;
+		this.isMessageVisible = isMessageVisible;
+		this.userTechStack = userTechStack;
+		this.userCareer = userCareer;
+		this.userProject = userProject;
+		this.userInterestTech = userInterestTech;
+		this.userInterestDomain = userInterestDomain;
 	}
 }
