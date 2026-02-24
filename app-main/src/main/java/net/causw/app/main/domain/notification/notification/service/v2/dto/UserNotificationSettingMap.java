@@ -51,6 +51,11 @@ public class UserNotificationSettingMap {
 		return value != null ? value : key.isDefaultEnabled();
 	}
 
+	/**
+	 * 설정 맵이 비어 있는지 확인한다.
+	 *
+	 * @return 설정 항목이 없으면 {@code true}
+	 */
 	public boolean isEmpty() {
 		return map.isEmpty();
 	}
