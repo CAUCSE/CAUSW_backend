@@ -11,7 +11,7 @@ import lombok.Getter;
  * BOTH	모두
  * 유저별 게시판 조회 범위를 나타내는 Enum
  * 조회 로직은 아래 클래스의 메서드에서 담당
- * @see net.causw.app.main.domain.community.board.service.implementation.BoardReader#getReadeScopesByAcademicStatus(AcademicStatus)
+ * @see net.causw.app.main.domain.community.board.service.implementation.BoardReader#getReadScopesByAcademicStatus(AcademicStatus)
  */
 @Getter
 @AllArgsConstructor

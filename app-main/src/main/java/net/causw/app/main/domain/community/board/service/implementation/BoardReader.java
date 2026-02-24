@@ -74,7 +74,7 @@ public class BoardReader {
 	 * @param academicStatus 사용자의 학적 상태
 	 * @return 사용자의 학적 상태에 따른 읽기 범위 리스트
 	 */
-	public List<BoardReadScope> getReadeScopesByAcademicStatus(AcademicStatus academicStatus) {
+	public List<BoardReadScope> getReadScopesByAcademicStatus(AcademicStatus academicStatus) {
 		if (academicStatus == null) {
 			return List.of(BoardReadScope.BOTH);
 		}
@@ -93,7 +93,7 @@ public class BoardReader {
 	 * @return 접근 가능한 공지사항 게시판 목록
 	 */
 	public List<Board> findAccessibleNoticeBoards(AcademicStatus academicStatus) {
-		List<BoardReadScope> readScopes = getReadeScopesByAcademicStatus(academicStatus);
+		List<BoardReadScope> readScopes = getReadScopesByAcademicStatus(academicStatus);
 		List<String> boardIds = boardConfigReader.findAllNoticeConfigsByReadScope(new HashSet<>(readScopes))
 			.stream()
 			.map(BoardConfig::getBoardId)

@@ -9,8 +9,5 @@ import net.causw.app.main.domain.community.board.entity.BoardConfig;
 
 @Repository
 public interface BoardConfigRepository extends JpaRepository<BoardConfig, Long> {
-
-	List<BoardConfig> findAllByIsNoticeTrue();
-
 	boolean existsByBoardIdAndIsNoticeTrue(String boardId);
 }
