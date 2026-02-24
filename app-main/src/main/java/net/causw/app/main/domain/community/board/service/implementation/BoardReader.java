@@ -91,11 +91,11 @@ public class BoardReader {
 	/**
 	 * 유저의 학적 상태에 맞는 삭제되지 않은 공지사항 게시판 목록을 반환한다.
 	 *
-	 * @param user 조회 대상 유저
+	 * @param academicStatus 유저의 학적 상태
 	 * @return 접근 가능한 공지사항 게시판 목록
 	 */
-	public List<Board> findAccessibleNoticeBoards(User user) {
-		List<BoardReadScope> readScopes = getReadeScopesByAcademicStatus(user.getAcademicStatus());
+	public List<Board> findAccessibleNoticeBoards(AcademicStatus academicStatus) {
+		List<BoardReadScope> readScopes = getReadeScopesByAcademicStatus(academicStatus);
 		List<String> boardIds = boardConfigReader.findAllNoticeConfigsByReadScope(new HashSet<>(readScopes))
 			.stream()
 			.map(BoardConfig::getBoardId)
@@ -103,6 +103,7 @@ public class BoardReader {
 		if (boardIds.isEmpty()) {
 			return List.of();
 		}
+
 		return findAllByIdsNotDeleted(boardIds);
 	}
 

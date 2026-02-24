@@ -3,6 +3,7 @@ package net.causw.app.main.domain.notification.notification.service.v2;
 import java.util.List;
 import java.util.Set;
 
+import net.causw.app.main.domain.user.account.service.v2.implementation.UserValidator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,17 +31,19 @@ public class NotificationSettingService {
 	private final BoardReader boardReader;
 	private final UserBoardSubscribeReader userBoardSubscribeReader;
 	private final UserReader userReader;
+	private final UserValidator userValidator;
 
 	/**
 	 * 개인별 고정 토글 + 공식계정 게시판 구독 설정을 한 번에 반환한다.
 	 * DB에 row가 없으면 enum의 defaultEnabled를 적용한다.
 	 */
 	public NotificationSettingResult getAllSettings(String userId) {
-		User user = userReader.findUserById(userId);
+		User user = userReader.findUserByIdNotDeleted(userId);
+		userValidator.validateUser(user);
 		UserNotificationSettingMap settingMap = notificationSettingReader.findSettingMap(userId);
 
-		List<Board> boards = boardReader.findAccessibleNoticeBoards(user);
-		List<OfficialBoardSetting> officialBoardSettings = toOfficialBoardSettings(user, boards);
+		List<Board> boards = boardReader.findAccessibleNoticeBoards(user.getAcademicStatus());
+		List<OfficialBoardSetting> officialBoardSettings = getOfficialBoardSettings(user, boards);
 
 		return NotificationSettingResult.from(settingMap, officialBoardSettings);
 	}
@@ -51,11 +54,12 @@ public class NotificationSettingService {
 	 * @param boards 조회 대상 게시판 목록 (유저의 학적 상태에 맞는 삭제되지 않은 공지사항 게시판)
 	 * @return 공식계정 게시판 설정 목록 (각 게시판에 대해, 유저가 구독 중인지 여부 포함)
 	 */
-	private List<OfficialBoardSetting> toOfficialBoardSettings(User user, List<Board> boards) {
+	private List<OfficialBoardSetting> getOfficialBoardSettings(User user, List<Board> boards) {
 		if (boards.isEmpty()) {
 			return List.of();
 		}
 		Set<String> subscribedBoardIds = userBoardSubscribeReader.findSubscribedBoardIds(user, boards);
+
 		return boards.stream()
 			.map(b -> new OfficialBoardSetting(b.getId(), b.getName(), subscribedBoardIds.contains(b.getId())))
 			.toList();
@@ -79,7 +83,7 @@ public class NotificationSettingService {
 	 */
 	@Transactional
 	public void updateOfficialBoardSubscribe(String userId, String boardId, boolean subscribed) {
-		User user = userReader.findUserById(userId);
+		User user = userReader.findUserByIdNotDeleted(userId);
 		Board board = boardReader.getNoticeBoardOrThrow(boardId);
 		notificationSettingWriter.upsertBoardSubscribe(user, board, subscribed);
 	}

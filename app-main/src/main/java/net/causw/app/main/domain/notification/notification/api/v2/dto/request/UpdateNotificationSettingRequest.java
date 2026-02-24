@@ -6,11 +6,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "알림 설정 수정 요청 (null 필드는 변경하지 않음)")
 public record UpdateNotificationSettingRequest(
-
 	@Schema(description = "커뮤니티 알림 설정") CommunitySettings community,
-
 	@Schema(description = "경조사 알림 설정") CeremonySettings ceremony,
-
 	@Schema(description = "서비스 공지 알림 설정") ServiceSettings service
 
 ) {

@@ -90,7 +90,7 @@ public class LockerAdminService {
 		lockerValidator.validateAssignable(locker);
 		lockerValidator.validateUserNotHavingLocker(userId);
 
-		User user = userReader.findUserById(userId);
+		User user = userReader.findUserByIdNotDeleted(userId);
 		locker.register(user, expiredAt);
 		lockerLogWriter.logAdminAssign(locker, admin);
 	}

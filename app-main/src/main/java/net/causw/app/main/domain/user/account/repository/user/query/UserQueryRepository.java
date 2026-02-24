@@ -3,6 +3,7 @@ package net.causw.app.main.domain.user.account.repository.user.query;
 import java.util.List;
 import java.util.Optional;
 
+import com.querydsl.core.types.dsl.BooleanExpression;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
@@ -156,5 +157,19 @@ public class UserQueryRepository {
 			.where(where);
 
 		return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+	}
+
+    public Optional<User> findByIdNotDeleted(String userId) {
+		QUser user = QUser.user;
+		return Optional.ofNullable(jpaQueryFactory
+			.selectFrom(user)
+			.where(user.id.eq(userId))
+			.where(notDeleted())
+			.fetchOne());
+    }
+
+	private static BooleanExpression notDeleted() {
+		QUser user = QUser.user;
+		return user.state.ne(UserState.DELETED);
 	}
 }
