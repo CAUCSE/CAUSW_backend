@@ -56,7 +56,7 @@ public class AuthValidator {
 	 * [INVALID_LOGIN] 비밀번호가 일치하지 않는 경우
 	 */
 	public void validateCredential(User user, String inputPassword) {
-		if (user.getPassword() == null) {
+		if (user.isSocialUser()) {
 			throw UserErrorCode.INVALID_LOGIN_SOCIAL_USER.toBaseException();
 		}
 		if (!passwordEncoder.matches(inputPassword, user.getPassword())) {

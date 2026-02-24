@@ -1,5 +1,7 @@
 package net.causw.app.main.domain.user.auth.service.v2;
 
+import java.util.Optional;
+
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -59,28 +61,34 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
 	private User saveOrUpdate(OAuthAttributes attributes) {
 		// 1. 소셜 계정(SocialAccount)이 이미 존재하는지 확인
-		return userReader.findBySocialTypeAndSocialId(attributes.socialType(), attributes.socialId())
-			.orElseGet(() -> {
-				// 2. 소셜 계정은 없지만, 같은 이메일을 가진 기존 유저(User)가 있는지 확인
-				return userReader.findByEmail(attributes.email())
-					.map(existingUser -> {
-						// 2-1. 기존 유저가 있다면 소셜 계정만 새로 연결 (계정 통합)
-						if (!attributes.isEmailVerified()) {
-							throw AuthErrorCode.UNVERIFIED_SOCIAL_EMAIL.toBaseException();
-						}
-						userValidator.checkAccountExistByUserAndSocialType(existingUser, attributes.socialType());
-						userValidator.validateUserStatusForIntegration(existingUser.getState());
-						createAndSaveSocialAccount(attributes, existingUser);
-						return existingUser;
-					})
-					.orElseGet(() -> {
-						// 2-2. 소셜 계정도 없고 이메일 중복도 없는 경우 (GUEST)
-						User newUser = User.createSocialUser(attributes);
-						userWriter.save(newUser);
-						createAndSaveSocialAccount(attributes, newUser);
-						return newUser;
-					});
-			});
+		Optional<User> existingSocialUser = userReader.findBySocialTypeAndSocialId(attributes.socialType(),
+			attributes.socialId());
+		if (existingSocialUser.isPresent()) {
+			return existingSocialUser.get();
+		}
+
+		// 2. 소셜 계정은 없지만, 같은 이메일을 가진 기존 유저(User)가 있는지 확인
+		Optional<User> existingEmailUser = userReader.findByEmail(attributes.email());
+		if (existingEmailUser.isPresent()) {
+			User existingUser = existingEmailUser.get();
+
+			// 2-1. 기존 유저가 있다면 소셜 계정만 새로 연결 (계정 통합)
+			if (!attributes.isEmailVerified()) {
+				throw AuthErrorCode.UNVERIFIED_SOCIAL_EMAIL.toBaseException();
+			}
+			userValidator.checkAccountExistByUserAndSocialType(existingUser, attributes.socialType());
+			userValidator.validateUserStatusForIntegration(existingUser.getState());
+			createAndSaveSocialAccount(attributes, existingUser);
+
+			return existingUser;
+		}
+
+		// 2-2. 소셜 계정도 없고 이메일 중복도 없는 경우 (GUEST)
+		User newUser = User.createSocialUser(attributes);
+		userWriter.save(newUser);
+		createAndSaveSocialAccount(attributes, newUser);
+
+		return newUser;
 	}
 
 	private void createAndSaveSocialAccount(OAuthAttributes attributes, User user) {

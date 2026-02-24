@@ -276,6 +276,10 @@ public class User extends BaseEntity {
 		return this.fcmTokens.remove(targetToken);
 	}
 
+	public boolean isSocialUser() {
+		return this.password == null;
+	}
+
 	public String getProfileUrl() {
 		if (this.userProfileImage == null || this.userProfileImage.getUuidFile() == null) {
 			return null;
