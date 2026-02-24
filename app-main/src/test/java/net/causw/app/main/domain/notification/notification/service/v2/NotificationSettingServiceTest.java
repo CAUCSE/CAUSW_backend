@@ -201,7 +201,7 @@ class NotificationSettingServiceTest {
 	}
 
 	@Nested
-	@DisplayName("공식 게시판 구독 설정 (updateOfficialBoardSubscribe)")
+	@DisplayName("공식 게시판 알림 설정 (updateOfficialBoardSubscribe)")
 	class UpdateOfficialBoardSubscribeTest {
 
 		private final String userId = "user-001";
