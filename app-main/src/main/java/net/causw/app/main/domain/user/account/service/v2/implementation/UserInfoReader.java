@@ -2,6 +2,8 @@ package net.causw.app.main.domain.user.account.service.v2.implementation;
 
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +18,10 @@ import lombok.RequiredArgsConstructor;
 public class UserInfoReader {
 
 	private final UserInfoRepository userInfoRepository;
+
+	public Page<UserInfo> findAll(Pageable pageable) {
+		return userInfoRepository.findAll(pageable);
+	}
 
 	public Optional<UserInfo> findById(String userInfoId) {
 		return userInfoRepository.findById(userInfoId);

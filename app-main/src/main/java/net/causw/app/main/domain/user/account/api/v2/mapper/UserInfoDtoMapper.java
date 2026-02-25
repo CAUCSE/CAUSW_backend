@@ -6,6 +6,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoDetailResponseDto;
+import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoSummaryResponseDto;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
 import net.causw.app.main.shared.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
 
@@ -38,6 +39,16 @@ public interface UserInfoDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "isPhoneNumberVisible", constant = "true")
 	@Mapping(target = "isMessageVisible", constant = "true")
 	UserInfoDetailResponseDto toMyUserInfoDetailResponseDto(UserInfo userInfo);
+
+	// 동문 수첩 프로필 리스트 조회
+	@Mapping(target = "id", source = "id")
+	@Mapping(target = "profileImageUrl", source = "userInfo.user.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
+	@Mapping(target = "name", source = "user.name")
+	@Mapping(target = "admissionYear", source = ".", qualifiedByName = "mapAdmissionYear")
+	@Mapping(target = "academicStatus", source = ".", qualifiedByName = "mapAcademicStatus")
+	@Mapping(target = "job", source = "job")
+	@Mapping(target = "description", source = "description")
+	UserInfoSummaryResponseDto toUserInfoSummaryResponseDto(UserInfo userInfo);
 
 	@Named("mapAdmissionYear")
 	static String mapAdmissionYear(UserInfo userInfo) {
