@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
-import net.causw.app.main.domain.community.ceremony.service.dto.CeremonyAdminListCondition;
+import net.causw.app.main.domain.community.ceremony.service.dto.request.CeremonyAdminListCondition;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyReader;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyWriter;
 import net.causw.app.main.domain.community.ceremony.util.CeremonyValidator;

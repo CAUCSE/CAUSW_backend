@@ -23,7 +23,7 @@ import org.springframework.data.domain.Pageable;
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyState;
 import net.causw.app.main.domain.community.ceremony.service.CeremonyAdminService;
-import net.causw.app.main.domain.community.ceremony.service.dto.CeremonyAdminListCondition;
+import net.causw.app.main.domain.community.ceremony.service.dto.request.CeremonyAdminListCondition;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyReader;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyWriter;
 import net.causw.app.main.domain.community.ceremony.util.CeremonyValidator;
