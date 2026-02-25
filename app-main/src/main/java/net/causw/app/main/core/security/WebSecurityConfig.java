@@ -25,7 +25,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import net.causw.app.main.domain.user.auth.handler.OAuth2FailureHandler;
 import net.causw.app.main.domain.user.auth.handler.OAuth2SuccessHandler;
-import net.causw.app.main.domain.user.auth.service.v2.CustomOAuth2UserService;
+import net.causw.app.main.domain.user.auth.service.CustomOAuth2UserService;
 
 import lombok.RequiredArgsConstructor;
 

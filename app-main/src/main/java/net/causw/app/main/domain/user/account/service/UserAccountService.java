@@ -5,12 +5,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
-import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
-import net.causw.app.main.domain.user.account.service.v2.implementation.UserValidator;
-import net.causw.app.main.domain.user.account.service.v2.implementation.UserWriter;
-import net.causw.app.main.domain.user.auth.service.v2.dto.AuthResult;
-import net.causw.app.main.domain.user.auth.service.v2.dto.AuthTokenPair;
-import net.causw.app.main.domain.user.auth.service.v2.implementation.AuthTokenManager;
+import net.causw.app.main.domain.user.account.service.implementation.UserReader;
+import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
+import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
+import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
+import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
+import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 
 import lombok.RequiredArgsConstructor;

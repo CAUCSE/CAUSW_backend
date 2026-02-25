@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.user.auth.service.v2.implementation;
+package net.causw.app.main.domain.user.auth.service.implementation;
 
 import java.util.regex.Pattern;
 

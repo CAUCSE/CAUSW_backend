@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.user.account.service.v2.implementation;
+package net.causw.app.main.domain.user.account.service.implementation;
 
 import java.util.HashSet;
 import java.util.Set;

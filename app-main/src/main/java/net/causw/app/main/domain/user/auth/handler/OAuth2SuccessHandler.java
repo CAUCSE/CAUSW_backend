@@ -13,9 +13,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
-import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
-import net.causw.app.main.domain.user.auth.service.v2.dto.CustomOAuth2User;
-import net.causw.app.main.domain.user.auth.service.v2.implementation.AuthTokenManager;
+import net.causw.app.main.domain.user.account.service.implementation.UserReader;
+import net.causw.app.main.domain.user.auth.service.dto.CustomOAuth2User;
+import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
 import net.causw.global.constant.StaticValue;
 
 import jakarta.servlet.http.HttpServletRequest;

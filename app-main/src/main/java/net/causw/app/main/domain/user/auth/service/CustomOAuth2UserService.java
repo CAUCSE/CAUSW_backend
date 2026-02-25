@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.user.auth.service.v2;
+package net.causw.app.main.domain.user.auth.service;
 
 import java.util.Optional;
 
@@ -13,11 +13,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.user.account.entity.user.SocialAccount;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
-import net.causw.app.main.domain.user.account.service.v2.implementation.UserValidator;
-import net.causw.app.main.domain.user.account.service.v2.implementation.UserWriter;
-import net.causw.app.main.domain.user.auth.service.v2.dto.CustomOAuth2User;
-import net.causw.app.main.domain.user.auth.service.v2.dto.OAuthAttributes;
+import net.causw.app.main.domain.user.account.service.implementation.UserReader;
+import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
+import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
+import net.causw.app.main.domain.user.auth.service.dto.CustomOAuth2User;
+import net.causw.app.main.domain.user.auth.service.dto.OAuthAttributes;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 

@@ -28,10 +28,11 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import net.causw.app.main.domain.user.account.entity.user.SocialAccount;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
-import net.causw.app.main.domain.user.account.service.v2.implementation.UserValidator;
-import net.causw.app.main.domain.user.account.service.v2.implementation.UserWriter;
-import net.causw.app.main.domain.user.auth.service.v2.dto.CustomOAuth2User;
+import net.causw.app.main.domain.user.account.service.implementation.UserReader;
+import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
+import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
+import net.causw.app.main.domain.user.auth.service.CustomOAuth2UserService;
+import net.causw.app.main.domain.user.auth.service.dto.CustomOAuth2User;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 
 @ExtendWith(MockitoExtension.class)

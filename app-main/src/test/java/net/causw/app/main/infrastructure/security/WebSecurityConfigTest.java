@@ -38,8 +38,8 @@ import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.auth.handler.OAuth2FailureHandler;
 import net.causw.app.main.domain.user.auth.handler.OAuth2SuccessHandler;
+import net.causw.app.main.domain.user.auth.service.CustomOAuth2UserService;
 import net.causw.app.main.domain.user.auth.service.v1.SecurityService;
-import net.causw.app.main.domain.user.auth.service.v2.CustomOAuth2UserService;
 import net.causw.app.main.util.DummyController;
 import net.causw.app.main.util.WithMockCustomUser;
 
