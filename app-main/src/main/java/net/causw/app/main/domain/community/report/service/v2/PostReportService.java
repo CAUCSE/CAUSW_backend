@@ -36,6 +36,8 @@ public class PostReportService {
 		Report report = Report.of(reporter, ReportType.POST, post.getId(), command.reportReason());
 		Report saved = postReportWriter.save(report);
 
+		post.getWriter().increaseReportCount();
+
 		return PostReportCreateResult.from(saved);
 	}
 }
