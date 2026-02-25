@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.community.report.api.v2.mapper;
 
+import net.causw.app.main.domain.community.report.api.v2.dto.request.PostReportCreateRequestDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
