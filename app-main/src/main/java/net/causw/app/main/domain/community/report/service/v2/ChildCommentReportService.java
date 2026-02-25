@@ -38,6 +38,8 @@ public class ChildCommentReportService {
 			reporter, ReportType.CHILD_COMMENT, childComment.getId(), command.reportReason());
 		Report saved = childCommentReportWriter.save(report);
 
+		childComment.getWriter().increaseReportCount();
+
 		return ChildCommentReportCreateResult.builder()
 			.reportId(saved.getId())
 			.childCommentId(childComment.getId())

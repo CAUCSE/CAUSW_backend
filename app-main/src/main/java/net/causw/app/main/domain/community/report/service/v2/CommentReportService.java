@@ -36,6 +36,8 @@ public class CommentReportService {
 		Report report = Report.of(reporter, ReportType.COMMENT, comment.getId(), command.reportReason());
 		Report saved = commentReportWriter.save(report);
 
+		comment.getWriter().increaseReportCount();
+
 		return CommentReportCreateResult.builder()
 			.reportId(saved.getId())
 			.commentId(comment.getId())
