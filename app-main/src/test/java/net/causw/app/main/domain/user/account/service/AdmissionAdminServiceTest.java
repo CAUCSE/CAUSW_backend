@@ -27,6 +27,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import net.causw.app.main.domain.notification.notification.service.AdmissionNotificationService;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.academic.event.CertifiedUserCreatedEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
@@ -64,6 +65,9 @@ class AdmissionAdminServiceTest {
 
 	@Mock
 	private ApplicationEventPublisher eventPublisher;
+
+	@Mock
+	private AdmissionNotificationService admissionNotificationService;
 
 	@InjectMocks
 	private AdmissionAdminService admissionAdminService;
@@ -299,6 +303,7 @@ class AdmissionAdminServiceTest {
 			verify(userWriter).approveAdmission(targetUser, admission);
 			verify(admissionLogWriter).createAcceptLog(admission, adminUser);
 			verify(admissionWriter).delete(admission);
+			verify(admissionNotificationService).sendApprovedAdmissionToUser(targetUser.getId(), adminUser.getId());
 		}
 
 		@Test
@@ -348,6 +353,7 @@ class AdmissionAdminServiceTest {
 			verifyNoInteractions(eventPublisher);
 			verify(admissionLogWriter, never()).createAcceptLog(admission, adminUser);
 			verify(admissionWriter, never()).delete(admission);
+			verifyNoInteractions(admissionNotificationService);
 		}
 
 		@Test
@@ -371,6 +377,7 @@ class AdmissionAdminServiceTest {
 			verifyNoInteractions(eventPublisher);
 			verifyNoInteractions(admissionLogWriter);
 			verifyNoInteractions(admissionWriter);
+			verifyNoInteractions(admissionNotificationService);
 		}
 	}
 
@@ -402,6 +409,7 @@ class AdmissionAdminServiceTest {
 			verify(userWriter).rejectAdmission(targetUser, rejectReason);
 			verify(admissionLogWriter).createRejectLog(admission, adminUser, rejectReason);
 			verify(admissionWriter).delete(admission);
+			verify(admissionNotificationService).sendRejectedAdmissionToUser(targetUser.getId(), adminUser.getId());
 		}
 
 		@Test
@@ -443,6 +451,7 @@ class AdmissionAdminServiceTest {
 			verifyNoInteractions(userWriter);
 			verifyNoInteractions(admissionLogWriter);
 			verifyNoInteractions(admissionWriter);
+			verifyNoInteractions(admissionNotificationService);
 		}
 
 		@ParameterizedTest
@@ -484,6 +493,7 @@ class AdmissionAdminServiceTest {
 			verifyNoInteractions(userWriter);
 			verifyNoInteractions(admissionLogWriter);
 			verifyNoInteractions(admissionWriter);
+			verifyNoInteractions(admissionNotificationService);
 		}
 	}
 }

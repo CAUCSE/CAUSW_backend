@@ -9,6 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.asset.file.service.v2.implementation.FileWriter;
+import net.causw.app.main.domain.notification.notification.service.AdmissionNotificationService;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
 import net.causw.app.main.domain.user.account.service.v2.dto.AdmissionCreateCommand;
@@ -30,6 +31,7 @@ public class AdmissionService {
 	private final AdmissionWriter admissionWriter;
 	private final UserWriter userWriter;
 	private final FileWriter fileWriter;
+	private final AdmissionNotificationService admissionNotificationService;
 
 	/**
 	 * v2 재학정보 인증 신청을 생성합니다.
@@ -66,6 +68,8 @@ public class AdmissionService {
 			dto.requestedAdmissionYear(),
 			dto.requestedDepartment(),
 			dto.graduationYear());
+
+		admissionNotificationService.sendCreatedAdmissionToAdmins(user.getId());
 
 		return AdmissionResult.from(admission);
 	}

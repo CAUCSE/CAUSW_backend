@@ -25,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.asset.file.service.v2.implementation.FileWriter;
+import net.causw.app.main.domain.notification.notification.service.AdmissionNotificationService;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
@@ -58,6 +59,9 @@ class AdmissionServiceTest {
 
 	@Mock
 	private FileWriter fileWriter;
+
+	@Mock
+	private AdmissionNotificationService admissionNotificationService;
 
 	@InjectMocks
 	private AdmissionService admissionService;
@@ -111,6 +115,7 @@ class AdmissionServiceTest {
 				eq(command.requestedAcademicStatus()), eq(command.requestedStudentId()),
 				eq(command.requestedAdmissionYear()), eq(command.requestedDepartment()),
 				eq(command.graduationYear()));
+			verify(admissionNotificationService).sendCreatedAdmissionToAdmins(user.getId());
 		}
 
 		@Test
@@ -145,6 +150,7 @@ class AdmissionServiceTest {
 				eq(command.requestedAcademicStatus()), eq(command.requestedStudentId()),
 				eq(command.requestedAdmissionYear()), eq(command.requestedDepartment()),
 				eq(command.graduationYear()));
+			verify(admissionNotificationService).sendCreatedAdmissionToAdmins(user.getId());
 		}
 
 		@Test
@@ -168,6 +174,7 @@ class AdmissionServiceTest {
 			verify(admissionValidator).validateAdmissionCreate(eq(user), anyString(), any(), any(), eq(attachImages));
 			verify(fileWriter, never()).uploadAndSaveList(anyList(), any(FilePath.class));
 			verify(admissionWriter, never()).create(any(), any(), any(), any(), any(), any(), any(), any());
+			verify(admissionNotificationService, never()).sendCreatedAdmissionToAdmins(anyString());
 		}
 
 		@Test
@@ -191,6 +198,7 @@ class AdmissionServiceTest {
 			verify(admissionValidator).validateAdmissionCreate(eq(user), anyString(), any(), any(), eq(attachImages));
 			verify(fileWriter, never()).uploadAndSaveList(anyList(), any(FilePath.class));
 			verify(admissionWriter, never()).create(any(), any(), any(), any(), any(), any(), any(), any());
+			verify(admissionNotificationService, never()).sendCreatedAdmissionToAdmins(anyString());
 		}
 
 		@Test
@@ -214,6 +222,7 @@ class AdmissionServiceTest {
 			verify(admissionValidator).validateAdmissionCreate(eq(user), anyString(), any(), any(), eq(attachImages));
 			verify(fileWriter, never()).uploadAndSaveList(anyList(), any(FilePath.class));
 			verify(admissionWriter, never()).create(any(), any(), any(), any(), any(), any(), any(), any());
+			verify(admissionNotificationService, never()).sendCreatedAdmissionToAdmins(anyString());
 		}
 
 		@Test
@@ -236,6 +245,7 @@ class AdmissionServiceTest {
 			verify(admissionValidator).validateAdmissionCreate(eq(user), anyString(), any(), any(), eq(emptyImages));
 			verify(fileWriter, never()).uploadAndSaveList(anyList(), any(FilePath.class));
 			verify(admissionWriter, never()).create(any(), any(), any(), any(), any(), any(), any(), any());
+			verify(admissionNotificationService, never()).sendCreatedAdmissionToAdmins(anyString());
 		}
 
 	}
