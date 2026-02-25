@@ -37,7 +37,7 @@ public record CommentResponseDto(
 
 	@Schema(description = "댓글 구독 여부") Boolean isCommentSubscribed,
 
-	@Schema(description = "댓글 종아요 수", example = "10") Long numLike,
+	@Schema(description = "댓글 좋아요 수", example = "10") Long numLike,
 
 	@Schema(description = "대댓글 수", example = "5") Long numChildComment,
 

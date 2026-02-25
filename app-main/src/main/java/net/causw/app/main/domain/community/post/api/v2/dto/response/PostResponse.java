@@ -20,7 +20,7 @@ public record PostResponse(
 
 	@Schema(description = "답글 개수", example = "13") Long numComment,
 
-	@Schema(description = "게시글 종아요 개수", example = "10") Long numLike,
+	@Schema(description = "게시글 좋아요 개수", example = "10") Long numLike,
 
 	@Schema(description = "게시글 즐겨찾기 개수", example = "11") Long numFavorite,
 
