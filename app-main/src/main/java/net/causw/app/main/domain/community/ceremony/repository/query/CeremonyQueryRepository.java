@@ -14,7 +14,6 @@ import net.causw.app.main.domain.community.ceremony.entity.QCeremony;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyState;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyType;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -102,22 +101,15 @@ public class CeremonyQueryRepository {
 		LocalDate fromDate, LocalDate toDate, CeremonyState state, Pageable pageable) {
 
 		QCeremony ceremony = QCeremony.ceremony;
-		BooleanBuilder condition = new BooleanBuilder();
-
-		if (state != null) {
-			condition.and(ceremony.ceremonyState.eq(state));
-		}
-		if (fromDate != null) {
-			condition.and(ceremony.startDate.goe(fromDate));
-		}
-		if (toDate != null) {
-			condition.and(ceremony.startDate.loe(toDate));
-		}
 
 		List<Ceremony> content = jpaQueryFactory
 			.selectFrom(ceremony)
 			.join(ceremony.user).fetchJoin()
-			.where(condition)
+			.where(
+				stateEq(state, ceremony),
+				startDateGoe(fromDate, ceremony),
+				startDateLoe(toDate, ceremony)
+			)
 			.orderBy(ceremony.createdAt.desc())
 			.offset(pageable.getOffset())
 			.limit(pageable.getPageSize())
@@ -126,9 +118,28 @@ public class CeremonyQueryRepository {
 		JPAQuery<Long> countQuery = jpaQueryFactory
 			.select(ceremony.count())
 			.from(ceremony)
-			.where(condition);
+			.where(
+				stateEq(state, ceremony),
+				startDateGoe(fromDate, ceremony),
+				startDateLoe(toDate, ceremony)
+			);
 
 		return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+	}
+
+	// state가 주어졌을 때 상태 필터를 적용한다.
+	private BooleanExpression stateEq(CeremonyState state, QCeremony ceremony) {
+		return state != null ? ceremony.ceremonyState.eq(state) : null;
+	}
+
+	// ceremony의 시작일이 fromDate 이상인 조건을 동적으로 적용한다.
+	private BooleanExpression startDateGoe(LocalDate fromDate, QCeremony ceremony) {
+		return fromDate != null ? ceremony.startDate.goe(fromDate) : null;
+	}
+
+	// ceremony의 시작일이 toDate 이하인 조건을 동적으로 적용한다.
+	private BooleanExpression startDateLoe(LocalDate toDate, QCeremony ceremony) {
+		return toDate != null ? ceremony.startDate.loe(toDate) : null;
 	}
 
 	private BooleanExpression baseCondition(String type, QCeremony ceremony) {
