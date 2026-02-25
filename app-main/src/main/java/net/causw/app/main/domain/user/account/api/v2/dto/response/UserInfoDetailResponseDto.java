@@ -6,7 +6,7 @@ import java.util.Set;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 public record UserInfoDetailResponseDto(
-	@Schema(description = "프로필 id", example = "uuid 형식의 String 값입니다.") String id,
+	@Schema(description = "동문 수첩 프로필 id", example = "uuid 형식의 String 값입니다") String id,
 
 	@Schema(description = "사용자 프로필 이미지 URL") String profileImageUrl,
 
@@ -18,7 +18,7 @@ public record UserInfoDetailResponseDto(
 
 	@Schema(description = "사용자 직업", example = "풀스택 개발자") String job,
 
-	@Schema(description = "프로필 설명", example = "프로필 설명입니다.") String description,
+	@Schema(description = "동문 수첩 프로필 설명", example = "동문 수첩 프로필 설명입니다.") String description,
 
 	@Schema(description = "사용자 전화번호", example = "010-1234-5678") String phoneNumber,
 
