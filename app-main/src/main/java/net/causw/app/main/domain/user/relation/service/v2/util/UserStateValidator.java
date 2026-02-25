@@ -11,8 +11,8 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class UserStateValidator {
-//공통으로 묶음
-	public static void validate(User user) {
+
+	public static void validateUserCanAct(User user) {
 		UserState state = user.getState();
 		if (state == UserState.DROP) {
 			throw UserErrorCode.USER_DROPPED.toBaseException();

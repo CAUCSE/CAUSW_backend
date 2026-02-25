@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 import net.causw.app.main.domain.community.report.enums.ReportReason;
 
-public record PostReportResponse(
+public record PostReportResponseDto(
 	String reportId,
 	String postId,
 	ReportReason reportReason,

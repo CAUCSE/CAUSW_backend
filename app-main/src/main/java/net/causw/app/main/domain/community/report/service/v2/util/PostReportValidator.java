@@ -9,11 +9,11 @@ import net.causw.app.main.shared.exception.errorcode.PostReportErrorCode;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class PostReportValidator {
 //	게시글 신고 생성 유효성 검증
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class PostReportValidator {
 	public static void validateCreate(User reporter, Post post, boolean alreadyReported) {
-		UserStateValidator.validate(reporter);
+		UserStateValidator.validateUserCanAct(reporter);
 
 		if (post.getIsDeleted()) {
 			throw PostErrorCode.POST_NOT_FOUND.toBaseException();

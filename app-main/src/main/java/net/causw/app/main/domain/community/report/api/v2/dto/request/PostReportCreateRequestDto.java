@@ -4,6 +4,6 @@ import net.causw.app.main.domain.community.report.enums.ReportReason;
 
 import jakarta.validation.constraints.NotNull;
 
-public record PostReportCreateRequest(
+public record PostReportCreateRequestDto(
 	@NotNull ReportReason reportReason) {
 }
