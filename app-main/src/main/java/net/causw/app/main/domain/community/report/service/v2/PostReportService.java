@@ -36,11 +36,6 @@ public class PostReportService {
 		Report report = Report.of(reporter, ReportType.POST, post.getId(), command.reportReason());
 		Report saved = postReportWriter.save(report);
 
-		return PostReportCreateResult.builder()
-			.reportId(saved.getId())
-			.postId(post.getId())
-			.reportReason(saved.getReportReason())
-			.createdAt(saved.getCreatedAt())
-			.build();
+		return PostReportCreateResult.from(saved);
 	}
 }
