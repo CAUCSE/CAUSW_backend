@@ -106,7 +106,7 @@ public class UserValidator {
 		// 유저 상태 검증
 		switch (user.getState()) {
 			case DROP ->
-				throw AuthErrorCode.BLOCKED_USER.toBaseException();
+				throw AuthErrorCode.DROPPED_USER.toBaseException();
 			case INACTIVE ->
 				throw AuthErrorCode.INACTIVE_USER.toBaseException();
 			case DELETED ->
