@@ -36,9 +36,9 @@ public class UserInfoController {
 	@GetMapping(value = "/{userInfoId}")
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "동문 수첩 프로필 상세 조회", description = "동문 수첩 프로필 상세 정보를 조회합니다.")
-	public UserInfoDetailResponseDto getUserInfoDetail(
+	public ApiResponse<UserInfoDetailResponseDto> getUserInfoDetail(
 		@PathVariable("userInfoId") String userInfoId) {
-		return userInfoService.getDetailUserInfo(userInfoId);
+		return ApiResponse.success(userInfoService.getDetailUserInfo(userInfoId));
 	}
 
 	/**
@@ -49,9 +49,9 @@ public class UserInfoController {
 	@GetMapping(value = "/me")
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "내 동문 수첩 프로필 상세 조회", description = "내 동문 수첩 프로필 상세 정보를 조회합니다.")
-	public UserInfoDetailResponseDto getMyUserInfoDetail(
+	public ApiResponse<UserInfoDetailResponseDto> getMyUserInfoDetail(
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		return userInfoService.getMyDetailUserInfo(userDetails.getUserId());
+		return ApiResponse.success(userInfoService.getMyDetailUserInfo(userDetails.getUserId()));
 	}
 
 	@GetMapping(value = "/")
