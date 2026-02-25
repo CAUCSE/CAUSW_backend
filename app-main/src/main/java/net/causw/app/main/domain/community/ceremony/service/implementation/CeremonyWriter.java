@@ -21,12 +21,10 @@ public class CeremonyWriter {
 
 	public void approve(Ceremony ceremony) {
 		ceremony.approve();
-		ceremonyRepository.save(ceremony);
 	}
 
 	public void reject(Ceremony ceremony, String rejectReason) {
 		ceremony.reject();
 		ceremony.updateNote(rejectReason);
-		ceremonyRepository.save(ceremony);
 	}
 }
