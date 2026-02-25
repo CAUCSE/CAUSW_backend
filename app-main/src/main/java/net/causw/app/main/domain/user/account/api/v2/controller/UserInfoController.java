@@ -1,6 +1,7 @@
 package net.causw.app.main.domain.user.account.api.v2.controller;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoDetailResponseDto;
 import net.causw.app.main.domain.user.account.service.UserInfoService;
+import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,9 +25,9 @@ public class UserInfoController {
 	private final UserInfoService userInfoService;
 
 	/**
-	 *  동문수첩 프로필 고유 id 값으로 프로필 세부 정보를 조회하는 API
-	 * @param userInfoId
-	 * @return
+	 *  동문수첩 프로필 고유 id 값으로 동문 수첩 프로필 세부 정보를 조회하는 API
+	 * @param userInfoId 동문 수첩 프로필 고유 id
+	 * @return 동문 수첩 프로필 상세 정보
 	 */
 	@GetMapping(value = "/{userInfoId}")
 	@ResponseStatus(HttpStatus.OK)
@@ -33,5 +35,18 @@ public class UserInfoController {
 	public UserInfoDetailResponseDto getUserInfoDetail(
 		@PathVariable("userInfoId") String userInfoId) {
 		return userInfoService.getDetailUserInfo(userInfoId);
+	}
+
+	/**
+	 * 사용자 본인의 고유 id 값으로 본인 동문 수첩 프로필 세부 정보를 조회하는 API
+	 * @param userDetails 사용자 본인 정보
+	 * @return 내 동문 수첩 프로필 상세 정보
+	 */
+	@GetMapping(value = "/me")
+	@ResponseStatus(HttpStatus.OK)
+	@Operation(summary = "내 동문 수첩 프로필 상세 조회", description = "내 동문 수첩 프로필 상세 정보를 조회합니다.")
+	public UserInfoDetailResponseDto getMyUserInfoDetail(
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
+		return userInfoService.getMyUserInfoDetail(userDetails.getUserId());
 	}
 }

@@ -43,4 +43,11 @@ public class UserInfoService {
 
 		return userInfoDtoMapper.toUserInfoDetailResponseDto(userInfo);
 	}
+
+	public UserInfoDetailResponseDto getMyUserInfoDetail(String userId) {
+		UserInfo userInfo = userInfoReader.findByUserId(userId)
+			.orElseThrow(UserInfoErrorCode.USERINFO_NOT_FOUND::toBaseException);
+
+		return userInfoDtoMapper.toUserInfoDetailResponseDto(userInfo);
+	}
 }

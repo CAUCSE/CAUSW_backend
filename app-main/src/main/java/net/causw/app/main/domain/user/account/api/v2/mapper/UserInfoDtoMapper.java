@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.user.account.api.v2.mapper;
 
+import org.mapstruct.InheritConfiguration;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -11,6 +12,7 @@ import net.causw.app.main.shared.dto.util.dtoMapper.custom.UuidFileToUrlDtoMappe
 @Mapper(componentModel = "spring")
 public interface UserInfoDtoMapper extends UuidFileToUrlDtoMapper {
 
+	// 동문 수첩 프로필 상세 조회
 	@Mapping(target = "id", source = "id")
 	@Mapping(target = "profileImageUrl", source = "userInfo.user.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
 	@Mapping(target = "name", source = "user.name")
@@ -29,6 +31,13 @@ public interface UserInfoDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "userInterestTech", source = "userInterestTech")
 	@Mapping(target = "userInterestDomain", source = "userInterestDomain")
 	UserInfoDetailResponseDto toUserInfoDetailResponseDto(UserInfo userInfo);
+
+	// 내 동문 수첩 프로필 상세 조회
+	@InheritConfiguration(name = "toUserInfoDetailResponseDto")
+	@Mapping(target = "phoneNumber", source = "user.phoneNumber")
+	@Mapping(target = "isPhoneNumberVisible", constant = "true")
+	@Mapping(target = "isMessageVisible", constant = "true")
+	UserInfoDetailResponseDto toMyUserInfoDetailResponseDto(UserInfo userInfo);
 
 	@Named("mapAdmissionYear")
 	static String mapAdmissionYear(UserInfo userInfo) {
