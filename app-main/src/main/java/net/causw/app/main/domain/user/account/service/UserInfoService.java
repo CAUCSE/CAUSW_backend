@@ -44,10 +44,16 @@ public class UserInfoService {
 		return userInfoDtoMapper.toUserInfoDetailResponseDto(userInfo);
 	}
 
-	public UserInfoDetailResponseDto getMyUserInfoDetail(String userId) {
+	/**
+	 * 내 동문 수첩 프로필 상세 조회
+	 * @param userId 사용자 ID
+	 * @return 내 동문 수첩 프로필 상세
+	 */
+	@Transactional(readOnly = true)
+	public UserInfoDetailResponseDto getMyDetailUserInfo(String userId) {
 		UserInfo userInfo = userInfoReader.findByUserId(userId)
 			.orElseThrow(UserInfoErrorCode.USERINFO_NOT_FOUND::toBaseException);
 
-		return userInfoDtoMapper.toUserInfoDetailResponseDto(userInfo);
+		return userInfoDtoMapper.toMyUserInfoDetailResponseDto(userInfo);
 	}
 }

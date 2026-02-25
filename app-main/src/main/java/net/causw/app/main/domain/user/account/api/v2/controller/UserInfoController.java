@@ -47,6 +47,6 @@ public class UserInfoController {
 	@Operation(summary = "내 동문 수첩 프로필 상세 조회", description = "내 동문 수첩 프로필 상세 정보를 조회합니다.")
 	public UserInfoDetailResponseDto getMyUserInfoDetail(
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		return userInfoService.getMyUserInfoDetail(userDetails.getUserId());
+		return userInfoService.getMyDetailUserInfo(userDetails.getUserId());
 	}
 }
