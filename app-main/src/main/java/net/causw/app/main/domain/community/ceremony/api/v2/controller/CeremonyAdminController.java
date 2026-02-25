@@ -17,9 +17,9 @@ import net.causw.app.main.domain.community.ceremony.api.v2.dto.request.CeremonyA
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.request.CeremonyRejectRequest;
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonyAdminListResponseDto;
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonyDetailResponseDto;
+import net.causw.app.main.domain.community.ceremony.api.v2.mapper.CeremonyAdminListMapper;
 import net.causw.app.main.domain.community.ceremony.api.v2.mapper.CeremonyDtoMapper;
 import net.causw.app.main.domain.community.ceremony.service.CeremonyAdminService;
-import net.causw.app.main.domain.community.ceremony.service.dto.CeremonyAdminListCondition;
 import net.causw.app.main.shared.dto.ApiResponse;
 import net.causw.app.main.shared.dto.PageResponse;
 
@@ -37,6 +37,7 @@ import lombok.RequiredArgsConstructor;
 public class CeremonyAdminController {
 
 	private final CeremonyAdminService ceremonyAdminService;
+	private final CeremonyAdminListMapper ceremonyAdminListMapper;
 	private final CeremonyDtoMapper ceremonyDtoMapper;
 
 	@GetMapping
@@ -45,11 +46,9 @@ public class CeremonyAdminController {
 	public ApiResponse<PageResponse<CeremonyAdminListResponseDto>> getCeremonyList(
 		@ParameterObject CeremonyAdminListRequest request,
 		@ParameterObject @PageableDefault(page = 0, size = 10) Pageable pageable) {
-		CeremonyAdminListCondition condition = new CeremonyAdminListCondition(
-			request.fromDate(), request.toDate(), request.state());
 		return ApiResponse.success(
 			PageResponse.from(
-				ceremonyAdminService.getCeremonyList(condition, pageable)
+				ceremonyAdminService.getCeremonyList(ceremonyAdminListMapper.toCondition(request), pageable)
 					.map(ceremonyDtoMapper::toAdminCeremonyListResponseDto)));
 	}
 
