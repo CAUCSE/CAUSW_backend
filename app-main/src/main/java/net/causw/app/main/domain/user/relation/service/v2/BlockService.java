@@ -12,7 +12,6 @@ import net.causw.app.main.domain.user.relation.service.v2.dto.BlockCreateResult;
 import net.causw.app.main.domain.user.relation.service.v2.implementation.BlockReader;
 import net.causw.app.main.domain.user.relation.service.v2.implementation.BlockWriter;
 import net.causw.app.main.domain.user.relation.service.v2.util.BlockValidator;
-import net.causw.app.main.shared.exception.errorcode.BlockErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,11 +29,6 @@ public class BlockService {
 		User blocker = command.blocker();
 		Post post = postReader.findByIdAndNotDeleted(command.postId());
 		User blocked = post.getWriter();  // 게시글 작성자를 서버에서 직접 도출
-
-		// 차단 대상이 게시글 작성자인지 데이터 무결성 검증
-		if (!post.getWriter().getId().equals(blocked.getId())) {
-			throw BlockErrorCode.BLOCK_TARGET_NOT_POST_WRITER.toBaseException();
-		}
 
 		boolean alreadyBlocked = blockReader.existsByBlockerAndBlocked(blocker, blocked);
 		BlockValidator.validateCreate(blocker, blocked, alreadyBlocked, post.getIsAnonymous());
