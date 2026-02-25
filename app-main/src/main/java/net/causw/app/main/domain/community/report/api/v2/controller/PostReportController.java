@@ -3,6 +3,7 @@ package net.causw.app.main.domain.community.report.api.v2.controller;
 import java.util.Arrays;
 import java.util.List;
 
+import net.causw.app.main.domain.community.report.api.v2.dto.response.PostReportResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,9 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import net.causw.app.main.domain.community.report.api.v2.dto.request.PostReportCreateRequest;
+import net.causw.app.main.domain.community.report.api.v2.dto.request.PostReportCreateRequestDto;
 import net.causw.app.main.domain.community.report.api.v2.dto.response.PostReportReasonResponseDto;
-import net.causw.app.main.domain.community.report.api.v2.dto.response.PostReportResponse;
 import net.causw.app.main.domain.community.report.api.v2.mapper.PostReportDtoMapper;
 import net.causw.app.main.domain.community.report.enums.ReportReason;
 import net.causw.app.main.domain.community.report.service.v2.PostReportService;
@@ -55,9 +55,9 @@ public class PostReportController {
 		- 동일 게시글 중복 신고 불가 (409)
 		- 신고 접수 후 관리자가 검토하여 처리/반려하는 방향으로 생각중입니다
 		""")
-	public ApiResponse<PostReportResponse> createReport(
+	public ApiResponse<PostReportResponseDto> createReport(
 		@PathVariable String postId,
-		@Valid @RequestBody PostReportCreateRequest request,
+		@Valid @RequestBody PostReportCreateRequestDto request,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		PostReportCreateResult result = postReportService.createReport(
 			postReportDtoMapper.toCommand(request, postId, userDetails.getUser()));
