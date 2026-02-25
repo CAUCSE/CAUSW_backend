@@ -43,7 +43,7 @@ public class EmailVerificationService {
 	 */
 	@Transactional
 	public void sendVerificationEmail(String email) {
-		emailVerificationValidator.validateResendInterval(email);
+		emailVerificationValidator.validateSend(email);
 
 		String verificationCode = generateVerificationCode();
 		LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(EXPIRATION_MINUTES);

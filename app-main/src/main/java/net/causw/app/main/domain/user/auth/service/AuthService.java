@@ -15,6 +15,7 @@ import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthValidator;
+import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationValidator;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 
 import jakarta.transaction.Transactional;
@@ -36,6 +37,7 @@ public class AuthService {
 	private final AuthValidator authValidator;
 	private final AuthTokenManager authTokenManager;
 	private final UserPushTokenWriter userPushTokenWriter;
+	private final EmailVerificationValidator emailVerificationValidator;
 
 	/**
 	 * 이메일 기반의 신규 회원을 등록합니다.
@@ -59,7 +61,7 @@ public class AuthService {
 		userValidator.checkEmailDuplication(dto.email());
 		userValidator.checkNicknameDuplication(dto.nickname());
 		userValidator.checkPhoneNumDuplication(dto.phoneNumber());
-
+		emailVerificationValidator.validateVerified(dto.email());
 		// 신규 사용자 생성 및 검증
 		User newUser = User.from(dto, passwordEncoder.encode(dto.password()));
 		authValidator.validateRegisterInput(newUser, dto.password(), dto.phoneNumber());
