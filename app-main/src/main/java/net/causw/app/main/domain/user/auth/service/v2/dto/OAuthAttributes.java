@@ -12,7 +12,6 @@ public record OAuthAttributes(
 	String nameAttributeKey,
 	String name,
 	String email,
-	String picture,
 	SocialType socialType,
 	String socialId,
 	boolean isEmailVerified) {
@@ -31,7 +30,6 @@ public record OAuthAttributes(
 		return OAuthAttributes.builder()
 			.name((String)attributes.get("name"))
 			.email((String)attributes.get("email"))
-			.picture((String)attributes.get("picture"))
 			.attributes(attributes)
 			.nameAttributeKey(userNameAttributeName)
 			.socialType(SocialType.GOOGLE)
@@ -42,12 +40,10 @@ public record OAuthAttributes(
 
 	private static OAuthAttributes ofKakao(String userNameAttributeName, Map<String, Object> attributes) {
 		Map<String, Object> kakaoAccount = (Map<String, Object>)attributes.get("kakao_account");
-		Map<String, Object> kakaoProfile = (Map<String, Object>)kakaoAccount.get("profile");
 
 		return OAuthAttributes.builder()
 			.name((String)kakaoAccount.get("name"))
 			.email((String)kakaoAccount.get("email"))
-			.picture((String)kakaoProfile.get("profile_image_url"))
 			.attributes(attributes)
 			.nameAttributeKey(userNameAttributeName)
 			.socialType(SocialType.KAKAO)
@@ -62,7 +58,6 @@ public record OAuthAttributes(
 		return OAuthAttributes.builder()
 			.name((String)attributes.get("email"))
 			.email((String)attributes.get("email"))
-			.picture(null)
 			.attributes(attributes)
 			.nameAttributeKey(userNameAttributeName)
 			.socialType(SocialType.APPLE)

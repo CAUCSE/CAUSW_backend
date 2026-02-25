@@ -92,7 +92,6 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 	}
 
 	private void createAndSaveSocialAccount(OAuthAttributes attributes, User user) {
-		//TODO: 유저 프로필 처리 필요
 		SocialAccount socialAccount = SocialAccount.of(
 			attributes.socialType(),
 			attributes.socialId(),
