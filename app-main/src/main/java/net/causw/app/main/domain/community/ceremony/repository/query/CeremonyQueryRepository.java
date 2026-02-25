@@ -108,8 +108,7 @@ public class CeremonyQueryRepository {
 			.where(
 				stateEq(state, ceremony),
 				startDateGoe(fromDate, ceremony),
-				startDateLoe(toDate, ceremony)
-			)
+				startDateLoe(toDate, ceremony))
 			.orderBy(ceremony.createdAt.desc())
 			.offset(pageable.getOffset())
 			.limit(pageable.getPageSize())
@@ -121,8 +120,7 @@ public class CeremonyQueryRepository {
 			.where(
 				stateEq(state, ceremony),
 				startDateGoe(fromDate, ceremony),
-				startDateLoe(toDate, ceremony)
-			);
+				startDateLoe(toDate, ceremony));
 
 		return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
 	}
