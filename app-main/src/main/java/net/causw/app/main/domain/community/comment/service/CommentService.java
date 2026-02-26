@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
 import net.causw.app.main.domain.community.comment.api.v2.dto.request.CommentCreateRequestDto;
 import net.causw.app.main.domain.community.comment.api.v2.dto.request.CommentUpdateRequestDto;
 import net.causw.app.main.domain.community.comment.api.v2.dto.response.CommentResponseDto;
@@ -40,6 +41,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CommentService {
 
+	private final BoardConfigReader boardConfigReader;
 	private final PostReader postReader;
 	private final UserReader userReader;
 	private final CommentReader commentReader;
@@ -80,6 +82,7 @@ public class CommentService {
 
 		commentValidator.validateForFind(user, post);
 
+		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
 		Set<String> blockedUserIds = userBlockEntityService.findBlockeeUserIdsByBlocker(user);
 		Page<Comment> comments = commentReader.getComments(postId, pageable);
 
@@ -109,7 +112,7 @@ public class CommentService {
 			: likeChildCommentReader.getLikedChildCommentIds(user.getId(), childCommentIds);
 
 		return comments.map(comment -> commentReader.getCommentListDetails(
-			comment, user, post.getBoard(), blockedUserIds,
+			comment, user, blockedUserIds, boardAdminIds,
 			commentLikeCounts, likedCommentIds, subscribedCommentIds,
 			childCommentLikeCounts, likedChildCommentIds));
 	}

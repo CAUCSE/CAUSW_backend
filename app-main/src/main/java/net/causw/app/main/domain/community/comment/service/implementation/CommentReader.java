@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.community.board.entity.Board;
+import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
 import net.causw.app.main.domain.community.comment.api.v2.dto.response.ChildCommentResponseDto;
 import net.causw.app.main.domain.community.comment.api.v2.dto.response.CommentResponseDto;
 import net.causw.app.main.domain.community.comment.api.v2.mapper.CommentResponseDtoMapper;
@@ -19,7 +20,6 @@ import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.community.comment.repository.CommentRepository;
 import net.causw.app.main.domain.notification.notification.service.implementation.UserCommentSubscribeReader;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.shared.StatusPolicy;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
@@ -30,6 +30,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CommentReader {
 
+	private final BoardConfigReader boardConfigReader;
 	private final LikeCommentReader likeCommentReader;
 	private final ChildCommentReader childCommentReader;
 	private final LikeChildCommentReader likeChildCommentReader;
@@ -45,12 +46,12 @@ public class CommentReader {
 	 */
 	public CommentResponseDto getCommentDetail(Comment comment, User user, Board board) {
 
-		// 자식 댓글 ID 리스트 추출
+		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(board.getId());
+
 		List<String> childCommentIds = comment.getChildCommentList().stream()
 			.map(ChildComment::getId)
 			.toList();
 
-		// 자식 댓글용 데이터 조회
 		Map<String, Long> childCommentLikeCounts = childCommentIds.isEmpty()
 			? Collections.emptyMap()
 			: likeChildCommentReader.getChildCommentLikeCounts(childCommentIds);
@@ -61,30 +62,37 @@ public class CommentReader {
 
 		List<ChildCommentResponseDto> childCommentList = comment.getChildCommentList().stream()
 			.map(childComment -> childCommentReader.getChildCommentListDetails(
-				childComment, user, board, Set.of(),
+				childComment, user, Collections.emptySet(), boardAdminIds,
 				childCommentLikeCounts.getOrDefault(childComment.getId(), 0L),
-				likedChildCommentIds.contains(childComment.getId())
+				likedChildCommentIds.contains(childComment.getId())))
+			.toList();
 
-			)).toList();
+		long numLike = likeCommentReader.getNumOfCommentLikes(comment.getId());
+		boolean isLiked = likeCommentReader.isCommentLiked(user, comment.getId());
+		boolean isSubscribed = userCommentSubscribeReader.isCommentSubscribed(user, comment);
+
+		boolean isOwner = comment.getWriter().getId().equals(user.getId());
+		boolean updatable = isOwner || boardAdminIds.contains(user.getId());
+		boolean deletable = isOwner || boardAdminIds.contains(user.getId());
 
 		return commentResponseDtoMapper.toCommentResponseDto(
 			comment,
 			(long)comment.getChildCommentList().size(),
-			likeCommentReader.getNumOfCommentLikes(comment.getId()),
-			likeCommentReader.isCommentLiked(user, comment.getId()),
-			StatusPolicy.isCommentOwner(comment, user),
+			numLike,
+			isLiked,
+			isOwner,
 			childCommentList,
-			StatusPolicy.isUpdatable(comment, user),
-			StatusPolicy.isDeletable(comment, user, board),
-			userCommentSubscribeReader.isCommentSubscribed(user, comment),
+			updatable,
+			deletable,
+			isSubscribed,
 			false);
 	}
 
 	/**
 	 * @param comment 댓글
 	 * @param user 조회자
-	 * @param board 게시판
 	 * @param blockedUserIds 차단된 유저 ID 목록
+	 * @param boardAdminIds 게시판 관리자 목록
 	 * @param commentLikeCounts 미리 조회한 부모 댓글들의 좋아요 수 Map
 	 * @param likedCommentIds 현재 유저가 좋아요를 누른 부모 댓글 ID Set
 	 * @param subscribedCommentIds 현재 유저가 구독한 부모 댓글 ID Set
@@ -93,33 +101,40 @@ public class CommentReader {
 	 * @return CommentResponseDto
 	 */
 	public CommentResponseDto getCommentListDetails(
-		Comment comment, User user, Board board, Set<String> blockedUserIds,
+		Comment comment, User user, Set<String> blockedUserIds, List<String> boardAdminIds,
 		Map<String, Long> commentLikeCounts,
 		Set<String> likedCommentIds,
 		Set<String> subscribedCommentIds,
 		Map<String, Long> childCommentLikeCounts,
 		Set<String> likedChildCommentIds) {
 
-		// 작성자 차단 여부 확인
 		boolean isBlockedContent = blockedUserIds.contains(comment.getWriter().getId());
 
-		List<ChildCommentResponseDto> childCommetList = comment.getChildCommentList().stream()
+		List<ChildCommentResponseDto> childCommentList = comment.getChildCommentList().stream()
 			.map(childComment -> childCommentReader.getChildCommentListDetails(
-				childComment, user, board, blockedUserIds,
-				childCommentLikeCounts.getOrDefault(childComment.getId(), 0L), // 자식 댓글 좋아요 수
-				likedChildCommentIds.contains(childComment.getId()) // 자식 댓글 좋아요 여부
-			)).toList();
+				childComment, user, blockedUserIds, boardAdminIds,
+				childCommentLikeCounts.getOrDefault(childComment.getId(), 0L),
+				likedChildCommentIds.contains(childComment.getId())))
+			.toList();
+
+		long numLike = commentLikeCounts.getOrDefault(comment.getId(), 0L);
+		boolean isLiked = likedCommentIds.contains(comment.getId());
+		boolean isSubscribed = subscribedCommentIds.contains(comment.getId());
+
+		boolean isOwner = comment.getWriter().getId().equals(user.getId());
+		boolean updatable = isOwner || boardAdminIds.contains(user.getId());
+		boolean deletable = isOwner || boardAdminIds.contains(user.getId());
 
 		return commentResponseDtoMapper.toCommentResponseDto(
 			comment,
 			(long)comment.getChildCommentList().size(),
-			commentLikeCounts.getOrDefault(comment.getId(), 0L),
-			likedCommentIds.contains(comment.getId()),
-			StatusPolicy.isCommentOwner(comment, user),
-			childCommetList,
-			StatusPolicy.isUpdatable(comment, user),
-			StatusPolicy.isDeletable(comment, user, board),
-			subscribedCommentIds.contains(comment.getId()),
+			numLike,
+			isLiked,
+			isOwner,
+			childCommentList,
+			updatable,
+			deletable,
+			isSubscribed,
 			isBlockedContent);
 	}
 
