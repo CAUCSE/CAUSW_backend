@@ -15,7 +15,7 @@ public interface UserInfoDtoMapper extends UuidFileToUrlDtoMapper {
 
 	// 동문 수첩 프로필 상세 조회
 	@Mapping(target = "id", source = "id")
-	@Mapping(target = "profileImageUrl", source = "userInfo.user.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
+	@Mapping(target = "profileImageUrl", source = "user.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
 	@Mapping(target = "name", source = "user.name")
 	@Mapping(target = "admissionYear", source = ".", qualifiedByName = "mapAdmissionYear")
 	@Mapping(target = "academicStatus", source = ".", qualifiedByName = "mapAcademicStatus")
@@ -42,7 +42,7 @@ public interface UserInfoDtoMapper extends UuidFileToUrlDtoMapper {
 
 	// 동문 수첩 프로필 리스트 조회
 	@Mapping(target = "id", source = "id")
-	@Mapping(target = "profileImageUrl", source = "userInfo.user.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
+	@Mapping(target = "profileImageUrl", source = "user.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
 	@Mapping(target = "name", source = "user.name")
 	@Mapping(target = "admissionYear", source = ".", qualifiedByName = "mapAdmissionYear")
 	@Mapping(target = "academicStatus", source = ".", qualifiedByName = "mapAcademicStatus")
