@@ -3,6 +3,7 @@ package net.causw.app.main.domain.user.auth.service;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import net.causw.app.main.domain.user.auth.entity.EmailVerification;
@@ -11,7 +12,7 @@ import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificat
 import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationValidator;
 import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationWriter;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
-import net.causw.app.main.shared.infra.mail.GoogleMailSender;
+import net.causw.app.main.shared.infra.mail.event.EmailVerificationEvent;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +33,7 @@ public class EmailVerificationService {
 	private final EmailVerificationWriter emailVerificationWriter;
 	private final EmailVerificationReader emailVerificationReader;
 	private final EmailVerificationValidator emailVerificationValidator;
-	private final GoogleMailSender googleMailSender;
+	private final ApplicationEventPublisher eventPublisher;
 
 	/**
 	 * 이메일로 인증 코드를 발송하고 DB에 인증 정보를 저장합니다.
@@ -51,7 +52,7 @@ public class EmailVerificationService {
 		EmailVerification emailVerification = EmailVerification.of(email, verificationCode, expiresAt);
 		emailVerificationWriter.save(emailVerification);
 
-		googleMailSender.sendEmailVerificationMail(email, verificationCode);
+		eventPublisher.publishEvent(new EmailVerificationEvent(email, verificationCode));
 	}
 
 	/**
