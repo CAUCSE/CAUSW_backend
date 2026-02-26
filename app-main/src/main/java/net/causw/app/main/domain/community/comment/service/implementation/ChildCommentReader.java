@@ -33,10 +33,6 @@ public class ChildCommentReader {
 				MessageUtil.COMMENT_NOT_FOUND));
 	}
 
-	public Long getNumOfChildComments(String parentCommentId) {
-		return childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(parentCommentId);
-	}
-
 	/**
 	 * @param childComment 댓글
 	 * @param user 조회자
@@ -84,14 +80,4 @@ public class ChildCommentReader {
 	public List<ChildComment> getChildCommentsByParentIds(List<String> parentCommentIds) {
 		return childCommentRepository.findChildCommentsByParentCommentIds(parentCommentIds);
 	}
-
-	/**
-	 * @param commentId 부모 댓글 id
-	 * @return List<ChildCommentResponseDto>
-	 */
-	public List<ChildComment> getChildComments(String commentId) {
-
-		return childCommentRepository.findByParentComment_Id(commentId);
-	}
-
 }
