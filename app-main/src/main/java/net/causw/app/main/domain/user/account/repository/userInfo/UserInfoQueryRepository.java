@@ -12,7 +12,6 @@ import net.causw.app.main.domain.user.account.api.v2.dto.request.UserInfoListCon
 import net.causw.app.main.domain.user.account.entity.userInfo.QUserCareer;
 import net.causw.app.main.domain.user.account.entity.userInfo.QUserInfo;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
-import net.causw.app.main.domain.user.account.enums.userinfo.SortType;
 import net.causw.app.main.shared.exception.errorcode.UserInfoErrorCode;
 
 import com.querydsl.core.types.OrderSpecifier;
@@ -93,13 +92,35 @@ public class UserInfoQueryRepository {
 		return condition;
 	}
 
-	private OrderSpecifier<?> getSortType(UserInfoListCondition filter, QUserInfo userInfo) {
-		// TODO: 정렬 기준 필요
+	private OrderSpecifier<?>[] getSortType(UserInfoListCondition filter, QUserInfo userInfo) {
 		// 정렬 필터
 		if (filter.sortType() == null) {
-			return userInfo.updatedAt.asc();
+			return new OrderSpecifier[] {
+				userInfo.updatedAt.desc(), userInfo.user.admissionYear.desc()
+			};
 		}
 
-		return filter.sortType() == SortType.DESC ? userInfo.updatedAt.desc() : userInfo.updatedAt.asc();
+		switch (filter.sortType()) {
+			case ADMISSION_YEAR_DESC -> {
+				return new OrderSpecifier[] {
+					userInfo.user.admissionYear.desc(), userInfo.updatedAt.desc()
+				};
+			}
+			case ADMISSION_YEAR_ASC -> {
+				return new OrderSpecifier[] {
+					userInfo.user.admissionYear.asc(), userInfo.updatedAt.desc()
+				};
+			}
+			case UPDATED_AT_ASC -> {
+				return new OrderSpecifier[] {
+					userInfo.updatedAt.asc(), userInfo.user.admissionYear.desc()
+				};
+			}
+			default -> {
+				return new OrderSpecifier[] {
+					userInfo.updatedAt.desc(), userInfo.user.admissionYear.desc()
+				};
+			}
+		}
 	}
 }
