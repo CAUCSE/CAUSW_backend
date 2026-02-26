@@ -62,7 +62,7 @@ public class UserInfoController {
 	 * @param pageNum 페이징
 	 * @return 조회된 동문 수첩 프로필 리스트
 	 */
-	@GetMapping(value = "/")
+	@GetMapping
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "동문 수첩 프로필 리스트 조회 및 검색", description = "검색어 또는 필터를 포함해 동문 수첩 프로필 리스트를 조회합니다.")
 	public ApiResponse<PageResponse<UserInfoSummaryResponseDto>> getUserInfoPage(
