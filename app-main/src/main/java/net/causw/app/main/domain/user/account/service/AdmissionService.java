@@ -12,13 +12,13 @@ import net.causw.app.main.domain.asset.file.service.v2.implementation.FileWriter
 import net.causw.app.main.domain.notification.notification.service.AdmissionNotificationService;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
+import net.causw.app.main.domain.user.account.service.dto.request.AdmissionCreateCommand;
+import net.causw.app.main.domain.user.account.service.dto.request.AdmissionResult;
+import net.causw.app.main.domain.user.account.service.dto.request.AdmissionStateResult;
+import net.causw.app.main.domain.user.account.service.implementation.AdmissionReader;
+import net.causw.app.main.domain.user.account.service.implementation.AdmissionValidator;
+import net.causw.app.main.domain.user.account.service.implementation.AdmissionWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
-import net.causw.app.main.domain.user.account.service.v2.dto.AdmissionCreateCommand;
-import net.causw.app.main.domain.user.account.service.v2.dto.AdmissionResult;
-import net.causw.app.main.domain.user.account.service.v2.dto.AdmissionStateResult;
-import net.causw.app.main.domain.user.account.service.v2.implementation.AdmissionReader;
-import net.causw.app.main.domain.user.account.service.v2.implementation.AdmissionValidator;
-import net.causw.app.main.domain.user.account.service.v2.implementation.AdmissionWriter;
 
 import lombok.RequiredArgsConstructor;
 

@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.user.account.service.v2.implementation;
+package net.causw.app.main.domain.user.account.service.implementation;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

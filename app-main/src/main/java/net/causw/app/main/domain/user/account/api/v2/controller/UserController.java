@@ -18,7 +18,7 @@ import net.causw.app.main.domain.user.account.api.v2.mapper.AdmissionDtoMapper;
 import net.causw.app.main.domain.user.account.service.AdmissionService;
 import net.causw.app.main.domain.user.account.service.UserAccountService;
 import net.causw.app.main.domain.user.account.service.UserNotificationService;
-import net.causw.app.main.domain.user.account.service.v2.dto.AdmissionResult;
+import net.causw.app.main.domain.user.account.service.dto.request.AdmissionResult;
 import net.causw.app.main.domain.user.auth.api.v2.dto.AuthDtoMapper;
 import net.causw.app.main.domain.user.auth.api.v2.dto.response.AuthResponse;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
