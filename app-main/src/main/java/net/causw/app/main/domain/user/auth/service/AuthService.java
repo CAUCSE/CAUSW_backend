@@ -61,7 +61,7 @@ public class AuthService {
 		userValidator.checkEmailDuplication(dto.email());
 		userValidator.checkNicknameDuplication(dto.nickname());
 		userValidator.checkPhoneNumDuplication(dto.phoneNumber());
-		emailVerificationValidator.validateVerified(dto.email());
+		emailVerificationValidator.validateVerified(dto.email(), dto.emailVerificationCode());
 		// 신규 사용자 생성 및 검증
 		User newUser = User.from(dto, passwordEncoder.encode(dto.password()));
 		authValidator.validateRegisterInput(newUser, dto.password(), dto.phoneNumber());

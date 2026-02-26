@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.auth.entity.EmailVerification;
-import net.causw.app.main.domain.user.auth.entity.EmailVerification.VerificationStatus;
 import net.causw.app.main.domain.user.auth.repository.EmailVerificationRepository;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
@@ -55,9 +54,9 @@ public class EmailVerificationValidator {
 	 * [EMAIL_VERIFICATION_NOT_FOUND] VERIFIED 상태의 인증 정보가 없는 경우
 	 * [EMAIL_VERIFICATION_EXPIRED] 인증 정보가 만료된 경우
 	 */
-	public void validateVerified(String email) {
+	public void validateVerified(String email, String verificationCode) {
 		EmailVerification verification = emailVerificationRepository
-			.findLatestByEmailAndStatus(email, VerificationStatus.VERIFIED)
+			.findVerifiedByEmailAndCode(email, verificationCode)
 			.orElseThrow(AuthErrorCode.EMAIL_VERIFICATION_NOT_FOUND::toBaseException);
 
 		if (verification.isExpired()) {
