@@ -239,9 +239,32 @@ public class User extends BaseEntity {
 		this.rejectionOrDropReason = reason;
 	}
 
+	// 재학 인증 신청시(UserAdmission 생성 시) 해당 유저가 신청 가능한 상태인지 확인
+	public boolean canApplyAdmission() {
+		return this.state == UserState.AWAIT || this.state == UserState.REJECT;
+	}
+
 	public void markAsAwait() {
 		this.state = UserState.AWAIT;
 		this.rejectionOrDropReason = null; // 거절 사유 초기화
+	}
+
+	// v2 재학인증 승인 시 신청서의 학적 정보를 사용자 계정에 반영하고 ACTIVE 상태로 전이한다.
+	public void approveAdmission(UserAdmission admission) {
+		this.studentId = admission.getRequestedStudentId();
+		this.admissionYear = admission.getRequestedAdmissionYear();
+		this.department = admission.getRequestedDepartment();
+		this.academicStatus = admission.getRequestedAcademicStatus();
+		this.graduationYear = admission.getRequestedGraduationYear();
+		this.state = UserState.ACTIVE;
+		this.rejectionOrDropReason = null;
+		this.roles = Set.of(Role.COMMON);
+	}
+
+	// v2 재학인증 거절 시 사용자 상태를 REJECT로 전이하고 거절 사유를 기록한다.
+	public void rejectAdmission(String rejectReason) {
+		this.state = UserState.REJECT;
+		this.rejectionOrDropReason = rejectReason;
 	}
 
 	public void markAsCertifiedGraduate(Integer graduationYear) {

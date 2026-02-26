@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/admin/users")
 @PreAuthorize("@security.hasRole(@Role.ADMIN)")
-@Tag(name = "관리자 유저 조회 api", description = "관리자 유저 조회 API")
+@Tag(name = "User Admin Query v2", description = "게시판 관리 등 관리자 기능에서 공통으로 사용되는 사용자 검색용 API")
 public class UserQueryAdminController {
 
 	private final UserQueryService userQueryService;
