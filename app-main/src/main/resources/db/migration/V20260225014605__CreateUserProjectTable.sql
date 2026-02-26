@@ -9,8 +9,8 @@ CREATE TABLE tb_user_project (
     user_info_id VARCHAR(255) NOT NULL,
     start_year INT NOT NULL,
     start_month INT NOT NULL,
-    end_year INT NOT NULL,
-    end_month INT NOT NULL,
+    end_year INT NULL,
+    end_month INT NULL,
     description VARCHAR(50) NOT NULL,
 
     CONSTRAINT fk_user_project_user_info_id
