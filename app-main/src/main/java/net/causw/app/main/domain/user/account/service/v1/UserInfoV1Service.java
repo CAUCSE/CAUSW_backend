@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserInfoSearchConditionDto;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
-import net.causw.app.main.domain.user.account.repository.userInfo.UserInfoQueryRepository;
+import net.causw.app.main.domain.user.account.repository.userInfo.UserInfoQueryV1Repository;
 import net.causw.app.main.domain.user.account.repository.userInfo.UserInfoRepository;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.ErrorCode;
@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserInfoV1Service {
 	private final UserInfoRepository userInfoRepository;
-	private final UserInfoQueryRepository userInfoQueryRepository;
+	private final UserInfoQueryV1Repository userInfoQueryV1Repository;
 
 	/**
 	 * 특정 유저에 대한 동문 수첩 정보가 있는 지 확인
@@ -34,7 +34,7 @@ public class UserInfoV1Service {
 	}
 
 	public Page<UserInfo> searchUserInfo(Pageable pageable, UserInfoSearchConditionDto userInfoSearchCondition) {
-		return userInfoQueryRepository.searchUserInfo(userInfoSearchCondition, pageable);
+		return userInfoQueryV1Repository.searchUserInfo(userInfoSearchCondition, pageable);
 	}
 
 	/**

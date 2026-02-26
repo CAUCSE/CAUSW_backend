@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.domain.user.account.api.v2.dto.request.UserInfoListCondition;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoDetailResponseDto;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoSummaryResponseDto;
 import net.causw.app.main.domain.user.account.api.v2.mapper.UserInfoDtoMapper;
@@ -63,11 +64,17 @@ public class UserInfoService {
 		return userInfoDtoMapper.toMyUserInfoDetailResponseDto(userInfo);
 	}
 
-	public Page<UserInfoSummaryResponseDto> getUserInfoPage(Integer pageNum) {
+	/**
+	 * 동문 수첩 프로필 리스트 조회
+	 * @param condition 필터
+	 * @param pageNum 페이징
+	 * @return 동문 수첩 프로필 리스트
+	 */
+	public Page<UserInfoSummaryResponseDto> getUserInfoPage(UserInfoListCondition condition, Integer pageNum) {
 		Page<UserInfo> userInfos;
 		Pageable pageable = pageableFactory.create(pageNum, StaticValue.USER_LIST_PAGE_SIZE);
+		userInfos = userInfoReader.findAllWithFilter(condition, pageable);
 
-		userInfos = userInfoReader.findAll(pageable);
 		return userInfos.map(userInfoDtoMapper::toUserInfoSummaryResponseDto);
 	}
 }

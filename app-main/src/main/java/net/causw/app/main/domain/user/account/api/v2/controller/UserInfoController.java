@@ -3,12 +3,14 @@ package net.causw.app.main.domain.user.account.api.v2.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.causw.app.main.domain.user.account.api.v2.dto.request.UserInfoListCondition;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoDetailResponseDto;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoSummaryResponseDto;
 import net.causw.app.main.domain.user.account.service.UserInfoService;
@@ -58,7 +60,8 @@ public class UserInfoController {
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "동문 수첩 프로필 리스트 조회", description = "동문 수첩 프로필 리스트를 조회합니다.")
 	public ApiResponse<PageResponse<UserInfoSummaryResponseDto>> getUserInfoPage(
+		@ModelAttribute UserInfoListCondition condition,
 		@RequestParam(name = "pageNum", required = false, defaultValue = "0") Integer pageNum) {
-		return ApiResponse.success(PageResponse.from(userInfoService.getUserInfoPage(pageNum)));
+		return ApiResponse.success(PageResponse.from(userInfoService.getUserInfoPage(condition, pageNum)));
 	}
 }

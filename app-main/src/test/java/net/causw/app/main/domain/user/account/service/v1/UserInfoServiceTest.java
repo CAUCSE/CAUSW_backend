@@ -28,7 +28,7 @@ import org.springframework.data.domain.Pageable;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserInfoSearchConditionDto;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
-import net.causw.app.main.domain.user.account.repository.userInfo.UserInfoQueryRepository;
+import net.causw.app.main.domain.user.account.repository.userInfo.UserInfoQueryV1Repository;
 import net.causw.app.main.domain.user.account.repository.userInfo.UserInfoRepository;
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.NotFoundException;
@@ -44,7 +44,7 @@ class UserInfoV1ServiceTest {
 	private UserInfoRepository userInfoRepository;
 
 	@Mock
-	private UserInfoQueryRepository userInfoQueryRepository;
+	private UserInfoQueryV1Repository userInfoQueryV1Repository;
 
 	@Nested
 	@DisplayName("getUserInfoByUser 테스트")
@@ -107,7 +107,7 @@ class UserInfoV1ServiceTest {
 			UserInfo testUserInfo = mock(UserInfo.class);
 			Page<UserInfo> expectedPage = new PageImpl<>(List.of(testUserInfo), pageable, 1);
 
-			given(userInfoQueryRepository.searchUserInfo(condition, pageable))
+			given(userInfoQueryV1Repository.searchUserInfo(condition, pageable))
 				.willReturn(expectedPage);
 
 			// when
@@ -117,7 +117,7 @@ class UserInfoV1ServiceTest {
 			assertThat(result).isNotNull();
 			assertThat(result.getContent()).hasSize(1);
 			assertThat(result.getTotalElements()).isEqualTo(1);
-			verify(userInfoQueryRepository, times(1)).searchUserInfo(condition, pageable);
+			verify(userInfoQueryV1Repository, times(1)).searchUserInfo(condition, pageable);
 		}
 	}
 
