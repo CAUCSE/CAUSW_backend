@@ -20,10 +20,10 @@ import lombok.RequiredArgsConstructor;
 public class UserInfoReader {
 
 	private final UserInfoRepository userInfoRepository;
-	private final UserInfoQueryRepository userInfoqueryRepository;
+	private final UserInfoQueryRepository userInfoQueryRepository;
 
-	public Page<UserInfo> findAllWithFilter(UserInfoListCondition condition, Pageable pageable) {
-		return userInfoqueryRepository.findAllWithFilter(condition, pageable);
+	public Page<UserInfo> findUserInfoWithFilter(UserInfoListCondition condition, Pageable pageable) {
+		return userInfoQueryRepository.findAllWithFilter(condition, pageable);
 	}
 
 	public Optional<UserInfo> findById(String userInfoId) {

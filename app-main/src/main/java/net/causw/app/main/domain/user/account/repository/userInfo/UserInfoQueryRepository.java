@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserInfoListCondition;
+import net.causw.app.main.domain.user.account.entity.userInfo.QUserCareer;
 import net.causw.app.main.domain.user.account.entity.userInfo.QUserInfo;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
 import net.causw.app.main.domain.user.account.enums.userinfo.SortType;
@@ -16,6 +17,8 @@ import net.causw.app.main.shared.exception.errorcode.UserInfoErrorCode;
 
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
@@ -48,37 +51,55 @@ public class UserInfoQueryRepository {
 	}
 
 	private BooleanExpression baseCondition(UserInfoListCondition filter, QUserInfo userInfo) {
-		BooleanExpression condition;
+		BooleanExpression condition = Expressions.TRUE.isTrue();
+		List<AcademicStatus> academicStatusList = filter.academicStatus();
+		Integer admissionYearStart = filter.admissionYearStart();
+		Integer admissionYearEnd = filter.admissionYearEnd();
+		String keyword = filter.keyword();
 
-		// 학적 상태 선택 안 되어 있으면 모두 조회 (재학생, 휴학생, 졸업생)
-		if (filter.academicStatus() == null || filter.academicStatus().isEmpty()) {
-			condition = userInfo.user.academicStatus.in(AcademicStatus.GRADUATED, AcademicStatus.ENROLLED,
-				AcademicStatus.LEAVE_OF_ABSENCE);
+		// 학적 상태 필터
+		if (academicStatusList == null || academicStatusList.isEmpty()) {
+			condition = condition.and(userInfo.user.academicStatus.in(AcademicStatus.GRADUATED, AcademicStatus.ENROLLED,
+				AcademicStatus.LEAVE_OF_ABSENCE));
 		} else {
-			condition = userInfo.user.academicStatus.in(filter.academicStatus());
+			condition = condition.and(userInfo.user.academicStatus.in(academicStatusList));
 		}
 
-		// 학번 범위 설정 안 되어 있으면 모두 조회
-		if (filter.admissionYearStart() == null && filter.admissionYearEnd() == null) {
-			return condition;
-		}
-		if (filter.admissionYearStart() == null || filter.admissionYearEnd() == null) {
-			throw UserInfoErrorCode.INVALID_ADMISSION_YEAR_RANGE.toBaseException();
-		}
-		if (filter.admissionYearStart() > filter.admissionYearEnd()) {
-			throw UserInfoErrorCode.INVALID_ADMISSION_YEAR_RANGE.toBaseException();
+		// 학번 필터
+		if (!(admissionYearStart == null && admissionYearEnd == null)) {
+			if (admissionYearStart == null || admissionYearEnd == null) {
+				throw UserInfoErrorCode.INVALID_ADMISSION_YEAR_RANGE.toBaseException();
+			}
+			if (admissionYearStart > admissionYearEnd) {
+				throw UserInfoErrorCode.INVALID_ADMISSION_YEAR_RANGE.toBaseException();
+			}
+			condition = condition.and(userInfo.user.admissionYear.between(admissionYearStart, admissionYearEnd));
 		}
 
-		return condition
-			.and(userInfo.user.admissionYear.between(filter.admissionYearStart(), filter.admissionYearEnd()));
+		// 검색
+		QUserCareer userCareer = QUserCareer.userCareer;
+		if (keyword != null && !keyword.trim().isBlank()) {
+			BooleanExpression keywordCondition = Expressions.FALSE.isTrue();
+
+			keywordCondition = keywordCondition.or(userInfo.user.name.containsIgnoreCase(keyword));
+			keywordCondition = keywordCondition.or(userInfo.job.containsIgnoreCase(keyword));
+			keywordCondition = keywordCondition.or(JPAExpressions.selectFrom(userCareer)
+				.where(userCareer.userInfo.eq(userInfo)
+					.and(userCareer.description.containsIgnoreCase(keyword)))
+				.exists());
+			condition = condition.and(keywordCondition);
+		}
+
+		return condition;
 	}
 
 	private OrderSpecifier<?> getSortType(UserInfoListCondition filter, QUserInfo userInfo) {
-		// TODO: 기준 필요
+		// TODO: 정렬 기준 필요
+		// 정렬 필터
 		if (filter.sortType() == null) {
-			return userInfo.user.name.asc();
+			return userInfo.updatedAt.asc();
 		}
 
-		return filter.sortType() == SortType.DESC ? userInfo.user.name.desc() : userInfo.user.name.asc();
+		return filter.sortType() == SortType.DESC ? userInfo.updatedAt.desc() : userInfo.updatedAt.asc();
 	}
 }

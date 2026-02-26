@@ -31,7 +31,7 @@ public class UserInfoController {
 	private final UserInfoService userInfoService;
 
 	/**
-	 *  동문수첩 프로필 고유 id 값으로 동문 수첩 프로필 세부 정보를 조회하는 API
+	 * 동문수첩 프로필 고유 id 값으로 동문 수첩 프로필 세부 정보를 조회하는 API
 	 * @param userInfoId 동문 수첩 프로필 고유 id
 	 * @return 동문 수첩 프로필 상세 정보
 	 */
@@ -56,9 +56,15 @@ public class UserInfoController {
 		return ApiResponse.success(userInfoService.getMyDetailUserInfo(userDetails.getUserId()));
 	}
 
+	/**
+	 * 동문 수첩 프로필 리스트 조회 및 검색
+	 * @param condition 검색어, 필터
+	 * @param pageNum 페이징
+	 * @return 조회된 동문 수첩 프로필 리스트
+	 */
 	@GetMapping(value = "/")
 	@ResponseStatus(HttpStatus.OK)
-	@Operation(summary = "동문 수첩 프로필 리스트 조회", description = "동문 수첩 프로필 리스트를 조회합니다.")
+	@Operation(summary = "동문 수첩 프로필 리스트 조회 및 검색", description = "검색어 또는 필터를 포함해 동문 수첩 프로필 리스트를 조회합니다.")
 	public ApiResponse<PageResponse<UserInfoSummaryResponseDto>> getUserInfoPage(
 		@ModelAttribute UserInfoListCondition condition,
 		@RequestParam(name = "pageNum", required = false, defaultValue = "0") Integer pageNum) {

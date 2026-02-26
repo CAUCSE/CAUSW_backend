@@ -65,15 +65,15 @@ public class UserInfoService {
 	}
 
 	/**
-	 * 동문 수첩 프로필 리스트 조회
-	 * @param condition 필터
+	 * 동문 수첩 프로필 리스트 조회 및 검색
+	 * @param condition 필터 (검색어 포함)
 	 * @param pageNum 페이징
 	 * @return 동문 수첩 프로필 리스트
 	 */
 	public Page<UserInfoSummaryResponseDto> getUserInfoPage(UserInfoListCondition condition, Integer pageNum) {
 		Page<UserInfo> userInfos;
 		Pageable pageable = pageableFactory.create(pageNum, StaticValue.USER_LIST_PAGE_SIZE);
-		userInfos = userInfoReader.findAllWithFilter(condition, pageable);
+		userInfos = userInfoReader.findUserInfoWithFilter(condition, pageable);
 
 		return userInfos.map(userInfoDtoMapper::toUserInfoSummaryResponseDto);
 	}
