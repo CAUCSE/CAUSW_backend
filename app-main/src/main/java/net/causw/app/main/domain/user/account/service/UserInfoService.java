@@ -5,7 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.domain.user.account.api.v2.dto.request.UserInfoListCondition;
+import net.causw.app.main.domain.user.account.service.v2.dto.UserInfoListCondition;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoDetailResponseDto;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoSummaryResponseDto;
 import net.causw.app.main.domain.user.account.api.v2.mapper.UserInfoDtoMapper;

@@ -8,7 +8,7 @@ import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
-import net.causw.app.main.domain.user.account.api.v2.dto.request.UserInfoListCondition;
+import net.causw.app.main.domain.user.account.service.v2.dto.UserInfoListCondition;
 import net.causw.app.main.domain.user.account.entity.userInfo.QUserCareer;
 import net.causw.app.main.domain.user.account.entity.userInfo.QUserInfo;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;

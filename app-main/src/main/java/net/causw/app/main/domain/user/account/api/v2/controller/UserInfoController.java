@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import net.causw.app.main.domain.user.account.api.v2.dto.request.UserInfoListCondition;
+import net.causw.app.main.domain.user.account.service.v2.dto.UserInfoListCondition;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoDetailResponseDto;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoSummaryResponseDto;
 import net.causw.app.main.domain.user.account.service.UserInfoService;
