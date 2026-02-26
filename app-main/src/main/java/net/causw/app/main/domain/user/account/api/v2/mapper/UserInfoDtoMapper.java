@@ -62,8 +62,7 @@ public interface UserInfoDtoMapper extends UuidFileToUrlDtoMapper {
 			case ENROLLED -> "재학생";
 			case LEAVE_OF_ABSENCE -> "휴학생";
 			case GRADUATED -> "졸업생";
-			case PROFESSOR -> "교수";
-			default -> "기타"; // 중퇴, 정학, 미정
+			default -> "기타"; // 교수, 중퇴, 정학, 미정
 		};
 	}
 
