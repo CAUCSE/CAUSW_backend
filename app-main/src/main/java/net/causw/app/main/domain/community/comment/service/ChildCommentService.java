@@ -30,7 +30,6 @@ public class ChildCommentService {
 	private final UserReader userReader;
 	private final CommentReader commentReader;
 	private final ChildCommentReader childCommentReader;
-	private final LikeChildCommentReader likeChildCommentReader;
 	private final PostReader postReader;
 	private final ChildCommentWriter childCommentWriter;
 	private final LikeChildCommentWriter likeChildCommentWriter;

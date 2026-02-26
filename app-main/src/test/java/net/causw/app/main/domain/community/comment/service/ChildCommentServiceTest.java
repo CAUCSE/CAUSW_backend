@@ -51,8 +51,6 @@ public class ChildCommentServiceTest {
 	@Mock
 	ChildCommentReader childCommentReader;
 	@Mock
-	LikeChildCommentReader likeChildCommentReader;
-	@Mock
 	PostReader postReader;
 	@Mock
 	ChildCommentWriter childCommentWriter;
