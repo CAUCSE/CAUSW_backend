@@ -1,5 +1,8 @@
 package net.causw.app.main.domain.user.account.api.v2.mapper;
 
+import java.util.List;
+import java.util.Set;
+
 import org.mapstruct.InheritConfiguration;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -26,11 +29,11 @@ public interface UserInfoDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "isPhoneNumberVisible", source = "phoneNumberVisible")
 	@Mapping(target = "isMessageVisible", source = "messageVisible")
 	@Mapping(target = "socialLinks", source = "socialLinks")
-	@Mapping(target = "techStack", source = "userTechStack")
+	@Mapping(target = "techStack", source = "userTechStack", qualifiedByName = "sortStringsAsc")
 	@Mapping(target = "userCareer", source = "userCareer")
 	@Mapping(target = "userProject", source = "userProject")
-	@Mapping(target = "userInterestTech", source = "userInterestTech")
-	@Mapping(target = "userInterestDomain", source = "userInterestDomain")
+	@Mapping(target = "userInterestTech", source = "userInterestTech", qualifiedByName = "sortStringsAsc")
+	@Mapping(target = "userInterestDomain", source = "userInterestDomain", qualifiedByName = "sortStringsAsc")
 	UserInfoDetailResponseDto toUserInfoDetailResponseDto(UserInfo userInfo);
 
 	// 내 동문 수첩 프로필 상세 조회
@@ -73,5 +76,15 @@ public interface UserInfoDtoMapper extends UuidFileToUrlDtoMapper {
 		} else {
 			return null;
 		}
+	}
+
+	@Named("sortStringsAsc")
+	static List<String> sortStringsAsc(Set<String> set) {
+		if (set == null || set.isEmpty())
+			return List.of();
+		return set.stream()
+			.filter(s -> s != null && !s.isBlank())
+			.sorted(String.CASE_INSENSITIVE_ORDER)
+			.toList();
 	}
 }

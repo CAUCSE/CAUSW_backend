@@ -49,6 +49,7 @@ public class UserInfoV1Controller {
 	 * @param userId
 	 * @return
 	 */
+	@Deprecated
 	@GetMapping(value = "/{userId}")
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "사용자 id로 사용자 세부정보 조회 API")
@@ -57,6 +58,7 @@ public class UserInfoV1Controller {
 		return getUserInfoUseCaseService.execute(userId);
 	}
 
+	@Deprecated
 	@GetMapping
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "전체 사용자 리스트 검색 및 조회 API", description = "최근 수정된 순서대로 정렬")
@@ -66,6 +68,7 @@ public class UserInfoV1Controller {
 		return searchUserInfoListUseCaseService.execute(userInfoSearchCondition, pageNum);
 	}
 
+	@Deprecated
 	@GetMapping(value = "/me")
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "자신의 세부정보 조회 API")
@@ -74,6 +77,7 @@ public class UserInfoV1Controller {
 		return getUserInfoUseCaseService.execute(userDetails.getUserId());
 	}
 
+	@Deprecated
 	@PutMapping(value = "/me", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "자신의 세부정보 갱신 API")

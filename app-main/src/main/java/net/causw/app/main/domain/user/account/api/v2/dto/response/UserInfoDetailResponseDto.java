@@ -1,7 +1,6 @@
 package net.causw.app.main.domain.user.account.api.v2.dto.response;
 
 import java.util.List;
-import java.util.Set;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -28,15 +27,15 @@ public record UserInfoDetailResponseDto(
 
 	@Schema(description = "사용자 이메일", example = "abcde12345@cau.ac.kr") String email,
 
-	@Schema(description = "사용자 SNS", example = "") List<String> socialLinks,
+	@Schema(description = "사용자 SNS", example = "[\"https://www.example.com\"]") List<String> socialLinks,
 
-	@Schema(description = "사용자 기술 스택", example = "") Set<String> techStack,
+	@Schema(description = "사용자 기술 스택", example = "[\"Stack0\", \"Stack1\"]") List<String> techStack,
 
-	@Schema(description = "사용자 경력 사항", example = "") List<UserCareerDto> userCareer,
+	@Schema(description = "사용자 경력 사항") List<UserCareerDto> userCareer,
 
-	@Schema(description = "사용자 대표 프로젝트", example = "") List<UserProjectDto> userProject,
+	@Schema(description = "사용자 대표 프로젝트") List<UserProjectDto> userProject,
 
-	@Schema(description = "사용자 관심 기술", example = "") Set<String> userInterestTech,
+	@Schema(description = "사용자 관심 기술", example = "[\"Tech0\", \"Tech1\"]") List<String> userInterestTech,
 
-	@Schema(description = "사용자 관심 도메인", example = "") Set<String> userInterestDomain) {
+	@Schema(description = "사용자 관심 도메인", example = "[\"Domain0\", \"Domain1\"]") List<String> userInterestDomain) {
 }

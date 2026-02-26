@@ -11,7 +11,13 @@ import lombok.RequiredArgsConstructor;
 public enum UserInfoErrorCode implements BaseResponseCode {
 	TOO_MUCH_SOCIAL_LINK(HttpStatus.BAD_REQUEST, "USERINFO_400_001", "소셜 링크는 최대 10개까지 추가할 수 있습니다."),
 	INVALID_ADMISSION_YEAR_RANGE(HttpStatus.BAD_REQUEST, "USERINFO_400_002", "학번 필터 범위가 올바르지 않습니다."),
-	USERINFO_NOT_FOUND(HttpStatus.BAD_REQUEST, "USERINFO_404_001", "존재하지 않는 동문 수첩 프로필입니다.");
+	INVALID_CAREER_START_DATE(HttpStatus.BAD_REQUEST, "USERINFO_400_003", "경력 사항 시작 날짜가 올바르지 않습니다."),
+	INVALID_CAREER_END_DATE(HttpStatus.BAD_REQUEST, "USERINFO_400_004", "경력 사항 종료 날짜가 올바르지 않습니다."),
+	INVALID_PROJECT_START_DATE(HttpStatus.BAD_REQUEST, "USERINFO_400_005", "대표 프로젝트 시작 날짜가 올바르지 않습니다."),
+	INVALID_PROJECT_END_DATE(HttpStatus.BAD_REQUEST, "USERINFO_400_006", "대표 프로젝트 종료 날짜가 올바르지 않습니다."),
+	USERINFO_NOT_FOUND(HttpStatus.NOT_FOUND, "USERINFO_404_001", "존재하지 않는 동문 수첩 프로필입니다."),
+	USER_CAREER_NOT_FOUND(HttpStatus.NOT_FOUND, "USERINFO_404_002", "존재하지 않는 경력 사항입니다."),
+	USER_PROJECT_NOT_FOUND(HttpStatus.NOT_FOUND, "USERINFO_404_003", "존재하지 않는 대표 프로젝트입니다.");
 
 	private final HttpStatus status;
 	private final String code;

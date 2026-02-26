@@ -1,7 +1,7 @@
 package net.causw.app.main.domain.user.account.entity.userInfo;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -64,7 +64,7 @@ public class UserInfo extends BaseEntity {
 	@CollectionTable(name = "tb_user_tech_stack", joinColumns = @JoinColumn(name = "user_info_id"))
 	@Column(name = "tech_stack")
 	@Builder.Default
-	private Set<String> userTechStack = new LinkedHashSet<>();
+	private Set<String> userTechStack = new HashSet<>();
 
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "userInfo", fetch = FetchType.LAZY)
 	@Builder.Default
@@ -78,13 +78,13 @@ public class UserInfo extends BaseEntity {
 	@CollectionTable(name = "tb_user_interest_tech", joinColumns = @JoinColumn(name = "user_info_id"))
 	@Column(name = "interest_tech")
 	@Builder.Default
-	private Set<String> userInterestTech = new LinkedHashSet<>();
+	private Set<String> userInterestTech = new HashSet<>();
 
 	@ElementCollection
 	@CollectionTable(name = "tb_user_interest_domain", joinColumns = @JoinColumn(name = "user_info_id"))
 	@Column(name = "interest_domain")
 	@Builder.Default
-	private Set<String> userInterestDomain = new LinkedHashSet<>();
+	private Set<String> userInterestDomain = new HashSet<>();
 
 	public static UserInfo of(User user) {
 		return UserInfo.builder()
@@ -114,24 +114,15 @@ public class UserInfo extends BaseEntity {
 		String job,
 		List<String> socialLinks,
 		boolean isPhoneNumberVisible,
-		boolean isMessageVisible,
-		LinkedHashSet<String> userTechStack,
-		List<UserCareer> userCareer,
-		List<UserProject> userProject,
-		LinkedHashSet<String> userInterestTech,
-		LinkedHashSet<String> userInterestDomain) {
+		boolean isMessageVisible) {
 		if (socialLinks.size() > 10) {
 			throw UserInfoErrorCode.TOO_MUCH_SOCIAL_LINK.toBaseException();
 		}
 
 		this.description = description;
 		this.job = job;
+		this.socialLinks = socialLinks;
 		this.isPhoneNumberVisible = isPhoneNumberVisible;
 		this.isMessageVisible = isMessageVisible;
-		this.userTechStack = userTechStack;
-		this.userCareer = userCareer;
-		this.userProject = userProject;
-		this.userInterestTech = userInterestTech;
-		this.userInterestDomain = userInterestDomain;
 	}
 }

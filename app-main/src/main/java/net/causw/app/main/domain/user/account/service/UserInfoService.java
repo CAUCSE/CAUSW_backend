@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.domain.user.account.api.v2.dto.request.UserInfoUpdateRequestDto;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoDetailResponseDto;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoSummaryResponseDto;
 import net.causw.app.main.domain.user.account.api.v2.mapper.UserInfoDtoMapper;
@@ -13,6 +14,7 @@ import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
 import net.causw.app.main.domain.user.account.service.v2.dto.UserInfoListCondition;
 import net.causw.app.main.domain.user.account.service.v2.implementation.UserInfoCreator;
 import net.causw.app.main.domain.user.account.service.v2.implementation.UserInfoReader;
+import net.causw.app.main.domain.user.account.service.v2.implementation.UserInfoWriter;
 import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
 import net.causw.app.main.shared.exception.errorcode.UserInfoErrorCode;
 import net.causw.app.main.shared.pageable.PageableFactory;
@@ -29,15 +31,23 @@ public class UserInfoService {
 	private final UserInfoDtoMapper userInfoDtoMapper;
 	private final PageableFactory pageableFactory;
 	private final UserReader userReader;
+	private final UserInfoWriter userInfoWriter;
 
 	/**
-	 * 사용자에 대한 동문 수첩이 없을 경우 동문 수첩 프로필 생성
+	 * 내 동문 수첩 프로필 수정
+	 * @param request 수정할 내용
 	 * @param user 사용자
 	 * @return 사용자 동문 수첩 프로필
 	 */
-	public UserInfo getOrCreateUserInfoFromUser(User user) {
-		return userInfoReader.findByUserId(user.getId())
+	@Transactional
+	public UserInfoDetailResponseDto updateUserInfo(UserInfoUpdateRequestDto request, User user) {
+		// 아직 동문 수첩 프로필 생성되지 않았으면 새로 생성
+		UserInfo userInfo = userInfoReader.findByUserId(user.getId())
 			.orElseGet(() -> userInfoCreator.save(UserInfo.of(user)));
+
+		userInfo = userInfoWriter.update(request, userInfo);
+
+		return userInfoDtoMapper.toUserInfoDetailResponseDto(userInfo);
 	}
 
 	/**
@@ -60,6 +70,7 @@ public class UserInfoService {
 	 */
 	@Transactional
 	public UserInfoDetailResponseDto getMyDetailUserInfo(String userId) {
+		// 아직 동문 수첩 프로필 생성되지 않았으면 새로 생성
 		UserInfo userInfo = userInfoReader.findByUserId(userId)
 			.orElseGet(() -> userInfoCreator.save(UserInfo.of(userReader.findUserById(userId))));
 
@@ -72,6 +83,7 @@ public class UserInfoService {
 	 * @param pageNum 페이징
 	 * @return 동문 수첩 프로필 리스트
 	 */
+	@Transactional
 	public Page<UserInfoSummaryResponseDto> getUserInfoPage(UserInfoListCondition condition, Integer pageNum) {
 		Page<UserInfo> userInfos;
 		Pageable pageable = pageableFactory.create(pageNum, StaticValue.USER_LIST_PAGE_SIZE);

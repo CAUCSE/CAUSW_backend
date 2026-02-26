@@ -242,7 +242,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "job", source = "userInfo.job")
 	@Mapping(target = "userCareer", source = "userInfo.userCareer", qualifiedByName = "mapUserCareerListToResponseDtoList")
 	@Mapping(target = "socialLinks", source = "userInfo.socialLinks")
-	@Mapping(target = "isPhoneNumberVisible", source = "userInfo.phoneNumberVisible")
+	@Mapping(target = "isPhoneNumberVisible", source = "userInfo.isPhoneNumberVisible")
 	UserInfoResponseDto toUserInfoResponseDto(UserInfo userInfo);
 
 	//TODO : 운영계 반영 성공시 삭제

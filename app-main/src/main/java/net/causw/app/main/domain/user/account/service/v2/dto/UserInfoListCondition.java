@@ -2,8 +2,6 @@ package net.causw.app.main.domain.user.account.service.v2.dto;
 
 import java.util.List;
 
-import org.springframework.boot.context.properties.bind.DefaultValue;
-
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.enums.userinfo.SortType;
 
