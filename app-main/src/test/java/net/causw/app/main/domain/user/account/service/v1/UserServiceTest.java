@@ -124,7 +124,7 @@ class UserServiceTest {
 			//given
 			UserState state = UserState.AWAIT;
 			String sheetName = state.getDescription() + " 유저";
-			UserAdmission userAdmission = ObjectFixtures.getUserAdmission();
+			UserAdmission userAdmission = ObjectFixtures.getUserAdmissionV1();
 			userAdmission.getUser().setState(state);
 
 			given(userAdmissionRepository.findAll()).willReturn(List.of(userAdmission));
