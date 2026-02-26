@@ -12,9 +12,7 @@ import net.causw.app.main.domain.community.comment.api.v2.mapper.ChildCommentRes
 import net.causw.app.main.domain.community.comment.entity.ChildComment;
 import net.causw.app.main.domain.community.comment.repository.ChildCommentRepository;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.global.constant.MessageUtil;
-import net.causw.global.exception.BadRequestException;
-import net.causw.global.exception.ErrorCode;
+import net.causw.app.main.shared.exception.errorcode.ChildCommentErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,9 +26,7 @@ public class ChildCommentReader {
 
 	public ChildComment findById(String childCommentId) {
 		return childCommentRepository.findById(childCommentId).orElseThrow(
-			() -> new BadRequestException(
-				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.COMMENT_NOT_FOUND));
+			ChildCommentErrorCode.CHILD_COMMENT_NOT_FOUND::toBaseException);
 	}
 
 	/**

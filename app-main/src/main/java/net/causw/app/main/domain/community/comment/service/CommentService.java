@@ -31,9 +31,7 @@ import net.causw.app.main.domain.notification.notification.service.v1.PostNotifi
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
 import net.causw.app.main.domain.user.relation.service.v1.UserBlockEntityService;
-import net.causw.global.constant.MessageUtil;
-import net.causw.global.exception.BadRequestException;
-import net.causw.global.exception.ErrorCode;
+import net.causw.app.main.shared.exception.errorcode.CommentErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -158,7 +156,7 @@ public class CommentService {
 		commentValidator.validateWriterNotDeleted(comment);
 
 		if (likeCommentReader.isCommentLiked(user, commentId)) {
-			throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.COMMENT_ALREADY_LIKED);
+			throw CommentErrorCode.COMMENT_ALREADY_LIKED.toBaseException();
 		}
 
 		LikeComment likeComment = LikeComment.of(comment, user);
@@ -173,7 +171,7 @@ public class CommentService {
 		commentValidator.validateWriterNotDeleted(comment);
 
 		if (!likeCommentReader.isCommentLiked(user, commentId)) {
-			throw new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.COMMENT_NOT_LIKED);
+			throw CommentErrorCode.COMMENT_NOT_LIKE.toBaseException();
 		}
 
 		likeCommentWriter.delete(commentId, user.getId());

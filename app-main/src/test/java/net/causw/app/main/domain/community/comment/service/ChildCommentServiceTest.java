@@ -38,7 +38,6 @@ import net.causw.app.main.domain.community.post.service.v2.implementation.PostRe
 import net.causw.app.main.domain.notification.notification.service.v1.CommentNotificationService;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
-import net.causw.global.exception.BadRequestException;
 
 @ExtendWith(MockitoExtension.class)
 public class ChildCommentServiceTest {
@@ -80,7 +79,6 @@ public class ChildCommentServiceTest {
 			post = mock(Post.class);
 			board = mock(Board.class);
 
-			given(creator.getId()).willReturn("creator-id");
 			given(parentComment.getPost()).willReturn(post);
 			given(post.getId()).willReturn("post-id");
 			given(post.getBoard()).willReturn(board);
@@ -225,8 +223,8 @@ public class ChildCommentServiceTest {
 
 			// when & then
 			assertThatThrownBy(() -> childCommentService.likeChildComment("user-id", "child-comment-id"))
-				.isInstanceOf(BadRequestException.class)
-				.hasMessageContaining("이미 좋아요");
+				.isInstanceOf(RuntimeException.class)
+				.hasMessageContaining("좋아요를 이미 누른 대댓글 입니다.");
 
 			verify(likeChildCommentWriter, never()).save(any(LikeChildComment.class));
 		}
@@ -269,8 +267,8 @@ public class ChildCommentServiceTest {
 
 			// when & then
 			assertThatThrownBy(() -> childCommentService.cancelLikeChildComment("user-id", "child-comment-id"))
-				.isInstanceOf(BadRequestException.class)
-				.hasMessageContaining("좋아요 내역이 없습니다");
+				.isInstanceOf(RuntimeException.class)
+				.hasMessageContaining("좋아요를 누르지 않은 대댓글입니다.");
 
 			verify(likeChildCommentWriter, never()).delete(anyString(), anyString());
 		}

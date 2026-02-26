@@ -20,9 +20,7 @@ import net.causw.app.main.domain.community.post.service.v2.implementation.PostRe
 import net.causw.app.main.domain.notification.notification.service.v1.CommentNotificationService;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
-import net.causw.global.constant.MessageUtil;
-import net.causw.global.exception.BadRequestException;
-import net.causw.global.exception.ErrorCode;
+import net.causw.app.main.shared.exception.errorcode.ChildCommentErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -114,7 +112,7 @@ public class ChildCommentService {
 		childCommentValidator.validateWriterNotDeleted(childComment);
 
 		if (likeChildCommentReader.isChildCommentLiked(user, childCommentId)) {
-			throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.CHILD_COMMENT_ALREADY_LIKED);
+			throw ChildCommentErrorCode.CHILD_COMMENT_ALREADY_LIKED.toBaseException();
 		}
 
 		LikeChildComment likeChildComment = LikeChildComment.of(childComment, user);
@@ -129,7 +127,7 @@ public class ChildCommentService {
 		childCommentValidator.validateWriterNotDeleted(childComment);
 
 		if (!likeChildCommentReader.isChildCommentLiked(user, childCommentId)) {
-			throw new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.CHILD_COMMENT_NOT_LIKED);
+			throw ChildCommentErrorCode.CHILD_COMMENT_NOT_LIKE.toBaseException();
 		}
 
 		likeChildCommentWriter.delete(childCommentId, user.getId());

@@ -20,9 +20,7 @@ import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.community.comment.repository.CommentRepository;
 import net.causw.app.main.domain.notification.notification.service.implementation.UserCommentSubscribeReader;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.global.constant.MessageUtil;
-import net.causw.global.exception.BadRequestException;
-import net.causw.global.exception.ErrorCode;
+import net.causw.app.main.shared.exception.errorcode.CommentErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -143,9 +141,7 @@ public class CommentReader {
 	 */
 	public Comment getComment(String commentId) {
 		return commentRepository.findById(commentId).orElseThrow(
-			() -> new BadRequestException(
-				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.COMMENT_NOT_FOUND));
+			CommentErrorCode.COMMENT_NOT_FOUND::toBaseException);
 	}
 
 	/**
