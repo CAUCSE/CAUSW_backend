@@ -7,10 +7,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.domain.user.account.service.v2.dto.UserInfoListCondition;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
 import net.causw.app.main.domain.user.account.repository.userInfo.UserInfoQueryRepository;
 import net.causw.app.main.domain.user.account.repository.userInfo.UserInfoRepository;
+import net.causw.app.main.domain.user.account.service.v2.dto.UserInfoListCondition;
 
 import lombok.RequiredArgsConstructor;
 

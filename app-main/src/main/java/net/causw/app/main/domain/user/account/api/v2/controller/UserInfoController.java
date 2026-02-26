@@ -10,10 +10,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import net.causw.app.main.domain.user.account.service.v2.dto.UserInfoListCondition;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoDetailResponseDto;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoSummaryResponseDto;
 import net.causw.app.main.domain.user.account.service.UserInfoService;
+import net.causw.app.main.domain.user.account.service.v2.dto.UserInfoListCondition;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 import net.causw.app.main.shared.dto.PageResponse;
@@ -50,11 +50,20 @@ public class UserInfoController {
 	 */
 	@GetMapping(value = "/me")
 	@ResponseStatus(HttpStatus.OK)
-	@Operation(summary = "내 동문 수첩 프로필 상세 조회", description = "내 동문 수첩 프로필 상세 정보를 조회합니다.")
+	@Operation(summary = "내 동문 수첩 프로필 상세 조회", description = "내 동문 수첩 프로필 상세 정보를 조회합니다. (아직 생성되지 않은 경우 생성)")
 	public ApiResponse<UserInfoDetailResponseDto> getMyUserInfoDetail(
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return ApiResponse.success(userInfoService.getMyDetailUserInfo(userDetails.getUserId()));
 	}
+
+	// @PutMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
+	// @ResponseStatus(HttpStatus.OK)
+	// @Operation(summary = "내 동문 수첩 프로필 업데이트", description = "내 동문 수첩 프로필을 업데이트합니다.")
+	// public ApiResponse<UserInfoDetailResponseDto> updateMyUserInfo(
+	// 	@AuthenticationPrincipal CustomUserDetails userDetails,
+	// 	@RequestPart(value = "userInfoUpdateDto") @Valid UserInfoUpdateRequestDto userInfoUpdateDto) {
+	// 	return ApiResponse.success(userInfoService.getOrCreateUserInfoFromUser(userDetails.getUser()));
+	// }
 
 	/**
 	 * 동문 수첩 프로필 리스트 조회 및 검색

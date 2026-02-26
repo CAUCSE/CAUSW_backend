@@ -18,7 +18,7 @@ public record UserInfoDetailResponseDto(
 
 	@Schema(description = "사용자 직업", example = "풀스택 개발자") String job,
 
-	@Schema(description = "동문 수첩 프로필 설명", example = "동문 수첩 프로필 설명입니다.") String description,
+	@Schema(description = "동문 수첩 프로필 소개글", example = "동문 수첩 프로필 소개글입니다.") String description,
 
 	@Schema(description = "사용자 전화번호", example = "010-1234-5678") String phoneNumber,
 

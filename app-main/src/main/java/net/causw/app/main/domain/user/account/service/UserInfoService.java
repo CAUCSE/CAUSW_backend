@@ -5,14 +5,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.domain.user.account.service.v2.dto.UserInfoListCondition;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoDetailResponseDto;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoSummaryResponseDto;
 import net.causw.app.main.domain.user.account.api.v2.mapper.UserInfoDtoMapper;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
+import net.causw.app.main.domain.user.account.service.v2.dto.UserInfoListCondition;
 import net.causw.app.main.domain.user.account.service.v2.implementation.UserInfoCreator;
 import net.causw.app.main.domain.user.account.service.v2.implementation.UserInfoReader;
+import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
 import net.causw.app.main.shared.exception.errorcode.UserInfoErrorCode;
 import net.causw.app.main.shared.pageable.PageableFactory;
 import net.causw.global.constant.StaticValue;
@@ -23,10 +24,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserInfoService {
 
+	private final UserInfoCreator userInfoCreator;
 	private final UserInfoReader userInfoReader;
 	private final UserInfoDtoMapper userInfoDtoMapper;
-	private final UserInfoCreator userInfoCreator;
 	private final PageableFactory pageableFactory;
+	private final UserReader userReader;
 
 	/**
 	 * 사용자에 대한 동문 수첩이 없을 경우 동문 수첩 프로필 생성
@@ -56,10 +58,10 @@ public class UserInfoService {
 	 * @param userId 사용자 ID
 	 * @return 내 동문 수첩 프로필 상세
 	 */
-	@Transactional(readOnly = true)
+	@Transactional
 	public UserInfoDetailResponseDto getMyDetailUserInfo(String userId) {
 		UserInfo userInfo = userInfoReader.findByUserId(userId)
-			.orElseThrow(UserInfoErrorCode.USERINFO_NOT_FOUND::toBaseException);
+			.orElseGet(() -> userInfoCreator.save(UserInfo.of(userReader.findUserById(userId))));
 
 		return userInfoDtoMapper.toMyUserInfoDetailResponseDto(userInfo);
 	}
