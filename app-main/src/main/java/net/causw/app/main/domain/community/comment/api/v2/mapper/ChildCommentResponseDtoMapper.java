@@ -2,9 +2,6 @@ package net.causw.app.main.domain.community.comment.api.v2.mapper;
 
 import java.util.List;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.community.comment.api.v2.dto.response.ChildCommentResponseDto;
 import net.causw.app.main.domain.community.comment.entity.ChildComment;
@@ -12,54 +9,78 @@ import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.global.constant.StaticValue;
 
-@Mapper(componentModel = "spring")
-public interface ChildCommentResponseDtoMapper {
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
-	@Mapping(target = "writerName", expression = "java(childComment.getIsAnonymous() ? null : childComment.getWriter().getName())")
-	@Mapping(target = "writerNickname", expression = "java(childComment.getIsAnonymous() ? null : childComment.getWriter().getNickname())")
-	@Mapping(target = "displayWriterNickname", expression = "java(mapDisplayNicknameForChildComment(childComment, childComment.getWriter().getNickname()))")
-	@Mapping(target = "writerAdmissionYear", expression = "java(childComment.getIsAnonymous() ? null : childComment.getWriter().getAdmissionYear())")
-	@Mapping(target = "writerProfileImage", expression = "java(mapProfileImageForChildComment(childComment))")
-	@Mapping(target = "isAnonymous", source = "childComment.isAnonymous")
-	@Mapping(target = "numLike", source = "numChildCommentLike")
-	@Mapping(target = "isBlocked", source = "isBlocked")
-	@Mapping(target = "content", expression = "java(mapContentForChildComment(childComment.getContent(), isBlocked))")
-	ChildCommentResponseDto toChildCommentResponseDto(
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public class ChildCommentResponseDtoMapper {
+
+	/**
+	 * ChildComment 엔티티와 관련 데이터를 ChildCommentResponseDto로 변환합니다.
+	 * 차단된 콘텐츠, 탈퇴/정지 유저, 익명 작성자에 대한 정보 보호 로직을 포함합니다.
+	 */
+	public static ChildCommentResponseDto toChildCommentResponseDto(
 		ChildComment childComment,
 		Long numChildCommentLike,
 		Boolean isChildCommentLike,
 		Boolean isOwner,
 		Boolean updatable,
 		Boolean deletable,
-		Boolean isBlocked);
+		Boolean isBlocked) {
 
-	default String mapContentForChildComment(String content, Boolean isBlocked) {
-		return Boolean.TRUE.equals(isBlocked) ? null : content;
-	}
-
-	default String mapProfileImageForChildComment(ChildComment childComment) {
-		if (Boolean.TRUE.equals(childComment.getIsAnonymous())) {
-			return null;
-		}
-
-		UserProfileImage userProfileImage = childComment.getWriter().getUserProfileImage();
-		if (userProfileImage == null) {
-			return null;
-		} else {
-			return userProfileImage.getUuidFile() == null ? null
-				: userProfileImage.getUuidFile().getFileUrl();
-		}
-	}
-
-	default String mapDisplayNicknameForChildComment(ChildComment childComment, String originalNickname) {
 		User writer = childComment.getWriter();
-		if (writer != null && List.of(UserState.INACTIVE, UserState.DROP, UserState.DELETED)
-			.contains(writer.getState())) {
-			return StaticValue.INACTIVE_USER_NICKNAME;
+
+		String content = Boolean.TRUE.equals(isBlocked) ? null : childComment.getContent();
+
+		String displayWriterNickname;
+		boolean isInactiveUser = writer != null && List.of(UserState.INACTIVE, UserState.DROP, UserState.DELETED)
+			.contains(writer.getState());
+
+		if (isInactiveUser) {
+			displayWriterNickname = StaticValue.INACTIVE_USER_NICKNAME;
 		} else if (Boolean.TRUE.equals(childComment.getIsAnonymous())) {
-			return StaticValue.ANONYMOUS_USER_NICKNAME;
+			displayWriterNickname = StaticValue.ANONYMOUS_USER_NICKNAME;
 		} else {
-			return originalNickname;
+			displayWriterNickname = writer != null ? writer.getNickname() : null;
 		}
+
+		String writerName = null;
+		String writerNickname = null;
+		Integer writerAdmissionYear = null;
+		String writerProfileImage = null;
+
+		if (!Boolean.TRUE.equals(childComment.getIsAnonymous()) && writer != null) {
+			writerName = writer.getName();
+			writerNickname = writer.getNickname();
+			writerAdmissionYear = writer.getAdmissionYear();
+
+			UserProfileImage userProfileImage = writer.getUserProfileImage();
+			if (userProfileImage != null && userProfileImage.getUuidFile() != null) {
+				writerProfileImage = userProfileImage.getUuidFile().getFileUrl();
+			}
+		}
+
+		return ChildCommentResponseDto.builder()
+			.id(childComment.getId())
+			.content(content)
+
+			.writerName(writerName)
+			.writerNickname(writerNickname)
+			.displayWriterNickname(displayWriterNickname)
+			.writerAdmissionYear(writerAdmissionYear)
+			.writerProfileImage(writerProfileImage)
+
+			.isAnonymous(childComment.getIsAnonymous())
+			.numLike(numChildCommentLike)
+			.isChildCommentLike(isChildCommentLike)
+			.isOwner(isOwner)
+
+			.updatable(updatable)
+			.deletable(deletable)
+			.isBlocked(isBlocked)
+
+			.createdAt(childComment.getCreatedAt())
+			.updatedAt(childComment.getUpdatedAt())
+			.build();
 	}
 }
