@@ -29,7 +29,6 @@ import net.causw.app.main.domain.community.comment.entity.LikeChildComment;
 import net.causw.app.main.domain.community.comment.service.implementation.ChildCommentReader;
 import net.causw.app.main.domain.community.comment.service.implementation.ChildCommentWriter;
 import net.causw.app.main.domain.community.comment.service.implementation.CommentReader;
-import net.causw.app.main.domain.community.comment.service.implementation.LikeChildCommentReader;
 import net.causw.app.main.domain.community.comment.service.implementation.LikeChildCommentWriter;
 import net.causw.app.main.domain.community.comment.util.ChildCommentValidator;
 import net.causw.app.main.domain.community.post.entity.Post;
