@@ -1,5 +1,8 @@
 package net.causw.app.main.domain.community.comment.service;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -10,16 +13,19 @@ import org.springframework.transaction.annotation.Transactional;
 import net.causw.app.main.domain.community.comment.api.v2.dto.request.CommentCreateRequestDto;
 import net.causw.app.main.domain.community.comment.api.v2.dto.request.CommentUpdateRequestDto;
 import net.causw.app.main.domain.community.comment.api.v2.dto.response.CommentResponseDto;
+import net.causw.app.main.domain.community.comment.entity.ChildComment;
 import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.community.comment.entity.LikeComment;
 import net.causw.app.main.domain.community.comment.service.implementation.CommentReader;
 import net.causw.app.main.domain.community.comment.service.implementation.CommentSubscribeWriter;
 import net.causw.app.main.domain.community.comment.service.implementation.CommentWriter;
+import net.causw.app.main.domain.community.comment.service.implementation.LikeChildCommentReader;
 import net.causw.app.main.domain.community.comment.service.implementation.LikeCommentReader;
 import net.causw.app.main.domain.community.comment.service.implementation.LikeCommentWriter;
 import net.causw.app.main.domain.community.comment.util.CommentValidator;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.v2.implementation.PostReader;
+import net.causw.app.main.domain.notification.notification.service.implementation.UserCommentSubscribeReader;
 import net.causw.app.main.domain.notification.notification.service.v1.PostNotificationService;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
@@ -38,12 +44,14 @@ public class CommentService {
 	private final UserReader userReader;
 	private final CommentReader commentReader;
 	private final LikeCommentReader likeCommentReader;
+	private final LikeChildCommentReader likeChildCommentReader;
 	private final CommentWriter commentWriter;
 	private final LikeCommentWriter likeCommentWriter;
 	private final CommentSubscribeWriter commentSubscribeWriter;
 	private final CommentValidator commentValidator;
 	private final PostNotificationService postNotificationService;
 	private final UserBlockEntityService userBlockEntityService;
+	private final UserCommentSubscribeReader userCommentSubscribeReader;
 
 	@Transactional
 	public CommentResponseDto createComment(String creatorId, CommentCreateRequestDto commentCreateDto) {
@@ -73,11 +81,37 @@ public class CommentService {
 		commentValidator.validateForFind(user, post);
 
 		Set<String> blockedUserIds = userBlockEntityService.findBlockeeUserIdsByBlocker(user);
-
 		Page<Comment> comments = commentReader.getComments(postId, pageable);
 
-		return comments
-			.map(comment -> commentReader.getCommentDetailForList(comment, user, post.getBoard(), blockedUserIds));
+		// 부모 댓글 ID 리스트 추출
+		List<String> commentIds = comments.getContent().stream().map(Comment::getId).toList();
+		if (commentIds.isEmpty())
+			return Page.empty(pageable); // 댓글이 없으면 조기 종료
+
+		// 자식 댓글 ID 리스트 추출
+		List<String> childCommentIds = comments.getContent().stream()
+			.flatMap(c -> c.getChildCommentList().stream())
+			.map(ChildComment::getId)
+			.toList();
+
+		// 부모 댓글 관련 데이터 조회
+		Map<String, Long> commentLikeCounts = likeCommentReader.getCommentLikeCounts(commentIds);
+		Set<String> likedCommentIds = likeCommentReader.getLikedCommentIds(user.getId(), commentIds);
+		Set<String> subscribedCommentIds = userCommentSubscribeReader.getSubscribedCommentIds(user.getId(), commentIds);
+
+		// 자식 댓글 관련 데이터 조회
+		Map<String, Long> childCommentLikeCounts = childCommentIds.isEmpty()
+			? Collections.emptyMap()
+			: likeChildCommentReader.getChildCommentLikeCounts(childCommentIds);
+
+		Set<String> likedChildCommentIds = childCommentIds.isEmpty()
+			? Collections.emptySet()
+			: likeChildCommentReader.getLikedChildCommentIds(user.getId(), childCommentIds);
+
+		return comments.map(comment -> commentReader.getCommentListDetails(
+			comment, user, post.getBoard(), blockedUserIds,
+			commentLikeCounts, likedCommentIds, subscribedCommentIds,
+			childCommentLikeCounts, likedChildCommentIds));
 	}
 
 	@Transactional

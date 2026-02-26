@@ -19,9 +19,11 @@ import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+@Tag(name = "Board Public v2", description = "게시판 관련 api")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/child-comments")

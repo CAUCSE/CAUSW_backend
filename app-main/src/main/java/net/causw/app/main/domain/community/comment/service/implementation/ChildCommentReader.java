@@ -56,24 +56,33 @@ public class ChildCommentReader {
 	}
 
 	/**
-	 * @param childComment 댓글
+	 * @param childComment 대댓글
 	 * @param user 조회자
 	 * @param board 게시판
-	 * @return CommentResponseDto
+	 * @param blockedUserIds 차단된 유저 ID 목록
+	 * @param likeCount 대댓글 좋아요 수
+	 * @param isLiked 현재 유저의 대댓글 좋아요 여부
+	 * @return ChildCommentResponseDto
 	 */
-	public ChildCommentResponseDto getChildCommentDetailForList(ChildComment childComment, User user, Board board,
-		Set<String> blockedUserIds) {
+	public ChildCommentResponseDto getChildCommentListDetails(
+		ChildComment childComment, User user, Board board, Set<String> blockedUserIds,
+		long likeCount, boolean isLiked) {
 
+		// 작성자 차단 여부 확인
 		boolean isBlockedContent = blockedUserIds.contains(childComment.getWriter().getId());
 
 		return childCommentResponseDtoMapper.toChildCommentResponseDto(
 			childComment,
-			likeChildCommentReader.getNumOfChildCommentLikes(childComment),
-			likeChildCommentReader.isChildCommentLiked(user, childComment.getId()),
+			likeCount,
+			isLiked,
 			StatusPolicy.isChildCommentOwner(childComment, user),
 			StatusPolicy.isUpdatable(childComment, user),
 			StatusPolicy.isDeletable(childComment, user, board),
 			isBlockedContent);
+	}
+
+	public List<ChildComment> getChildCommentsByParentIds(List<String> parentCommentIds) {
+		return childCommentRepository.findChildCommentsByParentCommentIds(parentCommentIds);
 	}
 
 	/**

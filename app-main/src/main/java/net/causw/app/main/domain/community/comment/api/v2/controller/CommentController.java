@@ -24,9 +24,11 @@ import net.causw.app.main.shared.dto.PageResponse;
 import net.causw.global.constant.StaticValue;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+@Tag(name = "Board Public v2", description = "게시판 관련 api")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/comments")
