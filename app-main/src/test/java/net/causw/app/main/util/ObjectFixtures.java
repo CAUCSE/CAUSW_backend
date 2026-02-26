@@ -36,7 +36,7 @@ import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.account.enums.user.GraduationType;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
-import net.causw.app.main.domain.user.account.service.v2.dto.AdmissionCreateCommand;
+import net.causw.app.main.domain.user.account.service.dto.request.AdmissionCreateCommand;
 import net.causw.global.constant.StaticValue;
 
 public class ObjectFixtures {

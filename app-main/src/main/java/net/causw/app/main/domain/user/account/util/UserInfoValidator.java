@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.user.account.service.util;
+package net.causw.app.main.domain.user.account.util;
 
 import java.time.LocalDate;
 

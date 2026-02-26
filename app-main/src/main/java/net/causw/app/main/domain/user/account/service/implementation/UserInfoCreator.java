@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.user.account.service.v2.implementation;
+package net.causw.app.main.domain.user.account.service.implementation;
 
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;

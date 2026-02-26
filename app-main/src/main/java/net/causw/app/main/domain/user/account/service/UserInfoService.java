@@ -11,11 +11,11 @@ import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoSummar
 import net.causw.app.main.domain.user.account.api.v2.mapper.UserInfoDtoMapper;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
-import net.causw.app.main.domain.user.account.service.v2.dto.UserInfoListCondition;
-import net.causw.app.main.domain.user.account.service.v2.implementation.UserInfoCreator;
-import net.causw.app.main.domain.user.account.service.v2.implementation.UserInfoReader;
-import net.causw.app.main.domain.user.account.service.v2.implementation.UserInfoWriter;
-import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
+import net.causw.app.main.domain.user.account.service.dto.request.UserInfoListCondition;
+import net.causw.app.main.domain.user.account.service.implementation.UserInfoCreator;
+import net.causw.app.main.domain.user.account.service.implementation.UserInfoReader;
+import net.causw.app.main.domain.user.account.service.implementation.UserInfoWriter;
+import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.shared.exception.errorcode.UserInfoErrorCode;
 import net.causw.app.main.shared.pageable.PageableFactory;
 import net.causw.global.constant.StaticValue;

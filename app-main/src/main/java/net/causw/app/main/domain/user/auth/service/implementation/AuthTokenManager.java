@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.user.auth.service.v2.implementation;
+package net.causw.app.main.domain.user.auth.service.implementation;
 
 import java.util.Optional;
 
@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 import net.causw.app.main.core.security.JwtTokenProvider;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.auth.service.v2.dto.AuthTokenPair;
+import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import net.causw.app.main.shared.infra.redis.RedisUtils;
 import net.causw.global.constant.StaticValue;

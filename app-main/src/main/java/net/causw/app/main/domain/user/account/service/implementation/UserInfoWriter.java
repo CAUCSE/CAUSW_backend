@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.user.account.service.v2.implementation;
+package net.causw.app.main.domain.user.account.service.implementation;
 
 import java.util.HashSet;
 import java.util.List;
@@ -16,7 +16,7 @@ import net.causw.app.main.domain.user.account.entity.userInfo.UserProject;
 import net.causw.app.main.domain.user.account.repository.userInfo.UserCareerRepository;
 import net.causw.app.main.domain.user.account.repository.userInfo.UserInfoRepository;
 import net.causw.app.main.domain.user.account.repository.userInfo.UserProjectRepository;
-import net.causw.app.main.domain.user.account.service.util.UserInfoValidator;
+import net.causw.app.main.domain.user.account.util.UserInfoValidator;
 import net.causw.app.main.shared.entity.BaseEntity;
 import net.causw.app.main.shared.exception.errorcode.UserInfoErrorCode;
 

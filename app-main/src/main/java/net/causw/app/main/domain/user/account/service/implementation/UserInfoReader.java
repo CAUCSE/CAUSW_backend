@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.user.account.service.v2.implementation;
+package net.causw.app.main.domain.user.account.service.implementation;
 
 import java.util.Optional;
 
@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
 import net.causw.app.main.domain.user.account.repository.userInfo.UserInfoQueryRepository;
 import net.causw.app.main.domain.user.account.repository.userInfo.UserInfoRepository;
-import net.causw.app.main.domain.user.account.service.v2.dto.UserInfoListCondition;
+import net.causw.app.main.domain.user.account.service.dto.request.UserInfoListCondition;
 
 import lombok.RequiredArgsConstructor;
 

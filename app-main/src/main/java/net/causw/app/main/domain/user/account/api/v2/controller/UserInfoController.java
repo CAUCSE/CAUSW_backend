@@ -17,7 +17,7 @@ import net.causw.app.main.domain.user.account.api.v2.dto.request.UserInfoUpdateR
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoDetailResponseDto;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoSummaryResponseDto;
 import net.causw.app.main.domain.user.account.service.UserInfoService;
-import net.causw.app.main.domain.user.account.service.v2.dto.UserInfoListCondition;
+import net.causw.app.main.domain.user.account.service.dto.request.UserInfoListCondition;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 import net.causw.app.main.shared.dto.PageResponse;
