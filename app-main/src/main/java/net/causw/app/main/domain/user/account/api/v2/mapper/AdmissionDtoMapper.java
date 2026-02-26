@@ -7,10 +7,10 @@ import net.causw.app.main.domain.user.account.api.v2.dto.request.AdmissionListRe
 import net.causw.app.main.domain.user.account.api.v2.dto.response.AdmissionListItemResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.AdmissionResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.AdmissionStateResponse;
-import net.causw.app.main.domain.user.account.service.v2.dto.AdmissionCreateCommand;
-import net.causw.app.main.domain.user.account.service.v2.dto.AdmissionListCondition;
-import net.causw.app.main.domain.user.account.service.v2.dto.AdmissionResult;
-import net.causw.app.main.domain.user.account.service.v2.dto.AdmissionStateResult;
+import net.causw.app.main.domain.user.account.service.dto.request.AdmissionCreateCommand;
+import net.causw.app.main.domain.user.account.service.dto.request.AdmissionListCondition;
+import net.causw.app.main.domain.user.account.service.dto.request.AdmissionResult;
+import net.causw.app.main.domain.user.account.service.dto.request.AdmissionStateResult;
 
 @Mapper(componentModel = "spring")
 public interface AdmissionDtoMapper {

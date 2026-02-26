@@ -10,13 +10,13 @@ import net.causw.app.main.domain.notification.notification.service.AdmissionNoti
 import net.causw.app.main.domain.user.academic.event.CertifiedUserCreatedEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
-import net.causw.app.main.domain.user.account.service.v2.dto.AdmissionListCondition;
-import net.causw.app.main.domain.user.account.service.v2.dto.AdmissionResult;
-import net.causw.app.main.domain.user.account.service.v2.implementation.AdmissionLogWriter;
-import net.causw.app.main.domain.user.account.service.v2.implementation.AdmissionReader;
-import net.causw.app.main.domain.user.account.service.v2.implementation.AdmissionValidator;
-import net.causw.app.main.domain.user.account.service.v2.implementation.AdmissionWriter;
-import net.causw.app.main.domain.user.account.service.v2.implementation.UserWriter;
+import net.causw.app.main.domain.user.account.service.dto.request.AdmissionListCondition;
+import net.causw.app.main.domain.user.account.service.dto.request.AdmissionResult;
+import net.causw.app.main.domain.user.account.service.implementation.AdmissionLogWriter;
+import net.causw.app.main.domain.user.account.service.implementation.AdmissionReader;
+import net.causw.app.main.domain.user.account.service.implementation.AdmissionValidator;
+import net.causw.app.main.domain.user.account.service.implementation.AdmissionWriter;
+import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 
 import lombok.RequiredArgsConstructor;
