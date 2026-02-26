@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.community.board.entity.Board;
+import net.causw.app.main.domain.community.comment.api.v2.dto.response.ChildCommentResponseDto;
 import net.causw.app.main.domain.community.comment.api.v2.dto.response.CommentResponseDto;
 import net.causw.app.main.domain.community.comment.api.v2.mapper.CommentResponseDtoMapper;
 import net.causw.app.main.domain.community.comment.entity.ChildComment;
@@ -58,25 +59,25 @@ public class CommentReader {
 			? Collections.emptySet()
 			: likeChildCommentReader.getLikedChildCommentIds(user.getId(), childCommentIds);
 
+		List<ChildCommentResponseDto> childCommentList = comment.getChildCommentList().stream()
+			.map(childComment -> childCommentReader.getChildCommentListDetails(
+				childComment, user, board, Set.of(),
+				childCommentLikeCounts.getOrDefault(childComment.getId(), 0L),
+				likedChildCommentIds.contains(childComment.getId())
+
+			)).toList();
+
 		return commentResponseDtoMapper.toCommentResponseDto(
 			comment,
 			(long)comment.getChildCommentList().size(),
 			likeCommentReader.getNumOfCommentLikes(comment.getId()),
 			likeCommentReader.isCommentLiked(user, comment.getId()),
 			StatusPolicy.isCommentOwner(comment, user),
-			comment.getChildCommentList().stream()
-				.map(childComment -> childCommentReader.getChildCommentListDetails(
-					childComment, user, board, Set.of(),
-					childCommentLikeCounts.getOrDefault(childComment.getId(), 0L),
-					likedChildCommentIds.contains(childComment.getId())
-
-				))
-				.collect(Collectors.toList()),
-
+			childCommentList,
 			StatusPolicy.isUpdatable(comment, user),
 			StatusPolicy.isDeletable(comment, user, board),
 			userCommentSubscribeReader.isCommentSubscribed(user, comment),
-			false); // isBlockedContent (단건 조회 시 기본값 처리)
+			false);
 	}
 
 	/**
@@ -102,19 +103,20 @@ public class CommentReader {
 		// 작성자 차단 여부 확인
 		boolean isBlockedContent = blockedUserIds.contains(comment.getWriter().getId());
 
+		List<ChildCommentResponseDto> childCommetList = comment.getChildCommentList().stream()
+			.map(childComment -> childCommentReader.getChildCommentListDetails(
+				childComment, user, board, blockedUserIds,
+				childCommentLikeCounts.getOrDefault(childComment.getId(), 0L), // 자식 댓글 좋아요 수
+				likedChildCommentIds.contains(childComment.getId()) // 자식 댓글 좋아요 여부
+			)).toList();
+
 		return commentResponseDtoMapper.toCommentResponseDto(
 			comment,
 			(long)comment.getChildCommentList().size(),
 			commentLikeCounts.getOrDefault(comment.getId(), 0L),
 			likedCommentIds.contains(comment.getId()),
 			StatusPolicy.isCommentOwner(comment, user),
-			comment.getChildCommentList().stream()
-				.map(childComment -> childCommentReader.getChildCommentListDetails(
-					childComment, user, board, blockedUserIds,
-					childCommentLikeCounts.getOrDefault(childComment.getId(), 0L), // 자식 댓글 좋아요 수
-					likedChildCommentIds.contains(childComment.getId()) // 자식 댓글 좋아요 여부
-				))
-				.collect(Collectors.toList()),
+			childCommetList,
 			StatusPolicy.isUpdatable(comment, user),
 			StatusPolicy.isDeletable(comment, user, board),
 			subscribedCommentIds.contains(comment.getId()),
