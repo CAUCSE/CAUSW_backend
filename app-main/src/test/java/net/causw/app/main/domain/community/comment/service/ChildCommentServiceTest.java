@@ -80,7 +80,6 @@ public class ChildCommentServiceTest {
 			board = mock(Board.class);
 
 			given(parentComment.getPost()).willReturn(post);
-			given(post.getId()).willReturn("post-id");
 			given(post.getBoard()).willReturn(board);
 		}
 
@@ -88,6 +87,7 @@ public class ChildCommentServiceTest {
 		@Test
 		void createChildComment_shouldSucceed() {
 			// given
+			given(post.getId()).willReturn("post-id");
 			ChildCommentCreateRequestDto requestDto = new ChildCommentCreateRequestDto(
 				"대댓글 내용", "parent-comment-id", false);
 			ChildCommentResponseDto expectedResponse = mock(ChildCommentResponseDto.class);
@@ -224,7 +224,7 @@ public class ChildCommentServiceTest {
 			// when & then
 			assertThatThrownBy(() -> childCommentService.likeChildComment("user-id", "child-comment-id"))
 				.isInstanceOf(RuntimeException.class)
-				.hasMessageContaining("좋아요를 이미 누른 대댓글 입니다.");
+				.hasMessageContaining("좋아요를 이미 누른 대댓글 입니다");
 
 			verify(likeChildCommentWriter, never()).save(any(LikeChildComment.class));
 		}
@@ -241,7 +241,6 @@ public class ChildCommentServiceTest {
 			user = mock(User.class);
 			childComment = mock(ChildComment.class);
 			given(userReader.findUserById("user-id")).willReturn(user);
-			given(user.getId()).willReturn("user-id");
 			given(childCommentReader.findById("child-comment-id")).willReturn(childComment);
 		}
 
@@ -249,6 +248,7 @@ public class ChildCommentServiceTest {
 		@Test
 		void cancelLikeChildComment_shouldSucceed() {
 			// given
+			given(user.getId()).willReturn("user-id");
 			given(likeChildCommentReader.isChildCommentLiked(user, "child-comment-id")).willReturn(true);
 
 			// when
@@ -268,7 +268,7 @@ public class ChildCommentServiceTest {
 			// when & then
 			assertThatThrownBy(() -> childCommentService.cancelLikeChildComment("user-id", "child-comment-id"))
 				.isInstanceOf(RuntimeException.class)
-				.hasMessageContaining("좋아요를 누르지 않은 대댓글입니다.");
+				.hasMessageContaining("좋아요를 누르지 않은 대댓글입니다");
 
 			verify(likeChildCommentWriter, never()).delete(anyString(), anyString());
 		}

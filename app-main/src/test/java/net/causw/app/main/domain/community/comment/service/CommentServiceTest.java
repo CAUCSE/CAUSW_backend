@@ -96,7 +96,6 @@ public class CommentServiceTest {
 			post = mock(Post.class);
 			board = mock(Board.class);
 
-			given(creator.getId()).willReturn("creator-id");
 			given(post.getBoard()).willReturn(board);
 		}
 
@@ -317,7 +316,7 @@ public class CommentServiceTest {
 			// when & then
 			assertThatThrownBy(() -> commentService.likeComment("user-id", "comment-id"))
 				.isInstanceOf(RuntimeException.class)
-				.hasMessageContaining("좋아요를 이미 누른 댓글 입니다.");
+				.hasMessageContaining("좋아요를 이미 누른 댓글 입니다");
 
 			verify(likeCommentWriter, never()).save(any(LikeComment.class));
 		}
@@ -334,7 +333,6 @@ public class CommentServiceTest {
 			user = mock(User.class);
 			comment = mock(Comment.class);
 			given(userReader.findUserById("user-id")).willReturn(user);
-			given(user.getId()).willReturn("user-id");
 			given(commentReader.getComment("comment-id")).willReturn(comment);
 		}
 
@@ -342,6 +340,7 @@ public class CommentServiceTest {
 		@Test
 		void cancelLikeComment_shouldSucceed() {
 			// given
+			given(user.getId()).willReturn("user-id");
 			given(likeCommentReader.isCommentLiked(user, "comment-id")).willReturn(true);
 
 			// when
@@ -361,7 +360,7 @@ public class CommentServiceTest {
 			// when & then
 			assertThatThrownBy(() -> commentService.cancelLikeComment("user-id", "comment-id"))
 				.isInstanceOf(RuntimeException.class)
-				.hasMessageContaining("좋아요를 누르지 않은 댓글입니다.");
+				.hasMessageContaining("좋아요를 누르지 않은 댓글입니다");
 
 			verify(likeCommentWriter, never()).delete(anyString(), anyString());
 		}
