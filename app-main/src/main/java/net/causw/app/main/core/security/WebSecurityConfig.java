@@ -38,6 +38,7 @@ public class WebSecurityConfig {
 	private final JwtTokenProvider jwtTokenProvider;
 	private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 	private final CustomAuthorizationManager authorizationManager;
+	private final AppleOAuth2AuthorizationRequestResolver appleOAuth2AuthorizationRequestResolver;
 	private final CustomOAuth2UserService customOAuth2UserService;
 	private final OAuth2SuccessHandler oAuth2SuccessHandler;
 	private final OAuth2FailureHandler oAuth2FailureHandler;
@@ -69,8 +70,11 @@ public class WebSecurityConfig {
 				.requestMatchers("/api/v2/admin/**").hasRole("ADMIN")
 				.anyRequest().authenticated())
 			.oauth2Login(oauth2 -> oauth2
+				.authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint
+					.authorizationRequestResolver(appleOAuth2AuthorizationRequestResolver))
 				.userInfoEndpoint(userInfo -> userInfo
-					.userService(customOAuth2UserService))
+					.userService(customOAuth2UserService)
+					.oidcUserService(customOAuth2UserService::loadOidcUser))
 				.successHandler(oAuth2SuccessHandler)
 				.failureHandler(oAuth2FailureHandler))
 			.exceptionHandling(exceptionHandling -> exceptionHandling

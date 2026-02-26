@@ -3,6 +3,7 @@ package net.causw.app.main.domain.user.auth.service.dto;
 import java.util.Map;
 
 import net.causw.app.main.domain.user.account.enums.user.SocialType;
+import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 
 import lombok.Builder;
 
@@ -53,16 +54,47 @@ public record OAuthAttributes(
 	}
 
 	private static OAuthAttributes ofApple(String userNameAttributeName, Map<String, Object> attributes) {
+		String socialId = resolveAppleSocialId(userNameAttributeName, attributes);
+		String email = getString(attributes, "email");
 		boolean isVerified = Boolean.parseBoolean(String.valueOf(attributes.getOrDefault("email_verified", "false")));
-		// 애플은 이름을 잘 안 주기 때문에 없을 경우 email로 대체
+		String name = getString(attributes, "name");
+		if (!hasText(name) && hasText(email)) {
+			name = email;
+		}
+
 		return OAuthAttributes.builder()
-			.name((String)attributes.get("email"))
-			.email((String)attributes.get("email"))
+			.name(name)
+			.email(email)
 			.attributes(attributes)
 			.nameAttributeKey(userNameAttributeName)
 			.socialType(SocialType.APPLE)
-			.socialId(String.valueOf(attributes.get(userNameAttributeName)))
+			.socialId(socialId)
 			.isEmailVerified(isVerified)
 			.build();
+	}
+
+	private static String resolveAppleSocialId(String userNameAttributeName, Map<String, Object> attributes) {
+		String socialId = getString(attributes, userNameAttributeName);
+		if (!hasText(socialId)) {
+			socialId = getString(attributes, "sub");
+		}
+		if (!hasText(socialId)) {
+			throw AuthErrorCode.INVALID_SOCIAL_IDENTIFIER.toBaseException();
+		}
+
+		return socialId;
+	}
+
+	private static String getString(Map<String, Object> attributes, String key) {
+		Object value = attributes.get(key);
+		if (value == null) {
+			return null;
+		}
+		String text = String.valueOf(value);
+		return hasText(text) ? text : null;
+	}
+
+	private static boolean hasText(String value) {
+		return value != null && !value.isBlank();
 	}
 }

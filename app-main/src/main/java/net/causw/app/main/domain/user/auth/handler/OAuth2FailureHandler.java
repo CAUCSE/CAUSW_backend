@@ -26,25 +26,30 @@ public class OAuth2FailureHandler extends SimpleUrlAuthenticationFailureHandler 
 
 		String errorMessage = "알 수 없는 오류가 발생했습니다.";
 		String errorCode = "UNKNOWN_ERROR";
+		int status = HttpServletResponse.SC_BAD_REQUEST;
 
 		Throwable cause = exception.getCause();
+		String exceptionMessage = exception.getMessage();
 
 		if (cause instanceof BaseRunTimeV2Exception baseException) {
 			errorCode = baseException.getErrorCode().getCode();
 			errorMessage = baseException.getMessage();
-		} else if (exception.getMessage().contains("access_denied")) {
+			status = baseException.getErrorCode().getStatus().value();
+		} else if (exceptionMessage != null && exceptionMessage.contains("access_denied")) {
 			errorCode = "USER_CANCELLED";
 			errorMessage = "로그인을 취소하셨습니다.";
-		} else if (exception.getMessage().contains("Email not found")) {
+		} else if (exceptionMessage != null && exceptionMessage.contains("Email not found")) {
 			errorCode = "MISSING_EMAIL";
 			errorMessage = "이메일 정보가 필요합니다.";
 		} else if (exception instanceof OAuth2AuthenticationException oauth2Exception) {
 			errorCode = oauth2Exception.getError().getErrorCode();
 			errorMessage = "로그인을 취소하셨거나 권한을 제공하지 않으셨습니다.";
+			status = HttpServletResponse.SC_UNAUTHORIZED;
 		}
 
 		String targetUrl = UriComponentsBuilder.fromUriString(baseUrl)
 			.queryParam("error", errorCode)
+			.queryParam("status", status)
 			.queryParam("message", errorMessage)
 			.build().encode().toUriString();
 

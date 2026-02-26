@@ -18,11 +18,16 @@ import org.mockito.Mock;
 import org.mockito.MockedConstruction;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
+import org.springframework.security.oauth2.core.oidc.OidcIdToken;
+import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
@@ -33,6 +38,8 @@ import net.causw.app.main.domain.user.account.service.implementation.UserValidat
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.domain.user.auth.service.CustomOAuth2UserService;
 import net.causw.app.main.domain.user.auth.service.dto.CustomOAuth2User;
+import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
+import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 
 @ExtendWith(MockitoExtension.class)
@@ -226,6 +233,143 @@ class CustomOAuth2UserServiceTest {
 
 			//verify
 			verify(userValidator).validateUserStatusForIntegration(any());
+			verify(userWriter, never()).save(any(SocialAccount.class));
+		}
+	}
+
+	@Test
+	@DisplayName("OIDC 애플 로그인 시 신규 유저를 생성한다")
+	void loadOidcUser_AppleNewUser() {
+		// given
+		ClientRegistration clientRegistration = ClientRegistration.withRegistrationId("apple")
+			.authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+			.clientId("apple-client")
+			.authorizationUri("https://appleid.apple.com/auth/authorize")
+			.tokenUri("https://appleid.apple.com/auth/token")
+			.jwkSetUri("https://appleid.apple.com/auth/keys")
+			.redirectUri("{baseUrl}/login/oauth2/code/{registrationId}")
+			.scope("openid", "email", "name")
+			.userInfoUri("https://appleid.apple.com/auth/userinfo")
+			.userNameAttributeName("sub")
+			.clientName("Apple")
+			.build();
+
+		OAuth2AccessToken accessToken = new OAuth2AccessToken(
+			OAuth2AccessToken.TokenType.BEARER, "apple-access-token", Instant.now(), Instant.MAX);
+		OidcIdToken idToken = new OidcIdToken(
+			"apple-id-token",
+			Instant.now(),
+			Instant.MAX,
+			Map.of(
+				"sub", "apple-social-id",
+				"email", "apple@test.com",
+				"email_verified", true));
+
+		OidcUserRequest oidcUserRequest = new OidcUserRequest(clientRegistration, accessToken, idToken);
+		OidcUser oidcUser = new DefaultOidcUser(Collections.singleton(() -> "ROLE_USER"), idToken, "sub");
+
+		try (MockedConstruction<OidcUserService> mocked = mockConstruction(OidcUserService.class,
+			(mock, context) -> when(mock.loadUser(any())).thenReturn(oidcUser))) {
+			when(userReader.findBySocialTypeAndSocialId(any(), any())).thenReturn(Optional.empty());
+			when(userReader.findByEmail(any())).thenReturn(Optional.empty());
+
+			// when
+			OidcUser result = customOAuth2UserService.loadOidcUser(oidcUserRequest);
+
+			// then
+			assertNotNull(result);
+
+			verify(userWriter).save(any(User.class));
+			verify(userWriter).save(any(SocialAccount.class));
+		}
+	}
+
+	@Test
+	@DisplayName("OIDC 애플 로그인에서 email이 없어도 기존 소셜 계정이면 로그인된다")
+	void loadOidcUser_AppleExistingSocialUserWithoutEmail() {
+		ClientRegistration clientRegistration = ClientRegistration.withRegistrationId("apple")
+			.authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+			.clientId("apple-client")
+			.authorizationUri("https://appleid.apple.com/auth/authorize")
+			.tokenUri("https://appleid.apple.com/auth/token")
+			.jwkSetUri("https://appleid.apple.com/auth/keys")
+			.redirectUri("{baseUrl}/login/oauth2/code/{registrationId}")
+			.scope("openid", "email", "name")
+			.userInfoUri("https://appleid.apple.com/auth/userinfo")
+			.userNameAttributeName("sub")
+			.clientName("Apple")
+			.build();
+
+		OAuth2AccessToken accessToken = new OAuth2AccessToken(
+			OAuth2AccessToken.TokenType.BEARER, "apple-access-token", Instant.now(), Instant.MAX);
+		OidcIdToken idToken = new OidcIdToken(
+			"apple-id-token",
+			Instant.now(),
+			Instant.MAX,
+			Map.of(
+				"sub", "apple-social-id",
+				"email_verified", true));
+
+		OidcUserRequest oidcUserRequest = new OidcUserRequest(clientRegistration, accessToken, idToken);
+		OidcUser oidcUser = new DefaultOidcUser(Collections.singleton(() -> "ROLE_USER"), idToken, "sub");
+
+		try (MockedConstruction<OidcUserService> mocked = mockConstruction(OidcUserService.class,
+			(mock, context) -> when(mock.loadUser(any())).thenReturn(oidcUser))) {
+			when(userReader.findBySocialTypeAndSocialId(any(), any())).thenReturn(Optional.of(testUser));
+
+			OidcUser result = customOAuth2UserService.loadOidcUser(oidcUserRequest);
+
+			assertNotNull(result);
+
+			verify(userReader).findBySocialTypeAndSocialId(any(), any());
+			verify(userReader, never()).findByEmail(any());
+			verify(userWriter, never()).save(any(User.class));
+			verify(userWriter, never()).save(any(SocialAccount.class));
+		}
+	}
+
+	@Test
+	@DisplayName("OIDC 애플 로그인에서 email 없이 신규/연동 경로면 예외를 던진다")
+	void loadOidcUser_AppleMissingEmailForProvisioning_ThrowsException() {
+		ClientRegistration clientRegistration = ClientRegistration.withRegistrationId("apple")
+			.authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+			.clientId("apple-client")
+			.authorizationUri("https://appleid.apple.com/auth/authorize")
+			.tokenUri("https://appleid.apple.com/auth/token")
+			.jwkSetUri("https://appleid.apple.com/auth/keys")
+			.redirectUri("{baseUrl}/login/oauth2/code/{registrationId}")
+			.scope("openid", "email", "name")
+			.userInfoUri("https://appleid.apple.com/auth/userinfo")
+			.userNameAttributeName("sub")
+			.clientName("Apple")
+			.build();
+
+		OAuth2AccessToken accessToken = new OAuth2AccessToken(
+			OAuth2AccessToken.TokenType.BEARER, "apple-access-token", Instant.now(), Instant.MAX);
+		OidcIdToken idToken = new OidcIdToken(
+			"apple-id-token",
+			Instant.now(),
+			Instant.MAX,
+			Map.of(
+				"sub", "apple-social-id",
+				"email_verified", true));
+
+		OidcUserRequest oidcUserRequest = new OidcUserRequest(clientRegistration, accessToken, idToken);
+		OidcUser oidcUser = new DefaultOidcUser(Collections.singleton(() -> "ROLE_USER"), idToken, "sub");
+
+		try (MockedConstruction<OidcUserService> mocked = mockConstruction(OidcUserService.class,
+			(mock, context) -> when(mock.loadUser(any())).thenReturn(oidcUser))) {
+			when(userReader.findBySocialTypeAndSocialId(any(), any())).thenReturn(Optional.empty());
+
+			InternalAuthenticationServiceException exception = assertThrows(
+				InternalAuthenticationServiceException.class,
+				() -> customOAuth2UserService.loadOidcUser(oidcUserRequest));
+
+			assertTrue(exception.getCause() instanceof BaseRunTimeV2Exception);
+			BaseRunTimeV2Exception cause = (BaseRunTimeV2Exception)exception.getCause();
+			assertEquals(AuthErrorCode.SOCIAL_EMAIL_REQUIRED, cause.getErrorCode());
+
+			verify(userWriter, never()).save(any(User.class));
 			verify(userWriter, never()).save(any(SocialAccount.class));
 		}
 	}
