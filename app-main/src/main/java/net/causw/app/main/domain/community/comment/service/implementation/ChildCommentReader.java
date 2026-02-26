@@ -25,7 +25,6 @@ public class ChildCommentReader {
 	private final LikeChildCommentReader likeChildCommentReader;
 	private final BoardConfigReader boardConfigReader;
 	private final ChildCommentRepository childCommentRepository;
-	private final ChildCommentResponseDtoMapper childCommentResponseDtoMapper;
 
 	public ChildComment findById(String childCommentId) {
 		return childCommentRepository.findById(childCommentId).orElseThrow(
@@ -51,7 +50,7 @@ public class ChildCommentReader {
 		boolean updatable = isOwner || boardAdminIds.contains(user.getId());
 		boolean deletable = isOwner || boardAdminIds.contains(user.getId());
 
-		return childCommentResponseDtoMapper.toChildCommentResponseDto(
+		return ChildCommentResponseDtoMapper.toChildCommentResponseDto(
 			childComment,
 			numLike,
 			isLiked,
@@ -81,7 +80,7 @@ public class ChildCommentReader {
 		boolean updatable = isOwner || boardAdminIds.contains(user.getId());
 		boolean deletable = isOwner || boardAdminIds.contains(user.getId());
 
-		return childCommentResponseDtoMapper.toChildCommentResponseDto(
+		return ChildCommentResponseDtoMapper.toChildCommentResponseDto(
 			childComment,
 			likeCount,
 			isLiked,
