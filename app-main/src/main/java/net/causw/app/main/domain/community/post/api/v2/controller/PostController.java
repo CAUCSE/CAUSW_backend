@@ -25,6 +25,7 @@ import net.causw.app.main.domain.community.post.api.v2.dto.response.PostListResp
 import net.causw.app.main.domain.community.post.api.v2.dto.response.PostResponse;
 import net.causw.app.main.domain.community.post.api.v2.dto.response.PostUpdateResponse;
 import net.causw.app.main.domain.community.post.api.v2.mapper.PostDtoMapper;
+import net.causw.app.main.domain.community.post.service.v2.LikePostService;
 import net.causw.app.main.domain.community.post.service.v2.PostService;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostCreateResult;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostDetailQuery;
@@ -47,6 +48,7 @@ import lombok.RequiredArgsConstructor;
 public class PostController {
 
 	private final PostService postService;
+	private final LikePostService likePostService;
 	private final PostDtoMapper postDtoMapper;
 
 	@PostMapping(value = "/{id}/like")
@@ -55,7 +57,7 @@ public class PostController {
 	public ApiResponse<Void> likePost(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		this.postService.likePost(userDetails.getUser().getId(), id);
+		this.likePostService.likePost(userDetails.getUser().getId(), id);
 		return ApiResponse.success();
 	}
 
@@ -65,7 +67,7 @@ public class PostController {
 	public ApiResponse<Void> cancelLikePost(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		this.postService.cancelLikePost(userDetails.getUser().getId(), id);
+		this.likePostService.cancelLikePost(userDetails.getUser().getId(), id);
 		return ApiResponse.success();
 	}
 

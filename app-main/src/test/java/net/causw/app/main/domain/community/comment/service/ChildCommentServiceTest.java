@@ -8,8 +8,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.times;
 import static org.mockito.BDDMockito.verify;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -201,17 +200,14 @@ public class ChildCommentServiceTest {
 			given(childCommentReader.findById("child-comment-id")).willReturn(childComment);
 		}
 
-		@DisplayName("대댓글 좋아요 생성 성공")
+		@DisplayName("대댓글 좋아요 성공")
 		@Test
 		void likeChildComment_shouldSucceed() {
-			// given
-			given(likeChildCommentReader.isChildCommentLiked(user, "child-comment-id")).willReturn(false);
-
 			// when
 			childCommentService.likeChildComment("user-id", "child-comment-id");
 
 			// then
-			verify(childCommentValidator, times(1)).validateWriterNotDeleted(childComment);
+			verify(childCommentValidator, times(1)).validateForLike(user, childComment);
 			verify(likeChildCommentWriter, times(1)).save(any(LikeChildComment.class));
 		}
 
@@ -219,12 +215,13 @@ public class ChildCommentServiceTest {
 		@Test
 		void likeChildComment_shouldFail_whenAlreadyLiked() {
 			// given
-			given(likeChildCommentReader.isChildCommentLiked(user, "child-comment-id")).willReturn(true);
+			doThrow(new RuntimeException("좋아요를 이미 누른 대댓글 입니다."))
+				.when(childCommentValidator).validateForLike(user, childComment);
 
 			// when & then
 			assertThatThrownBy(() -> childCommentService.likeChildComment("user-id", "child-comment-id"))
 				.isInstanceOf(RuntimeException.class)
-				.hasMessageContaining("좋아요를 이미 누른 대댓글 입니다");
+				.hasMessageContaining("좋아요를 이미 누른 대댓글 입니다.");
 
 			verify(likeChildCommentWriter, never()).save(any(LikeChildComment.class));
 		}
@@ -249,13 +246,12 @@ public class ChildCommentServiceTest {
 		void cancelLikeChildComment_shouldSucceed() {
 			// given
 			given(user.getId()).willReturn("user-id");
-			given(likeChildCommentReader.isChildCommentLiked(user, "child-comment-id")).willReturn(true);
 
 			// when
 			childCommentService.cancelLikeChildComment("user-id", "child-comment-id");
 
 			// then
-			verify(childCommentValidator, times(1)).validateWriterNotDeleted(childComment);
+			verify(childCommentValidator, times(1)).validateForCancelLike(user, childComment);
 			verify(likeChildCommentWriter, times(1)).delete("child-comment-id", "user-id");
 		}
 
@@ -263,12 +259,13 @@ public class ChildCommentServiceTest {
 		@Test
 		void cancelLikeChildComment_shouldFail_whenNotLiked() {
 			// given
-			given(likeChildCommentReader.isChildCommentLiked(user, "child-comment-id")).willReturn(false);
+			doThrow(new RuntimeException("좋아요을 누르지 않은 대댓글입니다."))
+				.when(childCommentValidator).validateForCancelLike(user, childComment);
 
 			// when & then
 			assertThatThrownBy(() -> childCommentService.cancelLikeChildComment("user-id", "child-comment-id"))
 				.isInstanceOf(RuntimeException.class)
-				.hasMessageContaining("좋아요를 누르지 않은 대댓글입니다");
+				.hasMessageContaining("좋아요을 누르지 않은 대댓글입니다.");
 
 			verify(likeChildCommentWriter, never()).delete(anyString(), anyString());
 		}

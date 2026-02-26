@@ -1,13 +1,8 @@
 package net.causw.app.main.domain.community.post.service.v2;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.times;
-import static org.mockito.BDDMockito.verify;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,7 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.v2.implementation.PostReader;
-import net.causw.app.main.domain.community.reaction.service.implementation.LikePostReader;
+import net.causw.app.main.domain.community.post.service.v2.util.LikePostValidator;
 import net.causw.app.main.domain.community.reaction.service.implementation.LikePostWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
@@ -29,16 +24,16 @@ import net.causw.app.main.domain.user.account.enums.user.UserState;
 public class LikePostServiceTest {
 
 	@InjectMocks
-	PostService postService;
+	LikePostService likePostService;
 
 	@Mock
 	PostReader postReader;
 
 	@Mock
-	LikePostReader likePostReader;
+	LikePostWriter likePostWriter;
 
 	@Mock
-	LikePostWriter likePostWriter;
+	LikePostValidator likePostValidator;
 
 	@Nested
 	@DisplayName("게시글 좋아요 테스트")
@@ -51,9 +46,8 @@ public class LikePostServiceTest {
 			writer = mock(User.class);
 			post = mock(Post.class);
 
-			// PostValidator.validateWriterNotDeleted 통과를 위한 셋팅
 			given(post.getWriter()).willReturn(writer);
-			given(writer.getState()).willReturn(UserState.ACTIVE); // 실제 프로젝트의 활성 상태값에 맞게 조정
+			given(writer.getState()).willReturn(UserState.ACTIVE);
 			given(postReader.findById("post-id")).willReturn(post);
 		}
 
@@ -61,12 +55,12 @@ public class LikePostServiceTest {
 		@Test
 		void likePost_shouldSucceed() {
 			// given
-			given(likePostReader.existsByPostIdAndUserId("user-id", "post-id")).willReturn(false);
 
 			// when
-			postService.likePost("user-id", "post-id");
+			likePostService.likePost("user-id", "post-id");
 
 			// then
+			verify(likePostValidator, times(1)).validateForLike("user-id", "post-id");
 			verify(likePostWriter, times(1)).saveLikePost("user-id", post);
 		}
 
@@ -74,11 +68,12 @@ public class LikePostServiceTest {
 		@Test
 		void likePost_shouldFail_whenAlreadyLiked() {
 			// given
-			given(likePostReader.existsByPostIdAndUserId("user-id", "post-id")).willReturn(true);
+
+			doThrow(new RuntimeException())
+				.when(likePostValidator).validateForLike("user-id", "post-id");
 
 			// when & then
-			assertThatThrownBy(() -> postService.likePost("user-id", "post-id"))
-				// LikePostErrorCode.POST_ALREADY_LIKED.toBaseException()의 실제 반환 타입으로 변경 권장 (예: BaseRunTimeV2Exception.class)
+			assertThatThrownBy(() -> likePostService.likePost("user-id", "post-id"))
 				.isInstanceOf(RuntimeException.class);
 
 			verify(likePostWriter, never()).saveLikePost(anyString(), any(Post.class));
@@ -96,7 +91,6 @@ public class LikePostServiceTest {
 			writer = mock(User.class);
 			post = mock(Post.class);
 
-			// PostValidator.validateWriterNotDeleted 통과를 위한 셋팅
 			given(post.getWriter()).willReturn(writer);
 			given(writer.getState()).willReturn(UserState.ACTIVE);
 			given(postReader.findById("post-id")).willReturn(post);
@@ -105,13 +99,11 @@ public class LikePostServiceTest {
 		@DisplayName("게시글 좋아요 취소 성공")
 		@Test
 		void cancelLikePost_shouldSucceed() {
-			// given
-			given(likePostReader.existsByPostIdAndUserId("user-id", "post-id")).willReturn(true);
-
 			// when
-			postService.cancelLikePost("user-id", "post-id");
+			likePostService.cancelLikePost("user-id", "post-id");
 
 			// then
+			verify(likePostValidator, times(1)).validateForCancelLike("user-id", "post-id");
 			verify(likePostWriter, times(1)).deleteLikePost("user-id", "post-id");
 		}
 
@@ -119,10 +111,11 @@ public class LikePostServiceTest {
 		@Test
 		void cancelLikePost_shouldFail_whenNotLiked() {
 			// given
-			given(likePostReader.existsByPostIdAndUserId("user-id", "post-id")).willReturn(false);
+			doThrow(new RuntimeException())
+				.when(likePostValidator).validateForCancelLike("user-id", "post-id");
 
 			// when & then
-			assertThatThrownBy(() -> postService.cancelLikePost("user-id", "post-id"))
+			assertThatThrownBy(() -> likePostService.cancelLikePost("user-id", "post-id"))
 				.isInstanceOf(RuntimeException.class);
 
 			verify(likePostWriter, never()).deleteLikePost(anyString(), anyString());

@@ -7,8 +7,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.times;
 import static org.mockito.BDDMockito.verify;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -293,17 +292,14 @@ public class CommentServiceTest {
 			given(commentReader.getComment("comment-id")).willReturn(comment);
 		}
 
-		@DisplayName("댓글 좋아요 생성 성공")
+		@DisplayName("댓글 좋아요 성공")
 		@Test
 		void likeComment_shouldSucceed() {
-			// given
-			given(likeCommentReader.isCommentLiked(user, "comment-id")).willReturn(false);
-
 			// when
 			commentService.likeComment("user-id", "comment-id");
 
 			// then
-			verify(commentValidator, times(1)).validateWriterNotDeleted(comment);
+			verify(commentValidator, times(1)).validateForLike(user, comment);
 			verify(likeCommentWriter, times(1)).save(any(LikeComment.class));
 		}
 
@@ -311,7 +307,8 @@ public class CommentServiceTest {
 		@Test
 		void likeComment_shouldFail_whenAlreadyLiked() {
 			// given
-			given(likeCommentReader.isCommentLiked(user, "comment-id")).willReturn(true);
+			doThrow(new RuntimeException("좋아요를 이미 누른 댓글 입니다"))
+				.when(commentValidator).validateForLike(user, comment);
 
 			// when & then
 			assertThatThrownBy(() -> commentService.likeComment("user-id", "comment-id"))
@@ -341,13 +338,12 @@ public class CommentServiceTest {
 		void cancelLikeComment_shouldSucceed() {
 			// given
 			given(user.getId()).willReturn("user-id");
-			given(likeCommentReader.isCommentLiked(user, "comment-id")).willReturn(true);
 
 			// when
 			commentService.cancelLikeComment("user-id", "comment-id");
 
 			// then
-			verify(commentValidator, times(1)).validateWriterNotDeleted(comment);
+			verify(commentValidator, times(1)).validateForCancelLike(user, comment);
 			verify(likeCommentWriter, times(1)).delete("comment-id", "user-id");
 		}
 
@@ -355,7 +351,8 @@ public class CommentServiceTest {
 		@Test
 		void cancelLikeComment_shouldFail_whenNotLiked() {
 			// given
-			given(likeCommentReader.isCommentLiked(user, "comment-id")).willReturn(false);
+			doThrow(new RuntimeException("좋아요를 누르지 않은 댓글입니다"))
+				.when(commentValidator).validateForCancelLike(user, comment);
 
 			// when & then
 			assertThatThrownBy(() -> commentService.cancelLikeComment("user-id", "comment-id"))

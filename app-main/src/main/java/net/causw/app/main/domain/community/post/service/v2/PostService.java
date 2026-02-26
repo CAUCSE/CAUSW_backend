@@ -35,9 +35,7 @@ import net.causw.app.main.domain.community.post.service.v2.util.PostCursorManage
 import net.causw.app.main.domain.community.post.service.v2.util.PostValidator;
 import net.causw.app.main.domain.community.reaction.service.implementation.FavoritePostReader;
 import net.causw.app.main.domain.community.reaction.service.implementation.LikePostReader;
-import net.causw.app.main.domain.community.reaction.service.implementation.LikePostWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.shared.exception.errorcode.LikePostErrorCode;
 import net.causw.global.constant.StaticValue;
 
 import lombok.RequiredArgsConstructor;
@@ -47,7 +45,6 @@ import lombok.RequiredArgsConstructor;
 @Transactional(readOnly = true)
 public class PostService {
 
-	private final LikePostWriter likePostWriter;
 	private final PostReader postReader;
 	private final PostWriter postWriter;
 	private final BoardReader boardReader;
@@ -267,41 +264,4 @@ public class PostService {
 			updatable,
 			deletable);
 	}
-
-	/**
-	 * 게시글 좋아요 메서드
-	 * @param userId 좋아요 누른 유저 id
-	 * @param postId 좋아요 누른 게시글 아이디
-	 */
-	@Transactional
-	public void likePost(String userId, String postId) {
-		Post post = postReader.findById(postId);
-
-		PostValidator.validateWriterNotDeleted(post);
-
-		if (likePostReader.existsByPostIdAndUserId(userId, postId)) {
-			throw LikePostErrorCode.POST_ALREADY_LIKED.toBaseException();
-		}
-
-		likePostWriter.saveLikePost(userId, post);
-	}
-
-	/**
-	 * 게시글 좋아요 취소 메서드
-	 * @param userId 좋아요 취소 누른 유저 id
-	 * @param postId 좋아요 취소 누른 게시글 아이디
-	 */
-	@Transactional
-	public void cancelLikePost(final String userId, final String postId) {
-		Post post = postReader.findById(postId);
-
-		PostValidator.validateWriterNotDeleted(post);
-
-		if (!likePostReader.existsByPostIdAndUserId(userId, postId)) {
-			throw LikePostErrorCode.POST_NOT_LIKE.toBaseException();
-		}
-
-		likePostWriter.deleteLikePost(userId, postId);
-	}
-
 }

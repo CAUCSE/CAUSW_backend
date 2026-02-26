@@ -6,11 +6,13 @@ import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.community.comment.entity.ChildComment;
 import net.causw.app.main.domain.community.comment.entity.Comment;
+import net.causw.app.main.domain.community.comment.service.implementation.LikeChildCommentReader;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.util.UserRoleIsNoneValidator;
 import net.causw.app.main.domain.user.account.util.UserStateIsDeletedValidator;
 import net.causw.app.main.domain.user.account.util.UserStateValidator;
+import net.causw.app.main.shared.exception.errorcode.ChildCommentErrorCode;
 import net.causw.app.main.shared.util.ConstraintValidator;
 import net.causw.app.main.shared.util.ContentsAdminValidator;
 import net.causw.app.main.shared.util.TargetIsDeletedValidator;
@@ -24,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 public class ChildCommentValidator {
 
 	private final Validator validator;
+	private final LikeChildCommentReader likeChildCommentReader;
 
 	/**
 	 * 대댓글 생성 시 필요한 모든 검증 로직을 수행합니다.
@@ -74,7 +77,17 @@ public class ChildCommentValidator {
 		TargetIsDeletedValidator.of(post.getIsDeleted(), StaticValue.DOMAIN_POST).validate();
 	}
 
-	public void validateWriterNotDeleted(ChildComment childComment) {
+	public void validateForLike(User user, ChildComment childComment) {
 		UserStateIsDeletedValidator.of(childComment.getWriter().getState()).validate();
+		if (likeChildCommentReader.isChildCommentLiked(user, childComment.getId())) {
+			throw ChildCommentErrorCode.CHILD_COMMENT_ALREADY_LIKED.toBaseException();
+		}
+	}
+
+	public void validateForCancelLike(User user, ChildComment childComment) {
+		UserStateIsDeletedValidator.of(childComment.getWriter().getState()).validate();
+		if (!likeChildCommentReader.isChildCommentLiked(user, childComment.getId())) {
+			throw ChildCommentErrorCode.CHILD_COMMENT_NOT_LIKE.toBaseException();
+		}
 	}
 }
