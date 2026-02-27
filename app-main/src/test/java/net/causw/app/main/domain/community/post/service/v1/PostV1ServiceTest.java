@@ -284,6 +284,7 @@ public class PostV1ServiceTest {
 				post.getWriter().getNickname(),
 				post.getWriter().getAdmissionYear(),
 				post.getWriter().getState(),
+				post.getWriter().getDeletedAt(),
 				post.getCreatedAt(),
 				post.getUpdatedAt(),
 				null // 썸네일 url
@@ -357,6 +358,7 @@ public class PostV1ServiceTest {
 				post.getWriter().getNickname(),
 				post.getWriter().getAdmissionYear(),
 				post.getWriter().getState(),
+				post.getWriter().getDeletedAt(),
 				post.getCreatedAt(),
 				post.getUpdatedAt(),
 				null // 썸네일 url
@@ -440,6 +442,7 @@ public class PostV1ServiceTest {
 				post.getWriter().getNickname(),
 				post.getWriter().getAdmissionYear(),
 				post.getWriter().getState(),
+				post.getWriter().getDeletedAt(),
 				post.getCreatedAt(),
 				post.getUpdatedAt(),
 				null // 썸네일 url
