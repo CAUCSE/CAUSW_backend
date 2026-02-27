@@ -292,7 +292,7 @@ public class User extends BaseEntity {
 		return this.fcmTokens.remove(targetToken);
 	}
 
-	public boolean isSocialUser() {
+	public boolean isOnlySocialUser() {
 		return this.password == null;
 	}
 

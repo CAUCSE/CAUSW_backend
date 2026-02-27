@@ -5,10 +5,10 @@ import java.util.regex.Pattern;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import lombok.RequiredArgsConstructor;
+
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
-
-import lombok.RequiredArgsConstructor;
 
 /**
  * 인증 관련 입력값의 형식 및 자격 증명을 검증하는 컴포넌트입니다.
@@ -56,7 +56,7 @@ public class AuthValidator {
 	 * [INVALID_LOGIN] 비밀번호가 일치하지 않는 경우
 	 */
 	public void validateCredential(User user, String inputPassword) {
-		if (user.isSocialUser()) {
+		if (user.isOnlySocialUser()) {
 			throw UserErrorCode.INVALID_LOGIN_SOCIAL_USER.toBaseException();
 		}
 		if (!passwordEncoder.matches(inputPassword, user.getPassword())) {

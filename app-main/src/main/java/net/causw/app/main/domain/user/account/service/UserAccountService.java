@@ -109,8 +109,8 @@ public class UserAccountService {
 	public void updatePassword(String userId, UserPasswordUpdateCommand command) {
 		User user = userReader.findUserById(userId);
 
-		if (user.isSocialUser()) {
-			throw UserErrorCode.SOCIAL_USER_CANNOT_CHANGE_PASSWORD.toBaseException();
+		if (user.isOnlySocialUser()) {
+			throw UserErrorCode.SOCIAL_ONLY_USER_CANNOT_CHANGE_PASSWORD.toBaseException();
 		}
 
 		if (!passwordEncoder.matches(command.currentPassword(), user.getPassword())) {
