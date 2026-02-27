@@ -15,11 +15,11 @@ import jakarta.validation.constraints.Size;
 public record ScheduleRequest(
 	@Schema(description = "일정 제목", example = "중간고사 기간", requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank(message = "일정 제목은 필수입니다.") @Size(min = 1, max = 100, message = "일정 제목은 1자 이상 100자 이하여야 합니다.") String title,
 
-	@Schema(description = "일정 유형", example = "ACAEMIC", requiredMode = Schema.RequiredMode.REQUIRED) @NotNull(message = "일정 타입은 필수입니다.") ScheduleType type,
+	@Schema(description = "일정 유형", example = "ACADEMIC", requiredMode = Schema.RequiredMode.REQUIRED) @NotNull(message = "일정 타입은 필수입니다.") ScheduleType type,
 
-	@Schema(description = "일정 시작 시간", example = "2026-04-15T00:00:00", requiredMode = Schema.RequiredMode.REQUIRED) @NotNull(message = "시작 시간은 필수입니다.") LocalDateTime start,
+	@Schema(description = "일정 시작 시간", type = "string", example = "2026-04-15T00:00:00", requiredMode = Schema.RequiredMode.REQUIRED) @NotNull(message = "시작 시간은 필수입니다.") LocalDateTime start,
 
-	@Schema(description = "일정 종료 시간", example = "2026-04-21T23:59:59", requiredMode = Schema.RequiredMode.REQUIRED) @NotNull(message = "종료 시간은 필수입니다.") LocalDateTime end,
+	@Schema(description = "일정 종료 시간", type = "string", example = "2026-04-21T23:59:59", requiredMode = Schema.RequiredMode.REQUIRED) @NotNull(message = "종료 시간은 필수입니다.") LocalDateTime end,
 
 	@Schema(description = "연관된 게시물 ID", example = "uuid-uuid-uuid-uuid", requiredMode = RequiredMode.NOT_REQUIRED) String targetPostId) {
 

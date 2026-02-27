@@ -17,9 +17,9 @@ public record ScheduleResponse(
 
 	@Schema(description = "일정 유형", example = "ACADEMIC") ScheduleType type,
 
-	@Schema(description = "일정 시작 시간", example = "2026-04-15T00:00:00") LocalDateTime start,
+	@Schema(description = "일정 시작 시간", example = "2026-04-15T00:00:00", type = "string") LocalDateTime start,
 
-	@Schema(description = "일정 종료 시간", example = "2026-04-21T23:59:59") LocalDateTime end,
+	@Schema(description = "일정 종료 시간", example = "2026-04-21T23:59:59", type = "string") LocalDateTime end,
 
 	@Schema(description = "연관된 게시물 ID", example = "uuid-uuid-uuid-uuid", requiredMode = RequiredMode.NOT_REQUIRED) String targetPostId) {
 }
