@@ -1498,14 +1498,7 @@ public class UserService {
 			"사용자 정보 최종 수정일");
 
 		LinkedHashMap<String, List<UserResponseDto>> sheetDataMap = new LinkedHashMap<>();
-		List<UserState> exportStates = List.of(
-			UserState.AWAIT,
-			UserState.ACTIVE,
-			UserState.INACTIVE,
-			UserState.REJECT,
-			UserState.DROP,
-			UserState.GUEST);
-		for (UserState state : exportStates) {
+		for (UserState state : UserState.values()) {
 			String sheetName = state.getDescription() + " 유저";
 			List<UserResponseDto> sheetData = getUserResponseDtosByState(state);
 
