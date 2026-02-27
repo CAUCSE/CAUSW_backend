@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.user.account.entity.user;
 
-import static net.causw.global.constant.StaticValue.NO_PHONE_NUMBER_MESSAGE;
+import static net.causw.global.constant.StaticValue.*;
 
 import java.util.HashSet;
 import java.util.List;
@@ -8,6 +8,26 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.hibernate.annotations.BatchSize;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.asset.locker.entity.Locker;
@@ -24,14 +44,6 @@ import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
 import net.causw.app.main.domain.user.auth.service.dto.OAuthAttributes;
 import net.causw.app.main.shared.entity.BaseEntity;
-
-import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Getter
 @Builder(access = AccessLevel.PROTECTED)
@@ -253,6 +265,10 @@ public class User extends BaseEntity {
 		this.phoneNumber = phoneNumber;
 		this.state = UserState.AWAIT;
 		this.agreements = TermAgreements.createRequiredAgreements();
+	}
+
+	public void updatePassword(String encodedPassword) {
+		this.password = encodedPassword;
 	}
 
 	public void updateRejectionOrDropReason(String reason) {

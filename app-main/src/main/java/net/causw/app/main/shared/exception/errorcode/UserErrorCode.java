@@ -2,10 +2,10 @@ package net.causw.app.main.shared.exception.errorcode;
 
 import org.springframework.http.HttpStatus;
 
-import net.causw.app.main.shared.exception.BaseResponseCode;
-
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+
+import net.causw.app.main.shared.exception.BaseResponseCode;
 
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public enum UserErrorCode implements BaseResponseCode {
@@ -24,7 +24,10 @@ public enum UserErrorCode implements BaseResponseCode {
 	EMAIL_ALREADY_EXIST(HttpStatus.CONFLICT, "USER_409_004", "이미 존재하는 이메일입니다."),
 	PHONE_NUMBER_ALREADY_EXIST(HttpStatus.CONFLICT, "USER_409_005", "이미 존재하는 전화번호입니다."),
 	NICKNAME_ALREADY_EXIST(HttpStatus.CONFLICT, "USER_409_006", "이미 존재하는 닉네임입니다."),
-	USER_DELETED(HttpStatus.UNAUTHORIZED, "USER_401_004", "삭제된 계정입니다.");
+	USER_DELETED(HttpStatus.UNAUTHORIZED, "USER_401_004", "삭제된 계정입니다."),
+	INVALID_CURRENT_PASSWORD(HttpStatus.BAD_REQUEST, "USER_400_004", "현재 비밀번호가 일치하지 않습니다."),
+	PASSWORD_CONFIRM_MISMATCH(HttpStatus.BAD_REQUEST, "USER_400_005", "새 비밀번호와 비밀번호 확인이 일치하지 않습니다."),
+	SOCIAL_USER_CANNOT_CHANGE_PASSWORD(HttpStatus.BAD_REQUEST, "USER_400_006", "소셜 로그인 계정은 비밀번호를 변경할 수 없습니다.");
 
 	private final HttpStatus status;
 	private final String code;

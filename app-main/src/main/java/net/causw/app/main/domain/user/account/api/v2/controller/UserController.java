@@ -1,24 +1,33 @@
 package net.causw.app.main.domain.user.account.api.v2.controller;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 import net.causw.app.main.domain.user.account.api.v1.dto.UserFcmTokenResponseDto;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserFcmTokenRequest;
+import net.causw.app.main.domain.user.account.api.v2.dto.request.UserPasswordUpdateRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserRegistrationRequest;
 import net.causw.app.main.domain.user.account.service.UserAccountService;
 import net.causw.app.main.domain.user.account.service.UserNotificationService;
+import net.causw.app.main.domain.user.account.service.dto.request.UserPasswordUpdateCommand;
 import net.causw.app.main.domain.user.auth.api.v2.dto.AuthDtoMapper;
 import net.causw.app.main.domain.user.auth.api.v2.dto.response.AuthResponse;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
-
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 
 @RestController("UserControllerV2")
 @RequiredArgsConstructor
@@ -75,6 +84,17 @@ public class UserController {
 	public ApiResponse<Void> checkPhoneNumDuplication(
 		@RequestParam String phoneNumber) {
 		userAccountService.checkPhoneNumDuplication(phoneNumber);
+		return ApiResponse.success();
+	}
+
+	@PatchMapping("/me/password")
+	@Operation(summary = "비밀번호 재설정 API", description = "현재 비밀번호를 확인하고 새 비밀번호로 변경합니다.")
+	public ApiResponse<Void> updatePassword(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@Valid @RequestBody UserPasswordUpdateRequest body) {
+		userAccountService.updatePassword(
+			userDetails.getUserId(),
+			UserPasswordUpdateCommand.from(body));
 		return ApiResponse.success();
 	}
 

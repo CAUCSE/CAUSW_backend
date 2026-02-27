@@ -4,6 +4,8 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
+import lombok.RequiredArgsConstructor;
+
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.SocialType;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
@@ -13,8 +15,6 @@ import net.causw.app.main.domain.user.account.util.PhoneNumberFormatValidator;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 import net.causw.app.main.shared.infra.redis.RedisUtils;
-
-import lombok.RequiredArgsConstructor;
 
 /**
  * 사용자의 상태 검증 및 중복 데이터 확인을 담당하는 컴포넌트입니다.
@@ -181,6 +181,22 @@ public class UserValidator {
 		Boolean isExist = socialAccountRepository.existsByUserAndSocialType(user, socialType);
 		if (isExist) {
 			throw AuthErrorCode.ALREADY_LINKED_SOCIAL_PROVIDER.toBaseException();
+		}
+	}
+
+	/**
+	 * 비밀번호 형식이 정책에 맞는지 검사합니다.
+	 * <p>
+	 * 영문, 숫자, 특수문자를 각각 1개 이상 포함하고 8자 이상이어야 합니다.
+	 *
+	 * @param password 검사할 비밀번호
+	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
+	 * [INVALID_PASSWORD_REQUEST] 비밀번호 형식이 정책에 맞지 않는 경우
+	 */
+	public void validatePasswordFormat(String password) {
+		String passwordPolicy = "^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*()-_?]).{8,20}$";
+		if (!password.matches(passwordPolicy)) {
+			throw UserErrorCode.INVALID_PASSWORD_REQUEST.toBaseException();
 		}
 	}
 }
