@@ -28,7 +28,7 @@ public class BlockService {
 	public BlockCreateResult createBlock(BlockCreateCommand command) {
 		User blocker = command.blocker();
 		Post post = postReader.findByIdAndNotDeleted(command.postId());
-		User blocked = post.getWriter();  // 게시글 작성자를 서버에서 직접 도출
+		User blocked = post.getWriter(); // 게시글 작성자를 서버에서 직접 도출
 
 		boolean alreadyBlocked = blockReader.existsByBlockerAndBlocked(blocker, blocked);
 		BlockValidator.validateCreate(blocker, blocked, alreadyBlocked, post.getIsAnonymous());

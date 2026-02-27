@@ -3,7 +3,6 @@ package net.causw.app.main.domain.community.report.api.v2.controller;
 import java.util.Arrays;
 import java.util.List;
 
-import net.causw.app.main.domain.community.report.api.v2.dto.response.PostReportResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import net.causw.app.main.domain.community.report.api.v2.dto.request.PostReportCreateRequestDto;
 import net.causw.app.main.domain.community.report.api.v2.dto.response.PostReportReasonResponseDto;
+import net.causw.app.main.domain.community.report.api.v2.dto.response.PostReportResponseDto;
 import net.causw.app.main.domain.community.report.api.v2.mapper.PostReportDtoMapper;
 import net.causw.app.main.domain.community.report.enums.ReportReason;
 import net.causw.app.main.domain.community.report.service.v2.PostReportService;
@@ -46,7 +46,8 @@ public class PostReportController {
 			.toList();
 		return ApiResponse.success(reasons);
 	}
-//
+
+	//
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	@Operation(summary = "게시글 신고", description = """
