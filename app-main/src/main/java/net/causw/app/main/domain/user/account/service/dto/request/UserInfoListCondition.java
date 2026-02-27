@@ -13,5 +13,5 @@ public record UserInfoListCondition(
 	@Schema(description = "학번 범위 시작", example = "1972") Integer admissionYearStart,
 	@Schema(description = "학번 범위 끝", example = "2025") Integer admissionYearEnd,
 	@Schema(description = "학적 상태", example = "[\"ENROLLED\", \"GRADUATED\"]") List<AcademicStatus> academicStatus,
-	@Schema(description = "정렬 기준", example = "ASC") SortType sortType) {
+	@Schema(description = "정렬 기준", example = "UPDATED_AT_DESC") SortType sortType) {
 }
