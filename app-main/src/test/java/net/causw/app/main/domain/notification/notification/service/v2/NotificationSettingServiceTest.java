@@ -35,8 +35,8 @@ import net.causw.app.main.domain.notification.notification.service.implementatio
 import net.causw.app.main.domain.notification.notification.service.implementation.UserBoardSubscribeReader;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
-import net.causw.app.main.domain.user.account.service.v2.implementation.UserValidator;
+import net.causw.app.main.domain.user.account.service.implementation.UserReader;
+import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import net.causw.app.main.shared.exception.errorcode.BoardConfigErrorCode;
@@ -156,13 +156,13 @@ class NotificationSettingServiceTest {
 			// given
 			User mockUser = mock(User.class);
 			given(userReader.findUserByIdNotDeleted(userId)).willReturn(mockUser);
-			doThrow(AuthErrorCode.BLOCKED_USER.toBaseException())
+			doThrow(AuthErrorCode.DROPPED_USER.toBaseException())
 				.when(userValidator).validateUser(mockUser);
 
 			// when & then
 			assertThatThrownBy(() -> notificationSettingService.getAllSettings(userId))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
-				.hasFieldOrPropertyWithValue("errorCode", AuthErrorCode.BLOCKED_USER);
+				.hasFieldOrPropertyWithValue("errorCode", AuthErrorCode.DROPPED_USER);
 		}
 	}
 
