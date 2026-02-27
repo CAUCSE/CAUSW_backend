@@ -47,6 +47,12 @@ public class AuthTokenManager {
 		return new AuthTokenPair(accessToken, refreshToken);
 	}
 
+	public String createRefreshToken(String userId) {
+		String refreshToken = jwtTokenProvider.createRefreshToken();
+		redisUtils.setRefreshTokenData(refreshToken, userId, StaticValue.JWT_REFRESH_TOKEN_VALID_TIME);
+		return refreshToken;
+	}
+
 	/**
 	 * 리프레시 토큰을 키(Key)로 사용하여 Redis에 저장된 사용자 ID를 조회합니다.
 	 *
