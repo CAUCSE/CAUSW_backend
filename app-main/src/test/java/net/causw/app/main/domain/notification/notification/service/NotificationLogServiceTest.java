@@ -21,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import net.causw.app.main.domain.notification.notification.api.v2.dto.response.NotificationCountResponseDto;
 import net.causw.app.main.domain.notification.notification.api.v2.dto.response.NotificationResponseDto;
@@ -58,6 +59,7 @@ class NotificationLogServiceTest {
 			User user = ObjectFixtures.getCertifiedUser();
 			Notification notification = ObjectFixtures.getNotification(user);
 			NotificationLog log = NotificationLog.of(user, notification);
+			ReflectionTestUtils.setField(log, "createdAt", LocalDateTime.now());
 
 			Page<NotificationLog> mockPage = new PageImpl<>(List.of(log), pageable, 1);
 
@@ -101,6 +103,7 @@ class NotificationLogServiceTest {
 			User user = ObjectFixtures.getCertifiedUser();
 			Notification notification = ObjectFixtures.getNotification(user);
 			NotificationLog log = NotificationLog.of(user, notification);
+			ReflectionTestUtils.setField(log, "createdAt", LocalDateTime.now());
 
 			given(notificationLogReader.getLatestUnread(userId))
 				.willReturn(Optional.of(log));
@@ -109,6 +112,7 @@ class NotificationLogServiceTest {
 				.notificationLogId(log.getId())
 				.title(notification.getTitle())
 				.isRead(false)
+				.createdAt(LocalDateTime.now())
 				.build();
 
 			given(notificationDtoMapper.toNotificationResponseDto(any(), any(), anyBoolean(), any(LocalDateTime.class)))
