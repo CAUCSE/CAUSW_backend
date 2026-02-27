@@ -69,31 +69,13 @@ public class BoardReader {
 	}
 
 	/**
-	 * 사용자의 학적 상태에 따른 읽기 범위 리스트 반환
-	 *
-	 * @param academicStatus 사용자의 학적 상태
-	 * @return 사용자의 학적 상태에 따른 읽기 범위 리스트
-	 */
-	public List<BoardReadScope> getReadScopesByAcademicStatus(AcademicStatus academicStatus) {
-		if (academicStatus == null) {
-			return List.of(BoardReadScope.BOTH);
-		}
-		return switch (academicStatus) {
-			case ENROLLED, LEAVE_OF_ABSENCE, SUSPEND, PROFESSOR ->
-				List.of(BoardReadScope.BOTH, BoardReadScope.ENROLLED);
-			case GRADUATED -> List.of(BoardReadScope.BOTH, BoardReadScope.GRADUATED);
-			default -> List.of(BoardReadScope.BOTH);
-		};
-	}
-
-	/**
 	 * 유저의 학적 상태에 맞는 삭제되지 않은 공지사항 게시판 목록을 반환한다.
 	 *
 	 * @param academicStatus 유저의 학적 상태
 	 * @return 접근 가능한 공지사항 게시판 목록
 	 */
 	public List<Board> findAccessibleNoticeBoards(AcademicStatus academicStatus) {
-		List<BoardReadScope> readScopes = getReadScopesByAcademicStatus(academicStatus);
+		List<BoardReadScope> readScopes = BoardReadScope.fromAcademicStatus(academicStatus);
 		List<String> boardIds = boardConfigReader.findAllNoticeConfigsByReadScope(new HashSet<>(readScopes))
 			.stream()
 			.map(BoardConfig::getBoardId)

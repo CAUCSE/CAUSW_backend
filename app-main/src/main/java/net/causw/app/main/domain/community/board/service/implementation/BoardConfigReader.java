@@ -99,12 +99,7 @@ public class BoardConfigReader {
 	 * @return 게시판 ID 목록
 	 */
 	public List<String> getAccessibleBoardIdsByAcademicStatus(AcademicStatus academicStatus) {
-		Set<BoardReadScope> scopes = new HashSet<>();
-		scopes.add(BoardReadScope.BOTH);
-		switch (academicStatus) {
-			case GRADUATED -> scopes.add(BoardReadScope.GRADUATED);
-			case ENROLLED -> scopes.add(BoardReadScope.ENROLLED);
-		}
+		Set<BoardReadScope> scopes = new HashSet<>(BoardReadScope.fromAcademicStatus(academicStatus));
 		return boardConfigQueryRepository.findBoardsByReadScopes(scopes);
 	}
 }
