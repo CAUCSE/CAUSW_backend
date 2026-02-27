@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.campus.schedule.service.v2;
+package net.causw.app.main.domain.campus.schedule.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -8,9 +8,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.campus.schedule.entity.Schedule;
 import net.causw.app.main.domain.campus.schedule.entity.enums.ScheduleType;
-import net.causw.app.main.domain.campus.schedule.service.v2.dto.ScheduleDto;
-import net.causw.app.main.domain.campus.schedule.service.v2.implementation.ScheduleReader;
-import net.causw.app.main.domain.campus.schedule.service.v2.implementation.ScheduleWriter;
+import net.causw.app.main.domain.campus.schedule.service.dto.ScheduleDto;
+import net.causw.app.main.domain.campus.schedule.service.implementation.ScheduleReader;
+import net.causw.app.main.domain.campus.schedule.service.implementation.ScheduleWriter;
 import net.causw.app.main.domain.campus.schedule.util.ScheduleMapper;
 
 import lombok.RequiredArgsConstructor;

@@ -21,10 +21,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import net.causw.app.main.domain.campus.schedule.entity.Schedule;
 import net.causw.app.main.domain.campus.schedule.entity.enums.ScheduleType;
-import net.causw.app.main.domain.campus.schedule.service.v2.ScheduleService;
-import net.causw.app.main.domain.campus.schedule.service.v2.dto.ScheduleDto;
-import net.causw.app.main.domain.campus.schedule.service.v2.implementation.ScheduleReader;
-import net.causw.app.main.domain.campus.schedule.service.v2.implementation.ScheduleWriter;
+import net.causw.app.main.domain.campus.schedule.service.ScheduleService;
+import net.causw.app.main.domain.campus.schedule.service.dto.ScheduleDto;
+import net.causw.app.main.domain.campus.schedule.service.implementation.ScheduleReader;
+import net.causw.app.main.domain.campus.schedule.service.implementation.ScheduleWriter;
 import net.causw.app.main.domain.campus.schedule.util.ScheduleMapper;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;

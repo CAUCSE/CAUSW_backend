@@ -44,22 +44,29 @@ public class Schedule extends BaseEntity {
 	@JoinColumn(name = "creator")
 	private User creator;
 
-	public static Schedule of(String title, ScheduleType type, LocalDateTime start, LocalDateTime end, User creator) {
+	@Column(name = "target_post_id", nullable = true)
+	private String targetPostId;
+
+	public static Schedule of(String title, ScheduleType type, LocalDateTime start, LocalDateTime end, User creator,
+		String targetPostId) {
 		return Schedule.builder()
 			.title(title)
 			.type(type)
 			.start(start)
 			.end(end)
 			.creator(creator)
+			.targetPostId(targetPostId)
 			.build();
 	}
 
-	public void update(String title, ScheduleType type, LocalDateTime start, LocalDateTime end, User creator) {
+	public void update(String title, ScheduleType type, LocalDateTime start, LocalDateTime end, User creator,
+		String targetPostId) {
 		this.title = title;
 		this.type = type;
 		this.start = start;
 		this.end = end;
 		this.creator = creator;
+		this.targetPostId = targetPostId;
 	}
 
 }

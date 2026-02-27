@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import net.causw.app.main.domain.campus.schedule.entity.enums.ScheduleType;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Schema.RequiredMode;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -18,7 +19,9 @@ public record ScheduleRequest(
 
 	@Schema(description = "일정 시작 시간", example = "2026-04-15T00:00:00", requiredMode = Schema.RequiredMode.REQUIRED) @NotNull(message = "시작 시간은 필수입니다.") LocalDateTime start,
 
-	@Schema(description = "일정 종료 시간", example = "2026-04-21T23:59:59", requiredMode = Schema.RequiredMode.REQUIRED) @NotNull(message = "종료 시간은 필수입니다.") LocalDateTime end) {
+	@Schema(description = "일정 종료 시간", example = "2026-04-21T23:59:59", requiredMode = Schema.RequiredMode.REQUIRED) @NotNull(message = "종료 시간은 필수입니다.") LocalDateTime end,
+
+	@Schema(description = "연관된 게시물 ID", example = "uuid-uuid-uuid-uuid", requiredMode = RequiredMode.NOT_REQUIRED) String targetPostId) {
 
 	@AssertTrue(message = "종료시간은 시작시간 이후여야 합니다.")
 	private boolean isValidTimeRange() {

@@ -1,11 +1,11 @@
-package net.causw.app.main.domain.campus.schedule.service.v2.implementation;
+package net.causw.app.main.domain.campus.schedule.service.implementation;
 
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.campus.schedule.entity.Schedule;
 import net.causw.app.main.domain.campus.schedule.repository.ScheduleRepository;
-import net.causw.app.main.domain.campus.schedule.service.v2.dto.ScheduleDto;
+import net.causw.app.main.domain.campus.schedule.service.dto.ScheduleDto;
 import net.causw.app.main.domain.campus.schedule.util.ScheduleMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -55,7 +55,8 @@ public class ScheduleWriter {
 			dto.type(),
 			dto.start(),
 			dto.end(),
-			dto.creator());
+			dto.creator(),
+			dto.targetPostId());
 		return scheduleRepository.save(schedule);
 	}
 }

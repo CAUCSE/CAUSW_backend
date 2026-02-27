@@ -12,8 +12,8 @@ import net.causw.app.main.domain.campus.schedule.api.v2.dto.response.ScheduleLis
 import net.causw.app.main.domain.campus.schedule.api.v2.dto.response.ScheduleResponse;
 import net.causw.app.main.domain.campus.schedule.api.v2.mapper.ScheduleDtoMapper;
 import net.causw.app.main.domain.campus.schedule.entity.enums.ScheduleType;
-import net.causw.app.main.domain.campus.schedule.service.v2.ScheduleService;
-import net.causw.app.main.domain.campus.schedule.service.v2.dto.ScheduleDto;
+import net.causw.app.main.domain.campus.schedule.service.ScheduleService;
+import net.causw.app.main.domain.campus.schedule.service.dto.ScheduleDto;
 import net.causw.app.main.shared.dto.ApiResponse;
 
 import io.swagger.v3.oas.annotations.Operation;

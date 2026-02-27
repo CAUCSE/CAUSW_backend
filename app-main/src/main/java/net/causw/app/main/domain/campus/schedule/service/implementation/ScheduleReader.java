@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.campus.schedule.service.v2.implementation;
+package net.causw.app.main.domain.campus.schedule.service.implementation;
 
 import java.time.LocalDateTime;
 import java.util.List;
