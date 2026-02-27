@@ -2,6 +2,8 @@ package net.causw.app.main.domain.user.terms.entity;
 
 import java.time.LocalDate;
 
+import net.causw.app.main.shared.entity.BaseEntity;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Lob;
@@ -11,7 +13,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.causw.app.main.shared.entity.BaseEntity;
 
 @Getter
 @Entity
