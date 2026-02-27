@@ -97,7 +97,8 @@ public class UpdateUserInfoUseCaseService {
 		}
 
 		// 커리어 삭제
-		List<String> idToDeleteList = userCareerRepository.findAllCareerByUserInfoId(userInfo.getId()).stream()
+		List<String> idToDeleteList = userCareerRepository
+			.findAllCareerByUserInfoIdOrderByStartYearDescStartMonthDesc(userInfo.getId()).stream()
 			.map(BaseEntity::getId)
 			.filter(id -> !requestedIdSet.contains(id)).toList();
 

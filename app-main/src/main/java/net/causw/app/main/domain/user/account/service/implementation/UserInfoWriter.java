@@ -85,7 +85,8 @@ public class UserInfoWriter {
 			}
 		}
 		// 경력 사항 삭제
-		List<String> idToDeleteList = userCareerRepository.findAllCareerByUserInfoId(userInfo.getId()).stream()
+		List<String> idToDeleteList = userCareerRepository
+			.findAllCareerByUserInfoIdOrderByStartYearDescStartMonthDesc(userInfo.getId()).stream()
 			.map(BaseEntity::getId)
 			.filter(id -> !requestedIdSet.contains(id)).toList();
 
@@ -124,7 +125,8 @@ public class UserInfoWriter {
 			}
 		}
 		// 대표 프로젝트 삭제
-		List<String> idToDeleteList = userProjectRepository.findAllProjectByUserInfoId(userInfo.getId()).stream()
+		List<String> idToDeleteList = userProjectRepository
+			.findAllProjectByUserInfoIdOrderByStartYearDescStartMonthDesc(userInfo.getId()).stream()
 			.map(BaseEntity::getId)
 			.filter(id -> !requestedIdSet.contains(id)).toList();
 

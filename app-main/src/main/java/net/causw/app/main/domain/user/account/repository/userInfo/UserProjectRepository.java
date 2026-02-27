@@ -10,5 +10,5 @@ import net.causw.app.main.domain.user.account.entity.userInfo.UserProject;
 @Repository
 public interface UserProjectRepository extends JpaRepository<UserProject, String> {
 
-	List<UserProject> findAllProjectByUserInfoId(String userInfoId);
+	List<UserProject> findAllProjectByUserInfoIdOrderByStartYearDescStartMonthDesc(String userInfoId);
 }
