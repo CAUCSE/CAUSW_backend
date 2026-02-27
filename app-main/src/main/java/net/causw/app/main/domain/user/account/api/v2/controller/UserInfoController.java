@@ -69,7 +69,7 @@ public class UserInfoController {
 	 */
 	@PutMapping(value = "/me", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.OK)
-	@Operation(summary = "내 동문 수첩 프로필 업데이트", description = "내 동문 수첩 프로필을 업데이트합니다.")
+	@Operation(summary = "내 동문 수첩 프로필 업데이트", description = "내 동문 수첩 프로필을 업데이트합니다. (아직 생성되지 않은 경우 생성)")
 	public ApiResponse<UserInfoDetailResponseDto> updateMyUserInfo(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestBody @Valid UserInfoUpdateRequestDto userInfoUpdateDto) {

@@ -92,8 +92,8 @@ public class UserInfoQueryRepository {
 		return condition;
 	}
 
+	// 정렬 필터
 	private OrderSpecifier<?>[] getSortType(UserInfoListCondition filter, QUserInfo userInfo) {
-		// 정렬 필터
 		if (filter.sortType() == null) {
 			return new OrderSpecifier[] {
 				userInfo.updatedAt.desc(), userInfo.user.admissionYear.desc()

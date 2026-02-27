@@ -66,11 +66,11 @@ public class UserInfo extends BaseEntity {
 	@Builder.Default
 	private Set<String> userTechStack = new HashSet<>();
 
-	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "userInfo", fetch = FetchType.LAZY)
+	@OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true, mappedBy = "userInfo", fetch = FetchType.LAZY)
 	@Builder.Default
 	private List<UserCareer> userCareer = new ArrayList<>();
 
-	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "userInfo", fetch = FetchType.LAZY)
+	@OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true, mappedBy = "userInfo", fetch = FetchType.LAZY)
 	@Builder.Default
 	private List<UserProject> userProject = new ArrayList<>();
 
