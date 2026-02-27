@@ -7,7 +7,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
+import net.causw.app.main.domain.asset.file.entity.QUuidFile;
+import net.causw.app.main.domain.asset.file.entity.joinEntity.QUserProfileImage;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.domain.user.account.entity.user.QUser;
 import net.causw.app.main.domain.user.account.entity.userInfo.QUserCareer;
 import net.causw.app.main.domain.user.account.entity.userInfo.QUserInfo;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
@@ -31,10 +34,17 @@ public class UserInfoQueryRepository {
 
 	public Page<UserInfo> findAllWithFilter(UserInfoListCondition filter, Pageable pageable) {
 		QUserInfo userInfo = QUserInfo.userInfo;
+		QUser user = QUser.user;
+		QUserProfileImage userProfileImage = QUserProfileImage.userProfileImage;
+		QUuidFile uuidFile = QUuidFile.uuidFile;
+
 		BooleanExpression condition = baseCondition(filter, userInfo);
 
 		List<UserInfo> content = jpaQueryFactory
 			.selectFrom(userInfo)
+			.join(userInfo.user, user).fetchJoin()
+			.leftJoin(user.userProfileImage, userProfileImage).fetchJoin()
+			.leftJoin(userProfileImage.uuidFile, uuidFile).fetchJoin()
 			.where(condition)
 			.orderBy(getSortType(filter, userInfo))
 			.offset(pageable.getOffset())
@@ -44,6 +54,7 @@ public class UserInfoQueryRepository {
 		JPAQuery<Long> countQuery = jpaQueryFactory
 			.select(userInfo.count())
 			.from(userInfo)
+			.join(userInfo.user, user)
 			.where(condition);
 
 		return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
