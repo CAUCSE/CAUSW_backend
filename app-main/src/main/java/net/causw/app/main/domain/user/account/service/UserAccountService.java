@@ -80,7 +80,6 @@ public class UserAccountService {
 		}
 		userValidator.checkNicknameDuplication(nickname);
 		user.updateNickname(nickname);
-		userWriter.save(user);
 	}
 
 	/**
