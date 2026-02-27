@@ -7,6 +7,7 @@ import net.causw.app.main.domain.campus.schedule.entity.Schedule;
 import net.causw.app.main.domain.campus.schedule.repository.ScheduleRepository;
 import net.causw.app.main.domain.campus.schedule.service.dto.ScheduleDto;
 import net.causw.app.main.domain.campus.schedule.util.ScheduleMapper;
+import net.causw.app.main.domain.community.post.service.v2.implementation.PostReader;
 
 import lombok.RequiredArgsConstructor;
 
@@ -15,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 public class ScheduleWriter {
 	private final ScheduleRepository scheduleRepository;
+	private final PostReader postReader;
 
 	/**
 	 * 새로운 Schedule을 생성합니다.
@@ -23,6 +25,7 @@ public class ScheduleWriter {
 	 * @return 생성된 Schedule Entity
 	 */
 	public Schedule create(ScheduleDto dto) {
+		postReader.findById(dto.targetPostId()); // post가 존재하는지 검증하기 위함
 		Schedule schedule = ScheduleMapper.from(dto);
 		return scheduleRepository.save(schedule);
 	}
@@ -51,6 +54,7 @@ public class ScheduleWriter {
 	 * @param dto 업데이트될 정보
 	 */
 	public Schedule update(Schedule schedule, ScheduleDto dto) {
+		postReader.findById(dto.targetPostId()); // post가 존재하는지 검증하기 위함
 		schedule.update(dto.title(),
 			dto.type(),
 			dto.start(),
