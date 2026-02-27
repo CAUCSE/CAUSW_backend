@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.causw.app.main.domain.notification.notification.service.NotificationSettingService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -27,6 +26,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.service.implementation.BoardReader;
 import net.causw.app.main.domain.notification.notification.enums.UserNotificationSettingKey;
+import net.causw.app.main.domain.notification.notification.service.NotificationSettingService;
 import net.causw.app.main.domain.notification.notification.service.dto.NotificationSettingResult;
 import net.causw.app.main.domain.notification.notification.service.dto.UpdateNotificationSettingCommand;
 import net.causw.app.main.domain.notification.notification.service.dto.UserNotificationSettingMap;

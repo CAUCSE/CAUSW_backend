@@ -10,8 +10,6 @@ import net.causw.app.main.domain.user.account.entity.user.User;
 
 import lombok.RequiredArgsConstructor;
 
-import java.util.Optional;
-
 @Component
 @RequiredArgsConstructor
 @Transactional
@@ -24,7 +22,7 @@ public class UserBoardSubscribeWriter {
 
 		if (existing.isPresent()) {
 			existing.get().setIsSubscribed(subscribed);
-		}else{
+		} else {
 			userBoardSubscribeRepository.save(
 				UserBoardSubscribe.of(user, board, subscribed));
 		}
