@@ -264,7 +264,7 @@ public class AuthServiceTest {
 
 			// verify
 			verify(authValidator).validateCredential(user, PASSWORD);
-			verify(userValidator).validateUserStatusForLogin(user.getState());
+			verify(userValidator).validateUserStatusForLogin(user);
 			verify(authTokenManager).issueTokens(user, null);
 		}
 

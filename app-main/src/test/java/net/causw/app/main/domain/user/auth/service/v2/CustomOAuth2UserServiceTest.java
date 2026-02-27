@@ -198,7 +198,7 @@ class CustomOAuth2UserServiceTest {
 			// 기존 유저가 존재한다고 가정
 			when(userReader.findBySocialTypeAndSocialId(any(), any())).thenReturn(Optional.of(testUser));
 
-			// Validator가 탈퇴한 유저(DELETED) 상태로 판단하여 예외를 던지도록 Mocking
+			// Validator가 deletedAt이 설정된 탈퇴 유저로 판단하여 예외를 던지도록 Mocking
 			doThrow(UserErrorCode.INVALID_LOGIN_USER_DELETED.toBaseException())
 				.when(userValidator).validateUserStatusForLogin(any());
 

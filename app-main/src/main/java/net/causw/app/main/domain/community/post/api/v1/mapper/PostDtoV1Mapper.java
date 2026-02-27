@@ -82,7 +82,7 @@ public interface PostDtoV1Mapper extends UuidFileToUrlDtoMapper {
 
 	default String getDisplayWriterNickname(boolean hasWriter, UserState state, boolean isAnonymous, String nickname) {
 		if (hasWriter &&
-			List.of(UserState.INACTIVE, UserState.DROP, UserState.DELETED).contains(state)) {
+			List.of(UserState.INACTIVE, UserState.DROP).contains(state)) {
 			return StaticValue.INACTIVE_USER_NICKNAME;
 
 		} else if (isAnonymous) {

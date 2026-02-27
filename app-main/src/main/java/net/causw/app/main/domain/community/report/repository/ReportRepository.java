@@ -60,7 +60,7 @@ public interface ReportRepository extends JpaRepository<Report, String> {
 		                WHEN u.state = 'INACTIVE' THEN 2
 		                WHEN u.state = 'REJECT' THEN 3
 		                WHEN u.state = 'DROP' THEN 4
-		                WHEN u.state = 'DELETED' THEN 5
+		                WHEN u.deletedAt IS NOT NULL THEN 5
 		                ELSE 99
 		                END,
 		            u.reportCount DESC

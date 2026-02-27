@@ -203,7 +203,7 @@ public class UserService {
 
 		ValidatorBucket.of()
 			.consistOf(UserRoleIsNoneValidator.of(roles))
-			.consistOf(UserStateValidator.of(requestUser.getState()))
+			.consistOf(UserStateValidator.of(requestUser))
 			.consistOf(UserRoleValidator.of(roles,
 				Set.of(Role.LEADER_CIRCLE)))
 			.validate();
@@ -239,7 +239,7 @@ public class UserService {
 		Set<Role> roles = requestUser.getRoles();
 
 		ValidatorBucket.of()
-			.consistOf(UserStateValidator.of(requestUser.getState()))
+			.consistOf(UserStateValidator.of(requestUser))
 			.validate();
 
 		if (roles.contains(Role.LEADER_CIRCLE)) {
@@ -264,7 +264,7 @@ public class UserService {
 
 		ValidatorBucket.of()
 			.consistOf(UserRoleIsNoneValidator.of(roles))
-			.consistOf(UserStateValidator.of(requestUser.getState()))
+			.consistOf(UserStateValidator.of(requestUser))
 			.validate();
 
 		return UserDtoMapper.INSTANCE.toUserPostsResponseDto(
@@ -287,7 +287,7 @@ public class UserService {
 
 		ValidatorBucket.of()
 			.consistOf(UserRoleIsNoneValidator.of(roles))
-			.consistOf(UserStateValidator.of(requestUser.getState()))
+			.consistOf(UserStateValidator.of(requestUser))
 			.validate();
 
 		Set<String> blockedUserIds = userBlockEntityService.findBlockeeUserIdsByBlocker(requestUser);
@@ -337,7 +337,7 @@ public class UserService {
 
 		ValidatorBucket.of()
 			.consistOf(UserRoleIsNoneValidator.of(roles))
-			.consistOf(UserStateValidator.of(requestUser.getState()))
+			.consistOf(UserStateValidator.of(requestUser))
 			.validate();
 
 		Set<String> blockedUserIds = userBlockEntityService.findBlockeeUserIdsByBlocker(requestUser);
@@ -376,7 +376,7 @@ public class UserService {
 
 		ValidatorBucket.of()
 			.consistOf(UserRoleIsNoneValidator.of(roles))
-			.consistOf(UserStateValidator.of(requestUser.getState()))
+			.consistOf(UserStateValidator.of(requestUser))
 			.validate();
 
 		Pageable pageable = this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE / 2 + 5);
@@ -428,7 +428,7 @@ public class UserService {
 
 		ValidatorBucket.of()
 			.consistOf(UserRoleIsNoneValidator.of(roles))
-			.consistOf(UserStateValidator.of(requestUser.getState()))
+			.consistOf(UserStateValidator.of(requestUser))
 			.validate();
 
 		return UserDtoMapper.INSTANCE.toUserCommentsResponseDto(
@@ -456,7 +456,7 @@ public class UserService {
 		Set<Role> roles = requestUser.getRoles();
 
 		ValidatorBucket.of()
-			.consistOf(UserStateValidator.of(requestUser.getState()))
+			.consistOf(UserStateValidator.of(requestUser))
 			.consistOf(UserRoleIsNoneValidator.of(roles))
 			.consistOf(UserRoleValidator.of(roles,
 				Set.of(Role.LEADER_CIRCLE)))
@@ -501,7 +501,7 @@ public class UserService {
 		Set<Role> roles = user.getRoles();
 
 		ValidatorBucket.of()
-			.consistOf(UserStateValidator.of(user.getState()))
+			.consistOf(UserStateValidator.of(user))
 			.consistOf(UserRoleIsNoneValidator.of(roles))
 			.consistOf(UserRoleValidator.of(roles, Set.of()))
 			.validate();
@@ -544,7 +544,7 @@ public class UserService {
 		Set<Role> roles = user.getRoles();
 
 		ValidatorBucket.of()
-			.consistOf(UserStateValidator.of(user.getState()))
+			.consistOf(UserStateValidator.of(user))
 			.consistOf(UserRoleIsNoneValidator.of(roles))
 			.validate();
 
@@ -743,7 +743,7 @@ public class UserService {
 			.validate();
 
 		ValidatorBucket.of()
-			.consistOf(UserStateValidator.of(user.getState()))
+			.consistOf(UserStateValidator.of(user))
 			.validate();
 
 		// refreshToken은 redis에 보관
@@ -902,7 +902,7 @@ public class UserService {
 		Set<Role> roles = user.getRoles();
 
 		ValidatorBucket.of()
-			.consistOf(UserStateValidator.of(user.getState()))
+			.consistOf(UserStateValidator.of(user))
 			.consistOf(UserRoleIsNoneValidator.of(roles))
 			.consistOf(PasswordCorrectValidator.of(
 				this.passwordEncoder,
@@ -927,7 +927,7 @@ public class UserService {
 
 		//관리자 or 대표만 삭제 가능
 		ValidatorBucket.of()
-			.consistOf(UserStateValidator.of(requestuser.getState()))
+			.consistOf(UserStateValidator.of(requestuser))
 			.consistOf(UserRoleIsNoneValidator.of(roles))
 			.consistOf(UserRoleWithoutAdminValidator.of(roles, Set.of(Role.ADMIN, Role.PRESIDENT)))
 			.validate();
@@ -984,7 +984,7 @@ public class UserService {
 		Set<Role> roles = user.getRoles();
 
 		ValidatorBucket.of()
-			.consistOf(UserStateValidator.of(user.getState()))
+			.consistOf(UserStateValidator.of(user))
 			.consistOf(UserRoleIsNoneValidator.of(roles))
 			.consistOf(UserRoleWithoutAdminValidator.of(roles, Set.of(Role.COMMON, Role.PROFESSOR)))
 			.validate();
@@ -1063,7 +1063,7 @@ public class UserService {
 		String droppedUserName = droppedUser.getName();
 
 		ValidatorBucket.of()
-			.consistOf(UserStateValidator.of(requestUser.getState()))
+			.consistOf(UserStateValidator.of(requestUser))
 			.consistOf(UserRoleIsNoneValidator.of(roles))
 			.consistOf(UserRoleValidator.of(roles, Set.of()))
 			.consistOf(UserRoleWithoutAdminValidator.of(droppedUser.getRoles(), Set.of(Role.COMMON, Role.PROFESSOR)))
@@ -1189,7 +1189,7 @@ public class UserService {
 		Set<Role> roles = requestUser.getRoles();
 
 		ValidatorBucket.of()
-			.consistOf(UserStateValidator.of(requestUser.getState()))
+			.consistOf(UserStateValidator.of(requestUser))
 			.consistOf(UserRoleIsNoneValidator.of(roles))
 			.consistOf(UserRoleValidator.of(roles, Set.of()))
 			.validate();
@@ -1209,7 +1209,7 @@ public class UserService {
 		Set<Role> roles = requestUser.getRoles();
 
 		ValidatorBucket.of()
-			.consistOf(UserStateValidator.of(requestUser.getState()))
+			.consistOf(UserStateValidator.of(requestUser))
 			.consistOf(UserRoleIsNoneValidator.of(roles))
 			.consistOf(UserRoleValidator.of(roles, Set.of()))
 			.validate();
@@ -1291,7 +1291,7 @@ public class UserService {
 			() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_APPLY_NOT_FOUND));
 
 		ValidatorBucket.of()
-			.consistOf(UserStateValidator.of(requestUser.getState()))
+			.consistOf(UserStateValidator.of(requestUser))
 			.consistOf(UserRoleIsNoneValidator.of(roles))
 			.consistOf(UserRoleValidator.of(roles, Set.of()))
 			.validate();
@@ -1342,7 +1342,7 @@ public class UserService {
 		User targetUser = userAdmission.getUser();
 
 		ValidatorBucket.of()
-			.consistOf(UserStateValidator.of(requestUser.getState()))
+			.consistOf(UserStateValidator.of(requestUser))
 			.consistOf(UserRoleIsNoneValidator.of(roles))
 			.consistOf(UserRoleValidator.of(roles, Set.of()))
 			.validate();
@@ -1389,7 +1389,7 @@ public class UserService {
 			() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND));
 		ValidatorBucket.of()
 			.consistOf(UserRoleValidator.of(roles, Set.of()))
-			.consistOf(UserStateIsDropOrIsInActiveValidator.of(restoredUser.getState()))
+			.consistOf(UserStateIsDropOrIsInActiveValidator.of(restoredUser))
 			.validate();
 
 		userRoleService.updateRole(restoredUser, Role.COMMON);
@@ -1411,7 +1411,7 @@ public class UserService {
 
 		ValidatorBucket.of()
 			.consistOf(UserRoleIsNoneValidator.of(user.getRoles()))
-			.consistOf(UserStateValidator.of(user.getState()))
+			.consistOf(UserStateValidator.of(user))
 			.validate();
 
 		// STEP2 : 새로운 accessToken 제공
@@ -1498,10 +1498,14 @@ public class UserService {
 			"사용자 정보 최종 수정일");
 
 		LinkedHashMap<String, List<UserResponseDto>> sheetDataMap = new LinkedHashMap<>();
-		for (UserState state : UserState.values()) {
-			if (state == UserState.DELETED) {
-				continue;
-			}
+		List<UserState> exportStates = List.of(
+			UserState.AWAIT,
+			UserState.ACTIVE,
+			UserState.INACTIVE,
+			UserState.REJECT,
+			UserState.DROP,
+			UserState.GUEST);
+		for (UserState state : exportStates) {
 			String sheetName = state.getDescription() + " 유저";
 			List<UserResponseDto> sheetData = getUserResponseDtosByState(state);
 
@@ -1699,6 +1703,11 @@ public class UserService {
 
 		// 사용자 상태가 INACTIVE인지 확인
 		if (user.getState() != UserState.INACTIVE) {
+			throw new BadRequestException(
+				ErrorCode.INVALID_PARAMETER,
+				MessageUtil.USER_RECOVER_INVALID_STATE);
+		}
+		if (user.getDeletedAt() != null) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_PARAMETER,
 				MessageUtil.USER_RECOVER_INVALID_STATE);

@@ -53,7 +53,7 @@ public class AuthService {
 	public AuthResult registerEmailUser(UserRegisterDto dto) {
 		// 전화번호로 기존 사용자 탐색 및 사용자 상태에 따른 에러 반환
 		Optional<User> userExist = userReader.checkUserExistByPhoneNumAndName(dto.phoneNumber(), dto.name());
-		userExist.ifPresent(user -> userValidator.validateUserStatusForSignup(user.getState()));
+		userExist.ifPresent(userValidator::validateUserStatusForSignup);
 
 		// 이메일, 닉네임, 전화번호에 대한 중복 검증 수행
 		userValidator.checkEmailDuplication(dto.email());
@@ -83,7 +83,7 @@ public class AuthService {
 		User user = userReader.findByEmailOrElseThrow(email);
 		// 유효성 검증 수행 (비밀번호, 유저 상태)
 		authValidator.validateCredential(user, password);
-		userValidator.validateUserStatusForLogin(user.getState());
+		userValidator.validateUserStatusForLogin(user);
 		// 토큰 생성
 		AuthTokenPair tokens = authTokenManager.issueTokens(user, null);
 		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), user.getProfileUrl(),

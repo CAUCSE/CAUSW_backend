@@ -69,7 +69,7 @@ public class PostValidator {
 		if (userState == UserState.INACTIVE) {
 			throw UserErrorCode.USER_INACTIVE_CAN_REJOIN.toBaseException();
 		}
-		if (userState == UserState.DELETED) {
+		if (user.getDeletedAt() != null) {
 			throw UserErrorCode.USER_DELETED.toBaseException();
 		}
 
