@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import net.causw.app.main.domain.user.terms.api.v2.dto.response.TermsResponse;
+import net.causw.app.main.domain.user.terms.api.v2.dto.response.TermsResponseDto;
 import net.causw.app.main.domain.user.terms.service.v2.TermsService;
 import net.causw.app.main.shared.dto.ApiResponse;
 
@@ -21,7 +21,7 @@ public class TermsController {
 
 	@Operation(summary = "이용약관 조회 V2", description = "이용약관을 조회합니다.")
 	@GetMapping
-	public ApiResponse<TermsResponse> getTerms() {
+	public ApiResponse<TermsResponseDto> getTerms() {
 		return ApiResponse.success(termsService.getTerms());
 	}
 }

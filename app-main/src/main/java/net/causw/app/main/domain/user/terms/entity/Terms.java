@@ -1,5 +1,7 @@
 package net.causw.app.main.domain.user.terms.entity;
 
+import java.time.LocalDate;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Lob;
@@ -23,10 +25,10 @@ public class Terms extends BaseEntity {
 	private String title;
 
 	@Column(name = "effective_date", nullable = false)
-	private String effectiveDate;
+	private LocalDate effectiveDate;
 
 	@Column(name = "last_revised_date", nullable = false)
-	private String lastRevisedDate;
+	private LocalDate lastRevisedDate;
 
 	@Lob
 	@Column(columnDefinition = "TEXT", name = "content", nullable = false)
