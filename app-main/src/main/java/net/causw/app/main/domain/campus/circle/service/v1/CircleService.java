@@ -72,7 +72,6 @@ import net.causw.app.main.domain.user.account.api.v1.dto.UserResponseDto;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.RoleGroup;
-import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.app.main.domain.user.account.util.UserNotEqualValidator;
 import net.causw.app.main.domain.user.account.util.UserRoleIsNoneValidator;
