@@ -12,6 +12,7 @@ import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
+import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -56,6 +57,30 @@ public class UserAccountService {
 		return AuthResult.of(tokens.accessToken(), updatedUser.getName(), updatedUser.getEmail(),
 			updatedUser.getProfileUrl(),
 			tokens.refreshToken());
+	}
+
+	/**
+	 * 현재 로그인한 사용자의 닉네임을 변경합니다.
+	 * <p>
+	 * 현재 닉네임과 동일한 값이면 예외를 발생시키고,
+	 * 중복 닉네임 검사 후 성공 시 닉네임을 저장합니다.
+	 * </p>
+	 *
+	 * @param userId   닉네임을 변경할 사용자의 고유 식별자 (PK)
+	 * @param nickname 변경할 닉네임
+	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
+	 * [NICKNAME_SAME_AS_CURRENT] 현재 닉네임과 동일한 경우,
+	 * [NICKNAME_ALREADY_EXIST] 이미 사용 중인 닉네임인 경우
+	 */
+	@Transactional
+	public void updateNickname(String userId, String nickname) {
+		User user = userReader.findUserById(userId);
+		if (nickname.equals(user.getNickname())) {
+			throw UserErrorCode.NICKNAME_SAME_AS_CURRENT.toBaseException();
+		}
+		userValidator.checkNicknameDuplication(nickname);
+		user.updateNickname(nickname);
+		userWriter.save(user);
 	}
 
 	/**
