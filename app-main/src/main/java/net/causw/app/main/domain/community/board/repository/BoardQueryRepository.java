@@ -34,7 +34,7 @@ public class BoardQueryRepository {
 			.selectFrom(board)
 			.join(boardConfig).on(board.id.eq(boardConfig.boardId))
 			.where(
-				deleted(),
+				notDeleted(),
 				boardQueryCondition.keyword() != null
 					? board.name.containsIgnoreCase(boardQueryCondition.keyword())
 					: null,
@@ -66,11 +66,26 @@ public class BoardQueryRepository {
 		return Optional.ofNullable(jpaQueryFactory
 			.selectFrom(board)
 			.where(board.id.eq(boardId))
-			.where(deleted())
+			.where(notDeleted())
 			.fetchOne());
 	}
 
-	public BooleanExpression deleted() {
+	/**
+	 * 게시판 아이디 목록으로 게시판을 조회합니다. 삭제되지 않은 게시판만 조회합니다.
+	 * @param boardIds 게시판 아이디 목록
+	 * @return 게시판 엔티티 목록
+	 */
+	public List<Board> findAllByIdsNotDeleted(List<String> boardIds) {
+		QBoard board = QBoard.board;
+
+		return jpaQueryFactory
+			.selectFrom(board)
+			.where(board.id.in(boardIds))
+			.where(notDeleted())
+			.fetch();
+	}
+
+	public BooleanExpression notDeleted() {
 		QBoard board = QBoard.board;
 		return board.isDeleted.eq(false);
 	}
