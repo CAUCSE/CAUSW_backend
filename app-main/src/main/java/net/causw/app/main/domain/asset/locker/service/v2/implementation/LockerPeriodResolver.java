@@ -8,7 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.asset.locker.enums.LockerPeriodPhase;
 import net.causw.app.main.domain.asset.locker.service.v2.dto.result.LockerPeriodStatusResult;
-import net.causw.app.main.shared.exception.errorcode.LockerErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -114,14 +113,15 @@ public class LockerPeriodResolver {
 
 	/**
 	 * 주어진 시각이 사물함 신청 가능 기간 내에 포함되는지 여부를 확인
-	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception 신청 기간이 설정되지 않은 경우
+	 * <br/> 신청 기간이 설정되지 않은 경우 false 반환
 	 */
 	private boolean isOnRegisterPeriod(LocalDateTime targetTime) {
 		Optional<LocalDateTime> start = lockerPolicyReader.findRegisterStartDate();
 		Optional<LocalDateTime> end = lockerPolicyReader.findRegisterEndDate();
 
 		if (start.isEmpty() || end.isEmpty()) {
-			throw LockerErrorCode.LOCKER_REGISTER_PERIOD_NOT_SET.toBaseException();
+			//			throw LockerErrorCode.LOCKER_REGISTER_PERIOD_NOT_SET.toBaseException();
+			return false;
 		}
 
 		return isOnPeriod(targetTime, start, end);
@@ -129,14 +129,14 @@ public class LockerPeriodResolver {
 
 	/**
 	 * 주어진 시각이 사물함 연장 가능 기간 내에 포함되는지 여부를 확인
-	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception 연장 기간이 설정되지 않은 경우
+	 * <br/> 연장 기간이 설정되지 않은 경우 false 반환
 	 */
 	private boolean isOnExtendPeriod(LocalDateTime targetTime) {
 		Optional<LocalDateTime> start = lockerPolicyReader.findExtendStartDate();
 		Optional<LocalDateTime> end = lockerPolicyReader.findExtendEndDate();
 
 		if (start.isEmpty() || end.isEmpty()) {
-			throw LockerErrorCode.LOCKER_EXTEND_PERIOD_NOT_SET.toBaseException();
+			return false;
 		}
 
 		return isOnPeriod(targetTime, start, end);
