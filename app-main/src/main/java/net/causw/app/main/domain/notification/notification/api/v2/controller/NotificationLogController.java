@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "Notification v2", description = "알림 로그 api")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("")
+@RequestMapping("/api/v2/notifications/log")
 public class NotificationLogController {
 	private final NotificationLogService notificationLogService;
 
