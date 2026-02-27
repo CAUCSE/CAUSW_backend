@@ -1,0 +1,6 @@
+-- Migration: ModifyColumnsNullableInUserForOauth2
+
+ALTER TABLE tb_user MODIFY COLUMN password VARCHAR(255) NULL;
+ALTER TABLE tb_user MODIFY COLUMN phone_number VARCHAR(255) NULL;
+ALTER TABLE tb_user MODIFY COLUMN nickname VARCHAR(255) NULL;
+ALTER TABLE tb_user MODIFY COLUMN `state` ENUM('AWAIT', 'ACTIVE', 'INACTIVE', 'REJECT', 'DROP', 'DELETED', 'GUEST') NOT NULL;

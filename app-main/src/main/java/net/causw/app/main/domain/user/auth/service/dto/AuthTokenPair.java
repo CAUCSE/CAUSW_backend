@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.user.auth.service.v2.dto;
+package net.causw.app.main.domain.user.auth.service.dto;
 
 public record AuthTokenPair(
 	String accessToken,

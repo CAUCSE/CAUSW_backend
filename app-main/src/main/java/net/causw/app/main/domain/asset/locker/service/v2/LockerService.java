@@ -22,7 +22,7 @@ import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerRe
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerValidator;
 import net.causw.app.main.domain.asset.locker.util.LockerMapper;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
+import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 
 import lombok.RequiredArgsConstructor;
 
