@@ -1700,7 +1700,7 @@ public class UserService {
 				ErrorCode.INVALID_PARAMETER,
 				MessageUtil.USER_RECOVER_INVALID_STATE);
 		}
-		if (user.getDeletedAt() != null) {
+		if (user.isDeleted()) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_PARAMETER,
 				MessageUtil.USER_RECOVER_INVALID_STATE);

@@ -118,7 +118,7 @@ public class PostV1ServiceTest {
 			String postId = "dummy123";
 
 			given(post.getWriter()).willReturn(writer);
-			given(writer.getDeletedAt()).willReturn(null);
+			given(writer.isDeleted()).willReturn(false);
 
 			when(postRepository.findById(postId)).thenReturn(Optional.of(post));
 			when(likePostRepository.existsByPostIdAndUserId(postId, user.getId())).thenReturn(false);
@@ -137,7 +137,7 @@ public class PostV1ServiceTest {
 			String postId = "dummy123";
 
 			given(post.getWriter()).willReturn(writer);
-			given(writer.getDeletedAt()).willReturn(LocalDateTime.now());
+			given(writer.isDeleted()).willReturn(true);
 
 			when(postRepository.findById(postId)).thenReturn(Optional.of(post));
 
@@ -157,7 +157,7 @@ public class PostV1ServiceTest {
 			String postId = "dummy123";
 
 			given(post.getWriter()).willReturn(writer);
-			given(writer.getDeletedAt()).willReturn(null);
+			given(writer.isDeleted()).willReturn(false);
 
 			when(postRepository.findById(postId)).thenReturn(Optional.of(post));
 			when(likePostRepository.existsByPostIdAndUserId(postId, user.getId())).thenReturn(true);
@@ -196,7 +196,7 @@ public class PostV1ServiceTest {
 			String userId = "dummy1234";
 
 			given(post.getWriter()).willReturn(writer);
-			given(writer.getDeletedAt()).willReturn(null);
+			given(writer.isDeleted()).willReturn(false);
 			given(user.getId()).willReturn(userId);
 
 			when(postRepository.findById(postId)).thenReturn(Optional.of(post));
@@ -216,7 +216,7 @@ public class PostV1ServiceTest {
 			String postId = "dummy123";
 
 			given(post.getWriter()).willReturn(writer);
-			given(writer.getDeletedAt()).willReturn(LocalDateTime.now());
+			given(writer.isDeleted()).willReturn(true);
 
 			when(postRepository.findById(postId)).thenReturn(Optional.of(post));
 
@@ -236,7 +236,7 @@ public class PostV1ServiceTest {
 			String postId = "dummy123";
 
 			given(post.getWriter()).willReturn(writer);
-			given(writer.getDeletedAt()).willReturn(null);
+			given(writer.isDeleted()).willReturn(false);
 
 			when(postRepository.findById(postId)).thenReturn(Optional.of(post));
 			when(likePostRepository.existsByPostIdAndUserId(postId, user.getId())).thenReturn(false);
@@ -284,7 +284,7 @@ public class PostV1ServiceTest {
 				post.getWriter().getNickname(),
 				post.getWriter().getAdmissionYear(),
 				post.getWriter().getState(),
-				post.getWriter().getDeletedAt(),
+				null,
 				post.getCreatedAt(),
 				post.getUpdatedAt(),
 				null // 썸네일 url
@@ -358,7 +358,7 @@ public class PostV1ServiceTest {
 				post.getWriter().getNickname(),
 				post.getWriter().getAdmissionYear(),
 				post.getWriter().getState(),
-				post.getWriter().getDeletedAt(),
+				null,
 				post.getCreatedAt(),
 				post.getUpdatedAt(),
 				null // 썸네일 url
@@ -442,7 +442,7 @@ public class PostV1ServiceTest {
 				post.getWriter().getNickname(),
 				post.getWriter().getAdmissionYear(),
 				post.getWriter().getState(),
-				post.getWriter().getDeletedAt(),
+				null,
 				post.getCreatedAt(),
 				post.getUpdatedAt(),
 				null // 썸네일 url

@@ -23,7 +23,7 @@ public class UserStateValidator extends AbstractValidator {
 
 	@Override
 	public void validate() {
-		if (this.user.getDeletedAt() != null) {
+		if (this.user.isDeleted()) {
 			throw new UnauthorizedException(
 				ErrorCode.DELETED_USER,
 				MessageUtil.USER_DELETED);

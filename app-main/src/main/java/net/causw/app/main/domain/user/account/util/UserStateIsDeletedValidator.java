@@ -19,7 +19,7 @@ public class UserStateIsDeletedValidator extends AbstractValidator {
 
 	@Override
 	public void validate() {
-		if (this.user.getDeletedAt() != null) {
+		if (this.user.isDeleted()) {
 			throw new UnauthorizedException(
 				ErrorCode.DELETED_USER,
 				"삭제된 사용자 입니다.");

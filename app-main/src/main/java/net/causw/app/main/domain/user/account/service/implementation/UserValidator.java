@@ -40,7 +40,7 @@ public class UserValidator {
 	 * [USER_INACTIVE_CAN_REJOIN] 휴면 계정인 경우 (재가입 절차 필요)
 	 */
 	public void validateUserStatusForSignup(User user) {
-		if (user.getDeletedAt() != null) {
+		if (user.isDeleted()) {
 			throw UserErrorCode.ALREADY_REGISTERED.toBaseException();
 		}
 		switch (user.getState()) {
@@ -67,7 +67,7 @@ public class UserValidator {
 	 * [USER_INACTIVE_CAN_REJOIN] 휴면 계정인 경우 (재가입 절차 필요)
 	 */
 	public void validateUserStatusForIntegration(User user) {
-		if (user.getDeletedAt() != null) {
+		if (user.isDeleted()) {
 			throw UserErrorCode.USER_DELETED.toBaseException();
 		}
 		switch (user.getState()) {
@@ -89,7 +89,7 @@ public class UserValidator {
 	 * [INVALID_LOGIN_USER_INACTIVE] 휴면 회원인 경우
 	 */
 	public void validateUserStatusForLogin(User user) {
-		if (user.getDeletedAt() != null) {
+		if (user.isDeleted()) {
 			throw UserErrorCode.INVALID_LOGIN_USER_DELETED.toBaseException();
 		}
 		switch (user.getState()) {
@@ -109,7 +109,7 @@ public class UserValidator {
 	 * [BLOCKED_USER] 추방된 유저, [INACTIVE_USER] 휴면 유저, [DELETED_USER] 탈퇴한 유저인 경우
 	 */
 	public void validateUser(User user) {
-		if (user.getDeletedAt() != null) {
+		if (user.isDeleted()) {
 			throw AuthErrorCode.DELETED_USER.toBaseException();
 		}
 		// 유저 상태 검증

@@ -156,6 +156,10 @@ public class User extends BaseEntity {
 		this.deletedAt = LocalDateTime.now();
 	}
 
+	public boolean isDeleted() {
+		return this.deletedAt != null;
+	}
+
 	public static User from(
 		UserCreateRequestDto userCreateRequestDto,
 		String encodedPassword) {
