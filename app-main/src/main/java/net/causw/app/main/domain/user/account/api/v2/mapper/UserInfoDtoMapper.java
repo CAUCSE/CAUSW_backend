@@ -71,7 +71,7 @@ public interface UserInfoDtoMapper extends UuidFileToUrlDtoMapper {
 
 	@Named("mapPhoneNumber")
 	static String mapPhoneNumber(UserInfo userInfo) {
-		if (userInfo.isPhoneNumberVisible()) {
+		if (userInfo.isPhoneNumberVisible() && userInfo.isMessageVisible()) {
 			return userInfo.getUser().getPhoneNumber();
 		} else {
 			return null;
