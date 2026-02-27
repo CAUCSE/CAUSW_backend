@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import net.causw.app.main.domain.community.report.api.v2.dto.request.ChildCommentReportCreateRequest;
 import net.causw.app.main.domain.community.report.api.v2.dto.response.ChildCommentReportResponse;
-import net.causw.app.main.domain.community.report.api.v2.dto.response.PostReportReasonResponse;
+import net.causw.app.main.domain.community.report.api.v2.dto.response.PostReportReasonResponseDto;
 import net.causw.app.main.domain.community.report.api.v2.mapper.ChildCommentReportDtoMapper;
 import net.causw.app.main.domain.community.report.enums.ReportReason;
 import net.causw.app.main.domain.community.report.service.v2.ChildCommentReportService;
@@ -40,9 +40,9 @@ public class ChildCommentReportController {
 	@GetMapping("/reasons")
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "신고 사유 목록 조회", description = "신고 사유 선택 화면에 표시할 사유 목록을 반환합니다.")
-	public ApiResponse<List<PostReportReasonResponse>> getReportReasons(@PathVariable String childCommentId) {
-		List<PostReportReasonResponse> reasons = Arrays.stream(ReportReason.values())
-			.map(PostReportReasonResponse::from)
+	public ApiResponse<List<PostReportReasonResponseDto>> getReportReasons(@PathVariable String childCommentId) {
+		List<PostReportReasonResponseDto> reasons = Arrays.stream(ReportReason.values())
+			.map(PostReportReasonResponseDto::from)
 			.toList();
 		return ApiResponse.success(reasons);
 	}
