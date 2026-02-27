@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,6 +17,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import net.causw.app.main.domain.notification.notification.api.v2.dto.response.NotificationCountResponseDto;
 import net.causw.app.main.domain.notification.notification.api.v2.dto.response.NotificationResponseDto;
@@ -40,6 +45,51 @@ class NotificationLogServiceTest {
 	private NotificationDtoMapper notificationDtoMapper;
 
 	@Nested
+	@DisplayName("알림 리스트 페이징 조회 테스트")
+	class GetNotificationListTest {
+
+		@Test
+		@DisplayName("유저의 알림 리스트를 성공적으로 페이징하여 DTO로 변환한다")
+		void givenUserWithLogs_whenGetNotificationList_thenReturnsPagedDto() {
+			// given
+			String userId = "user-uuid-123";
+			Pageable pageable = PageRequest.of(0, 20);
+
+			User user = ObjectFixtures.getCertifiedUser();
+			Notification notification = ObjectFixtures.getNotification(user);
+			NotificationLog log = NotificationLog.of(user, notification);
+
+			Page<NotificationLog> mockPage = new PageImpl<>(List.of(log), pageable, 1);
+
+			given(notificationLogReader.getNotificationList(userId, pageable))
+				.willReturn(mockPage);
+
+			NotificationResponseDto expectedDto = NotificationResponseDto.builder()
+				.notificationLogId(log.getId())
+				.title(notification.getTitle())
+				.isRead(false)
+				.build();
+
+			given(notificationDtoMapper.toNotificationResponseDto(
+				any(), any(), anyBoolean(), any(LocalDateTime.class)))
+				.willReturn(expectedDto);
+
+			// when
+			Page<NotificationResponseDto> result = notificationLogService.getNotificationList(userId, pageable);
+
+			// then
+			assertThat(result).isNotNull();
+			assertThat(result.getContent()).hasSize(1);
+			assertThat(result.getContent().get(0)).isEqualTo(expectedDto);
+			assertThat(result.getTotalElements()).isEqualTo(1);
+
+			then(notificationLogReader).should().getNotificationList(userId, pageable);
+			then(notificationDtoMapper).should().toNotificationResponseDto(
+				any(), any(), anyBoolean(), any(LocalDateTime.class));
+		}
+	}
+
+	@Nested
 	@DisplayName("최신 미확인 알림 조회 테스트")
 	class GetLatestUnreadTest {
 
@@ -61,7 +111,7 @@ class NotificationLogServiceTest {
 				.isRead(false)
 				.build();
 
-			given(notificationDtoMapper.toNotificationResponseDto(any(), any(), anyBoolean()))
+			given(notificationDtoMapper.toNotificationResponseDto(any(), any(), anyBoolean(), any(LocalDateTime.class)))
 				.willReturn(expectedDto);
 
 			// when

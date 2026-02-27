@@ -1,5 +1,7 @@
 package net.causw.app.main.domain.notification.notification.api.v2.dto.response;
 
+import java.time.LocalDateTime;
+
 import net.causw.app.main.domain.notification.notification.enums.NoticeType;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -19,5 +21,7 @@ public record NotificationResponseDto(
 
 	@Schema(description = "조회할 타겟의 부모 id(게시글의 경우 게시판)", example = "uuid 형식의 String 값입니다") String targetParentId,
 
-	@Schema(description = "알람 확인 여부", example = "true/false") Boolean isRead) {
+	@Schema(description = "알람 확인 여부", example = "true/false") Boolean isRead,
+
+	@Schema(description = "알림 생성 시간", example = "2024-09-01T11:41") LocalDateTime createdAt) {
 }

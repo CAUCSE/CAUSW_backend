@@ -17,6 +17,12 @@ public interface NotificationLogRepository extends JpaRepository<NotificationLog
 
 	@Query("SELECT nl FROM NotificationLog nl " +
 		"JOIN FETCH nl.notification n " +
+		"WHERE nl.user.id = :userId " +
+		"ORDER BY nl.createdAt DESC")
+	Page<NotificationLog> findByUserId(@Param("userId") String userId, Pageable pageable);
+
+	@Query("SELECT nl FROM NotificationLog nl " +
+		"JOIN FETCH nl.notification n " +
 		"WHERE nl.user = :user " +
 		"AND n.noticeType IN :types " +
 		"ORDER BY nl.createdAt DESC")
