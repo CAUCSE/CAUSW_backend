@@ -18,7 +18,7 @@ import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.v2.implementation.PostReader;
 import net.causw.app.main.domain.notification.notification.service.v1.CommentNotificationService;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
+import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 
 import lombok.RequiredArgsConstructor;
 

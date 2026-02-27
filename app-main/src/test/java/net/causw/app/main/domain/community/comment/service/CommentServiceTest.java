@@ -46,7 +46,7 @@ import net.causw.app.main.domain.community.post.service.v2.implementation.PostRe
 import net.causw.app.main.domain.notification.notification.service.implementation.UserCommentSubscribeReader;
 import net.causw.app.main.domain.notification.notification.service.v1.PostNotificationService;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
+import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.relation.service.v1.UserBlockEntityService;
 
 @ExtendWith(MockitoExtension.class)
