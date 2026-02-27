@@ -97,7 +97,7 @@ class UserInfoServiceTest {
 			// when & then
 			assertThatThrownBy(() -> userInfoService.getDetailUserInfo(userInfoId))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
-				.extracting(e -> ((BaseRunTimeV2Exception) e).getErrorCode())
+				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
 				.isEqualTo(UserInfoErrorCode.USERINFO_NOT_FOUND);
 
 			verify(userInfoReader).findById(userInfoId);
@@ -269,21 +269,27 @@ class UserInfoServiceTest {
 		static User user() {
 			return org.mockito.Mockito.mock(User.class);
 		}
+
 		static UserInfo userInfo() {
 			return org.mockito.Mockito.mock(UserInfo.class);
 		}
+
 		static UserInfoUpdateRequestDto updateRequest() {
 			return org.mockito.Mockito.mock(UserInfoUpdateRequestDto.class);
 		}
+
 		static UserInfoDetailResponseDto detailResponse() {
 			return org.mockito.Mockito.mock(UserInfoDetailResponseDto.class);
 		}
+
 		static UserInfoSummaryResponseDto summaryResponse() {
 			return org.mockito.Mockito.mock(UserInfoSummaryResponseDto.class);
 		}
+
 		static UserInfoListCondition listCondition() {
 			return org.mockito.Mockito.mock(UserInfoListCondition.class);
 		}
+
 		static Pageable pageable() {
 			return org.mockito.Mockito.mock(Pageable.class);
 		}
