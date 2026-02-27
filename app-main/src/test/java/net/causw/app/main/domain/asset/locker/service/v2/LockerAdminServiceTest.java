@@ -149,7 +149,7 @@ class LockerAdminServiceTest {
 
 			when(lockerReader.findByIdForWrite(lockerId)).thenReturn(locker);
 			when(userReader.findAdminUserById(adminId)).thenReturn(admin);
-			when(userReader.findUserById(userId)).thenReturn(user);
+			when(userReader.findUserByIdNotDeleted(userId)).thenReturn(user);
 
 			// when
 			lockerAdminService.assignLocker(lockerId, userId, expiredAt, adminId);
