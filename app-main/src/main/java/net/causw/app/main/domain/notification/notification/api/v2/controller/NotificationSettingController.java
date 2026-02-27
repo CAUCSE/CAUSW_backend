@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import net.causw.app.main.domain.notification.notification.api.v2.dto.request.UpdateNotificationSettingRequest;
 import net.causw.app.main.domain.notification.notification.api.v2.dto.request.UpdateOfficialBoardSubscribeRequest;
 import net.causw.app.main.domain.notification.notification.api.v2.dto.response.NotificationSettingResponse;
-import net.causw.app.main.domain.notification.notification.service.v2.NotificationSettingService;
+import net.causw.app.main.domain.notification.notification.service.NotificationSettingService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 

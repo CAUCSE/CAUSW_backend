@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.notification.notification.service.v2.implementation;
+package net.causw.app.main.domain.notification.notification.service.implementation;
 
 import java.util.Map;
 import java.util.function.Function;
@@ -11,7 +11,7 @@ import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.notification.notification.entity.UserNotificationSetting;
 import net.causw.app.main.domain.notification.notification.enums.UserNotificationSettingKey;
 import net.causw.app.main.domain.notification.notification.repository.UserNotificationSettingRepository;
-import net.causw.app.main.domain.notification.notification.service.v2.dto.UserNotificationSettingMap;
+import net.causw.app.main.domain.notification.notification.service.dto.UserNotificationSettingMap;
 import net.causw.app.main.domain.user.account.entity.user.User;
 
 import lombok.RequiredArgsConstructor;

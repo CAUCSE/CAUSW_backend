@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.notification.notification.service.v2.implementation;
+package net.causw.app.main.domain.notification.notification.service.implementation;
 
 import java.util.List;
 import java.util.Map;
@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import net.causw.app.main.domain.notification.notification.entity.UserNotificationSetting;
 import net.causw.app.main.domain.notification.notification.enums.UserNotificationSettingKey;
 import net.causw.app.main.domain.notification.notification.repository.UserNotificationSettingRepository;
-import net.causw.app.main.domain.notification.notification.service.v2.dto.UserNotificationSettingMap;
+import net.causw.app.main.domain.notification.notification.service.dto.UserNotificationSettingMap;
 
 import lombok.RequiredArgsConstructor;
 

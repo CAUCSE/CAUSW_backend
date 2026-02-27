@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.notification.notification.service.v2.dto;
+package net.causw.app.main.domain.notification.notification.service.dto;
 
 /**
  * 공지사항 게시판 알림 구독 설정 정보.

@@ -2,7 +2,7 @@ package net.causw.app.main.domain.notification.notification.api.v2.dto.response;
 
 import java.util.List;
 
-import net.causw.app.main.domain.notification.notification.service.v2.dto.NotificationSettingResult;
+import net.causw.app.main.domain.notification.notification.service.dto.NotificationSettingResult;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

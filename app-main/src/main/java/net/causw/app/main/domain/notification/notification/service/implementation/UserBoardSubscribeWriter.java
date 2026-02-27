@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.notification.notification.service.v2.implementation;
+package net.causw.app.main.domain.notification.notification.service.implementation;
 
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;

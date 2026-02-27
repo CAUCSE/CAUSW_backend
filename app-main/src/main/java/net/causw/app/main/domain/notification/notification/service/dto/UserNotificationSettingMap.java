@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.notification.notification.service.v2.dto;
+package net.causw.app.main.domain.notification.notification.service.dto;
 
 import java.util.EnumMap;
 import java.util.Map;

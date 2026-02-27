@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.notification.notification.service.v2;
+package net.causw.app.main.domain.notification.notification.service;
 
 import java.util.List;
 import java.util.Set;
@@ -8,13 +8,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.service.implementation.BoardReader;
-import net.causw.app.main.domain.notification.notification.service.v2.dto.NotificationSettingResult;
-import net.causw.app.main.domain.notification.notification.service.v2.dto.OfficialBoardSetting;
-import net.causw.app.main.domain.notification.notification.service.v2.dto.UpdateNotificationSettingCommand;
-import net.causw.app.main.domain.notification.notification.service.v2.dto.UserNotificationSettingMap;
-import net.causw.app.main.domain.notification.notification.service.v2.implementation.NotificationSettingReader;
-import net.causw.app.main.domain.notification.notification.service.v2.implementation.NotificationSettingWriter;
-import net.causw.app.main.domain.notification.notification.service.v2.implementation.UserBoardSubscribeReader;
+import net.causw.app.main.domain.notification.notification.service.dto.NotificationSettingResult;
+import net.causw.app.main.domain.notification.notification.service.dto.OfficialBoardSetting;
+import net.causw.app.main.domain.notification.notification.service.dto.UpdateNotificationSettingCommand;
+import net.causw.app.main.domain.notification.notification.service.dto.UserNotificationSettingMap;
+import net.causw.app.main.domain.notification.notification.service.implementation.NotificationSettingReader;
+import net.causw.app.main.domain.notification.notification.service.implementation.NotificationSettingWriter;
+import net.causw.app.main.domain.notification.notification.service.implementation.UserBoardSubscribeReader;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;

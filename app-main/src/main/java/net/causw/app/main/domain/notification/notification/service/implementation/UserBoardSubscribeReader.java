@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.notification.notification.service.v2.implementation;
+package net.causw.app.main.domain.notification.notification.service.implementation;
 
 import java.util.List;
 import java.util.Set;

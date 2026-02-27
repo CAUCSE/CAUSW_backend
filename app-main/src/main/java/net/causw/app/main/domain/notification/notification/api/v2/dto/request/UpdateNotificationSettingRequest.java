@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.notification.notification.api.v2.dto.request;
 
-import net.causw.app.main.domain.notification.notification.service.v2.dto.UpdateNotificationSettingCommand;
+import net.causw.app.main.domain.notification.notification.service.dto.UpdateNotificationSettingCommand;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
