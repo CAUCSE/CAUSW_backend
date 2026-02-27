@@ -10,6 +10,8 @@ import net.causw.app.main.domain.user.account.entity.user.User;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.Optional;
+
 @Component
 @RequiredArgsConstructor
 @Transactional
@@ -18,10 +20,13 @@ public class UserBoardSubscribeWriter {
 	private final UserBoardSubscribeRepository userBoardSubscribeRepository;
 
 	public void upsertBoardSubscribe(User user, Board board, boolean subscribed) {
-		userBoardSubscribeRepository.findByUserAndBoard(user, board)
-			.ifPresentOrElse(
-				existing -> existing.setIsSubscribed(subscribed),
-				() -> userBoardSubscribeRepository.save(
-					UserBoardSubscribe.of(user, board, subscribed)));
+		var existing = userBoardSubscribeRepository.findByUserAndBoard(user, board);
+
+		if (existing.isPresent()) {
+			existing.get().setIsSubscribed(subscribed);
+		}else{
+			userBoardSubscribeRepository.save(
+				UserBoardSubscribe.of(user, board, subscribed));
+		}
 	}
 }
