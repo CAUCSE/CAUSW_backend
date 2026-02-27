@@ -5,9 +5,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-import net.causw.app.main.shared.infra.mail.GoogleMailSender;
-
 import lombok.RequiredArgsConstructor;
+
+import net.causw.app.main.shared.infra.mail.GoogleMailSender;
 
 @Component
 @RequiredArgsConstructor
@@ -19,5 +19,11 @@ public class MailEventListener {
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void handleEmailVerification(EmailVerificationEvent event) {
 		googleMailSender.sendEmailVerificationMail(event.email(), event.verificationCode());
+	}
+
+	@Async("asyncExecutor")
+	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	public void handleFindPassword(FindPasswordEvent event) {
+		googleMailSender.sendNewPasswordMail(event.email(), event.newPassword());
 	}
 }
