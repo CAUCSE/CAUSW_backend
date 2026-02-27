@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 public class BlockValidator {
 
 	public static void validateCreate(User blocker, User blocked, boolean alreadyBlocked, boolean isAnonymous) {
-		UserStateValidator.validateUserCanAct(blocker);
+		UserStateValidator.validateUserIsActiveWithValidRole(blocker);
 
 		// 본인 차단 방지
 		if (blocker.getId().equals(blocked.getId())) {

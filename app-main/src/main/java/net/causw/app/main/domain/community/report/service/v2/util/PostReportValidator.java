@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class PostReportValidator {
 	public static void validateCreate(User reporter, Post post, boolean alreadyReported) {
-		UserStateValidator.validateUserCanAct(reporter);
+		UserStateValidator.validateUserIsActiveWithValidRole(reporter);
 
 		if (post.getIsDeleted()) {
 			throw PostErrorCode.POST_NOT_FOUND.toBaseException();

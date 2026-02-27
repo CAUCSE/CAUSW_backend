@@ -12,7 +12,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class UserStateValidator {
 
-	public static void validateUserCanAct(User user) {
+	/**
+	 * 사용자가 서비스 내 활동(신고, 차단 등)을 수행할 수 있는 상태인지 검증.
+	 * DROP / INACTIVE / DELETED 상태이거나 NONE 역할인 경우 예외를 발생시킨다.
+	 */
+	public static void validateUserIsActiveWithValidRole(User user) {
 		UserState state = user.getState();
 		if (state == UserState.DROP) {
 			throw UserErrorCode.USER_DROPPED.toBaseException();
