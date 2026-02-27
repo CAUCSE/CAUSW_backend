@@ -40,6 +40,7 @@ public interface ChildCommentRepository extends JpaRepository<ChildComment, Stri
 
 	@Query("SELECT c FROM ChildComment c " +
 		"LEFT JOIN FETCH c.writer w " +
+		"LEFT JOIN FETCH c.parentComment pc " +
 		"WHERE c.parentComment.id IN :parentCommentIds " +
 		"ORDER BY c.createdAt ASC")
 	List<ChildComment> findChildCommentsByParentCommentIds(@Param("parentCommentIds") List<String> parentCommentIds);
