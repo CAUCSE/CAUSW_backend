@@ -1,13 +1,15 @@
-package net.causw.app.main.domain.user.account.service.v2.implementation;
+package net.causw.app.main.domain.user.account.service.implementation;
 
 import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.enums.user.Role;
+import net.causw.app.main.domain.user.account.enums.user.SocialType;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.domain.user.account.repository.user.SocialAccountRepository;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
+import net.causw.app.main.domain.user.account.util.PhoneNumberFormatValidator;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 import net.causw.app.main.shared.infra.redis.RedisUtils;
@@ -24,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserValidator {
 	private final UserRepository userRepository;
+	private final SocialAccountRepository socialAccountRepository;
 	private final RedisUtils redisUtils;
 
 	/**
@@ -41,6 +44,28 @@ public class UserValidator {
 		switch (state) {
 			case ACTIVE, AWAIT, REJECT ->
 				throw UserErrorCode.ALREADY_REGISTERED.toBaseException();
+			case DROP ->
+				throw UserErrorCode.USER_DROPPED.toBaseException();
+			case INACTIVE ->
+				throw UserErrorCode.USER_INACTIVE_CAN_REJOIN.toBaseException();
+			default -> {}
+		}
+	}
+
+	/**
+	 * 기존 계정에 소셜 계정을 통합(연동)하기 전, 유저의 상태가 유효한지 검증합니다.
+	 * <p>
+	 * 정상적인 활동 상태(ACTIVE)나 대기 상태인 경우 검증을 통과하며,
+	 * 탈퇴 또는 비활성화 상태인 경우 연동을 차단하고 예외를 발생시킵니다.
+	 * </p>
+	 *
+	 * @param state 검증할 유저의 현재 상태
+	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
+	 * [USER_DROPPED] 추방된 회원인 경우,
+	 * [USER_INACTIVE_CAN_REJOIN] 휴면 계정인 경우 (재가입 절차 필요)
+	 */
+	public void validateUserStatusForIntegration(UserState state) {
+		switch (state) {
 			case DROP ->
 				throw UserErrorCode.USER_DROPPED.toBaseException();
 			case INACTIVE ->
@@ -71,28 +96,22 @@ public class UserValidator {
 	}
 
 	/**
-	 * 인증 과정(토큰 재발급 등)에서 유저의 유효성(상태 및 권한)을 검증합니다.
+	 * 인증 과정(토큰 재발급 등)에서 유저의 유효성(상태)을 검증합니다.
 	 *
 	 * @param user 검증할 사용자 엔티티
 	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
 	 * [BLOCKED_USER] 추방된 유저, [INACTIVE_USER] 휴면 유저, [DELETED_USER] 탈퇴한 유저인 경우
-	 * [NEED_SIGN_IN] 유저에게 부여된 권한(Role)이 없는 경우 (Role.NONE)
 	 */
 	public void validateUser(User user) {
 		// 유저 상태 검증
 		switch (user.getState()) {
 			case DROP ->
-				throw AuthErrorCode.BLOCKED_USER.toBaseException();
+				throw AuthErrorCode.DROPPED_USER.toBaseException();
 			case INACTIVE ->
 				throw AuthErrorCode.INACTIVE_USER.toBaseException();
 			case DELETED ->
 				throw AuthErrorCode.DELETED_USER.toBaseException();
 			default -> {}
-		}
-
-		// 유저 역할 검증
-		if (user.getRoles().contains(Role.NONE)) {
-			throw AuthErrorCode.NEED_SIGN_IN.toBaseException();
 		}
 	}
 
@@ -137,6 +156,7 @@ public class UserValidator {
 	 * [PHONE_NUMBER_ALREADY_EXIST] 이미 존재하는 전화번호인 경우
 	 */
 	public void checkPhoneNumDuplication(String phoneNumber) {
+		PhoneNumberFormatValidator.of(phoneNumber).validate();
 		Optional<User> phoneNumExist = userRepository.findByPhoneNumber(phoneNumber);
 		if (phoneNumExist.isPresent()) {
 			throw UserErrorCode.PHONE_NUMBER_ALREADY_EXIST.toBaseException();
@@ -154,6 +174,13 @@ public class UserValidator {
 		Optional<User> nicknameExist = userRepository.findByNickname(nickname);
 		if (nicknameExist.isPresent()) {
 			throw UserErrorCode.NICKNAME_ALREADY_EXIST.toBaseException();
+		}
+	}
+
+	public void checkAccountExistByUserAndSocialType(User user, SocialType socialType) {
+		Boolean isExist = socialAccountRepository.existsByUserAndSocialType(user, socialType);
+		if (isExist) {
+			throw AuthErrorCode.ALREADY_LINKED_SOCIAL_PROVIDER.toBaseException();
 		}
 	}
 }

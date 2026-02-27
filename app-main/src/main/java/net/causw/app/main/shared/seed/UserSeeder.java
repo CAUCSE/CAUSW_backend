@@ -76,7 +76,7 @@ public class UserSeeder {
 	}
 
 	private UserAdmissionLog createUserAdmissionLog(User user) {
-		UserAdmissionLog log = UserAdmissionLog.of(
+		UserAdmissionLog log = UserAdmissionLog.ofV1(
 			user.getEmail(),
 			user.getName(),
 			"admin@seed.test",

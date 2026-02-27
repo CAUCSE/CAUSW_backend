@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.user.auth.service.v2;
+package net.causw.app.main.domain.user.auth.service;
 
 import java.util.Optional;
 
@@ -6,15 +6,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.service.v2.dto.UserRegisterDto;
-import net.causw.app.main.domain.user.account.service.v2.implementation.UserPushTokenWriter;
-import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
-import net.causw.app.main.domain.user.account.service.v2.implementation.UserValidator;
-import net.causw.app.main.domain.user.account.service.v2.implementation.UserWriter;
-import net.causw.app.main.domain.user.auth.service.v2.dto.AuthResult;
-import net.causw.app.main.domain.user.auth.service.v2.dto.AuthTokenPair;
-import net.causw.app.main.domain.user.auth.service.v2.implementation.AuthTokenManager;
-import net.causw.app.main.domain.user.auth.service.v2.implementation.AuthValidator;
+import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
+import net.causw.app.main.domain.user.account.service.implementation.UserPushTokenWriter;
+import net.causw.app.main.domain.user.account.service.implementation.UserReader;
+import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
+import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
+import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
+import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
+import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
+import net.causw.app.main.domain.user.auth.service.implementation.AuthValidator;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 
 import jakarta.transaction.Transactional;

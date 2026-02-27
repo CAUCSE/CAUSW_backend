@@ -1254,7 +1254,7 @@ public class UserService {
 		List<UuidFile> uuidFileList = uuidFileService.saveFileList(userAdmissionAttachImageList,
 			FilePath.USER_ADMISSION);
 
-		UserAdmission userAdmission = UserAdmission.of(
+		UserAdmission userAdmission = UserAdmission.ofV1(
 			user,
 			uuidFileList,
 			userAdmissionCreateRequestDto.getDescription());
@@ -1303,7 +1303,7 @@ public class UserService {
 		userRoleService.updateRole(userAdmission.getUser(), Role.COMMON);
 
 		// Add admission log
-		UserAdmissionLog userAdmissionLog = UserAdmissionLog.of(
+		UserAdmissionLog userAdmissionLog = UserAdmissionLog.ofV1(
 			userAdmission.getUser().getEmail(),
 			userAdmission.getUser().getName(),
 			requestUser.getEmail(),
@@ -1348,7 +1348,7 @@ public class UserService {
 			.validate();
 
 		// Add admission log
-		UserAdmissionLog userAdmissionLog = UserAdmissionLog.of(
+		UserAdmissionLog userAdmissionLog = UserAdmissionLog.ofV1(
 			userAdmission.getUser().getEmail(),
 			userAdmission.getUser().getName(),
 			requestUser.getEmail(),
