@@ -28,7 +28,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-@Tag(name = "Board Public v2", description = "게시판 관련 api")
+@Tag(name = "Child Public v2", description = "댓글 관련 api")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/comments")
