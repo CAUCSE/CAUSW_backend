@@ -87,7 +87,7 @@ public class UserController {
 		return ApiResponse.success();
 	}
 
-	@PatchMapping("/me/password")
+	@PostMapping("/me/password-change")
 	@Operation(summary = "비밀번호 재설정 API", description = "현재 비밀번호를 확인하고 새 비밀번호로 변경합니다.")
 	public ApiResponse<Void> updatePassword(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
