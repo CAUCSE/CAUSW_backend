@@ -21,7 +21,7 @@ public record ScheduleRequest(
 
 	@Schema(description = "일정 종료 시간", type = "string", example = "2026-04-21T23:59:59", requiredMode = Schema.RequiredMode.REQUIRED) @NotNull(message = "종료 시간은 필수입니다.") LocalDateTime end,
 
-	@Schema(description = "연관된 게시물 ID", example = "uuid-uuid-uuid-uuid", requiredMode = RequiredMode.NOT_REQUIRED) String targetPostId) {
+	@Schema(description = "연관된 게시물 ID", example = "013f2bc9-672c-4f0e-b197-db7286942921", requiredMode = RequiredMode.NOT_REQUIRED) String targetPostId) {
 
 	@AssertTrue(message = "종료시간은 시작시간 이후여야 합니다.")
 	private boolean isValidTimeRange() {

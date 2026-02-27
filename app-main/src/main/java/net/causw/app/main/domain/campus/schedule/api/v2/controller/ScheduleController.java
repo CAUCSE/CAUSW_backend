@@ -1,6 +1,7 @@
 package net.causw.app.main.domain.campus.schedule.api.v2.controller;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -40,7 +41,7 @@ public class ScheduleController {
 	public ApiResponse<ScheduleListResponse> readSchedules(
 		@RequestParam(required = false) LocalDateTime from,
 		@RequestParam(required = false) LocalDateTime to,
-		@RequestParam(required = false) java.util.List<ScheduleType> types) {
+		@RequestParam(required = false) Set<ScheduleType> types) {
 
 		LocalDateTime startDate = from;
 		LocalDateTime endDate = to;

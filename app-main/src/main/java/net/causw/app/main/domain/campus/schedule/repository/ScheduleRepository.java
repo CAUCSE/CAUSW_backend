@@ -1,6 +1,7 @@
 package net.causw.app.main.domain.campus.schedule.repository;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,5 +24,5 @@ public interface ScheduleRepository extends JpaRepository<Schedule, String> {
 		ORDER BY s.start, s.end
 		""")
 	List<Schedule> findAllByCondition(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to,
-		@Param("types") List<ScheduleType> types);
+		@Param("types") Collection<ScheduleType> types);
 }
