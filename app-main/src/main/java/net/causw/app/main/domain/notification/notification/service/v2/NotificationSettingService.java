@@ -16,8 +16,8 @@ import net.causw.app.main.domain.notification.notification.service.v2.implementa
 import net.causw.app.main.domain.notification.notification.service.v2.implementation.NotificationSettingWriter;
 import net.causw.app.main.domain.notification.notification.service.v2.implementation.UserBoardSubscribeReader;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
-import net.causw.app.main.domain.user.account.service.v2.implementation.UserValidator;
+import net.causw.app.main.domain.user.account.service.implementation.UserReader;
+import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 
 import lombok.RequiredArgsConstructor;
 
