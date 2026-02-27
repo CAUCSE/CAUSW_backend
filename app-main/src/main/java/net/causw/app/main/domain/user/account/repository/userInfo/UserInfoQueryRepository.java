@@ -14,6 +14,7 @@ import net.causw.app.main.domain.user.account.entity.user.QUser;
 import net.causw.app.main.domain.user.account.entity.userInfo.QUserCareer;
 import net.causw.app.main.domain.user.account.entity.userInfo.QUserInfo;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
+import net.causw.app.main.domain.user.account.enums.userinfo.SortType;
 import net.causw.app.main.domain.user.account.service.dto.request.UserInfoListCondition;
 import net.causw.app.main.shared.exception.errorcode.UserInfoErrorCode;
 
@@ -62,7 +63,7 @@ public class UserInfoQueryRepository {
 
 	private BooleanExpression baseCondition(UserInfoListCondition filter, QUserInfo userInfo) {
 		BooleanExpression condition = Expressions.TRUE.isTrue();
-		List<AcademicStatus> academicStatusList = filter.academicStatus();
+		List<String> academicStatusList = filter.academicStatus();
 		Integer admissionYearStart = filter.admissionYearStart();
 		Integer admissionYearEnd = filter.admissionYearEnd();
 		String keyword = filter.keyword();
@@ -72,7 +73,10 @@ public class UserInfoQueryRepository {
 			condition = condition.and(userInfo.user.academicStatus.in(AcademicStatus.GRADUATED, AcademicStatus.ENROLLED,
 				AcademicStatus.LEAVE_OF_ABSENCE));
 		} else {
-			condition = condition.and(userInfo.user.academicStatus.in(academicStatusList));
+			List<AcademicStatus> academicStatuses = academicStatusList.stream()
+				.map(AcademicStatus::fromString)
+				.toList();
+			condition = condition.and(userInfo.user.academicStatus.in(academicStatuses));
 		}
 
 		// 학번 필터
@@ -105,13 +109,14 @@ public class UserInfoQueryRepository {
 
 	// 정렬 필터
 	private OrderSpecifier<?>[] getSortType(UserInfoListCondition filter, QUserInfo userInfo) {
-		if (filter.sortType() == null) {
+		if (filter.sortType() == null || filter.sortType().isEmpty()) {
 			return new OrderSpecifier[] {
 				userInfo.updatedAt.desc(), userInfo.user.admissionYear.desc()
 			};
 		}
+		SortType sortType = SortType.fromString(filter.sortType());
 
-		switch (filter.sortType()) {
+		switch (sortType) {
 			case ADMISSION_YEAR_DESC -> {
 				return new OrderSpecifier[] {
 					userInfo.user.admissionYear.desc(), userInfo.updatedAt.desc()
