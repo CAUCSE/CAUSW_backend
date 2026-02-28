@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -119,19 +120,70 @@ public class PostQueryRepository {
 		};
 
 		// 게시글 조회 (size + 1개 조회하여 hasNext 판단)
+		return getPostCursorResults(size, post, writer, conditions);
+	}
+
+	/**
+	 * 특정 사용자가 댓글을 작성한 게시글을 커서 기반 페이징으로 조회합니다.
+	 * findPostsWithCursor와 동일하게 PostCursorResult를 반환하여 재사용합니다.
+	 *
+	 * @param userId         댓글 작성자 ID
+	 * @param blockedUserIds 차단한 사용자 ID 목록 (해당 사용자 게시글 제외)
+	 * @param cursorCreatedAt 커서 (마지막 게시글의 createdAt)
+	 * @param cursorId       커서 (마지막 게시글의 ID)
+	 * @param size           조회할 개수
+	 * @return 게시글 목록 Slice
+	 */
+	public Slice<PostCursorResult> findPostsCommentedByUserWithCursor(
+		String userId,
+		Set<String> blockedUserIds,
+		String cursorCreatedAt,
+		String cursorId,
+		int size) {
+		QPost post = QPost.post;
+		QUser writer = new QUser("writer");
+		QComment comment = QComment.comment;
+
+		// 커서 조건
+		BooleanExpression cursorCondition = NO_CONDITION;
+		if (cursorCreatedAt != null && cursorId != null) {
+			cursorCondition = post.createdAt.lt(LocalDateTime.parse(cursorCreatedAt))
+				.or(post.createdAt.eq(LocalDateTime.parse(cursorCreatedAt)).and(post.id.lt(cursorId)));
+		}
+
+		// 해당 사용자가 댓글을 단 글이 존재하는지
+		BooleanExpression userCommentedPost = JPAExpressions
+			.selectOne()
+			.from(comment)
+			.where(
+				comment.post.eq(post),
+				comment.writer.id.eq(userId),
+				comment.isDeleted.isFalse())
+			.exists();
+
+		BooleanExpression[] conditions = new BooleanExpression[] {
+			userCommentedPost,
+			post.isDeleted.eq(false),
+			notInBlockedUsers(writer, blockedUserIds),
+			cursorCondition
+		};
+
+		return getPostCursorResults(size, post, writer, conditions);
+	}
+
+	@NotNull
+	private Slice<PostCursorResult> getPostCursorResults(int size, QPost post, QUser writer, BooleanExpression[] conditions) {
 		List<PostCursorResult> results = jpaQueryFactory
 			.select(toPostCursorResult(post, writer))
 			.from(post)
 			.leftJoin(post.writer, writer)
 			.where(conditions)
-			.orderBy(post.createdAt.desc(), post.id.desc()) // createdAt 역순, id 역순
+			.orderBy(post.createdAt.desc(), post.id.desc())
 			.limit(size + 1)
 			.fetch();
 
-		// hasNext 판단 및 Slice 생성
 		boolean hasNext = results.size() > size;
 		List<PostCursorResult> content = hasNext ? results.subList(0, size) : results;
-
 		return new SliceImpl<>(content, Pageable.ofSize(size), hasNext);
 	}
 

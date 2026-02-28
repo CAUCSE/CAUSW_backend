@@ -2,6 +2,7 @@ package net.causw.app.main.domain.community.post.service.v2.implementation;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Component;
@@ -65,6 +66,20 @@ public class PostReader {
 		int size,
 		String keyword) {
 		return postQueryRepository.findPostsWithCursor(boardIds, cursorCreatedAt, cursorId, size, keyword);
+	}
+
+	/**
+	 * 특정 사용자가 댓글을 작성한 게시글을 커서 기반 페이징으로 조회합니다.
+	 * findPostsWithCursor와 동일한 PostCursorResult를 반환합니다.
+	 */
+	public Slice<PostCursorResult> findPostsCommentedByUserWithCursor(
+		String userId,
+		Set<String> blockedUserIds,
+		String cursorCreatedAt,
+		String cursorId,
+		int size) {
+		return postQueryRepository.findPostsCommentedByUserWithCursor(
+			userId, blockedUserIds, cursorCreatedAt, cursorId, size);
 	}
 
 	/**

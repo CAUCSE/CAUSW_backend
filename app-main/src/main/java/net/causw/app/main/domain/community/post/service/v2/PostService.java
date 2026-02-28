@@ -3,6 +3,7 @@ package net.causw.app.main.domain.community.post.service.v2;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,7 @@ import net.causw.app.main.domain.community.post.service.v2.util.PostValidator;
 import net.causw.app.main.domain.community.reaction.service.implementation.FavoritePostReader;
 import net.causw.app.main.domain.community.reaction.service.implementation.LikePostReader;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.relation.service.v1.UserBlockEntityService;
 import net.causw.global.constant.StaticValue;
 
 import lombok.RequiredArgsConstructor;
@@ -54,6 +56,7 @@ public class PostService {
 	private final LikePostReader likePostReader;
 	private final FavoritePostReader favoritePostReader;
 	private final PostAttachImageWriter postAttachImageWriter;
+	private final UserBlockEntityService userBlockEntityService;
 
 	@Transactional
 	public PostCreateResult create(PostCreateCommand command) {
@@ -263,5 +266,50 @@ public class PostService {
 			isOwner,
 			updatable,
 			deletable);
+	}
+
+	/**
+	 * 로그인한 사용자가 댓글을 작성한 게시글 목록을 커서 기반으로 조회합니다.
+	 * findPostsWithCursor와 동일한 PostListResponse 형식(커서 포함)으로 반환합니다.
+	 *
+	 * @param user   조회 요청 사용자 (차단 목록 등에 사용)
+	 * @param cursor 커서 (마지막 게시글의 createdAt|postId, null이면 최신부터)
+	 * @param size   조회할 개수 (null이면 기본값 사용)
+	 * @return 게시글 목록 결과
+	 */
+	public PostListResult getPostsCommentedByUser(User user, String cursor, Integer size) {
+		Set<String> blockedUserIds = userBlockEntityService.findBlockeeUserIdsByBlocker(user);
+		int pageSize = size != null ? size : StaticValue.DEFAULT_POST_PAGE_SIZE;
+		PostCursorManager.ParsedCursor parsedCursor = PostCursorManager.parseCursor(cursor);
+
+		Slice<PostCursorResult> slice = postReader.findPostsCommentedByUserWithCursor(
+			user.getId(),
+			blockedUserIds,
+			parsedCursor.createdAt(),
+			parsedCursor.postId(),
+			pageSize);
+
+		List<PostCursorResult> posts = slice.getContent();
+		if (posts.isEmpty()) {
+			return PostListResult.of(List.of(), null);
+		}
+
+		List<String> postIds = posts.stream().map(PostCursorResult::postId).toList();
+		Map<String, List<String>> postImagesMap = postReader.findPostImagesByPostIds(postIds);
+
+		List<PostListResult.PostItem> postItems = posts.stream()
+			.map(result -> {
+				List<String> imageUrls = postImagesMap.getOrDefault(result.postId(), List.of());
+				return PostMapper.toPostListItem(result, imageUrls);
+			})
+			.toList();
+
+		String nextCursor = null;
+		if (slice.hasNext()) {
+			PostCursorResult lastPost = posts.get(posts.size() - 1);
+			nextCursor = PostCursorManager.createNextCursor(lastPost.createdAt(), lastPost.postId());
+		}
+
+		return PostListResult.of(postItems, nextCursor);
 	}
 }
