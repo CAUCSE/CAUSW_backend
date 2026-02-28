@@ -26,4 +26,12 @@ public interface UserCommentSubscribeRepository extends JpaRepository<UserCommen
 		@Param("blockerUserIds") Set<String> blockerUserIds);
 
 	Optional<UserCommentSubscribe> findByUserAndComment(User user, Comment comment);
+
+	@Query("SELECT s.comment.id " +
+		"FROM UserCommentSubscribe s " +
+		"WHERE s.user.id = :userId " +
+		"AND s.comment.id IN :commentIds")
+	Set<String> findSubscribedCommentIdsByUserIdAndCommentIds(
+		@Param("userId") String userId,
+		@Param("commentIds") List<String> commentIds);
 }

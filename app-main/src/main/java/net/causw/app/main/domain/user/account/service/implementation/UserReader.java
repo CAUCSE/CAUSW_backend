@@ -64,6 +64,7 @@ public class UserReader {
 	public User findByEmailOrElseThrow(String email) {
 		return userRepository.findByEmail(email)
 			.orElseThrow(UserErrorCode.INVALID_LOGIN::toBaseException);
+
 	}
 
 	public Optional<User> findByEmail(String email) {

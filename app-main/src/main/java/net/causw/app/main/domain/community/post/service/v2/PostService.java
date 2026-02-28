@@ -44,6 +44,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class PostService {
+
 	private final PostReader postReader;
 	private final PostWriter postWriter;
 	private final BoardReader boardReader;
@@ -263,5 +264,4 @@ public class PostService {
 			updatable,
 			deletable);
 	}
-
 }

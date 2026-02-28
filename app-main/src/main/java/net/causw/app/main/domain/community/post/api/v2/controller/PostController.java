@@ -25,6 +25,7 @@ import net.causw.app.main.domain.community.post.api.v2.dto.response.PostListResp
 import net.causw.app.main.domain.community.post.api.v2.dto.response.PostResponse;
 import net.causw.app.main.domain.community.post.api.v2.dto.response.PostUpdateResponse;
 import net.causw.app.main.domain.community.post.api.v2.mapper.PostDtoMapper;
+import net.causw.app.main.domain.community.post.service.v2.LikePostService;
 import net.causw.app.main.domain.community.post.service.v2.PostService;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostCreateResult;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostDetailQuery;
@@ -42,12 +43,33 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v2/posts")
 @Tag(name = "게시글 API (V2)", description = "게시글 관련 API")
+@RequestMapping("/api/v2/posts")
 public class PostController {
 
 	private final PostService postService;
+	private final LikePostService likePostService;
 	private final PostDtoMapper postDtoMapper;
+
+	@PostMapping(value = "/{id}/like")
+	@ResponseStatus(value = HttpStatus.CREATED)
+	@Operation(summary = "게시글 좋아요 저장 API", description = "특정 유저가 특정 게시글에 좋아요를 누른 걸 저장하는 Api 입니다.")
+	public ApiResponse<Void> likePost(
+		@PathVariable("id") String id,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
+		this.likePostService.likePost(userDetails.getUser().getId(), id);
+		return ApiResponse.success();
+	}
+
+	@DeleteMapping(value = "/{id}/like")
+	@ResponseStatus(value = HttpStatus.OK)
+	@Operation(summary = "게시글 좋아요 취소 API", description = "특정 유저가 특정 게시글에 좋아요를 누른 걸 취소하는 Api 입니다.")
+	public ApiResponse<Void> cancelLikePost(
+		@PathVariable("id") String id,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
+		this.likePostService.cancelLikePost(userDetails.getUser().getId(), id);
+		return ApiResponse.success();
+	}
 
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@ResponseStatus(HttpStatus.CREATED)
