@@ -233,7 +233,8 @@ public class PostQueryRepository {
 	}
 
 	@NotNull
-	private Slice<PostCursorResult> getPostCursorResults(int size, QPost post, QUser writer, BooleanExpression[] conditions) {
+	private Slice<PostCursorResult> getPostCursorResults(int size, QPost post, QUser writer,
+		BooleanExpression[] conditions) {
 		List<PostCursorResult> results = jpaQueryFactory
 			.select(toPostCursorResult(post, writer))
 			.from(post)
