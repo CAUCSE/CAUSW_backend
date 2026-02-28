@@ -53,7 +53,7 @@ public class AuthService {
 	public AuthResult registerEmailUser(UserRegisterDto dto) {
 		// 전화번호로 기존 사용자 탐색 및 사용자 상태에 따른 에러 반환
 		Optional<User> userExist = userReader.checkUserExistByPhoneNumAndName(dto.phoneNumber(), dto.name());
-		userExist.ifPresent(user -> userValidator.validateUserStatusForSignup(user.getState()));
+		userExist.ifPresent(user -> userValidator.validateUserStatusForSignup(user));
 
 		// 이메일, 닉네임, 전화번호에 대한 중복 검증 수행
 		userValidator.checkEmailDuplication(dto.email());

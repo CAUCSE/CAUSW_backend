@@ -16,6 +16,7 @@ import static org.mockito.BDDMockito.times;
 import static org.mockito.BDDMockito.verify;
 import static org.mockito.BDDMockito.when;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -372,10 +373,10 @@ class UserServiceTest {
 		}
 
 		@Test
-		@DisplayName("탈퇴(INACTIVE)한 사용자가 재가입 시도 시 실패")
+		@DisplayName("탈퇴(deletedAt)한 사용자가 재가입 시도 시 실패")
 		void signUp_InactiveUser_ThrowsException() {
 			// given
-			existingUser.setState(UserState.INACTIVE);
+			existingUser.setDeletedAt(LocalDateTime.now());
 			given(userRepository.findByEmail(signUpRequest.getEmail()))
 				.willReturn(Optional.of(existingUser));
 
@@ -392,11 +393,11 @@ class UserServiceTest {
 	class RecoverUserTest {
 
 		@Test
-		@DisplayName("INACTIVE 사용자 계정 복구 성공")
+		@DisplayName("탈퇴(deletedAt) 사용자 계정 복구 성공")
 		void recoverUser_InactiveUser_Success() {
 
 			User inactiveUser = ObjectFixtures.getCertifiedUserWithId("test-user-id");
-			inactiveUser.setState(UserState.INACTIVE);
+			inactiveUser.setDeletedAt(LocalDateTime.now());
 			inactiveUser.setRoles(new HashSet<>(Set.of(Role.NONE)));
 
 			// given
@@ -414,6 +415,7 @@ class UserServiceTest {
 			// then
 			verify(userRepository).save(inactiveUser);
 			assertThat(inactiveUser.getState()).isEqualTo(UserState.ACTIVE);
+			assertThat(inactiveUser.isDeleted()).isFalse();
 			assertThat(inactiveUser.getRoles()).containsExactly(Role.COMMON);
 			assertThat(result.getAccessToken()).isEqualTo("access-token");
 			assertThat(result.getRefreshToken()).isEqualTo("refresh-token");

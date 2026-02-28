@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
  * <p>
  * 회원가입/로그인 시의 상태(State) 체크, 리프레시 토큰의 소유권 확인,
  * 이메일/전화번호/닉네임의 중복 여부를 검사합니다.
- * 상태 검증은 state 기준으로 판정합니다.
+ * 상태 검증은 state 및 deletedAt 기준으로 판정합니다.
  */
 @Component
 @RequiredArgsConstructor
@@ -35,18 +35,21 @@ public class UserValidator {
 	 * <p>
 	 * 이미 가입된 유저(ACTIVE, AWAIT, REJECT)이거나 재가입 불가능한 상태인 경우 예외를 발생시킵니다.
 	 *
-	 * @param state 검사할 사용자 상태
+	 * @param user 검사할 사용자
 	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
 	 * [ALREADY_REGISTERED] 이미 가입된 회원인 경우,
 	 * [USER_DROPPED] 추방된 회원인 경우,
 	 * [USER_INACTIVE_CAN_REJOIN] 휴면 계정인 경우 (재가입 절차 필요)
 	 */
-	public void validateUserStatusForSignup(UserState state) {
+	public void validateUserStatusForSignup(User user) {
+		if (user.isDeleted()) {
+			throw UserErrorCode.USER_INACTIVE_CAN_REJOIN.toBaseException();
+		}
+
+		UserState state = user.getState();
 		switch (state) {
 			case DROP ->
 				throw UserErrorCode.USER_DROPPED.toBaseException();
-			case INACTIVE ->
-				throw UserErrorCode.USER_INACTIVE_CAN_REJOIN.toBaseException();
 			case ACTIVE, AWAIT, REJECT ->
 				throw UserErrorCode.ALREADY_REGISTERED.toBaseException();
 			default -> {}
@@ -70,14 +73,11 @@ public class UserValidator {
 		switch (user.getState()) {
 			case DROP ->
 				throw UserErrorCode.USER_DROPPED.toBaseException();
-			case INACTIVE ->
-				throw UserErrorCode.USER_INACTIVE_CAN_REJOIN.toBaseException();
 			default -> {}
 		}
 
-		// state 상으로 허용 상태지만 deletedAt이 설정된 비정상 케이스 방어
 		if (user.isDeleted()) {
-			throw UserErrorCode.USER_DELETED.toBaseException();
+			throw UserErrorCode.USER_INACTIVE_CAN_REJOIN.toBaseException();
 		}
 	}
 
@@ -94,14 +94,11 @@ public class UserValidator {
 		switch (user.getState()) {
 			case DROP ->
 				throw UserErrorCode.INVALID_LOGIN_USER_DROPPED.toBaseException();
-			case INACTIVE ->
-				throw UserErrorCode.INVALID_LOGIN_USER_INACTIVE.toBaseException();
 			default -> {}
 		}
 
-		// state 상으로는 허용 상태지만 deletedAt이 설정된 비정상 케이스 방어
 		if (user.isDeleted()) {
-			throw UserErrorCode.INVALID_LOGIN_USER_DELETED.toBaseException();
+			throw UserErrorCode.INVALID_LOGIN_USER_INACTIVE.toBaseException();
 		}
 	}
 
@@ -117,14 +114,11 @@ public class UserValidator {
 		switch (user.getState()) {
 			case DROP ->
 				throw AuthErrorCode.DROPPED_USER.toBaseException();
-			case INACTIVE ->
-				throw AuthErrorCode.INACTIVE_USER.toBaseException();
 			default -> {}
 		}
 
-		// state 상으로는 허용 상태지만 deletedAt이 설정된 비정상 케이스 방어
 		if (user.isDeleted()) {
-			throw AuthErrorCode.DELETED_USER.toBaseException();
+			throw AuthErrorCode.INACTIVE_USER.toBaseException();
 		}
 	}
 

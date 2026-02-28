@@ -142,7 +142,7 @@ public class AuthServiceTest {
 						.willReturn(Optional.of(mockedExistingUser));
 
 					doThrow(errorCode.toBaseException())
-						.when(userValidator).validateUserStatusForSignup(any(UserState.class));
+						.when(userValidator).validateUserStatusForSignup(any(User.class));
 
 					// when & then
 					assertThatThrownBy(() -> authService.registerEmailUser(registerDto))
@@ -150,7 +150,7 @@ public class AuthServiceTest {
 						.hasMessage(errorCode.getMessage());
 
 					// verify
-					verify(userValidator).validateUserStatusForSignup(any(UserState.class));
+					verify(userValidator).validateUserStatusForSignup(any(User.class));
 					verify(userValidator, never()).checkEmailDuplication(anyString());
 				}
 			}

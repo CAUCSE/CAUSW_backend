@@ -13,7 +13,6 @@ import lombok.Getter;
 public enum UserState {
 	AWAIT("AWAIT", "가입 대기"),
 	ACTIVE("ACTIVE", "활성"),
-	INACTIVE("INACTIVE", "탈퇴"),
 	REJECT("REJECT", "가입 거부"),
 	DROP("DROP", "추방"),
 	GUEST("GUEST", "소셜로그인 대기자");

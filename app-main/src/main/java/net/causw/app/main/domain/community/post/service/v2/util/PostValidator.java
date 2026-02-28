@@ -66,11 +66,8 @@ public class PostValidator {
 		if (userState == UserState.DROP) {
 			throw UserErrorCode.USER_DROPPED.toBaseException();
 		}
-		if (userState == UserState.INACTIVE) {
-			throw UserErrorCode.USER_INACTIVE_CAN_REJOIN.toBaseException();
-		}
 		if (user.isDeleted()) {
-			throw UserErrorCode.USER_DELETED.toBaseException();
+			throw UserErrorCode.USER_INACTIVE_CAN_REJOIN.toBaseException();
 		}
 
 		// User Role 검증 (NONE 역할이 있으면 안됨)

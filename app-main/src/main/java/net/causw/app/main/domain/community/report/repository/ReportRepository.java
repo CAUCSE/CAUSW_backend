@@ -57,10 +57,9 @@ public interface ReportRepository extends JpaRepository<Report, String> {
 		   ORDER BY CASE
 		                WHEN u.state = 'ACTIVE' THEN 0
 		                WHEN u.state = 'AWAIT' THEN 1
-		                WHEN u.state = 'INACTIVE' THEN 2
-		                WHEN u.state = 'REJECT' THEN 3
-		                WHEN u.state = 'DROP' THEN 4
-		                WHEN u.deletedAt IS NOT NULL THEN 5
+	                WHEN u.deletedAt IS NOT NULL THEN 2
+	                WHEN u.state = 'REJECT' THEN 3
+	                WHEN u.state = 'DROP' THEN 4
 		                ELSE 99
 		                END,
 		            u.reportCount DESC

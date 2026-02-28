@@ -298,7 +298,6 @@ public class PostV1ServiceTest {
 		private static Stream<Arguments> provideUnauthorizedUserCases() {
 			return Stream.of(
 				Arguments.of(Role.NONE, UserState.ACTIVE, null),
-				Arguments.of(Role.COMMON, UserState.INACTIVE, null),
 				Arguments.of(Role.COMMON, UserState.DROP, null),
 				Arguments.of(Role.COMMON, UserState.ACTIVE, LocalDateTime.now()));
 		}
@@ -310,10 +309,10 @@ public class PostV1ServiceTest {
 				Arguments.of("제목에 키워드 포함", "내용에 키워드 포함"));
 		}
 
-		@DisplayName("인증되지 않은 사용자는 게시글 조회 불가")
+		@DisplayName("사용자 상태/권한이 유효하지 않으면 게시글 조회 불가")
 		@ParameterizedTest
 		@MethodSource("provideUnauthorizedUserCases")
-		void testUnauthorizedUser(Role role, UserState state, LocalDateTime deletedAt) {
+		void testInvalidUserStateOrRole(Role role, UserState state, LocalDateTime deletedAt) {
 			// given
 			user.setRoles(Set.of(role));
 			user.setState(state);

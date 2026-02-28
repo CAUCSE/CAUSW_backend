@@ -21,14 +21,7 @@ public class UserStateIsDropOrIsInActiveValidator extends AbstractValidator {
 
 	@Override
 	public void validate() {
-		if (this.user.isDeleted()) {
-			throw new UnauthorizedException(
-				ErrorCode.DELETED_USER,
-				"삭제된 사용자 입니다.");
-		}
-
-		if (!(this.userState.equals(UserState.REJECT) || this.userState.equals(UserState.DROP) || this.userState.equals(
-			UserState.INACTIVE))) {
+		if (!(this.userState.equals(UserState.REJECT) || this.userState.equals(UserState.DROP) || this.user.isDeleted())) {
 			throw new UnauthorizedException(
 				ErrorCode.BLOCKED_USER,
 				"등록된 사용자가 아닙니다.");

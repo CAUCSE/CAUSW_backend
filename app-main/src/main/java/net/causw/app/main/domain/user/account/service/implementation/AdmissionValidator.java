@@ -85,7 +85,7 @@ public class AdmissionValidator {
 
 		userRepository.findByStudentId(requestedStudentId).ifPresent(existingUser -> {
 			UserState state = existingUser.getState();
-			if (state == UserState.ACTIVE || state == UserState.INACTIVE || state == UserState.DROP) {
+			if (state == UserState.ACTIVE || existingUser.isDeleted() || state == UserState.DROP) {
 				throw UserErrorCode.STUDENT_ID_ALREADY_EXIST.toBaseException();
 			}
 		});
