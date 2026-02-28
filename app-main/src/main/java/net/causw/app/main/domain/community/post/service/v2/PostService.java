@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -289,6 +290,45 @@ public class PostService {
 			parsedCursor.postId(),
 			pageSize);
 
+		return getPostListResult(slice);
+	}
+
+	/**
+	 * 로그인한 사용자가 작성한 게시글 목록을 커서 기반으로 조회합니다.
+	 */
+	public PostListResult getPostsWrittenByUser(User user, String cursor, Integer size) {
+		int pageSize = size != null ? size : StaticValue.DEFAULT_POST_PAGE_SIZE;
+		PostCursorManager.ParsedCursor parsedCursor = PostCursorManager.parseCursor(cursor);
+
+		Slice<PostCursorResult> slice = postReader.findPostsWrittenByUserWithCursor(
+			user.getId(),
+			parsedCursor.createdAt(),
+			parsedCursor.postId(),
+			pageSize);
+
+		return getPostListResult(slice);
+	}
+
+	/**
+	 * 로그인한 사용자가 좋아요를 누른 게시글 목록을 커서 기반으로 조회합니다.
+	 */
+	public PostListResult getPostsLikedByUser(User user, String cursor, Integer size) {
+		Set<String> blockedUserIds = userBlockEntityService.findBlockeeUserIdsByBlocker(user);
+		int pageSize = size != null ? size : StaticValue.DEFAULT_POST_PAGE_SIZE;
+		PostCursorManager.ParsedCursor parsedCursor = PostCursorManager.parseCursor(cursor);
+
+		Slice<PostCursorResult> slice = postReader.findPostsLikedByUserWithCursor(
+			user.getId(),
+			blockedUserIds,
+			parsedCursor.createdAt(),
+			parsedCursor.postId(),
+			pageSize);
+
+		return getPostListResult(slice);
+	}
+
+	@NotNull
+	private PostListResult getPostListResult(Slice<PostCursorResult> slice) {
 		List<PostCursorResult> posts = slice.getContent();
 		if (posts.isEmpty()) {
 			return PostListResult.of(List.of(), null);

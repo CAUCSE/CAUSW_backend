@@ -171,6 +171,67 @@ public class PostQueryRepository {
 		return getPostCursorResults(size, post, writer, conditions);
 	}
 
+	/**
+	 * 특정 사용자가 작성한 게시글을 커서 기반 페이징으로 조회합니다.
+	 */
+	public Slice<PostCursorResult> findPostsWrittenByUserWithCursor(
+		String userId,
+		String cursorCreatedAt,
+		String cursorId,
+		int size) {
+		QPost post = QPost.post;
+		QUser writer = new QUser("writer");
+
+		BooleanExpression cursorCondition = NO_CONDITION;
+		if (cursorCreatedAt != null && cursorId != null) {
+			cursorCondition = post.createdAt.lt(LocalDateTime.parse(cursorCreatedAt))
+				.or(post.createdAt.eq(LocalDateTime.parse(cursorCreatedAt)).and(post.id.lt(cursorId)));
+		}
+
+		BooleanExpression[] conditions = new BooleanExpression[] {
+			post.writer.id.eq(userId),
+			post.isDeleted.eq(false),
+			cursorCondition
+		};
+
+		return getPostCursorResults(size, post, writer, conditions);
+	}
+
+	/**
+	 * 특정 사용자가 좋아요를 누른 게시글을 커서 기반 페이징으로 조회합니다.
+	 */
+	public Slice<PostCursorResult> findPostsLikedByUserWithCursor(
+		String userId,
+		Set<String> blockedUserIds,
+		String cursorCreatedAt,
+		String cursorId,
+		int size) {
+		QPost post = QPost.post;
+		QUser writer = new QUser("writer");
+		QLikePost likePost = QLikePost.likePost;
+
+		BooleanExpression cursorCondition = NO_CONDITION;
+		if (cursorCreatedAt != null && cursorId != null) {
+			cursorCondition = post.createdAt.lt(LocalDateTime.parse(cursorCreatedAt))
+				.or(post.createdAt.eq(LocalDateTime.parse(cursorCreatedAt)).and(post.id.lt(cursorId)));
+		}
+
+		BooleanExpression userLikedPost = JPAExpressions
+			.selectOne()
+			.from(likePost)
+			.where(likePost.post.eq(post), likePost.user.id.eq(userId))
+			.exists();
+
+		BooleanExpression[] conditions = new BooleanExpression[] {
+			userLikedPost,
+			post.isDeleted.eq(false),
+			notInBlockedUsers(writer, blockedUserIds),
+			cursorCondition
+		};
+
+		return getPostCursorResults(size, post, writer, conditions);
+	}
+
 	@NotNull
 	private Slice<PostCursorResult> getPostCursorResults(int size, QPost post, QUser writer, BooleanExpression[] conditions) {
 		List<PostCursorResult> results = jpaQueryFactory

@@ -95,6 +95,28 @@ public class PostController {
 		return ApiResponse.success(postDtoMapper.toListResponse(result));
 	}
 
+	@GetMapping("/me/posts")
+	@ResponseStatus(HttpStatus.OK)
+	@Operation(summary = "내가 쓴 글 목록 조회", description = "로그인한 사용자가 작성한 게시글 목록을 커서 기반으로 조회합니다. 게시글 목록 조회와 동일한 형식(posts, nextCursor)으로 반환합니다.")
+	public ApiResponse<PostListResponse> getPostsWrittenByMe(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestParam(name = "cursor", required = false) String cursor,
+		@RequestParam(name = "size", required = false) Integer size) {
+		PostListResult result = postService.getPostsWrittenByUser(userDetails.getUser(), cursor, size);
+		return ApiResponse.success(postDtoMapper.toListResponse(result));
+	}
+
+	@GetMapping("/me/liked")
+	@ResponseStatus(HttpStatus.OK)
+	@Operation(summary = "내가 좋아요 누른 글 목록 조회", description = "로그인한 사용자가 좋아요를 누른 게시글 목록을 커서 기반으로 조회합니다. 게시글 목록 조회와 동일한 형식(posts, nextCursor)으로 반환합니다.")
+	public ApiResponse<PostListResponse> getPostsLikedByMe(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestParam(name = "cursor", required = false) String cursor,
+		@RequestParam(name = "size", required = false) Integer size) {
+		PostListResult result = postService.getPostsLikedByUser(userDetails.getUser(), cursor, size);
+		return ApiResponse.success(postDtoMapper.toListResponse(result));
+	}
+
 	@GetMapping("/me/commented")
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "내가 댓글 단 글 목록 조회", description = "로그인한 사용자가 댓글을 작성한 게시글 목록을 커서 기반으로 조회합니다. 게시글 목록 조회와 동일한 형식(posts, nextCursor)으로 반환합니다.")
