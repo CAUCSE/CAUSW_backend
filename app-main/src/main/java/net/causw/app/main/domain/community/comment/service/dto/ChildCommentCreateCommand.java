@@ -16,5 +16,4 @@ public record ChildCommentCreateCommand(
 	Boolean isAnonymous,
 	String creatorId) {
 
-
 }

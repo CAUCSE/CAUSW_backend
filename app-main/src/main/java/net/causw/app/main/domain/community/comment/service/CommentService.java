@@ -110,7 +110,8 @@ public class CommentService {
 		Set<String> blockedUserIds = userBlockEntityService.findBlockeeUserIdsByBlocker(viewer);
 
 		// 댓글·대댓글 집계 데이터 배치 조회
-		Map<String, CommentMeta> metaMap = commentMetaReader.fetch(viewer.getId(), blockedUserIds, comments.getContent());
+		Map<String, CommentMeta> metaMap = commentMetaReader.fetch(viewer.getId(), blockedUserIds,
+			comments.getContent());
 
 		return comments.map(c -> commentMapper.toResult(c, viewer, boardAdminIds, metaMap.get(c.getId())));
 	}

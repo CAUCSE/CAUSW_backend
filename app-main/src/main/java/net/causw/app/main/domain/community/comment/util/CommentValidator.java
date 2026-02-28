@@ -49,7 +49,7 @@ public class CommentValidator {
 
 		if (!updater.getId().equals(comment.getWriter().getId())
 			&& updater.getRoles().stream()
-			.noneMatch(role -> EnumSet.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT).contains(role))) {
+				.noneMatch(role -> EnumSet.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT).contains(role))) {
 			throw AuthErrorCode.NO_PERMISSION_FOR_RESOURCE.toBaseException();
 		}
 	}
@@ -88,14 +88,20 @@ public class CommentValidator {
 	 */
 	private void validateCreatorAndPostStatus(User user, Post post) {
 		UserState userState = user.getState();
-		if (userState == UserState.DROP) throw AuthErrorCode.DROPPED_USER.toBaseException();
-		if (userState == UserState.INACTIVE) throw AuthErrorCode.INACTIVE_USER.toBaseException();
-		if (userState == UserState.DELETED) throw AuthErrorCode.DELETED_USER.toBaseException();
+		if (userState == UserState.DROP)
+			throw AuthErrorCode.DROPPED_USER.toBaseException();
+		if (userState == UserState.INACTIVE)
+			throw AuthErrorCode.INACTIVE_USER.toBaseException();
+		if (userState == UserState.DELETED)
+			throw AuthErrorCode.DELETED_USER.toBaseException();
 
-		if (user.getRoles().contains(Role.NONE)) throw AuthErrorCode.USER_ROLE_NONE.toBaseException();
+		if (user.getRoles().contains(Role.NONE))
+			throw AuthErrorCode.USER_ROLE_NONE.toBaseException();
 
-		if (post.getBoard().getIsDeleted()) throw BoardErrorCode.BOARD_DELETED.toBaseException();
-		if (post.getIsDeleted()) throw PostErrorCode.POST_NOT_FOUND.toBaseException();
+		if (post.getBoard().getIsDeleted())
+			throw BoardErrorCode.BOARD_DELETED.toBaseException();
+		if (post.getIsDeleted())
+			throw PostErrorCode.POST_NOT_FOUND.toBaseException();
 	}
 
 }
