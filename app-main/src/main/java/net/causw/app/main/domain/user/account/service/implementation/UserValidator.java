@@ -60,54 +60,71 @@ public class UserValidator {
 	 * 탈퇴 또는 추방 상태인 경우 연동을 차단하고 예외를 발생시킵니다.
 	 * </p>
 	 *
-	 * @param state 검증할 유저의 현재 상태
+	 * @param user 검증할 유저
 	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
 	 * [USER_DROPPED] 추방된 회원인 경우,
-	 * [USER_INACTIVE_CAN_REJOIN] 휴면 계정인 경우 (재가입 절차 필요)
+	 * [USER_INACTIVE_CAN_REJOIN] 휴면 계정인 경우 (재가입 절차 필요),
+	 * [USER_DELETED] 삭제된 계정인 경우
 	 */
-	public void validateUserStatusForIntegration(UserState state) {
-		switch (state) {
+	public void validateUserStatusForIntegration(User user) {
+		switch (user.getState()) {
 			case DROP ->
 				throw UserErrorCode.USER_DROPPED.toBaseException();
 			case INACTIVE ->
 				throw UserErrorCode.USER_INACTIVE_CAN_REJOIN.toBaseException();
 			default -> {}
 		}
+
+		// state 상으로 허용 상태지만 deletedAt이 설정된 비정상 케이스 방어
+		if (user.isDeleted()) {
+			throw UserErrorCode.USER_DELETED.toBaseException();
+		}
 	}
 
 	/**
 	 * 로그인 시도 시, 해당 사용자가 로그인이 가능한 상태인지 확인합니다.
 	 *
-	 * @param state 검사할 사용자 상태
+	 * @param user 검사할 사용자
 	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
 	 * [INVALID_LOGIN_USER_DROPPED] 추방된 회원,
-	 * [INVALID_LOGIN_USER_INACTIVE] 휴면 회원인 경우
+	 * [INVALID_LOGIN_USER_INACTIVE] 휴면 회원인 경우,
+	 * [INVALID_LOGIN_USER_DELETED] 삭제된 계정인 경우
 	 */
-	public void validateUserStatusForLogin(UserState state) {
-		switch (state) {
+	public void validateUserStatusForLogin(User user) {
+		switch (user.getState()) {
 			case DROP ->
 				throw UserErrorCode.INVALID_LOGIN_USER_DROPPED.toBaseException();
 			case INACTIVE ->
 				throw UserErrorCode.INVALID_LOGIN_USER_INACTIVE.toBaseException();
 			default -> {}
 		}
+
+		// state 상으로는 허용 상태지만 deletedAt이 설정된 비정상 케이스 방어
+		if (user.isDeleted()) {
+			throw UserErrorCode.INVALID_LOGIN_USER_DELETED.toBaseException();
+		}
 	}
 
 	/**
 	 * 인증 과정(토큰 재발급 등)에서 유저의 유효성(상태)을 검증합니다.
 	 *
-	 * @param state 검증할 사용자 상태
+	 * @param user 검증할 사용자
 	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
-	 * [BLOCKED_USER] 추방된 유저, [INACTIVE_USER] 휴면 유저인 경우
+	 * [BLOCKED_USER] 추방된 유저, [INACTIVE_USER] 휴면 유저인 경우, [DELETED_USER] 삭제된 유저인 경우
 	 */
-	public void validateUser(UserState state) {
+	public void validateUser(User user) {
 		// 유저 상태 검증
-		switch (state) {
+		switch (user.getState()) {
 			case DROP ->
 				throw AuthErrorCode.DROPPED_USER.toBaseException();
 			case INACTIVE ->
 				throw AuthErrorCode.INACTIVE_USER.toBaseException();
 			default -> {}
+		}
+
+		// state 상으로는 허용 상태지만 deletedAt이 설정된 비정상 케이스 방어
+		if (user.isDeleted()) {
+			throw AuthErrorCode.DELETED_USER.toBaseException();
 		}
 	}
 

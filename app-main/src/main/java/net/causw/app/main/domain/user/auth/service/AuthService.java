@@ -83,7 +83,7 @@ public class AuthService {
 		User user = userReader.findByEmailOrElseThrow(email);
 		// 유효성 검증 수행 (비밀번호, 유저 상태)
 		authValidator.validateCredential(user, password);
-		userValidator.validateUserStatusForLogin(user.getState());
+		userValidator.validateUserStatusForLogin(user);
 		// 토큰 생성
 		AuthTokenPair tokens = authTokenManager.issueTokens(user, null);
 		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), user.getProfileUrl(),
@@ -109,7 +109,7 @@ public class AuthService {
 		}
 		String userId = authTokenManager.getUserIdFromRefreshToken(refreshToken);
 		User user = userReader.findUserById(userId);
-		userValidator.validateUser(user.getState());
+		userValidator.validateUser(user);
 		// 토큰 생성
 		AuthTokenPair tokens = authTokenManager.issueTokens(user, refreshToken);
 		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), user.getProfileUrl(),

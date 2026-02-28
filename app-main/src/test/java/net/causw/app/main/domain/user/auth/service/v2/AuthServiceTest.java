@@ -264,7 +264,7 @@ public class AuthServiceTest {
 
 			// verify
 			verify(authValidator).validateCredential(user, PASSWORD);
-			verify(userValidator).validateUserStatusForLogin(user.getState());
+			verify(userValidator).validateUserStatusForLogin(user);
 			verify(authTokenManager).issueTokens(user, null);
 		}
 
@@ -348,7 +348,7 @@ public class AuthServiceTest {
 				assertThat(result.refreshToken()).isEqualTo(NEW_REFRESH_TOKEN);
 
 				// verify
-				verify(userValidator).validateUser(user.getState());
+				verify(userValidator).validateUser(user);
 				verify(authTokenManager).issueTokens(user, REFRESH_TOKEN);
 			}
 
