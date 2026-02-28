@@ -51,8 +51,7 @@ public class UserValidator {
 				throw UserErrorCode.USER_INACTIVE_CAN_REJOIN.toBaseException();
 			case ACTIVE, AWAIT, REJECT ->
 				throw UserErrorCode.ALREADY_REGISTERED.toBaseException();
-			default -> {
-			}
+			default -> {}
 		}
 	}
 
@@ -74,8 +73,7 @@ public class UserValidator {
 				throw UserErrorCode.USER_DROPPED.toBaseException();
 			case INACTIVE ->
 				throw UserErrorCode.USER_INACTIVE_CAN_REJOIN.toBaseException();
-			default -> {
-			}
+			default -> {}
 		}
 	}
 
@@ -95,8 +93,7 @@ public class UserValidator {
 				throw UserErrorCode.INVALID_LOGIN_USER_DROPPED.toBaseException();
 			case INACTIVE ->
 				throw UserErrorCode.INVALID_LOGIN_USER_INACTIVE.toBaseException();
-			default -> {
-			}
+			default -> {}
 		}
 	}
 
@@ -116,8 +113,7 @@ public class UserValidator {
 				throw AuthErrorCode.DROPPED_USER.toBaseException();
 			case INACTIVE ->
 				throw AuthErrorCode.INACTIVE_USER.toBaseException();
-			default -> {
-			}
+			default -> {}
 		}
 	}
 
