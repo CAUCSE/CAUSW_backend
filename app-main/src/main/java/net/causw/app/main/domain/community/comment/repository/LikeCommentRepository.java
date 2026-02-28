@@ -8,7 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import net.causw.app.main.domain.community.comment.entity.LikeComment;
-import net.causw.app.main.domain.community.comment.repository.query.CommentLikeCountDto;
 
 public interface LikeCommentRepository extends JpaRepository<LikeComment, Long> {
 	Boolean existsByCommentIdAndUserId(String commentId, String UserId);
@@ -16,12 +15,6 @@ public interface LikeCommentRepository extends JpaRepository<LikeComment, Long> 
 	Long countByCommentId(String commentId);
 
 	void deleteLikeByCommentIdAndUserId(String commentId, String userId);
-
-	@Query("SELECT l.comment.id AS commentId, COUNT(l) AS likeCount " +
-		"FROM LikeComment l " +
-		"WHERE l.comment.id IN :commentIds " +
-		"GROUP BY l.comment.id")
-	List<CommentLikeCountDto> countLikesByCommentIds(@Param("commentIds") List<String> commentIds);
 
 	@Query("SELECT l.comment.id " +
 		"FROM LikeComment l " +

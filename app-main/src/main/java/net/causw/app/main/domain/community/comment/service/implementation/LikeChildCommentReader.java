@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.community.comment.entity.ChildComment;
+import net.causw.app.main.domain.community.comment.repository.LikeChildCommentQueryRepository;
 import net.causw.app.main.domain.community.comment.repository.LikeChildCommentRepository;
 import net.causw.app.main.domain.community.comment.repository.query.ChildCommentLikeCountDto;
 import net.causw.app.main.domain.user.account.entity.user.User;
@@ -23,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 public class LikeChildCommentReader {
 
 	private final LikeChildCommentRepository likeChildCommentRepository;
+	private final LikeChildCommentQueryRepository likeChildCommentQueryRepository;
 
 	/**
 	 * 단일 대댓글의 좋아요 수를 조회합니다.
@@ -56,7 +58,7 @@ public class LikeChildCommentReader {
 			return Collections.emptyMap();
 		}
 
-		List<ChildCommentLikeCountDto> results = likeChildCommentRepository
+		List<ChildCommentLikeCountDto> results = likeChildCommentQueryRepository
 			.countLikesByChildCommentIds(childCommentIds);
 
 		return results.stream()

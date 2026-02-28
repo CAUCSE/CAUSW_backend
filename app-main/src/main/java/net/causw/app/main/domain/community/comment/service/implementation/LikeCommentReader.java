@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
+import net.causw.app.main.domain.community.comment.repository.LikeCommentQueryRepository;
 import net.causw.app.main.domain.community.comment.repository.LikeCommentRepository;
 import net.causw.app.main.domain.community.comment.repository.query.CommentLikeCountDto;
 import net.causw.app.main.domain.user.account.entity.user.User;
@@ -22,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class LikeCommentReader {
 
 	private final LikeCommentRepository likeCommentRepository;
+	private final LikeCommentQueryRepository likeCommentQueryRepository;
 
 	/**
 	 * 단일 댓글의 좋아요 수를 조회합니다.
@@ -55,7 +57,7 @@ public class LikeCommentReader {
 			return Collections.emptyMap();
 		}
 
-		List<CommentLikeCountDto> results = likeCommentRepository.countLikesByCommentIds(commentIds);
+		List<CommentLikeCountDto> results = likeCommentQueryRepository.countLikesByCommentIds(commentIds);
 
 		return results.stream()
 			.collect(Collectors.toMap(
