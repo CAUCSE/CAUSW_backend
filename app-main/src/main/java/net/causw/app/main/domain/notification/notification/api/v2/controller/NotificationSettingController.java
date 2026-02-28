@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/notification-settings")
-@Tag(name = "알림 설정 API V2", description = "알림 설정 조회 및 수정 API")
+@Tag(name = "NotificationSetting Public v2", description = "알림 설정 조회 및 수정 API")
 public class NotificationSettingController {
 
 	private final NotificationSettingService notificationSettingService;

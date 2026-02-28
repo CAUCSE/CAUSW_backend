@@ -30,7 +30,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-@Tag(name = "Ceremony V2", description = "경조사 조회 및 생성 API")
+@Tag(name = "Ceremony Public v2", description = "경조사 조회 및 생성 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/ceremonies")

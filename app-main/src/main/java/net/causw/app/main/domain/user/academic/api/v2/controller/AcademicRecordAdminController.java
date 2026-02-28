@@ -29,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/admin/academic-records")
 @PreAuthorize("@security.hasRole(@Role.ADMIN)")
-@Tag(name = "관리자 학적상태 변경신청 관리 api", description = "관리자 학적상태 변경신청 관리 API")
+@Tag(name = "AcademicRecord Admin v2", description = "관리자 학적상태 변경신청 관리 API")
 public class AcademicRecordAdminController {
 
 	private final AcademicRecordAdminService academicRecordAdminService;
