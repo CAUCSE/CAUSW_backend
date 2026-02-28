@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.community.comment.util;
 
-import java.util.List;
+import java.util.EnumSet;
 
 import org.springframework.stereotype.Component;
 
@@ -9,33 +9,30 @@ import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.community.comment.service.implementation.LikeChildCommentReader;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.util.UserRoleIsNoneValidator;
-import net.causw.app.main.domain.user.account.util.UserStateIsDeletedValidator;
-import net.causw.app.main.domain.user.account.util.UserStateValidator;
+import net.causw.app.main.domain.user.account.enums.user.Role;
+import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
+import net.causw.app.main.shared.exception.errorcode.BoardErrorCode;
 import net.causw.app.main.shared.exception.errorcode.ChildCommentErrorCode;
-import net.causw.app.main.shared.util.ConstraintValidator;
-import net.causw.app.main.shared.util.ContentsAdminValidator;
-import net.causw.app.main.shared.util.TargetIsDeletedValidator;
-import net.causw.global.constant.StaticValue;
+import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
 
-import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
 public class ChildCommentValidator {
 
-	private final Validator validator;
 	private final LikeChildCommentReader likeChildCommentReader;
 
 	/**
 	 * 대댓글 생성 시 필요한 모든 검증 로직을 수행합니다.
 	 */
-	public void validateForCreate(User creator, Post post, Comment parentComment, ChildComment childComment) {
+	public void validateForCreate(User creator, Post post, Comment parentComment) {
 		this.validateCreatorAndPostStatus(creator, post);
 
-		ConstraintValidator.of(childComment, this.validator).validate();
-		UserStateIsDeletedValidator.of(parentComment.getWriter().getState());
+		if (parentComment.getWriter().getState() == UserState.DELETED) {
+			throw AuthErrorCode.DELETED_USER.toBaseException();
+		}
 	}
 
 	/**
@@ -44,15 +41,15 @@ public class ChildCommentValidator {
 	public void validateForUpdate(User updater, Post post, ChildComment childComment) {
 		this.validateCreatorAndPostStatus(updater, post);
 
-		TargetIsDeletedValidator.of(childComment.getIsDeleted(), StaticValue.DOMAIN_CHILD_COMMENT).validate();
+		if (childComment.getIsDeleted()) {
+			throw ChildCommentErrorCode.CHILD_COMMENT_NOT_FOUND.toBaseException();
+		}
 
-		ConstraintValidator.of(childComment, this.validator).validate();
-
-		ContentsAdminValidator.of(
-			updater.getRoles(),
-			updater.getId(),
-			childComment.getWriter().getId(),
-			List.of()).validate();
+		if (!updater.getId().equals(childComment.getWriter().getId())
+			&& updater.getRoles().stream()
+			.noneMatch(role -> EnumSet.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT).contains(role))) {
+			throw AuthErrorCode.NO_PERMISSION_FOR_RESOURCE.toBaseException();
+		}
 	}
 
 	/**
@@ -61,31 +58,45 @@ public class ChildCommentValidator {
 	public void validateForDelete(User deleter, Post post, ChildComment childComment) {
 		this.validateCreatorAndPostStatus(deleter, post);
 
-		TargetIsDeletedValidator.of(childComment.getIsDeleted(), StaticValue.DOMAIN_COMMENT).validate();
+		if (childComment.getIsDeleted()) {
+			throw ChildCommentErrorCode.CHILD_COMMENT_NOT_FOUND.toBaseException();
+		}
 	}
 
 	/**
 	 * 작성자의 권한/상태 및 상위 게시글/게시판의 삭제 여부를 확인합니다.
 	 */
 	private void validateCreatorAndPostStatus(User user, Post post) {
-		// 사용자 상태 및 권한 검증
-		UserStateValidator.of(user.getState()).validate();
-		UserRoleIsNoneValidator.of(user.getRoles()).validate();
+		UserState userState = user.getState();
+		if (userState == UserState.DROP) throw AuthErrorCode.DROPPED_USER.toBaseException();
+		if (userState == UserState.INACTIVE) throw AuthErrorCode.INACTIVE_USER.toBaseException();
+		if (userState == UserState.DELETED) throw AuthErrorCode.DELETED_USER.toBaseException();
 
-		// 게시판 및 게시글 삭제 여부 검증
-		TargetIsDeletedValidator.of(post.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD).validate();
-		TargetIsDeletedValidator.of(post.getIsDeleted(), StaticValue.DOMAIN_POST).validate();
+		if (user.getRoles().contains(Role.NONE)) throw AuthErrorCode.USER_ROLE_NONE.toBaseException();
+
+		if (post.getBoard().getIsDeleted()) throw BoardErrorCode.BOARD_DELETED.toBaseException();
+		if (post.getIsDeleted()) throw PostErrorCode.POST_NOT_FOUND.toBaseException();
 	}
 
+	/**
+	 * 대댓글 좋아요 시 필요한 검증 로직을 수행합니다.
+	 */
 	public void validateForLike(User user, ChildComment childComment) {
-		UserStateIsDeletedValidator.of(childComment.getWriter().getState()).validate();
+		if (childComment.getWriter().getState() == UserState.DELETED) {
+			throw AuthErrorCode.DELETED_USER.toBaseException();
+		}
 		if (likeChildCommentReader.isChildCommentLiked(user, childComment.getId())) {
 			throw ChildCommentErrorCode.CHILD_COMMENT_ALREADY_LIKED.toBaseException();
 		}
 	}
 
+	/**
+	 * 대댓글 좋아요 취소 시 필요한 검증 로직을 수행합니다.
+	 */
 	public void validateForCancelLike(User user, ChildComment childComment) {
-		UserStateIsDeletedValidator.of(childComment.getWriter().getState()).validate();
+		if (childComment.getWriter().getState() == UserState.DELETED) {
+			throw AuthErrorCode.DELETED_USER.toBaseException();
+		}
 		if (!likeChildCommentReader.isChildCommentLiked(user, childComment.getId())) {
 			throw ChildCommentErrorCode.CHILD_COMMENT_NOT_LIKE.toBaseException();
 		}

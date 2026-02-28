@@ -71,7 +71,7 @@ public class CommentService {
 		Post post = postReader.findById(command.postId());
 		Comment comment = Comment.of(command.content(), false, command.isAnonymous(), creator, post);
 
-		commentValidator.validateForCreate(creator, post, comment);
+		commentValidator.validateForCreate(creator, post);
 		commentWriter.save(comment);
 
 		// 신규 댓글: 좋아요 0, 대댓글 없음, 구독은 다음 단계에서 생성

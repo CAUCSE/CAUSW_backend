@@ -111,8 +111,7 @@ public class ChildCommentServiceTest {
 
 			// then
 			assertThat(result).isNotNull();
-			verify(childCommentValidator, times(1)).validateForCreate(eq(creator), eq(post), eq(parentComment),
-				any(ChildComment.class));
+			verify(childCommentValidator, times(1)).validateForCreate(eq(creator), eq(post), eq(parentComment));
 			verify(childCommentWriter, times(1)).save(any(ChildComment.class));
 			verify(commentNotificationService, times(1)).sendByCommentIsSubscribed(eq(parentComment),
 				any(ChildComment.class));

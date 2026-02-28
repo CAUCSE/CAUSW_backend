@@ -71,7 +71,7 @@ public class ChildCommentService {
 			creator,
 			parentComment);
 
-		childCommentValidator.validateForCreate(creator, post, parentComment, childComment);
+		childCommentValidator.validateForCreate(creator, post, parentComment);
 		childCommentWriter.save(childComment);
 
 		// 신규 대댓글: 좋아요 0

@@ -115,7 +115,7 @@ public class CommentServiceTest {
 
 			// then
 			assertThat(result).isNotNull();
-			verify(commentValidator, times(1)).validateForCreate(eq(creator), eq(post), any(Comment.class));
+			verify(commentValidator, times(1)).validateForCreate(eq(creator), eq(post));
 			verify(commentWriter, times(1)).save(any(Comment.class));
 			verify(commentSubscribeWriter, times(1)).createCommentSubscribe(eq(creator), any());
 			verify(postNotificationService, times(1)).sendByPostIsSubscribed(eq(post), any(Comment.class));

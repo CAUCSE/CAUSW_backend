@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.community.comment.util;
 
-import java.util.List;
+import java.util.EnumSet;
 
 import org.springframework.stereotype.Component;
 
@@ -8,32 +8,26 @@ import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.community.comment.service.implementation.LikeCommentReader;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.util.UserRoleIsNoneValidator;
-import net.causw.app.main.domain.user.account.util.UserStateIsDeletedValidator;
-import net.causw.app.main.domain.user.account.util.UserStateValidator;
+import net.causw.app.main.domain.user.account.enums.user.Role;
+import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
+import net.causw.app.main.shared.exception.errorcode.BoardErrorCode;
 import net.causw.app.main.shared.exception.errorcode.CommentErrorCode;
-import net.causw.app.main.shared.util.ConstraintValidator;
-import net.causw.app.main.shared.util.ContentsAdminValidator;
-import net.causw.app.main.shared.util.TargetIsDeletedValidator;
-import net.causw.global.constant.StaticValue;
+import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
 
-import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
 public class CommentValidator {
 
-	private final Validator validator;
 	private final LikeCommentReader likeCommentReader;
 
 	/**
 	 * 댓글 생성 시 필요한 모든 검증 로직을 수행합니다.
 	 */
-	public void validateForCreate(User creator, Post post, Comment comment) {
+	public void validateForCreate(User creator, Post post) {
 		this.validateCreatorAndPostStatus(creator, post);
-
-		ConstraintValidator.of(comment, this.validator).validate();
 	}
 
 	/**
@@ -49,15 +43,15 @@ public class CommentValidator {
 	public void validateForUpdate(User updater, Post post, Comment comment) {
 		this.validateCreatorAndPostStatus(updater, post);
 
-		TargetIsDeletedValidator.of(comment.getIsDeleted(), StaticValue.DOMAIN_COMMENT).validate();
+		if (comment.getIsDeleted()) {
+			throw CommentErrorCode.COMMENT_NOT_FOUND.toBaseException();
+		}
 
-		ConstraintValidator.of(comment, this.validator).validate();
-
-		ContentsAdminValidator.of(
-			updater.getRoles(),
-			updater.getId(),
-			comment.getWriter().getId(),
-			List.of()).validate();
+		if (!updater.getId().equals(comment.getWriter().getId())
+			&& updater.getRoles().stream()
+			.noneMatch(role -> EnumSet.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT).contains(role))) {
+			throw AuthErrorCode.NO_PERMISSION_FOR_RESOURCE.toBaseException();
+		}
 	}
 
 	/**
@@ -66,21 +60,24 @@ public class CommentValidator {
 	public void validateForDelete(User deleter, Post post, Comment comment) {
 		this.validateCreatorAndPostStatus(deleter, post);
 
-		TargetIsDeletedValidator.of(comment.getIsDeleted(), StaticValue.DOMAIN_COMMENT).validate();
-
-		UserStateValidator.of(deleter.getState()).validate();
-		UserRoleIsNoneValidator.of(deleter.getRoles()).validate();
+		if (comment.getIsDeleted()) {
+			throw CommentErrorCode.COMMENT_NOT_FOUND.toBaseException();
+		}
 	}
 
 	public void validateForLike(User user, Comment comment) {
-		UserStateIsDeletedValidator.of(comment.getWriter().getState()).validate();
+		if (comment.getWriter().getState() == UserState.DELETED) {
+			throw AuthErrorCode.DELETED_USER.toBaseException();
+		}
 		if (likeCommentReader.isCommentLiked(user, comment.getId())) {
 			throw CommentErrorCode.COMMENT_ALREADY_LIKED.toBaseException();
 		}
 	}
 
 	public void validateForCancelLike(User user, Comment comment) {
-		UserStateIsDeletedValidator.of(comment.getWriter().getState()).validate();
+		if (comment.getWriter().getState() == UserState.DELETED) {
+			throw AuthErrorCode.DELETED_USER.toBaseException();
+		}
 		if (!likeCommentReader.isCommentLiked(user, comment.getId())) {
 			throw CommentErrorCode.COMMENT_NOT_LIKE.toBaseException();
 		}
@@ -90,13 +87,15 @@ public class CommentValidator {
 	 * 작성자의 권한/상태 및 상위 게시글/게시판의 삭제 여부를 확인합니다.
 	 */
 	private void validateCreatorAndPostStatus(User user, Post post) {
-		// 사용자 상태 및 권한 검증
-		UserStateValidator.of(user.getState()).validate();
-		UserRoleIsNoneValidator.of(user.getRoles()).validate();
+		UserState userState = user.getState();
+		if (userState == UserState.DROP) throw AuthErrorCode.DROPPED_USER.toBaseException();
+		if (userState == UserState.INACTIVE) throw AuthErrorCode.INACTIVE_USER.toBaseException();
+		if (userState == UserState.DELETED) throw AuthErrorCode.DELETED_USER.toBaseException();
 
-		// 게시판 및 게시글 삭제 여부 검증
-		TargetIsDeletedValidator.of(post.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD).validate();
-		TargetIsDeletedValidator.of(post.getIsDeleted(), StaticValue.DOMAIN_POST).validate();
+		if (user.getRoles().contains(Role.NONE)) throw AuthErrorCode.USER_ROLE_NONE.toBaseException();
+
+		if (post.getBoard().getIsDeleted()) throw BoardErrorCode.BOARD_DELETED.toBaseException();
+		if (post.getIsDeleted()) throw PostErrorCode.POST_NOT_FOUND.toBaseException();
 	}
 
 }
