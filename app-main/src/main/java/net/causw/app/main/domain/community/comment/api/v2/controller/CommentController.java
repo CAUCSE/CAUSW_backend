@@ -17,7 +17,11 @@ import org.springframework.web.bind.annotation.RestController;
 import net.causw.app.main.domain.community.comment.api.v2.dto.request.CommentCreateRequestDto;
 import net.causw.app.main.domain.community.comment.api.v2.dto.request.CommentUpdateRequestDto;
 import net.causw.app.main.domain.community.comment.api.v2.dto.response.CommentResponseDto;
+import net.causw.app.main.domain.community.comment.api.v2.mapper.CommentResponseDtoMapper;
 import net.causw.app.main.domain.community.comment.service.CommentService;
+import net.causw.app.main.domain.community.comment.service.dto.CommentCreateCommand;
+import net.causw.app.main.domain.community.comment.service.dto.CommentListQuery;
+import net.causw.app.main.domain.community.comment.service.dto.CommentUpdateCommand;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 import net.causw.app.main.shared.dto.PageResponse;
@@ -43,10 +47,13 @@ public class CommentController {
 		@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-		PageRequest pageRequest = PageRequest.of(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE);
+		CommentListQuery query = new CommentListQuery(
+			userDetails.getUser(),
+			postId,
+			PageRequest.of(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE));
 
 		PageResponse<CommentResponseDto> response = PageResponse.from(
-			commentService.findAllComments(userDetails.getUser().getId(), postId, pageRequest));
+			commentService.findAllComments(query).map(CommentResponseDtoMapper::toResponseDto));
 
 		return ApiResponse.success(response);
 	}
@@ -58,8 +65,14 @@ public class CommentController {
 		@Valid @RequestBody CommentCreateRequestDto commentCreateRequestDto,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
+		CommentCreateCommand command = new CommentCreateCommand(
+			commentCreateRequestDto.content(),
+			commentCreateRequestDto.postId(),
+			commentCreateRequestDto.isAnonymous(),
+			userDetails.getUser());
+
 		return ApiResponse.success(
-			commentService.createComment(userDetails.getUser().getId(), commentCreateRequestDto));
+			CommentResponseDtoMapper.toResponseDto(commentService.createComment(command)));
 	}
 
 	@PutMapping(value = "/{id}")
@@ -70,8 +83,13 @@ public class CommentController {
 		@Valid @RequestBody CommentUpdateRequestDto commentUpdateRequestDto,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
+		CommentUpdateCommand command = new CommentUpdateCommand(
+			id,
+			commentUpdateRequestDto.content(),
+			userDetails.getUser());
+
 		return ApiResponse.success(
-			commentService.updateComment(userDetails.getUser().getId(), id, commentUpdateRequestDto));
+			CommentResponseDtoMapper.toResponseDto(commentService.updateComment(command)));
 	}
 
 	@DeleteMapping(value = "/{id}")
@@ -81,7 +99,9 @@ public class CommentController {
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-		return ApiResponse.success(commentService.deleteComment(userDetails.getUser().getId(), id));
+		return ApiResponse.success(
+			CommentResponseDtoMapper.toResponseDto(
+				commentService.deleteComment(userDetails.getUser(), id)));
 	}
 
 	@PostMapping(value = "/{id}/like")
@@ -90,7 +110,7 @@ public class CommentController {
 	public ApiResponse<Void> likeComment(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		commentService.likeComment(userDetails.getUser().getId(), id);
+		commentService.likeComment(userDetails.getUser(), id);
 		return ApiResponse.success();
 	}
 
@@ -100,7 +120,7 @@ public class CommentController {
 	public ApiResponse<Void> cancelLikeComment(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		commentService.cancelLikeComment(userDetails.getUser().getId(), id);
+		commentService.cancelLikeComment(userDetails.getUser(), id);
 		return ApiResponse.success();
 	}
 

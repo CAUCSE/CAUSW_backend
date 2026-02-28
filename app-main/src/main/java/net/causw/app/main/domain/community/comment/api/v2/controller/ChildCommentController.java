@@ -14,7 +14,10 @@ import org.springframework.web.bind.annotation.RestController;
 import net.causw.app.main.domain.community.comment.api.v2.dto.request.ChildCommentCreateRequestDto;
 import net.causw.app.main.domain.community.comment.api.v2.dto.request.ChildCommentUpdateRequestDto;
 import net.causw.app.main.domain.community.comment.api.v2.dto.response.ChildCommentResponseDto;
+import net.causw.app.main.domain.community.comment.api.v2.mapper.ChildCommentResponseDtoMapper;
 import net.causw.app.main.domain.community.comment.service.ChildCommentService;
+import net.causw.app.main.domain.community.comment.service.dto.ChildCommentCreateCommand;
+import net.causw.app.main.domain.community.comment.service.dto.ChildCommentUpdateCommand;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 
@@ -37,8 +40,14 @@ public class ChildCommentController {
 		@Valid @RequestBody ChildCommentCreateRequestDto childCommentCreateRequestDto,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
+		ChildCommentCreateCommand command = new ChildCommentCreateCommand(
+			childCommentCreateRequestDto.content(),
+			childCommentCreateRequestDto.parentCommentId(),
+			childCommentCreateRequestDto.isAnonymous(),
+			userDetails.getUser());
+
 		return ApiResponse.success(
-			childCommentService.createChildComment(userDetails.getUser().getId(), childCommentCreateRequestDto));
+			ChildCommentResponseDtoMapper.toResponseDto(childCommentService.createChildComment(command)));
 	}
 
 	@PutMapping(value = "/{id}")
@@ -49,8 +58,13 @@ public class ChildCommentController {
 		@Valid @RequestBody ChildCommentUpdateRequestDto childCommentUpdateRequestDto,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
+		ChildCommentUpdateCommand command = new ChildCommentUpdateCommand(
+			id,
+			childCommentUpdateRequestDto.content(),
+			userDetails.getUser());
+
 		return ApiResponse.success(
-			childCommentService.updateChildComment(userDetails.getUser().getId(), id, childCommentUpdateRequestDto));
+			ChildCommentResponseDtoMapper.toResponseDto(childCommentService.updateChildComment(command)));
 	}
 
 	@DeleteMapping(value = "/{id}")
@@ -60,7 +74,9 @@ public class ChildCommentController {
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-		return ApiResponse.success(childCommentService.deleteChildComment(userDetails.getUser().getId(), id));
+		return ApiResponse.success(
+			ChildCommentResponseDtoMapper.toResponseDto(
+				childCommentService.deleteChildComment(userDetails.getUser(), id)));
 	}
 
 	@PostMapping(value = "/{id}/like")
@@ -69,7 +85,7 @@ public class ChildCommentController {
 	public ApiResponse<Void> likeChildComment(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		childCommentService.likeChildComment(userDetails.getUser().getId(), id);
+		childCommentService.likeChildComment(userDetails.getUser(), id);
 		return ApiResponse.success();
 	}
 
@@ -79,7 +95,7 @@ public class ChildCommentController {
 	public ApiResponse<Void> cancelLikeChildComment(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		childCommentService.cancelLikeChildComment(userDetails.getUser().getId(), id);
+		childCommentService.cancelLikeChildComment(userDetails.getUser(), id);
 		return ApiResponse.success();
 	}
 }

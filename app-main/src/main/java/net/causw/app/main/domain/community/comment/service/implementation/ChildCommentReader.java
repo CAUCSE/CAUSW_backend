@@ -1,92 +1,46 @@
 package net.causw.app.main.domain.community.comment.service.implementation;
 
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.stereotype.Component;
 
-import net.causw.app.main.domain.community.board.entity.Board;
-import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
-import net.causw.app.main.domain.community.comment.api.v2.dto.response.ChildCommentResponseDto;
-import net.causw.app.main.domain.community.comment.api.v2.mapper.ChildCommentResponseDtoMapper;
 import net.causw.app.main.domain.community.comment.entity.ChildComment;
 import net.causw.app.main.domain.community.comment.repository.ChildCommentRepository;
-import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.exception.errorcode.ChildCommentErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * 대댓글 엔티티 조회를 담당합니다.
+ */
 @Component
 @RequiredArgsConstructor
 public class ChildCommentReader {
 
-	private final LikeChildCommentReader likeChildCommentReader;
-	private final BoardConfigReader boardConfigReader;
 	private final ChildCommentRepository childCommentRepository;
 
+	/**
+	 * ID로 대댓글을 조회합니다. 존재하지 않으면 예외를 발생시킵니다.
+	 *
+	 * @param childCommentId 조회할 대댓글 ID
+	 * @return 조회된 {@link ChildComment} 엔티티
+	 * @throws net.causw.app.main.shared.exception.BaseException 대댓글이 존재하지 않는 경우
+	 */
 	public ChildComment findById(String childCommentId) {
 		return childCommentRepository.findById(childCommentId).orElseThrow(
 			ChildCommentErrorCode.CHILD_COMMENT_NOT_FOUND::toBaseException);
 	}
 
 	/**
-	 * @param childComment 댓글
-	 * @param user 조회자
-	 * @param board 게시판
-	 * @return CommentResponseDto
+	 * 부모 댓글 ID 목록에 속한 대댓글을 일괄 조회합니다.
+	 *
+	 * <p>{@link CommentReader#getComments} 에서 N+1 문제를 방지하기 위해 호출됩니다.</p>
+	 *
+	 * @param parentCommentIds 부모 댓글 ID 목록
+	 * @return 해당 부모 댓글들에 속한 대댓글 목록
 	 */
-	public ChildCommentResponseDto getChildCommentDetail(ChildComment childComment, User user, Board board) {
-
-		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(board.getId());
-
-		long numLike = likeChildCommentReader.getNumOfChildCommentLikes(childComment);
-		boolean isLiked = likeChildCommentReader.isChildCommentLiked(user, childComment.getId());
-
-		boolean isOwner = childComment.getWriter().getId().equals(user.getId());
-		boolean updatable = isOwner || boardAdminIds.contains(user.getId());
-		boolean deletable = isOwner || boardAdminIds.contains(user.getId());
-
-		return ChildCommentResponseDtoMapper.toChildCommentResponseDto(
-			childComment,
-			numLike,
-			isLiked,
-			isOwner,
-			updatable,
-			deletable,
-			false);
-	}
-
-	/**
-	 * @param childComment 대댓글
-	 * @param user 조회자
-	 * @param blockedUserIds 차단된 유저 ID 목록
-	 * @param boardAdminIds 해당 게시판의 관리자 목록
-	 * @param likeCount 대댓글 좋아요 수
-	 * @param isLiked 현재 유저의 대댓글 좋아요 여부
-	
-	 * @return ChildCommentResponseDto
-	 */
-	public ChildCommentResponseDto getChildCommentListDetails(
-		ChildComment childComment, User user, Set<String> blockedUserIds,
-		List<String> boardAdminIds, long likeCount, boolean isLiked) {
-
-		boolean isBlockedContent = blockedUserIds.contains(childComment.getWriter().getId());
-
-		boolean isOwner = childComment.getWriter().getId().equals(user.getId());
-		boolean updatable = isOwner || boardAdminIds.contains(user.getId());
-		boolean deletable = isOwner || boardAdminIds.contains(user.getId());
-
-		return ChildCommentResponseDtoMapper.toChildCommentResponseDto(
-			childComment,
-			likeCount,
-			isLiked,
-			isOwner,
-			updatable,
-			deletable,
-			isBlockedContent);
-	}
-
 	public List<ChildComment> getChildCommentsByParentIds(List<String> parentCommentIds) {
 		return childCommentRepository.findChildCommentsByParentCommentIds(parentCommentIds);
 	}
+
 }

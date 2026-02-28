@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import net.causw.app.main.domain.community.comment.entity.LikeComment;
-import net.causw.app.main.domain.community.comment.service.dto.CommentLikeCountDto;
+import net.causw.app.main.domain.community.comment.repository.query.CommentLikeCountDto;
 
 public interface LikeCommentRepository extends JpaRepository<LikeComment, Long> {
 	Boolean existsByCommentIdAndUserId(String commentId, String UserId);

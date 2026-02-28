@@ -28,25 +28,24 @@ import org.springframework.data.domain.PageRequest;
 
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
-import net.causw.app.main.domain.community.comment.api.v2.dto.request.CommentCreateRequestDto;
-import net.causw.app.main.domain.community.comment.api.v2.dto.request.CommentUpdateRequestDto;
-import net.causw.app.main.domain.community.comment.api.v2.dto.response.CommentResponseDto;
-import net.causw.app.main.domain.community.comment.entity.ChildComment;
 import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.community.comment.entity.LikeComment;
+import net.causw.app.main.domain.community.comment.service.dto.CommentCreateCommand;
+import net.causw.app.main.domain.community.comment.service.dto.CommentListQuery;
+import net.causw.app.main.domain.community.comment.service.dto.CommentMeta;
+import net.causw.app.main.domain.community.comment.service.dto.CommentResult;
+import net.causw.app.main.domain.community.comment.service.dto.CommentUpdateCommand;
+import net.causw.app.main.domain.community.comment.service.implementation.CommentMapper;
+import net.causw.app.main.domain.community.comment.service.implementation.CommentMetaReader;
 import net.causw.app.main.domain.community.comment.service.implementation.CommentReader;
 import net.causw.app.main.domain.community.comment.service.implementation.CommentSubscribeWriter;
 import net.causw.app.main.domain.community.comment.service.implementation.CommentWriter;
-import net.causw.app.main.domain.community.comment.service.implementation.LikeChildCommentReader;
-import net.causw.app.main.domain.community.comment.service.implementation.LikeCommentReader;
 import net.causw.app.main.domain.community.comment.service.implementation.LikeCommentWriter;
 import net.causw.app.main.domain.community.comment.util.CommentValidator;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.v2.implementation.PostReader;
-import net.causw.app.main.domain.notification.notification.service.implementation.UserCommentSubscribeReader;
 import net.causw.app.main.domain.notification.notification.service.v1.PostNotificationService;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.relation.service.v1.UserBlockEntityService;
 
 @ExtendWith(MockitoExtension.class)
@@ -60,13 +59,7 @@ public class CommentServiceTest {
 	@Mock
 	PostReader postReader;
 	@Mock
-	UserReader userReader;
-	@Mock
 	CommentReader commentReader;
-	@Mock
-	LikeCommentReader likeCommentReader;
-	@Mock
-	LikeChildCommentReader likeChildCommentReader;
 	@Mock
 	CommentWriter commentWriter;
 	@Mock
@@ -80,7 +73,9 @@ public class CommentServiceTest {
 	@Mock
 	UserBlockEntityService userBlockEntityService;
 	@Mock
-	UserCommentSubscribeReader userCommentSubscribeReader;
+	CommentMetaReader commentMetaReader;
+	@Mock
+	CommentMapper commentMapper;
 
 	@Nested
 	@DisplayName("댓글 생성 테스트")
@@ -96,22 +91,23 @@ public class CommentServiceTest {
 			board = mock(Board.class);
 
 			given(post.getBoard()).willReturn(board);
+			given(board.getId()).willReturn("board-id");
 		}
 
 		@DisplayName("댓글 생성 성공")
 		@Test
 		void createComment_shouldSucceed() {
 			// given
-			CommentCreateRequestDto requestDto = new CommentCreateRequestDto("댓글 내용", "post-id", false);
-			CommentResponseDto expectedResponse = mock(CommentResponseDto.class);
+			CommentCreateCommand command = new CommentCreateCommand("댓글 내용", "post-id", false, creator);
+			CommentResult expectedResult = mock(CommentResult.class);
 
 			given(postReader.findById("post-id")).willReturn(post);
-			given(userReader.findUserById("creator-id")).willReturn(creator);
-			given(commentReader.getCommentDetail(any(Comment.class), eq(creator), eq(board)))
-				.willReturn(expectedResponse);
+			given(boardConfigReader.getAdminIdsByBoardId("board-id")).willReturn(List.of("admin-id"));
+			given(commentMapper.toResult(any(Comment.class), eq(creator), anyList(), any(CommentMeta.class)))
+				.willReturn(expectedResult);
 
 			// when
-			CommentResponseDto result = commentService.createComment("creator-id", requestDto);
+			CommentResult result = commentService.createComment(command);
 
 			// then
 			assertThat(result).isNotNull();
@@ -125,69 +121,53 @@ public class CommentServiceTest {
 	@Nested
 	@DisplayName("댓글 목록 조회 테스트")
 	class FindAllCommentsTest {
-		User user;
+		User viewer;
 		Post post;
 		Board board;
 
 		@BeforeEach
 		void setUp() {
-			user = mock(User.class);
+			viewer = mock(User.class);
 			post = mock(Post.class);
 			board = mock(Board.class);
-
-			given(post.getBoard()).willReturn(board);
-			given(board.getId()).willReturn("board-id");
 		}
 
 		@DisplayName("댓글 목록 조회 성공 (대댓글 포함)")
 		@Test
 		void findAllComments_shouldSucceed() {
 			// given
-			given(user.getId()).willReturn("user-id");
+			given(viewer.getId()).willReturn("user-id");
+			given(post.getBoard()).willReturn(board);
+			given(board.getId()).willReturn("board-id");
+
 			PageRequest pageable = PageRequest.of(0, 10);
 			Comment comment = mock(Comment.class);
-			ChildComment childComment = mock(ChildComment.class);
-			CommentResponseDto responseDto = mock(CommentResponseDto.class);
+			CommentResult commentResult = mock(CommentResult.class);
 
 			given(comment.getId()).willReturn("comment-id");
-			given(childComment.getId()).willReturn("child-comment-id");
-			given(comment.getChildCommentList()).willReturn(List.of(childComment));
 
 			Page<Comment> commentsPage = new PageImpl<>(List.of(comment), pageable, 1);
+			CommentListQuery query = new CommentListQuery(viewer, "post-id", pageable);
 
 			given(postReader.findById("post-id")).willReturn(post);
-			given(userReader.findUserById("user-id")).willReturn(user);
 			given(boardConfigReader.getAdminIdsByBoardId("board-id")).willReturn(List.of("admin-id"));
-			given(userBlockEntityService.findBlockeeUserIdsByBlocker(user)).willReturn(Collections.emptySet());
+			given(userBlockEntityService.findBlockeeUserIdsByBlocker(viewer)).willReturn(Collections.emptySet());
 			given(commentReader.getComments("post-id", pageable)).willReturn(commentsPage);
-
-			// Bulk 조회 목업 세팅
-			given(likeCommentReader.getCommentLikeCounts(anyList())).willReturn(Map.of("comment-id", 5L));
-			given(likeCommentReader.getLikedCommentIds("user-id", List.of("comment-id")))
-				.willReturn(Set.of("comment-id"));
-			given(userCommentSubscribeReader.getSubscribedCommentIds("user-id", List.of("comment-id")))
-				.willReturn(Collections.emptySet());
-			given(likeChildCommentReader.getChildCommentLikeCounts(anyList()))
-				.willReturn(Map.of("child-comment-id", 2L));
-			given(likeChildCommentReader.getLikedChildCommentIds("user-id", List.of("child-comment-id")))
-				.willReturn(Collections.emptySet());
-
-			// DTO 조립 목업 세팅
-			given(commentReader.getCommentListDetails(
-				eq(comment), eq(user), anySet(), anyList(), anyMap(), anySet(), anySet(), anyMap(), anySet()))
-				.willReturn(responseDto);
+			given(commentMetaReader.fetch(eq("user-id"), any(Set.class), anyList()))
+				.willReturn(Map.of("comment-id", mock(CommentMeta.class)));
+			given(commentMapper.toResult(eq(comment), eq(viewer), anyList(), any(CommentMeta.class)))
+				.willReturn(commentResult);
 
 			// when
-			Page<CommentResponseDto> result = commentService.findAllComments("user-id", "post-id", pageable);
+			Page<CommentResult> result = commentService.findAllComments(query);
 
 			// then
 			assertAll(
 				() -> assertThat(result).isNotNull(),
 				() -> assertThat(result.getContent()).hasSize(1));
 
-			verify(commentValidator, times(1)).validateForFind(user, post);
-			verify(likeCommentReader, times(1)).getCommentLikeCounts(anyList());
-			verify(likeChildCommentReader, times(1)).getChildCommentLikeCounts(anyList());
+			verify(commentValidator, times(1)).validateForFind(viewer, post);
+			verify(commentMetaReader, times(1)).fetch(eq("user-id"), any(Set.class), anyList());
 		}
 
 		@DisplayName("댓글이 없을 경우 조기 종료(Early Exit) 성공")
@@ -196,20 +176,19 @@ public class CommentServiceTest {
 			// given
 			PageRequest pageable = PageRequest.of(0, 10);
 			Page<Comment> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
+			CommentListQuery query = new CommentListQuery(viewer, "post-id", pageable);
 
 			given(postReader.findById("post-id")).willReturn(post);
-			given(userReader.findUserById("user-id")).willReturn(user);
 			given(commentReader.getComments("post-id", pageable)).willReturn(emptyPage);
 
 			// when
-			Page<CommentResponseDto> result = commentService.findAllComments("user-id", "post-id", pageable);
+			Page<CommentResult> result = commentService.findAllComments(query);
 
 			// then
 			assertThat(result.isEmpty()).isTrue();
 
 			// 댓글이 없으므로 N+1 방지용 Bulk 조회가 아예 호출되지 않아야 함
-			verify(likeCommentReader, never()).getCommentLikeCounts(anyList());
-			verify(likeChildCommentReader, never()).getChildCommentLikeCounts(anyList());
+			verify(commentMetaReader, never()).fetch(any(), any(), any());
 		}
 	}
 
@@ -224,19 +203,23 @@ public class CommentServiceTest {
 			Post post = mock(Post.class);
 			Board board = mock(Board.class);
 			Comment comment = mock(Comment.class);
-			CommentUpdateRequestDto requestDto = new CommentUpdateRequestDto("수정된 댓글 내용");
-			CommentResponseDto expectedResponse = mock(CommentResponseDto.class);
+			CommentUpdateCommand command = new CommentUpdateCommand("comment-id", "수정된 댓글 내용", updater);
+			CommentResult expectedResult = mock(CommentResult.class);
 
-			given(userReader.findUserById("updater-id")).willReturn(updater);
 			given(commentReader.getComment("comment-id")).willReturn(comment);
 			given(comment.getPost()).willReturn(post);
 			given(post.getId()).willReturn("post-id");
 			given(postReader.findById("post-id")).willReturn(post);
 			given(post.getBoard()).willReturn(board);
-			given(commentReader.getCommentDetail(comment, updater, board)).willReturn(expectedResponse);
+			given(board.getId()).willReturn("board-id");
+			given(boardConfigReader.getAdminIdsByBoardId("board-id")).willReturn(List.of("admin-id"));
+			given(commentMetaReader.fetchForComment(eq(updater), eq(comment)))
+				.willReturn(mock(CommentMeta.class));
+			given(commentMapper.toResult(eq(comment), eq(updater), anyList(), any(CommentMeta.class)))
+				.willReturn(expectedResult);
 
 			// when
-			CommentResponseDto result = commentService.updateComment("updater-id", "comment-id", requestDto);
+			CommentResult result = commentService.updateComment(command);
 
 			// then
 			assertThat(result).isNotNull();
@@ -257,18 +240,22 @@ public class CommentServiceTest {
 			Post post = mock(Post.class);
 			Board board = mock(Board.class);
 			Comment comment = mock(Comment.class);
-			CommentResponseDto expectedResponse = mock(CommentResponseDto.class);
+			CommentResult expectedResult = mock(CommentResult.class);
 
-			given(userReader.findUserById("deleter-id")).willReturn(deleter);
 			given(commentReader.getComment("comment-id")).willReturn(comment);
 			given(comment.getPost()).willReturn(post);
 			given(post.getId()).willReturn("post-id");
 			given(postReader.findById("post-id")).willReturn(post);
 			given(post.getBoard()).willReturn(board);
-			given(commentReader.getCommentDetail(comment, deleter, board)).willReturn(expectedResponse);
+			given(board.getId()).willReturn("board-id");
+			given(boardConfigReader.getAdminIdsByBoardId("board-id")).willReturn(List.of("admin-id"));
+			given(commentMetaReader.fetchForComment(eq(deleter), eq(comment)))
+				.willReturn(mock(CommentMeta.class));
+			given(commentMapper.toResult(eq(comment), eq(deleter), anyList(), any(CommentMeta.class)))
+				.willReturn(expectedResult);
 
 			// when
-			CommentResponseDto result = commentService.deleteComment("deleter-id", "comment-id");
+			CommentResult result = commentService.deleteComment(deleter, "comment-id");
 
 			// then
 			assertThat(result).isNotNull();
@@ -288,7 +275,6 @@ public class CommentServiceTest {
 		void setUp() {
 			user = mock(User.class);
 			comment = mock(Comment.class);
-			given(userReader.findUserById("user-id")).willReturn(user);
 			given(commentReader.getComment("comment-id")).willReturn(comment);
 		}
 
@@ -296,7 +282,7 @@ public class CommentServiceTest {
 		@Test
 		void likeComment_shouldSucceed() {
 			// when
-			commentService.likeComment("user-id", "comment-id");
+			commentService.likeComment(user, "comment-id");
 
 			// then
 			verify(commentValidator, times(1)).validateForLike(user, comment);
@@ -311,7 +297,7 @@ public class CommentServiceTest {
 				.when(commentValidator).validateForLike(user, comment);
 
 			// when & then
-			assertThatThrownBy(() -> commentService.likeComment("user-id", "comment-id"))
+			assertThatThrownBy(() -> commentService.likeComment(user, "comment-id"))
 				.isInstanceOf(RuntimeException.class)
 				.hasMessageContaining("좋아요를 이미 누른 댓글 입니다");
 
@@ -329,7 +315,6 @@ public class CommentServiceTest {
 		void setUp() {
 			user = mock(User.class);
 			comment = mock(Comment.class);
-			given(userReader.findUserById("user-id")).willReturn(user);
 			given(commentReader.getComment("comment-id")).willReturn(comment);
 		}
 
@@ -340,7 +325,7 @@ public class CommentServiceTest {
 			given(user.getId()).willReturn("user-id");
 
 			// when
-			commentService.cancelLikeComment("user-id", "comment-id");
+			commentService.cancelLikeComment(user, "comment-id");
 
 			// then
 			verify(commentValidator, times(1)).validateForCancelLike(user, comment);
@@ -355,7 +340,7 @@ public class CommentServiceTest {
 				.when(commentValidator).validateForCancelLike(user, comment);
 
 			// when & then
-			assertThatThrownBy(() -> commentService.cancelLikeComment("user-id", "comment-id"))
+			assertThatThrownBy(() -> commentService.cancelLikeComment(user, "comment-id"))
 				.isInstanceOf(RuntimeException.class)
 				.hasMessageContaining("좋아요를 누르지 않은 댓글입니다");
 

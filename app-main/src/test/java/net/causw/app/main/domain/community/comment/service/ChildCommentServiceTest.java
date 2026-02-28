@@ -20,22 +20,25 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import net.causw.app.main.domain.community.board.entity.Board;
-import net.causw.app.main.domain.community.comment.api.v2.dto.request.ChildCommentCreateRequestDto;
-import net.causw.app.main.domain.community.comment.api.v2.dto.request.ChildCommentUpdateRequestDto;
-import net.causw.app.main.domain.community.comment.api.v2.dto.response.ChildCommentResponseDto;
+import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
 import net.causw.app.main.domain.community.comment.entity.ChildComment;
 import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.community.comment.entity.LikeChildComment;
+import net.causw.app.main.domain.community.comment.service.dto.ChildCommentCreateCommand;
+import net.causw.app.main.domain.community.comment.service.dto.ChildCommentMeta;
+import net.causw.app.main.domain.community.comment.service.dto.ChildCommentResult;
+import net.causw.app.main.domain.community.comment.service.dto.ChildCommentUpdateCommand;
+import net.causw.app.main.domain.community.comment.service.implementation.ChildCommentMapper;
 import net.causw.app.main.domain.community.comment.service.implementation.ChildCommentReader;
 import net.causw.app.main.domain.community.comment.service.implementation.ChildCommentWriter;
 import net.causw.app.main.domain.community.comment.service.implementation.CommentReader;
+import net.causw.app.main.domain.community.comment.service.implementation.LikeChildCommentReader;
 import net.causw.app.main.domain.community.comment.service.implementation.LikeChildCommentWriter;
 import net.causw.app.main.domain.community.comment.util.ChildCommentValidator;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.v2.implementation.PostReader;
 import net.causw.app.main.domain.notification.notification.service.v1.CommentNotificationService;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 
 @ExtendWith(MockitoExtension.class)
 public class ChildCommentServiceTest {
@@ -43,8 +46,6 @@ public class ChildCommentServiceTest {
 	@InjectMocks
 	ChildCommentService childCommentService;
 
-	@Mock
-	UserReader userReader;
 	@Mock
 	CommentReader commentReader;
 	@Mock
@@ -56,9 +57,15 @@ public class ChildCommentServiceTest {
 	@Mock
 	LikeChildCommentWriter likeChildCommentWriter;
 	@Mock
+	LikeChildCommentReader likeChildCommentReader;
+	@Mock
 	ChildCommentValidator childCommentValidator;
 	@Mock
 	CommentNotificationService commentNotificationService;
+	@Mock
+	BoardConfigReader boardConfigReader;
+	@Mock
+	ChildCommentMapper childCommentMapper;
 
 	@Nested
 	@DisplayName("대댓글 생성 테스트")
@@ -77,6 +84,7 @@ public class ChildCommentServiceTest {
 
 			given(parentComment.getPost()).willReturn(post);
 			given(post.getBoard()).willReturn(board);
+			given(board.getId()).willReturn("board-id");
 		}
 
 		@DisplayName("대댓글 생성 성공")
@@ -84,18 +92,18 @@ public class ChildCommentServiceTest {
 		void createChildComment_shouldSucceed() {
 			// given
 			given(post.getId()).willReturn("post-id");
-			ChildCommentCreateRequestDto requestDto = new ChildCommentCreateRequestDto(
-				"대댓글 내용", "parent-comment-id", false);
-			ChildCommentResponseDto expectedResponse = mock(ChildCommentResponseDto.class);
+			ChildCommentCreateCommand command = new ChildCommentCreateCommand(
+				"대댓글 내용", "parent-comment-id", false, creator);
+			ChildCommentResult expectedResult = mock(ChildCommentResult.class);
 
-			given(userReader.findUserById("creator-id")).willReturn(creator);
 			given(commentReader.getComment("parent-comment-id")).willReturn(parentComment);
 			given(postReader.findById("post-id")).willReturn(post);
-			given(childCommentReader.getChildCommentDetail(any(ChildComment.class), eq(creator), eq(board)))
-				.willReturn(expectedResponse);
+			given(boardConfigReader.getAdminIdsByBoardId("board-id")).willReturn(java.util.List.of("admin-id"));
+			given(childCommentMapper.toResult(any(ChildComment.class), eq(creator), any(ChildCommentMeta.class)))
+				.willReturn(expectedResult);
 
 			// when
-			ChildCommentResponseDto result = childCommentService.createChildComment("creator-id", requestDto);
+			ChildCommentResult result = childCommentService.createChildComment(command);
 
 			// then
 			assertThat(result).isNotNull();
@@ -119,24 +127,25 @@ public class ChildCommentServiceTest {
 			Comment parentComment = mock(Comment.class);
 			Post post = mock(Post.class);
 			Board board = mock(Board.class);
-			ChildCommentUpdateRequestDto requestDto = new ChildCommentUpdateRequestDto("수정된 대댓글 내용");
-			ChildCommentResponseDto expectedResponse = mock(ChildCommentResponseDto.class);
+			ChildCommentUpdateCommand command = new ChildCommentUpdateCommand(
+				"child-comment-id", "수정된 대댓글 내용", updater);
+			ChildCommentResult expectedResult = mock(ChildCommentResult.class);
 
-			given(userReader.findUserById("updater-id")).willReturn(updater);
 			given(childCommentReader.findById("child-comment-id")).willReturn(childComment);
-
-			// 객체 체이닝을 위한 Mock 설정
 			given(childComment.getParentComment()).willReturn(parentComment);
 			given(parentComment.getPost()).willReturn(post);
 			given(post.getId()).willReturn("post-id");
 			given(postReader.findById("post-id")).willReturn(post);
 			given(post.getBoard()).willReturn(board);
-
-			given(childCommentReader.getChildCommentDetail(childComment, updater, board)).willReturn(expectedResponse);
+			given(board.getId()).willReturn("board-id");
+			given(boardConfigReader.getAdminIdsByBoardId("board-id")).willReturn(java.util.List.of("admin-id"));
+			given(likeChildCommentReader.getNumOfChildCommentLikes(childComment)).willReturn(2L);
+			given(likeChildCommentReader.isChildCommentLiked(updater, childComment.getId())).willReturn(false);
+			given(childCommentMapper.toResult(eq(childComment), eq(updater), any(ChildCommentMeta.class)))
+				.willReturn(expectedResult);
 
 			// when
-			ChildCommentResponseDto result = childCommentService.updateChildComment("updater-id", "child-comment-id",
-				requestDto);
+			ChildCommentResult result = childCommentService.updateChildComment(command);
 
 			// then
 			assertThat(result).isNotNull();
@@ -158,22 +167,23 @@ public class ChildCommentServiceTest {
 			Comment parentComment = mock(Comment.class);
 			Post post = mock(Post.class);
 			Board board = mock(Board.class);
-			ChildCommentResponseDto expectedResponse = mock(ChildCommentResponseDto.class);
+			ChildCommentResult expectedResult = mock(ChildCommentResult.class);
 
-			given(userReader.findUserById("deleter-id")).willReturn(deleter);
 			given(childCommentReader.findById("child-comment-id")).willReturn(childComment);
-
-			// 객체 체이닝을 위한 Mock 설정
 			given(childComment.getParentComment()).willReturn(parentComment);
 			given(parentComment.getPost()).willReturn(post);
 			given(post.getId()).willReturn("post-id");
 			given(postReader.findById("post-id")).willReturn(post);
 			given(post.getBoard()).willReturn(board);
-
-			given(childCommentReader.getChildCommentDetail(childComment, deleter, board)).willReturn(expectedResponse);
+			given(board.getId()).willReturn("board-id");
+			given(boardConfigReader.getAdminIdsByBoardId("board-id")).willReturn(java.util.List.of("admin-id"));
+			given(likeChildCommentReader.getNumOfChildCommentLikes(childComment)).willReturn(0L);
+			given(likeChildCommentReader.isChildCommentLiked(deleter, childComment.getId())).willReturn(false);
+			given(childCommentMapper.toResult(eq(childComment), eq(deleter), any(ChildCommentMeta.class)))
+				.willReturn(expectedResult);
 
 			// when
-			ChildCommentResponseDto result = childCommentService.deleteChildComment("deleter-id", "child-comment-id");
+			ChildCommentResult result = childCommentService.deleteChildComment(deleter, "child-comment-id");
 
 			// then
 			assertThat(result).isNotNull();
@@ -193,7 +203,6 @@ public class ChildCommentServiceTest {
 		void setUp() {
 			user = mock(User.class);
 			childComment = mock(ChildComment.class);
-			given(userReader.findUserById("user-id")).willReturn(user);
 			given(childCommentReader.findById("child-comment-id")).willReturn(childComment);
 		}
 
@@ -201,7 +210,7 @@ public class ChildCommentServiceTest {
 		@Test
 		void likeChildComment_shouldSucceed() {
 			// when
-			childCommentService.likeChildComment("user-id", "child-comment-id");
+			childCommentService.likeChildComment(user, "child-comment-id");
 
 			// then
 			verify(childCommentValidator, times(1)).validateForLike(user, childComment);
@@ -216,7 +225,7 @@ public class ChildCommentServiceTest {
 				.when(childCommentValidator).validateForLike(user, childComment);
 
 			// when & then
-			assertThatThrownBy(() -> childCommentService.likeChildComment("user-id", "child-comment-id"))
+			assertThatThrownBy(() -> childCommentService.likeChildComment(user, "child-comment-id"))
 				.isInstanceOf(RuntimeException.class)
 				.hasMessageContaining("좋아요를 이미 누른 대댓글 입니다.");
 
@@ -234,7 +243,6 @@ public class ChildCommentServiceTest {
 		void setUp() {
 			user = mock(User.class);
 			childComment = mock(ChildComment.class);
-			given(userReader.findUserById("user-id")).willReturn(user);
 			given(childCommentReader.findById("child-comment-id")).willReturn(childComment);
 		}
 
@@ -245,7 +253,7 @@ public class ChildCommentServiceTest {
 			given(user.getId()).willReturn("user-id");
 
 			// when
-			childCommentService.cancelLikeChildComment("user-id", "child-comment-id");
+			childCommentService.cancelLikeChildComment(user, "child-comment-id");
 
 			// then
 			verify(childCommentValidator, times(1)).validateForCancelLike(user, childComment);
@@ -260,7 +268,7 @@ public class ChildCommentServiceTest {
 				.when(childCommentValidator).validateForCancelLike(user, childComment);
 
 			// when & then
-			assertThatThrownBy(() -> childCommentService.cancelLikeChildComment("user-id", "child-comment-id"))
+			assertThatThrownBy(() -> childCommentService.cancelLikeChildComment(user, "child-comment-id"))
 				.isInstanceOf(RuntimeException.class)
 				.hasMessageContaining("좋아요을 누르지 않은 대댓글입니다.");
 
