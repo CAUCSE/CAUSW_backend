@@ -3,6 +3,9 @@ package net.causw.app.main.domain.community.ceremony.util;
 import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.request.CreateCeremonyRequestDto;
+import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
+import net.causw.app.main.domain.community.ceremony.enums.CeremonyState;
+import net.causw.app.main.shared.exception.errorcode.CeremonyErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -27,5 +30,11 @@ public class CeremonyValidator {
 			dto.getEndTime());
 
 		ceremonyNotificationValidator.validateNotificationTarget(dto.getIsSetAll(), dto.getTargetAdmissionYears());
+	}
+
+	public void validateAwaiting(Ceremony ceremony) {
+		if (ceremony.getCeremonyState() != CeremonyState.AWAIT) {
+			throw CeremonyErrorCode.CEREMONY_ALREADY_PROCESSED.toBaseException();
+		}
 	}
 }

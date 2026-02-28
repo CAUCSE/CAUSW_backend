@@ -28,6 +28,7 @@ public enum CeremonyErrorCode implements BaseResponseCode {
 	INVALID_CEREMONY_CONTEXT(HttpStatus.BAD_REQUEST, "CEREMONY_400_015", "잘못된 context입니다."),
 	INVALID_CEREMONY_TYPE(HttpStatus.BAD_REQUEST, "CEREMONY_400_016", "잘못된 type입니다."),
 	INVALID_CEREMONY_STATE(HttpStatus.BAD_REQUEST, "CEREMONY_400_017", "잘못된 state입니다."),
+	CEREMONY_ALREADY_PROCESSED(HttpStatus.BAD_REQUEST, "CEREMONY_400_018", "이미 처리된 경조사입니다."),
 	ACCESS_ONLY_APPLICANT(HttpStatus.FORBIDDEN, "CEREMONY_403_001", "본인의 경조사만 조회할 수 있습니다."),
 	CEREMONY_NOT_FOUND(HttpStatus.NOT_FOUND, "CEREMONY_404_001", "해당 경조사를 찾을 수 없습니다.");
 

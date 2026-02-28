@@ -4,8 +4,6 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
-import lombok.RequiredArgsConstructor;
-
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.SocialType;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
@@ -15,6 +13,8 @@ import net.causw.app.main.domain.user.account.util.PhoneNumberFormatValidator;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 import net.causw.app.main.shared.infra.redis.RedisUtils;
+
+import lombok.RequiredArgsConstructor;
 
 /**
  * 사용자의 상태 검증 및 중복 데이터 확인을 담당하는 컴포넌트입니다.
@@ -106,7 +106,7 @@ public class UserValidator {
 		// 유저 상태 검증
 		switch (user.getState()) {
 			case DROP ->
-				throw AuthErrorCode.BLOCKED_USER.toBaseException();
+				throw AuthErrorCode.DROPPED_USER.toBaseException();
 			case INACTIVE ->
 				throw AuthErrorCode.INACTIVE_USER.toBaseException();
 			case DELETED ->

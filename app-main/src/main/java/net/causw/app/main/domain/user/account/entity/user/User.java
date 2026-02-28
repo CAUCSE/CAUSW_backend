@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.user.account.entity.user;
 
-import static net.causw.global.constant.StaticValue.*;
+import static net.causw.global.constant.StaticValue.NO_PHONE_NUMBER_MESSAGE;
 
 import java.util.HashSet;
 import java.util.List;
@@ -8,6 +8,22 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.hibernate.annotations.BatchSize;
+
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
+import net.causw.app.main.domain.asset.locker.entity.Locker;
+import net.causw.app.main.domain.campus.circle.entity.CircleMember;
+import net.causw.app.main.domain.community.vote.entity.VoteRecord;
+import net.causw.app.main.domain.notification.notification.entity.CeremonyNotificationSetting;
+import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.domain.user.account.api.v1.dto.GraduatedUserCommand;
+import net.causw.app.main.domain.user.account.api.v1.dto.UserCreateRequestDto;
+import net.causw.app.main.domain.user.account.enums.user.Department;
+import net.causw.app.main.domain.user.account.enums.user.GraduationType;
+import net.causw.app.main.domain.user.account.enums.user.Role;
+import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
+import net.causw.app.main.domain.user.auth.service.dto.OAuthAttributes;
+import net.causw.app.main.shared.entity.BaseEntity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
@@ -29,22 +45,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
-import net.causw.app.main.domain.asset.locker.entity.Locker;
-import net.causw.app.main.domain.campus.circle.entity.CircleMember;
-import net.causw.app.main.domain.community.vote.entity.VoteRecord;
-import net.causw.app.main.domain.notification.notification.entity.CeremonyNotificationSetting;
-import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
-import net.causw.app.main.domain.user.account.api.v1.dto.GraduatedUserCommand;
-import net.causw.app.main.domain.user.account.api.v1.dto.UserCreateRequestDto;
-import net.causw.app.main.domain.user.account.enums.user.Department;
-import net.causw.app.main.domain.user.account.enums.user.GraduationType;
-import net.causw.app.main.domain.user.account.enums.user.Role;
-import net.causw.app.main.domain.user.account.enums.user.UserState;
-import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
-import net.causw.app.main.domain.user.auth.service.dto.OAuthAttributes;
-import net.causw.app.main.shared.entity.BaseEntity;
-
 @Getter
 @Builder(access = AccessLevel.PROTECTED)
 @Setter
@@ -59,10 +59,10 @@ public class User extends BaseEntity {
 	@Column(name = "name", nullable = false)
 	private String name;
 
-	@Column(name = "phone_number", unique = true, nullable = true)
+	@Column(name = "phone_number", unique = true, nullable = false)
 	private String phoneNumber;
 
-	@Column(name = "password", nullable = true)
+	@Column(name = "password", nullable = false)
 	private String password;
 
 	@Column(name = "student_id", unique = true, nullable = true)
@@ -72,7 +72,7 @@ public class User extends BaseEntity {
 	private Integer admissionYear;
 
 	// 새로 추가한 필드들
-	@Column(name = "nickname", unique = true, nullable = true)
+	@Column(name = "nickname", unique = true, nullable = false)
 	private String nickname;
 
 	// TODO: 기존값들 department로 마이그레이션 후 삭제
@@ -224,6 +224,10 @@ public class User extends BaseEntity {
 			.build();
 	}
 
+	public void updatePassword(String encodedPassword) {
+		this.password = encodedPassword;
+	}
+
 	public static User createSocialUser(OAuthAttributes attributes) {
 		return User.builder()
 			.email(attributes.email())
@@ -267,17 +271,36 @@ public class User extends BaseEntity {
 		this.agreements = TermAgreements.createRequiredAgreements();
 	}
 
-	public void updatePassword(String encodedPassword) {
-		this.password = encodedPassword;
-	}
-
 	public void updateRejectionOrDropReason(String reason) {
 		this.rejectionOrDropReason = reason;
+	}
+
+	// 재학 인증 신청시(UserAdmission 생성 시) 해당 유저가 신청 가능한 상태인지 확인
+	public boolean canApplyAdmission() {
+		return this.state == UserState.AWAIT || this.state == UserState.REJECT;
 	}
 
 	public void markAsAwait() {
 		this.state = UserState.AWAIT;
 		this.rejectionOrDropReason = null; // 거절 사유 초기화
+	}
+
+	// v2 재학인증 승인 시 신청서의 학적 정보를 사용자 계정에 반영하고 ACTIVE 상태로 전이한다.
+	public void approveAdmission(UserAdmission admission) {
+		this.studentId = admission.getRequestedStudentId();
+		this.admissionYear = admission.getRequestedAdmissionYear();
+		this.department = admission.getRequestedDepartment();
+		this.academicStatus = admission.getRequestedAcademicStatus();
+		this.graduationYear = admission.getRequestedGraduationYear();
+		this.state = UserState.ACTIVE;
+		this.rejectionOrDropReason = null;
+		this.roles = Set.of(Role.COMMON);
+	}
+
+	// v2 재학인증 거절 시 사용자 상태를 REJECT로 전이하고 거절 사유를 기록한다.
+	public void rejectAdmission(String rejectReason) {
+		this.state = UserState.REJECT;
+		this.rejectionOrDropReason = rejectReason;
 	}
 
 	public void markAsCertifiedGraduate(Integer graduationYear) {

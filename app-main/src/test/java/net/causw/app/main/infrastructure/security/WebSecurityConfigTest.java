@@ -28,6 +28,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import net.causw.app.main.core.security.AppleOAuth2AuthorizationRequestResolver;
 import net.causw.app.main.core.security.CustomAuthenticationEntryPoint;
 import net.causw.app.main.core.security.CustomAuthorizationManager;
 import net.causw.app.main.core.security.JwtTokenProvider;
@@ -53,6 +54,8 @@ public class WebSecurityConfigTest {
 
 	@MockBean
 	private JwtTokenProvider jwtTokenProvider;
+	@MockBean
+	private AppleOAuth2AuthorizationRequestResolver appleOAuth2AuthorizationRequestResolver;
 	@MockBean
 	private CustomOAuth2UserService customOAuth2UserService;
 	@MockBean

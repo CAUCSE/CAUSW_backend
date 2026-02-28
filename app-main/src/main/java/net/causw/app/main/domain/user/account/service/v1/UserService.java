@@ -164,7 +164,7 @@ public class UserService {
 	private final UserRoleService userRoleService;
 
 	private final UserDtoMapper userDtoMapper;
-	private final PostDtoV1Mapper postDtoMapper;
+	private final PostDtoV1Mapper postDtoV1Mapper;
 	private final PostV1Service postV1Service;
 	private final UserBlockEntityService userBlockEntityService;
 	private final UserQueryRepository userQueryRepository;
@@ -349,7 +349,7 @@ public class UserService {
 			likePostPage
 				.map(likePost -> {
 					Post post = likePost.getPost();
-					PostsResponseDto dto = postDtoMapper.toPostsResponseDto(
+					PostsResponseDto dto = postDtoV1Mapper.toPostsResponseDto(
 						post,
 						getNumOfComment(post),
 						getNumOfPostLikes(post),
@@ -1253,7 +1253,7 @@ public class UserService {
 		List<UuidFile> uuidFileList = uuidFileService.saveFileList(userAdmissionAttachImageList,
 			FilePath.USER_ADMISSION);
 
-		UserAdmission userAdmission = UserAdmission.of(
+		UserAdmission userAdmission = UserAdmission.ofV1(
 			user,
 			uuidFileList,
 			userAdmissionCreateRequestDto.getDescription());
@@ -1302,7 +1302,7 @@ public class UserService {
 		userRoleService.updateRole(userAdmission.getUser(), Role.COMMON);
 
 		// Add admission log
-		UserAdmissionLog userAdmissionLog = UserAdmissionLog.of(
+		UserAdmissionLog userAdmissionLog = UserAdmissionLog.ofV1(
 			userAdmission.getUser().getEmail(),
 			userAdmission.getUser().getName(),
 			requestUser.getEmail(),
@@ -1347,7 +1347,7 @@ public class UserService {
 			.validate();
 
 		// Add admission log
-		UserAdmissionLog userAdmissionLog = UserAdmissionLog.of(
+		UserAdmissionLog userAdmissionLog = UserAdmissionLog.ofV1(
 			userAdmission.getUser().getEmail(),
 			userAdmission.getUser().getName(),
 			requestUser.getEmail(),
