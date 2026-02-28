@@ -57,35 +57,6 @@ public class PostMapper {
 	}
 
 	/**
-	 * Post 엔티티와 집계 데이터를 PostCursorResult로 변환합니다.
-	 * 내가 댓글 단 글 등 Post 엔티티 기반 목록에서 toPostListItem 재사용을 위해 사용합니다.
-	 */
-	public static PostCursorResult toCursorResult(Post post, long numComment, long numLike, long numFavorite) {
-		var writer = post.getWriter();
-		return new PostCursorResult(
-			post.getId(),
-			post.getContent(),
-			numComment,
-			numLike,
-			numFavorite,
-			post.getIsAnonymous(),
-			post.getVote() != null ? post.getVote().getId() : null,
-			post.getIsDeleted(),
-			writer != null,
-			writer != null ? writer.getName() : null,
-			writer != null ? writer.getNickname() : null,
-			writer != null ? writer.getAdmissionYear() : null,
-			writer != null ? writer.getState() : null,
-			writer != null && writer.getUserProfileImage() != null
-				? writer.getUserProfileImage().getUuidFile().getFileUrl()
-				: null,
-			post.getCreatedAt(),
-			post.getUpdatedAt(),
-			post.getBoard().getId(),
-			post.getBoard().getName());
-	}
-
-	/**
 	 * PostCursorResult를 PostListResult.PostItem으로 변환합니다.
 	 * 익명 게시판인 경우 닉네임을 "익명"으로, 프로필 사진을 null로 설정합니다.
 	 */
