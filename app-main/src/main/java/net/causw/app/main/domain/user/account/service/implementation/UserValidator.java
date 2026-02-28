@@ -33,9 +33,7 @@ public class UserValidator {
 	/**
 	 * 회원가입 시도 시, 해당 사용자의 현재 상태를 기반으로 가입 가능 여부를 확인합니다.
 	 * <p>
-	 * state 우선순위:
-	 * DROP -> USER_DROPPED, INACTIVE -> USER_INACTIVE_CAN_REJOIN,
-	 * ACTIVE/AWAIT/REJECT -> ALREADY_REGISTERED.
+	 * 이미 가입된 유저(ACTIVE, AWAIT, REJECT)이거나 재가입 불가능한 상태인 경우 예외를 발생시킵니다.
 	 *
 	 * @param state 검사할 사용자 상태
 	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
@@ -58,11 +56,11 @@ public class UserValidator {
 	/**
 	 * 기존 계정에 소셜 계정을 통합(연동)하기 전, 유저의 상태가 유효한지 검증합니다.
 	 * <p>
-	 * state 우선순위:
-	 * DROP -> USER_DROPPED, INACTIVE -> USER_INACTIVE_CAN_REJOIN.
+	 * 정상적인 활동 상태(ACTIVE)나 대기 상태인 경우 검증을 통과하며,
+	 * 탈퇴 또는 추방 상태인 경우 연동을 차단하고 예외를 발생시킵니다.
 	 * </p>
 	 *
-	 * @param state 검증할 유저 상태
+	 * @param state 검증할 유저의 현재 상태
 	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
 	 * [USER_DROPPED] 추방된 회원인 경우,
 	 * [USER_INACTIVE_CAN_REJOIN] 휴면 계정인 경우 (재가입 절차 필요)
@@ -79,8 +77,6 @@ public class UserValidator {
 
 	/**
 	 * 로그인 시도 시, 해당 사용자가 로그인이 가능한 상태인지 확인합니다.
-	 * state 우선순위:
-	 * DROP -> INVALID_LOGIN_USER_DROPPED, INACTIVE -> INVALID_LOGIN_USER_INACTIVE.
 	 *
 	 * @param state 검사할 사용자 상태
 	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
@@ -99,8 +95,6 @@ public class UserValidator {
 
 	/**
 	 * 인증 과정(토큰 재발급 등)에서 유저의 유효성(상태)을 검증합니다.
-	 * state 우선순위:
-	 * DROP -> DROPPED_USER, INACTIVE -> INACTIVE_USER.
 	 *
 	 * @param state 검증할 사용자 상태
 	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
