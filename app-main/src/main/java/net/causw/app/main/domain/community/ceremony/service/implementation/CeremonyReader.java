@@ -48,4 +48,9 @@ public class CeremonyReader {
 		return ceremonyRepository.findByUser_IdAndCeremonyStateOrderByStartDateDescStartTimeDesc(userId, state,
 			pageable);
 	}
+
+	public Page<Ceremony> findAllForAdmin(LocalDate fromDate, LocalDate toDate, CeremonyState state,
+		Pageable pageable) {
+		return ceremonyQueryRepository.findAllForAdmin(fromDate, toDate, state, pageable);
+	}
 }
