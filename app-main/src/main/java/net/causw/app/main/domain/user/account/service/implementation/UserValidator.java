@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.SocialType;
+import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.repository.user.SocialAccountRepository;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.app.main.domain.user.account.util.PhoneNumberFormatValidator;
@@ -20,6 +21,7 @@ import lombok.RequiredArgsConstructor;
  * <p>
  * 회원가입/로그인 시의 상태(State) 체크, 리프레시 토큰의 소유권 확인,
  * 이메일/전화번호/닉네임의 중복 여부를 검사합니다.
+ * 상태 검증은 state 기준으로 판정합니다.
  */
 @Component
 @RequiredArgsConstructor
@@ -31,7 +33,9 @@ public class UserValidator {
 	/**
 	 * 회원가입 시도 시, 해당 사용자의 현재 상태를 기반으로 가입 가능 여부를 확인합니다.
 	 * <p>
-	 * 이미 가입된 유저(ACTIVE, AWAIT, REJECT)이거나 재가입 불가능한 상태인 경우 예외를 발생시킵니다.
+	 * state 우선순위:
+	 * DROP -> USER_DROPPED, INACTIVE -> USER_INACTIVE_CAN_REJOIN,
+	 * ACTIVE/AWAIT/REJECT -> ALREADY_REGISTERED.
 	 *
 	 * @param state 검사할 사용자 상태
 	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
@@ -39,86 +43,81 @@ public class UserValidator {
 	 * [USER_DROPPED] 추방된 회원인 경우,
 	 * [USER_INACTIVE_CAN_REJOIN] 휴면 계정인 경우 (재가입 절차 필요)
 	 */
-	public void validateUserStatusForSignup(User user) {
-		if (user.isDeleted()) {
-			throw UserErrorCode.ALREADY_REGISTERED.toBaseException();
-		}
-		switch (user.getState()) {
-			case ACTIVE, AWAIT, REJECT ->
-				throw UserErrorCode.ALREADY_REGISTERED.toBaseException();
+	public void validateUserStatusForSignup(UserState state) {
+		switch (state) {
 			case DROP ->
 				throw UserErrorCode.USER_DROPPED.toBaseException();
 			case INACTIVE ->
 				throw UserErrorCode.USER_INACTIVE_CAN_REJOIN.toBaseException();
-			default -> {}
+			case ACTIVE, AWAIT, REJECT ->
+				throw UserErrorCode.ALREADY_REGISTERED.toBaseException();
+			default -> {
+			}
 		}
 	}
 
 	/**
 	 * 기존 계정에 소셜 계정을 통합(연동)하기 전, 유저의 상태가 유효한지 검증합니다.
 	 * <p>
-	 * 정상적인 활동 상태(ACTIVE)나 대기 상태인 경우 검증을 통과하며,
-	 * 탈퇴 또는 비활성화 상태인 경우 연동을 차단하고 예외를 발생시킵니다.
+	 * state 우선순위:
+	 * DROP -> USER_DROPPED, INACTIVE -> USER_INACTIVE_CAN_REJOIN.
 	 * </p>
 	 *
-	 * @param state 검증할 유저의 현재 상태
+	 * @param state 검증할 유저 상태
 	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
 	 * [USER_DROPPED] 추방된 회원인 경우,
 	 * [USER_INACTIVE_CAN_REJOIN] 휴면 계정인 경우 (재가입 절차 필요)
 	 */
-	public void validateUserStatusForIntegration(User user) {
-		if (user.isDeleted()) {
-			throw UserErrorCode.USER_DELETED.toBaseException();
-		}
-		switch (user.getState()) {
+	public void validateUserStatusForIntegration(UserState state) {
+		switch (state) {
 			case DROP ->
 				throw UserErrorCode.USER_DROPPED.toBaseException();
 			case INACTIVE ->
 				throw UserErrorCode.USER_INACTIVE_CAN_REJOIN.toBaseException();
-			default -> {}
+			default -> {
+			}
 		}
 	}
 
 	/**
 	 * 로그인 시도 시, 해당 사용자가 로그인이 가능한 상태인지 확인합니다.
+	 * state 우선순위:
+	 * DROP -> INVALID_LOGIN_USER_DROPPED, INACTIVE -> INVALID_LOGIN_USER_INACTIVE.
 	 *
 	 * @param state 검사할 사용자 상태
 	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
-	 * [INVALID_LOGIN_USER_DELETED] 탈퇴한 회원,
 	 * [INVALID_LOGIN_USER_DROPPED] 추방된 회원,
 	 * [INVALID_LOGIN_USER_INACTIVE] 휴면 회원인 경우
 	 */
-	public void validateUserStatusForLogin(User user) {
-		if (user.isDeleted()) {
-			throw UserErrorCode.INVALID_LOGIN_USER_DELETED.toBaseException();
-		}
-		switch (user.getState()) {
+	public void validateUserStatusForLogin(UserState state) {
+		switch (state) {
 			case DROP ->
 				throw UserErrorCode.INVALID_LOGIN_USER_DROPPED.toBaseException();
 			case INACTIVE ->
 				throw UserErrorCode.INVALID_LOGIN_USER_INACTIVE.toBaseException();
-			default -> {}
+			default -> {
+			}
 		}
 	}
 
 	/**
 	 * 인증 과정(토큰 재발급 등)에서 유저의 유효성(상태)을 검증합니다.
+	 * state 우선순위:
+	 * DROP -> DROPPED_USER, INACTIVE -> INACTIVE_USER.
 	 *
-	 * @param user 검증할 사용자 엔티티
+	 * @param state 검증할 사용자 상태
 	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
-	 * [BLOCKED_USER] 추방된 유저, [INACTIVE_USER] 휴면 유저, [DELETED_USER] 탈퇴한 유저인 경우
+	 * [BLOCKED_USER] 추방된 유저, [INACTIVE_USER] 휴면 유저인 경우
 	 */
-	public void validateUser(User user) {
-		if (user.isDeleted()) {
-			throw AuthErrorCode.DELETED_USER.toBaseException();
-		}
+	public void validateUser(UserState state) {
 		// 유저 상태 검증
-		switch (user.getState()) {
+		switch (state) {
 			case DROP ->
 				throw AuthErrorCode.DROPPED_USER.toBaseException();
 			case INACTIVE ->
 				throw AuthErrorCode.INACTIVE_USER.toBaseException();
-			default -> {}
+			default -> {
+			}
 		}
 	}
 

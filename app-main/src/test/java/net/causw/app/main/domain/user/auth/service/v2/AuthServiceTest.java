@@ -142,7 +142,7 @@ public class AuthServiceTest {
 						.willReturn(Optional.of(mockedExistingUser));
 
 					doThrow(errorCode.toBaseException())
-						.when(userValidator).validateUserStatusForSignup(any());
+						.when(userValidator).validateUserStatusForSignup(any(UserState.class));
 
 					// when & then
 					assertThatThrownBy(() -> authService.registerEmailUser(registerDto))
@@ -150,7 +150,7 @@ public class AuthServiceTest {
 						.hasMessage(errorCode.getMessage());
 
 					// verify
-					verify(userValidator).validateUserStatusForSignup(any());
+					verify(userValidator).validateUserStatusForSignup(any(UserState.class));
 					verify(userValidator, never()).checkEmailDuplication(anyString());
 				}
 			}
@@ -264,7 +264,7 @@ public class AuthServiceTest {
 
 			// verify
 			verify(authValidator).validateCredential(user, PASSWORD);
-			verify(userValidator).validateUserStatusForLogin(user);
+			verify(userValidator).validateUserStatusForLogin(user.getState());
 			verify(authTokenManager).issueTokens(user, null);
 		}
 
@@ -348,7 +348,7 @@ public class AuthServiceTest {
 				assertThat(result.refreshToken()).isEqualTo(NEW_REFRESH_TOKEN);
 
 				// verify
-				verify(userValidator).validateUser(user);
+				verify(userValidator).validateUser(user.getState());
 				verify(authTokenManager).issueTokens(user, REFRESH_TOKEN);
 			}
 

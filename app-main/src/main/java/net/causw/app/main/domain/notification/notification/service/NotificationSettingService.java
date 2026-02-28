@@ -39,7 +39,7 @@ public class NotificationSettingService {
 	 */
 	public NotificationSettingResult getAllSettings(String userId) {
 		User user = userReader.findUserByIdNotDeleted(userId);
-		userValidator.validateUser(user);
+		userValidator.validateUser(user.getState());
 		UserNotificationSettingMap settingMap = notificationSettingReader.findSettingMap(userId);
 
 		List<Board> boards = boardReader.findAccessibleNoticeBoards(user.getAcademicStatus());

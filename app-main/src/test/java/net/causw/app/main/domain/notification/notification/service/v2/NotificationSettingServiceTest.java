@@ -35,6 +35,7 @@ import net.causw.app.main.domain.notification.notification.service.implementatio
 import net.causw.app.main.domain.notification.notification.service.implementation.UserBoardSubscribeReader;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
@@ -156,8 +157,9 @@ class NotificationSettingServiceTest {
 			// given
 			User mockUser = mock(User.class);
 			given(userReader.findUserByIdNotDeleted(userId)).willReturn(mockUser);
+			given(mockUser.getState()).willReturn(UserState.DROP);
 			doThrow(AuthErrorCode.DROPPED_USER.toBaseException())
-				.when(userValidator).validateUser(mockUser);
+				.when(userValidator).validateUser(UserState.DROP);
 
 			// when & then
 			assertThatThrownBy(() -> notificationSettingService.getAllSettings(userId))

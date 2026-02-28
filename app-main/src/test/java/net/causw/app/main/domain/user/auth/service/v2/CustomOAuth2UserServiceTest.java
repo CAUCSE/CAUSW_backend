@@ -33,6 +33,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import net.causw.app.main.domain.user.account.entity.user.SocialAccount;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
@@ -98,6 +99,7 @@ class CustomOAuth2UserServiceTest {
 		//given
 		try (MockedConstruction<DefaultOAuth2UserService> mocked = mockConstruction(DefaultOAuth2UserService.class,
 			(mock, context) -> when(mock.loadUser(any())).thenReturn(oAuth2User))) {
+			when(testUser.getState()).thenReturn(UserState.ACTIVE);
 			when(userReader.findBySocialTypeAndSocialId(any(), any())).thenReturn(Optional.of(testUser));
 
 			//when
@@ -108,7 +110,7 @@ class CustomOAuth2UserServiceTest {
 
 			//verify
 			verify(userReader).findBySocialTypeAndSocialId(any(), any());
-			verify(userValidator).validateUserStatusForLogin(any());
+			verify(userValidator).validateUserStatusForLogin(any(UserState.class));
 			verify(userWriter, never()).save((User)any());
 		}
 	}
@@ -119,6 +121,7 @@ class CustomOAuth2UserServiceTest {
 		//given
 		try (MockedConstruction<DefaultOAuth2UserService> mocked = mockConstruction(DefaultOAuth2UserService.class,
 			(mock, context) -> when(mock.loadUser(any())).thenReturn(oAuth2User))) {
+			when(testUser.getState()).thenReturn(UserState.ACTIVE);
 			when(userReader.findBySocialTypeAndSocialId(any(), any())).thenReturn(Optional.empty());
 			when(userReader.findByEmail(any())).thenReturn(Optional.of(testUser));
 
@@ -130,7 +133,7 @@ class CustomOAuth2UserServiceTest {
 
 			//verify
 			verify(userValidator).checkAccountExistByUserAndSocialType(any(), any());
-			verify(userValidator).validateUserStatusForIntegration(any());
+			verify(userValidator).validateUserStatusForIntegration(any(UserState.class));
 			verify(userWriter).save(any(SocialAccount.class));
 			verify(userWriter, never()).save(any(User.class));
 		}
@@ -196,11 +199,12 @@ class CustomOAuth2UserServiceTest {
 			(mock, context) -> when(mock.loadUser(any())).thenReturn(oAuth2User))) {
 
 			// 기존 유저가 존재한다고 가정
+			when(testUser.getState()).thenReturn(UserState.ACTIVE);
 			when(userReader.findBySocialTypeAndSocialId(any(), any())).thenReturn(Optional.of(testUser));
 
 			// Validator가 deletedAt이 설정된 탈퇴 유저로 판단하여 예외를 던지도록 Mocking
 			doThrow(UserErrorCode.INVALID_LOGIN_USER_DELETED.toBaseException())
-				.when(userValidator).validateUserStatusForLogin(any());
+				.when(userValidator).validateUserStatusForLogin(any(UserState.class));
 
 			//when & then
 			assertThrows(InternalAuthenticationServiceException.class, () -> {
@@ -208,7 +212,7 @@ class CustomOAuth2UserServiceTest {
 			});
 
 			//verify
-			verify(userValidator).validateUserStatusForLogin(any());
+			verify(userValidator).validateUserStatusForLogin(any(UserState.class));
 		}
 	}
 
@@ -219,12 +223,13 @@ class CustomOAuth2UserServiceTest {
 		try (MockedConstruction<DefaultOAuth2UserService> mocked = mockConstruction(DefaultOAuth2UserService.class,
 			(mock, context) -> when(mock.loadUser(any())).thenReturn(oAuth2User))) {
 
+			when(testUser.getState()).thenReturn(UserState.ACTIVE);
 			when(userReader.findBySocialTypeAndSocialId(any(), any())).thenReturn(Optional.empty());
 			when(userReader.findByEmail(any())).thenReturn(Optional.of(testUser));
 
 			// Validator가 추방된 유저(DROP) 상태로 판단하여 통합 불가 예외를 던지도록 Mocking
 			doThrow(UserErrorCode.USER_DROPPED.toBaseException())
-				.when(userValidator).validateUserStatusForIntegration(any());
+				.when(userValidator).validateUserStatusForIntegration(any(UserState.class));
 
 			//when & then
 			assertThrows(InternalAuthenticationServiceException.class, () -> {
@@ -232,7 +237,7 @@ class CustomOAuth2UserServiceTest {
 			});
 
 			//verify
-			verify(userValidator).validateUserStatusForIntegration(any());
+			verify(userValidator).validateUserStatusForIntegration(any(UserState.class));
 			verify(userWriter, never()).save(any(SocialAccount.class));
 		}
 	}
@@ -315,6 +320,7 @@ class CustomOAuth2UserServiceTest {
 
 		try (MockedConstruction<OidcUserService> mocked = mockConstruction(OidcUserService.class,
 			(mock, context) -> when(mock.loadUser(any())).thenReturn(oidcUser))) {
+			when(testUser.getState()).thenReturn(UserState.ACTIVE);
 			when(userReader.findBySocialTypeAndSocialId(any(), any())).thenReturn(Optional.of(testUser));
 
 			OidcUser result = customOAuth2UserService.loadOidcUser(oidcUserRequest);
