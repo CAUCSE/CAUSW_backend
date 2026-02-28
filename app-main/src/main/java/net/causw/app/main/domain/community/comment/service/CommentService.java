@@ -27,6 +27,7 @@ import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.v2.implementation.PostReader;
 import net.causw.app.main.domain.notification.notification.service.v1.PostNotificationService;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.relation.service.v1.UserBlockEntityService;
 
 import lombok.RequiredArgsConstructor;
@@ -53,6 +54,7 @@ public class CommentService {
 	private final BoardConfigReader boardConfigReader;
 	private final CommentMetaReader commentMetaReader;
 	private final CommentMapper commentMapper;
+	private final UserReader userReader;
 
 	/**
 	 * 댓글을 생성하고 응답 객체를 반환합니다.
@@ -65,8 +67,8 @@ public class CommentService {
 	 */
 	@Transactional
 	public CommentResult createComment(CommentCreateCommand command) {
+		User creator = userReader.findUserByIdNotDeleted(command.creatorId());
 		Post post = postReader.findById(command.postId());
-		User creator = command.creator();
 		Comment comment = Comment.of(command.content(), false, command.isAnonymous(), creator, post);
 
 		commentValidator.validateForCreate(creator, post, comment);
@@ -94,8 +96,8 @@ public class CommentService {
 	 */
 	@Transactional(readOnly = true)
 	public Page<CommentResult> findAllComments(CommentListQuery query) {
+		User viewer = userReader.findUserByIdNotDeleted(query.viewerId());
 		Post post = postReader.findById(query.postId());
-		User viewer = query.viewer();
 
 		commentValidator.validateForFind(viewer, post);
 
@@ -121,7 +123,7 @@ public class CommentService {
 	 */
 	@Transactional
 	public CommentResult updateComment(CommentUpdateCommand command) {
-		User updater = command.updater();
+		User updater = userReader.findUserByIdNotDeleted(command.updaterId());
 		Comment comment = commentReader.getComment(command.commentId());
 		Post post = postReader.findById(comment.getPost().getId());
 
@@ -137,12 +139,13 @@ public class CommentService {
 	/**
 	 * 댓글을 소프트 삭제하고 응답 객체를 반환합니다.
 	 *
-	 * @param deleter   삭제 요청 유저
+	 * @param deleterId 삭제 요청 유저 ID
 	 * @param commentId 삭제할 댓글 ID
 	 * @return 삭제된 댓글의 응답 객체
 	 */
 	@Transactional
-	public CommentResult deleteComment(User deleter, String commentId) {
+	public CommentResult deleteComment(String deleterId, String commentId) {
+		User deleter = userReader.findUserByIdNotDeleted(deleterId);
 		Comment comment = commentReader.getComment(commentId);
 		Post post = postReader.findById(comment.getPost().getId());
 
@@ -158,11 +161,12 @@ public class CommentService {
 	/**
 	 * 댓글에 좋아요를 추가합니다.
 	 *
-	 * @param user      좋아요를 누를 유저
+	 * @param userId    좋아요를 누를 유저 ID
 	 * @param commentId 좋아요를 누를 댓글 ID
 	 */
 	@Transactional
-	public void likeComment(User user, String commentId) {
+	public void likeComment(String userId, String commentId) {
+		User user = userReader.findUserByIdNotDeleted(userId);
 		Comment comment = commentReader.getComment(commentId);
 
 		commentValidator.validateForLike(user, comment);
@@ -174,11 +178,12 @@ public class CommentService {
 	/**
 	 * 댓글 좋아요를 취소합니다.
 	 *
-	 * @param user      좋아요를 취소할 유저
+	 * @param userId    좋아요를 취소할 유저 ID
 	 * @param commentId 좋아요를 취소할 댓글 ID
 	 */
 	@Transactional
-	public void cancelLikeComment(User user, String commentId) {
+	public void cancelLikeComment(String userId, String commentId) {
+		User user = userReader.findUserByIdNotDeleted(userId);
 		Comment comment = commentReader.getComment(commentId);
 
 		commentValidator.validateForCancelLike(user, comment);

@@ -1,7 +1,5 @@
 package net.causw.app.main.domain.community.comment.service.dto;
 
-import net.causw.app.main.domain.user.account.entity.user.User;
-
 /**
  * 댓글 수정 요청 데이터.
  *
@@ -9,10 +7,10 @@ import net.causw.app.main.domain.user.account.entity.user.User;
  *
  * @param commentId 수정할 댓글 ID
  * @param content   수정할 댓글 내용
- * @param updater   수정 요청 유저
+ * @param updaterId 수정 요청 유저 ID
  */
 public record CommentUpdateCommand(
 	String commentId,
 	String content,
-	User updater) {
+	String updaterId) {
 }

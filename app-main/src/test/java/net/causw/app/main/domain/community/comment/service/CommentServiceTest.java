@@ -46,6 +46,7 @@ import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.v2.implementation.PostReader;
 import net.causw.app.main.domain.notification.notification.service.v1.PostNotificationService;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.relation.service.v1.UserBlockEntityService;
 
 @ExtendWith(MockitoExtension.class)
@@ -76,6 +77,8 @@ public class CommentServiceTest {
 	CommentMetaReader commentMetaReader;
 	@Mock
 	CommentMapper commentMapper;
+	@Mock
+	UserReader userReader;
 
 	@Nested
 	@DisplayName("댓글 생성 테스트")
@@ -98,9 +101,10 @@ public class CommentServiceTest {
 		@Test
 		void createComment_shouldSucceed() {
 			// given
-			CommentCreateCommand command = new CommentCreateCommand("댓글 내용", "post-id", false, creator);
+			CommentCreateCommand command = new CommentCreateCommand("댓글 내용", "post-id", false, "creator-id");
 			CommentResult expectedResult = mock(CommentResult.class);
 
+			given(userReader.findUserByIdNotDeleted("creator-id")).willReturn(creator);
 			given(postReader.findById("post-id")).willReturn(post);
 			given(boardConfigReader.getAdminIdsByBoardId("board-id")).willReturn(List.of("admin-id"));
 			given(commentMapper.toResult(any(Comment.class), eq(creator), anyList(), any(CommentMeta.class)))
@@ -147,8 +151,9 @@ public class CommentServiceTest {
 			given(comment.getId()).willReturn("comment-id");
 
 			Page<Comment> commentsPage = new PageImpl<>(List.of(comment), pageable, 1);
-			CommentListQuery query = new CommentListQuery(viewer, "post-id", pageable);
+			CommentListQuery query = new CommentListQuery("viewer-id", "post-id", pageable);
 
+			given(userReader.findUserByIdNotDeleted("viewer-id")).willReturn(viewer);
 			given(postReader.findById("post-id")).willReturn(post);
 			given(boardConfigReader.getAdminIdsByBoardId("board-id")).willReturn(List.of("admin-id"));
 			given(userBlockEntityService.findBlockeeUserIdsByBlocker(viewer)).willReturn(Collections.emptySet());
@@ -176,8 +181,9 @@ public class CommentServiceTest {
 			// given
 			PageRequest pageable = PageRequest.of(0, 10);
 			Page<Comment> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
-			CommentListQuery query = new CommentListQuery(viewer, "post-id", pageable);
+			CommentListQuery query = new CommentListQuery("viewer-id", "post-id", pageable);
 
+			given(userReader.findUserByIdNotDeleted("viewer-id")).willReturn(viewer);
 			given(postReader.findById("post-id")).willReturn(post);
 			given(commentReader.getComments("post-id", pageable)).willReturn(emptyPage);
 
@@ -203,9 +209,10 @@ public class CommentServiceTest {
 			Post post = mock(Post.class);
 			Board board = mock(Board.class);
 			Comment comment = mock(Comment.class);
-			CommentUpdateCommand command = new CommentUpdateCommand("comment-id", "수정된 댓글 내용", updater);
+			CommentUpdateCommand command = new CommentUpdateCommand("comment-id", "수정된 댓글 내용", "updater-id");
 			CommentResult expectedResult = mock(CommentResult.class);
 
+			given(userReader.findUserByIdNotDeleted("updater-id")).willReturn(updater);
 			given(commentReader.getComment("comment-id")).willReturn(comment);
 			given(comment.getPost()).willReturn(post);
 			given(post.getId()).willReturn("post-id");
@@ -242,6 +249,7 @@ public class CommentServiceTest {
 			Comment comment = mock(Comment.class);
 			CommentResult expectedResult = mock(CommentResult.class);
 
+			given(userReader.findUserByIdNotDeleted("deleter-id")).willReturn(deleter);
 			given(commentReader.getComment("comment-id")).willReturn(comment);
 			given(comment.getPost()).willReturn(post);
 			given(post.getId()).willReturn("post-id");
@@ -255,7 +263,7 @@ public class CommentServiceTest {
 				.willReturn(expectedResult);
 
 			// when
-			CommentResult result = commentService.deleteComment(deleter, "comment-id");
+			CommentResult result = commentService.deleteComment("deleter-id", "comment-id");
 
 			// then
 			assertThat(result).isNotNull();
@@ -275,6 +283,7 @@ public class CommentServiceTest {
 		void setUp() {
 			user = mock(User.class);
 			comment = mock(Comment.class);
+			given(userReader.findUserByIdNotDeleted("user-id")).willReturn(user);
 			given(commentReader.getComment("comment-id")).willReturn(comment);
 		}
 
@@ -282,7 +291,7 @@ public class CommentServiceTest {
 		@Test
 		void likeComment_shouldSucceed() {
 			// when
-			commentService.likeComment(user, "comment-id");
+			commentService.likeComment("user-id", "comment-id");
 
 			// then
 			verify(commentValidator, times(1)).validateForLike(user, comment);
@@ -297,7 +306,7 @@ public class CommentServiceTest {
 				.when(commentValidator).validateForLike(user, comment);
 
 			// when & then
-			assertThatThrownBy(() -> commentService.likeComment(user, "comment-id"))
+			assertThatThrownBy(() -> commentService.likeComment("user-id", "comment-id"))
 				.isInstanceOf(RuntimeException.class)
 				.hasMessageContaining("좋아요를 이미 누른 댓글 입니다");
 
@@ -315,6 +324,7 @@ public class CommentServiceTest {
 		void setUp() {
 			user = mock(User.class);
 			comment = mock(Comment.class);
+			given(userReader.findUserByIdNotDeleted("user-id")).willReturn(user);
 			given(commentReader.getComment("comment-id")).willReturn(comment);
 		}
 
@@ -325,7 +335,7 @@ public class CommentServiceTest {
 			given(user.getId()).willReturn("user-id");
 
 			// when
-			commentService.cancelLikeComment(user, "comment-id");
+			commentService.cancelLikeComment("user-id", "comment-id");
 
 			// then
 			verify(commentValidator, times(1)).validateForCancelLike(user, comment);
@@ -340,7 +350,7 @@ public class CommentServiceTest {
 				.when(commentValidator).validateForCancelLike(user, comment);
 
 			// when & then
-			assertThatThrownBy(() -> commentService.cancelLikeComment(user, "comment-id"))
+			assertThatThrownBy(() -> commentService.cancelLikeComment("user-id", "comment-id"))
 				.isInstanceOf(RuntimeException.class)
 				.hasMessageContaining("좋아요를 누르지 않은 댓글입니다");
 

@@ -44,7 +44,7 @@ public class ChildCommentController {
 			childCommentCreateRequestDto.content(),
 			childCommentCreateRequestDto.parentCommentId(),
 			childCommentCreateRequestDto.isAnonymous(),
-			userDetails.getUser());
+			userDetails.getUserId());
 
 		return ApiResponse.success(
 			ChildCommentResponseDtoMapper.toResponseDto(childCommentService.createChildComment(command)));
@@ -61,7 +61,7 @@ public class ChildCommentController {
 		ChildCommentUpdateCommand command = new ChildCommentUpdateCommand(
 			id,
 			childCommentUpdateRequestDto.content(),
-			userDetails.getUser());
+			userDetails.getUserId());
 
 		return ApiResponse.success(
 			ChildCommentResponseDtoMapper.toResponseDto(childCommentService.updateChildComment(command)));
@@ -76,7 +76,7 @@ public class ChildCommentController {
 
 		return ApiResponse.success(
 			ChildCommentResponseDtoMapper.toResponseDto(
-				childCommentService.deleteChildComment(userDetails.getUser(), id)));
+				childCommentService.deleteChildComment(userDetails.getUserId(), id)));
 	}
 
 	@PostMapping(value = "/{id}/like")
@@ -85,7 +85,7 @@ public class ChildCommentController {
 	public ApiResponse<Void> likeChildComment(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		childCommentService.likeChildComment(userDetails.getUser(), id);
+		childCommentService.likeChildComment(userDetails.getUserId(), id);
 		return ApiResponse.success();
 	}
 
@@ -95,7 +95,7 @@ public class ChildCommentController {
 	public ApiResponse<Void> cancelLikeChildComment(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		childCommentService.cancelLikeChildComment(userDetails.getUser(), id);
+		childCommentService.cancelLikeChildComment(userDetails.getUserId(), id);
 		return ApiResponse.success();
 	}
 }

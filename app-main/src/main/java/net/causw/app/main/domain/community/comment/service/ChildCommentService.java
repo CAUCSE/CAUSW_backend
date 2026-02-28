@@ -24,6 +24,7 @@ import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.v2.implementation.PostReader;
 import net.causw.app.main.domain.notification.notification.service.v1.CommentNotificationService;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 
 import lombok.RequiredArgsConstructor;
 
@@ -47,6 +48,7 @@ public class ChildCommentService {
 	private final BoardConfigReader boardConfigReader;
 	private final LikeChildCommentReader likeChildCommentReader;
 	private final ChildCommentMapper childCommentMapper;
+	private final UserReader userReader;
 
 	/**
 	 * 대댓글을 생성하고 응답 객체를 반환합니다.
@@ -59,7 +61,7 @@ public class ChildCommentService {
 	 */
 	@Transactional
 	public ChildCommentResult createChildComment(ChildCommentCreateCommand command) {
-		User creator = command.creator();
+		User creator = userReader.findUserByIdNotDeleted(command.creatorId());
 		Comment parentComment = commentReader.getComment(command.parentCommentId());
 		Post post = postReader.findById(parentComment.getPost().getId());
 		ChildComment childComment = ChildComment.of(
@@ -90,7 +92,7 @@ public class ChildCommentService {
 	 */
 	@Transactional
 	public ChildCommentResult updateChildComment(ChildCommentUpdateCommand command) {
-		User updater = command.updater();
+		User updater = userReader.findUserByIdNotDeleted(command.updaterId());
 		ChildComment childComment = childCommentReader.findById(command.childCommentId());
 		Post post = postReader.findById(childComment.getParentComment().getPost().getId());
 
@@ -110,12 +112,13 @@ public class ChildCommentService {
 	/**
 	 * 대댓글을 소프트 삭제하고 응답 객체를 반환합니다.
 	 *
-	 * @param deleter        삭제 요청 유저
+	 * @param deleterId      삭제 요청 유저 ID
 	 * @param childCommentId 삭제할 대댓글 ID
 	 * @return 삭제된 대댓글의 응답 객체
 	 */
 	@Transactional
-	public ChildCommentResult deleteChildComment(User deleter, String childCommentId) {
+	public ChildCommentResult deleteChildComment(String deleterId, String childCommentId) {
+		User deleter = userReader.findUserByIdNotDeleted(deleterId);
 		ChildComment childComment = childCommentReader.findById(childCommentId);
 		Post post = postReader.findById(childComment.getParentComment().getPost().getId());
 
@@ -135,11 +138,12 @@ public class ChildCommentService {
 	/**
 	 * 대댓글에 좋아요를 추가합니다.
 	 *
-	 * @param user           좋아요를 누를 유저
+	 * @param userId         좋아요를 누를 유저 ID
 	 * @param childCommentId 좋아요를 누를 대댓글 ID
 	 */
 	@Transactional
-	public void likeChildComment(User user, String childCommentId) {
+	public void likeChildComment(String userId, String childCommentId) {
+		User user = userReader.findUserByIdNotDeleted(userId);
 		ChildComment childComment = childCommentReader.findById(childCommentId);
 
 		childCommentValidator.validateForLike(user, childComment);
@@ -151,11 +155,12 @@ public class ChildCommentService {
 	/**
 	 * 대댓글 좋아요를 취소합니다.
 	 *
-	 * @param user           좋아요를 취소할 유저
+	 * @param userId         좋아요를 취소할 유저 ID
 	 * @param childCommentId 좋아요를 취소할 대댓글 ID
 	 */
 	@Transactional
-	public void cancelLikeChildComment(User user, String childCommentId) {
+	public void cancelLikeChildComment(String userId, String childCommentId) {
+		User user = userReader.findUserByIdNotDeleted(userId);
 		ChildComment childComment = childCommentReader.findById(childCommentId);
 
 		childCommentValidator.validateForCancelLike(user, childComment);

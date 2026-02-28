@@ -1,7 +1,5 @@
 package net.causw.app.main.domain.community.comment.service.dto;
 
-import net.causw.app.main.domain.user.account.entity.user.User;
-
 /**
  * 대댓글 생성 요청 데이터.
  *
@@ -10,13 +8,13 @@ import net.causw.app.main.domain.user.account.entity.user.User;
  * @param content         대댓글 내용
  * @param parentCommentId 부모 댓글 ID
  * @param isAnonymous     익명 작성 여부
- * @param creator         대댓글 작성자
+ * @param creatorId       대댓글 작성자 ID
  */
 public record ChildCommentCreateCommand(
 	String content,
 	String parentCommentId,
 	Boolean isAnonymous,
-	User creator) {
+	String creatorId) {
 
 
 }

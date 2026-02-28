@@ -39,6 +39,7 @@ import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.v2.implementation.PostReader;
 import net.causw.app.main.domain.notification.notification.service.v1.CommentNotificationService;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 
 @ExtendWith(MockitoExtension.class)
 public class ChildCommentServiceTest {
@@ -66,6 +67,8 @@ public class ChildCommentServiceTest {
 	BoardConfigReader boardConfigReader;
 	@Mock
 	ChildCommentMapper childCommentMapper;
+	@Mock
+	UserReader userReader;
 
 	@Nested
 	@DisplayName("대댓글 생성 테스트")
@@ -93,9 +96,10 @@ public class ChildCommentServiceTest {
 			// given
 			given(post.getId()).willReturn("post-id");
 			ChildCommentCreateCommand command = new ChildCommentCreateCommand(
-				"대댓글 내용", "parent-comment-id", false, creator);
+				"대댓글 내용", "parent-comment-id", false, "creator-id");
 			ChildCommentResult expectedResult = mock(ChildCommentResult.class);
 
+			given(userReader.findUserByIdNotDeleted("creator-id")).willReturn(creator);
 			given(commentReader.getComment("parent-comment-id")).willReturn(parentComment);
 			given(postReader.findById("post-id")).willReturn(post);
 			given(boardConfigReader.getAdminIdsByBoardId("board-id")).willReturn(java.util.List.of("admin-id"));
@@ -128,9 +132,10 @@ public class ChildCommentServiceTest {
 			Post post = mock(Post.class);
 			Board board = mock(Board.class);
 			ChildCommentUpdateCommand command = new ChildCommentUpdateCommand(
-				"child-comment-id", "수정된 대댓글 내용", updater);
+				"child-comment-id", "수정된 대댓글 내용", "updater-id");
 			ChildCommentResult expectedResult = mock(ChildCommentResult.class);
 
+			given(userReader.findUserByIdNotDeleted("updater-id")).willReturn(updater);
 			given(childCommentReader.findById("child-comment-id")).willReturn(childComment);
 			given(childComment.getParentComment()).willReturn(parentComment);
 			given(parentComment.getPost()).willReturn(post);
@@ -169,6 +174,7 @@ public class ChildCommentServiceTest {
 			Board board = mock(Board.class);
 			ChildCommentResult expectedResult = mock(ChildCommentResult.class);
 
+			given(userReader.findUserByIdNotDeleted("deleter-id")).willReturn(deleter);
 			given(childCommentReader.findById("child-comment-id")).willReturn(childComment);
 			given(childComment.getParentComment()).willReturn(parentComment);
 			given(parentComment.getPost()).willReturn(post);
@@ -183,7 +189,7 @@ public class ChildCommentServiceTest {
 				.willReturn(expectedResult);
 
 			// when
-			ChildCommentResult result = childCommentService.deleteChildComment(deleter, "child-comment-id");
+			ChildCommentResult result = childCommentService.deleteChildComment("deleter-id", "child-comment-id");
 
 			// then
 			assertThat(result).isNotNull();
@@ -203,6 +209,7 @@ public class ChildCommentServiceTest {
 		void setUp() {
 			user = mock(User.class);
 			childComment = mock(ChildComment.class);
+			given(userReader.findUserByIdNotDeleted("user-id")).willReturn(user);
 			given(childCommentReader.findById("child-comment-id")).willReturn(childComment);
 		}
 
@@ -210,7 +217,7 @@ public class ChildCommentServiceTest {
 		@Test
 		void likeChildComment_shouldSucceed() {
 			// when
-			childCommentService.likeChildComment(user, "child-comment-id");
+			childCommentService.likeChildComment("user-id", "child-comment-id");
 
 			// then
 			verify(childCommentValidator, times(1)).validateForLike(user, childComment);
@@ -225,7 +232,7 @@ public class ChildCommentServiceTest {
 				.when(childCommentValidator).validateForLike(user, childComment);
 
 			// when & then
-			assertThatThrownBy(() -> childCommentService.likeChildComment(user, "child-comment-id"))
+			assertThatThrownBy(() -> childCommentService.likeChildComment("user-id", "child-comment-id"))
 				.isInstanceOf(RuntimeException.class)
 				.hasMessageContaining("좋아요를 이미 누른 대댓글 입니다.");
 
@@ -243,6 +250,7 @@ public class ChildCommentServiceTest {
 		void setUp() {
 			user = mock(User.class);
 			childComment = mock(ChildComment.class);
+			given(userReader.findUserByIdNotDeleted("user-id")).willReturn(user);
 			given(childCommentReader.findById("child-comment-id")).willReturn(childComment);
 		}
 
@@ -253,7 +261,7 @@ public class ChildCommentServiceTest {
 			given(user.getId()).willReturn("user-id");
 
 			// when
-			childCommentService.cancelLikeChildComment(user, "child-comment-id");
+			childCommentService.cancelLikeChildComment("user-id", "child-comment-id");
 
 			// then
 			verify(childCommentValidator, times(1)).validateForCancelLike(user, childComment);
@@ -268,7 +276,7 @@ public class ChildCommentServiceTest {
 				.when(childCommentValidator).validateForCancelLike(user, childComment);
 
 			// when & then
-			assertThatThrownBy(() -> childCommentService.cancelLikeChildComment(user, "child-comment-id"))
+			assertThatThrownBy(() -> childCommentService.cancelLikeChildComment("user-id", "child-comment-id"))
 				.isInstanceOf(RuntimeException.class)
 				.hasMessageContaining("좋아요을 누르지 않은 대댓글입니다.");
 

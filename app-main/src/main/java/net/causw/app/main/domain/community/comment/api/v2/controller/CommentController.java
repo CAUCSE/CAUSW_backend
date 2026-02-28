@@ -48,7 +48,7 @@ public class CommentController {
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
 		CommentListQuery query = new CommentListQuery(
-			userDetails.getUser(),
+			userDetails.getUserId(),
 			postId,
 			PageRequest.of(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE));
 
@@ -69,7 +69,7 @@ public class CommentController {
 			commentCreateRequestDto.content(),
 			commentCreateRequestDto.postId(),
 			commentCreateRequestDto.isAnonymous(),
-			userDetails.getUser());
+			userDetails.getUserId());
 
 		return ApiResponse.success(
 			CommentResponseDtoMapper.toResponseDto(commentService.createComment(command)));
@@ -86,7 +86,7 @@ public class CommentController {
 		CommentUpdateCommand command = new CommentUpdateCommand(
 			id,
 			commentUpdateRequestDto.content(),
-			userDetails.getUser());
+			userDetails.getUserId());
 
 		return ApiResponse.success(
 			CommentResponseDtoMapper.toResponseDto(commentService.updateComment(command)));
@@ -101,7 +101,7 @@ public class CommentController {
 
 		return ApiResponse.success(
 			CommentResponseDtoMapper.toResponseDto(
-				commentService.deleteComment(userDetails.getUser(), id)));
+				commentService.deleteComment(userDetails.getUserId(), id)));
 	}
 
 	@PostMapping(value = "/{id}/like")
@@ -110,7 +110,7 @@ public class CommentController {
 	public ApiResponse<Void> likeComment(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		commentService.likeComment(userDetails.getUser(), id);
+		commentService.likeComment(userDetails.getUserId(), id);
 		return ApiResponse.success();
 	}
 
@@ -120,7 +120,7 @@ public class CommentController {
 	public ApiResponse<Void> cancelLikeComment(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		commentService.cancelLikeComment(userDetails.getUser(), id);
+		commentService.cancelLikeComment(userDetails.getUserId(), id);
 		return ApiResponse.success();
 	}
 

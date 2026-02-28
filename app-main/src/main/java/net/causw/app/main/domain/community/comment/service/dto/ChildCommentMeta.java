@@ -18,4 +18,5 @@ public record ChildCommentMeta(
 	long numLike,
 	boolean isLiked,
 	boolean isBlocked) {
+
 }
