@@ -30,7 +30,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
 import net.causw.app.main.domain.user.account.service.implementation.UserPushTokenWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
@@ -137,7 +136,6 @@ public class AuthServiceTest {
 				void fail_when_user_exists_with_invalid_state(UserErrorCode errorCode) {
 					// given
 					User mockedExistingUser = mock(User.class);
-					given(mockedExistingUser.getState()).willReturn(UserState.ACTIVE);
 					given(userReader.checkUserExistByPhoneNumAndName(eq(PHONE), eq(NAME)))
 						.willReturn(Optional.of(mockedExistingUser));
 
