@@ -26,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(value = "/api/v1/blocks", produces = APPLICATION_JSON_VALUE)
-public class UserBlockController {
+public class UserBlockV1Controller {
 
 	private final BlockByPostUseCaseService blockByPostUseCaseService;
 	private final BlockByCommentUseCaseService blockByCommentUseCaseService;
