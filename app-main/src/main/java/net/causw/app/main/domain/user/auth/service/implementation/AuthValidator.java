@@ -5,10 +5,10 @@ import java.util.regex.Pattern;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import lombok.RequiredArgsConstructor;
-
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
+
+import lombok.RequiredArgsConstructor;
 
 /**
  * 인증 관련 입력값의 형식 및 자격 증명을 검증하는 컴포넌트입니다.

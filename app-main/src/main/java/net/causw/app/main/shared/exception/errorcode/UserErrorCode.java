@@ -8,8 +8,6 @@ import net.causw.global.constant.StaticValue;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
-import net.causw.app.main.shared.exception.BaseResponseCode;
-
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public enum UserErrorCode implements BaseResponseCode {
 	INVALID_PASSWORD_REQUEST(HttpStatus.BAD_REQUEST, "USER_400_001", "비밀번호 형식이 잘못되었습니다."),

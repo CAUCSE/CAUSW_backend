@@ -2,13 +2,13 @@ package net.causw.app.main.domain.campus.schedule.api.v2.dto.request;
 
 import java.time.LocalDateTime;
 
+import net.causw.app.main.domain.campus.schedule.entity.enums.ScheduleType;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-
-import net.causw.app.main.domain.campus.schedule.entity.enums.ScheduleType;
 
 @Schema(description = "일정 생성/수정 요청")
 public record ScheduleRequest(

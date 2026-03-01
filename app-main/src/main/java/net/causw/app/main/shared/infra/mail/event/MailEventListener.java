@@ -5,9 +5,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-import lombok.RequiredArgsConstructor;
-
 import net.causw.app.main.shared.infra.mail.GoogleMailSender;
+
+import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
