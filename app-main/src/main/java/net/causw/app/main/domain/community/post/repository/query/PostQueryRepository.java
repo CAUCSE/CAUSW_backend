@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -98,12 +99,7 @@ public class PostQueryRepository {
 		QUser writer = new QUser("writer");
 
 		// 커서 조건 (createdAt과 id 기반 커서 - 시간순 정렬 보장)
-		BooleanExpression cursorCondition = NO_CONDITION;
-		if (cursorCreatedAt != null && cursorId != null) {
-			// createdAt이 cursor보다 이전이거나, createdAt이 같고 id가 cursor보다 작은 경우
-			cursorCondition = post.createdAt.lt(LocalDateTime.parse(cursorCreatedAt))
-				.or(post.createdAt.eq(LocalDateTime.parse(cursorCreatedAt)).and(post.id.lt(cursorId)));
-		}
+		BooleanExpression cursorCondition = createCursorCondition(cursorCreatedAt, cursorId, post);
 
 		// 게시판 조건
 		BooleanExpression boardCondition = NO_CONDITION;
@@ -145,11 +141,7 @@ public class PostQueryRepository {
 		QComment comment = QComment.comment;
 
 		// 커서 조건
-		BooleanExpression cursorCondition = NO_CONDITION;
-		if (cursorCreatedAt != null && cursorId != null) {
-			cursorCondition = post.createdAt.lt(LocalDateTime.parse(cursorCreatedAt))
-				.or(post.createdAt.eq(LocalDateTime.parse(cursorCreatedAt)).and(post.id.lt(cursorId)));
-		}
+		BooleanExpression cursorCondition = createCursorCondition(cursorCreatedAt, cursorId, post);
 
 		// 해당 사용자가 댓글을 단 글이 존재하는지
 		BooleanExpression userCommentedPost = JPAExpressions
@@ -171,6 +163,16 @@ public class PostQueryRepository {
 		return getPostCursorResults(size, post, writer, conditions);
 	}
 
+	@Nullable
+	private static BooleanExpression createCursorCondition(String cursorCreatedAt, String cursorId, QPost post) {
+		BooleanExpression cursorCondition = NO_CONDITION;
+		if (cursorCreatedAt != null && cursorId != null) {
+			cursorCondition = post.createdAt.lt(LocalDateTime.parse(cursorCreatedAt))
+				.or(post.createdAt.eq(LocalDateTime.parse(cursorCreatedAt)).and(post.id.lt(cursorId)));
+		}
+		return cursorCondition;
+	}
+
 	/**
 	 * 특정 사용자가 작성한 게시글을 커서 기반 페이징으로 조회합니다.
 	 */
@@ -182,11 +184,7 @@ public class PostQueryRepository {
 		QPost post = QPost.post;
 		QUser writer = new QUser("writer");
 
-		BooleanExpression cursorCondition = NO_CONDITION;
-		if (cursorCreatedAt != null && cursorId != null) {
-			cursorCondition = post.createdAt.lt(LocalDateTime.parse(cursorCreatedAt))
-				.or(post.createdAt.eq(LocalDateTime.parse(cursorCreatedAt)).and(post.id.lt(cursorId)));
-		}
+		BooleanExpression cursorCondition = createCursorCondition(cursorCreatedAt, cursorId, post);
 
 		BooleanExpression[] conditions = new BooleanExpression[] {
 			post.writer.id.eq(userId),
@@ -210,11 +208,7 @@ public class PostQueryRepository {
 		QUser writer = new QUser("writer");
 		QLikePost likePost = QLikePost.likePost;
 
-		BooleanExpression cursorCondition = NO_CONDITION;
-		if (cursorCreatedAt != null && cursorId != null) {
-			cursorCondition = post.createdAt.lt(LocalDateTime.parse(cursorCreatedAt))
-				.or(post.createdAt.eq(LocalDateTime.parse(cursorCreatedAt)).and(post.id.lt(cursorId)));
-		}
+		BooleanExpression cursorCondition = createCursorCondition(cursorCreatedAt, cursorId, post);
 
 		BooleanExpression userLikedPost = JPAExpressions
 			.selectOne()
