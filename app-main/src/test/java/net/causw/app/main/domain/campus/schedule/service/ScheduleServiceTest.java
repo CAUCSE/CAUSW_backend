@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.campus.schedule.service.v1;
+package net.causw.app.main.domain.campus.schedule.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -21,7 +21,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import net.causw.app.main.domain.campus.schedule.entity.Schedule;
 import net.causw.app.main.domain.campus.schedule.entity.enums.ScheduleType;
-import net.causw.app.main.domain.campus.schedule.service.ScheduleService;
 import net.causw.app.main.domain.campus.schedule.service.dto.ScheduleDto;
 import net.causw.app.main.domain.campus.schedule.service.implementation.ScheduleReader;
 import net.causw.app.main.domain.campus.schedule.service.implementation.ScheduleWriter;

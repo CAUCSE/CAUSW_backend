@@ -304,7 +304,8 @@ public class ObjectFixtures {
 			ScheduleType.ACADEMIC,
 			LocalDateTime.of(2026, 4, 15, 0, 0),
 			LocalDateTime.of(2026, 4, 21, 23, 59),
-			creator);
+			creator,
+			null);
 	}
 
 	public static ScheduleDto getScheduleDto(User creator) {

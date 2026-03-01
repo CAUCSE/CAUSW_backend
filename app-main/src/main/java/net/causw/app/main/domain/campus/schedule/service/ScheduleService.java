@@ -2,7 +2,6 @@ package net.causw.app.main.domain.campus.schedule.service;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -41,8 +40,7 @@ public class ScheduleService {
 
 	@Transactional(readOnly = true)
 	public List<ScheduleDto> findByCondition(LocalDateTime from, LocalDateTime to, Collection<ScheduleType> types) {
-		types.add(ScheduleType.HOLIDAY); // HOLIDAY는 조회시 항상 포함
-		return scheduleReader.findByCondition(from, to, new HashSet<>(types)).stream().map(ScheduleMapper::to)
+		return scheduleReader.findByCondition(from, to, types).stream().map(ScheduleMapper::to)
 			.toList();
 	}
 
