@@ -140,6 +140,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 		boolean isFirstLogin = (state == UserState.GUEST);
 		return UriComponentsBuilder.fromUriString(baseUrl)
 			.queryParam("isFirstLogin", isFirstLogin)
+			.queryParam("userState", state.name())
 			.build().toUriString();
 	}
 }

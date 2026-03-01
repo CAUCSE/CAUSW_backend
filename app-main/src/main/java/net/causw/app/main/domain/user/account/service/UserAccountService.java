@@ -55,7 +55,7 @@ public class UserAccountService {
 		AuthTokenPair tokens = authTokenManager.issueTokens(updatedUser, refreshToken);
 		return AuthResult.of(tokens.accessToken(), updatedUser.getName(), updatedUser.getEmail(),
 			updatedUser.getProfileUrl(),
-			tokens.refreshToken());
+			tokens.refreshToken(), updatedUser.getState());
 	}
 
 	/**
