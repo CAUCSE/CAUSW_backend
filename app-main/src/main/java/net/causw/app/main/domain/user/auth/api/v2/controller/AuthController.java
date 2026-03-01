@@ -13,8 +13,10 @@ import net.causw.app.main.domain.user.auth.api.v2.dto.AuthDtoMapper;
 import net.causw.app.main.domain.user.auth.api.v2.dto.request.EmailLoginRequest;
 import net.causw.app.main.domain.user.auth.api.v2.dto.request.EmailSignupRequest;
 import net.causw.app.main.domain.user.auth.api.v2.dto.request.SignOutRequest;
+import net.causw.app.main.domain.user.auth.api.v2.dto.request.SocialNativeLoginRequest;
 import net.causw.app.main.domain.user.auth.api.v2.dto.response.AuthResponse;
 import net.causw.app.main.domain.user.auth.service.AuthService;
+import net.causw.app.main.domain.user.auth.service.SocialNativeAuthService;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
@@ -35,6 +37,7 @@ public class AuthController {
 
 	private final AuthDtoMapper authDtoMapper;
 	private final AuthService authService;
+	private final SocialNativeAuthService socialNativeAuthService;
 
 	@Operation(summary = "이메일 회원가입 V2", description = "이메일을 활용하여 사용자 계정을 생성합니다.")
 	@PostMapping("/signup")
@@ -72,6 +75,24 @@ public class AuthController {
 		AuthResult dto = authService.updateToken(refreshToken);
 
 		// 쿠키로 리프레시토큰 반환
+		ResponseCookie cookie = ResponseCookie.from("refresh_token", dto.refreshToken())
+			.httpOnly(true)
+			.secure(true)
+			.path("/")
+			.maxAge(Duration.ofMillis(StaticValue.JWT_REFRESH_TOKEN_VALID_TIME))
+			.sameSite("None")
+			.build();
+
+		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
+			.body(ApiResponse.success(authDtoMapper.toAuthResponse(dto)));
+	}
+
+	@Operation(summary = "네이티브 소셜 로그인 V2", description = "네이티브 SDK에서 발급된 access token 검증으로 소셜 로그인을 완료합니다.")
+	@PostMapping("/login/native")
+	public ResponseEntity<ApiResponse<AuthResponse>> loginNativeSocial(
+		@RequestBody @Valid SocialNativeLoginRequest request) {
+		AuthResult dto = socialNativeAuthService.login(request.provider(), request.accessToken());
+
 		ResponseCookie cookie = ResponseCookie.from("refresh_token", dto.refreshToken())
 			.httpOnly(true)
 			.secure(true)
