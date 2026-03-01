@@ -49,7 +49,7 @@ public interface ReportRepository extends JpaRepository<Report, String> {
 		@Param("userId") String userId,
 		Pageable pageable);
 
-	// 신고된 사용자 목록 조회
+	// 신고된 사용자 목록 조회 (v1)
 	@Query(value = """
 		   SELECT u
 		   FROM User u
