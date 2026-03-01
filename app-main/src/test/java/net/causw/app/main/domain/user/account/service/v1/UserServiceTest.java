@@ -376,6 +376,7 @@ class UserServiceTest {
 		@DisplayName("탈퇴(deletedAt)한 사용자가 재가입 시도 시 실패")
 		void signUp_InactiveUser_ThrowsException() {
 			// given
+			existingUser.setState(UserState.ACTIVE);
 			existingUser.setDeletedAt(LocalDateTime.now());
 			given(userRepository.findByEmail(signUpRequest.getEmail()))
 				.willReturn(Optional.of(existingUser));
