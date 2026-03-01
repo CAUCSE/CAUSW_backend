@@ -59,6 +59,11 @@ public class PostService {
 	private final PostAttachImageWriter postAttachImageWriter;
 	private final UserBlockEntityService userBlockEntityService;
 
+	/**
+	 * 게시글을 생성합니다. 게시글 내용과 첨부 이미지를 저장합니다.
+	 * @param command 생성에 필요한 정보 (작성자, 게시판 ID, 내용, 이미지 파일 등)
+	 * @return 생성된 게시글 정보 (게시글 ID, 내용, 이미지 URL 목록 등)
+	 */
 	@Transactional
 	public PostCreateResult create(PostCreateCommand command) {
 		User writer = command.writer();
@@ -116,6 +121,11 @@ public class PostService {
 		return fileIds;
 	}
 
+	/**
+	 * 게시글을 수정합니다. 게시글 내용과 첨부 이미지를 업데이트할 수 있습니다.
+	 * @param command 수정에 필요한 정보 (게시글 ID, 수정자, 새 내용, 새 이미지 파일 등)
+	 * @return 수정된 게시글 정보 (게시글 ID, 새 내용, 새 이미지 URL 목록 등)
+	 */
 	@Transactional
 	public PostUpdateResult update(PostUpdateCommand command) {
 		User updater = command.updater();
@@ -157,6 +167,12 @@ public class PostService {
 		return result;
 	}
 
+	/**
+	 * 게시글 목록을 커서 기반으로 조회합니다.
+	 * <br> 게시판 ID 목록이 지정된 경우 해당 게시판들에서, 지정되지 않은 경우 사용자가 접근 가능한 모든 게시판에서 게시글을 조회합니다.
+	 * @param query 조회 조건 (게시판 ID 목록, 커서, 페이지 크기, 키워드 등)
+	 * @return 게시글 목록 결과 (게시글 리스트 + 다음 커서)
+	 */
 	public PostListResult getPosts(PostListQuery query) {
 		User viewer = query.viewer();
 		List<String> requestedBoardIds = query.boardIds();
@@ -221,6 +237,11 @@ public class PostService {
 		return PostListResult.of(postItems, nextCursor);
 	}
 
+	/**
+	 * 게시글 단건 조회. 게시글 내용, 첨부 이미지 URL 목록, 좋아요/즐겨찾기/댓글 개수, 사용자의 좋아요/즐겨찾기 여부, 수정/삭제 가능 여부 등을 포함합니다.
+	 * @param query 조회 조건 (게시글 ID, 조회 요청 사용자)
+	 * @return 게시글 상세 정보 (게시글 ID, 내용, 첨부 이미지 URL 목록, 좋아요/즐겨찾기/댓글 개수, 사용자의 좋아요/즐겨찾기 여부, 수정/삭제 가능 여부 등)
+	 */
 	public PostDetailResult getPostDetail(PostDetailQuery query) {
 		User viewer = query.viewer();
 		String postId = query.postId();
@@ -295,6 +316,11 @@ public class PostService {
 
 	/**
 	 * 로그인한 사용자가 작성한 게시글 목록을 커서 기반으로 조회합니다.
+	 *
+	 * @param user 조회 요청 사용자 (차단 목록 등에 사용)
+	 * @param cursor 커서 (마지막 게시글의 createdAt|postId, null이면 최신부터)
+	 * @param size 조회할 개수 (null이면 기본값 사용)
+	 * @return 게시글 목록 결과
 	 */
 	public PostListResult getPostsWrittenByUser(User user, String cursor, Integer size) {
 		int pageSize = size != null ? size : StaticValue.DEFAULT_POST_PAGE_SIZE;
@@ -311,6 +337,10 @@ public class PostService {
 
 	/**
 	 * 로그인한 사용자가 좋아요를 누른 게시글 목록을 커서 기반으로 조회합니다.
+	 * @param user 조회 요청 사용자
+	 * @param cursor 커서 (마지막 게시글의 createdAt|postId, null이면 최신부터)
+	 * @param size 조회할 개수 (null이면 기본값 사용)
+	 * @return 게시글 목록 결과
 	 */
 	public PostListResult getPostsLikedByUser(User user, String cursor, Integer size) {
 		Set<String> blockedUserIds = userBlockEntityService.findBlockeeUserIdsByBlocker(user);
