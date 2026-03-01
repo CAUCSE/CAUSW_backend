@@ -52,10 +52,6 @@ public record UserDetailItem(
 	}
 
 	private static String extractProfileImageUrl(User user) {
-		if (user.getUserProfileImage() == null) {
-			return null;
-		}
-		var uuidFile = user.getUserProfileImage().getUuidFile();
-		return uuidFile != null ? uuidFile.getFileUrl() : null;
+		return user.getProfileUrl();
 	}
 }
