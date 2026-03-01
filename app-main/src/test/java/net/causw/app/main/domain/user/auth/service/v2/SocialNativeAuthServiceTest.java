@@ -7,6 +7,8 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.DisplayName;
@@ -20,6 +22,9 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtDecoderFactory;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.auth.service.CustomOAuth2UserService;
@@ -36,6 +41,7 @@ class SocialNativeAuthServiceTest {
 
 	private static final String PROVIDER_ACCESS_TOKEN = "provider-access-token";
 	private static final String BEARER_PROVIDER_ACCESS_TOKEN = "Bearer provider-access-token";
+	private static final String PROVIDER_ID_TOKEN = "provider-id-token";
 	private static final String APP_ACCESS_TOKEN = "app-access-token";
 	private static final String APP_REFRESH_TOKEN = "app-refresh-token";
 
@@ -47,6 +53,9 @@ class SocialNativeAuthServiceTest {
 
 	@Mock
 	private CustomOAuth2UserService customOAuth2UserService;
+
+	@Mock
+	private JwtDecoderFactory<ClientRegistration> oidcIdTokenDecoderFactory;
 
 	@Mock
 	private AuthTokenManager authTokenManager;
@@ -63,7 +72,7 @@ class SocialNativeAuthServiceTest {
 		given(authTokenManager.issueTokens(user, null))
 			.willReturn(AuthTokenPair.of(APP_ACCESS_TOKEN, APP_REFRESH_TOKEN));
 
-		AuthResult result = socialNativeAuthService.login("kakao", PROVIDER_ACCESS_TOKEN);
+		AuthResult result = socialNativeAuthService.login("kakao", PROVIDER_ACCESS_TOKEN, null);
 
 		assertThat(result.accessToken()).isEqualTo(APP_ACCESS_TOKEN);
 		assertThat(result.refreshToken()).isEqualTo(APP_REFRESH_TOKEN);
@@ -85,38 +94,117 @@ class SocialNativeAuthServiceTest {
 		given(authTokenManager.issueTokens(user, null))
 			.willReturn(AuthTokenPair.of(APP_ACCESS_TOKEN, APP_REFRESH_TOKEN));
 
-		AuthResult result = socialNativeAuthService.login("kakao", BEARER_PROVIDER_ACCESS_TOKEN);
+		AuthResult result = socialNativeAuthService.login("kakao", BEARER_PROVIDER_ACCESS_TOKEN, null);
 
 		assertThat(result.accessToken()).isEqualTo(APP_ACCESS_TOKEN);
 		assertThat(result.refreshToken()).isEqualTo(APP_REFRESH_TOKEN);
 	}
 
 	@Test
-	@DisplayName("실패: OIDC provider는 access-token-only 네이티브 플로우를 허용하지 않는다")
-	void login_oidc_provider_not_supported() {
+	@DisplayName("성공: Google OIDC id token 검증 후 앱 토큰을 발급한다")
+	void login_google_oidc_success() {
+		ClientRegistration google = clientRegistration("google", "openid", "email", "profile");
+		User user = mockUser();
+		JwtDecoder jwtDecoder = org.mockito.Mockito.mock(JwtDecoder.class);
+		Jwt jwt = oidcJwt(Map.of(
+			"sub", "google-sub",
+			"email", "user@cau.ac.kr",
+			"email_verified", true,
+			"iss", "https://accounts.google.com",
+			"aud", List.of("google-client-id")));
+
+		given(clientRegistrationRepository.findByRegistrationId("google")).willReturn(google);
+		given(oidcIdTokenDecoderFactory.createDecoder(google)).willReturn(jwtDecoder);
+		given(jwtDecoder.decode(PROVIDER_ID_TOKEN)).willReturn(jwt);
+		given(customOAuth2UserService.loadUserFromOidcClaims("google", jwt.getClaims())).willReturn(user);
+		given(authTokenManager.issueTokens(user, null))
+			.willReturn(AuthTokenPair.of(APP_ACCESS_TOKEN, APP_REFRESH_TOKEN));
+
+		AuthResult result = socialNativeAuthService.login("google", null, PROVIDER_ID_TOKEN);
+
+		assertThat(result.accessToken()).isEqualTo(APP_ACCESS_TOKEN);
+		assertThat(result.refreshToken()).isEqualTo(APP_REFRESH_TOKEN);
+
+		verify(customOAuth2UserService).loadUserFromOidcClaims("google", jwt.getClaims());
+		verify(customOAuth2UserService, never()).loadUser(any(OAuth2UserRequest.class));
+	}
+
+	@Test
+	@DisplayName("성공: Apple OIDC id token 검증 후 앱 토큰을 발급한다")
+	void login_apple_oidc_success() {
+		ClientRegistration apple = clientRegistration("apple", "openid", "email", "name");
+		User user = mockUser();
+		JwtDecoder jwtDecoder = org.mockito.Mockito.mock(JwtDecoder.class);
+		Jwt jwt = oidcJwt(Map.of(
+			"sub", "apple-sub",
+			"email", "user@cau.ac.kr",
+			"email_verified", true,
+			"iss", "https://appleid.apple.com",
+			"aud", List.of("apple-client-id")));
+
+		given(clientRegistrationRepository.findByRegistrationId("apple")).willReturn(apple);
+		given(oidcIdTokenDecoderFactory.createDecoder(apple)).willReturn(jwtDecoder);
+		given(jwtDecoder.decode(PROVIDER_ID_TOKEN)).willReturn(jwt);
+		given(customOAuth2UserService.loadUserFromOidcClaims("apple", jwt.getClaims())).willReturn(user);
+		given(authTokenManager.issueTokens(user, null))
+			.willReturn(AuthTokenPair.of(APP_ACCESS_TOKEN, APP_REFRESH_TOKEN));
+
+		AuthResult result = socialNativeAuthService.login("apple", null, PROVIDER_ID_TOKEN);
+
+		assertThat(result.accessToken()).isEqualTo(APP_ACCESS_TOKEN);
+		assertThat(result.refreshToken()).isEqualTo(APP_REFRESH_TOKEN);
+
+		verify(customOAuth2UserService).loadUserFromOidcClaims("apple", jwt.getClaims());
+	}
+
+	@Test
+	@DisplayName("실패: OIDC provider 요청에서 id token이 없으면 INVALID_TOKEN을 반환한다")
+	void login_oidc_fail_when_id_token_missing() {
 		ClientRegistration apple = clientRegistration("apple", "openid", "email", "name");
 
 		given(clientRegistrationRepository.findByRegistrationId("apple")).willReturn(apple);
 
-		assertThatThrownBy(() -> socialNativeAuthService.login("apple", PROVIDER_ACCESS_TOKEN))
+		assertThatThrownBy(() -> socialNativeAuthService.login("apple", PROVIDER_ACCESS_TOKEN, null))
 			.isInstanceOf(BaseRunTimeV2Exception.class)
 			.hasMessage(AuthErrorCode.INVALID_TOKEN.getMessage());
 
-		verify(customOAuth2UserService, never()).loadUser(any(OAuth2UserRequest.class));
-		verify(authTokenManager, never()).issueTokens(any(User.class), any());
+		verify(customOAuth2UserService, never()).loadUserFromOidcClaims(any(), any());
 	}
 
 	@Test
-	@DisplayName("실패: 소셜 로그인 도중 domain 예외가 발생하면 원인 예외를 그대로 전달한다")
-	void login_rethrow_domain_exception() {
-		ClientRegistration kakao = clientRegistration("kakao", "profile_nickname", "account_email");
+	@DisplayName("실패: OIDC id token 디코딩 실패 시 INVALID_TOKEN을 반환한다")
+	void login_oidc_fail_when_decode_fails() {
+		ClientRegistration google = clientRegistration("google", "openid", "email", "profile");
+		JwtDecoder jwtDecoder = org.mockito.Mockito.mock(JwtDecoder.class);
+
+		given(clientRegistrationRepository.findByRegistrationId("google")).willReturn(google);
+		given(oidcIdTokenDecoderFactory.createDecoder(google)).willReturn(jwtDecoder);
+		given(jwtDecoder.decode(PROVIDER_ID_TOKEN)).willThrow(new RuntimeException("bad id token"));
+
+		assertThatThrownBy(() -> socialNativeAuthService.login("google", null, PROVIDER_ID_TOKEN))
+			.isInstanceOf(BaseRunTimeV2Exception.class)
+			.hasMessage(AuthErrorCode.INVALID_TOKEN.getMessage());
+	}
+
+	@Test
+	@DisplayName("실패: OIDC 사용자 동기화 중 domain 예외가 발생하면 원인 예외를 그대로 전달한다")
+	void login_oidc_rethrow_domain_exception() {
+		ClientRegistration google = clientRegistration("google", "openid", "email", "profile");
+		JwtDecoder jwtDecoder = org.mockito.Mockito.mock(JwtDecoder.class);
+		Jwt jwt = oidcJwt(Map.of(
+			"sub", "google-sub",
+			"email", "user@cau.ac.kr",
+			"email_verified", true,
+			"iss", "https://accounts.google.com",
+			"aud", List.of("google-client-id")));
 		BaseRunTimeV2Exception domainException = AuthErrorCode.SOCIAL_EMAIL_REQUIRED.toBaseException();
 
-		given(clientRegistrationRepository.findByRegistrationId("kakao")).willReturn(kakao);
-		given(customOAuth2UserService.loadUser(any(OAuth2UserRequest.class)))
-			.willThrow(new InternalAuthenticationServiceException("social login failed", domainException));
+		given(clientRegistrationRepository.findByRegistrationId("google")).willReturn(google);
+		given(oidcIdTokenDecoderFactory.createDecoder(google)).willReturn(jwtDecoder);
+		given(jwtDecoder.decode(PROVIDER_ID_TOKEN)).willReturn(jwt);
+		given(customOAuth2UserService.loadUserFromOidcClaims("google", jwt.getClaims())).willThrow(domainException);
 
-		assertThatThrownBy(() -> socialNativeAuthService.login("kakao", PROVIDER_ACCESS_TOKEN))
+		assertThatThrownBy(() -> socialNativeAuthService.login("google", null, PROVIDER_ID_TOKEN))
 			.isInstanceOf(BaseRunTimeV2Exception.class)
 			.hasMessage(AuthErrorCode.SOCIAL_EMAIL_REQUIRED.getMessage());
 
@@ -132,7 +220,7 @@ class SocialNativeAuthServiceTest {
 		given(customOAuth2UserService.loadUser(any(OAuth2UserRequest.class)))
 			.willThrow(new RuntimeException("provider rejected token"));
 
-		assertThatThrownBy(() -> socialNativeAuthService.login("kakao", PROVIDER_ACCESS_TOKEN))
+		assertThatThrownBy(() -> socialNativeAuthService.login("kakao", PROVIDER_ACCESS_TOKEN, null))
 			.isInstanceOf(BaseRunTimeV2Exception.class)
 			.hasMessage(AuthErrorCode.INVALID_TOKEN.getMessage());
 
@@ -142,9 +230,26 @@ class SocialNativeAuthServiceTest {
 	@Test
 	@DisplayName("실패: 지원하지 않는 provider면 예외를 반환한다")
 	void login_fail_when_provider_unsupported() {
-		assertThatThrownBy(() -> socialNativeAuthService.login("naver", PROVIDER_ACCESS_TOKEN))
+		assertThatThrownBy(() -> socialNativeAuthService.login("naver", PROVIDER_ACCESS_TOKEN, null))
 			.isInstanceOf(BaseRunTimeV2Exception.class)
 			.hasMessage(AuthErrorCode.UNSUPPORTED_SOCIAL_PROVIDER.getMessage());
+	}
+
+	@Test
+	@DisplayName("실패: 소셜 로그인 도중 domain 예외가 발생하면 원인 예외를 그대로 전달한다")
+	void login_rethrow_domain_exception() {
+		ClientRegistration kakao = clientRegistration("kakao", "profile_nickname", "account_email");
+		BaseRunTimeV2Exception domainException = AuthErrorCode.SOCIAL_EMAIL_REQUIRED.toBaseException();
+
+		given(clientRegistrationRepository.findByRegistrationId("kakao")).willReturn(kakao);
+		given(customOAuth2UserService.loadUser(any(OAuth2UserRequest.class)))
+			.willThrow(new InternalAuthenticationServiceException("social login failed", domainException));
+
+		assertThatThrownBy(() -> socialNativeAuthService.login("kakao", PROVIDER_ACCESS_TOKEN, null))
+			.isInstanceOf(BaseRunTimeV2Exception.class)
+			.hasMessage(AuthErrorCode.SOCIAL_EMAIL_REQUIRED.getMessage());
+
+		verify(authTokenManager, never()).issueTokens(any(User.class), any());
 	}
 
 	private ClientRegistration clientRegistration(String registrationId, String... scopes) {
@@ -160,6 +265,11 @@ class SocialNativeAuthServiceTest {
 			.scope(scopes)
 			.clientName(registrationId)
 			.build();
+	}
+
+	private Jwt oidcJwt(Map<String, Object> claims) {
+		Instant now = Instant.now();
+		return new Jwt(PROVIDER_ID_TOKEN, now, now.plusSeconds(300), Map.of("alg", "none"), claims);
 	}
 
 	private User mockUser() {

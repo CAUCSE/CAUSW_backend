@@ -87,11 +87,11 @@ public class AuthController {
 			.body(ApiResponse.success(authDtoMapper.toAuthResponse(dto)));
 	}
 
-	@Operation(summary = "네이티브 소셜 로그인 V2", description = "네이티브 SDK에서 발급된 access token 검증으로 소셜 로그인을 완료합니다.")
+	@Operation(summary = "네이티브 소셜 로그인 V2", description = "provider 특성에 따라 access token 또는 OIDC id token 검증으로 소셜 로그인을 완료합니다.")
 	@PostMapping("/login/native")
 	public ResponseEntity<ApiResponse<AuthResponse>> loginNativeSocial(
 		@RequestBody @Valid SocialNativeLoginRequest request) {
-		AuthResult dto = socialNativeAuthService.login(request.provider(), request.accessToken());
+		AuthResult dto = socialNativeAuthService.login(request.provider(), request.accessToken(), request.idToken());
 
 		ResponseCookie cookie = ResponseCookie.from("refresh_token", dto.refreshToken())
 			.httpOnly(true)
