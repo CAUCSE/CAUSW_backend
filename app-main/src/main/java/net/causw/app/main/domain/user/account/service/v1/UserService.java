@@ -508,7 +508,7 @@ public class UserService {
 
 		//portimpl 내부 로직 서비스단으로 이동
 		Page<User> usersPage;
-		// [중요] v1 클라이언트는 여전히 state 문자열로 INACTIVE를 전달한다.
+		// [중요] v1 클라이언트는 여전히 레거시 state 문자열(INACTIVE)을 전달한다.
 		// 정책상 탈퇴 판정이 state가 아닌 deletedAt 기준으로 변경되면서,
 		// INACTIVE / INACTIVE_N_DROP 입력도 deletedAt 기반 조회 쿼리로 매핑한다.
 		if ("INACTIVE_N_DROP".equals(state)) {
@@ -739,7 +739,7 @@ public class UserService {
 				MessageUtil.EMAIL_INVALID));
 
 		/* Validate the input password and user state
-		 * The sign-in process is rejected if the user is in BLOCKED, WAIT, or INACTIVE state.
+		 * The sign-in process is rejected if the user is in BLOCKED, WAIT, or withdrawn(deletedAt set) state.
 		 */
 		ValidatorBucket.of()
 			.consistOf(PasswordCorrectValidator.of(
@@ -1687,7 +1687,7 @@ public class UserService {
 	}
 
 	/**
-	 * INACTIVE 사용자 계정 복구 API
+	 * 탈퇴 사용자 계정 복구 API
 	 *
 	 * @param email 복구할 사용자 이메일
 	 * @return UserSignInResponseDto 로그인 응답 (액세스 토큰, 리프레시 토큰)

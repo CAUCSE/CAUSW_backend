@@ -39,7 +39,7 @@ public class UserValidator {
 	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
 	 * [ALREADY_REGISTERED] 이미 가입된 회원인 경우,
 	 * [USER_DROPPED] 추방된 회원인 경우,
-	 * [USER_INACTIVE_CAN_REJOIN] 휴면 계정인 경우 (재가입 절차 필요)
+	 * [USER_INACTIVE_CAN_REJOIN] 탈퇴 계정인 경우 (복구 절차 필요)
 	 */
 	public void validateUserStatusForSignup(User user) {
 		if (user.isDeleted()) {
@@ -66,7 +66,7 @@ public class UserValidator {
 	 * @param user 검증할 유저
 	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
 	 * [USER_DROPPED] 추방된 회원인 경우,
-	 * [USER_INACTIVE_CAN_REJOIN] 휴면 계정인 경우 (재가입 절차 필요)
+	 * [USER_INACTIVE_CAN_REJOIN] 탈퇴 계정인 경우 (복구 절차 필요)
 	 */
 	public void validateUserStatusForIntegration(User user) {
 		switch (user.getState()) {
@@ -86,7 +86,7 @@ public class UserValidator {
 	 * @param user 검사할 사용자
 	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
 	 * [INVALID_LOGIN_USER_DROPPED] 추방된 회원,
-	 * [INVALID_LOGIN_USER_INACTIVE] 휴면 회원인 경우
+	 * [INVALID_LOGIN_USER_INACTIVE] 탈퇴 회원인 경우
 	 */
 	public void validateUserStatusForLogin(User user) {
 		switch (user.getState()) {
@@ -105,7 +105,7 @@ public class UserValidator {
 	 *
 	 * @param user 검증할 사용자
 	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
-	 * [BLOCKED_USER] 추방된 유저, [INACTIVE_USER] 휴면 유저인 경우
+	 * [BLOCKED_USER] 추방된 유저, [INACTIVE_USER] 탈퇴 유저인 경우
 	 */
 	public void validateUser(User user) {
 		// 유저 상태 검증

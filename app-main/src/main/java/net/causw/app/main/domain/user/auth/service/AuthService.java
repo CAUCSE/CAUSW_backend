@@ -100,7 +100,7 @@ public class AuthService {
 	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
 	 * [REFRESH_TOKEN_MISSING] 토큰이 없거나, [INVALID_REFRESH_TOKEN] 유효하지 않은 경우
 	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
-	 * [BLOCKED/INACTIVE_USER] 유저 상태가 활동 불가능한 경우
+	 * [BLOCKED/INACTIVE_USER] 유저 상태가 활동 불가능한 경우(탈퇴 포함)
 	 */
 	@Transactional
 	public AuthResult updateToken(String refreshToken) {
