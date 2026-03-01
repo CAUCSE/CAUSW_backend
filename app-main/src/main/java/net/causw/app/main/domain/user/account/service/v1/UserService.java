@@ -508,8 +508,8 @@ public class UserService {
 
 		//portimpl 내부 로직 서비스단으로 이동
 		Page<User> usersPage;
-		// [중요] 클라이언트는 여전히 state 문자열로 INACTIVE를 전달한다.
-		// 정책상 탈퇴 판정은 state가 아닌 deletedAt 기준이므로,
+		// [중요] v1 클라이언트는 여전히 state 문자열로 INACTIVE를 전달한다.
+		// 정책상 탈퇴 판정이 state가 아닌 deletedAt 기준으로 변경되면서,
 		// INACTIVE / INACTIVE_N_DROP 입력도 deletedAt 기반 조회 쿼리로 매핑한다.
 		if ("INACTIVE_N_DROP".equals(state)) {
 			usersPage = userRepository.findDroppedOrDeletedByName(

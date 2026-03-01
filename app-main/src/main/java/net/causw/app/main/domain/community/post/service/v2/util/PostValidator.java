@@ -25,7 +25,7 @@ import lombok.NoArgsConstructor;
 public class PostValidator {
 
 	public static void validateWriterNotDeleted(Post post) {
-		if (post.getWriter().getState().equals(UserState.DELETED)) {
+		if (post.getWriter().isDeleted()) {
 			throw PostErrorCode.DELETED_WRITER.toBaseException();
 		}
 	}
