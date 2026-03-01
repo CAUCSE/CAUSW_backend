@@ -208,14 +208,16 @@ public class ScheduleServiceTest {
 				ScheduleType.ACADEMIC,
 				LocalDateTime.of(2026, 4, 15, 0, 0),
 				LocalDateTime.of(2026, 4, 21, 23, 59),
-				mockUser);
+				mockUser,
+				null);
 
 			Schedule schedule2 = Schedule.of(
 				"학술제",
 				ScheduleType.DEPARTMENT,
 				LocalDateTime.of(2026, 4, 25, 0, 0),
 				LocalDateTime.of(2026, 4, 27, 23, 59),
-				mockUser);
+				mockUser,
+				null);
 
 			List<Schedule> mockSchedules = List.of(schedule1, schedule2);
 			given(scheduleReader.findByCondition(from, to, types)).willReturn(mockSchedules);
@@ -268,14 +270,16 @@ public class ScheduleServiceTest {
 				ScheduleType.ACADEMIC,
 				LocalDateTime.of(2026, 4, 15, 0, 0),
 				LocalDateTime.of(2026, 4, 21, 23, 59),
-				mockUser);
+				mockUser,
+				null);
 
 			Schedule schedule2 = Schedule.of(
 				"동아리 활동",
 				ScheduleType.CCSSAA,
 				LocalDateTime.of(2026, 4, 25, 0, 0),
 				LocalDateTime.of(2026, 4, 27, 23, 59),
-				mockUser);
+				mockUser,
+				null);
 
 			List<Schedule> mockSchedules = List.of(schedule1, schedule2);
 			given(scheduleReader.findByCondition(from, to, null)).willReturn(mockSchedules);
