@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
@@ -159,7 +160,7 @@ class LockerAdminServiceTest {
 			verify(lockerValidator).validateUserNotHavingLocker(userId);
 
 			verify(locker).register(user, expiredAt);
-			verify(lockerLogWriter).logAdminAssign(locker, admin);
+			verify(lockerLogWriter).logAdminAssign(locker, admin, user);
 		}
 
 		@Test
@@ -188,7 +189,7 @@ class LockerAdminServiceTest {
 				.hasMessage(LockerErrorCode.LOCKER_USER_ALREADY_HAS_LOCKER.getMessage());
 
 			verify(locker, never()).register(any(User.class), any(LocalDateTime.class));
-			verify(lockerLogWriter, never()).logAdminAssign(any(Locker.class), any(User.class));
+			verify(lockerLogWriter, never()).logAdminAssign(any(Locker.class), any(User.class), any(User.class));
 		}
 	}
 
@@ -205,8 +206,9 @@ class LockerAdminServiceTest {
 			LocalDateTime newExpireAt = LocalDateTime.now().plusDays(30);
 
 			User admin = createUser(adminId);
+			User lockerUser = createUser("user-1");
 			LockerLocation location = createLocation("loc-1", LockerName.SECOND);
-			Locker locker = createLocker("locker-1", 1L, location, null, null, true);
+			Locker locker = createLocker("locker-1", 1L, location, lockerUser, null, true);
 
 			when(lockerReader.findByIdForWrite(lockerId)).thenReturn(locker);
 			when(userReader.findAdminUserById(adminId)).thenReturn(admin);
@@ -217,7 +219,7 @@ class LockerAdminServiceTest {
 			// then
 			verify(lockerValidator).validateInUse(locker);
 			verify(locker).extendExpireDate(newExpireAt);
-			verify(lockerLogWriter).logAdminExtend(locker, admin);
+			verify(lockerLogWriter).logAdminExtend(eq(locker), eq(admin), any(User.class));
 		}
 
 		@Test
@@ -245,7 +247,7 @@ class LockerAdminServiceTest {
 				.hasMessage(LockerErrorCode.LOCKER_NOT_IN_USE.getMessage());
 
 			verify(locker, never()).extendExpireDate(any(LocalDateTime.class));
-			verify(lockerLogWriter, never()).logAdminExtend(any(Locker.class), any(User.class));
+			verify(lockerLogWriter, never()).logAdminExtend(any(Locker.class), any(User.class), any(User.class));
 		}
 	}
 
@@ -262,9 +264,13 @@ class LockerAdminServiceTest {
 
 			Locker locker = mock(Locker.class);
 			User admin = mock(User.class);
+			User lockerUser = mock(User.class);
+			when(lockerUser.getEmail()).thenReturn("user@cau.ac.kr");
+			when(lockerUser.getName()).thenReturn("lockerUser");
 
 			when(lockerReader.findByIdForWrite(lockerId)).thenReturn(locker);
 			when(userReader.findAdminUserById(adminId)).thenReturn(admin);
+			when(locker.getUser()).thenReturn(Optional.of(lockerUser));
 
 			// when
 			lockerAdminService.releaseLocker(lockerId, adminId);
@@ -272,7 +278,7 @@ class LockerAdminServiceTest {
 			// then
 			verify(lockerValidator).validateInUse(locker);
 			verify(locker).returnLocker();
-			verify(lockerLogWriter).logAdminRelease(locker, admin);
+			verify(lockerLogWriter).logAdminRelease(eq(locker), eq(admin), anyString(), anyString());
 		}
 
 		@Test
@@ -299,7 +305,7 @@ class LockerAdminServiceTest {
 				.hasMessage(LockerErrorCode.LOCKER_NOT_IN_USE.getMessage());
 
 			verify(locker, never()).returnLocker();
-			verify(lockerLogWriter, never()).logAdminRelease(any(Locker.class), any(User.class));
+			verify(lockerLogWriter, never()).logAdminRelease(any(Locker.class), any(User.class), anyString(), anyString());
 		}
 	}
 
@@ -357,7 +363,7 @@ class LockerAdminServiceTest {
 			verify(lockerValidator).validateDisableable(locker);
 
 			verify(locker).returnLocker();
-			verify(lockerLogWriter).logAdminRelease(locker, admin);
+			verify(lockerLogWriter).logAdminRelease(locker, admin, currentUser.getEmail(), currentUser.getName());
 
 			verify(locker).disable();
 			verify(lockerLogWriter).logDisable(locker, admin);
@@ -384,7 +390,7 @@ class LockerAdminServiceTest {
 			verify(lockerValidator).validateDisableable(locker);
 
 			verify(locker, never()).returnLocker();
-			verify(lockerLogWriter, never()).logAdminRelease(any(Locker.class), any(User.class));
+			verify(lockerLogWriter, never()).logAdminRelease(any(Locker.class), any(User.class), anyString(), anyString());
 
 			verify(locker).disable();
 			verify(lockerLogWriter).logDisable(locker, admin);
@@ -421,8 +427,8 @@ class LockerAdminServiceTest {
 			verify(locker1).returnLocker();
 			verify(locker2).returnLocker();
 
-			verify(lockerLogWriter).logAdminRelease(locker1, admin);
-			verify(lockerLogWriter).logAdminRelease(locker2, admin);
+			verify(lockerLogWriter).logAdminRelease(eq(locker1), eq(admin), anyString(), anyString());
+			verify(lockerLogWriter).logAdminRelease(eq(locker2), eq(admin), anyString(), anyString());
 		}
 	}
 }

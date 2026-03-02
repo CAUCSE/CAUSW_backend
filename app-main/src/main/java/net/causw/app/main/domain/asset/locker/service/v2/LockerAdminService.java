@@ -1,7 +1,9 @@
 package net.causw.app.main.domain.asset.locker.service.v2;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
+import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -92,7 +94,8 @@ public class LockerAdminService {
 
 		User user = userReader.findUserByIdNotDeleted(userId);
 		locker.register(user, expiredAt);
-		lockerLogWriter.logAdminAssign(locker, admin);
+
+		lockerLogWriter.logAdminAssign(locker, admin, user);
 	}
 
 	/**
@@ -108,8 +111,10 @@ public class LockerAdminService {
 
 		lockerValidator.validateInUse(locker);
 
+		User user = locker.getUser().orElseThrow(UserErrorCode.USER_NOT_FOUND::toBaseException);
+
 		locker.extendExpireDate(expiredAt);
-		lockerLogWriter.logAdminExtend(locker, admin);
+		lockerLogWriter.logAdminExtend(locker, admin, user);
 	}
 
 	/**
@@ -124,8 +129,10 @@ public class LockerAdminService {
 
 		lockerValidator.validateInUse(locker);
 
+		User user = locker.getUser().orElseThrow(UserErrorCode.USER_NOT_FOUND::toBaseException);
+
 		locker.returnLocker();
-		lockerLogWriter.logAdminRelease(locker, admin);
+		lockerLogWriter.logAdminRelease(locker, admin, user.getEmail(), user.getName());
 	}
 
 	/**
@@ -157,9 +164,10 @@ public class LockerAdminService {
 		lockerValidator.validateDisableable(locker);
 
 		// locker user 존재할 시에 반환
-		if (locker.getUser().isPresent()) {
+		var user = locker.getUser();
+		if (user.isPresent()) {
 			locker.returnLocker();
-			lockerLogWriter.logAdminRelease(locker, admin);
+			lockerLogWriter.logAdminRelease(locker, admin, user.get().getEmail(), user.get().getName());
 		}
 
 		locker.disable();
@@ -172,7 +180,9 @@ public class LockerAdminService {
 		var expiredLockers = lockerReader.findExpiredLockers(LocalDateTime.now());
 		expiredLockers.forEach(locker -> {
 			locker.returnLocker();
-			lockerLogWriter.logAdminRelease(locker, admin);
+			var userEmail = locker.getUser().map(User::getEmail).orElse("알 수 없음");
+			var userName = locker.getUser().map(User::getName).orElse("알 수 없음");
+			lockerLogWriter.logAdminRelease(locker, admin, userEmail, userName);
 		});
 	}
 }
