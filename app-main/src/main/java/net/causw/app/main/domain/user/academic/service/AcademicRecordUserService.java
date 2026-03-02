@@ -128,7 +128,7 @@ public class AcademicRecordUserService {
 			throw AcademicRecordApplicationErrorCode.ACADEMIC_RECORD_INVALID_STATUS_TRANSITION.toBaseException();
 		}
 
-		if (imageFileList == null || imageFileList.isEmpty()) {
+		if (imageFileList.isEmpty()) {
 			throw AcademicRecordApplicationErrorCode.ACADEMIC_RECORD_ENROLLMENT_IMAGE_REQUIRED.toBaseException();
 		}
 	}
