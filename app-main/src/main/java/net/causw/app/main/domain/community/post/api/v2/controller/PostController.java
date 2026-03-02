@@ -95,7 +95,7 @@ public class PostController {
 		return ApiResponse.success(postDtoMapper.toListResponse(result));
 	}
 
-	@GetMapping("/me/posts")
+	@GetMapping("/me")
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "내가 쓴 글 목록 조회", description = "로그인한 사용자가 작성한 게시글 목록을 커서 기반으로 조회합니다. 게시글 목록 조회와 동일한 형식(posts, nextCursor)으로 반환합니다.")
 	public ApiResponse<PostListResponse> getPostsWrittenByMe(
