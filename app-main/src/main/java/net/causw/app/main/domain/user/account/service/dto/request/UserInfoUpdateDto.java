@@ -1,13 +1,10 @@
-package net.causw.app.main.domain.user.account.api.v2.dto.request;
+package net.causw.app.main.domain.user.account.service.dto.request;
 
 import java.util.List;
 
-import net.causw.app.main.domain.user.account.api.v2.dto.response.UserCareerDto;
-import net.causw.app.main.domain.user.account.api.v2.dto.response.UserProjectDto;
-
 import jakarta.validation.constraints.Size;
 
-public record UserInfoUpdateRequestDto(
+public record UserInfoUpdateDto(
 	@Size(max = 50, message = "직업은 최대 50자까지 입력 가능합니다.") String job,
 
 	@Size(max = 200, message = "소개글은 최대 200자까지 입력 가능합니다.") String description,
@@ -20,9 +17,9 @@ public record UserInfoUpdateRequestDto(
 
 	List<String> userTechStack,
 
-	List<UserCareerDto> userCareer,
+	List<UserCareerCommand> userCareer,
 
-	List<UserProjectDto> userProject,
+	List<UserProjectCommand> userProject,
 
 	List<String> userInterestTech,
 
