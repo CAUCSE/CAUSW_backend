@@ -27,7 +27,6 @@ public interface UserInfoDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "email", source = "user.email")
 	@Mapping(target = "phoneNumber", source = ".", qualifiedByName = "mapPhoneNumber")
 	@Mapping(target = "isPhoneNumberVisible", source = "phoneNumberVisible")
-	@Mapping(target = "isMessageVisible", source = "messageVisible")
 	@Mapping(target = "socialLinks", source = "socialLinks")
 	@Mapping(target = "techStack", source = "userTechStack", qualifiedByName = "sortStringsAsc")
 	@Mapping(target = "userCareer", source = "userCareer")
@@ -40,7 +39,6 @@ public interface UserInfoDtoMapper extends UuidFileToUrlDtoMapper {
 	@InheritConfiguration(name = "toUserInfoDetailResponseDto")
 	@Mapping(target = "phoneNumber", source = "user.phoneNumber")
 	@Mapping(target = "isPhoneNumberVisible", constant = "true")
-	@Mapping(target = "isMessageVisible", constant = "true")
 	UserInfoDetailResponseDto toMyUserInfoDetailResponseDto(UserInfo userInfo);
 
 	// 동문 수첩 프로필 리스트 조회
@@ -71,7 +69,7 @@ public interface UserInfoDtoMapper extends UuidFileToUrlDtoMapper {
 
 	@Named("mapPhoneNumber")
 	static String mapPhoneNumber(UserInfo userInfo) {
-		if (userInfo.isPhoneNumberVisible() && userInfo.isMessageVisible()) {
+		if (userInfo.isPhoneNumberVisible()) {
 			return userInfo.getUser().getPhoneNumber();
 		} else {
 			return null;

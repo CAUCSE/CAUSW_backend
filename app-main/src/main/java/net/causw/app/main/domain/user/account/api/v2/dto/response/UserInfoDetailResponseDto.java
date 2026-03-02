@@ -21,9 +21,7 @@ public record UserInfoDetailResponseDto(
 
 	@Schema(description = "사용자 전화번호", example = "010-1234-5678") String phoneNumber,
 
-	@Schema(description = "전화번호 공개 여부", example = "false") Boolean isPhoneNumberVisible,
-
-	@Schema(description = "메시지 공개 여부", example = "true") Boolean isMessageVisible,
+	@Schema(description = "연락처 공개 여부", example = "false") Boolean isPhoneNumberVisible,
 
 	@Schema(description = "사용자 이메일", example = "abcde12345@cau.ac.kr") String email,
 

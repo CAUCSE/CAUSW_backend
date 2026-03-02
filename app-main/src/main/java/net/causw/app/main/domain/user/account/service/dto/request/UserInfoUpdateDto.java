@@ -11,8 +11,6 @@ public record UserInfoUpdateDto(
 
 	boolean isPhoneNumberVisible,
 
-	boolean isMessageVisible,
-
 	@Size(max = 10, message = "SNS는 최대 10개까지 등록할 수 있습니다.") List<String> socialLinks,
 
 	List<String> userTechStack,

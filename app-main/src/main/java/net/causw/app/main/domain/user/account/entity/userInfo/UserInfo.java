@@ -8,9 +8,6 @@ import java.util.Set;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.entity.BaseEntity;
 import net.causw.app.main.shared.exception.errorcode.UserInfoErrorCode;
-import net.causw.global.constant.MessageUtil;
-import net.causw.global.exception.BadRequestException;
-import net.causw.global.exception.ErrorCode;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
@@ -51,10 +48,6 @@ public class UserInfo extends BaseEntity {
 	@Builder.Default
 	private boolean isPhoneNumberVisible = false;
 
-	@Column(name = "is_message_visible", nullable = false)
-	@Builder.Default
-	private boolean isMessageVisible = false;
-
 	@Column(name = "social_links", columnDefinition = "TEXT")
 	@Convert(converter = SocialLinksConverter.class)
 	@Builder.Default
@@ -92,29 +85,11 @@ public class UserInfo extends BaseEntity {
 			.build();
 	}
 
-	public void updateV1(
-		String description,
-		String job,
-		List<String> socialLinks,
-		boolean isPhoneNumberVisible) {
-		if (socialLinks.size() > 10) {
-			throw new BadRequestException(
-				ErrorCode.INVALID_PARAMETER,
-				MessageUtil.INVALID_SOCIAL_LINK);
-		}
-
-		this.description = description;
-		this.job = job;
-		this.isPhoneNumberVisible = isPhoneNumberVisible;
-		this.socialLinks = socialLinks;
-	}
-
 	public void update(
 		String description,
 		String job,
 		List<String> socialLinks,
-		boolean isPhoneNumberVisible,
-		boolean isMessageVisible) {
+		boolean isPhoneNumberVisible) {
 		if (socialLinks.size() > 10) {
 			throw UserInfoErrorCode.TOO_MUCH_SOCIAL_LINK.toBaseException();
 		}
@@ -123,6 +98,5 @@ public class UserInfo extends BaseEntity {
 		this.job = job;
 		this.socialLinks = socialLinks;
 		this.isPhoneNumberVisible = isPhoneNumberVisible;
-		this.isMessageVisible = isMessageVisible;
 	}
 }

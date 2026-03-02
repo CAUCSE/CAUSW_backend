@@ -51,14 +51,13 @@ public class UserInfoService {
 		UserInfo userInfo = userInfoReader.findByUserId(user.getId())
 			.orElseGet(() -> userInfoCreator.createAndSave(user));
 
-		// 소개글, 직업, SNS, 전화번호 공개 여부, 메세지 공개 여부 업데이트
+		// 소개글, 직업, SNS, 연락처 공개 여부 업데이트
 		List<String> socialLinks = request.socialLinks() == null ? List.of() : request.socialLinks();
 		userInfo.update(
 			request.description(),
 			request.job(),
 			socialLinks,
-			request.isPhoneNumberVisible(),
-			request.isMessageVisible());
+			request.isPhoneNumberVisible());
 
 		// 사용자 이력, 대표 프로젝트 업데이트
 		updateUserCareer(request.userCareer(), userInfo);
