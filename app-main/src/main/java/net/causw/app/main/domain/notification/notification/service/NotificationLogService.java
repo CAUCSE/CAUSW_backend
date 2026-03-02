@@ -3,6 +3,8 @@ package net.causw.app.main.domain.notification.notification.service;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,13 +24,25 @@ public class NotificationLogService {
 	private final NotificationDtoMapper notificationDtoMapper;
 
 	@Transactional(readOnly = true)
+	public Page<NotificationResponseDto> getNotificationList(String userId, Pageable pageable) {
+		Page<NotificationLog> notificationLog = notificationLogReader.getNotificationList(userId, pageable);
+
+		return notificationLog.map(log -> notificationDtoMapper.toNotificationResponseDto(
+			log.getId(),
+			log.getNotification(),
+			log.getIsRead(),
+			log.getCreatedAt()));
+	}
+
+	@Transactional(readOnly = true)
 	public NotificationResponseDto getLatestUnread(String userId) {
 		Optional<NotificationLog> notificationLog = notificationLogReader.getLatestUnread(userId);
 
 		return notificationLog.map(log -> notificationDtoMapper.toNotificationResponseDto(
 			log.getId(),
 			log.getNotification(),
-			log.getIsRead()))
+			log.getIsRead(),
+			log.getCreatedAt()))
 			.orElse(null);
 	}
 

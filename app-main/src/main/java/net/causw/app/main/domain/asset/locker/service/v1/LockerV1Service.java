@@ -96,7 +96,7 @@ public class LockerV1Service {
 		}
 		Locker locker = Locker.of(lockerCreateRequestDto.getLockerNumber(), true, user, lockerLocation, null);
 		validatorBucket
-			.consistOf(UserStateValidator.of(user.getState()))
+			.consistOf(UserStateValidator.of(user))
 			.consistOf(UserRoleIsNoneValidator.of(roles))
 			.consistOf(UserRoleValidator.of(roles, Set.of()))
 			.consistOf(ConstraintValidator.of(locker, this.validator))
@@ -122,7 +122,7 @@ public class LockerV1Service {
 			MessageUtil.LOCKER_NOT_FOUND));
 
 		ValidatorBucket.of()
-			.consistOf(UserStateValidator.of(user.getState()))
+			.consistOf(UserStateValidator.of(user))
 			.consistOf(UserRoleIsNoneValidator.of(roles))
 			.validate();
 
@@ -172,7 +172,7 @@ public class LockerV1Service {
 		locker.move(lockerLocation);
 
 		ValidatorBucket.of()
-			.consistOf(UserStateValidator.of(user.getState()))
+			.consistOf(UserStateValidator.of(user))
 			.consistOf(UserRoleIsNoneValidator.of(roles))
 			.consistOf(UserRoleValidator.of(roles, Set.of()))
 			.consistOf(ConstraintValidator.of(locker, this.validator))
@@ -197,7 +197,7 @@ public class LockerV1Service {
 
 		ValidatorBucket.of()
 			.consistOf(LockerInUseValidator.of(locker.getUser().isPresent()))
-			.consistOf(UserStateValidator.of(user.getState()))
+			.consistOf(UserStateValidator.of(user))
 			.consistOf(UserRoleIsNoneValidator.of(roles))
 			.consistOf(UserRoleValidator.of(roles, Set.of(Role.PRESIDENT)))
 			.validate();
@@ -268,7 +268,7 @@ public class LockerV1Service {
 			LockerName.valueOf(lockerLocationCreateRequestDto.getName()));
 
 		ValidatorBucket.of()
-			.consistOf(UserStateValidator.of(user.getState()))
+			.consistOf(UserStateValidator.of(user))
 			.consistOf(UserRoleIsNoneValidator.of(roles))
 			.consistOf(UserRoleValidator.of(roles, Set.of()))
 			.consistOf(ConstraintValidator.of(lockerLocation, this.validator))
@@ -304,7 +304,7 @@ public class LockerV1Service {
 			LockerName.valueOf(lockerLocationRequestDto.getName()));
 
 		ValidatorBucket.of()
-			.consistOf(UserStateValidator.of(user.getState()))
+			.consistOf(UserStateValidator.of(user))
 			.consistOf(UserRoleIsNoneValidator.of(roles))
 			.consistOf(UserRoleValidator.of(roles, Set.of()))
 			.consistOf(ConstraintValidator.of(lockerLocation, this.validator))
@@ -331,7 +331,7 @@ public class LockerV1Service {
 		}
 
 		ValidatorBucket.of()
-			.consistOf(UserStateValidator.of(user.getState()))
+			.consistOf(UserStateValidator.of(user))
 			.consistOf(UserRoleIsNoneValidator.of(roles))
 			.consistOf(UserRoleValidator.of(roles, Set.of()))
 			.validate();
@@ -359,7 +359,7 @@ public class LockerV1Service {
 		Set<Role> roles = user.getRoles();
 
 		ValidatorBucket.of()
-			.consistOf(UserStateValidator.of(user.getState()))
+			.consistOf(UserStateValidator.of(user))
 			.consistOf(UserRoleIsNoneValidator.of(roles))
 			.consistOf(UserRoleValidator.of(roles, Set.of()))
 			.validate();
@@ -389,7 +389,7 @@ public class LockerV1Service {
 		Set<Role> roles = user.getRoles();
 
 		ValidatorBucket.of()
-			.consistOf(UserStateValidator.of(user.getState()))
+			.consistOf(UserStateValidator.of(user))
 			.consistOf(UserRoleIsNoneValidator.of(roles))
 			.consistOf(UserRoleValidator.of(roles, Set.of()))
 			.validate();
@@ -432,7 +432,7 @@ public class LockerV1Service {
 		Set<Role> roles = user.getRoles();
 
 		ValidatorBucket.of()
-			.consistOf(UserStateValidator.of(user.getState()))
+			.consistOf(UserStateValidator.of(user))
 			.consistOf(UserRoleIsNoneValidator.of(roles))
 			.consistOf(UserRoleValidator.of(roles, Set.of()))
 			.validate();
@@ -476,7 +476,7 @@ public class LockerV1Service {
 		Set<Role> roles = user.getRoles();
 
 		ValidatorBucket.of()
-			.consistOf(UserStateValidator.of(user.getState()))
+			.consistOf(UserStateValidator.of(user))
 			.consistOf(UserRoleIsNoneValidator.of(roles))
 			.consistOf(UserRoleValidator.of(roles, Set.of()))
 			.validate();
@@ -522,7 +522,7 @@ public class LockerV1Service {
 			Set<Role> roles = user.getRoles();
 
 			validatorBucket
-				.consistOf(UserStateValidator.of(user.getState()))
+				.consistOf(UserStateValidator.of(user))
 				.consistOf(UserRoleIsNoneValidator.of(roles))
 				.consistOf(UserRoleValidator.of(roles, Set.of()))
 				.consistOf(ConstraintValidator.of(locker, this.validator))

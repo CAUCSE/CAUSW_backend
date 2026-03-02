@@ -30,7 +30,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
 import net.causw.app.main.domain.user.account.service.implementation.UserPushTokenWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
@@ -137,12 +136,11 @@ public class AuthServiceTest {
 				void fail_when_user_exists_with_invalid_state(UserErrorCode errorCode) {
 					// given
 					User mockedExistingUser = mock(User.class);
-					given(mockedExistingUser.getState()).willReturn(UserState.ACTIVE);
 					given(userReader.checkUserExistByPhoneNumAndName(eq(PHONE), eq(NAME)))
 						.willReturn(Optional.of(mockedExistingUser));
 
 					doThrow(errorCode.toBaseException())
-						.when(userValidator).validateUserStatusForSignup(any());
+						.when(userValidator).validateUserStatusForSignup(any(User.class));
 
 					// when & then
 					assertThatThrownBy(() -> authService.registerEmailUser(registerDto))
@@ -150,7 +148,7 @@ public class AuthServiceTest {
 						.hasMessage(errorCode.getMessage());
 
 					// verify
-					verify(userValidator).validateUserStatusForSignup(any());
+					verify(userValidator).validateUserStatusForSignup(any(User.class));
 					verify(userValidator, never()).checkEmailDuplication(anyString());
 				}
 			}
@@ -264,7 +262,7 @@ public class AuthServiceTest {
 
 			// verify
 			verify(authValidator).validateCredential(user, PASSWORD);
-			verify(userValidator).validateUserStatusForLogin(user.getState());
+			verify(userValidator).validateUserStatusForLogin(user);
 			verify(authTokenManager).issueTokens(user, null);
 		}
 

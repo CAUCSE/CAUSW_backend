@@ -26,6 +26,7 @@ public record PostQueryResult(
 	String writerNickname,
 	Integer writerAdmissionYear,
 	UserState writerUserState,
+	LocalDateTime writerDeletedAt,
 	LocalDateTime createdAt,
 	LocalDateTime updatedAt,
 	String postAttachImage) { // 썸네일 이미지 URL
