@@ -14,18 +14,15 @@ public class UserStateValidator {
 
 	/**
 	 * 사용자가 서비스 내 활동(신고, 차단 등)을 수행할 수 있는 상태인지 검증.
-	 * DROP / INACTIVE / DELETED 상태이거나 NONE 역할인 경우 예외를 발생시킨다.
+	 * DROP 상태이거나 탈퇴 상태, 혹은 NONE 역할인 경우 예외를 발생시킨다.
 	 */
 	public static void validateUserIsActiveWithValidRole(User user) {
 		UserState state = user.getState();
 		if (state == UserState.DROP) {
 			throw UserErrorCode.USER_DROPPED.toBaseException();
 		}
-		if (state == UserState.INACTIVE) {
+		if (user.isDeleted()) {
 			throw UserErrorCode.USER_INACTIVE_CAN_REJOIN.toBaseException();
-		}
-		if (state == UserState.DELETED) {
-			throw UserErrorCode.USER_DELETED.toBaseException();
 		}
 		if (user.getRoles().contains(Role.NONE)) {
 			throw AuthErrorCode.USER_ROLE_NONE.toBaseException();
