@@ -202,7 +202,7 @@ class AdmissionServiceTest {
 		}
 
 		@Test
-		@DisplayName("요청 학번이 다른 ACTIVE/INACTIVE 사용자와 중복되면 예외가 발생한다")
+		@DisplayName("요청 학번이 다른 ACTIVE/탈퇴(deletedAt) 사용자와 중복되면 예외가 발생한다")
 		void givenDuplicateStudentId_whenCreateAdmission_thenThrowStudentIdAlreadyExistException() {
 			// given
 			User user = ObjectFixtures.getUserWithId("user-6");

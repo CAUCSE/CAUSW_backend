@@ -51,7 +51,7 @@ public class HomePageService {
 		Set<Role> roles = user.getRoles();
 
 		ValidatorBucket.of()
-			.consistOf(UserStateValidator.of(user.getState()))
+			.consistOf(UserStateValidator.of(user))
 			.consistOf(UserRoleIsNoneValidator.of(roles))
 			.validate();
 

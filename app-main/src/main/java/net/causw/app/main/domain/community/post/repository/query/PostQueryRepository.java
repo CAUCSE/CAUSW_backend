@@ -199,7 +199,7 @@ public class PostQueryRepository {
 			commentCount, likeCount, favoriteCount,
 			post.isAnonymous, post.isQuestion, post.vote.isNotNull(), post.form.isNotNull(),
 			post.isDeleted,
-			writer.isNotNull(), writer.name, writer.nickname, writer.admissionYear, writer.state,
+			writer.isNotNull(), writer.name, writer.nickname, writer.admissionYear, writer.state, writer.deletedAt,
 			post.createdAt, post.updatedAt,
 			thumbnailUrl);
 	}

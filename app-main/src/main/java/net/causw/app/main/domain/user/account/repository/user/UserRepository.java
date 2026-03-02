@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.user.account.repository.user;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,6 +42,8 @@ public interface UserRepository extends JpaRepository<User, String> {
 
 	List<User> findAllByState(UserState state);
 
+	List<User> findAllByDeletedAtBefore(LocalDateTime deletedAt);
+
 	Optional<User> findByStudentIdAndName(String studentId, String name);
 
 	Optional<User> findByPhoneNumberAndName(String phoneNumber, String name);
@@ -53,14 +56,30 @@ public interface UserRepository extends JpaRepository<User, String> {
 
 	@Query(value = "SELECT * " +
 		"FROM tb_user AS u " +
-		"WHERE u.state = :state AND (:name IS NULL OR u.name LIKE %:name%) ORDER BY u.created_at DESC", nativeQuery = true)
+		"WHERE u.state = :state " +
+		"AND u.deleted_at IS NULL " +
+		"AND (:name IS NULL OR u.name LIKE %:name%) " +
+		"ORDER BY u.created_at DESC", nativeQuery = true)
 	Page<User> findByStateAndName(@Param("state") String state, @Param("name") String name, Pageable pageable);
 
 	@Query(value = "SELECT * " +
 		"FROM tb_user AS u " +
-		"WHERE u.state IN :state AND (COALESCE(:name, '') = '' OR u.name LIKE CONCAT('%', :name, '%')) ORDER BY u.created_at DESC", nativeQuery = true)
+		"WHERE u.state IN :state " +
+		"AND u.deleted_at IS NULL " +
+		"AND (COALESCE(:name, '') = '' OR u.name LIKE CONCAT('%', :name, '%')) " +
+		"ORDER BY u.created_at DESC", nativeQuery = true)
 	Page<User> findByStateInAndNameContaining(@Param("state") List<String> states, @Param("name") String name,
 		Pageable pageable);
+
+	@Query(value = "SELECT * " +
+		"FROM tb_user AS u " +
+		"WHERE u.deleted_at IS NOT NULL AND (:name IS NULL OR u.name LIKE %:name%) ORDER BY u.created_at DESC", nativeQuery = true)
+	Page<User> findDeletedByName(@Param("name") String name, Pageable pageable);
+
+	@Query(value = "SELECT * " +
+		"FROM tb_user AS u " +
+		"WHERE (u.state = 'DROP' OR u.deleted_at IS NOT NULL) AND (:name IS NULL OR u.name LIKE %:name%) ORDER BY u.created_at DESC", nativeQuery = true)
+	Page<User> findDroppedOrDeletedByName(@Param("name") String name, Pageable pageable);
 
 	@Query(value = "SELECT * FROM" +
 		" tb_user AS u " +
