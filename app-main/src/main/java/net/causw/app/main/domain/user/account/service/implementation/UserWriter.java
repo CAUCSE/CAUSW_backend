@@ -54,4 +54,14 @@ public class UserWriter {
 		user.rejectAdmission(rejectReason);
 		return this.userRepository.save(user);
 	}
+
+	public User dropByAdmin(User user, String dropReason) {
+		user.dropByAdmin(dropReason);
+		return this.userRepository.save(user);
+	}
+
+	public User restore(User user) {
+		user.restore();
+		return this.userRepository.save(user);
+	}
 }

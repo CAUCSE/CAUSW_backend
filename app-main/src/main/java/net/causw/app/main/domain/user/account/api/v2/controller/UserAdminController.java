@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import net.causw.app.main.domain.user.account.api.v2.dto.request.AdmissionListRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.AdmissionRejectRequest;
+import net.causw.app.main.domain.user.account.api.v2.dto.request.UserDropRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserListRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.AdmissionListItemResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.AdmissionResponse;
@@ -64,6 +65,25 @@ public class UserAdminController {
 
 		var userDetail = userAdminService.getUserDetail(userId);
 		return ApiResponse.success(userDetailMapper.toResponse(userDetail));
+	}
+
+	@Operation(summary = "회원 추방 V2", description = "관리자가 사용자를 추방합니다. 추방 시 사용자 상태가 DROP으로 변경됩니다.")
+	@PatchMapping("/{userId}/drop")
+	public ApiResponse<Void> dropUser(
+		@PathVariable String userId,
+		@RequestBody @Valid UserDropRequest request) {
+
+		userAdminService.dropUser(userId, request.dropReason());
+		return ApiResponse.success();
+	}
+
+	@Operation(summary = "회원 복구 V2", description = "관리자가 추방된 사용자를 복구합니다. 복구 시 사용자 상태가 ACTIVE로 변경됩니다.")
+	@PatchMapping("/{userId}/restore")
+	public ApiResponse<Void> restoreUser(
+		@PathVariable String userId) {
+
+		userAdminService.restoreUser(userId);
+		return ApiResponse.success();
 	}
 
 	// ── 재학정보 인증 ──

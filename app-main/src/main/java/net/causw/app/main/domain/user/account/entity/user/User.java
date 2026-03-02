@@ -311,6 +311,20 @@ public class User extends BaseEntity {
 		this.rejectionOrDropReason = rejectReason;
 	}
 
+	public void dropByAdmin(String dropReason) {
+		this.state = UserState.DROP;
+		this.roles = Set.of(Role.NONE);
+		this.rejectionOrDropReason = dropReason;
+	}
+
+	// 탈퇴, 추방된 유저의 계정 복구에 사용
+	public void restore() {
+		this.state = UserState.ACTIVE;
+		this.roles = Set.of(Role.COMMON);
+		this.deletedAt = null;
+		this.rejectionOrDropReason = null;
+	}
+
 	public void markAsCertifiedGraduate(Integer graduationYear) {
 		this.graduationYear = graduationYear;
 		this.state = UserState.ACTIVE;
