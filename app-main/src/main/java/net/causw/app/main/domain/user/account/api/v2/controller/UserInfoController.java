@@ -2,6 +2,7 @@ package net.causw.app.main.domain.user.account.api.v2.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -31,6 +32,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/users-info")
+@PreAuthorize("@security.isActiveUser()")
 public class UserInfoController {
 
 	private final UserInfoService userInfoService;
