@@ -96,6 +96,50 @@ public class CeremonyQueryRepository {
 		return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
 	}
 
+	// 관리자 경조사 목록 조회: fromDate~toDate 범위 내 경조사 시작일 필터링, state별 필터링 (각 조건은 nullable하여 동적 적용)
+	public Page<Ceremony> findAllForAdmin(
+		LocalDate fromDate, LocalDate toDate, CeremonyState state, Pageable pageable) {
+
+		QCeremony ceremony = QCeremony.ceremony;
+
+		List<Ceremony> content = jpaQueryFactory
+			.selectFrom(ceremony)
+			.join(ceremony.user).fetchJoin()
+			.where(
+				stateEq(state, ceremony),
+				startDateGoe(fromDate, ceremony),
+				startDateLoe(toDate, ceremony))
+			.orderBy(ceremony.createdAt.desc())
+			.offset(pageable.getOffset())
+			.limit(pageable.getPageSize())
+			.fetch();
+
+		JPAQuery<Long> countQuery = jpaQueryFactory
+			.select(ceremony.count())
+			.from(ceremony)
+			.where(
+				stateEq(state, ceremony),
+				startDateGoe(fromDate, ceremony),
+				startDateLoe(toDate, ceremony));
+
+		return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+	}
+
+	// state가 주어졌을 때 상태 필터를 적용한다.
+	private BooleanExpression stateEq(CeremonyState state, QCeremony ceremony) {
+		return state != null ? ceremony.ceremonyState.eq(state) : null;
+	}
+
+	// ceremony의 시작일이 fromDate 이상인 조건을 동적으로 적용한다.
+	private BooleanExpression startDateGoe(LocalDate fromDate, QCeremony ceremony) {
+		return fromDate != null ? ceremony.startDate.goe(fromDate) : null;
+	}
+
+	// ceremony의 시작일이 toDate 이하인 조건을 동적으로 적용한다.
+	private BooleanExpression startDateLoe(LocalDate toDate, QCeremony ceremony) {
+		return toDate != null ? ceremony.startDate.loe(toDate) : null;
+	}
+
 	private BooleanExpression baseCondition(String type, QCeremony ceremony) {
 		BooleanExpression condition = ceremony.ceremonyState.eq(CeremonyState.ACCEPT);
 		String parsedType = CeremonyType.parseTypeOrNull(type);

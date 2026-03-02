@@ -15,7 +15,7 @@ public class CommentCreateRequestDto {
 	@NotBlank(message = "댓글 내용을 입력해 주세요.")
 	private String content;
 
-	@NotBlank(message = "게시물 id를 입력해 주세요.")
+	@NotBlank(message = "댓글을 달 게시물이 선택되지 않았습니다..")
 	private String postId;
 
 	@Schema(description = "익명글 여부", example = "False")
