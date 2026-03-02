@@ -31,6 +31,7 @@ import net.causw.app.main.domain.notification.notification.entity.Notification;
 import net.causw.app.main.domain.notification.notification.entity.NotificationLog;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationLogReader;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.util.ObjectFixtures;
 
 @ExtendWith(MockitoExtension.class)
@@ -217,7 +218,7 @@ class NotificationLogServiceTest {
 			// when & then
 			// 프로젝트의 커스텀 BaseException 계열로 예외가 던져지는지 검증
 			assertThatThrownBy(() -> notificationLogService.readNotification(userId, logId))
-				.isInstanceOf(RuntimeException.class); // 실제 사용하시는 BaseException 클래스로 타입을 변경해 주세요.
+				.isInstanceOf(BaseRunTimeV2Exception.class);
 
 			then(notificationLogReader).should().findByIdAndUserId(logId, userId);
 		}
