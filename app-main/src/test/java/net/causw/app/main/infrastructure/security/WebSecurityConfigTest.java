@@ -32,6 +32,7 @@ import net.causw.app.main.core.security.AppleOAuth2AuthorizationRequestResolver;
 import net.causw.app.main.core.security.CustomAuthenticationEntryPoint;
 import net.causw.app.main.core.security.CustomAuthorizationManager;
 import net.causw.app.main.core.security.JwtTokenProvider;
+import net.causw.app.main.core.security.OAuth2AuthorizationRequestCookieRepository;
 import net.causw.app.main.core.security.SecurityEndpoints;
 import net.causw.app.main.core.security.WebSecurityConfig;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
@@ -56,6 +57,8 @@ public class WebSecurityConfigTest {
 	private JwtTokenProvider jwtTokenProvider;
 	@MockBean
 	private AppleOAuth2AuthorizationRequestResolver appleOAuth2AuthorizationRequestResolver;
+	@MockBean
+	private OAuth2AuthorizationRequestCookieRepository oAuth2AuthorizationRequestCookieRepository;
 	@MockBean
 	private CustomOAuth2UserService customOAuth2UserService;
 	@MockBean
