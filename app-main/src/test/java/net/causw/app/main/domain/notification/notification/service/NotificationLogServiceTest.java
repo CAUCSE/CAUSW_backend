@@ -1,10 +1,11 @@
 package net.causw.app.main.domain.notification.notification.service;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
+import static org.assertj.core.api.AssertionsForClassTypes.*;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -172,4 +173,54 @@ class NotificationLogServiceTest {
 			then(notificationLogReader).should().findUnreadUpToLimit(userId);
 		}
 	}
+
+	@Nested
+	@DisplayName("알림 읽음 처리 테스트")
+	class ReadNotificationTest {
+
+		@Test
+		@DisplayName("존재하는 알림의 경우 읽음 상태(isRead)를 true로 성공적으로 변경한다")
+		void givenValidIds_whenReadNotification_thenSetsIsReadTrue() {
+			// given
+			String userId = "user-uuid-123";
+			String logId = "log-uuid-456";
+
+			User user = ObjectFixtures.getCertifiedUser();
+			Notification notification = ObjectFixtures.getNotification(user);
+			NotificationLog log = NotificationLog.of(user, notification);
+			ReflectionTestUtils.setField(log, "isRead", false); // 초기 상태 명시적 세팅
+
+			given(notificationLogReader.findByIdAndUserId(logId, userId))
+				.willReturn(Optional.of(log));
+
+			// when
+			notificationLogService.readNotification(userId, logId);
+
+			// then
+			// 상태가 정상적으로 true로 업데이트되었는지 검증
+			assertThat(log.getIsRead()).isTrue();
+
+			// mock 객체가 의도대로 호출되었는지 행위 검증
+			then(notificationLogReader).should().findByIdAndUserId(logId, userId);
+		}
+
+		@Test
+		@DisplayName("알림을 찾을 수 없거나 권한이 없는 경우 예외가 발생한다")
+		void givenInvalidLogId_whenReadNotification_thenThrowsException() {
+			// given
+			String userId = "user-uuid-123";
+			String logId = "log-uuid-456";
+
+			given(notificationLogReader.findByIdAndUserId(logId, userId))
+				.willReturn(Optional.empty());
+
+			// when & then
+			// 프로젝트의 커스텀 BaseException 계열로 예외가 던져지는지 검증
+			assertThatThrownBy(() -> notificationLogService.readNotification(userId, logId))
+				.isInstanceOf(RuntimeException.class); // 실제 사용하시는 BaseException 클래스로 타입을 변경해 주세요.
+
+			then(notificationLogReader).should().findByIdAndUserId(logId, userId);
+		}
+	}
+
 }

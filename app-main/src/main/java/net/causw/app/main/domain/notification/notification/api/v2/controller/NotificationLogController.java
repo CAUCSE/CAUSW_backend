@@ -3,10 +3,14 @@ package net.causw.app.main.domain.notification.notification.api.v2.controller;
 import static net.causw.global.constant.StaticValue.*;
 
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.causw.app.main.domain.notification.notification.api.v2.dto.response.NotificationCountResponseDto;
@@ -62,4 +66,15 @@ public class NotificationLogController {
 
 		return ApiResponse.success(response);
 	}
+
+	@PatchMapping("/{id}/read")
+	@ResponseStatus(value = HttpStatus.OK)
+	@Operation(summary = "유저에게 온 알람 읽음으로 변경", description = "유저의 알람 조회 여부를 참으로 변경합니다<br> " +
+		"id에는 notification_log id를 넣어주세요")
+	public void readNotification(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable("id") String id) {
+		notificationLogService.readNotification(userDetails.getUser().getId(), id);
+	}
+
 }
