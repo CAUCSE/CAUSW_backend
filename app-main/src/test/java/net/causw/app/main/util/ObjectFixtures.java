@@ -288,13 +288,18 @@ public class ObjectFixtures {
 	}
 
 	public static Notification getNotification(User user) {
-		return Notification.of(
+		Notification notification = Notification.of(
 			user,
 			"최신 알림",
 			"알림 내용",
 			NoticeType.POST,
 			"target-1",
 			null);
+
+		ReflectionTestUtils.setField(notification, "id", "notification-uuid-123");
+		ReflectionTestUtils.setField(notification, "createdAt", LocalDateTime.now());
+
+		return notification;
 	}
 
 	// Schedule 관련 헬퍼 메서드
