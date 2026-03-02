@@ -27,8 +27,23 @@ public class UserReader {
 	private final UserRepository userRepository;
 	private final SocialAccountRepository socialAccountRepository;
 
+	/**
+	 * 유저 ID로 유저 조회(삭제 여부 상관 없음)
+	 * @param userId 유저 ID
+	 * @return 유저 Entity
+	 */
 	public User findUserById(String userId) {
 		return userRepository.findById(userId)
+			.orElseThrow(UserErrorCode.USER_NOT_FOUND::toBaseException);
+	}
+
+	/**
+	 * 유저 ID로 유저 조회(삭제된 유저는 제외)
+	 * @param userId 유저 ID
+	 * @return 유저 Entity
+	 */
+	public User findUserByIdNotDeleted(String userId) {
+		return userQueryRepository.findByIdNotDeleted(userId)
 			.orElseThrow(UserErrorCode.USER_NOT_FOUND::toBaseException);
 	}
 
@@ -49,6 +64,7 @@ public class UserReader {
 	public User findByEmailOrElseThrow(String email) {
 		return userRepository.findByEmail(email)
 			.orElseThrow(UserErrorCode.INVALID_LOGIN::toBaseException);
+
 	}
 
 	public Optional<User> findByEmail(String email) {

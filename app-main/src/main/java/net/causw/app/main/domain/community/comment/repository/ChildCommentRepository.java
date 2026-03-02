@@ -38,5 +38,12 @@ public interface ChildCommentRepository extends JpaRepository<ChildComment, Stri
 	Page<Post> findPostsByUserId(@Param("userId") String userId, @Param("blockedUserIds") Set<String> blockedUserIds,
 		Pageable pageable);
 
+	@Query("SELECT c FROM ChildComment c " +
+		"LEFT JOIN FETCH c.writer w " +
+		"LEFT JOIN FETCH c.parentComment pc " +
+		"WHERE c.parentComment.id IN :parentCommentIds " +
+		"ORDER BY c.createdAt ASC")
+	List<ChildComment> findChildCommentsByParentCommentIds(@Param("parentCommentIds") List<String> parentCommentIds);
+
 	Optional<ChildComment> findByIdAndIsDeletedFalse(String id);
 }

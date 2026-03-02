@@ -19,7 +19,7 @@ import net.causw.app.main.domain.community.comment.api.v1.dto.CommentCreateReque
 import net.causw.app.main.domain.community.comment.api.v1.dto.CommentResponseDto;
 import net.causw.app.main.domain.community.comment.api.v1.dto.CommentSubscribeResponseDto;
 import net.causw.app.main.domain.community.comment.api.v1.dto.CommentUpdateRequestDto;
-import net.causw.app.main.domain.community.comment.service.v1.CommentService;
+import net.causw.app.main.domain.community.comment.service.v1.CommentV1Service;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.UnauthorizedException;
@@ -36,8 +36,8 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/comments")
-public class CommentController {
-	private final CommentService commentService;
+public class CommentV1Controller {
+	private final CommentV1Service commentV1Service;
 
 	@GetMapping(params = "postId")
 	@ResponseStatus(value = HttpStatus.OK)
@@ -66,7 +66,7 @@ public class CommentController {
 		@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-		return this.commentService.findAllComments(userDetails.getUser(), postId, pageNum);
+		return this.commentV1Service.findAllComments(userDetails.getUser(), postId, pageNum);
 	}
 
 	@PostMapping
@@ -94,7 +94,7 @@ public class CommentController {
 	public CommentResponseDto createComment(
 		@Valid @RequestBody CommentCreateRequestDto commentCreateRequestDto,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		return this.commentService.createComment(userDetails.getUser(), commentCreateRequestDto);
+		return this.commentV1Service.createComment(userDetails.getUser(), commentCreateRequestDto);
 	}
 
 	@PutMapping(value = "/{id}")
@@ -126,7 +126,7 @@ public class CommentController {
 		@PathVariable("id") String id,
 		@Valid @RequestBody CommentUpdateRequestDto commentUpdateRequestDto,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		return this.commentService.updateComment(
+		return this.commentV1Service.updateComment(
 			userDetails.getUser(),
 			id,
 			commentUpdateRequestDto);
@@ -161,7 +161,7 @@ public class CommentController {
 	public CommentResponseDto deleteComment(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		return this.commentService.deleteComment(userDetails.getUser(), id);
+		return this.commentV1Service.deleteComment(userDetails.getUser(), id);
 	}
 
 	@PostMapping(value = "/{id}/like")
@@ -181,7 +181,7 @@ public class CommentController {
 	public void likeComment(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		this.commentService.likeComment(userDetails.getUser(), id);
+		this.commentV1Service.likeComment(userDetails.getUser(), id);
 	}
 
 	@PostMapping("/subscribe/{id}")
@@ -190,7 +190,7 @@ public class CommentController {
 	public CommentSubscribeResponseDto subscribeComment(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable("id") String id) {
-		return commentService.setCommentSubscribe(userDetails.getUser(), id, true);
+		return commentV1Service.setCommentSubscribe(userDetails.getUser(), id, true);
 	}
 
 	@DeleteMapping("/subscribe/{id}")
@@ -199,7 +199,7 @@ public class CommentController {
 	public CommentSubscribeResponseDto unsubscribeComment(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable("id") String id) {
-		return commentService.setCommentSubscribe(userDetails.getUser(), id, false);
+		return commentV1Service.setCommentSubscribe(userDetails.getUser(), id, false);
 	}
 
 	@DeleteMapping(value = "/{id}/like")
@@ -219,6 +219,6 @@ public class CommentController {
 	public void cancelLikeComment(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		this.commentService.cancelLikeComment(userDetails.getUser(), id);
+		this.commentV1Service.cancelLikeComment(userDetails.getUser(), id);
 	}
 }

@@ -25,7 +25,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-@Tag(name = "일정 관리자 API V2", description = "일정 관리자 전용 API V2")
+@Tag(name = "Schedule Admin v2", description = "일정 관리자 전용 API V2")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/admin/schedules")

@@ -20,7 +20,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
-@Tag(name = "Notification v2", description = "알림 로그 api")
+@Tag(name = "Notification Public v2", description = "알림 로그 조회 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/notifications/log")
