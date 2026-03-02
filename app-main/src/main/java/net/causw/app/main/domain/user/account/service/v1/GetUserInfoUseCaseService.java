@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 @Transactional(readOnly = true)
 public class GetUserInfoUseCaseService {
 
-	private final UserInfoService userInfoService;
+	private final UserInfoV1Service userInfoV1Service;
 	private final UserEntityService userEntityService;
 
 	public UserInfoResponseDto execute(String userId) {
@@ -31,7 +31,7 @@ public class GetUserInfoUseCaseService {
 				MessageUtil.USER_INFO_NOT_ACCESSIBLE);
 		}
 
-		UserInfo userInfo = userInfoService.getUserInfoByUser(user);
+		UserInfo userInfo = userInfoV1Service.getUserInfoByUser(user);
 
 		return UserDtoMapper.INSTANCE.toUserInfoResponseDto(userInfo);
 	}

@@ -32,6 +32,7 @@ public enum UserErrorCode implements BaseResponseCode {
 	STUDENT_ID_ALREADY_EXIST(HttpStatus.CONFLICT, "USER_409_008", "이미 존재하는 학번입니다."),
 	ADMISSION_REJECT_REASON_REQUIRED(HttpStatus.BAD_REQUEST, "USER_400_005", "거절 사유를 입력해 주세요."),
 	GRADUATION_YEAR_REQUIRED(HttpStatus.BAD_REQUEST, "USER_400_006", "졸업자는 졸업연도를 입력해 주세요."),
+	INVALID_ACADEMIC_STATUS(HttpStatus.BAD_REQUEST, "USER_400_007", "유효하지 않은 학적 상태입니다."),
 	USER_DELETED(HttpStatus.UNAUTHORIZED, "USER_401_004", "삭제된 계정입니다.");
 
 	private final HttpStatus status;
