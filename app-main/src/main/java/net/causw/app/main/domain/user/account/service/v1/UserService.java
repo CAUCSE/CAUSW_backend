@@ -165,7 +165,7 @@ public class UserService {
 	private final UserRoleService userRoleService;
 
 	private final UserDtoMapper userDtoMapper;
-	private final PostDtoV1Mapper postDtoMapper;
+	private final PostDtoV1Mapper postDtoV1Mapper;
 	private final PostV1Service postV1Service;
 	private final UserBlockEntityService userBlockEntityService;
 	private final UserQueryRepository userQueryRepository;
@@ -350,7 +350,7 @@ public class UserService {
 			likePostPage
 				.map(likePost -> {
 					Post post = likePost.getPost();
-					PostsResponseDto dto = postDtoMapper.toPostsResponseDto(
+					PostsResponseDto dto = postDtoV1Mapper.toPostsResponseDto(
 						post,
 						getNumOfComment(post),
 						getNumOfPostLikes(post),

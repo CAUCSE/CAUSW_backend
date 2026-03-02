@@ -15,7 +15,7 @@ import net.causw.app.main.core.global.annotation.V1Api;
 import net.causw.app.main.domain.community.comment.api.v1.dto.ChildCommentCreateRequestDto;
 import net.causw.app.main.domain.community.comment.api.v1.dto.ChildCommentResponseDto;
 import net.causw.app.main.domain.community.comment.api.v1.dto.ChildCommentUpdateRequestDto;
-import net.causw.app.main.domain.community.comment.service.v1.ChildCommentService;
+import net.causw.app.main.domain.community.comment.service.v1.ChildCommentV1Service;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.UnauthorizedException;
@@ -32,8 +32,8 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/child-comments")
-public class ChildCommentController {
-	private final ChildCommentService childCommentService;
+public class ChildCommentV1Controller {
+	private final ChildCommentV1Service childCommentV1Service;
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
@@ -64,7 +64,7 @@ public class ChildCommentController {
 		@Valid @RequestBody ChildCommentCreateRequestDto childCommentCreateRequestDto,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-		return this.childCommentService.createChildComment(userDetails.getUser(), childCommentCreateRequestDto);
+		return this.childCommentV1Service.createChildComment(userDetails.getUser(), childCommentCreateRequestDto);
 	}
 
 	@PutMapping(value = "/{id}")
@@ -97,7 +97,7 @@ public class ChildCommentController {
 		@PathVariable("id") String id,
 		@Valid @RequestBody ChildCommentUpdateRequestDto childCommentUpdateRequestDto,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		return this.childCommentService.updateChildComment(userDetails.getUser(), id, childCommentUpdateRequestDto);
+		return this.childCommentV1Service.updateChildComment(userDetails.getUser(), id, childCommentUpdateRequestDto);
 	}
 
 	@DeleteMapping(value = "/{id}")
@@ -129,7 +129,7 @@ public class ChildCommentController {
 	public ChildCommentResponseDto deleteChildComment(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		return this.childCommentService.deleteChildComment(userDetails.getUser(), id);
+		return this.childCommentV1Service.deleteChildComment(userDetails.getUser(), id);
 	}
 
 	@PostMapping(value = "/{id}/like")
@@ -149,7 +149,7 @@ public class ChildCommentController {
 	public void likeChildComment(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		this.childCommentService.likeChildComment(userDetails.getUser(), id);
+		this.childCommentV1Service.likeChildComment(userDetails.getUser(), id);
 	}
 
 	@DeleteMapping(value = "/{id}/like")
@@ -169,6 +169,6 @@ public class ChildCommentController {
 	public void cancelLikeChildComment(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		this.childCommentService.cancelLikeChildComment(userDetails.getUser(), id);
+		this.childCommentV1Service.cancelLikeChildComment(userDetails.getUser(), id);
 	}
 }

@@ -24,8 +24,6 @@ public enum LockerErrorCode implements BaseResponseCode {
 	LOCKER_ALREADY_DISABLED(HttpStatus.CONFLICT, "LOCKER_409_008", "이미 비활성화된 사물함입니다."),
 	LOCKER_EXPIRE_DATE_NOT_SET(HttpStatus.INTERNAL_SERVER_ERROR, "LOCKER_500_001", "사물함 만료일이 설정되지 않았습니다."),
 	LOCKER_NEXT_EXPIRE_DATE_NOT_SET(HttpStatus.INTERNAL_SERVER_ERROR, "LOCKER_500_002", "사물함 연장 만료일이 설정되지 않았습니다."),
-	LOCKER_REGISTER_PERIOD_NOT_SET(HttpStatus.INTERNAL_SERVER_ERROR, "LOCKER_500_003", "사물함 신청기간이 설정되지 않았습니다."),
-	LOCKER_EXTEND_PERIOD_NOT_SET(HttpStatus.INTERNAL_SERVER_ERROR, "LOCKER_500_004", "사물함 연장기간이 설정되지 않았습니다."),
 	LOCKER_REGISTER_ALREADY_ACTIVE(HttpStatus.CONFLICT, "LOCKER_409_009", "사물함 신청이 활성화된 상태에서는 연장을 활성화할 수 없습니다."),
 	LOCKER_EXTEND_ALREADY_ACTIVE(HttpStatus.CONFLICT, "LOCKER_409_010", "사물함 연장이 활성화된 상태에서는 신청을 활성화할 수 없습니다."),
 	LOCKER_PERIOD_START_AFTER_END(HttpStatus.BAD_REQUEST, "LOCKER_400_001", "기간 시작일은 종료일보다 앞서야 합니다."),

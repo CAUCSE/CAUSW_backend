@@ -34,7 +34,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/admin/lockers")
 @PreAuthorize("@security.hasRole(@Role.ADMIN)")
-@Tag(name = "관리자 사물함 API V2", description = "관리자 사물함 관리 API V2")
+@Tag(name = "Locker Admin v2", description = "관리자 사물함 관리 API V2")
 public class LockerAdminController {
 
 	private final LockerAdminService lockerAdminService;

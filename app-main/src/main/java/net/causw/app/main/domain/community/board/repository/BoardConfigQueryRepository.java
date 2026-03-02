@@ -11,6 +11,7 @@ import net.causw.app.main.domain.community.board.entity.BoardReadScope;
 import net.causw.app.main.domain.community.board.entity.BoardVisibility;
 import net.causw.app.main.domain.community.board.entity.QBoardConfig;
 
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
@@ -61,8 +62,28 @@ public class BoardConfigQueryRepository {
 		return jpaQueryFactory
 			.select(boardConfig.boardId)
 			.from(boardConfig)
-			.where(boardConfig.visibility.eq(BoardVisibility.VISIBLE)
+			.where(visible(boardConfig)
 				.and(boardConfig.readScope.in(boardReadScopes)))
 			.fetch();
+	}
+
+	/**
+	 * 공지사항 게시판(boardConfig.isNotice=true) 중에서 사용자의 ReadScope에 맞는 게시판 설정을 조회합니다.
+	 * @param readScopes 조회할 boardReadScope 집합
+	 * @return 공지사항 게시판 설정 목록
+	 *
+	 */
+	public List<BoardConfig> findAllByIsNoticeTrueAndReadScopeIn(Set<BoardReadScope> readScopes) {
+		QBoardConfig boardConfig = QBoardConfig.boardConfig;
+		return jpaQueryFactory
+			.selectFrom(boardConfig)
+			.where(boardConfig.isNotice.eq(true)
+				.and(boardConfig.readScope.in(readScopes))
+				.and(visible(boardConfig)))
+			.fetch();
+	}
+
+	private static BooleanExpression visible(QBoardConfig boardConfig) {
+		return boardConfig.visibility.eq(BoardVisibility.VISIBLE);
 	}
 }
