@@ -20,7 +20,7 @@ public class NotificationLogReader {
 	private final NotificationLogRepository notificationLogRepository;
 	private final PageableFactory pageableFactory;
 
-	public Optional<NotificationLog> findByIdAndUserId(String userId, String id) {
+	public Optional<NotificationLog> findByIdAndUserId(String id, String userId) {
 		return notificationLogRepository.findByIdAndUserId(id, userId);
 	}
 
