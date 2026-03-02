@@ -71,10 +71,11 @@ public class NotificationLogController {
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "유저에게 온 알람 읽음으로 변경", description = "유저의 알람 조회 여부를 참으로 변경합니다<br> " +
 		"id에는 notification_log id를 넣어주세요")
-	public void readNotification(
+	public ApiResponse<Void> readNotification(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable("id") String id) {
 		notificationLogService.readNotification(userDetails.getUser().getId(), id);
+		return ApiResponse.success();
 	}
 
 }
