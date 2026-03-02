@@ -8,7 +8,6 @@ import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.Academic
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.academic.repository.userAcademicRecord.UserAcademicRecordLogRepository;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.enums.user.GraduationType;
 
 import lombok.RequiredArgsConstructor;
 
@@ -34,14 +33,12 @@ public class AcademicRecordLogCreator {
 	 *
 	 * @param requester 요청 사용자
 	 * @param graduationYear 졸업년도
-	 * @param graduationType 졸업 유형
 	 * @param note 사용자 메모
 	 * @return 저장된 로그
 	 */
 	public UserAcademicRecordLog createGraduationLog(
 		User requester,
 		Integer graduationYear,
-		GraduationType graduationType,
 		String note) {
 		String normalizedNote = normalizeNote(note);
 
@@ -50,7 +47,7 @@ public class AcademicRecordLogCreator {
 			requester,
 			AcademicStatus.GRADUATED,
 			graduationYear,
-			graduationType,
+			null,
 			normalizedNote,
 			AcademicRecordRequestStatus.ACCEPT);
 

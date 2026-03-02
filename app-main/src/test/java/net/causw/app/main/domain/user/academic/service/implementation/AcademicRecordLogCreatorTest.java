@@ -17,7 +17,6 @@ import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.Academic
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.academic.repository.userAcademicRecord.UserAcademicRecordLogRepository;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.enums.user.GraduationType;
 import net.causw.app.main.util.ObjectFixtures;
 
 @ExtendWith(MockitoExtension.class)
@@ -35,7 +34,7 @@ class AcademicRecordLogCreatorTest {
 		User user = ObjectFixtures.getCertifiedUserWithId("user-1");
 		when(logRepository.save(any(UserAcademicRecordLog.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-		UserAcademicRecordLog log = logCreator.createGraduationLog(user, 2026, GraduationType.AUGUST, "졸업 신청");
+		UserAcademicRecordLog log = logCreator.createGraduationLog(user, 2026, "졸업 신청");
 
 		assertThat(log.getTargetAcademicRecordStatus()).isEqualTo(AcademicStatus.GRADUATED);
 		assertThat(log.getTargetAcademicRecordRequestStatus()).isEqualTo(AcademicRecordRequestStatus.ACCEPT);
@@ -49,7 +48,7 @@ class AcademicRecordLogCreatorTest {
 		User user = ObjectFixtures.getCertifiedUserWithId("user-2");
 		when(logRepository.save(any(UserAcademicRecordLog.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-		UserAcademicRecordLog log = logCreator.createGraduationLog(user, 2026, GraduationType.FEBRUARY, "  ");
+		UserAcademicRecordLog log = logCreator.createGraduationLog(user, 2026, "  ");
 
 		assertThat(log.getTargetAcademicRecordRequestStatus()).isEqualTo(AcademicRecordRequestStatus.ACCEPT);
 		assertThat(log.getNote()).isNull();

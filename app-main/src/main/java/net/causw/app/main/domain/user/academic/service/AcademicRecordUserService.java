@@ -57,7 +57,6 @@ public class AcademicRecordUserService {
 
 		user.setAcademicStatus(AcademicStatus.GRADUATED);
 		user.setGraduationYear(request.graduationYear());
-		user.setGraduationType(request.graduationType());
 		userWriter.save(user);
 
 		eventPublisher.publishEvent(new AcademicStatusChangeEvent(
@@ -68,13 +67,11 @@ public class AcademicRecordUserService {
 		UserAcademicRecordLog graduationLog = logCreator.createGraduationLog(
 			user,
 			request.graduationYear(),
-			request.graduationType(),
 			request.note());
 
 		GraduationDetailsResponse details = new GraduationDetailsResponse(
 			graduationLog.getId(),
 			request.graduationYear(),
-			request.graduationType(),
 			graduationLog.getCreatedAt());
 
 		return new AcademicStatusResponse<>(
@@ -106,7 +103,6 @@ public class AcademicRecordUserService {
 
 		UserAcademicRecordApplication application = applicationWriter.createEnrollmentApplication(
 			user,
-			request.currentCompletedSemester(),
 			request.note(),
 			savedFiles);
 

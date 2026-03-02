@@ -60,14 +60,12 @@ public class AcademicRecordApplicationWriter {
 	 * 재학 전환 신청서를 생성한다.
 	 *
 	 * @param user 신청 사용자
-	 * @param currentCompletedSemester 신청 완료 학기 차수
 	 * @param note 신청 메모
 	 * @param attachImageList 신청 첨부 이미지 목록
 	 * @return 저장된 신청서
 	 */
 	public UserAcademicRecordApplication createEnrollmentApplication(
 		User user,
-		Integer currentCompletedSemester,
 		String note,
 		List<UuidFile> attachImageList) {
 		closeAwaitApplications(user);
@@ -76,7 +74,7 @@ public class AcademicRecordApplicationWriter {
 			user,
 			AcademicRecordRequestStatus.AWAIT,
 			AcademicStatus.ENROLLED,
-			currentCompletedSemester,
+			null,
 			note,
 			attachImageList);
 

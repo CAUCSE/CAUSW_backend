@@ -37,7 +37,6 @@ import net.causw.app.main.domain.user.academic.event.AcademicStatusChangeEvent;
 import net.causw.app.main.domain.user.academic.service.implementation.AcademicRecordApplicationWriter;
 import net.causw.app.main.domain.user.academic.service.implementation.AcademicRecordLogCreator;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.enums.user.GraduationType;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
@@ -71,20 +70,20 @@ class AcademicRecordUserServiceTest {
 	@DisplayName("재학 사용자가 졸업 상태로 변경 요청하면 로그만 생성하고 학적 상태를 즉시 변경한다")
 	void updateStatusToGraduated_success() {
 		User user = ObjectFixtures.getCertifiedUserWithId("user-1");
-		GraduationApplicationRequest request = new GraduationApplicationRequest(2026, GraduationType.AUGUST, "졸업 신청");
+		GraduationApplicationRequest request = new GraduationApplicationRequest(2026, "졸업 신청");
 
 		UserAcademicRecordLog log = UserAcademicRecordLog.createWithGraduation(
 			user,
 			user,
 			AcademicStatus.GRADUATED,
 			2026,
-			GraduationType.AUGUST,
+			null,
 			"졸업 신청");
 		ReflectionTestUtils.setField(log, "id", "log-1");
 		ReflectionTestUtils.setField(log, "createdAt", LocalDateTime.of(2026, 2, 1, 0, 0));
 
 		when(userReader.findUserById(user.getId())).thenReturn(user);
-		when(logCreator.createGraduationLog(user, 2026, GraduationType.AUGUST, "졸업 신청")).thenReturn(log);
+		when(logCreator.createGraduationLog(user, 2026, "졸업 신청")).thenReturn(log);
 
 		AcademicStatusResponse<GraduationDetailsResponse> response = academicRecordUserService.updateStatusToGraduated(
 			user,
@@ -94,12 +93,12 @@ class AcademicRecordUserServiceTest {
 		assertThat(response.updatedStatus()).isEqualTo(AcademicStatus.GRADUATED);
 		assertThat(response.recordDetails().logId()).isEqualTo("log-1");
 		assertThat(user.getGraduationYear()).isEqualTo(2026);
-		assertThat(user.getGraduationType()).isEqualTo(GraduationType.AUGUST);
+		assertThat(user.getGraduationType()).isNull();
 
 		verify(userWriter).save(user);
 		verify(eventPublisher).publishEvent(any(AcademicStatusChangeEvent.class));
-		verify(logCreator).createGraduationLog(user, 2026, GraduationType.AUGUST, "졸업 신청");
-		verify(applicationWriter, never()).createEnrollmentApplication(any(), any(), any(), any());
+		verify(logCreator).createGraduationLog(user, 2026, "졸업 신청");
+		verify(applicationWriter, never()).createEnrollmentApplication(any(), any(), any());
 	}
 
 	@Test
@@ -108,7 +107,7 @@ class AcademicRecordUserServiceTest {
 		User user = ObjectFixtures.getCertifiedUserWithId("user-2");
 		user.setAcademicStatus(AcademicStatus.GRADUATED);
 
-		EnrollmentApplicationRequest request = new EnrollmentApplicationRequest(5, "복학 신청");
+		EnrollmentApplicationRequest request = new EnrollmentApplicationRequest("복학 신청");
 		MockMultipartFile image = new MockMultipartFile("imageFileList", "proof.png", "image/png",
 			new byte[] {1, 2, 3});
 
@@ -124,7 +123,7 @@ class AcademicRecordUserServiceTest {
 			user,
 			AcademicRecordRequestStatus.AWAIT,
 			AcademicStatus.ENROLLED,
-			5,
+			null,
 			"복학 신청",
 			List.of(uuidFile));
 		ReflectionTestUtils.setField(application, "id", "application-1");
@@ -133,7 +132,7 @@ class AcademicRecordUserServiceTest {
 		when(userReader.findUserById(user.getId())).thenReturn(user);
 		when(uuidFileService.saveFileList(List.of(image), FilePath.USER_ACADEMIC_RECORD_APPLICATION))
 			.thenReturn(List.of(uuidFile));
-		when(applicationWriter.createEnrollmentApplication(user, 5, "복학 신청", List.of(uuidFile)))
+		when(applicationWriter.createEnrollmentApplication(user, "복학 신청", List.of(uuidFile)))
 			.thenReturn(application);
 
 		AcademicStatusResponse<EnrollmentDetailsResponse> response = academicRecordUserService.updateStatusToEnrolled(
@@ -148,7 +147,7 @@ class AcademicRecordUserServiceTest {
 		assertThat(response.recordDetails().requestedAt()).isEqualTo(LocalDateTime.of(2026, 3, 1, 10, 0));
 
 		verify(uuidFileService).saveFileList(List.of(image), FilePath.USER_ACADEMIC_RECORD_APPLICATION);
-		verify(applicationWriter).createEnrollmentApplication(user, 5, "복학 신청", List.of(uuidFile));
+		verify(applicationWriter).createEnrollmentApplication(user, "복학 신청", List.of(uuidFile));
 		verify(logCreator, never()).createFromApplication(any(), any());
 		verify(userWriter, never()).save(any(User.class));
 		verify(eventPublisher, never()).publishEvent(any(Object.class));
@@ -158,7 +157,7 @@ class AcademicRecordUserServiceTest {
 	@DisplayName("졸업 상태가 아닌 사용자가 재학 변경 요청하면 예외가 발생한다")
 	void updateStatusToEnrolled_invalidTransition() {
 		User user = ObjectFixtures.getCertifiedUserWithId("user-3");
-		EnrollmentApplicationRequest request = new EnrollmentApplicationRequest(3, "복학 신청");
+		EnrollmentApplicationRequest request = new EnrollmentApplicationRequest("복학 신청");
 		MockMultipartFile image = new MockMultipartFile("imageFileList", "proof.png", "image/png", new byte[] {1});
 
 		when(userReader.findUserById(user.getId())).thenReturn(user);
@@ -174,7 +173,7 @@ class AcademicRecordUserServiceTest {
 	void updateStatusToEnrolled_emptyImagePart_throwsException() {
 		User user = ObjectFixtures.getCertifiedUserWithId("user-4");
 		user.setAcademicStatus(AcademicStatus.GRADUATED);
-		EnrollmentApplicationRequest request = new EnrollmentApplicationRequest(4, "복학 신청");
+		EnrollmentApplicationRequest request = new EnrollmentApplicationRequest("복학 신청");
 		MockMultipartFile emptyImage = new MockMultipartFile("imageFileList", "", "application/octet-stream",
 			new byte[0]);
 
