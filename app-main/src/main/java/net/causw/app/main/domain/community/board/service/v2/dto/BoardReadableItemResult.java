@@ -5,6 +5,5 @@ package net.causw.app.main.domain.community.board.service.v2.dto;
  */
 public record BoardReadableItemResult(
 	String id,
-	String name
-) {
+	String name) {
 }
