@@ -5,10 +5,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.causw.app.main.domain.community.report.api.v2.dto.request.ReportedUserListRequest;
+import net.causw.app.main.domain.community.report.api.v2.dto.response.ReportedCommentSummaryResponse;
 import net.causw.app.main.domain.community.report.api.v2.dto.response.ReportedUserSummaryResponse;
 import net.causw.app.main.domain.community.report.api.v2.mapper.ReportAdminMapper;
 import net.causw.app.main.domain.community.report.service.v2.ReportAdminService;
@@ -16,6 +18,7 @@ import net.causw.app.main.shared.dto.ApiResponse;
 import net.causw.app.main.shared.dto.PageResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
@@ -38,6 +41,20 @@ public class ReportAdminController {
 		return ApiResponse.success(
 			PageResponse.from(
 				reportAdminService.getReportedUserList(reportAdminMapper.toCondition(request), pageable)
+					.map(reportAdminMapper::toResponse)
+			)
+		);
+	}
+
+	@Operation(summary = "특정 회원의 신고된 댓글 조회", description = "특정 회원이 작성한 신고된 댓글/대댓글 목록을 조회합니다.")
+	@GetMapping("/users/{userId}/comments")
+	public ApiResponse<PageResponse<ReportedCommentSummaryResponse>> getReportedCommentListByUser(
+		@Parameter(description = "회원 ID") @PathVariable String userId,
+		@ParameterObject @PageableDefault(page = 0, size = 10) Pageable pageable
+	) {
+		return ApiResponse.success(
+			PageResponse.from(
+				reportAdminService.getReportedCommentListByUser(userId, pageable)
 					.map(reportAdminMapper::toResponse)
 			)
 		);
