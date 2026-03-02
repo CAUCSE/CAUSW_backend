@@ -38,7 +38,7 @@ import net.causw.app.main.domain.community.post.service.v2.util.PostValidator;
 import net.causw.app.main.domain.community.reaction.service.implementation.FavoritePostReader;
 import net.causw.app.main.domain.community.reaction.service.implementation.LikePostReader;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.relation.service.v1.UserBlockEntityService;
+import net.causw.app.main.domain.user.relation.service.v2.implementation.BlockReader;
 import net.causw.global.constant.StaticValue;
 
 import lombok.RequiredArgsConstructor;
@@ -57,7 +57,7 @@ public class PostService {
 	private final LikePostReader likePostReader;
 	private final FavoritePostReader favoritePostReader;
 	private final PostAttachImageWriter postAttachImageWriter;
-	private final UserBlockEntityService userBlockEntityService;
+	private final BlockReader userBlockReader;
 
 	/**
 	 * 게시글을 생성합니다. 게시글 내용과 첨부 이미지를 저장합니다.
@@ -300,7 +300,7 @@ public class PostService {
 	 * @return 게시글 목록 결과
 	 */
 	public PostListResult getPostsCommentedByUser(User user, String cursor, Integer size) {
-		Set<String> blockedUserIds = userBlockEntityService.findBlockeeUserIdsByBlocker(user);
+		Set<String> blockedUserIds = userBlockReader.findBlockeeUserIdsByBlocker(user);
 		int pageSize = size != null ? size : StaticValue.DEFAULT_POST_PAGE_SIZE;
 		PostCursorManager.ParsedCursor parsedCursor = PostCursorManager.parseCursor(cursor);
 
@@ -343,7 +343,7 @@ public class PostService {
 	 * @return 게시글 목록 결과
 	 */
 	public PostListResult getPostsLikedByUser(User user, String cursor, Integer size) {
-		Set<String> blockedUserIds = userBlockEntityService.findBlockeeUserIdsByBlocker(user);
+		Set<String> blockedUserIds = userBlockReader.findBlockeeUserIdsByBlocker(user);
 		int pageSize = size != null ? size : StaticValue.DEFAULT_POST_PAGE_SIZE;
 		PostCursorManager.ParsedCursor parsedCursor = PostCursorManager.parseCursor(cursor);
 
