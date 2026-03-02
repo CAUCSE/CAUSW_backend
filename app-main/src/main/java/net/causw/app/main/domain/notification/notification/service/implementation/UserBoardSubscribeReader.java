@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.community.board.entity.Board;
+import net.causw.app.main.domain.notification.notification.entity.UserBoardSubscribe;
 import net.causw.app.main.domain.notification.notification.repository.UserBoardSubscribeRepository;
 import net.causw.app.main.domain.user.account.entity.user.User;
 
@@ -25,5 +26,9 @@ public class UserBoardSubscribeReader {
 			.filter(s -> Boolean.TRUE.equals(s.getIsSubscribed()))
 			.map(s -> s.getBoard().getId())
 			.collect(Collectors.toSet());
+	}
+
+	public List<UserBoardSubscribe> findForNotification(Board board, Set<String> blockerUserIds) {
+		return userBoardSubscribeRepository.findByBoardAndIsSubscribedTrueExcludingBlockerUsers(board, blockerUserIds);
 	}
 }

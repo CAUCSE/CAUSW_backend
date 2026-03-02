@@ -2,6 +2,7 @@ package net.causw.app.main.domain.community.comment.service;
 
 import java.util.List;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +23,7 @@ import net.causw.app.main.domain.community.comment.service.implementation.LikeCh
 import net.causw.app.main.domain.community.comment.util.ChildCommentValidator;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.v2.implementation.PostReader;
-import net.causw.app.main.domain.notification.notification.service.v1.CommentNotificationService;
+import net.causw.app.main.domain.notification.notification.service.v2.event.CommentChildCommentCreatedEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 
@@ -44,7 +45,7 @@ public class ChildCommentService {
 	private final ChildCommentWriter childCommentWriter;
 	private final LikeChildCommentWriter likeChildCommentWriter;
 	private final ChildCommentValidator childCommentValidator;
-	private final CommentNotificationService commentNotificationService;
+	private final ApplicationEventPublisher eventPublisher;
 	private final BoardConfigReader boardConfigReader;
 	private final LikeChildCommentReader likeChildCommentReader;
 	private final ChildCommentMapper childCommentMapper;
@@ -79,7 +80,7 @@ public class ChildCommentService {
 		ChildCommentResult result = childCommentMapper.toResult(
 			childComment, creator, new ChildCommentMeta(boardAdminIds, 0L, false, false));
 
-		commentNotificationService.sendByCommentIsSubscribed(parentComment, childComment);
+		eventPublisher.publishEvent(new CommentChildCommentCreatedEvent(parentComment, childComment));
 
 		return result;
 	}
