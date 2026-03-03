@@ -22,8 +22,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import jakarta.validation.ConstraintViolationException;
-
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
 import net.causw.app.main.domain.user.account.service.implementation.UserPushTokenWriter;
@@ -41,6 +39,8 @@ import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
+
+import jakarta.validation.ConstraintViolationException;
 
 @ExtendWith(MockitoExtension.class)
 public class AuthServiceTest {
