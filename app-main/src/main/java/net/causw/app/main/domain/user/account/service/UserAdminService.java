@@ -65,6 +65,13 @@ public class UserAdminService {
 		userWriter.restore(targetUser);
 	}
 
+	@Transactional
+	public void updateUserRole(String userId, Role currentRole, Role newRole) {
+		User targetUser = userReader.findUserById(userId);
+		validateCurrentRoleMatched(targetUser, currentRole);
+		userWriter.replaceRole(targetUser, currentRole, newRole);
+	}
+
 	private void validateDroppableUser(User targetUser) {
 		boolean isDroppableState = targetUser.getState() == UserState.ACTIVE && !targetUser.isDeleted();
 		if (!isDroppableState) {
@@ -82,6 +89,12 @@ public class UserAdminService {
 		boolean restorable = targetUser.getState() == UserState.DROP || targetUser.isDeleted();
 		if (!restorable) {
 			throw UserErrorCode.USER_NOT_RESTORABLE.toBaseException();
+		}
+	}
+
+	private void validateCurrentRoleMatched(User targetUser, Role currentRole) {
+		if (!targetUser.getRoles().contains(currentRole)) {
+			throw UserErrorCode.USER_ROLE_MISMATCH.toBaseException();
 		}
 	}
 }

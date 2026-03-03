@@ -11,6 +11,7 @@ import net.causw.app.main.domain.user.account.api.v2.dto.request.AdmissionListRe
 import net.causw.app.main.domain.user.account.api.v2.dto.request.AdmissionRejectRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserDropRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserListRequest;
+import net.causw.app.main.domain.user.account.api.v2.dto.request.UserRoleUpdateRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.AdmissionListItemResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.AdmissionResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserDetailResponse;
@@ -83,6 +84,16 @@ public class UserAdminController {
 		@PathVariable String userId) {
 
 		userAdminService.restoreUser(userId);
+		return ApiResponse.success();
+	}
+
+	@Operation(summary = "회원 권한 변경 V2", description = "관리자가 회원의 현재 권한을 확인한 뒤 지정한 권한으로 변경합니다.")
+	@PatchMapping("/{userId}/role")
+	public ApiResponse<Void> updateUserRole(
+		@PathVariable String userId,
+		@RequestBody @Valid UserRoleUpdateRequest request) {
+
+		userAdminService.updateUserRole(userId, request.currentRole(), request.newRole());
 		return ApiResponse.success();
 	}
 

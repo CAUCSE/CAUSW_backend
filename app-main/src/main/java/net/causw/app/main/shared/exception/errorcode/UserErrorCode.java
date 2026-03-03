@@ -40,7 +40,8 @@ public enum UserErrorCode implements BaseResponseCode {
 		"소셜 로그인만 연결된 계정은 비밀번호를 변경할 수 없습니다."),
 	USER_NOT_DROPPABLE(HttpStatus.BAD_REQUEST, "USER_400_008", "활성 상태이며 탈퇴하지 않은 사용자만 추방할 수 있습니다."),
 	USER_NOT_DROPPABLE_ROLE(HttpStatus.FORBIDDEN, "USER_403_004", "해당 권한의 사용자는 추방할 수 없습니다."),
-	USER_NOT_RESTORABLE(HttpStatus.BAD_REQUEST, "USER_400_009", "추방 상태 또는 탈퇴한 사용자만 복구할 수 있습니다.");
+	USER_NOT_RESTORABLE(HttpStatus.BAD_REQUEST, "USER_400_009", "추방 상태 또는 탈퇴한 사용자만 복구할 수 있습니다."),
+	USER_ROLE_MISMATCH(HttpStatus.BAD_REQUEST, "USER_400_010", "요청한 현재 권한이 사용자의 권한 목록과 일치하지 않습니다.");
 
 	private final HttpStatus status;
 	private final String code;

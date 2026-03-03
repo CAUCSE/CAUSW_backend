@@ -1,10 +1,14 @@
 package net.causw.app.main.domain.user.account.service.implementation;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.user.account.entity.user.SocialAccount;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
+import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.repository.user.SocialAccountRepository;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 
@@ -62,6 +66,15 @@ public class UserWriter {
 
 	public User restore(User user) {
 		user.restore();
+		return this.userRepository.save(user);
+	}
+
+	// 관리자 전용 권한 교체 메서드
+	public User replaceRole(User user, Role currentRole, Role newRole) {
+		Set<Role> roles = new HashSet<>(user.getRoles());
+		roles.remove(currentRole);
+		roles.add(newRole);
+		user.setRoles(roles);
 		return this.userRepository.save(user);
 	}
 }

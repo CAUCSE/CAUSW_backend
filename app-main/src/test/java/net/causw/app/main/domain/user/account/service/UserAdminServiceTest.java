@@ -292,4 +292,47 @@ class UserAdminServiceTest {
 			verify(userWriter, never()).restore(any());
 		}
 	}
+
+	@Nested
+	@DisplayName("유저 권한 변경")
+	class UpdateUserRole {
+
+		@Test
+		@DisplayName("현재 권한이 일치하면 권한을 변경한다")
+		void givenMatchedCurrentRole_whenUpdateUserRole_thenReplaceRole() {
+			// given
+			String userId = "user-1";
+			User user = ObjectFixtures.getCertifiedUserWithId(userId);
+			user.setRoles(Set.of(Role.COMMON));
+
+			when(userReader.findUserById(userId)).thenReturn(user);
+
+			// when
+			userAdminService.updateUserRole(userId, Role.COMMON, Role.COUNCIL);
+
+			// then
+			verify(userWriter).replaceRole(user, Role.COMMON, Role.COUNCIL);
+		}
+
+		@Test
+		@DisplayName("현재 권한이 일치하지 않으면 USER_ROLE_MISMATCH 예외가 발생한다")
+		void givenMismatchedCurrentRole_whenUpdateUserRole_thenThrowRoleMismatch() {
+			// given
+			String userId = "user-1";
+			User user = ObjectFixtures.getCertifiedUserWithId(userId);
+			user.setRoles(Set.of(Role.COMMON));
+
+			when(userReader.findUserById(userId)).thenReturn(user);
+
+			// when
+			Throwable throwable = catchThrowable(() -> userAdminService.updateUserRole(userId, Role.COUNCIL, Role.ADMIN));
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
+				.isEqualTo(UserErrorCode.USER_ROLE_MISMATCH);
+			verify(userWriter, never()).replaceRole(any(), any(), any());
+		}
+	}
 }
