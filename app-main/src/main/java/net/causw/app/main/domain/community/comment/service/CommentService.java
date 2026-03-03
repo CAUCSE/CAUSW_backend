@@ -41,6 +41,7 @@ import lombok.RequiredArgsConstructor;
  */
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CommentService {
 
 	private final PostReader postReader;
@@ -94,7 +95,6 @@ public class CommentService {
 	 * @param query 댓글 목록 조회 쿼리 데이터
 	 * @return 댓글 응답 페이지
 	 */
-	@Transactional(readOnly = true)
 	public Page<CommentResult> findAllComments(CommentListQuery query) {
 		User viewer = userReader.findUserByIdNotDeleted(query.viewerId());
 		Post post = postReader.findById(query.postId());
