@@ -112,7 +112,7 @@ import net.causw.app.main.domain.user.relation.service.v1.UserBlockEntityService
 import net.causw.app.main.shared.StatusPolicy;
 import net.causw.app.main.shared.ValidatorBucket;
 import net.causw.app.main.shared.infra.firebase.FcmUtils;
-import net.causw.app.main.shared.infra.mail.GoogleMailSender;
+import net.causw.app.main.shared.infra.mail.event.FindPasswordEvent;
 import net.causw.app.main.shared.infra.redis.RedisUtils;
 import net.causw.app.main.shared.pageable.PageableFactory;
 import net.causw.app.main.shared.util.ConstraintValidator;
@@ -134,7 +134,6 @@ import lombok.RequiredArgsConstructor;
 public class UserService {
 	private final JwtTokenProvider jwtTokenProvider;
 	private final UuidFileV1Service uuidFileService;
-	private final GoogleMailSender googleMailSender;
 	private final PasswordGenerator passwordGenerator;
 	private final PasswordEncoder passwordEncoder;
 	private final Validator validator;
@@ -188,12 +187,12 @@ public class UserService {
 		// 임시 비밀번호 생성
 		String newPassword = this.passwordGenerator.generate();
 
-		// 메일 전송
-		this.googleMailSender.sendNewPasswordMail(requestUser.getEmail(), newPassword);
-
 		// 비밀번호 변경
 		requestUser.setPassword(this.passwordEncoder.encode(newPassword));
-		// ! dirty cecking 때문에 save 필요 없음
+		// ! dirty checking 때문에 save 필요 없음
+
+		// 트랜잭션 커밋 후 메일 전송 (TransactionalEventListener)
+		eventPublisher.publishEvent(new FindPasswordEvent(requestUser.getEmail(), newPassword));
 	}
 
 	// Find process of another user
