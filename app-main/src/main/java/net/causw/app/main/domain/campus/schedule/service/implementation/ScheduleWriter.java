@@ -25,7 +25,9 @@ public class ScheduleWriter {
 	 * @return 생성된 Schedule Entity
 	 */
 	public Schedule create(ScheduleDto dto) {
-		postReader.findById(dto.targetPostId()); // post가 존재하는지 검증하기 위함
+		if (dto.targetPostId() != null) {
+			postReader.findById(dto.targetPostId()); // post가 존재하는지 검증하기 위함
+		}
 		Schedule schedule = ScheduleMapper.from(dto);
 		return scheduleRepository.save(schedule);
 	}
@@ -54,7 +56,9 @@ public class ScheduleWriter {
 	 * @param dto 업데이트될 정보
 	 */
 	public Schedule update(Schedule schedule, ScheduleDto dto) {
-		postReader.findById(dto.targetPostId()); // post가 존재하는지 검증하기 위함
+		if (dto.targetPostId() != null) {
+			postReader.findById(dto.targetPostId()); // post가 존재하는지 검증하기 위함
+		}
 		schedule.update(dto.title(),
 			dto.type(),
 			dto.start(),
