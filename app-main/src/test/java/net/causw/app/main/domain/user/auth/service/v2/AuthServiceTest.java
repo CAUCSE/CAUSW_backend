@@ -1,15 +1,8 @@
 package net.causw.app.main.domain.user.auth.service.v2;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
 
 import java.util.Optional;
 import java.util.Set;
@@ -29,6 +22,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import jakarta.validation.ConstraintViolationException;
+
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
 import net.causw.app.main.domain.user.account.service.implementation.UserPushTokenWriter;
@@ -40,13 +35,12 @@ import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthValidator;
+import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationValidator;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
-
-import jakarta.validation.ConstraintViolationException;
 
 @ExtendWith(MockitoExtension.class)
 public class AuthServiceTest {
@@ -68,6 +62,8 @@ public class AuthServiceTest {
 	private AuthTokenManager authTokenManager;
 	@Mock
 	private UserPushTokenWriter userPushTokenWriter;
+	@Mock
+	private EmailVerificationValidator emailVerificationValidator;
 
 	private static final String USER_ID = "user_id_123";
 	private static final String EMAIL = "test@example.com";
@@ -88,7 +84,7 @@ public class AuthServiceTest {
 
 	@BeforeEach
 	void setup() {
-		registerDto = new UserRegisterDto(EMAIL, PASSWORD, NAME, NICKNAME, PHONE);
+		registerDto = new UserRegisterDto(EMAIL, PASSWORD, NAME, NICKNAME, PHONE, "ABCD12");
 		user = User.from(registerDto, ENCODED_PASSWORD);
 		authTokenPair = new AuthTokenPair(ACCESS_TOKEN, REFRESH_TOKEN);
 	}
