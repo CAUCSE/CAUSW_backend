@@ -1,5 +1,7 @@
 package net.causw.app.main.domain.user.terms.api.v2.controller;
 
+import java.util.List;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,9 +22,9 @@ public class TermsController {
 
 	private final TermsService termsService;
 
-	@Operation(summary = "이용약관 조회 V2", description = "이용약관을 조회합니다.")
+	@Operation(summary = "이용약관 조회 V2", description = "모든 종류의 최신 버전 이용약관 목록을 조회합니다.")
 	@GetMapping
-	public ApiResponse<TermsResponseDto> getTerms() {
+	public ApiResponse<List<TermsResponseDto>> getTerms() {
 		return ApiResponse.success(termsService.getTerms());
 	}
 }
