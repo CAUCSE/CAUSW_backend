@@ -3,15 +3,15 @@ package net.causw.app.main.domain.community.block.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.domain.community.block.service.dto.BlockCreateResult;
 import net.causw.app.main.domain.community.block.service.dto.CommentBlockCreateCommand;
-import net.causw.app.main.domain.community.block.service.implementation.BlockReader;
-import net.causw.app.main.domain.community.block.service.implementation.BlockWriter;
-import net.causw.app.main.domain.community.block.service.util.BlockValidator;
+import net.causw.app.main.domain.user.relation.service.v2.dto.BlockCreateResult;
+import net.causw.app.main.domain.user.relation.service.v2.implementation.BlockReader;
+import net.causw.app.main.domain.user.relation.service.v2.implementation.BlockWriter;
+import net.causw.app.main.domain.user.relation.service.v2.util.BlockValidator;
 import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.community.comment.service.v2.implementation.CommentReader;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.service.v2.implementation.UserReader;
+import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.relation.entity.userBlock.UserBlock;
 
 import lombok.RequiredArgsConstructor;

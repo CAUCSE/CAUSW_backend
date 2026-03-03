@@ -8,10 +8,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import net.causw.app.main.domain.community.block.api.v2.dto.response.BlockResponse;
 import net.causw.app.main.domain.community.block.api.v2.mapper.CommentBlockDtoMapper;
 import net.causw.app.main.domain.community.block.service.CommentBlockService;
-import net.causw.app.main.domain.community.block.service.dto.BlockCreateResult;
+import net.causw.app.main.domain.user.account.api.v2.dto.response.BlockResponseDto;
+import net.causw.app.main.domain.user.relation.service.v2.dto.BlockCreateResult;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 
@@ -31,7 +31,7 @@ public class CommentBlockController {
 	@PostMapping("/{targetUserId}")
 	@ResponseStatus(HttpStatus.CREATED)
 	@Operation(summary = "댓글 기반 유저 차단", description = "댓글에서 특정 유저를 차단합니다. 본인 차단 및 중복 차단은 불가합니다.")
-	public ApiResponse<BlockResponse> createBlock(
+	public ApiResponse<BlockResponseDto> createBlock(
 		@PathVariable String commentId,
 		@PathVariable String targetUserId,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
