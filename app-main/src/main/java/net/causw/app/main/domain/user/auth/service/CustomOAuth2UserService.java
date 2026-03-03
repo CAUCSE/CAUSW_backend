@@ -89,15 +89,20 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
 		try {
 			String registrationId = userRequest.getClientRegistration().getRegistrationId();
-			String userNameAttributeName = resolveUserNameAttributeName(
-				userRequest.getClientRegistration().getProviderDetails().getUserInfoEndpoint()
-					.getUserNameAttributeName());
-
-			processSocialLogin(registrationId, userNameAttributeName, oidcUser.getClaims());
+			loadUserFromOidcClaims(registrationId, oidcUser.getClaims());
 			return oidcUser;
 		} catch (BaseRunTimeV2Exception e) {
 			throw new InternalAuthenticationServiceException(e.getMessage(), e);
 		}
+	}
+
+	/**
+	 * 네이티브 OIDC(id_token) 기반 요청처럼 claim만 전달되는 경우,
+	 * claim을 사용자 도메인과 동기화하여 로그인 가능한 User를 반환합니다.
+	 */
+	@Transactional
+	public User loadUserFromOidcClaims(String registrationId, Map<String, Object> oidcClaims) {
+		return processSocialLogin(registrationId, resolveUserNameAttributeName("sub"), oidcClaims);
 	}
 
 	private User processSocialLogin(String registrationId, String userNameAttributeName,
