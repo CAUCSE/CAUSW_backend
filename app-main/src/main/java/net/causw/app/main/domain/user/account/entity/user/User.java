@@ -59,10 +59,10 @@ public class User extends BaseEntity {
 	@Column(name = "name", nullable = false)
 	private String name;
 
-	@Column(name = "phone_number", unique = true, nullable = false)
+	@Column(name = "phone_number", unique = true, nullable = true)
 	private String phoneNumber;
 
-	@Column(name = "password", nullable = false)
+	@Column(name = "password", nullable = true)
 	private String password;
 
 	@Column(name = "student_id", unique = true, nullable = true)
@@ -72,7 +72,7 @@ public class User extends BaseEntity {
 	private Integer admissionYear;
 
 	// 새로 추가한 필드들
-	@Column(name = "nickname", unique = true, nullable = false)
+	@Column(name = "nickname", unique = true, nullable = true)
 	private String nickname;
 
 	// TODO: 기존값들 department로 마이그레이션 후 삭제
