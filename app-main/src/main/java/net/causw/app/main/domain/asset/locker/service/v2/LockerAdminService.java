@@ -174,6 +174,7 @@ public class LockerAdminService {
 		lockerLogWriter.logDisable(locker, admin);
 	}
 
+	@Transactional
 	public void releaseExpiredLocker(String adminId) {
 		User admin = userReader.findAdminUserById(adminId);
 
