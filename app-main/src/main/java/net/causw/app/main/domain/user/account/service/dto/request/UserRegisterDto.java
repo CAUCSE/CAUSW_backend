@@ -7,13 +7,15 @@ public record UserRegisterDto(
 	String password,
 	String name,
 	String nickname,
-	String phoneNumber) {
+	String phoneNumber,
+	String emailVerificationCode) {
 	public static UserRegisterDto from(EmailSignupRequest request) {
 		return new UserRegisterDto(
 			request.email(),
 			request.password(),
 			request.name(),
 			request.nickname(),
-			request.phoneNumber());
+			request.phoneNumber(),
+			request.emailVerificationCode());
 	}
 }

@@ -15,6 +15,7 @@ import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthValidator;
+import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationValidator;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 
 import jakarta.transaction.Transactional;
@@ -36,6 +37,7 @@ public class AuthService {
 	private final AuthValidator authValidator;
 	private final AuthTokenManager authTokenManager;
 	private final UserPushTokenWriter userPushTokenWriter;
+	private final EmailVerificationValidator emailVerificationValidator;
 
 	/**
 	 * 이메일 기반의 신규 회원을 등록합니다.
@@ -53,13 +55,13 @@ public class AuthService {
 	public AuthResult registerEmailUser(UserRegisterDto dto) {
 		// 전화번호로 기존 사용자 탐색 및 사용자 상태에 따른 에러 반환
 		Optional<User> userExist = userReader.checkUserExistByPhoneNumAndName(dto.phoneNumber(), dto.name());
-		userExist.ifPresent(user -> userValidator.validateUserStatusForSignup(user.getState()));
+		userExist.ifPresent(user -> userValidator.validateUserStatusForSignup(user));
 
 		// 이메일, 닉네임, 전화번호에 대한 중복 검증 수행
 		userValidator.checkEmailDuplication(dto.email());
 		userValidator.checkNicknameDuplication(dto.nickname());
 		userValidator.checkPhoneNumDuplication(dto.phoneNumber());
-
+		emailVerificationValidator.validateVerified(dto.email(), dto.emailVerificationCode());
 		// 신규 사용자 생성 및 검증
 		User newUser = User.from(dto, passwordEncoder.encode(dto.password()));
 		authValidator.validateRegisterInput(newUser, dto.password(), dto.phoneNumber());
@@ -83,7 +85,7 @@ public class AuthService {
 		User user = userReader.findByEmailOrElseThrow(email);
 		// 유효성 검증 수행 (비밀번호, 유저 상태)
 		authValidator.validateCredential(user, password);
-		userValidator.validateUserStatusForLogin(user.getState());
+		userValidator.validateUserStatusForLogin(user);
 		// 토큰 생성
 		AuthTokenPair tokens = authTokenManager.issueTokens(user, null);
 		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), user.getProfileUrl(),
@@ -100,7 +102,7 @@ public class AuthService {
 	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
 	 * [REFRESH_TOKEN_MISSING] 토큰이 없거나, [INVALID_REFRESH_TOKEN] 유효하지 않은 경우
 	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
-	 * [BLOCKED/INACTIVE_USER] 유저 상태가 활동 불가능한 경우
+	 * [BLOCKED/INACTIVE_USER] 유저 상태가 활동 불가능한 경우(탈퇴 포함)
 	 */
 	@Transactional
 	public AuthResult updateToken(String refreshToken) {

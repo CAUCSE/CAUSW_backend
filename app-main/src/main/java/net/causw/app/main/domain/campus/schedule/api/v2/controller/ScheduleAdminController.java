@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 import net.causw.app.main.domain.campus.schedule.api.v2.dto.request.ScheduleRequest;
 import net.causw.app.main.domain.campus.schedule.api.v2.dto.response.ScheduleResponse;
 import net.causw.app.main.domain.campus.schedule.api.v2.mapper.ScheduleDtoMapper;
-import net.causw.app.main.domain.campus.schedule.service.v2.ScheduleService;
-import net.causw.app.main.domain.campus.schedule.service.v2.dto.ScheduleDto;
+import net.causw.app.main.domain.campus.schedule.service.ScheduleService;
+import net.causw.app.main.domain.campus.schedule.service.dto.ScheduleDto;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 
@@ -25,7 +25,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-@Tag(name = "일정 관리자 API V2", description = "일정 관리자 전용 API V2")
+@Tag(name = "Schedule Admin v2", description = "일정 관리자 전용 API V2")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/admin/schedules")

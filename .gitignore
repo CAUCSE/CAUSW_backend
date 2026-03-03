@@ -73,3 +73,5 @@ monitoring/prometheus-data/
 monitoring/grafana-data/
 monitoring/loki-data/
 monitoring/mysqld-exporter/.my.cnf
+
+/.claude

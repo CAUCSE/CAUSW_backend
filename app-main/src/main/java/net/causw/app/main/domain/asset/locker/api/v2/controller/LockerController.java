@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/lockers")
-@Tag(name = "사물함 API V2", description = "사물함 API V2")
+@Tag(name = "Locker Public v2", description = "사물함 API V2")
 public class LockerController {
 
 	private final LockerService lockerService;

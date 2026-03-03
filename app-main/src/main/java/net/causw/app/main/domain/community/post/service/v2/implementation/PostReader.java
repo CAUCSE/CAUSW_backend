@@ -2,6 +2,7 @@ package net.causw.app.main.domain.community.post.service.v2.implementation;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Component;
@@ -65,6 +66,49 @@ public class PostReader {
 		int size,
 		String keyword) {
 		return postQueryRepository.findPostsWithCursor(boardIds, cursorCreatedAt, cursorId, size, keyword);
+	}
+
+	/**
+	 * 커서 기반 페이징으로 특정 유저가 댓글을 단 게시글 목록을 조회합니다. (V2용)
+	 * @param userId 댓글을 단 유저 ID
+	 * @param blockedUserIds 차단된 유저 ID 목록 (null이면 차단된 유저 없음)
+	 * @param cursorCreatedAt 커서 (마지막 게시글의 createdAt)
+	 * @param cursorId 커서 (마지막 게시글의 ID)
+	 * @param size 조회할 개수
+	 * @return 게시글 목록 Slice
+	 */
+	public Slice<PostCursorResult> findPostsCommentedByUserWithCursor(
+		String userId,
+		Set<String> blockedUserIds,
+		String cursorCreatedAt,
+		String cursorId,
+		int size) {
+		return postQueryRepository.findPostsCommentedByUserWithCursor(
+			userId, blockedUserIds, cursorCreatedAt, cursorId, size);
+	}
+
+	/**
+	 * 특정 사용자가 작성한 게시글을 커서 기반 페이징으로 조회합니다.
+	 */
+	public Slice<PostCursorResult> findPostsWrittenByUserWithCursor(
+		String userId,
+		String cursorCreatedAt,
+		String cursorId,
+		int size) {
+		return postQueryRepository.findPostsWrittenByUserWithCursor(userId, cursorCreatedAt, cursorId, size);
+	}
+
+	/**
+	 * 특정 사용자가 좋아요를 누른 게시글을 커서 기반 페이징으로 조회합니다.
+	 */
+	public Slice<PostCursorResult> findPostsLikedByUserWithCursor(
+		String userId,
+		Set<String> blockedUserIds,
+		String cursorCreatedAt,
+		String cursorId,
+		int size) {
+		return postQueryRepository.findPostsLikedByUserWithCursor(
+			userId, blockedUserIds, cursorCreatedAt, cursorId, size);
 	}
 
 	/**

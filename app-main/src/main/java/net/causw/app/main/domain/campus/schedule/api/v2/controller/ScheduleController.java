@@ -1,6 +1,7 @@
 package net.causw.app.main.domain.campus.schedule.api.v2.controller;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,15 +13,15 @@ import net.causw.app.main.domain.campus.schedule.api.v2.dto.response.ScheduleLis
 import net.causw.app.main.domain.campus.schedule.api.v2.dto.response.ScheduleResponse;
 import net.causw.app.main.domain.campus.schedule.api.v2.mapper.ScheduleDtoMapper;
 import net.causw.app.main.domain.campus.schedule.entity.enums.ScheduleType;
-import net.causw.app.main.domain.campus.schedule.service.v2.ScheduleService;
-import net.causw.app.main.domain.campus.schedule.service.v2.dto.ScheduleDto;
+import net.causw.app.main.domain.campus.schedule.service.ScheduleService;
+import net.causw.app.main.domain.campus.schedule.service.dto.ScheduleDto;
 import net.causw.app.main.shared.dto.ApiResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
-@Tag(name = "일정 API V2", description = "일정 조회 API V2")
+@Tag(name = "Schedule Public v2", description = "일정 조회 API V2")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/schedules")
@@ -40,7 +41,7 @@ public class ScheduleController {
 	public ApiResponse<ScheduleListResponse> readSchedules(
 		@RequestParam(required = false) LocalDateTime from,
 		@RequestParam(required = false) LocalDateTime to,
-		@RequestParam(required = false) java.util.List<ScheduleType> types) {
+		@RequestParam(required = false) Set<ScheduleType> types) {
 
 		LocalDateTime startDate = from;
 		LocalDateTime endDate = to;

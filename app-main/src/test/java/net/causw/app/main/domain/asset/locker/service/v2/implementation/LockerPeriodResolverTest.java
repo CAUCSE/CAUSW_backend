@@ -1,7 +1,6 @@
 package net.causw.app.main.domain.asset.locker.service.v2.implementation;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
@@ -17,8 +16,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import net.causw.app.main.domain.asset.locker.enums.LockerPeriodPhase;
 import net.causw.app.main.domain.asset.locker.service.v2.dto.result.LockerPeriodStatusResult;
-import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
-import net.causw.app.main.shared.exception.errorcode.LockerErrorCode;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("LockerPeriodResolver 단위 테스트")
@@ -86,8 +83,8 @@ class LockerPeriodResolverTest {
 		}
 
 		@Test
-		@DisplayName("신청 flag ON 이고 신청 기간이 설정되지 않았으면 LOCKER_REGISTER_PERIOD_NOT_SET 예외를 던진다")
-		void givenFlagOnAndPeriodNotSet_whenCheck_thenThrow() {
+		@DisplayName("신청 flag ON 이고 신청 기간이 설정되지 않았으면 false를 반환한다.")
+		void givenFlagOnAndPeriodNotSet_whenCheck_thenFalse() {
 			// given
 			LocalDateTime target = LocalDateTime.of(2026, 6, 3, 12, 0);
 			when(lockerPolicyReader.getLockerAccessStatusFlag()).thenReturn(true);
@@ -95,9 +92,8 @@ class LockerPeriodResolverTest {
 			when(lockerPolicyReader.findRegisterEndDate()).thenReturn(Optional.empty());
 
 			// when & then
-			assertThatThrownBy(() -> lockerPeriodResolver.isRegisterActive(target))
-				.isInstanceOf(BaseRunTimeV2Exception.class)
-				.hasMessage(LockerErrorCode.LOCKER_REGISTER_PERIOD_NOT_SET.getMessage());
+			assertThat(lockerPeriodResolver.isRegisterActive(target))
+				.isFalse();
 		}
 	}
 
@@ -154,8 +150,8 @@ class LockerPeriodResolverTest {
 		}
 
 		@Test
-		@DisplayName("연장 flag ON 이고 연장 기간이 설정되지 않았으면 LOCKER_EXTEND_PERIOD_NOT_SET 예외를 던진다")
-		void givenFlagOnAndPeriodNotSet_whenCheck_thenThrow() {
+		@DisplayName("연장 flag ON 이고 연장 기간이 설정되지 않았으면 false를 반환한다")
+		void givenFlagOnAndPeriodNotSet_whenCheck_thenFalse() {
 			// given
 			LocalDateTime target = LocalDateTime.of(2026, 6, 3, 12, 0);
 			when(lockerPolicyReader.getLockerExtendStatusFlag()).thenReturn(true);
@@ -163,9 +159,8 @@ class LockerPeriodResolverTest {
 			when(lockerPolicyReader.findExtendEndDate()).thenReturn(Optional.empty());
 
 			// when & then
-			assertThatThrownBy(() -> lockerPeriodResolver.isExtendActive(target))
-				.isInstanceOf(BaseRunTimeV2Exception.class)
-				.hasMessage(LockerErrorCode.LOCKER_EXTEND_PERIOD_NOT_SET.getMessage());
+			assertThat(lockerPeriodResolver.isExtendActive(target))
+				.isFalse();
 		}
 	}
 

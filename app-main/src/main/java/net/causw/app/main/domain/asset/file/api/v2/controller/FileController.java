@@ -30,7 +30,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Tag(name = "File V2", description = "파일 관리 API V2")
+@Tag(name = "File Public v2", description = "파일 관리 API V2")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(value = "/api/v2/storage", produces = APPLICATION_JSON_VALUE)
