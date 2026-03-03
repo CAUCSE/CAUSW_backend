@@ -179,10 +179,10 @@ public class LockerAdminService {
 
 		var expiredLockers = lockerReader.findExpiredLockers(LocalDateTime.now());
 		expiredLockers.forEach(locker -> {
-			locker.returnLocker();
 			var userEmail = locker.getUser().map(User::getEmail).orElse("알 수 없음");
 			var userName = locker.getUser().map(User::getName).orElse("알 수 없음");
 			lockerLogWriter.logAdminRelease(locker, admin, userEmail, userName);
+			locker.returnLocker();
 		});
 	}
 }
