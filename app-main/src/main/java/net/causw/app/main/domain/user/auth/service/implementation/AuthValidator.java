@@ -68,7 +68,7 @@ public class AuthValidator {
 	 * 비밀번호 포맷 검증 (Private)
 	 * Rule: 영문, 숫자, 특수문자 포함 8자 이상
 	 */
-	private void validatePasswordFormat(String password) {
+	public void validatePasswordFormat(String password) {
 		if (!PASSWORD_PATTERN.matcher(password).matches()) {
 			throw UserErrorCode.INVALID_PASSWORD_REQUEST.toBaseException();
 		}

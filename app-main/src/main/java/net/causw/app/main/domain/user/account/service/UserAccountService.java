@@ -13,6 +13,7 @@ import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
+import net.causw.app.main.domain.user.auth.service.implementation.AuthValidator;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 
@@ -25,6 +26,7 @@ public class UserAccountService {
 	private final UserReader userReader;
 	private final UserWriter userWriter;
 	private final UserValidator userValidator;
+	private final AuthValidator authValidator;
 	private final AuthTokenManager authTokenManager;
 	private final PasswordEncoder passwordEncoder;
 
@@ -121,7 +123,7 @@ public class UserAccountService {
 			throw UserErrorCode.PASSWORD_CONFIRM_MISMATCH.toBaseException();
 		}
 
-		userValidator.validatePasswordFormat(command.newPassword());
+		authValidator.validatePasswordFormat(command.newPassword());
 
 		user.updatePassword(passwordEncoder.encode(command.newPassword()));
 	}
