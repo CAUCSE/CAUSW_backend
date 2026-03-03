@@ -14,6 +14,7 @@ public interface CommentReportDtoMapper {
 
 	@Mapping(target = "reporter", source = "user")
 	@Mapping(target = "commentId", source = "commentId")
+	@Mapping(target = "reportReason", source = "request.reportReason")
 	CommentReportCreateCommand toCommand(CommentReportCreateRequest request, String commentId, User user);
 
 	CommentReportResponse toResponse(CommentReportCreateResult result);

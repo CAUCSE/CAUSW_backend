@@ -14,6 +14,7 @@ public interface ChildCommentReportDtoMapper {
 
 	@Mapping(target = "reporter", source = "user")
 	@Mapping(target = "childCommentId", source = "childCommentId")
+	@Mapping(target = "reportReason", source = "request.reportReason")
 	ChildCommentReportCreateCommand toCommand(
 		ChildCommentReportCreateRequest request, String childCommentId, User user);
 
