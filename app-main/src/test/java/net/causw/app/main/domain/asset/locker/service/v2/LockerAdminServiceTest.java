@@ -411,9 +411,11 @@ class LockerAdminServiceTest {
 
 			User admin = createUser(adminId);
 			LockerLocation location = createLocation("loc-1", LockerName.SECOND);
-			Locker locker1 = createLocker("locker-1", 1L, location, createUser("user-1"),
+			User user1 = createUser("user-1");
+			User user2 = createUser("user-2");
+			Locker locker1 = createLocker("locker-1", 1L, location, user1,
 				LocalDateTime.now().minusDays(1), true);
-			Locker locker2 = createLocker("locker-2", 2L, location, createUser("user-2"),
+			Locker locker2 = createLocker("locker-2", 2L, location, user2,
 				LocalDateTime.now().minusDays(1), true);
 
 			when(userReader.findAdminUserById(adminId)).thenReturn(admin);
@@ -429,8 +431,8 @@ class LockerAdminServiceTest {
 			verify(locker1).returnLocker();
 			verify(locker2).returnLocker();
 
-			verify(lockerLogWriter).logAdminRelease(eq(locker1), eq(admin), anyString(), anyString());
-			verify(lockerLogWriter).logAdminRelease(eq(locker2), eq(admin), anyString(), anyString());
+			verify(lockerLogWriter).logAdminRelease(locker1, admin, user1.getEmail(), user1.getName());
+			verify(lockerLogWriter).logAdminRelease(locker2, admin, user2.getEmail(), user2.getName());
 		}
 	}
 }
