@@ -325,7 +325,8 @@ class UserAdminServiceTest {
 			when(userReader.findUserById(userId)).thenReturn(user);
 
 			// when
-			Throwable throwable = catchThrowable(() -> userAdminService.updateUserRole(userId, Role.COUNCIL, Role.ADMIN));
+			Throwable throwable = catchThrowable(
+				() -> userAdminService.updateUserRole(userId, Role.COUNCIL, Role.ADMIN));
 
 			// then
 			assertThat(throwable)
