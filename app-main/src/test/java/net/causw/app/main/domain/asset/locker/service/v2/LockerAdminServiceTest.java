@@ -305,7 +305,8 @@ class LockerAdminServiceTest {
 				.hasMessage(LockerErrorCode.LOCKER_NOT_IN_USE.getMessage());
 
 			verify(locker, never()).returnLocker();
-			verify(lockerLogWriter, never()).logAdminRelease(any(Locker.class), any(User.class), anyString(), anyString());
+			verify(lockerLogWriter, never()).logAdminRelease(any(Locker.class), any(User.class), anyString(),
+				anyString());
 		}
 	}
 
@@ -390,7 +391,8 @@ class LockerAdminServiceTest {
 			verify(lockerValidator).validateDisableable(locker);
 
 			verify(locker, never()).returnLocker();
-			verify(lockerLogWriter, never()).logAdminRelease(any(Locker.class), any(User.class), anyString(), anyString());
+			verify(lockerLogWriter, never()).logAdminRelease(any(Locker.class), any(User.class), anyString(),
+				anyString());
 
 			verify(locker).disable();
 			verify(lockerLogWriter).logDisable(locker, admin);

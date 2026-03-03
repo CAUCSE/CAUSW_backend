@@ -39,15 +39,18 @@ public class LockerLogWriter {
 	}
 
 	public void logAdminAssign(Locker locker, User admin, User assignee) {
-		save(locker, admin.getEmail(), admin.getName(), LockerLogAction.ADMIN_ASSIGN, "관리자 사물함 배정 " + assignee.getName() + "(" + assignee.getEmail() + ")");
+		save(locker, admin.getEmail(), admin.getName(), LockerLogAction.ADMIN_ASSIGN,
+			"관리자 사물함 배정 " + assignee.getName() + "(" + assignee.getEmail() + ")");
 	}
 
 	public void logAdminExtend(Locker locker, User admin, User assignee) {
-		save(locker, admin.getEmail(), admin.getName(), LockerLogAction.ADMIN_EXTEND, "관리자 사물함 연장 " + assignee.getName() + "(" + assignee.getEmail() + ")");
+		save(locker, admin.getEmail(), admin.getName(), LockerLogAction.ADMIN_EXTEND,
+			"관리자 사물함 연장 " + assignee.getName() + "(" + assignee.getEmail() + ")");
 	}
 
 	public void logAdminRelease(Locker locker, User admin, String userEmail, String userName) {
-		save(locker, admin.getEmail(), admin.getName(), LockerLogAction.ADMIN_RELEASE, "관리자 사물함 회수" + userName + "(" + userEmail + ")");
+		save(locker, admin.getEmail(), admin.getName(), LockerLogAction.ADMIN_RELEASE,
+			"관리자 사물함 회수" + userName + "(" + userEmail + ")");
 	}
 
 	private void save(Locker locker, String userEmail, String userName, LockerLogAction action, String message) {
