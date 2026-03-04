@@ -37,7 +37,9 @@ public enum UserErrorCode implements BaseResponseCode {
 	INVALID_CURRENT_PASSWORD(HttpStatus.BAD_REQUEST, "USER_400_004", "현재 비밀번호가 일치하지 않습니다."),
 	PASSWORD_CONFIRM_MISMATCH(HttpStatus.BAD_REQUEST, "USER_400_005", "새 비밀번호와 비밀번호 확인이 일치하지 않습니다."),
 	SOCIAL_ONLY_USER_CANNOT_CHANGE_PASSWORD(HttpStatus.BAD_REQUEST, "USER_400_006",
-		"소셜 로그인만 연결된 계정은 비밀번호를 변경할 수 없습니다.");
+		"소셜 로그인만 연결된 계정은 비밀번호를 변경할 수 없습니다."),
+	PASSWORD_RESET_EXPIRED(HttpStatus.BAD_REQUEST, "AUTH_400_005", "비밀번호 초기화 인증 유효 시간이 만료되었습니다."),
+	PASSWORD_RESET_CODE_MISMATCH(HttpStatus.BAD_REQUEST, "AUTH_400_006", "비밀번호 초기화 인증 코드가 일치하지 않습니다.");
 
 	private final HttpStatus status;
 	private final String code;

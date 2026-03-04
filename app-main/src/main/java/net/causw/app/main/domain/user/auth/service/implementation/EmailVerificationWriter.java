@@ -25,4 +25,13 @@ public class EmailVerificationWriter {
 	public EmailVerification save(EmailVerification emailVerification) {
 		return emailVerificationRepository.save(emailVerification);
 	}
+
+	/**
+	 * 이메일 인증 정보를 삭제합니다.
+	 *
+	 * @param emailVerification 삭제할 EmailVerification 엔티티
+	 */
+	public void delete(EmailVerification emailVerification) {
+		emailVerificationRepository.delete(emailVerification);
+	}
 }

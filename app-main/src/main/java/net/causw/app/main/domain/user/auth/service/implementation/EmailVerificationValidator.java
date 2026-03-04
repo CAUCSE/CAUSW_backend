@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.auth.entity.EmailVerification;
+import net.causw.app.main.domain.user.auth.entity.EmailVerification.VerificationStatus;
 import net.causw.app.main.domain.user.auth.repository.EmailVerificationRepository;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
@@ -37,7 +38,7 @@ public class EmailVerificationValidator {
 			throw UserErrorCode.EMAIL_ALREADY_EXIST.toBaseException();
 		}
 
-		emailVerificationRepository.findLatestByEmail(email)
+		emailVerificationRepository.findLatestByEmailAndStatus(email, VerificationStatus.PENDING)
 			.ifPresent(latest -> {
 				LocalDateTime allowedAt = latest.getCreatedAt().plusSeconds(RESEND_INTERVAL_SECONDS);
 				if (LocalDateTime.now().isBefore(allowedAt)) {
@@ -62,6 +63,22 @@ public class EmailVerificationValidator {
 		if (verification.isExpired()) {
 			throw AuthErrorCode.EMAIL_VERIFICATION_EXPIRED.toBaseException();
 		}
+	}
+
+	/**
+	 * 비밀번호 초기화 인증 메일 발송 전, 이름+이메일에 해당하는 사용자 존재 여부와
+	 * 재발송 간격(30초)을 검증합니다.
+	 */
+	public void validatePasswordResetSend(String name, String email) {
+		userReader.findByEmailAndName(email, name); // 유저 존재하는지 검증
+
+		emailVerificationRepository.findLatestByEmailAndStatus(email, VerificationStatus.PASSWORD_FIND)
+			.ifPresent(latest -> {
+				LocalDateTime allowedAt = latest.getCreatedAt().plusSeconds(RESEND_INTERVAL_SECONDS);
+				if (LocalDateTime.now().isBefore(allowedAt)) {
+					throw AuthErrorCode.EMAIL_VERIFICATION_SEND_TOO_SOON.toBaseException();
+				}
+			});
 	}
 
 }

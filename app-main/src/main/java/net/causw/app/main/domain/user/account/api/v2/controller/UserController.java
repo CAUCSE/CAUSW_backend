@@ -31,7 +31,10 @@ import net.causw.app.main.domain.user.account.service.UserNotificationService;
 import net.causw.app.main.domain.user.account.service.dto.request.AdmissionResult;
 import net.causw.app.main.domain.user.account.service.dto.request.UserPasswordUpdateCommand;
 import net.causw.app.main.domain.user.auth.api.v2.dto.AuthDtoMapper;
+import net.causw.app.main.domain.user.auth.api.v2.dto.request.PasswordResetSendRequest;
+import net.causw.app.main.domain.user.auth.api.v2.dto.request.PasswordResetVerifyRequest;
 import net.causw.app.main.domain.user.auth.api.v2.dto.response.AuthResponse;
+import net.causw.app.main.domain.user.auth.api.v2.dto.response.PasswordResetResponse;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
@@ -144,6 +147,24 @@ public class UserController {
 			userDetails.getUserId(),
 			UserPasswordUpdateCommand.from(body));
 		return ApiResponse.success();
+	}
+
+	// ── 비밀번호 찾기 ──
+
+	@PostMapping("/password-reset/send")
+	@Operation(summary = "비밀번호 초기화 인증 코드 발송 V2", description = "이름과 이메일을 확인한 뒤 비밀번호 초기화용 인증 코드를 이메일로 발송합니다.")
+	public ApiResponse<Void> sendPasswordResetCode(@RequestBody @Valid PasswordResetSendRequest request) {
+		userAccountService.sendPasswordResetVerificationEmail(request.name(), request.email());
+		return ApiResponse.success();
+	}
+
+	@PostMapping("/password-reset/verify")
+	@Operation(summary = "비밀번호 초기화 인증 코드 검증 V2", description = "인증 코드를 검증한 뒤 비밀번호를 초기화하고, 초기화된 임시 비밀번호를 반환합니다.")
+	public ApiResponse<PasswordResetResponse> verifyPasswordResetCode(
+		@RequestBody @Valid PasswordResetVerifyRequest request) {
+		String temporaryPassword = userAccountService.resetPasswordByVerificationCode(request.name(),
+			request.email(), request.verificationCode());
+		return ApiResponse.success(PasswordResetResponse.of(temporaryPassword));
 	}
 
 }

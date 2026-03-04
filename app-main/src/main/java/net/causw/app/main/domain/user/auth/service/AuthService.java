@@ -11,11 +11,14 @@ import net.causw.app.main.domain.user.account.service.implementation.UserPushTok
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
+import net.causw.app.main.domain.user.auth.entity.EmailVerification.VerificationStatus;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthValidator;
+import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationReader;
 import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationValidator;
+import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationWriter;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 
 import jakarta.transaction.Transactional;
@@ -38,6 +41,8 @@ public class AuthService {
 	private final AuthTokenManager authTokenManager;
 	private final UserPushTokenWriter userPushTokenWriter;
 	private final EmailVerificationValidator emailVerificationValidator;
+	private final EmailVerificationWriter emailVerificationWriter;
+	private final EmailVerificationReader emailVerificationReader;
 
 	/**
 	 * 이메일 기반의 신규 회원을 등록합니다.
@@ -66,6 +71,9 @@ public class AuthService {
 		User newUser = User.from(dto, passwordEncoder.encode(dto.password()));
 		authValidator.validateRegisterInput(newUser, dto.password(), dto.phoneNumber());
 		User savedUser = userWriter.save(newUser);
+		// 회원가입 완료 후 이메일 인증 정보 삭제
+		emailVerificationWriter.delete(
+			emailVerificationReader.findLatestByEmailAndStatus(dto.email(), VerificationStatus.VERIFIED));
 		return AuthResult.of(null, savedUser.getName(), savedUser.getEmail(), savedUser.getProfileUrl(), null);
 	}
 
