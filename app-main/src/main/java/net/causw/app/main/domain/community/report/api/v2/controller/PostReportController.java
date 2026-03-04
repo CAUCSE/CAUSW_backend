@@ -1,12 +1,7 @@
 package net.causw.app.main.domain.community.report.api.v2.controller;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,10 +10,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.causw.app.main.domain.community.report.api.v2.dto.request.PostReportCreateRequestDto;
-import net.causw.app.main.domain.community.report.api.v2.dto.response.PostReportReasonResponseDto;
 import net.causw.app.main.domain.community.report.api.v2.dto.response.PostReportResponseDto;
 import net.causw.app.main.domain.community.report.api.v2.mapper.PostReportDtoMapper;
-import net.causw.app.main.domain.community.report.enums.ReportReason;
 import net.causw.app.main.domain.community.report.service.v2.PostReportService;
 import net.causw.app.main.domain.community.report.service.v2.dto.PostReportCreateResult;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
@@ -38,17 +31,6 @@ public class PostReportController {
 	private final PostReportService postReportService;
 	private final PostReportDtoMapper postReportDtoMapper;
 
-	@GetMapping("/reasons")
-	@ResponseStatus(HttpStatus.OK)
-	@Operation(summary = "신고 사유 목록 조회", description = "신고 사유 선택 화면에 표시할 사유 목록을 반환합니다.")
-	public ApiResponse<List<PostReportReasonResponseDto>> getReportReasons() {
-		List<PostReportReasonResponseDto> reasons = Arrays.stream(ReportReason.values())
-			.map(PostReportReasonResponseDto::from)
-			.toList();
-		return ApiResponse.success(reasons);
-	}
-
-	//
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	@Operation(summary = "게시글 신고", description = """
