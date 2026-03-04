@@ -14,9 +14,13 @@ import net.causw.app.main.domain.user.account.api.v2.dto.request.UserListRequest
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserRoleUpdateRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.AdmissionListItemResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.AdmissionResponse;
+import net.causw.app.main.domain.user.account.api.v2.dto.response.UserDropResponse;
+import net.causw.app.main.domain.user.account.api.v2.dto.response.UserRestoreResponse;
+import net.causw.app.main.domain.user.account.api.v2.dto.response.UserRoleUpdateResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserDetailResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserListItemResponse;
 import net.causw.app.main.domain.user.account.api.v2.mapper.AdmissionDtoMapper;
+import net.causw.app.main.domain.user.account.api.v2.mapper.UserManagementMapper;
 import net.causw.app.main.domain.user.account.api.v2.mapper.UserDetailMapper;
 import net.causw.app.main.domain.user.account.api.v2.mapper.UserListMapper;
 import net.causw.app.main.domain.user.account.service.AdmissionAdminService;
@@ -41,6 +45,7 @@ public class UserAdminController {
 	private final AdmissionAdminService admissionAdminService;
 	private final UserListMapper userListMapper;
 	private final UserDetailMapper userDetailMapper;
+	private final UserManagementMapper userManagementMapper;
 	private final AdmissionDtoMapper admissionDtoMapper;
 
 	// ── 회원 관리 ──
@@ -70,34 +75,41 @@ public class UserAdminController {
 
 	@Operation(summary = "회원 추방 V2", description = "관리자가 사용자를 추방합니다. 추방 시 사용자 상태가 DROP으로 변경됩니다.")
 	@PatchMapping("/{userId}/drop")
-	public ApiResponse<Void> dropUser(
+	public ApiResponse<UserDropResponse> dropUser(
 		@PathVariable String userId,
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestBody @Valid UserDropRequest request) {
 
-		userAdminService.dropUser(userDetails.getUser(), userId, request.dropReason());
-		return ApiResponse.success();
+		return ApiResponse.success(
+			userManagementMapper.toDropResponse(
+				userAdminService.dropUser(userDetails.getUser(), userId, request.dropReason())));
 	}
 
 	@Operation(summary = "회원 복구 V2", description = "관리자가 추방된 사용자를 복구합니다. 복구 시 사용자 상태가 ACTIVE로 변경됩니다.")
 	@PatchMapping("/{userId}/restore")
-	public ApiResponse<Void> restoreUser(
+	public ApiResponse<UserRestoreResponse> restoreUser(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable String userId) {
 
-		userAdminService.restoreUser(userDetails.getUser(), userId);
-		return ApiResponse.success();
+		return ApiResponse.success(
+			userManagementMapper.toRestoreResponse(
+				userAdminService.restoreUser(userDetails.getUser(), userId)));
 	}
 
 	@Operation(summary = "회원 권한 변경 V2", description = "관리자가 회원의 현재 권한을 확인한 뒤 지정한 권한으로 변경합니다.")
 	@PatchMapping("/{userId}/role")
-	public ApiResponse<Void> replaceUserRole(
+	public ApiResponse<UserRoleUpdateResponse> replaceUserRole(
 		@PathVariable String userId,
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestBody @Valid UserRoleUpdateRequest request) {
 
-		userAdminService.replaceUserRole(userDetails.getUser(), userId, request.currentRole(), request.newRole());
-		return ApiResponse.success();
+		return ApiResponse.success(
+			userManagementMapper.toRoleUpdateResponse(
+				userAdminService.replaceUserRole(
+					userDetails.getUser(),
+					userId,
+					request.currentRole(),
+					request.newRole())));
 	}
 
 	// ── 재학정보 인증 ──

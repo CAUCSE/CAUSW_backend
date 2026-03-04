@@ -178,6 +178,7 @@ class UserAdminServiceTest {
 
 			when(userReader.findUserById(userId)).thenReturn(user);
 			when(lockerReader.findByUserId(userId)).thenReturn(Optional.of(locker));
+			when(userWriter.dropByAdmin(user, dropReason)).thenReturn(user);
 
 			// when
 			userAdminService.dropUser(adminUser, userId, dropReason);
@@ -259,6 +260,7 @@ class UserAdminServiceTest {
 			user.setDeletedAt(null);
 
 			when(userReader.findUserById(userId)).thenReturn(user);
+			when(userWriter.restore(user)).thenReturn(user);
 
 			// when
 			userAdminService.restoreUser(adminUser, userId);
@@ -331,6 +333,7 @@ class UserAdminServiceTest {
 			user.setRoles(Set.of(Role.COMMON));
 
 			when(userReader.findUserById(userId)).thenReturn(user);
+			when(userWriter.replaceRole(user, Role.COMMON, Role.COUNCIL)).thenReturn(user);
 
 			// when
 			userAdminService.replaceUserRole(adminUser, userId, Role.COMMON, Role.COUNCIL);

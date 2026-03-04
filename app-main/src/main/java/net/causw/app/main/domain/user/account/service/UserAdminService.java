@@ -16,7 +16,10 @@ import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.dto.request.UserListCondition;
 import net.causw.app.main.domain.user.account.service.dto.response.UserDetailItem;
+import net.causw.app.main.domain.user.account.service.dto.response.UserDropResult;
 import net.causw.app.main.domain.user.account.service.dto.response.UserListItem;
+import net.causw.app.main.domain.user.account.service.dto.response.UserRestoreResult;
+import net.causw.app.main.domain.user.account.service.dto.response.UserRoleUpdateResult;
 import net.causw.app.main.domain.user.account.service.implementation.UserAdminActionLogWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
@@ -51,7 +54,7 @@ public class UserAdminService {
 	}
 
 	@Transactional
-	public void dropUser(User adminUser, String userId, String dropReason) {
+	public UserDropResult dropUser(User adminUser, String userId, String dropReason) {
 		User targetUser = userReader.findUserById(userId);
 		validateDroppableUser(targetUser);
 
@@ -63,31 +66,34 @@ public class UserAdminService {
 			lockerLogWriter.logReturn(locker, targetUser);
 		});
 
-		userWriter.dropByAdmin(targetUser, dropReason);
-		userAdminActionLogWriter.logDrop(adminUser, targetUser, beforeState, beforeRoles, dropReason);
+		User updatedUser = userWriter.dropByAdmin(targetUser, dropReason);
+		userAdminActionLogWriter.logDrop(adminUser, updatedUser, beforeState, beforeRoles, dropReason);
+		return UserDropResult.from(updatedUser);
 	}
 
 	@Transactional
-	public void restoreUser(User adminUser, String userId) {
+	public UserRestoreResult restoreUser(User adminUser, String userId) {
 		User targetUser = userReader.findUserById(userId);
 		validateRestorableUser(targetUser);
 
 		UserState beforeState = targetUser.getState();
 		Set<Role> beforeRoles = new HashSet<>(targetUser.getRoles());
 
-		userWriter.restore(targetUser);
-		userAdminActionLogWriter.logRestore(adminUser, targetUser, beforeState, beforeRoles);
+		User restoredUser = userWriter.restore(targetUser);
+		userAdminActionLogWriter.logRestore(adminUser, restoredUser, beforeState, beforeRoles);
+		return UserRestoreResult.from(restoredUser);
 	}
 
 	@Transactional
-	public void replaceUserRole(User adminUser, String userId, Role currentRole, Role newRole) {
+	public UserRoleUpdateResult replaceUserRole(User adminUser, String userId, Role currentRole, Role newRole) {
 		User targetUser = userReader.findUserById(userId);
 		validateCurrentRoleMatched(targetUser, currentRole);
 
 		Set<Role> beforeRoles = new HashSet<>(targetUser.getRoles());
 
-		userWriter.replaceRole(targetUser, currentRole, newRole);
-		userAdminActionLogWriter.logRoleChange(adminUser, targetUser, beforeRoles, targetUser.getRoles());
+		User updatedUser = userWriter.replaceRole(targetUser, currentRole, newRole);
+		userAdminActionLogWriter.logRoleChange(adminUser, updatedUser, beforeRoles, updatedUser.getRoles());
+		return UserRoleUpdateResult.from(updatedUser);
 	}
 
 	// 대상 사용자가 추방 가능한 상태인지 확인
