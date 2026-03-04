@@ -35,6 +35,7 @@ public class UserAdminService {
 	private final LockerLogWriter lockerLogWriter;
 	private final UserAdminActionLogWriter userAdminActionLogWriter;
 
+	// 필터링 조건과 페이징 정보를 기반으로 전체 사용자 목록 조회
 	@Transactional(readOnly = true)
 	public Page<UserListItem> getUserList(
 		UserListCondition condition,
@@ -89,6 +90,9 @@ public class UserAdminService {
 		userAdminActionLogWriter.logRoleChange(adminUser, targetUser, beforeRoles, targetUser.getRoles());
 	}
 
+	// 대상 사용자가 추방 가능한 상태인지 확인
+	// - ACTIVE 상태여야 하고 이미 탈퇴한(isDeleted) 사용자가 아님
+	// - 권한 있는 역할(ADMIN 등)을 가지고 있으면 추방 불가
 	private void validateDroppableUser(User targetUser) {
 		boolean isDroppableState = targetUser.getState() == UserState.ACTIVE && !targetUser.isDeleted();
 		if (!isDroppableState) {
@@ -103,6 +107,8 @@ public class UserAdminService {
 		}
 	}
 
+	// 사용자 복원이 가능한지 검증
+	// - DROP 상태만 복원 가능
 	private void validateRestorableUser(User targetUser) {
 		boolean restorable = targetUser.getState() == UserState.DROP;
 		if (!restorable) {
@@ -110,6 +116,7 @@ public class UserAdminService {
 		}
 	}
 
+	// 요청된 currentRole이 사용자의 실제 역할과 일치하는지 검증
 	private void validateCurrentRoleMatched(User targetUser, Role currentRole) {
 		if (!targetUser.getRoles().contains(currentRole)) {
 			throw UserErrorCode.USER_ROLE_MISMATCH.toBaseException();
