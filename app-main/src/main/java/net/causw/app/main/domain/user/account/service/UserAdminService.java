@@ -96,7 +96,8 @@ public class UserAdminService {
 		}
 
 		Set<Role> targetRoles = targetUser.getRoles();
-		boolean isDroppableRole = targetRoles.stream().allMatch(role -> role == Role.COMMON || role == Role.NONE);
+		boolean isDroppableRole = targetRoles.stream()
+			.noneMatch(Role.getPrivilegedRoles()::contains);
 		if (!isDroppableRole) {
 			throw UserErrorCode.USER_NOT_DROPPABLE_ROLE.toBaseException();
 		}
