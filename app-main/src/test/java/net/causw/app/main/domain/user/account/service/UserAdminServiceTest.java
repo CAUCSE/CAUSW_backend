@@ -333,7 +333,7 @@ class UserAdminServiceTest {
 			when(userReader.findUserById(userId)).thenReturn(user);
 
 			// when
-			userAdminService.updateUserRole(adminUser, userId, Role.COMMON, Role.COUNCIL);
+			userAdminService.replaceUserRole(adminUser, userId, Role.COMMON, Role.COUNCIL);
 
 			// then
 			verify(userWriter).replaceRole(user, Role.COMMON, Role.COUNCIL);
@@ -353,7 +353,7 @@ class UserAdminServiceTest {
 
 			// when
 			Throwable throwable = catchThrowable(
-				() -> userAdminService.updateUserRole(adminUser, userId, Role.COUNCIL, Role.ADMIN));
+				() -> userAdminService.replaceUserRole(adminUser, userId, Role.COUNCIL, Role.ADMIN));
 
 			// then
 			assertThat(throwable)

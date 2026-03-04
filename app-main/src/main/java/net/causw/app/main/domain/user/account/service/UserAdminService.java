@@ -80,7 +80,7 @@ public class UserAdminService {
 	}
 
 	@Transactional
-	public void updateUserRole(User adminUser, String userId, Role currentRole, Role newRole) {
+	public void replaceUserRole(User adminUser, String userId, Role currentRole, Role newRole) {
 		User targetUser = userReader.findUserById(userId);
 		validateCurrentRoleMatched(targetUser, currentRole);
 

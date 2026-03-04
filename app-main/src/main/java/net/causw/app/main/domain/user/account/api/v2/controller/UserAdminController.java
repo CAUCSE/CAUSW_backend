@@ -91,12 +91,12 @@ public class UserAdminController {
 
 	@Operation(summary = "회원 권한 변경 V2", description = "관리자가 회원의 현재 권한을 확인한 뒤 지정한 권한으로 변경합니다.")
 	@PatchMapping("/{userId}/role")
-	public ApiResponse<Void> updateUserRole(
+	public ApiResponse<Void> replaceUserRole(
 		@PathVariable String userId,
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestBody @Valid UserRoleUpdateRequest request) {
 
-		userAdminService.updateUserRole(userDetails.getUser(), userId, request.currentRole(), request.newRole());
+		userAdminService.replaceUserRole(userDetails.getUser(), userId, request.currentRole(), request.newRole());
 		return ApiResponse.success();
 	}
 
