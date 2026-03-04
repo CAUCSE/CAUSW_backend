@@ -12,7 +12,7 @@ import net.causw.app.main.domain.user.account.entity.user.User;
 public interface ChildCommentBlockDtoMapper {
 
 	@Mapping(target = "blocker", source = "user")
-	ChildCommentBlockCreateCommand toCommand(String targetUserId, String childCommentId, User user);
+	ChildCommentBlockCreateCommand toCommand(String childCommentId, User user);
 
 	BlockResponseDto toResponse(BlockCreateResult result);
 }

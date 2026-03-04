@@ -11,7 +11,6 @@ import net.causw.app.main.domain.user.relation.service.v2.util.BlockValidator;
 import net.causw.app.main.domain.community.comment.entity.ChildComment;
 import net.causw.app.main.domain.community.comment.service.v2.implementation.ChildCommentReader;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.relation.entity.userBlock.UserBlock;
 
 import lombok.RequiredArgsConstructor;
@@ -23,24 +22,20 @@ public class ChildCommentBlockService {
 
 	private final BlockReader blockReader;
 	private final BlockWriter blockWriter;
-	private final UserReader userReader;
 	private final ChildCommentReader childCommentReader;
 
 	@Transactional
 	public BlockCreateResult createBlock(ChildCommentBlockCreateCommand command) {
 		User blocker = command.blocker();
-		User blocked = userReader.findUserById(command.targetUserId());
 		ChildComment childComment = childCommentReader.findByIdAndNotDeleted(command.childCommentId());
+		User blocked = childComment.getWriter(); // 대댓글 작성자를 서버에서 직접 도출
 
 		boolean alreadyBlocked = blockReader.existsByBlockerAndBlocked(blocker, blocked);
 		BlockValidator.validateCreate(blocker, blocked, alreadyBlocked, childComment.getIsAnonymous());
 
-		// 익명 대댓글에서 이미 차단된 경우: 익명성 보호를 위해 성공 응답 반환
+		// 익명 대댓글 + 이미 차단: 익명성 보호를 위해 신원 없이 성공 응답 반환
 		if (childComment.getIsAnonymous() && alreadyBlocked) {
-			return BlockCreateResult.builder()
-				.blockedUserId(blocked.getId())
-				.blockedUserName(blocked.getNickname())
-				.build();
+			return BlockCreateResult.builder().build();
 		}
 
 		UserBlock userBlock = UserBlock.createForChildComment(
@@ -50,6 +45,14 @@ public class ChildCommentBlockService {
 			childComment.getIsAnonymous(),
 			childComment.getContent());
 		UserBlock saved = blockWriter.save(userBlock);
+
+		// 익명 대댓글이면 응답에서 신원 정보 제외
+		if (childComment.getIsAnonymous()) {
+			return BlockCreateResult.builder()
+				.blockId(saved.getId())
+				.createdAt(saved.getCreatedAt())
+				.build();
+		}
 
 		return BlockCreateResult.builder()
 			.blockId(saved.getId())

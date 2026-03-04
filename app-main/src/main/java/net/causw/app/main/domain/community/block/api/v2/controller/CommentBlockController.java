@@ -28,15 +28,14 @@ public class CommentBlockController {
 	private final CommentBlockService commentBlockService;
 	private final CommentBlockDtoMapper commentBlockDtoMapper;
 
-	@PostMapping("/{targetUserId}")
+	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@Operation(summary = "댓글 기반 유저 차단", description = "댓글에서 특정 유저를 차단합니다. 본인 차단 및 중복 차단은 불가합니다.")
+	@Operation(summary = "댓글 작성자 차단", description = "댓글 ID를 기반으로 작성자를 서버에서 직접 조회하여 차단합니다. 익명 댓글의 경우 응답에서 신원 정보를 반환하지 않습니다.")
 	public ApiResponse<BlockResponseDto> createBlock(
 		@PathVariable String commentId,
-		@PathVariable String targetUserId,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		BlockCreateResult result = commentBlockService.createBlock(
-			commentBlockDtoMapper.toCommand(targetUserId, commentId, userDetails.getUser()));
+			commentBlockDtoMapper.toCommand(commentId, userDetails.getUser()));
 		return ApiResponse.success(commentBlockDtoMapper.toResponse(result));
 	}
 }
