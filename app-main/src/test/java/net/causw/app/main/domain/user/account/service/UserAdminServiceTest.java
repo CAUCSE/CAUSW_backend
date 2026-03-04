@@ -35,6 +35,7 @@ import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.dto.request.UserListCondition;
 import net.causw.app.main.domain.user.account.service.dto.response.UserDetailItem;
 import net.causw.app.main.domain.user.account.service.dto.response.UserListItem;
+import net.causw.app.main.domain.user.account.service.implementation.UserAdminActionLogWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
@@ -55,6 +56,9 @@ class UserAdminServiceTest {
 
 	@Mock
 	private LockerLogWriter lockerLogWriter;
+
+	@Mock
+	private UserAdminActionLogWriter userAdminActionLogWriter;
 
 	@InjectMocks
 	private UserAdminService userAdminService;
@@ -159,6 +163,7 @@ class UserAdminServiceTest {
 		@DisplayName("활성 사용자이며 허용된 권한이면 추방하고 사물함을 반납한다")
 		void givenDroppableUserWithLocker_whenDropUser_thenDropAndReturnLocker() {
 			// given
+			User adminUser = ObjectFixtures.getCertifiedUserWithId("admin-1");
 			String userId = "user-1";
 			String dropReason = "운영 정책 위반";
 			User user = ObjectFixtures.getCertifiedUserWithId(userId);
@@ -171,18 +176,20 @@ class UserAdminServiceTest {
 			when(lockerReader.findByUserId(userId)).thenReturn(Optional.of(locker));
 
 			// when
-			userAdminService.dropUser(userId, dropReason);
+			userAdminService.dropUser(adminUser, userId, dropReason);
 
 			// then
 			verify(locker).returnLocker();
 			verify(lockerLogWriter).logReturn(locker, user);
 			verify(userWriter).dropByAdmin(user, dropReason);
+			verify(userAdminActionLogWriter).logDrop(any(), any(), any(), any(), any());
 		}
 
 		@Test
 		@DisplayName("활성 상태가 아니거나 삭제된 사용자면 USER_NOT_DROPPABLE 예외가 발생한다")
 		void givenNotDroppableState_whenDropUser_thenThrowUserNotDroppable() {
 			// given
+			User adminUser = ObjectFixtures.getCertifiedUserWithId("admin-1");
 			String userId = "user-1";
 			User user = ObjectFixtures.getCertifiedUserWithId(userId);
 			user.setState(UserState.AWAIT);
@@ -192,7 +199,7 @@ class UserAdminServiceTest {
 			when(userReader.findUserById(userId)).thenReturn(user);
 
 			// when
-			Throwable throwable = catchThrowable(() -> userAdminService.dropUser(userId, "reason"));
+			Throwable throwable = catchThrowable(() -> userAdminService.dropUser(adminUser, userId, "reason"));
 
 			// then
 			assertThat(throwable)
@@ -202,12 +209,14 @@ class UserAdminServiceTest {
 
 			verify(lockerReader, never()).findByUserId(any());
 			verify(userWriter, never()).dropByAdmin(any(), any());
+			verify(userAdminActionLogWriter, never()).logDrop(any(), any(), any(), any(), any());
 		}
 
 		@Test
 		@DisplayName("추방이 허용되지 않은 권한의 사용자를 추방하면 USER_NOT_DROPPABLE_ROLE 예외가 발생한다")
 		void givenNotDroppableRole_whenDropUser_thenThrowUserNotDroppableRole() {
 			// given
+			User adminUser = ObjectFixtures.getCertifiedUserWithId("admin-1");
 			String userId = "user-1";
 			User user = ObjectFixtures.getCertifiedUserWithId(userId);
 			user.setState(UserState.ACTIVE);
@@ -217,7 +226,7 @@ class UserAdminServiceTest {
 			when(userReader.findUserById(userId)).thenReturn(user);
 
 			// when
-			Throwable throwable = catchThrowable(() -> userAdminService.dropUser(userId, "reason"));
+			Throwable throwable = catchThrowable(() -> userAdminService.dropUser(adminUser, userId, "reason"));
 
 			// then
 			assertThat(throwable)
@@ -227,6 +236,7 @@ class UserAdminServiceTest {
 
 			verify(lockerReader, never()).findByUserId(any());
 			verify(userWriter, never()).dropByAdmin(any(), any());
+			verify(userAdminActionLogWriter, never()).logDrop(any(), any(), any(), any(), any());
 		}
 	}
 
@@ -238,6 +248,7 @@ class UserAdminServiceTest {
 		@DisplayName("DROP 상태 사용자면 복구한다")
 		void givenDroppedUser_whenRestoreUser_thenRestore() {
 			// given
+			User adminUser = ObjectFixtures.getCertifiedUserWithId("admin-1");
 			String userId = "user-1";
 			User user = ObjectFixtures.getCertifiedUserWithId(userId);
 			user.setState(UserState.DROP);
@@ -246,16 +257,18 @@ class UserAdminServiceTest {
 			when(userReader.findUserById(userId)).thenReturn(user);
 
 			// when
-			userAdminService.restoreUser(userId);
+			userAdminService.restoreUser(adminUser, userId);
 
 			// then
 			verify(userWriter).restore(user);
+			verify(userAdminActionLogWriter).logRestore(any(), any(), any(), any());
 		}
 
 		@Test
 		@DisplayName("탈퇴된 사용자면 복구한다")
 		void givenDeletedUser_whenRestoreUser_thenRestore() {
 			// given
+			User adminUser = ObjectFixtures.getCertifiedUserWithId("admin-1");
 			String userId = "user-1";
 			User user = ObjectFixtures.getCertifiedUserWithId(userId);
 			user.setState(UserState.ACTIVE);
@@ -264,16 +277,18 @@ class UserAdminServiceTest {
 			when(userReader.findUserById(userId)).thenReturn(user);
 
 			// when
-			userAdminService.restoreUser(userId);
+			userAdminService.restoreUser(adminUser, userId);
 
 			// then
 			verify(userWriter).restore(user);
+			verify(userAdminActionLogWriter).logRestore(any(), any(), any(), any());
 		}
 
 		@Test
 		@DisplayName("DROP도 아니고 탈퇴도 아니면 USER_NOT_RESTORABLE 예외가 발생한다")
 		void givenNotRestorableUser_whenRestoreUser_thenThrowUserNotRestorable() {
 			// given
+			User adminUser = ObjectFixtures.getCertifiedUserWithId("admin-1");
 			String userId = "user-1";
 			User user = ObjectFixtures.getCertifiedUserWithId(userId);
 			user.setState(UserState.ACTIVE);
@@ -282,7 +297,7 @@ class UserAdminServiceTest {
 			when(userReader.findUserById(userId)).thenReturn(user);
 
 			// when
-			Throwable throwable = catchThrowable(() -> userAdminService.restoreUser(userId));
+			Throwable throwable = catchThrowable(() -> userAdminService.restoreUser(adminUser, userId));
 
 			// then
 			assertThat(throwable)
@@ -290,6 +305,7 @@ class UserAdminServiceTest {
 				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
 				.isEqualTo(UserErrorCode.USER_NOT_RESTORABLE);
 			verify(userWriter, never()).restore(any());
+			verify(userAdminActionLogWriter, never()).logRestore(any(), any(), any(), any());
 		}
 	}
 
@@ -301,6 +317,7 @@ class UserAdminServiceTest {
 		@DisplayName("현재 권한이 일치하면 권한을 변경한다")
 		void givenMatchedCurrentRole_whenUpdateUserRole_thenReplaceRole() {
 			// given
+			User adminUser = ObjectFixtures.getCertifiedUserWithId("admin-1");
 			String userId = "user-1";
 			User user = ObjectFixtures.getCertifiedUserWithId(userId);
 			user.setRoles(Set.of(Role.COMMON));
@@ -308,16 +325,18 @@ class UserAdminServiceTest {
 			when(userReader.findUserById(userId)).thenReturn(user);
 
 			// when
-			userAdminService.updateUserRole(userId, Role.COMMON, Role.COUNCIL);
+			userAdminService.updateUserRole(adminUser, userId, Role.COMMON, Role.COUNCIL);
 
 			// then
 			verify(userWriter).replaceRole(user, Role.COMMON, Role.COUNCIL);
+			verify(userAdminActionLogWriter).logRoleChange(any(), any(), any(), any());
 		}
 
 		@Test
 		@DisplayName("현재 권한이 일치하지 않으면 USER_ROLE_MISMATCH 예외가 발생한다")
 		void givenMismatchedCurrentRole_whenUpdateUserRole_thenThrowRoleMismatch() {
 			// given
+			User adminUser = ObjectFixtures.getCertifiedUserWithId("admin-1");
 			String userId = "user-1";
 			User user = ObjectFixtures.getCertifiedUserWithId(userId);
 			user.setRoles(Set.of(Role.COMMON));
@@ -326,7 +345,7 @@ class UserAdminServiceTest {
 
 			// when
 			Throwable throwable = catchThrowable(
-				() -> userAdminService.updateUserRole(userId, Role.COUNCIL, Role.ADMIN));
+				() -> userAdminService.updateUserRole(adminUser, userId, Role.COUNCIL, Role.ADMIN));
 
 			// then
 			assertThat(throwable)
@@ -334,6 +353,7 @@ class UserAdminServiceTest {
 				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
 				.isEqualTo(UserErrorCode.USER_ROLE_MISMATCH);
 			verify(userWriter, never()).replaceRole(any(), any(), any());
+			verify(userAdminActionLogWriter, never()).logRoleChange(any(), any(), any(), any());
 		}
 	}
 }

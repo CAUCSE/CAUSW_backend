@@ -302,7 +302,7 @@ public class User extends BaseEntity {
 		this.graduationYear = admission.getRequestedGraduationYear();
 		this.state = UserState.ACTIVE;
 		this.rejectionOrDropReason = null;
-		this.roles = Set.of(Role.COMMON);
+		this.roles = new HashSet<>(Set.of(Role.COMMON));
 	}
 
 	// v2 재학인증 거절 시 사용자 상태를 REJECT로 전이하고 거절 사유를 기록한다.
@@ -313,14 +313,14 @@ public class User extends BaseEntity {
 
 	public void dropByAdmin(String dropReason) {
 		this.state = UserState.DROP;
-		this.roles = Set.of(Role.NONE);
+		this.roles = new HashSet<>(Set.of(Role.NONE));
 		this.rejectionOrDropReason = dropReason;
 	}
 
 	// 탈퇴, 추방된 유저의 계정 복구에 사용
 	public void restore() {
 		this.state = UserState.ACTIVE;
-		this.roles = Set.of(Role.COMMON);
+		this.roles = new HashSet<>(Set.of(Role.COMMON));
 		this.deletedAt = null;
 		this.rejectionOrDropReason = null;
 	}
@@ -328,7 +328,7 @@ public class User extends BaseEntity {
 	public void markAsCertifiedGraduate(Integer graduationYear) {
 		this.graduationYear = graduationYear;
 		this.state = UserState.ACTIVE;
-		this.roles = Set.of(Role.COMMON);
+		this.roles = new HashSet<>(Set.of(Role.COMMON));
 		this.academicStatus = AcademicStatus.GRADUATED;
 		this.rejectionOrDropReason = null; // 거절 사유 초기화
 	}

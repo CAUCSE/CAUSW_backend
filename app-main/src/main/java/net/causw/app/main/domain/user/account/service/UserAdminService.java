@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.user.account.service;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -15,6 +16,7 @@ import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.dto.request.UserListCondition;
 import net.causw.app.main.domain.user.account.service.dto.response.UserDetailItem;
 import net.causw.app.main.domain.user.account.service.dto.response.UserListItem;
+import net.causw.app.main.domain.user.account.service.implementation.UserAdminActionLogWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
@@ -29,6 +31,7 @@ public class UserAdminService {
 	private final UserWriter userWriter;
 	private final LockerReader lockerReader;
 	private final LockerLogWriter lockerLogWriter;
+	private final UserAdminActionLogWriter userAdminActionLogWriter;
 
 	@Transactional(readOnly = true)
 	public Page<UserListItem> getUserList(
@@ -45,9 +48,12 @@ public class UserAdminService {
 	}
 
 	@Transactional
-	public void dropUser(String userId, String dropReason) {
+	public void dropUser(User adminUser, String userId, String dropReason) {
 		User targetUser = userReader.findUserById(userId);
 		validateDroppableUser(targetUser);
+
+		UserState beforeState = targetUser.getState();
+		Set<Role> beforeRoles = new HashSet<>(targetUser.getRoles());
 
 		lockerReader.findByUserId(targetUser.getId()).ifPresent(locker -> {
 			locker.returnLocker();
@@ -55,21 +61,30 @@ public class UserAdminService {
 		});
 
 		userWriter.dropByAdmin(targetUser, dropReason);
+		userAdminActionLogWriter.logDrop(adminUser, targetUser, beforeState, beforeRoles, dropReason);
 	}
 
 	@Transactional
-	public void restoreUser(String userId) {
+	public void restoreUser(User adminUser, String userId) {
 		User targetUser = userReader.findUserById(userId);
 		validateRestorableUser(targetUser);
 
+		UserState beforeState = targetUser.getState();
+		Set<Role> beforeRoles = new HashSet<>(targetUser.getRoles());
+
 		userWriter.restore(targetUser);
+		userAdminActionLogWriter.logRestore(adminUser, targetUser, beforeState, beforeRoles);
 	}
 
 	@Transactional
-	public void updateUserRole(String userId, Role currentRole, Role newRole) {
+	public void updateUserRole(User adminUser, String userId, Role currentRole, Role newRole) {
 		User targetUser = userReader.findUserById(userId);
 		validateCurrentRoleMatched(targetUser, currentRole);
+
+		Set<Role> beforeRoles = new HashSet<>(targetUser.getRoles());
+
 		userWriter.replaceRole(targetUser, currentRole, newRole);
+		userAdminActionLogWriter.logRoleChange(adminUser, targetUser, beforeRoles, targetUser.getRoles());
 	}
 
 	private void validateDroppableUser(User targetUser) {

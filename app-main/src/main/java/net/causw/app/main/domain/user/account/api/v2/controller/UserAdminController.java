@@ -72,18 +72,20 @@ public class UserAdminController {
 	@PatchMapping("/{userId}/drop")
 	public ApiResponse<Void> dropUser(
 		@PathVariable String userId,
+		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestBody @Valid UserDropRequest request) {
 
-		userAdminService.dropUser(userId, request.dropReason());
+		userAdminService.dropUser(userDetails.getUser(), userId, request.dropReason());
 		return ApiResponse.success();
 	}
 
 	@Operation(summary = "회원 복구 V2", description = "관리자가 추방된 사용자를 복구합니다. 복구 시 사용자 상태가 ACTIVE로 변경됩니다.")
 	@PatchMapping("/{userId}/restore")
 	public ApiResponse<Void> restoreUser(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable String userId) {
 
-		userAdminService.restoreUser(userId);
+		userAdminService.restoreUser(userDetails.getUser(), userId);
 		return ApiResponse.success();
 	}
 
@@ -91,9 +93,10 @@ public class UserAdminController {
 	@PatchMapping("/{userId}/role")
 	public ApiResponse<Void> updateUserRole(
 		@PathVariable String userId,
+		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestBody @Valid UserRoleUpdateRequest request) {
 
-		userAdminService.updateUserRole(userId, request.currentRole(), request.newRole());
+		userAdminService.updateUserRole(userDetails.getUser(), userId, request.currentRole(), request.newRole());
 		return ApiResponse.success();
 	}
 
