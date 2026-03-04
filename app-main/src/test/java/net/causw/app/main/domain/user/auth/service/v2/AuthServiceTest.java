@@ -1,8 +1,15 @@
 package net.causw.app.main.domain.user.auth.service.v2;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.doThrow;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.mock;
+import static org.mockito.BDDMockito.never;
+import static org.mockito.BDDMockito.verify;
 
 import java.util.Optional;
 import java.util.Set;
@@ -28,12 +35,16 @@ import net.causw.app.main.domain.user.account.service.implementation.UserPushTok
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
+import net.causw.app.main.domain.user.auth.entity.EmailVerification;
+import net.causw.app.main.domain.user.auth.entity.EmailVerification.VerificationStatus;
 import net.causw.app.main.domain.user.auth.service.AuthService;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthValidator;
+import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationReader;
 import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationValidator;
+import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationWriter;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
@@ -64,6 +75,10 @@ public class AuthServiceTest {
 	private UserPushTokenWriter userPushTokenWriter;
 	@Mock
 	private EmailVerificationValidator emailVerificationValidator;
+	@Mock
+	private EmailVerificationWriter emailVerificationWriter;
+	@Mock
+	private EmailVerificationReader emailVerificationReader;
 
 	private static final String USER_ID = "user_id_123";
 	private static final String EMAIL = "test@example.com";
@@ -97,9 +112,13 @@ public class AuthServiceTest {
 		@DisplayName("성공: 모든 검증을 통과하면 사용자가 저장되고 응답을 반환한다.")
 		void success() {
 			// given
+			EmailVerification verifiedEmail = mock(EmailVerification.class);
+
 			given(userReader.checkUserExistByPhoneNumAndName(anyString(), anyString())).willReturn(Optional.empty());
 			given(passwordEncoder.encode(anyString())).willReturn(ENCODED_PASSWORD);
 			given(userWriter.save(any(User.class))).willReturn(user);
+			given(emailVerificationReader.findLatestByEmailAndStatus(EMAIL, VerificationStatus.VERIFIED))
+				.willReturn(verifiedEmail);
 
 			// when
 			AuthResult result = authService.registerEmailUser(registerDto);
