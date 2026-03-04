@@ -28,7 +28,8 @@ public class EmailVerification extends BaseEntity {
 
 	public enum VerificationStatus {
 		PENDING,
-		VERIFIED
+		VERIFIED,
+		PASSWORD_FIND
 	}
 
 	@Column(name = "email", nullable = false)
@@ -45,10 +46,18 @@ public class EmailVerification extends BaseEntity {
 	private LocalDateTime expiresAt;
 
 	public static EmailVerification of(String email, String verificationCode, LocalDateTime expiresAt) {
+		return of(email, verificationCode, expiresAt, VerificationStatus.PENDING);
+	}
+
+	public static EmailVerification of(
+		String email,
+		String verificationCode,
+		LocalDateTime expiresAt,
+		VerificationStatus status) {
 		return EmailVerification.builder()
 			.email(email)
 			.verificationCode(verificationCode)
-			.status(VerificationStatus.PENDING)
+			.status(status)
 			.expiresAt(expiresAt)
 			.build();
 	}
