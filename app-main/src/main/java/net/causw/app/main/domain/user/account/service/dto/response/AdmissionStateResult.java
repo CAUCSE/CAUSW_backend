@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.user.account.service.dto.request;
+package net.causw.app.main.domain.user.account.service.dto.response;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
