@@ -269,8 +269,8 @@ class UserAdminServiceTest {
 		}
 
 		@Test
-		@DisplayName("탈퇴된 사용자면 복구한다")
-		void givenDeletedUser_whenRestoreUser_thenRestore() {
+		@DisplayName("탈퇴된 사용자면 USER_NOT_RESTORABLE 예외가 발생한다")
+		void givenDeletedUser_whenRestoreUser_thenThrowUserNotRestorable() {
 			// given
 			User adminUser = ObjectFixtures.getCertifiedUserWithId("admin-1");
 			String userId = "user-1";
@@ -281,11 +281,15 @@ class UserAdminServiceTest {
 			when(userReader.findUserById(userId)).thenReturn(user);
 
 			// when
-			userAdminService.restoreUser(adminUser, userId);
+			Throwable throwable = catchThrowable(() -> userAdminService.restoreUser(adminUser, userId));
 
 			// then
-			verify(userWriter).restore(user);
-			verify(userAdminActionLogWriter).logRestore(any(), any(), any(), any());
+			assertThat(throwable)
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
+				.isEqualTo(UserErrorCode.USER_NOT_RESTORABLE);
+			verify(userWriter, never()).restore(any());
+			verify(userAdminActionLogWriter, never()).logRestore(any(), any(), any(), any());
 		}
 
 		@Test

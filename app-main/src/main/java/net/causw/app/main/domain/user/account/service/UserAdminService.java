@@ -103,7 +103,7 @@ public class UserAdminService {
 	}
 
 	private void validateRestorableUser(User targetUser) {
-		boolean restorable = targetUser.getState() == UserState.DROP || targetUser.isDeleted();
+		boolean restorable = targetUser.getState() == UserState.DROP;
 		if (!restorable) {
 			throw UserErrorCode.USER_NOT_RESTORABLE.toBaseException();
 		}
