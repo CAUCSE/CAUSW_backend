@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerLogWriter;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerReader;
+import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
@@ -30,6 +31,7 @@ public class UserAdminService {
 	private final UserReader userReader;
 	private final UserWriter userWriter;
 	private final LockerReader lockerReader;
+	private final LockerWriter lockerWriter;
 	private final LockerLogWriter lockerLogWriter;
 	private final UserAdminActionLogWriter userAdminActionLogWriter;
 
@@ -56,7 +58,7 @@ public class UserAdminService {
 		Set<Role> beforeRoles = new HashSet<>(targetUser.getRoles());
 
 		lockerReader.findByUserId(targetUser.getId()).ifPresent(locker -> {
-			locker.returnLocker();
+			lockerWriter.returnLocker(locker);
 			lockerLogWriter.logReturn(locker, targetUser);
 		});
 

@@ -27,6 +27,7 @@ import org.springframework.data.domain.Pageable;
 import net.causw.app.main.domain.asset.locker.entity.Locker;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerLogWriter;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerReader;
+import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerWriter;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Department;
@@ -53,6 +54,9 @@ class UserAdminServiceTest {
 
 	@Mock
 	private LockerReader lockerReader;
+
+	@Mock
+	private LockerWriter lockerWriter;
 
 	@Mock
 	private LockerLogWriter lockerLogWriter;
@@ -179,7 +183,7 @@ class UserAdminServiceTest {
 			userAdminService.dropUser(adminUser, userId, dropReason);
 
 			// then
-			verify(locker).returnLocker();
+			verify(lockerWriter).returnLocker(locker);
 			verify(lockerLogWriter).logReturn(locker, user);
 			verify(userWriter).dropByAdmin(user, dropReason);
 			verify(userAdminActionLogWriter).logDrop(any(), any(), any(), any(), any());
