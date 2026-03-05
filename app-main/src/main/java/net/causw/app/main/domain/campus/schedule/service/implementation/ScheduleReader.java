@@ -1,6 +1,7 @@
-package net.causw.app.main.domain.campus.schedule.service.v2.implementation;
+package net.causw.app.main.domain.campus.schedule.service.implementation;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.stereotype.Component;
@@ -41,7 +42,7 @@ public class ScheduleReader {
 	 * @param types Schedule 타입 리스트 (null 또는 빈 리스트일 경우 모든 타입 조회)
 	 * @return Schedule 목록
 	 */
-	public List<Schedule> findByCondition(LocalDateTime from, LocalDateTime to, List<ScheduleType> types) {
+	public List<Schedule> findByCondition(LocalDateTime from, LocalDateTime to, Collection<ScheduleType> types) {
 		return scheduleRepository.findAllByCondition(from, to, types);
 	}
 }

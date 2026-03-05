@@ -1,17 +1,21 @@
 package net.causw.app.main.domain.user.account.service;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.domain.user.account.service.dto.request.UserPasswordUpdateCommand;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
+import net.causw.app.main.domain.user.auth.service.implementation.AuthValidator;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
+import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,7 +26,9 @@ public class UserAccountService {
 	private final UserReader userReader;
 	private final UserWriter userWriter;
 	private final UserValidator userValidator;
+	private final AuthValidator authValidator;
 	private final AuthTokenManager authTokenManager;
+	private final PasswordEncoder passwordEncoder;
 
 	/**
 	 * 소셜 로그인을 통해 생성된 임시 유저(GUEST)의 추가 정보를 등록하고 회원가입 절차를 완료합니다.
@@ -85,4 +91,41 @@ public class UserAccountService {
 	public void checkPhoneNumDuplication(String phoneNumber) {
 		userValidator.checkPhoneNumDuplication(phoneNumber);
 	}
+
+	/**
+	 * 현재 비밀번호를 확인하고 새 비밀번호로 변경합니다.
+	 * <p>
+	 * 소셜 로그인 전용 계정(비밀번호 없음)은 변경할 수 없으며,
+	 * 현재 비밀번호 일치 여부, 새 비밀번호 형식, 새 비밀번호 확인 일치 여부를 검사합니다.
+	 * </p>
+	 *
+	 * @param userId             비밀번호를 변경할 유저의 고유 식별자 (PK)
+	 * @param command			비밀번호 재설정 command
+	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
+	 * [SOCIAL_USER_CANNOT_CHANGE_PASSWORD] 소셜 로그인 전용 계정인 경우,
+	 * [INVALID_CURRENT_PASSWORD] 현재 비밀번호가 일치하지 않는 경우,
+	 * [INVALID_PASSWORD_REQUEST] 새 비밀번호 형식이 잘못된 경우,
+	 * [PASSWORD_CONFIRM_MISMATCH] 새 비밀번호와 확인 값이 일치하지 않는 경우
+	 */
+	@Transactional
+	public void updatePassword(String userId, UserPasswordUpdateCommand command) {
+		User user = userReader.findUserById(userId);
+
+		if (user.isOnlySocialUser()) {
+			throw UserErrorCode.SOCIAL_ONLY_USER_CANNOT_CHANGE_PASSWORD.toBaseException();
+		}
+
+		if (!passwordEncoder.matches(command.currentPassword(), user.getPassword())) {
+			throw UserErrorCode.INVALID_CURRENT_PASSWORD.toBaseException();
+		}
+
+		if (!command.newPassword().equals(command.newPasswordConfirm())) {
+			throw UserErrorCode.PASSWORD_CONFIRM_MISMATCH.toBaseException();
+		}
+
+		authValidator.validatePasswordFormat(command.newPassword());
+
+		user.updatePassword(passwordEncoder.encode(command.newPassword()));
+	}
+
 }

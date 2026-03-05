@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.campus.schedule.service.v2.dto;
+package net.causw.app.main.domain.campus.schedule.service.dto;
 
 import java.time.LocalDateTime;
 
@@ -14,5 +14,6 @@ public record ScheduleDto(
 	ScheduleType type,
 	LocalDateTime start,
 	LocalDateTime end,
-	User creator) {
+	User creator,
+	String targetPostId) {
 }

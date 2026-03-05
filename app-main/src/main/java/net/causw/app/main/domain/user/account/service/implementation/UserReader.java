@@ -100,4 +100,8 @@ public class UserReader {
 		return socialAccountRepository.findBySocialIdAndSocialType(socialId, socialType)
 			.map(SocialAccount::getUser);
 	}
+
+	public boolean existsByEmail(String email) {
+		return userRepository.existsByEmail(email);
+	}
 }

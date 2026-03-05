@@ -33,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 public class UpdateUserInfoUseCaseService {
 
 	private final UserEntityService userEntityService;
-	private final UserInfoService userInfoService;
+	private final UserInfoV1Service userInfoV1Service;
 	private final UserService userService;
 	private final UserCareerRepository userCareerRepository;
 
@@ -52,7 +52,7 @@ public class UpdateUserInfoUseCaseService {
 		userService.update(user, userUpdateRequestDto, profileImage); // 실패시 user, userInfo 전부 rollback
 
 		// 사용자 상세정보 갱신
-		final UserInfo userInfo = userInfoService.getOrCreateUserInfoFromUser(user);
+		final UserInfo userInfo = userInfoV1Service.getOrCreateUserInfoFromUser(user);
 
 		userInfo.update(
 			request.getDescription(), request.getJob(), request.getSocialLinks(), request.getIsPhoneNumberVisible());
@@ -97,7 +97,8 @@ public class UpdateUserInfoUseCaseService {
 		}
 
 		// 커리어 삭제
-		List<String> idToDeleteList = userCareerRepository.findAllCareerByUserInfoId(userInfo.getId()).stream()
+		List<String> idToDeleteList = userCareerRepository
+			.findAllCareerByUserInfoIdOrderByStartYearDescStartMonthDesc(userInfo.getId()).stream()
 			.map(BaseEntity::getId)
 			.filter(id -> !requestedIdSet.contains(id)).toList();
 

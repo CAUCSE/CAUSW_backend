@@ -15,7 +15,7 @@ import net.causw.app.main.domain.asset.locker.entity.LockerLocation;
 import net.causw.app.main.domain.asset.locker.entity.LockerName;
 import net.causw.app.main.domain.campus.schedule.entity.Schedule;
 import net.causw.app.main.domain.campus.schedule.entity.enums.ScheduleType;
-import net.causw.app.main.domain.campus.schedule.service.v2.dto.ScheduleDto;
+import net.causw.app.main.domain.campus.schedule.service.dto.ScheduleDto;
 import net.causw.app.main.domain.campus.semester.entity.Semester;
 import net.causw.app.main.domain.campus.semester.enums.SemesterType;
 import net.causw.app.main.domain.community.board.entity.Board;
@@ -309,7 +309,8 @@ public class ObjectFixtures {
 			ScheduleType.ACADEMIC,
 			LocalDateTime.of(2026, 4, 15, 0, 0),
 			LocalDateTime.of(2026, 4, 21, 23, 59),
-			creator);
+			creator,
+			null);
 	}
 
 	public static ScheduleDto getScheduleDto(User creator) {

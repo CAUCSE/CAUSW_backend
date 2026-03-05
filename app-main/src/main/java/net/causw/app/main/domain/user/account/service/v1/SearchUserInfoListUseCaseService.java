@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 @Transactional(readOnly = true)
 public class SearchUserInfoListUseCaseService {
 
-	private final UserInfoService userInfoService;
+	private final UserInfoV1Service userInfoV1Service;
 	private final PageableFactory pageableFactory;
 	private final UserDtoMapper userDtoMapper;
 
@@ -27,7 +27,7 @@ public class SearchUserInfoListUseCaseService {
 		Integer pageNum) {
 		Pageable pageable = pageableFactory.create(pageNum, DEFAULT_PAGE_SIZE);
 
-		return userInfoService.searchUserInfo(pageable, userInfoSearchCondition)
+		return userInfoV1Service.searchUserInfo(pageable, userInfoSearchCondition)
 			.map(userDtoMapper::toUserInfoSummaryResponseDto);
 	}
 }

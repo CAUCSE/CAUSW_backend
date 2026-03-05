@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.campus.schedule.service.v1;
+package net.causw.app.main.domain.campus.schedule.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -21,10 +21,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import net.causw.app.main.domain.campus.schedule.entity.Schedule;
 import net.causw.app.main.domain.campus.schedule.entity.enums.ScheduleType;
-import net.causw.app.main.domain.campus.schedule.service.v2.ScheduleService;
-import net.causw.app.main.domain.campus.schedule.service.v2.dto.ScheduleDto;
-import net.causw.app.main.domain.campus.schedule.service.v2.implementation.ScheduleReader;
-import net.causw.app.main.domain.campus.schedule.service.v2.implementation.ScheduleWriter;
+import net.causw.app.main.domain.campus.schedule.service.dto.ScheduleDto;
+import net.causw.app.main.domain.campus.schedule.service.implementation.ScheduleReader;
+import net.causw.app.main.domain.campus.schedule.service.implementation.ScheduleWriter;
 import net.causw.app.main.domain.campus.schedule.util.ScheduleMapper;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
@@ -208,14 +207,16 @@ public class ScheduleServiceTest {
 				ScheduleType.ACADEMIC,
 				LocalDateTime.of(2026, 4, 15, 0, 0),
 				LocalDateTime.of(2026, 4, 21, 23, 59),
-				mockUser);
+				mockUser,
+				null);
 
 			Schedule schedule2 = Schedule.of(
 				"학술제",
 				ScheduleType.DEPARTMENT,
 				LocalDateTime.of(2026, 4, 25, 0, 0),
 				LocalDateTime.of(2026, 4, 27, 23, 59),
-				mockUser);
+				mockUser,
+				null);
 
 			List<Schedule> mockSchedules = List.of(schedule1, schedule2);
 			given(scheduleReader.findByCondition(from, to, types)).willReturn(mockSchedules);
@@ -268,14 +269,16 @@ public class ScheduleServiceTest {
 				ScheduleType.ACADEMIC,
 				LocalDateTime.of(2026, 4, 15, 0, 0),
 				LocalDateTime.of(2026, 4, 21, 23, 59),
-				mockUser);
+				mockUser,
+				null);
 
 			Schedule schedule2 = Schedule.of(
 				"동아리 활동",
 				ScheduleType.CCSSAA,
 				LocalDateTime.of(2026, 4, 25, 0, 0),
 				LocalDateTime.of(2026, 4, 27, 23, 59),
-				mockUser);
+				mockUser,
+				null);
 
 			List<Schedule> mockSchedules = List.of(schedule1, schedule2);
 			given(scheduleReader.findByCondition(from, to, null)).willReturn(mockSchedules);

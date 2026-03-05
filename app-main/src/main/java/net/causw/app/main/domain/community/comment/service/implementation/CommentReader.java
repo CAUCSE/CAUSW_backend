@@ -31,7 +31,7 @@ public class CommentReader {
 	 *
 	 * @param commentId 조회할 댓글 ID
 	 * @return 조회된 {@link Comment} 엔티티
-	 * @throws net.causw.app.main.shared.exception.BaseException 댓글이 존재하지 않는 경우
+	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception 댓글이 존재하지 않는 경우
 	 */
 	public Comment getComment(String commentId) {
 		return commentRepository.findById(commentId).orElseThrow(
