@@ -6,12 +6,12 @@ import java.time.LocalDateTime;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
+import lombok.RequiredArgsConstructor;
+
 import net.causw.app.main.domain.user.auth.entity.EmailVerification;
 import net.causw.app.main.domain.user.auth.entity.EmailVerification.VerificationStatus;
 import net.causw.app.main.shared.infra.mail.event.EmailVerificationEvent;
 import net.causw.app.main.shared.infra.mail.event.PasswordResetCodeEvent;
-
-import lombok.RequiredArgsConstructor;
 
 /**
  * 이메일 인증 코드 생성 및 발송을 담당하는 컴포넌트입니다.
@@ -31,11 +31,18 @@ public class EmailVerificationSender {
 
 	/**
 	 * 지정된 상태로 인증 코드를 생성하여 DB에 저장하고, 이메일로 발송합니다.
+	 * <p>
+	 * 동일 이메일과 상태의 기존 인증 정보가 있으면 삭제 후 새로 생성합니다.
 	 *
 	 * @param email  인증 코드를 받을 이메일 주소
 	 * @param status 저장할 인증 상태 ({@link VerificationStatus})
 	 */
 	public void send(String email, VerificationStatus status) {
+		emailVerificationWriter.deleteAllByEmailAndStatus(email, status);
+		if (status == VerificationStatus.PENDING) {
+			emailVerificationWriter.deleteAllByEmailAndStatus(email, VerificationStatus.VERIFIED);
+		}
+
 		String verificationCode = generateVerificationCode();
 		LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(EXPIRATION_MINUTES);
 
