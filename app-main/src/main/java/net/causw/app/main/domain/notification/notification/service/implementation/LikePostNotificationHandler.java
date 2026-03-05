@@ -65,7 +65,8 @@ public class LikePostNotificationHandler {
 	}
 
 	private boolean isLikeCountMilestone(long count) {
-		if (count == 5 || count == 10 || count == 50 || count == 100 || count == 500) return true;
+		if (count == 5 || count == 10 || count == 50 || count == 100 || count == 500)
+			return true;
 		return count >= 1000 && count % 1000 == 0;
 	}
 }

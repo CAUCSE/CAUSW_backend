@@ -54,13 +54,13 @@ public class NotificationSettingReader {
 	 * @return Map<userId, UserNotificationSettingMap>
 	 */
 	public Map<String, UserNotificationSettingMap> findSettingMapByUserIds(List<String> userIds) {
-		Map<String, Map<UserNotificationSettingKey, Boolean>> storedByUser =
-			userNotificationSettingRepository.findAllByUserIdIn(userIds).stream()
-				.collect(Collectors.groupingBy(
-					UserNotificationSetting::getUserId,
-					Collectors.toMap(
-						UserNotificationSetting::getSettingKey,
-						UserNotificationSetting::isEnabled)));
+		Map<String, Map<UserNotificationSettingKey, Boolean>> storedByUser = userNotificationSettingRepository
+			.findAllByUserIdIn(userIds).stream()
+			.collect(Collectors.groupingBy(
+				UserNotificationSetting::getUserId,
+				Collectors.toMap(
+					UserNotificationSetting::getSettingKey,
+					UserNotificationSetting::isEnabled)));
 
 		return userIds.stream()
 			.collect(Collectors.toMap(

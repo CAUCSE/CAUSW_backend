@@ -48,7 +48,8 @@ public class AdmissionNotificationHandler {
 		Set<String> blockedByRequester = userBlockEntityService.findBlockeeUserIdsByBlocker(requester);
 
 		List<String> adminIds = admins.stream().map(User::getId).collect(Collectors.toList());
-		Map<String, UserNotificationSettingMap> settingMaps = notificationSettingReader.findSettingMapByUserIds(adminIds);
+		Map<String, UserNotificationSettingMap> settingMaps = notificationSettingReader
+			.findSettingMapByUserIds(adminIds);
 
 		String title = "재학정보 인증 요청";
 		String body = String.format("%s(%s)님이 재학정보 인증을 요청했습니다.", requester.getName(), requester.getStudentId());
