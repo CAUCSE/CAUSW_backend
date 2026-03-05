@@ -2,6 +2,7 @@ package net.causw.app.main.domain.user.account.service;
 
 import java.util.List;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -9,7 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.asset.file.service.v2.implementation.FileWriter;
-import net.causw.app.main.domain.notification.notification.service.AdmissionNotificationService;
+import net.causw.app.main.domain.notification.notification.service.v2.event.AdmissionRequestedEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
 import net.causw.app.main.domain.user.account.service.dto.request.AdmissionCreateCommand;
@@ -31,7 +32,7 @@ public class AdmissionService {
 	private final AdmissionWriter admissionWriter;
 	private final UserWriter userWriter;
 	private final FileWriter fileWriter;
-	private final AdmissionNotificationService admissionNotificationService;
+	private final ApplicationEventPublisher eventPublisher;
 
 	/**
 	 * v2 재학정보 인증 신청을 생성합니다.
@@ -69,7 +70,7 @@ public class AdmissionService {
 			dto.requestedDepartment(),
 			dto.graduationYear());
 
-		admissionNotificationService.sendCreatedAdmissionToAdmins(user.getId());
+		eventPublisher.publishEvent(new AdmissionRequestedEvent(user, admission.getRequestedAcademicStatus()));
 
 		return AdmissionResult.from(admission);
 	}

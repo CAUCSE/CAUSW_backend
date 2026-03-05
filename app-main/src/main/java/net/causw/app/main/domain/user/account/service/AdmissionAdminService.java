@@ -6,7 +6,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.domain.notification.notification.service.AdmissionNotificationService;
+import net.causw.app.main.domain.notification.notification.service.v2.event.AdmissionAcceptedEvent;
+import net.causw.app.main.domain.notification.notification.service.v2.event.AdmissionRejectedEvent;
 import net.causw.app.main.domain.user.academic.event.CertifiedUserCreatedEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
@@ -31,7 +32,6 @@ public class AdmissionAdminService {
 	private final AdmissionLogWriter admissionLogWriter;
 	private final UserWriter userWriter;
 	private final ApplicationEventPublisher eventPublisher;
-	private final AdmissionNotificationService admissionNotificationService;
 
 	/**
 	 * 재학인증 신청 목록을 조회합니다.
@@ -85,7 +85,7 @@ public class AdmissionAdminService {
 		// 신청 삭제
 		admissionWriter.delete(admission);
 
-		admissionNotificationService.sendApprovedAdmissionToUser(targetUser.getId(), adminUser.getId());
+		eventPublisher.publishEvent(new AdmissionAcceptedEvent(targetUser));
 	}
 
 	/**
@@ -116,6 +116,6 @@ public class AdmissionAdminService {
 		// 신청 삭제
 		admissionWriter.delete(admission);
 
-		admissionNotificationService.sendRejectedAdmissionToUser(targetUser.getId(), adminUser.getId());
+		eventPublisher.publishEvent(new AdmissionRejectedEvent(targetUser, rejectReason));
 	}
 }
