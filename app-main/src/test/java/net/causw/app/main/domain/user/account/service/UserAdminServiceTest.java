@@ -366,5 +366,31 @@ class UserAdminServiceTest {
 			verify(userWriter, never()).replaceRole(any(), any(), any());
 			verify(userAdminActionLogWriter, never()).logRoleChange(any(), any(), any(), any());
 		}
+
+		@Test
+		@DisplayName("활성 상태가 아니거나 탈퇴된 사용자면 USER_NOT_ROLE_UPDATABLE 예외가 발생한다")
+		void givenNotRoleUpdatableUser_whenUpdateUserRole_thenThrowUserNotRoleUpdatable() {
+			// given
+			User adminUser = ObjectFixtures.getCertifiedUserWithId("admin-1");
+			String userId = "user-1";
+			User user = ObjectFixtures.getCertifiedUserWithId(userId);
+			user.setState(UserState.AWAIT);
+			user.setDeletedAt(LocalDateTime.now());
+			user.setRoles(Set.of(Role.COMMON));
+
+			when(userReader.findUserById(userId)).thenReturn(user);
+
+			// when
+			Throwable throwable = catchThrowable(
+				() -> userAdminService.replaceUserRole(adminUser, userId, Role.COMMON, Role.COUNCIL));
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
+				.isEqualTo(UserErrorCode.USER_NOT_ROLE_UPDATABLE);
+			verify(userWriter, never()).replaceRole(any(), any(), any());
+			verify(userAdminActionLogWriter, never()).logRoleChange(any(), any(), any(), any());
+		}
 	}
 }

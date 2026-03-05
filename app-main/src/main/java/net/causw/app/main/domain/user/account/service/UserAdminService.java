@@ -87,6 +87,7 @@ public class UserAdminService {
 	@Transactional
 	public UserRoleUpdateResult replaceUserRole(User adminUser, String userId, Role currentRole, Role newRole) {
 		User targetUser = userReader.findUserById(userId);
+		validateRoleUpdatableUser(targetUser);
 		validateCurrentRoleMatched(targetUser, currentRole);
 
 		Set<Role> beforeRoles = new HashSet<>(targetUser.getRoles());
@@ -126,6 +127,15 @@ public class UserAdminService {
 	private void validateCurrentRoleMatched(User targetUser, Role currentRole) {
 		if (!targetUser.getRoles().contains(currentRole)) {
 			throw UserErrorCode.USER_ROLE_MISMATCH.toBaseException();
+		}
+	}
+
+	// 역할 변경 가능한 대상인지 검증
+	// - ACTIVE 상태여야 하고 탈퇴(isDeleted) 상태가 아니어야 함
+	private void validateRoleUpdatableUser(User targetUser) {
+		boolean roleUpdatable = targetUser.getState() == UserState.ACTIVE && !targetUser.isDeleted();
+		if (!roleUpdatable) {
+			throw UserErrorCode.USER_NOT_ROLE_UPDATABLE.toBaseException();
 		}
 	}
 }
