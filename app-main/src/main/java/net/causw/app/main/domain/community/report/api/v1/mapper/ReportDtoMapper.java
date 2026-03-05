@@ -6,12 +6,12 @@ import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 
 import net.causw.app.main.domain.community.report.api.v1.dto.ReportCreateResponseDto;
-import net.causw.app.main.domain.community.report.repository.projection.ReportedCommentNativeProjection;
 import net.causw.app.main.domain.community.report.api.v1.dto.ReportedCommentResponseDto;
-import net.causw.app.main.domain.community.report.repository.projection.ReportedPostNativeProjection;
 import net.causw.app.main.domain.community.report.api.v1.dto.ReportedPostResponseDto;
 import net.causw.app.main.domain.community.report.api.v1.dto.ReportedUserResponseDto;
 import net.causw.app.main.domain.community.report.enums.ReportReason;
+import net.causw.app.main.domain.community.report.repository.projection.ReportedCommentNativeProjection;
+import net.causw.app.main.domain.community.report.repository.projection.ReportedPostNativeProjection;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
 

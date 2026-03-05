@@ -6,6 +6,5 @@ import net.causw.app.main.domain.user.account.enums.user.UserState;
 public record ReportedUserListCondition(
 	String keyword,
 	UserState state,
-	AcademicStatus academicStatus
-) {
+	AcademicStatus academicStatus) {
 }

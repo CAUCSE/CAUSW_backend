@@ -2,8 +2,8 @@ package net.causw.app.main.domain.community.report.service.v2.dto;
 
 import java.time.LocalDateTime;
 
-import net.causw.app.main.domain.community.report.repository.projection.ReportedPostNativeProjection;
 import net.causw.app.main.domain.community.report.enums.ReportReason;
+import net.causw.app.main.domain.community.report.repository.projection.ReportedPostNativeProjection;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 
 public record ReportedPostSummaryResult(
@@ -15,8 +15,7 @@ public record ReportedPostSummaryResult(
 	String reportReasonDescription,
 	LocalDateTime reportCreatedAt,
 	String boardName,
-	String url
-) {
+	String url) {
 	public static ReportedPostSummaryResult from(ReportedPostNativeProjection projection) {
 		return new ReportedPostSummaryResult(
 			projection.getReportId(),
@@ -27,7 +26,6 @@ public record ReportedPostSummaryResult(
 			ReportReason.valueOf(projection.getReportReason()).getDescription(),
 			projection.getReportCreatedAt(),
 			projection.getBoardName(),
-			"/board/" + projection.getBoardId() + "/" + projection.getPostId()
-		);
+			"/board/" + projection.getBoardId() + "/" + projection.getPostId());
 	}
 }

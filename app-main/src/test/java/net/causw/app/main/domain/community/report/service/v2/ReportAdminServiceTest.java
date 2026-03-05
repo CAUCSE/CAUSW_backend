@@ -64,7 +64,8 @@ class ReportAdminServiceTest {
 		User user2 = ObjectFixtures.getCertifiedUserWithId("user-2");
 		Page<User> userPage = new PageImpl<>(List.of(user1, user2), pageable, 2);
 
-		when(userReader.findReportedUserList(condition.keyword(), condition.state(), condition.academicStatus(), pageable))
+		when(userReader.findReportedUserList(condition.keyword(), condition.state(), condition.academicStatus(),
+			pageable))
 			.thenReturn(userPage);
 
 		// when
@@ -78,8 +79,7 @@ class ReportAdminServiceTest {
 			condition.keyword(),
 			condition.state(),
 			condition.academicStatus(),
-			pageable
-		);
+			pageable);
 	}
 
 	@Nested
@@ -173,7 +173,8 @@ class ReportAdminServiceTest {
 			when(commentReportReader.findCombinedCommentReportsByUserId(userId, pageable)).thenReturn(nativePage);
 
 			// when
-			Page<ReportedCommentSummaryResult> result = reportAdminService.getReportedCommentListByUser(userId, pageable);
+			Page<ReportedCommentSummaryResult> result = reportAdminService.getReportedCommentListByUser(userId,
+				pageable);
 
 			// then
 			assertThat(result.getContent()).hasSize(1);

@@ -10,8 +10,7 @@ public record ReportedUserSummaryResult(
 	String name,
 	AcademicStatus academicStatus,
 	Integer reportedCount,
-	UserState userState
-) {
+	UserState userState) {
 	public static ReportedUserSummaryResult from(User user) {
 		return new ReportedUserSummaryResult(
 			user.getId(),
@@ -19,7 +18,6 @@ public record ReportedUserSummaryResult(
 			user.getName(),
 			user.getAcademicStatus(),
 			user.getReportCount(),
-			user.getState()
-		);
+			user.getState());
 	}
 }

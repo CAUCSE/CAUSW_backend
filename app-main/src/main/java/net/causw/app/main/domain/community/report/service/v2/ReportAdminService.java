@@ -26,21 +26,18 @@ public class ReportAdminService {
 	@Transactional(readOnly = true)
 	public Page<ReportedUserSummaryResult> getReportedUserList(
 		ReportedUserListCondition condition,
-		Pageable pageable
-	) {
+		Pageable pageable) {
 		return userReader.findReportedUserList(
 			condition.keyword(),
 			condition.state(),
 			condition.academicStatus(),
-			pageable
-		).map(ReportedUserSummaryResult::from);
+			pageable).map(ReportedUserSummaryResult::from);
 	}
 
 	@Transactional(readOnly = true)
 	public Page<ReportedPostSummaryResult> getReportedPostListByUser(
 		String userId,
-		Pageable pageable
-	) {
+		Pageable pageable) {
 		// 존재하지 않는 사용자 조회 요청은 404로 처리
 		userReader.findUserById(userId);
 
@@ -51,8 +48,7 @@ public class ReportAdminService {
 	@Transactional(readOnly = true)
 	public Page<ReportedCommentSummaryResult> getReportedCommentListByUser(
 		String userId,
-		Pageable pageable
-	) {
+		Pageable pageable) {
 		// 존재하지 않는 사용자 조회 요청은 404로 처리
 		userReader.findUserById(userId);
 

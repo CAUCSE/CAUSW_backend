@@ -37,41 +37,32 @@ public class ReportAdminController {
 	@GetMapping("/users")
 	public ApiResponse<PageResponse<ReportedUserSummaryResponse>> getReportedUserList(
 		@ParameterObject ReportedUserListRequest request,
-		@ParameterObject @PageableDefault(page = 0, size = 10) Pageable pageable
-	) {
+		@ParameterObject @PageableDefault(page = 0, size = 10) Pageable pageable) {
 		return ApiResponse.success(
 			PageResponse.from(
 				reportAdminService.getReportedUserList(reportAdminMapper.toCondition(request), pageable)
-					.map(reportAdminMapper::toResponse)
-			)
-		);
+					.map(reportAdminMapper::toResponse)));
 	}
 
 	@Operation(summary = "특정 회원의 신고된 게시글 조회", description = "특정 회원이 작성한 신고된 게시글 목록을 조회합니다.")
 	@GetMapping("/users/{userId}/posts")
 	public ApiResponse<PageResponse<ReportedPostSummaryResponse>> getReportedPostListByUser(
 		@Parameter(description = "회원 ID") @PathVariable String userId,
-		@ParameterObject @PageableDefault(page = 0, size = 10) Pageable pageable
-	) {
+		@ParameterObject @PageableDefault(page = 0, size = 10) Pageable pageable) {
 		return ApiResponse.success(
 			PageResponse.from(
 				reportAdminService.getReportedPostListByUser(userId, pageable)
-					.map(reportAdminMapper::toResponse)
-			)
-		);
+					.map(reportAdminMapper::toResponse)));
 	}
 
 	@Operation(summary = "특정 회원의 신고된 댓글 조회", description = "특정 회원이 작성한 신고된 댓글/대댓글 목록을 조회합니다.")
 	@GetMapping("/users/{userId}/comments")
 	public ApiResponse<PageResponse<ReportedCommentSummaryResponse>> getReportedCommentListByUser(
 		@Parameter(description = "회원 ID") @PathVariable String userId,
-		@ParameterObject @PageableDefault(page = 0, size = 10) Pageable pageable
-	) {
+		@ParameterObject @PageableDefault(page = 0, size = 10) Pageable pageable) {
 		return ApiResponse.success(
 			PageResponse.from(
 				reportAdminService.getReportedCommentListByUser(userId, pageable)
-					.map(reportAdminMapper::toResponse)
-			)
-		);
+					.map(reportAdminMapper::toResponse)));
 	}
 }

@@ -5,8 +5,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.domain.community.report.repository.projection.ReportedCommentNativeProjection;
 import net.causw.app.main.domain.community.report.repository.ReportRepository;
+import net.causw.app.main.domain.community.report.repository.projection.ReportedCommentNativeProjection;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,8 +19,7 @@ public class CommentReportReader {
 
 	public Page<ReportedCommentNativeProjection> findCombinedCommentReportsByUserId(
 		String userId,
-		Pageable pageable
-	) {
+		Pageable pageable) {
 		return reportRepository.findCombinedCommentReports(userId, pageable);
 	}
 }
