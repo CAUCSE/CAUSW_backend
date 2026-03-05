@@ -32,8 +32,7 @@ public class NotificationLogController {
 	private final NotificationLogService notificationLogService;
 
 	@GetMapping
-	@Operation(summary = "유저의 알림 리스트 조회", description = "유저의 알림 리스트를 조회합니다. <br>" +
-		"오프셋 페이지네이션 기반이고 기본적으로 한 페이지에 20개의 알림입니다.")
+	@Operation(summary = "유저의 알림 리스트 조회", description = "유저의 알림 리스트를 조회합니다. 오프셋 페이지네이션 기반이고 기본적으로 한 페이지에 20개의 알림입니다.")
 	public ApiResponse<PageResponse<NotificationResponseDto>> getNotificationList(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestParam(name = "pageNum", required = false, defaultValue = "0") Integer pageNum) {
@@ -47,8 +46,7 @@ public class NotificationLogController {
 	}
 
 	@GetMapping("/latest")
-	@Operation(summary = "유저에게 온 최신 알림 조회(없을 시 null 반환)", description = "유저의 최신 알림을 조회합니다. <br>" +
-		"해당 api는 홈 화면에서 읽지 않은 최신 알림 1개를 표시할 때 사용됩니다.")
+	@Operation(summary = "유저에게 온 최신 알림 조회(없을 시 null 반환)", description = "유저의 최신 알림을 조회합니다. 해당 api는 홈 화면에서 읽지 않은 최신 알림 1개를 표시할 때 사용됩니다.")
 	public ApiResponse<NotificationResponseDto> getNotificationTop1(
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		NotificationResponseDto response = notificationLogService.getLatestUnread(userDetails.getUser().getId());
@@ -57,8 +55,7 @@ public class NotificationLogController {
 	}
 
 	@GetMapping("/count")
-	@Operation(summary = "유저에게 온 일반, 경조사 알림 중 읽지 않은 알림 총 개수 반환", description = "유저의 읽지 않은 알림 개수를 반환합니다.<br>" +
-		"최대 10개까지 카운팅합니다.")
+	@Operation(summary = "유저에게 온 일반, 경조사 알림 중 읽지 않은 알림 총 개수 반환", description = "유저의 읽지 않은 알림 개수를 반환합니다. 최대 10개까지 카운팅합니다.")
 	public ApiResponse<NotificationCountResponseDto> getNotificationLogCount(
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		NotificationCountResponseDto response = notificationLogService
@@ -69,12 +66,11 @@ public class NotificationLogController {
 
 	@PatchMapping("/{id}/read")
 	@ResponseStatus(value = HttpStatus.OK)
-	@Operation(summary = "유저에게 온 알람 읽음으로 변경", description = "유저의 알람 조회 여부를 참으로 변경합니다<br> " +
-		"id에는 notification_log id를 넣어주세요")
+	@Operation(summary = "유저에게 온 알람 읽음으로 변경", description = "유저의 알람 조회 여부를 참으로 변경합니다. id에는 notification_log id를 넣어주세요")
 	public ApiResponse<Void> readNotification(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable("id") String id) {
-		notificationLogService.readNotification(userDetails.getUser().getId(), id);
+		notificationLogService.updateNotificationLogAsRead(userDetails.getUser().getId(), id);
 		return ApiResponse.success();
 	}
 
