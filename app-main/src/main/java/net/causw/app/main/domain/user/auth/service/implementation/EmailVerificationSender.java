@@ -6,12 +6,12 @@ import java.time.LocalDateTime;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
-import lombok.RequiredArgsConstructor;
-
 import net.causw.app.main.domain.user.auth.entity.EmailVerification;
 import net.causw.app.main.domain.user.auth.entity.EmailVerification.VerificationStatus;
 import net.causw.app.main.shared.infra.mail.event.EmailVerificationEvent;
 import net.causw.app.main.shared.infra.mail.event.PasswordResetCodeEvent;
+
+import lombok.RequiredArgsConstructor;
 
 /**
  * 이메일 인증 코드 생성 및 발송을 담당하는 컴포넌트입니다.

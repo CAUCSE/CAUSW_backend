@@ -2,11 +2,11 @@ package net.causw.app.main.domain.user.auth.service.implementation;
 
 import org.springframework.stereotype.Component;
 
-import lombok.RequiredArgsConstructor;
-
 import net.causw.app.main.domain.user.auth.entity.EmailVerification;
 import net.causw.app.main.domain.user.auth.entity.EmailVerification.VerificationStatus;
 import net.causw.app.main.domain.user.auth.repository.EmailVerificationRepository;
+
+import lombok.RequiredArgsConstructor;
 
 /**
  * 이메일 인증 정보를 저장하는 컴포넌트입니다.
