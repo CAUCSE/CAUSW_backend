@@ -4,8 +4,10 @@ import org.mapstruct.Mapper;
 
 import net.causw.app.main.domain.community.report.api.v2.dto.request.ReportedUserListRequest;
 import net.causw.app.main.domain.community.report.api.v2.dto.response.ReportedCommentSummaryResponse;
+import net.causw.app.main.domain.community.report.api.v2.dto.response.ReportedPostSummaryResponse;
 import net.causw.app.main.domain.community.report.api.v2.dto.response.ReportedUserSummaryResponse;
 import net.causw.app.main.domain.community.report.service.v2.dto.ReportedCommentSummaryResult;
+import net.causw.app.main.domain.community.report.service.v2.dto.ReportedPostSummaryResult;
 import net.causw.app.main.domain.community.report.service.v2.dto.ReportedUserListCondition;
 import net.causw.app.main.domain.community.report.service.v2.dto.ReportedUserSummaryResult;
 
@@ -15,6 +17,8 @@ public interface ReportAdminMapper {
 	ReportedUserListCondition toCondition(ReportedUserListRequest request);
 
 	ReportedUserSummaryResponse toResponse(ReportedUserSummaryResult result);
+
+	ReportedPostSummaryResponse toResponse(ReportedPostSummaryResult result);
 
 	ReportedCommentSummaryResponse toResponse(ReportedCommentSummaryResult result);
 }

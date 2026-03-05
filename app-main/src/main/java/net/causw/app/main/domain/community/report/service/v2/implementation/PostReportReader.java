@@ -2,7 +2,10 @@ package net.causw.app.main.domain.community.report.service.v2.implementation;
 
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
+import net.causw.app.main.domain.community.report.api.v1.dto.ReportedPostNativeProjection;
 import net.causw.app.main.domain.community.report.enums.ReportType;
 import net.causw.app.main.domain.community.report.repository.ReportRepository;
 import net.causw.app.main.domain.user.account.entity.user.User;
@@ -18,5 +21,12 @@ public class PostReportReader {
 
 	public boolean existsByReporterAndPostId(User reporter, String postId) {
 		return reportRepository.existsByReporterAndReportTypeAndTargetId(reporter, ReportType.POST, postId);
+	}
+
+	public Page<ReportedPostNativeProjection> findPostReportsByUserId(
+		String userId,
+		Pageable pageable
+	) {
+		return reportRepository.findPostReportsWithDetails(ReportType.POST.name(), userId, pageable);
 	}
 }

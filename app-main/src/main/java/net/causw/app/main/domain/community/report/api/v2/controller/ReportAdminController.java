@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import net.causw.app.main.domain.community.report.api.v2.dto.request.ReportedUserListRequest;
 import net.causw.app.main.domain.community.report.api.v2.dto.response.ReportedCommentSummaryResponse;
+import net.causw.app.main.domain.community.report.api.v2.dto.response.ReportedPostSummaryResponse;
 import net.causw.app.main.domain.community.report.api.v2.dto.response.ReportedUserSummaryResponse;
 import net.causw.app.main.domain.community.report.api.v2.mapper.ReportAdminMapper;
 import net.causw.app.main.domain.community.report.service.v2.ReportAdminService;
@@ -41,6 +42,20 @@ public class ReportAdminController {
 		return ApiResponse.success(
 			PageResponse.from(
 				reportAdminService.getReportedUserList(reportAdminMapper.toCondition(request), pageable)
+					.map(reportAdminMapper::toResponse)
+			)
+		);
+	}
+
+	@Operation(summary = "특정 회원의 신고된 게시글 조회", description = "특정 회원이 작성한 신고된 게시글 목록을 조회합니다.")
+	@GetMapping("/users/{userId}/posts")
+	public ApiResponse<PageResponse<ReportedPostSummaryResponse>> getReportedPostListByUser(
+		@Parameter(description = "회원 ID") @PathVariable String userId,
+		@ParameterObject @PageableDefault(page = 0, size = 10) Pageable pageable
+	) {
+		return ApiResponse.success(
+			PageResponse.from(
+				reportAdminService.getReportedPostListByUser(userId, pageable)
 					.map(reportAdminMapper::toResponse)
 			)
 		);
