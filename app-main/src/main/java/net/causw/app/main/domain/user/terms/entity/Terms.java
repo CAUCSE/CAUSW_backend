@@ -22,9 +22,7 @@ import lombok.NoArgsConstructor;
 @Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(
-	name = "tb_terms",
-	uniqueConstraints = @UniqueConstraint(columnNames = {"type", "version"}))
+@Table(name = "tb_terms", uniqueConstraints = @UniqueConstraint(columnNames = {"type", "version"}))
 public class Terms extends BaseEntity {
 
 	@Column(name = "title", nullable = false)
