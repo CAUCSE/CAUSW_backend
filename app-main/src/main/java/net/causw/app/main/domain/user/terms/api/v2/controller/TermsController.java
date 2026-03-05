@@ -25,6 +25,7 @@ public class TermsController {
 	@Operation(summary = "이용약관 조회 V2", description = "모든 종류의 최신 버전 이용약관 목록을 조회합니다.")
 	@GetMapping
 	public ApiResponse<List<TermsResponseDto>> getTerms() {
-		return ApiResponse.success(termsService.getTerms());
+		return ApiResponse.success(
+			termsService.getTerms().stream().map(TermsResponseDto::from).toList());
 	}
 }

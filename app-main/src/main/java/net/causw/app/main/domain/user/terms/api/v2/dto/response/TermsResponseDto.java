@@ -2,8 +2,8 @@ package net.causw.app.main.domain.user.terms.api.v2.dto.response;
 
 import java.time.LocalDate;
 
-import net.causw.app.main.domain.user.terms.entity.Terms;
 import net.causw.app.main.domain.user.terms.entity.TermsType;
+import net.causw.app.main.domain.user.terms.service.v2.dto.TermsInfo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -15,13 +15,13 @@ public record TermsResponseDto(
 	@Schema(description = "시행일") LocalDate effectiveDate,
 	@Schema(description = "내용") String content) {
 
-	public static TermsResponseDto from(Terms terms) {
+	public static TermsResponseDto from(TermsInfo info) {
 		return new TermsResponseDto(
-			terms.getTitle(),
-			terms.getType(),
-			terms.isRequired(),
-			terms.getVersion(),
-			terms.getEffectiveDate(),
-			terms.getContent());
+			info.title(),
+			info.type(),
+			info.isRequired(),
+			info.version(),
+			info.effectiveDate(),
+			info.content());
 	}
 }
