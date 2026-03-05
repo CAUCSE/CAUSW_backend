@@ -17,6 +17,7 @@ import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerRe
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerValidator;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
+import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -92,7 +93,8 @@ public class LockerAdminService {
 
 		User user = userReader.findUserByIdNotDeleted(userId);
 		locker.register(user, expiredAt);
-		lockerLogWriter.logAdminAssign(locker, admin);
+
+		lockerLogWriter.logAdminAssign(locker, admin, user);
 	}
 
 	/**
@@ -108,8 +110,10 @@ public class LockerAdminService {
 
 		lockerValidator.validateInUse(locker);
 
+		User user = locker.getUser().orElseThrow(UserErrorCode.USER_NOT_FOUND::toBaseException);
+
 		locker.extendExpireDate(expiredAt);
-		lockerLogWriter.logAdminExtend(locker, admin);
+		lockerLogWriter.logAdminExtend(locker, admin, user);
 	}
 
 	/**
@@ -124,8 +128,10 @@ public class LockerAdminService {
 
 		lockerValidator.validateInUse(locker);
 
+		User user = locker.getUser().orElseThrow(UserErrorCode.USER_NOT_FOUND::toBaseException);
+
 		locker.returnLocker();
-		lockerLogWriter.logAdminRelease(locker, admin);
+		lockerLogWriter.logAdminRelease(locker, admin, user.getEmail(), user.getName());
 	}
 
 	/**
@@ -157,22 +163,26 @@ public class LockerAdminService {
 		lockerValidator.validateDisableable(locker);
 
 		// locker user 존재할 시에 반환
-		if (locker.getUser().isPresent()) {
+		var user = locker.getUser();
+		if (user.isPresent()) {
 			locker.returnLocker();
-			lockerLogWriter.logAdminRelease(locker, admin);
+			lockerLogWriter.logAdminRelease(locker, admin, user.get().getEmail(), user.get().getName());
 		}
 
 		locker.disable();
 		lockerLogWriter.logDisable(locker, admin);
 	}
 
+	@Transactional
 	public void releaseExpiredLocker(String adminId) {
 		User admin = userReader.findAdminUserById(adminId);
 
 		var expiredLockers = lockerReader.findExpiredLockers(LocalDateTime.now());
 		expiredLockers.forEach(locker -> {
+			var userEmail = locker.getUser().map(User::getEmail).orElse("알 수 없음");
+			var userName = locker.getUser().map(User::getName).orElse("알 수 없음");
+			lockerLogWriter.logAdminRelease(locker, admin, userEmail, userName);
 			locker.returnLocker();
-			lockerLogWriter.logAdminRelease(locker, admin);
 		});
 	}
 }
