@@ -125,6 +125,9 @@ public class UserQueryRepository {
 
 		BooleanBuilder where = new BooleanBuilder();
 
+		// 탈퇴한 회원은 제외
+		where.and(notDeleted());
+
 		if (keyword != null && !keyword.isBlank()) {
 			where.and(
 				user.name.containsIgnoreCase(keyword)
