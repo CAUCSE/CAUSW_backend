@@ -103,4 +103,9 @@ public interface UserRepository extends JpaRepository<User, String> {
 	List<String> findAllIds();
 
 	Optional<User> findByIdAndRolesContaining(String id, Role role);
+
+	@Query("SELECT u FROM User u WHERE :role MEMBER OF u.roles AND u.academicStatus = :academicStatus AND u.state = :state")
+	List<User> findByRoleAndAcademicStatusAndState(@Param("role") Role role,
+		@Param("academicStatus") AcademicStatus academicStatus,
+		@Param("state") UserState state);
 }
