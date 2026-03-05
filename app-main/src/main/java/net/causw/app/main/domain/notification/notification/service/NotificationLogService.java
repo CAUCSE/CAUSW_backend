@@ -55,7 +55,7 @@ public class NotificationLogService {
 	}
 
 	@Transactional
-	public void readNotification(String userId, String id) {
+	public void updateNotificationLogAsRead(String userId, String id) {
 		NotificationLog notificationLog = notificationLogReader.findByIdAndUserId(id, userId)
 			.orElseThrow(NotificationLogErrorCode.NOTIFICATION_LOG_NOT_FOUND::toBaseException);
 		notificationLog.setIsRead(true);

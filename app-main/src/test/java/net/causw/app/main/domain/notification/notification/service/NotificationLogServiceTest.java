@@ -195,7 +195,7 @@ class NotificationLogServiceTest {
 				.willReturn(Optional.of(log));
 
 			// when
-			notificationLogService.readNotification(userId, logId);
+			notificationLogService.updateNotificationLogAsRead(userId, logId);
 
 			// then
 			// 상태가 정상적으로 true로 업데이트되었는지 검증
@@ -217,7 +217,7 @@ class NotificationLogServiceTest {
 
 			// when & then
 			// 프로젝트의 커스텀 BaseException 계열로 예외가 던져지는지 검증
-			assertThatThrownBy(() -> notificationLogService.readNotification(userId, logId))
+			assertThatThrownBy(() -> notificationLogService.updateNotificationLogAsRead(userId, logId))
 				.isInstanceOf(BaseRunTimeV2Exception.class);
 
 			then(notificationLogReader).should().findByIdAndUserId(logId, userId);
