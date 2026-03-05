@@ -46,4 +46,25 @@ public class NotificationSettingReader {
 	public List<UserNotificationSetting> findAllByUserId(String userId) {
 		return userNotificationSettingRepository.findAllByUserId(userId);
 	}
+
+	/**
+	 * 여러 유저의 설정을 한 번에 조회하여 userId → UserNotificationSettingMap 으로 반환한다.
+	 * DB에 저장된 설정이 없는 유저는 enum의 defaultEnabled 값으로 채워진 맵을 반환한다.
+	 * @param userIds 조회할 유저 ID 목록
+	 * @return Map<userId, UserNotificationSettingMap>
+	 */
+	public Map<String, UserNotificationSettingMap> findSettingMapByUserIds(List<String> userIds) {
+		Map<String, Map<UserNotificationSettingKey, Boolean>> storedByUser =
+			userNotificationSettingRepository.findAllByUserIdIn(userIds).stream()
+				.collect(Collectors.groupingBy(
+					UserNotificationSetting::getUserId,
+					Collectors.toMap(
+						UserNotificationSetting::getSettingKey,
+						UserNotificationSetting::isEnabled)));
+
+		return userIds.stream()
+			.collect(Collectors.toMap(
+				userId -> userId,
+				userId -> UserNotificationSettingMap.ofFull(storedByUser.getOrDefault(userId, Map.of()))));
+	}
 }

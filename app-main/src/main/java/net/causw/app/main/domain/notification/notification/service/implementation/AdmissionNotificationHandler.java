@@ -1,7 +1,9 @@
 package net.causw.app.main.domain.notification.notification.service.implementation;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -39,7 +41,14 @@ public class AdmissionNotificationHandler {
 		User requester = event.requester();
 
 		List<User> admins = userReader.findAdminsByAcademicStatus(event.targetStatus());
+		if (admins.isEmpty()) {
+			return;
+		}
+
 		Set<String> blockedByRequester = userBlockEntityService.findBlockeeUserIdsByBlocker(requester);
+
+		List<String> adminIds = admins.stream().map(User::getId).collect(Collectors.toList());
+		Map<String, UserNotificationSettingMap> settingMaps = notificationSettingReader.findSettingMapByUserIds(adminIds);
 
 		String title = "재학정보 인증 요청";
 		String body = String.format("%s(%s)님이 재학정보 인증을 요청했습니다.", requester.getName(), requester.getStudentId());
@@ -49,8 +58,7 @@ public class AdmissionNotificationHandler {
 
 		admins.stream()
 			.filter(admin -> !blockedByRequester.contains(admin.getId()))
-			.filter(admin -> notificationSettingReader.findSettingMap(admin.getId())
-				.get(UserNotificationSettingKey.SERVICE_NOTICE_ENABLED))
+			.filter(admin -> settingMaps.get(admin.getId()).get(UserNotificationSettingKey.SERVICE_NOTICE_ENABLED))
 			.forEach(admin -> {
 				notificationPushSender.sendToUser(admin, title, body);
 				notificationWriter.saveLog(admin, notification);
