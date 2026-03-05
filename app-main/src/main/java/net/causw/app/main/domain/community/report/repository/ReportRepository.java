@@ -6,8 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import net.causw.app.main.domain.community.report.api.v1.dto.ReportedCommentNativeProjection;
-import net.causw.app.main.domain.community.report.api.v1.dto.ReportedPostNativeProjection;
+import net.causw.app.main.domain.community.report.repository.projection.ReportedCommentNativeProjection;
+import net.causw.app.main.domain.community.report.repository.projection.ReportedPostNativeProjection;
 import net.causw.app.main.domain.community.report.entity.Report;
 import net.causw.app.main.domain.community.report.enums.ReportType;
 import net.causw.app.main.domain.user.account.entity.user.User;

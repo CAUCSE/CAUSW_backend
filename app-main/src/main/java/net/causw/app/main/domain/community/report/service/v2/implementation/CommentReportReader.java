@@ -5,7 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.domain.community.report.api.v1.dto.ReportedCommentNativeProjection;
+import net.causw.app.main.domain.community.report.repository.projection.ReportedCommentNativeProjection;
 import net.causw.app.main.domain.community.report.repository.ReportRepository;
 
 import lombok.RequiredArgsConstructor;
