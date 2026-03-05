@@ -23,6 +23,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -62,6 +63,8 @@ public class WebSecurityConfigTest {
 	private OAuth2SuccessHandler oAuth2SuccessHandler;
 	@MockBean
 	private OAuth2FailureHandler oAuth2FailureHandler;
+	@MockBean
+	private ClientRegistrationRepository clientRegistrationRepository;
 
 	@Nested
 	@DisplayName("AuthorizeHttpRequests 테스트")
