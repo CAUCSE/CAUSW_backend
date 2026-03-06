@@ -3,6 +3,8 @@ package net.causw.app.main.domain.community.comment.api.v2.dto.response;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import net.causw.app.main.shared.dto.ProfileImageDto;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
@@ -22,7 +24,7 @@ public record CommentResponseDto(
 
 	@Schema(description = "작성자의 입학연도", example = "2022") Integer writerAdmissionYear,
 
-	@Schema(description = "작성자 사진이 저장되어 있는 URL 주소(없으면 Null 반환)", example = "http://test/123") String writerProfileImage,
+	@Schema(description = "작성자 프로필 이미지 정보 (익명인 경우 null)") ProfileImageDto writerProfileImage,
 
 	Boolean updatable,
 	Boolean deletable,

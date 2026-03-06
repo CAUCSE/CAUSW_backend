@@ -2,9 +2,9 @@ package net.causw.app.main.domain.community.comment.service.dto;
 
 import java.util.List;
 
-import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.shared.dto.ProfileImageDto;
 import net.causw.global.constant.StaticValue;
 
 /**
@@ -18,7 +18,7 @@ import net.causw.global.constant.StaticValue;
  * @param writerNickname        작성자 닉네임 (익명 댓글이면 {@code null})
  * @param displayWriterNickname 화면에 표시되는 닉네임 (익명·탈퇴 시 고정 문자열로 치환)
  * @param writerAdmissionYear   작성자 입학연도 (익명 댓글이면 {@code null})
- * @param writerProfileImage    작성자 프로필 이미지 URL (익명 댓글이면 {@code null})
+ * @param writerProfileImage    작성자 프로필 이미지 정보 (익명 댓글이면 {@code null}, 차단/추방/탈퇴 시 GHOST)
  * @param updatable             현재 조회 유저가 이 댓글을 수정할 수 있는지 여부
  * @param deletable             현재 조회 유저가 이 댓글을 삭제할 수 있는지 여부
  * @param isBlocked             작성자가 현재 조회 유저에 의해 차단됐는지 여부
@@ -30,7 +30,7 @@ public record CommentAuthorInfo(
 	String writerNickname,
 	String displayWriterNickname,
 	Integer writerAdmissionYear,
-	String writerProfileImage,
+	ProfileImageDto writerProfileImage,
 	Boolean updatable,
 	Boolean deletable,
 	Boolean isBlocked,
@@ -70,14 +70,18 @@ public record CommentAuthorInfo(
 		String writerName = null;
 		String writerNickname = null;
 		Integer writerAdmissionYear = null;
-		String writerProfileImage = null;
+		ProfileImageDto writerProfileImage = null;
 		if (!Boolean.TRUE.equals(isAnonymous) && writer != null) {
 			writerName = writer.getName();
 			writerNickname = writer.getNickname();
 			writerAdmissionYear = writer.getAdmissionYear();
-			UserProfileImage profileImage = writer.getUserProfileImage();
-			if (profileImage != null && profileImage.getUuidFile() != null) {
-				writerProfileImage = profileImage.getUuidFile().getFileUrl();
+
+			if (isBlocked) {
+				// 차단된 유저는 GHOST 처리 (비식별)
+				writerProfileImage = ProfileImageDto.forBlockedUser();
+			} else {
+				// 추방/탈퇴 유저는 ProfileImageDto.from()에서 GHOST 처리됨
+				writerProfileImage = ProfileImageDto.from(writer);
 			}
 		}
 

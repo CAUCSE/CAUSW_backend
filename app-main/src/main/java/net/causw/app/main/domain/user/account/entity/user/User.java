@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.user.account.entity.user;
 
-import static net.causw.global.constant.StaticValue.NO_PHONE_NUMBER_MESSAGE;
+import static net.causw.global.constant.StaticValue.*;
 
 import java.util.HashSet;
 import java.util.List;
@@ -165,6 +165,7 @@ public class User extends BaseEntity {
 		this.studentId = null;
 		this.nickname = null;
 		this.major = null;
+		this.profileImageType = ProfileImageType.GHOST;
 		this.userProfileImage = null;
 		this.graduationYear = null;
 		this.graduationType = null;

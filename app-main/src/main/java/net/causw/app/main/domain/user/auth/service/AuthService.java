@@ -64,7 +64,8 @@ public class AuthService {
 		User newUser = User.from(dto, passwordEncoder.encode(dto.password()));
 		authValidator.validateRegisterInput(newUser, dto.password(), dto.phoneNumber());
 		User savedUser = userWriter.save(newUser);
-		return AuthResult.of(null, savedUser.getName(), savedUser.getEmail(), savedUser.getProfileUrl(), null);
+		return AuthResult.of(null, savedUser.getName(), savedUser.getEmail(), savedUser.getProfileImageType(),
+			savedUser.getProfileUrl(), null);
 	}
 
 	/**
@@ -86,7 +87,8 @@ public class AuthService {
 		userValidator.validateUserStatusForLogin(user.getState());
 		// 토큰 생성
 		AuthTokenPair tokens = authTokenManager.issueTokens(user, null);
-		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), user.getProfileUrl(),
+		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), user.getProfileImageType(),
+			user.getProfileUrl(),
 			tokens.refreshToken());
 	}
 
@@ -112,7 +114,8 @@ public class AuthService {
 		userValidator.validateUser(user);
 		// 토큰 생성
 		AuthTokenPair tokens = authTokenManager.issueTokens(user, refreshToken);
-		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), user.getProfileUrl(),
+		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), user.getProfileImageType(),
+			user.getProfileUrl(),
 			tokens.refreshToken());
 	}
 

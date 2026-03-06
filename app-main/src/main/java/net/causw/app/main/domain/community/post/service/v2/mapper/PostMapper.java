@@ -12,6 +12,7 @@ import net.causw.app.main.domain.community.post.service.v2.dto.PostDetailResult;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostListResult;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostUpdateResult;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.shared.dto.ProfileImageDto;
 import net.causw.global.constant.StaticValue;
 
 import lombok.AccessLevel;
@@ -58,11 +59,13 @@ public class PostMapper {
 
 	/**
 	 * PostCursorResult를 PostListResult.PostItem으로 변환합니다.
-	 * 익명 게시판인 경우 닉네임을 "익명"으로, 프로필 사진을 null로 설정합니다.
+	 * 익명 게시판인 경우 닉네임을 "익명"으로, 프로필 이미지를 null로 설정합니다.
 	 */
 	public static PostListResult.PostItem toPostListItem(PostCursorResult result, List<String> imageUrls) {
 		String writerNickname = result.isAnonymous() ? StaticValue.ANONYMOUS_USER_NICKNAME : result.writerNickname();
-		String writerProfileImageUrl = result.isAnonymous() ? null : result.writerProfileImageUrl();
+		ProfileImageDto writerProfileImage = result.isAnonymous()
+			? ProfileImageDto.anonymous()
+			: ProfileImageDto.of(result.writerProfileImageType(), result.writerProfileImageUrl());
 
 		return PostListResult.PostItem.of(
 			result.postId(),
@@ -74,7 +77,7 @@ public class PostMapper {
 			result.voteId(),
 			result.isDeleted(),
 			writerNickname,
-			writerProfileImageUrl,
+			writerProfileImage,
 			result.createdAt(),
 			result.updatedAt(),
 			imageUrls,
@@ -112,15 +115,13 @@ public class PostMapper {
 
 		// 작성자 닉네임 및 프로필 이미지 (익명 처리)
 		String displayWriterNickname;
-		String writerProfileImage;
+		ProfileImageDto writerProfileImage;
 		if (post.getIsAnonymous()) {
 			displayWriterNickname = StaticValue.ANONYMOUS_USER_NICKNAME;
-			writerProfileImage = null;
+			writerProfileImage = ProfileImageDto.anonymous();
 		} else {
 			displayWriterNickname = post.getWriter().getNickname();
-			writerProfileImage = post.getWriter().getUserProfileImage() != null
-				? post.getWriter().getUserProfileImage().getUuidFile().getFileUrl()
-				: null;
+			writerProfileImage = ProfileImageDto.from(post.getWriter());
 		}
 
 		String voteId = post.getVote() != null ? post.getVote().getId() : null;

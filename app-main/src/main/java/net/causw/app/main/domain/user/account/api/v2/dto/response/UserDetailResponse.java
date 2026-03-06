@@ -7,6 +7,7 @@ import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.Academic
 import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.account.enums.user.GraduationType;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.shared.dto.ProfileImageDto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -25,7 +26,7 @@ public record UserDetailResponse(
 
 	@Schema(description = "사용자 권한 목록", example = "[\"COMMON\"]") List<String> roles,
 
-	@Schema(description = "프로필 이미지 URL", example = "https://cdn.causw.net/profile/default.png", nullable = true) String profileImageUrl,
+	@Schema(description = "프로필 이미지 정보") ProfileImageDto profileImage,
 
 	@Schema(description = "사용자 상태", example = "AWAIT") UserState state,
 

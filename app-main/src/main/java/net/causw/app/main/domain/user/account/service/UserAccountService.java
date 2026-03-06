@@ -54,7 +54,7 @@ public class UserAccountService {
 		User updatedUser = userWriter.save(guestUser);
 		AuthTokenPair tokens = authTokenManager.issueTokens(updatedUser, refreshToken);
 		return AuthResult.of(tokens.accessToken(), updatedUser.getName(), updatedUser.getEmail(),
-			updatedUser.getProfileUrl(),
+			updatedUser.getProfileImageType(), updatedUser.getProfileUrl(),
 			tokens.refreshToken());
 	}
 

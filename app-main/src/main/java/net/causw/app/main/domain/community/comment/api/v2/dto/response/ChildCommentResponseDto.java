@@ -2,6 +2,8 @@ package net.causw.app.main.domain.community.comment.api.v2.dto.response;
 
 import java.time.LocalDateTime;
 
+import net.causw.app.main.shared.dto.ProfileImageDto;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
@@ -19,7 +21,9 @@ public record ChildCommentResponseDto(
 	@Schema(description = "표시될 대댓글 작성자 닉네임", example = "[닉네임/비활성 유저/익명]") String displayWriterNickname,
 
 	Integer writerAdmissionYear,
-	String writerProfileImage,
+
+	@Schema(description = "작성자 프로필 이미지 정보 (익명인 경우 null)") ProfileImageDto writerProfileImage,
+
 	Boolean updatable,
 	Boolean deletable,
 
