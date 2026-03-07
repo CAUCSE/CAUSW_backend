@@ -21,8 +21,7 @@ public class StudentIdIsNullValidator extends AbstractValidator {
 		if (this.studentId == null) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_STUDENT_ID,
-				"학번이 입력되지 않았습니다."
-			);
+				"학번이 입력되지 않았습니다.");
 		}
 	}
 }

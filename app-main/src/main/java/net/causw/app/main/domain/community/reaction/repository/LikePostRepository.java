@@ -19,16 +19,14 @@ public interface LikePostRepository extends JpaRepository<LikePost, String> {
 
 	Long countByPostId(String postId);
 
-	@Query(
-		"""
-			SELECT lp
-			FROM LikePost lp
-			JOIN lp.post p
-			WHERE lp.user.id = :userId
-			AND (:#{#blockedUserIds.size()} = 0 OR p.writer.id NOT IN :blockedUserIds)
-			ORDER BY p.createdAt DESC
-			"""
-	)
+	@Query("""
+		SELECT lp
+		FROM LikePost lp
+		JOIN lp.post p
+		WHERE lp.user.id = :userId
+		AND (:#{#blockedUserIds.size()} = 0 OR p.writer.id NOT IN :blockedUserIds)
+		ORDER BY p.createdAt DESC
+		""")
 	@EntityGraph(attributePaths = {"post"})
 	Page<LikePost> findByUserId(@Param("userId") String userId, @Param("blockedUserIds") Set<String> blockedUserIds,
 		Pageable pageable);

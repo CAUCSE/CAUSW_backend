@@ -24,8 +24,7 @@ public class PasswordFormatValidator extends AbstractValidator {
 		if (!this.validatePassword()) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_USER_DATA_REQUEST,
-				"비밀번호 형식이 잘못되었습니다."
-			);
+				"비밀번호 형식이 잘못되었습니다.");
 		}
 	}
 

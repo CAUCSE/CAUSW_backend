@@ -1,8 +1,8 @@
 package net.causw.app.main.domain.finance.usercouncilfee.policy;
 
-import net.causw.app.main.domain.finance.usercouncilfee.entity.UserCouncilFee;
 import net.causw.app.main.domain.campus.semester.entity.Semester;
 import net.causw.app.main.domain.campus.semester.enums.SemesterType;
+import net.causw.app.main.domain.finance.usercouncilfee.entity.UserCouncilFee;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 
 public class UserCouncilFeePolicy {
@@ -40,8 +40,7 @@ public class UserCouncilFeePolicy {
 	public static boolean isAppliedCurrentSemesterWithUser(UserCouncilFee userCouncilFee) {
 		return isAppliedCurrentSemester(
 			userCouncilFee,
-			userCouncilFee.getUser().getCurrentCompletedSemester()
-		);
+			userCouncilFee.getUser().getCurrentCompletedSemester());
 	}
 
 	/**
@@ -53,8 +52,7 @@ public class UserCouncilFeePolicy {
 	public static boolean isAppliedCurrentSemesterWithFakeUser(UserCouncilFee userCouncilFee) {
 		return isAppliedCurrentSemester(
 			userCouncilFee,
-			userCouncilFee.getCouncilFeeFakeUser().getCurrentCompletedSemester()
-		);
+			userCouncilFee.getCouncilFeeFakeUser().getCurrentCompletedSemester());
 	}
 
 	/**
@@ -70,11 +68,10 @@ public class UserCouncilFeePolicy {
 	 */
 	public static int getStartSemesterToApply(
 		Semester currentSemester,
-		Integer currentCompletedSemester, AcademicStatus currentAcademicStatus
-	) {
+		Integer currentCompletedSemester, AcademicStatus currentAcademicStatus) {
 		SemesterType currentSemesterType = currentSemester.getSemesterType();
-		boolean duringSemester =
-			(currentSemesterType == SemesterType.FIRST) || (currentSemesterType == SemesterType.SECOND);
+		boolean duringSemester = (currentSemesterType == SemesterType.FIRST)
+			|| (currentSemesterType == SemesterType.SECOND);
 
 		if (currentAcademicStatus == AcademicStatus.ENROLLED && duringSemester) {
 			return currentCompletedSemester;

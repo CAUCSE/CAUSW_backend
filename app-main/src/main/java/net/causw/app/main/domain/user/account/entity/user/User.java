@@ -1,7 +1,8 @@
 package net.causw.app.main.domain.user.account.entity.user;
 
-import static net.causw.global.constant.StaticValue.*;
+import static net.causw.global.constant.StaticValue.NO_PHONE_NUMBER_MESSAGE;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -10,23 +11,26 @@ import java.util.Set;
 import org.hibernate.annotations.BatchSize;
 
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
-import net.causw.app.main.domain.community.vote.entity.VoteRecord;
-import net.causw.app.main.api.dto.user.GraduatedUserCommand;
-import net.causw.app.main.api.dto.user.UserCreateRequestDto;
-import net.causw.app.main.domain.campus.circle.entity.CircleMember;
 import net.causw.app.main.domain.asset.locker.entity.Locker;
+import net.causw.app.main.domain.campus.circle.entity.CircleMember;
+import net.causw.app.main.domain.community.vote.entity.VoteRecord;
 import net.causw.app.main.domain.notification.notification.entity.CeremonyNotificationSetting;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.domain.user.account.api.v1.dto.GraduatedUserCommand;
+import net.causw.app.main.domain.user.account.api.v1.dto.UserCreateRequestDto;
 import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.account.enums.user.GraduationType;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
+import net.causw.app.main.domain.user.auth.service.dto.OAuthAttributes;
 import net.causw.app.main.shared.entity.BaseEntity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -56,20 +60,20 @@ public class User extends BaseEntity {
 	@Column(name = "name", nullable = false)
 	private String name;
 
-	@Column(name = "phone_number", unique = true, nullable = false)
+	@Column(name = "phone_number", unique = true, nullable = true)
 	private String phoneNumber;
 
-	@Column(name = "password", nullable = false)
+	@Column(name = "password", nullable = true)
 	private String password;
 
 	@Column(name = "student_id", unique = true, nullable = true)
 	private String studentId;
 
-	@Column(name = "admission_year", nullable = false)
+	@Column(name = "admission_year", nullable = true)
 	private Integer admissionYear;
 
 	// 새로 추가한 필드들
-	@Column(name = "nickname", unique = true, nullable = false)
+	@Column(name = "nickname", unique = true, nullable = true)
 	private String nickname;
 
 	// TODO: 기존값들 department로 마이그레이션 후 삭제
@@ -88,6 +92,10 @@ public class User extends BaseEntity {
 	@Column(name = "current_completed_semester", nullable = true)
 	private Integer currentCompletedSemester;
 
+	/**
+	 * @deprecated v1에서 관리자가 유저 학적에 대해 별도로 기록하던 메모용 필드.
+	 * 사용 빈도가 낮아 v2에서는 해당 필드를 더 이상 사용하지 않는다.
+	 */
 	@Column(name = "academic_status_note", nullable = true)
 	private String academicStatusNote;
 
@@ -111,6 +119,12 @@ public class User extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private UserState state;
 
+	@Column(name = "deleted_at", nullable = true)
+	private LocalDateTime deletedAt;
+
+	@Embedded
+	private TermAgreements agreements;
+
 	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
 	private Locker locker;
 
@@ -132,10 +146,7 @@ public class User extends BaseEntity {
 	private Boolean isV2 = true;
 
 	@ElementCollection(fetch = FetchType.EAGER)
-	@CollectionTable(
-		name = "tb_user_fcm_token",
-		joinColumns = @JoinColumn(name = "user_id")
-	)
+	@CollectionTable(name = "tb_user_fcm_token", joinColumns = @JoinColumn(name = "user_id"))
 	@Column(name = "fcm_token_value")
 	private Set<String> fcmTokens = new HashSet<>();
 
@@ -154,13 +165,16 @@ public class User extends BaseEntity {
 		this.userProfileImage = null;
 		this.graduationYear = null;
 		this.graduationType = null;
-		this.state = UserState.DELETED;
+		this.deletedAt = LocalDateTime.now();
+	}
+
+	public boolean isDeleted() {
+		return this.deletedAt != null;
 	}
 
 	public static User from(
 		UserCreateRequestDto userCreateRequestDto,
-		String encodedPassword
-	) {
+		String encodedPassword) {
 		return User.builder()
 			.email(userCreateRequestDto.getEmail())
 			.name(userCreateRequestDto.getName())
@@ -174,18 +188,32 @@ public class User extends BaseEntity {
 			.department(
 				DepartmentResolver.resolveByAdmissionYearOrDepartment(
 					userCreateRequestDto.getAdmissionYear(),
-					userCreateRequestDto.getDepartment()
-				))
+					userCreateRequestDto.getDepartment()))
 			.academicStatus(AcademicStatus.UNDETERMINED)
 			.phoneNumber(userCreateRequestDto.getPhoneNumber())
+			.agreements(TermAgreements.createRequiredAgreements())
+			.isV2(true)
+			.build();
+	}
+
+	public static User from(UserRegisterDto dto, String encodedPassword) {
+		return User.builder()
+			.email(dto.email())
+			.name(dto.name())
+			.roles(Set.of(Role.NONE))
+			.state(UserState.AWAIT)
+			.password(encodedPassword)
+			.nickname(dto.nickname())
+			.academicStatus(AcademicStatus.UNDETERMINED)
+			.phoneNumber(dto.phoneNumber())
+			.agreements(TermAgreements.createRequiredAgreements())
 			.isV2(true)
 			.build();
 	}
 
 	public static User createGraduate(
 		GraduatedUserCommand graduatedUserCommand,
-		String encodedPassword
-	) {
+		String encodedPassword) {
 		return User.builder()
 			.email(graduatedUserCommand.email())
 			.name(graduatedUserCommand.name())
@@ -199,6 +227,22 @@ public class User extends BaseEntity {
 			.department(graduatedUserCommand.department())
 			.academicStatus(AcademicStatus.GRADUATED)
 			.phoneNumber(graduatedUserCommand.phoneNumber())
+			.agreements(TermAgreements.createRequiredAgreements())
+			.isV2(true)
+			.build();
+	}
+
+	public void updatePassword(String encodedPassword) {
+		this.password = encodedPassword;
+	}
+
+	public static User createSocialUser(OAuthAttributes attributes) {
+		return User.builder()
+			.email(attributes.email())
+			.name(attributes.name())
+			.roles(Set.of(Role.NONE))
+			.state(UserState.GUEST)
+			.academicStatus(AcademicStatus.UNDETERMINED)
 			.isV2(true)
 			.build();
 	}
@@ -214,8 +258,7 @@ public class User extends BaseEntity {
 	public void updateDetails(
 		String email, String name, String phoneNumber, String encodedPassword,
 		String studentId, Integer admissionYear, String nickname,
-		String major, Department department
-	) {
+		String major, Department department) {
 		this.email = email;
 		this.name = name;
 		this.phoneNumber = phoneNumber;
@@ -225,15 +268,47 @@ public class User extends BaseEntity {
 		this.nickname = nickname;
 		this.major = major;
 		this.department = department;
+		this.agreements = TermAgreements.createRequiredAgreements();
+	}
+
+	public void submitRegistration(String name, String nickname, String phoneNumber) {
+		this.name = name;
+		this.nickname = nickname;
+		this.phoneNumber = phoneNumber;
+		this.state = UserState.AWAIT;
+		this.agreements = TermAgreements.createRequiredAgreements();
 	}
 
 	public void updateRejectionOrDropReason(String reason) {
 		this.rejectionOrDropReason = reason;
 	}
 
+	// 재학 인증 신청시(UserAdmission 생성 시) 해당 유저가 신청 가능한 상태인지 확인
+	public boolean canApplyAdmission() {
+		return this.state == UserState.AWAIT || this.state == UserState.REJECT;
+	}
+
 	public void markAsAwait() {
 		this.state = UserState.AWAIT;
 		this.rejectionOrDropReason = null; // 거절 사유 초기화
+	}
+
+	// v2 재학인증 승인 시 신청서의 학적 정보를 사용자 계정에 반영하고 ACTIVE 상태로 전이한다.
+	public void approveAdmission(UserAdmission admission) {
+		this.studentId = admission.getRequestedStudentId();
+		this.admissionYear = admission.getRequestedAdmissionYear();
+		this.department = admission.getRequestedDepartment();
+		this.academicStatus = admission.getRequestedAcademicStatus();
+		this.graduationYear = admission.getRequestedGraduationYear();
+		this.state = UserState.ACTIVE;
+		this.rejectionOrDropReason = null;
+		this.roles = Set.of(Role.COMMON);
+	}
+
+	// v2 재학인증 거절 시 사용자 상태를 REJECT로 전이하고 거절 사유를 기록한다.
+	public void rejectAdmission(String rejectReason) {
+		this.state = UserState.REJECT;
+		this.rejectionOrDropReason = rejectReason;
 	}
 
 	public void markAsCertifiedGraduate(Integer graduationYear) {
@@ -244,8 +319,23 @@ public class User extends BaseEntity {
 		this.rejectionOrDropReason = null; // 거절 사유 초기화
 	}
 
-	public void removeFcmToken(String targetToken) {
-		this.fcmTokens.remove(targetToken);
+	public boolean removeFcmToken(String targetToken) {
+		return this.fcmTokens.remove(targetToken);
+	}
+
+	public boolean isOnlySocialUser() {
+		return this.password == null;
+	}
+
+	public String getProfileUrl() {
+		if (this.userProfileImage == null || this.userProfileImage.getUuidFile() == null) {
+			return null;
+		}
+		return this.userProfileImage.getUuidFile().getFileUrl();
+	}
+
+	public void updateNickname(String nickname) {
+		this.nickname = nickname;
 	}
 
 	// 신고 관련 메소드

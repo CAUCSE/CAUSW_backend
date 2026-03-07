@@ -7,17 +7,25 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
+import net.causw.app.main.shared.dto.ApiResponse;
+import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.UnauthorizedException;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
+
+	private final ObjectMapper objectMapper;
 
 	@Override
 	public void commence(HttpServletRequest request, HttpServletResponse response,
@@ -34,14 +42,19 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
 			message = exception.getMessage();
 		}
 
-		setResponse(response, errorCode, message);
+		// v2 API인지 확인
+		String requestPath = request.getRequestURI();
+		if (requestPath != null && requestPath.startsWith("/api/v2/")) {
+			setV2Response(response);
+		} else {
+			setV1Response(response, errorCode, message);
+		}
 	}
 
-	private void setResponse(
+	private void setV1Response(
 		HttpServletResponse response,
 		ErrorCode errorCode,
-		String message
-	) throws IOException {
+		String message) throws IOException {
 		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 		response.setContentType("application/json;charset=UTF-8");
 
@@ -52,6 +65,17 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
 			    "timeStamp" : "%s"
 			}
 			""".formatted(errorCode.getCode(), message, LocalDateTime.now());
+
+		response.getWriter().println(body);
+	}
+
+	private void setV2Response(
+		HttpServletResponse response) throws IOException {
+		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+		response.setContentType("application/json;charset=UTF-8");
+
+		ApiResponse<String> apiResponse = ApiResponse.error(AuthErrorCode.INVALID_TOKEN);
+		String body = objectMapper.writeValueAsString(apiResponse);
 
 		response.getWriter().println(body);
 	}

@@ -42,7 +42,7 @@ flyway {
     locations = ["filesystem:src/main/resources/db/migration"]
 
     // 5. 환경별 추가 설정
-    switch(env) {
+    switch (env) {
         case "test":
             logger.lifecycle("🧪 Applying TEST(CI) Flyway configuration")
             outOfOrder = true

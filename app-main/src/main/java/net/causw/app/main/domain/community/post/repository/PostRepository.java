@@ -40,8 +40,7 @@ public interface PostRepository extends JpaRepository<Post, String> {
 		@Param("includeDeleted") boolean includeDeleted,
 		@Param("blockedUserIds") Set<String> blockedUserIds,
 		@Param("keyword") String keyword,
-		Pageable pageable
-	);
+		Pageable pageable);
 
 	// 특정 사용자가 작성한 게시글 검색
 	@Query("SELECT p " +

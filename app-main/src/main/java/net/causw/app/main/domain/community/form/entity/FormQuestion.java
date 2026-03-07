@@ -3,8 +3,8 @@ package net.causw.app.main.domain.community.form.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.causw.app.main.domain.community.form.api.v1.dto.request.create.QuestionCreateRequestDto;
 import net.causw.app.main.domain.community.form.enums.QuestionType;
-import net.causw.app.main.api.dto.form.request.create.QuestionCreateRequestDto;
 import net.causw.app.main.shared.entity.BaseEntity;
 
 import jakarta.persistence.CascadeType;
@@ -30,10 +30,9 @@ import lombok.Setter;
 @Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name = "tb_form_question",
-	indexes = {
-		@Index(name = "form_id_index", columnList = "form_id")
-	})
+@Table(name = "tb_form_question", indexes = {
+	@Index(name = "form_id_index", columnList = "form_id")
+})
 public class FormQuestion extends BaseEntity {
 
 	@Column(name = "number", nullable = false)
@@ -62,8 +61,7 @@ public class FormQuestion extends BaseEntity {
 	public static FormQuestion createObjectiveQuestion(
 		Integer number,
 		QuestionCreateRequestDto questionCreateRequestDto,
-		List<FormQuestionOption> formQuestionOptionList
-	) {
+		List<FormQuestionOption> formQuestionOptionList) {
 		return FormQuestion.builder()
 			.number(number)
 			.questionType(questionCreateRequestDto.getQuestionType())
@@ -75,8 +73,7 @@ public class FormQuestion extends BaseEntity {
 
 	public static FormQuestion createSubjectQuestion(
 		Integer number,
-		QuestionCreateRequestDto questionCreateRequestDto
-	) {
+		QuestionCreateRequestDto questionCreateRequestDto) {
 		return FormQuestion.builder()
 			.number(number)
 			.questionType(questionCreateRequestDto.getQuestionType())

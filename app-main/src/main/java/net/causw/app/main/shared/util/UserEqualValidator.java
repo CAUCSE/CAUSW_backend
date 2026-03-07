@@ -24,8 +24,7 @@ public class UserEqualValidator extends AbstractValidator {
 		if (!this.srcUserId.equals(this.targetUserId)) {
 			throw new UnauthorizedException(
 				ErrorCode.API_NOT_ALLOWED,
-				"접근 권한이 없습니다."
-			);
+				"접근 권한이 없습니다.");
 		}
 	}
 }

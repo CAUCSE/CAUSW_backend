@@ -1,6 +1,5 @@
 package net.causw.app.main.domain.user.academic.entity.userAcademicRecord;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -67,6 +66,10 @@ public class UserAcademicRecordLog extends BaseEntity {
 	@Column(name = "graduation_year", nullable = true)
 	private Integer graduationYear;
 
+	/**
+	 * @deprecated v2부터 사용되지 않음.
+	 * 기존 데이터 호환을 위해 컬럼은 유지하지만 신규 비즈니스 로직에는 사용하지 않는다.
+	 */
 	@Enumerated(EnumType.STRING)
 	@Column(name = "graduation_type", nullable = true)
 	private GraduationType graduationType;
@@ -79,8 +82,7 @@ public class UserAcademicRecordLog extends BaseEntity {
 
 	public static UserAcademicRecordLog createWithApplication(
 		User controlledUser,
-		UserAcademicRecordApplication targetUserAcademicRecordApplication
-	) {
+		UserAcademicRecordApplication targetUserAcademicRecordApplication) {
 		User targetUser = targetUserAcademicRecordApplication.getUser();
 
 		UserAcademicRecordLog userAcademicRecordLog = UserAcademicRecordLog.builder()
@@ -96,13 +98,12 @@ public class UserAcademicRecordLog extends BaseEntity {
 			.rejectMessage(targetUserAcademicRecordApplication.getRejectMessage())
 			.build();
 
-		List<UserAcademicRecordLogAttachImage> userAcademicRecordLogAttachImageList =
-			targetUserAcademicRecordApplication.getUserAcademicRecordAttachImageList()
-				.stream()
-				.map(userAcademicRecordApplicationAttachImage ->
-					UserAcademicRecordLogAttachImage.of(
-						userAcademicRecordLog, userAcademicRecordApplicationAttachImage.getUuidFile()))
-				.toList();
+		List<UserAcademicRecordLogAttachImage> userAcademicRecordLogAttachImageList = targetUserAcademicRecordApplication
+			.getUserAcademicRecordAttachImageList()
+			.stream()
+			.map(userAcademicRecordApplicationAttachImage -> UserAcademicRecordLogAttachImage.of(
+				userAcademicRecordLog, userAcademicRecordApplicationAttachImage.getUuidFile()))
+			.toList();
 
 		userAcademicRecordLog.setUserAcademicRecordLogAttachImageList(userAcademicRecordLogAttachImageList);
 
@@ -112,8 +113,7 @@ public class UserAcademicRecordLog extends BaseEntity {
 	public static UserAcademicRecordLog createWithApplication(
 		User controlledUser,
 		UserAcademicRecordApplication targetUserAcademicRecordApplication,
-		String note
-	) {
+		String note) {
 		User targetUser = targetUserAcademicRecordApplication.getUser();
 
 		UserAcademicRecordLog userAcademicRecordLog = UserAcademicRecordLog.builder()
@@ -129,13 +129,12 @@ public class UserAcademicRecordLog extends BaseEntity {
 			.rejectMessage(targetUserAcademicRecordApplication.getRejectMessage())
 			.build();
 
-		List<UserAcademicRecordLogAttachImage> userAcademicRecordLogAttachImageList =
-			targetUserAcademicRecordApplication.getUserAcademicRecordAttachImageList()
-				.stream()
-				.map(userAcademicRecordApplicationAttachImage ->
-					UserAcademicRecordLogAttachImage.of(
-						userAcademicRecordLog, userAcademicRecordApplicationAttachImage.getUuidFile()))
-				.toList();
+		List<UserAcademicRecordLogAttachImage> userAcademicRecordLogAttachImageList = targetUserAcademicRecordApplication
+			.getUserAcademicRecordAttachImageList()
+			.stream()
+			.map(userAcademicRecordApplicationAttachImage -> UserAcademicRecordLogAttachImage.of(
+				userAcademicRecordLog, userAcademicRecordApplicationAttachImage.getUuidFile()))
+			.toList();
 
 		userAcademicRecordLog.setUserAcademicRecordLogAttachImageList(userAcademicRecordLogAttachImageList);
 
@@ -146,8 +145,7 @@ public class UserAcademicRecordLog extends BaseEntity {
 		User controlledUser,
 		User targetUser,
 		AcademicStatus targetAcademicRecordStatus,
-		String note
-	) {
+		String note) {
 		return UserAcademicRecordLog.builder()
 			.controlledUserEmail(controlledUser.getEmail())
 			.controlledUserName(controlledUser.getName())
@@ -166,8 +164,25 @@ public class UserAcademicRecordLog extends BaseEntity {
 		AcademicStatus targetAcademicRecordStatus,
 		Integer graduationYear,
 		GraduationType graduationType,
-		String note
-	) {
+		String note) {
+		return createWithGraduation(
+			controlledUser,
+			targetUser,
+			targetAcademicRecordStatus,
+			graduationYear,
+			graduationType,
+			note,
+			null);
+	}
+
+	public static UserAcademicRecordLog createWithGraduation(
+		User controlledUser,
+		User targetUser,
+		AcademicStatus targetAcademicRecordStatus,
+		Integer graduationYear,
+		GraduationType graduationType,
+		String note,
+		AcademicRecordRequestStatus targetAcademicRecordRequestStatus) {
 		return UserAcademicRecordLog.builder()
 			.controlledUserEmail(controlledUser.getEmail())
 			.controlledUserName(controlledUser.getName())
@@ -176,6 +191,7 @@ public class UserAcademicRecordLog extends BaseEntity {
 			.targetUserName(targetUser.getName())
 			.targetUserStudentId(targetUser.getStudentId())
 			.targetAcademicRecordStatus(targetAcademicRecordStatus)
+			.targetAcademicRecordRequestStatus(targetAcademicRecordRequestStatus)
 			.graduationYear(graduationYear)
 			.graduationType(graduationType)
 			.note(note)

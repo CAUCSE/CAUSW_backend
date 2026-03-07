@@ -38,10 +38,12 @@ import lombok.NoArgsConstructor;
 @Table(name = "tb_post", indexes = {
 	@Index(name = "board_id_index", columnList = "board_id"),
 	@Index(name = "user_id_index", columnList = "user_id"),
-	@Index(name = "form_id_index", columnList = "form_id")
+	@Index(name = "form_id_index", columnList = "form_id"),
+	@Index(name = "post_cursor_index", columnList = "created_at, id")
 })
 public class Post extends BaseEntity {
-	@Column(name = "title", nullable = false)
+	@Deprecated
+	@Column(name = "title", nullable = true)
 	private String title;
 
 	@Lob
@@ -90,8 +92,7 @@ public class Post extends BaseEntity {
 		Board board,
 		Form form,
 
-		List<UuidFile> postAttachImageUuidFileList
-	) {
+		List<UuidFile> postAttachImageUuidFileList) {
 		Post post = Post.builder()
 			.title(title)
 			.content(content)
@@ -115,10 +116,45 @@ public class Post extends BaseEntity {
 		return post;
 	}
 
+	public static Post of(
+		String title,
+		String content,
+		User writer,
+		Boolean isAnonymous,
+		Board board,
+		List<UuidFile> postAttachImageUuidFileList) {
+		Post post = Post.builder()
+			.title(title)
+			.content(content)
+			.writer(writer)
+			.isAnonymous(isAnonymous)
+			.isQuestion(false)
+			.board(board)
+			.form(null)
+			.build();
+
+		if (postAttachImageUuidFileList.isEmpty()) {
+			return post;
+		}
+
+		List<PostAttachImage> postAttachImageList = postAttachImageUuidFileList.stream()
+			.map(uuidFile -> PostAttachImage.of(post, uuidFile))
+			.toList();
+
+		post.setPostAttachFileList(postAttachImageList);
+
+		return post;
+	}
+
 	public void update(String title, String content, Form form, List<PostAttachImage> postAttachImageList) {
 		this.title = title;
 		this.content = content;
 		this.form = form;
+		this.postAttachImageList = postAttachImageList;
+	}
+
+	public void updateContentAndImages(String content, List<PostAttachImage> postAttachImageList) {
+		this.content = content;
 		this.postAttachImageList = postAttachImageList;
 	}
 

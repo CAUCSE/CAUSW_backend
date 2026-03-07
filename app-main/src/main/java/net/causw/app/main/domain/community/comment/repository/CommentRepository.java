@@ -40,8 +40,7 @@ public interface CommentRepository extends JpaRepository<Comment, String> {
 		  WHERE c.writer.id = :userId AND c.isDeleted = false
 		  AND (:#{#blockedUserIds.size()} = 0 OR p.writer.id NOT IN :blockedUserIds)
 		  ORDER BY p.createdAt DESC
-		"""
-	)
+		""")
 	Page<Post> findPostsByUserId(@Param("userId") String userId, @Param("blockedUserIds") Set<String> blockedUserIds,
 		Pageable pageable);
 

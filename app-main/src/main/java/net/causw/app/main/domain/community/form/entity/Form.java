@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
+import net.causw.app.main.domain.campus.circle.entity.Circle;
+import net.causw.app.main.domain.community.form.api.v1.dto.request.create.FormCreateRequestDto;
 import net.causw.app.main.domain.community.form.enums.FormType;
 import net.causw.app.main.domain.community.form.enums.RegisteredSemester;
 import net.causw.app.main.domain.community.form.enums.RegisteredSemesterManager;
-import net.causw.app.main.api.dto.form.request.create.FormCreateRequestDto;
-import net.causw.app.main.domain.campus.circle.entity.Circle;
 import net.causw.app.main.shared.entity.BaseEntity;
 
 import jakarta.persistence.CascadeType;
@@ -33,10 +33,9 @@ import lombok.Setter;
 @Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name = "tb_form",
-	indexes = {
-		@Index(name = "circle_id_index", columnList = "circle_id")
-	})
+@Table(name = "tb_form", indexes = {
+	@Index(name = "circle_id_index", columnList = "circle_id")
+})
 public class Form extends BaseEntity {
 
 	@Enumerated(EnumType.STRING)
@@ -101,35 +100,29 @@ public class Form extends BaseEntity {
 
 	public static Form createPostForm(
 		FormCreateRequestDto formCreateRequestDto,
-		List<FormQuestion> formQuestionList
-	) {
+		List<FormQuestion> formQuestionList) {
 		return Form.builder()
 			.formType(FormType.POST_FORM)
 			.title(formCreateRequestDto.getTitle())
 			.formQuestionList(formQuestionList)
 			.isAllowedEnrolled(formCreateRequestDto.getIsAllowedEnrolled())
 			.EnrolledRegisteredSemester(
-				formCreateRequestDto.getIsAllowedEnrolled() ?
-					RegisteredSemesterManager.fromEnumList(
-						formCreateRequestDto.getEnrolledRegisteredSemesterList()
-					).serialize()
+				formCreateRequestDto.getIsAllowedEnrolled() ? RegisteredSemesterManager.fromEnumList(
+					formCreateRequestDto.getEnrolledRegisteredSemesterList()).serialize()
 					: null)
 			.isNeedCouncilFeePaid(
 				(formCreateRequestDto.getIsAllowedEnrolled()
-					&& formCreateRequestDto.getIsNeedCouncilFeePaid() != null) ?
-					formCreateRequestDto.getIsNeedCouncilFeePaid()
-					: false
-			)
+					&& formCreateRequestDto.getIsNeedCouncilFeePaid() != null)
+						? formCreateRequestDto.getIsNeedCouncilFeePaid()
+						: false)
 			.isAllowedLeaveOfAbsence(formCreateRequestDto.getIsAllowedLeaveOfAbsence())
 			.LeaveOfAbsenceRegisteredSemester(
 				(formCreateRequestDto.getIsAllowedLeaveOfAbsence() &&
 					!(formCreateRequestDto.getLeaveOfAbsenceRegisteredSemesterList() == null ||
-						formCreateRequestDto.getLeaveOfAbsenceRegisteredSemesterList().isEmpty())
-				) ?
-					RegisteredSemesterManager.fromEnumList(
-						formCreateRequestDto.getLeaveOfAbsenceRegisteredSemesterList()
-					).serialize()
-					: null)
+						formCreateRequestDto.getLeaveOfAbsenceRegisteredSemesterList().isEmpty()))
+							? RegisteredSemesterManager.fromEnumList(
+								formCreateRequestDto.getLeaveOfAbsenceRegisteredSemesterList()).serialize()
+							: null)
 			.isAllowedGraduation(formCreateRequestDto.getIsAllowedGraduation())
 			.build();
 	}
@@ -137,8 +130,7 @@ public class Form extends BaseEntity {
 	public static Form createCircleApplicationForm(
 		FormCreateRequestDto formCreateRequestDto,
 		List<FormQuestion> formQuestionList,
-		Circle circle
-	) {
+		Circle circle) {
 		return Form.builder()
 			.formType(FormType.CIRCLE_APPLICATION_FORM)
 			.title(formCreateRequestDto.getTitle())
@@ -146,27 +138,22 @@ public class Form extends BaseEntity {
 			.circle(circle)
 			.isAllowedEnrolled(formCreateRequestDto.getIsAllowedEnrolled())
 			.EnrolledRegisteredSemester(
-				formCreateRequestDto.getIsAllowedEnrolled() ?
-					RegisteredSemesterManager.fromEnumList(
-						formCreateRequestDto.getEnrolledRegisteredSemesterList()
-					).serialize()
+				formCreateRequestDto.getIsAllowedEnrolled() ? RegisteredSemesterManager.fromEnumList(
+					formCreateRequestDto.getEnrolledRegisteredSemesterList()).serialize()
 					: null)
 			.isNeedCouncilFeePaid(
 				(formCreateRequestDto.getIsAllowedEnrolled()
-					&& formCreateRequestDto.getIsNeedCouncilFeePaid() != null) ?
-					formCreateRequestDto.getIsNeedCouncilFeePaid()
-					: false
-			)
+					&& formCreateRequestDto.getIsNeedCouncilFeePaid() != null)
+						? formCreateRequestDto.getIsNeedCouncilFeePaid()
+						: false)
 			.isAllowedLeaveOfAbsence(formCreateRequestDto.getIsAllowedLeaveOfAbsence())
 			.LeaveOfAbsenceRegisteredSemester(
 				(formCreateRequestDto.getIsAllowedLeaveOfAbsence() &&
 					!(formCreateRequestDto.getLeaveOfAbsenceRegisteredSemesterList() == null ||
-						formCreateRequestDto.getLeaveOfAbsenceRegisteredSemesterList().isEmpty())
-				) ?
-					RegisteredSemesterManager.fromEnumList(
-						formCreateRequestDto.getLeaveOfAbsenceRegisteredSemesterList()
-					).serialize()
-					: null)
+						formCreateRequestDto.getLeaveOfAbsenceRegisteredSemesterList().isEmpty()))
+							? RegisteredSemesterManager.fromEnumList(
+								formCreateRequestDto.getLeaveOfAbsenceRegisteredSemesterList()).serialize()
+							: null)
 			.isAllowedGraduation(formCreateRequestDto.getIsAllowedGraduation())
 			.build();
 	}

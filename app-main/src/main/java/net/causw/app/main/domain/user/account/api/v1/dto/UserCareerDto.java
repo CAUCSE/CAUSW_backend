@@ -1,0 +1,26 @@
+package net.causw.app.main.domain.user.account.api.v1.dto;
+
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.Builder;
+import lombok.Getter;
+
+@Getter
+@Builder
+public class UserCareerDto {
+	private String id;
+
+	@NotNull
+	private Integer startYear;
+
+	@NotNull
+	private Integer startMonth;
+
+	private Integer endYear;
+
+	private Integer endMonth;
+
+	@NotNull
+	@Size(max = 50, message = "최대 글자수 50을 초과했습니다.")
+	private String description;
+}

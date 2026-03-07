@@ -1,9 +1,10 @@
 package net.causw.app.main.domain.community.ceremony.enums;
 
-import net.causw.global.constant.MessageUtil;
-import net.causw.global.exception.BadRequestException;
-import net.causw.global.exception.ErrorCode;
+import net.causw.app.main.shared.exception.errorcode.CeremonyErrorCode;
 
+import lombok.Getter;
+
+@Getter
 public enum CeremonyContext {
 	GENERAL("general", "전체 알림 페이지에서 접근"),
 	MY("my", "나의 경조사 페이지에서 접근"),
@@ -17,21 +18,10 @@ public enum CeremonyContext {
 		this.description = description;
 	}
 
-	public String getValue() {
-		return value;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
 	// String을 enum으로 변환
 	public static CeremonyContext fromString(String context) {
 		if (context == null || context.isEmpty()) {
-			throw new BadRequestException(
-				ErrorCode.INVALID_PARAMETER,
-				MessageUtil.CEREMONY_INVALID_CONTEXT_VALUE
-			);
+			throw CeremonyErrorCode.INVALID_CEREMONY_CONTEXT.toBaseException();
 		}
 
 		for (CeremonyContext ceremonyContext : CeremonyContext.values()) {
@@ -40,9 +30,6 @@ public enum CeremonyContext {
 			}
 		}
 
-		throw new BadRequestException(
-			ErrorCode.INVALID_PARAMETER,
-			MessageUtil.CEREMONY_INVALID_CONTEXT_VALUE
-		);
+		throw CeremonyErrorCode.INVALID_CEREMONY_CONTEXT.toBaseException();
 	}
 }

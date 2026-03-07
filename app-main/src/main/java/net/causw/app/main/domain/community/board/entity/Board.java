@@ -8,8 +8,8 @@ import java.util.stream.Collectors;
 
 import org.hibernate.annotations.ColumnDefault;
 
-import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.campus.circle.entity.Circle;
+import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.RoleGroup;
 import net.causw.app.main.shared.entity.BaseEntity;
@@ -36,6 +36,7 @@ import lombok.Setter;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_board")
 public class Board extends BaseEntity {
+
 	@Column(name = "name", nullable = false, unique = true)
 	private String name;
 
@@ -43,6 +44,9 @@ public class Board extends BaseEntity {
 	private String description;
 
 	@Column(name = "create_role_list", nullable = false)
+	/**
+	 * @deprecated v1 게시판 관리 권한 목록 필드, v2에서는 사용되지 않음
+	 */
 	private String createRoles;
 
 	@Column(name = "category", nullable = false)
@@ -55,25 +59,43 @@ public class Board extends BaseEntity {
 
 	@Column(name = "is_default", nullable = false)
 	@ColumnDefault("false")
+	/**
+	 * @deprecated v1 게시판 기본홈 노출 여부 필드, v2에서는 사용되지 않음
+	 */
 	private Boolean isDefault;
 
 	@Column(name = "is_alumni", nullable = false)
 	@ColumnDefault("false")
+	/**
+	 * @deprecated v1 졸업생 기본홈 노출 여부 필드, v2에서는 사용되지 않음
+	 */
 	private Boolean isAlumni;
 
 	@Column(name = "is_home", nullable = false)
 	@ColumnDefault("false")
+	/**
+	 * @deprecated v1 게시판 홈 노출 여부 필드, v2에서는 사용되지 않음
+	 */
 	private Boolean isHome;
 
 	@Column(name = "is_anonymous_allowed", nullable = false)
 	@ColumnDefault("false")
+	/**
+	 * @deprecated v1 게시판 기본홈 노출 여부 필드, v2에서는 사용되지 않음
+	 */
 	private Boolean isAnonymousAllowed;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "circle_id", nullable = true)
+	/**
+	 * @deprecated v1 동아리 연동 게시판 필드, v2에서는 사용되지 않음
+	 */
 	private Circle circle;
 
 	@OneToMany(mappedBy = "board", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+	/**
+	 * @deprecated v1에서 사용되는 post set, v2에서는 사용되지 않음
+	 */
 	private Set<Post> postSet;
 
 	@Column(name = "is_default_notice", nullable = false)
@@ -85,8 +107,7 @@ public class Board extends BaseEntity {
 		String description,
 		String category,
 		Boolean isAnonymousAllowed,
-		Circle circle
-	) {
+		Circle circle) {
 		Set<String> roleSet = Arrays.stream(Role.values()) // 일반 게시판 생성시 글쓰기 권한 '모두 허용'
 			.map(Role::getValue)
 			.collect(Collectors.toSet());
@@ -118,8 +139,7 @@ public class Board extends BaseEntity {
 		String category,
 		Boolean isAnonymousAllowed,
 		Boolean isAlumni,
-		Circle circle
-	) {
+		Circle circle) {
 		Set<String> roleSet = RoleGroup.EXECUTIVES.getRoles().stream() // 집행부(관리자, 학생회장, 부학생회장) 글쓰기 권한 보장
 			.map(Role::getValue)
 			.collect(Collectors.toSet());
@@ -129,8 +149,7 @@ public class Board extends BaseEntity {
 				createRoleList.stream() // 공지 게시판 생성시 글쓰기 권한 '선택적 허용'
 					.map(Role::of)
 					.map(Role::getValue)
-					.collect(Collectors.toSet())
-			);
+					.collect(Collectors.toSet()));
 		}
 
 		roleSet.remove(Role.NONE.getValue()); // 비회원 글쓰기 권한 제한
@@ -149,6 +168,35 @@ public class Board extends BaseEntity {
 			.postSet(new HashSet<>())
 			.isDefaultNotice(false)
 			.isAlumni(isAlumni != null ? isAlumni : false)
+			.isHome(false)
+			.build();
+	}
+
+	/**
+	 * v2 게시판 생성 (BoardConfig와 별도 관리)
+	 * @param name 게시판 이름
+	 * @param description 게시판 설명
+	 * @return Board 엔티티
+	 */
+	public static Board createForV2(String name, String description) {
+		Set<String> roleSet = Arrays.stream(Role.values())
+			.map(Role::getValue)
+			.collect(Collectors.toSet());
+		roleSet.remove(Role.NONE.getValue());
+		String createRoles = String.join(",", roleSet);
+
+		return Board.builder()
+			.name(name)
+			.description(description)
+			.createRoles(createRoles)
+			.category("COMMUNITY")
+			.isDeleted(false)
+			.isDefault(false)
+			.isAnonymousAllowed(false)
+			.circle(null)
+			.postSet(new HashSet<>())
+			.isDefaultNotice(false)
+			.isAlumni(false)
 			.isHome(false)
 			.build();
 	}

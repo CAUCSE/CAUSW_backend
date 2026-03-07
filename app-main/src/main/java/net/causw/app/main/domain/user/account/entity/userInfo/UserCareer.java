@@ -45,8 +45,7 @@ public class UserCareer extends BaseEntity {
 		UserInfo userInfo,
 		Integer startYear, Integer startMonth,
 		Integer endYear, Integer endMonth,
-		String description
-	) {
+		String description) {
 		return UserCareer.builder()
 			.userInfo(userInfo)
 			.startYear(startYear)
@@ -60,8 +59,7 @@ public class UserCareer extends BaseEntity {
 	public void update(
 		Integer startYear, Integer startMonth,
 		Integer endYear, Integer endMonth,
-		String description
-	) {
+		String description) {
 		this.startYear = startYear;
 		this.startMonth = startMonth;
 		this.endYear = endYear;

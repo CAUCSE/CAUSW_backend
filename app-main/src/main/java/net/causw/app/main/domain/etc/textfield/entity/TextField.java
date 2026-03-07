@@ -28,8 +28,7 @@ public class TextField extends BaseEntity {
 
 	public static TextField of(
 		String key,
-		String value
-	) {
+		String value) {
 		return TextField.builder()
 			.key(key)
 			.value(value)

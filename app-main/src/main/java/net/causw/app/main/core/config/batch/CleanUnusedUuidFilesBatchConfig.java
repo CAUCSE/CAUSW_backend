@@ -17,7 +17,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import net.causw.app.main.core.batch.listener.CheckMeasureStepListener;
 import net.causw.app.main.core.batch.listener.DeleteFileStepListener;
 import net.causw.app.main.core.batch.listener.DeleteUnusedFileJobCompletionNotificationListener;
-import net.causw.app.main.domain.asset.file.service.CleanUnusedUuidFileService;
+import net.causw.app.main.domain.asset.file.service.v1.CleanUnusedUuidFileService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -56,8 +56,7 @@ public class CleanUnusedUuidFilesBatchConfig {
 		@Qualifier("checkIsUsedWithUserAdmissionAttachImageIntegrationStep") Step checkIsUsedWithUserAdmissionAttachImageIntegrationStep,
 		@Qualifier("checkIsUsedWithUserAdmissionLogAttachImageIntegrationStep") Step checkIsUsedWithUserAdmissionLogAttachImageIntegrationStep,
 		@Qualifier("checkIsUsedWithUserProfileImageIntegrationStep") Step checkIsUsedWithUserProfileImageIntegrationStep,
-		@Qualifier("deleteFileNotUsedStep") Step deleteFileNotUsedStep
-	) {
+		@Qualifier("deleteFileNotUsedStep") Step deleteFileNotUsedStep) {
 		return new JobBuilder("cleanUpUnusedFilesJob", jobRepository)
 			.listener(deleteUnusedFileJobCompletionNotificationListener)
 			.start(initIsUsedUuidFileIntegrationStep)

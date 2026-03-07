@@ -12,6 +12,7 @@ public class StaticValue {
 	public static final Integer CAU_SW_START_YEAR = 1972;
 	public static final Integer CAU_AI_START_YEAR = 2021;
 	public static final Integer MAX_NUM_FILE_ATTACHMENTS = 3;
+	public static final String ADMIN_EMAIL = "caucsedongne@gmail.com";
 
 	// Pagination
 	public static final Integer DEFAULT_PAGE_SIZE = 20;
@@ -23,6 +24,7 @@ public class StaticValue {
 	public final static Integer USER_LIST_PAGE_SIZE = 30;
 	public final static Integer DEFAULT_NOTIFICATION_PAGE_SIZE = 10;
 	public final static Integer SIDE_NOTIFICATION_PAGE_SIZE = 4;
+	public final static Integer HOME_NOTIFICATION_PAGE_SIZE = 1;
 	public final static Integer MAX_NOTIFICATION_COUNT = 10;
 	public final static Integer BATCH_USER_LIST_SIZE = 500;
 
@@ -30,8 +32,8 @@ public class StaticValue {
 	public static final Integer MAX_NUM_EVENT = 10;
 
 	// JWT Token
-	public static final Long JWT_ACCESS_TOKEN_VALID_TIME = 1000L * 60 * 30;    // 30min
-	public static final Long JWT_REFRESH_TOKEN_VALID_TIME = 1000L * 60 * 60 * 24 * 7;   // 7day
+	public static final Long JWT_ACCESS_TOKEN_VALID_TIME = 1000L * 60 * 30;    // 30 min
+	public static final Long JWT_REFRESH_TOKEN_VALID_TIME = 1000L * 60 * 60 * 24 * 15;   // 15 days
 	public static final Integer JWT_ACCESS_THRESHOLD = 60 * 60 * 24;  // 1 day
 
 	// Swagger configuration
@@ -114,6 +116,7 @@ public class StaticValue {
 	public static final String HASH_ALGORITHM = "SHA-256";
 
 	// nickname
+	public static final int NICKNAME_MAX_LENGTH = 8;
 	public static final String INACTIVE_USER_NICKNAME = "비활성 유저";
 	public static final String ANONYMOUS_USER_NICKNAME = "익명";
 

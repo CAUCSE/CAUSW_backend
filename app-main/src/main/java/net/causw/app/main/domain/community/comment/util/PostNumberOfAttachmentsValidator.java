@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.community.comment.util;
 
-import static net.causw.global.constant.StaticValue.*;
+import static net.causw.global.constant.StaticValue.MAX_NUM_FILE_ATTACHMENTS;
 
 import java.util.List;
 
@@ -26,8 +26,7 @@ public class PostNumberOfAttachmentsValidator extends AbstractValidator {
 		if (multipartFileList != null && multipartFileList.size() > MAX_NUM_FILE_ATTACHMENTS) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_PARAMETER,
-				"4개 이상의 파일을 첨부할 수 없습니다."
-			);
+				"4개 이상의 파일을 첨부할 수 없습니다.");
 		}
 	}
 }

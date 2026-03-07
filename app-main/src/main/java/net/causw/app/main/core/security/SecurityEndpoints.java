@@ -1,7 +1,9 @@
 package net.causw.app.main.core.security;
 
-import static net.causw.app.main.core.security.SecurityEndpoints.SecurityEndpoint.*;
-import static org.springframework.http.HttpMethod.*;
+import static net.causw.app.main.core.security.SecurityEndpoints.SecurityEndpoint.of;
+import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpMethod.PUT;
 
 import org.springframework.http.HttpMethod;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -108,8 +110,7 @@ public class SecurityEndpoints {
 	 */
 	public record SecurityEndpoint(
 		String pattern,
-		HttpMethod httpMethod
-	) {
+		HttpMethod httpMethod) {
 		public static SecurityEndpoint of(String pattern) {
 			return new SecurityEndpoint(pattern, null);
 		}

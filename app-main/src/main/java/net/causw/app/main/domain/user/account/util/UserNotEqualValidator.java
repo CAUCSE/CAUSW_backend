@@ -24,8 +24,7 @@ public class UserNotEqualValidator extends AbstractValidator {
 		if (this.srcUserId.equals(this.targetUserId)) {
 			throw new BadRequestException(
 				ErrorCode.CANNOT_PERFORMED,
-				"해당 사용자는 명령을 수행할 수 없습니다."
-			);
+				"해당 사용자는 명령을 수행할 수 없습니다.");
 		}
 	}
 }

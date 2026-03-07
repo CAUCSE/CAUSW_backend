@@ -31,16 +31,13 @@ public class CustomUserDetailsService implements UserDetailsService {
 	}
 
 	public UserDetails loadUserByUserId(String userId) throws UsernameNotFoundException {
-		User user = userQueryRepository.findByIdWithRoles(userId)
+		User user = userQueryRepository.findByIdWithRelations(userId)
 			.orElseThrow(() -> new BadRequestException(
-					ErrorCode.ROW_DOES_NOT_EXIST,
-					MessageUtil.LOGIN_USER_NOT_FOUND
-				)
-			);
+				ErrorCode.ROW_DOES_NOT_EXIST,
+				MessageUtil.LOGIN_USER_NOT_FOUND));
 
 		return CustomUserDetails.builder()
 			.user(user)
 			.build();
 	}
 }
-

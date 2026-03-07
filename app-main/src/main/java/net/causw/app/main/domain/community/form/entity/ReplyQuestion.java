@@ -24,11 +24,10 @@ import lombok.Setter;
 @Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name = "tb_reply_question",
-	indexes = {
-		@Index(name = "reply_id_index", columnList = "reply_id"),
-		@Index(name = "form_question_id_index", columnList = "form_question_id")
-	})
+@Table(name = "tb_reply_question", indexes = {
+	@Index(name = "reply_id_index", columnList = "reply_id"),
+	@Index(name = "form_question_id_index", columnList = "form_question_id")
+})
 public class ReplyQuestion extends BaseEntity {
 
 	@Setter
@@ -50,8 +49,7 @@ public class ReplyQuestion extends BaseEntity {
 	public static ReplyQuestion of(
 		FormQuestion formQuestion,
 		String questionAnswer,
-		List<Integer> selectedOptionList
-	) {
+		List<Integer> selectedOptionList) {
 		return ReplyQuestion.builder()
 			.formQuestion(formQuestion)
 			.questionAnswer(questionAnswer)

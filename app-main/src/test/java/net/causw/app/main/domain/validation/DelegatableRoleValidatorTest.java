@@ -1,10 +1,26 @@
 package net.causw.app.main.domain.validation;
 
 import static java.util.Map.entry;
-import static net.causw.app.main.domain.user.account.enums.user.Role.*;
-import static net.causw.app.main.domain.user.account.policy.RolePolicy.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static net.causw.app.main.domain.user.account.enums.user.Role.ADMIN;
+import static net.causw.app.main.domain.user.account.enums.user.Role.COMMON;
+import static net.causw.app.main.domain.user.account.enums.user.Role.COUNCIL;
+import static net.causw.app.main.domain.user.account.enums.user.Role.LEADER_1;
+import static net.causw.app.main.domain.user.account.enums.user.Role.LEADER_2;
+import static net.causw.app.main.domain.user.account.enums.user.Role.LEADER_3;
+import static net.causw.app.main.domain.user.account.enums.user.Role.LEADER_4;
+import static net.causw.app.main.domain.user.account.enums.user.Role.LEADER_ALUMNI;
+import static net.causw.app.main.domain.user.account.enums.user.Role.LEADER_CIRCLE;
+import static net.causw.app.main.domain.user.account.enums.user.Role.NONE;
+import static net.causw.app.main.domain.user.account.enums.user.Role.PRESIDENT;
+import static net.causw.app.main.domain.user.account.enums.user.Role.PROFESSOR;
+import static net.causw.app.main.domain.user.account.enums.user.Role.VICE_PRESIDENT;
+import static net.causw.app.main.domain.user.account.policy.RolePolicy.canAssign;
+import static net.causw.app.main.domain.user.account.policy.RolePolicy.getRolePriority;
+import static net.causw.app.main.domain.user.account.policy.RolePolicy.getRolesAssignableFor;
+import static net.causw.app.main.domain.user.account.policy.RolePolicy.isPrivilegeInverted;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 
 import java.util.Map;
 import java.util.Set;
@@ -17,10 +33,10 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import net.causw.app.main.domain.user.account.util.DelegatableRoleValidator;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.policy.RolePolicy;
+import net.causw.app.main.domain.user.account.util.DelegatableRoleValidator;
 import net.causw.app.main.util.ObjectFixtures;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.ErrorCode;
@@ -46,13 +62,11 @@ public class DelegatableRoleValidatorTest {
 		entry(NONE, 100),
 
 		entry(LEADER_CIRCLE, 5),
-		entry(PROFESSOR, 6)
-	);
+		entry(PROFESSOR, 6));
 
 	private static final Map<Role, Set<Role>> MOCK_ROLES_ASSIGNABLE_FOR = Map.of(
 		Role.PRESIDENT, Set.of(Role.VICE_PRESIDENT, Role.COUNCIL, Role.COMMON),
-		Role.VICE_PRESIDENT, Set.of(Role.PRESIDENT)
-	);
+		Role.VICE_PRESIDENT, Set.of(Role.PRESIDENT));
 
 	private static final Set<Role> MOCK_DELEGATABLE_ROLES = Set.of(ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT);
 
@@ -163,8 +177,8 @@ public class DelegatableRoleValidatorTest {
 			rolePolicyMockedStatic.when(RolePolicy::getDelegatableRoles)
 				.thenReturn(MOCK_DELEGATABLE_ROLES);
 
-			Stream.concat(delegator.getRoles().stream(), delegatee.getRoles().stream()).forEach(role ->
-				rolePolicyMockedStatic.when(() -> getRolePriority(role))
+			Stream.concat(delegator.getRoles().stream(), delegatee.getRoles().stream())
+				.forEach(role -> rolePolicyMockedStatic.when(() -> getRolePriority(role))
 					.thenReturn(MOCK_ROLE_PRIORITY.get(role)));
 
 			rolePolicyMockedStatic.when(() -> canAssign(any(), any()))
@@ -179,20 +193,16 @@ public class DelegatableRoleValidatorTest {
 
 	private void assertValidatorSuccess(Role delegatedRole) {
 		DelegatableRoleValidator validator = createValidator(delegatedRole);
-		withMockedRolePolicy(delegatedRole, () ->
-			assertThatCode(validator::validate)
-				.doesNotThrowAnyException()
-		);
+		withMockedRolePolicy(delegatedRole, () -> assertThatCode(validator::validate)
+			.doesNotThrowAnyException());
 	}
 
 	private void assertValidatorFail(Role delegatedRole) {
 		DelegatableRoleValidator validator = createValidator(delegatedRole);
-		withMockedRolePolicy(delegatedRole, () ->
-			assertThatThrownBy(validator::validate)
-				.isInstanceOf(UnauthorizedException.class)
-				.hasMessageContaining(MessageUtil.DELEGATE_ROLE_NOT_ALLOWED)
-				.extracting("errorCode")
-				.isEqualTo(ErrorCode.ASSIGN_ROLE_NOT_ALLOWED)
-		);
+		withMockedRolePolicy(delegatedRole, () -> assertThatThrownBy(validator::validate)
+			.isInstanceOf(UnauthorizedException.class)
+			.hasMessageContaining(MessageUtil.DELEGATE_ROLE_NOT_ALLOWED)
+			.extracting("errorCode")
+			.isEqualTo(ErrorCode.ASSIGN_ROLE_NOT_ALLOWED));
 	}
 }

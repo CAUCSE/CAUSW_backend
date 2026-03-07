@@ -50,8 +50,7 @@ public class Locker extends BaseEntity {
 		Boolean isActive,
 		User user,
 		LockerLocation location,
-		LocalDateTime expireDate
-	) {
+		LocalDateTime expireDate) {
 		return Locker.builder()
 			.lockerNumber(lockerNumber)
 			.isActive(isActive)
@@ -75,15 +74,25 @@ public class Locker extends BaseEntity {
 		this.location = location;
 	}
 
-	public void register(User user, LocalDateTime expiredAt) {
+	public void registerV1(User user, LocalDateTime expiredAt) {
 		this.user = user;
 		this.isActive = Boolean.FALSE;
 		this.expireDate = expiredAt;
 	}
 
-	public void returnLocker() {
+	public void returnLockerV1() {
 		this.user = null;
 		this.isActive = Boolean.TRUE;
+		this.expireDate = null;
+	}
+
+	public void register(User user, LocalDateTime expiredAt) {
+		this.user = user;
+		this.expireDate = expiredAt;
+	}
+
+	public void returnLocker() {
+		this.user = null;
 		this.expireDate = null;
 	}
 
@@ -91,17 +100,29 @@ public class Locker extends BaseEntity {
 		this.expireDate = expiredAt;
 	}
 
-	public void activate() {
+	public void enable() {
 		this.isActive = true;
 	}
 
-	public void deactivate() {
+	public void disable() {
 		this.isActive = false;
 		this.user = null;
 	}
 
 	public void move(LockerLocation lockerLocation) {
 		this.location = lockerLocation;
+	}
+
+	public LockerStatus getStatus() {
+		return LockerStatus.of(this);
+	}
+
+	public LockerStatus getStatus(String userId) {
+		return LockerStatus.of(this, userId);
+	}
+
+	public boolean isEnabled() {
+		return Boolean.TRUE.equals(this.isActive);
 	}
 
 }

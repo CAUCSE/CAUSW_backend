@@ -53,8 +53,7 @@ public class UserCouncilFee extends BaseEntity {
 		Integer paidAt,
 		Integer numOfPaidSemester,
 		Boolean isRefunded,
-		Integer refundedAt
-	) {
+		Integer refundedAt) {
 		this.isJoinedService = isJoinedService;
 		this.user = user;
 		this.councilFeeFakeUser = councilFeeFakeUser;
@@ -71,8 +70,7 @@ public class UserCouncilFee extends BaseEntity {
 		Integer paidAt,
 		Integer numOfPaidSemester,
 		Boolean isRefunded,
-		Integer refundedAt
-	) {
+		Integer refundedAt) {
 		return UserCouncilFee.builder()
 			.isJoinedService(isJoinedService)
 			.user(user)
@@ -85,7 +83,6 @@ public class UserCouncilFee extends BaseEntity {
 	}
 
 	public Integer getCurrentCompletedSemester() {
-		return user != null ?
-			user.getCurrentCompletedSemester() : councilFeeFakeUser.getCurrentCompletedSemester();
+		return user != null ? user.getCurrentCompletedSemester() : councilFeeFakeUser.getCurrentCompletedSemester();
 	}
 }

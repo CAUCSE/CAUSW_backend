@@ -42,8 +42,7 @@ public class UserPostSubscribe extends BaseEntity {
 	public static UserPostSubscribe of(
 		User user,
 		Post post,
-		Boolean isSubscribed
-	) {
+		Boolean isSubscribed) {
 		return UserPostSubscribe.builder()
 			.user(user)
 			.post(post)

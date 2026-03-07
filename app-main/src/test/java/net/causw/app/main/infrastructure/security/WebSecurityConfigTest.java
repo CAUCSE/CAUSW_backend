@@ -1,8 +1,8 @@
 package net.causw.app.main.infrastructure.security;
 
-import static net.causw.app.main.core.security.SecurityEndpoints.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static net.causw.app.main.core.security.SecurityEndpoints.SecurityEndpoint;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -14,6 +14,7 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,20 +23,25 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import net.causw.app.main.domain.user.account.enums.user.Role;
-import net.causw.app.main.domain.user.account.enums.user.UserState;
-import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.core.security.AppleOAuth2AuthorizationRequestResolver;
 import net.causw.app.main.core.security.CustomAuthenticationEntryPoint;
 import net.causw.app.main.core.security.CustomAuthorizationManager;
 import net.causw.app.main.core.security.JwtTokenProvider;
 import net.causw.app.main.core.security.SecurityEndpoints;
-import net.causw.app.main.domain.user.auth.service.SecurityService;
 import net.causw.app.main.core.security.WebSecurityConfig;
+import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.domain.user.account.enums.user.Role;
+import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.domain.user.auth.handler.OAuth2FailureHandler;
+import net.causw.app.main.domain.user.auth.handler.OAuth2SuccessHandler;
+import net.causw.app.main.domain.user.auth.service.CustomOAuth2UserService;
+import net.causw.app.main.domain.user.auth.service.v1.SecurityService;
 import net.causw.app.main.util.DummyController;
 import net.causw.app.main.util.WithMockCustomUser;
 
@@ -49,6 +55,16 @@ public class WebSecurityConfigTest {
 
 	@MockBean
 	private JwtTokenProvider jwtTokenProvider;
+	@MockBean
+	private AppleOAuth2AuthorizationRequestResolver appleOAuth2AuthorizationRequestResolver;
+	@MockBean
+	private CustomOAuth2UserService customOAuth2UserService;
+	@MockBean
+	private OAuth2SuccessHandler oAuth2SuccessHandler;
+	@MockBean
+	private OAuth2FailureHandler oAuth2FailureHandler;
+	@MockBean
+	private ClientRegistrationRepository clientRegistrationRepository;
 
 	@Nested
 	@DisplayName("AuthorizeHttpRequests 테스트")
@@ -152,11 +168,10 @@ public class WebSecurityConfigTest {
 
 		private HttpMethod[] getAllHttpMethodsWithoutRegistered(String pattern) {
 			Set<HttpMethod> registeredMethods = Stream.of(
-					SecurityEndpoints.PUBLIC_ENDPOINTS,
-					SecurityEndpoints.AUTHENTICATED_ENDPOINTS,
-					SecurityEndpoints.ACTIVE_USER_ENDPOINTS,
-					SecurityEndpoints.CERTIFIED_USER_ENDPOINTS
-				)
+				SecurityEndpoints.PUBLIC_ENDPOINTS,
+				SecurityEndpoints.AUTHENTICATED_ENDPOINTS,
+				SecurityEndpoints.ACTIVE_USER_ENDPOINTS,
+				SecurityEndpoints.CERTIFIED_USER_ENDPOINTS)
 				.flatMap(Stream::of)
 				.filter(endpoint -> pattern.equals(endpoint.pattern()))
 				.map(SecurityEndpoint::httpMethod)
@@ -189,6 +204,35 @@ public class WebSecurityConfigTest {
 			dummyPath = resolved.toString();
 
 			return dummyPath;
+		}
+	}
+
+	@Nested
+	@DisplayName("V2 API 권한 테스트")
+	class V2ApiSecurityTest {
+
+		@Test
+		@WithAnonymousUser
+		@DisplayName("/api/v2/auth/** 경로는 인증 없이 접근 허용")
+		void shouldAllowV2AuthAccess_WhenAnonymous() throws Exception {
+			mockMvc.perform(MockMvcRequestBuilders.get("/api/v2/auth/login"))
+				.andExpect(status().isNotFound());
+		}
+
+		@Test
+		@WithAnonymousUser
+		@DisplayName("/api/v2/admin/** 경로는 비로그인 시 접근 거부")
+		void shouldRejectV2AdminAccess_WhenAnonymous() throws Exception {
+			mockMvc.perform(MockMvcRequestBuilders.get("/api/v2/admin/test"))
+				.andExpect(status().isUnauthorized());
+		}
+
+		@Test
+		@WithMockUser(roles = "ADMIN")
+		@DisplayName("/api/v2/admin/** 경로는 ADMIN 권한 보유 시 접근 허용")
+		void shouldAllowV2AdminAccess_WhenAdmin() throws Exception {
+			mockMvc.perform(MockMvcRequestBuilders.get("/api/v2/admin/test"))
+				.andExpect(status().isNotFound());
 		}
 	}
 }

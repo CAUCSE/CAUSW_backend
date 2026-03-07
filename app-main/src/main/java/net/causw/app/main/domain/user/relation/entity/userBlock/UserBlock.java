@@ -20,13 +20,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "tb_user_block",
-	uniqueConstraints = {
-		// 활성 차단은 동일 스코프로 중복 생성 방지
-		@UniqueConstraint(name = "uq_block",
-			columnNames = {"blocker_id", "blockee_id"})
-	}
-)
+@Table(name = "tb_user_block", uniqueConstraints = {
+	// 활성 차단은 동일 스코프로 중복 생성 방지
+	@UniqueConstraint(name = "uq_block", columnNames = {"blocker_id", "blockee_id"})
+})
 @Getter
 @Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -130,8 +127,7 @@ public class UserBlock extends BaseEntity {
 			BlockScope.COMMENT,
 			commentId,
 			isAnonymous,
-			commentContent
-		);
+			commentContent);
 	}
 
 	/**
@@ -157,8 +153,7 @@ public class UserBlock extends BaseEntity {
 			BlockScope.CHILD_COMMENT,
 			childCommentId,
 			isAnonymous,
-			childCommentContent
-		);
+			childCommentContent);
 	}
 
 	/**
@@ -184,8 +179,7 @@ public class UserBlock extends BaseEntity {
 			BlockScope.POST,
 			postId,
 			isAnonymous,
-			postContent
-		);
+			postContent);
 	}
 
 	/**

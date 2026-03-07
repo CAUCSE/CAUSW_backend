@@ -6,5 +6,4 @@ import org.springframework.stereotype.Repository;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.EventAttachImage;
 
 @Repository
-public interface EventAttachImageRepository extends JpaRepository<EventAttachImage, Long> {
-}
+public interface EventAttachImageRepository extends JpaRepository<EventAttachImage, Long> {}

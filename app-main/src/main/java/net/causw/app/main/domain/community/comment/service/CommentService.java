@@ -1,414 +1,195 @@
 package net.causw.app.main.domain.community.comment.service;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.core.aop.annotation.MeasureTime;
-import net.causw.app.main.domain.community.board.entity.Board;
-import net.causw.app.main.domain.community.comment.entity.ChildComment;
+import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
 import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.community.comment.entity.LikeComment;
-import net.causw.app.main.domain.community.comment.repository.ChildCommentRepository;
-import net.causw.app.main.domain.community.comment.repository.CommentRepository;
-import net.causw.app.main.domain.community.comment.repository.LikeChildCommentRepository;
-import net.causw.app.main.domain.community.comment.repository.LikeCommentRepository;
+import net.causw.app.main.domain.community.comment.service.dto.CommentCreateCommand;
+import net.causw.app.main.domain.community.comment.service.dto.CommentListQuery;
+import net.causw.app.main.domain.community.comment.service.dto.CommentMeta;
+import net.causw.app.main.domain.community.comment.service.dto.CommentResult;
+import net.causw.app.main.domain.community.comment.service.dto.CommentUpdateCommand;
+import net.causw.app.main.domain.community.comment.service.implementation.CommentMapper;
+import net.causw.app.main.domain.community.comment.service.implementation.CommentMetaReader;
+import net.causw.app.main.domain.community.comment.service.implementation.CommentReader;
+import net.causw.app.main.domain.community.comment.service.implementation.CommentSubscribeWriter;
+import net.causw.app.main.domain.community.comment.service.implementation.CommentWriter;
+import net.causw.app.main.domain.community.comment.service.implementation.LikeCommentWriter;
+import net.causw.app.main.domain.community.comment.util.CommentValidator;
 import net.causw.app.main.domain.community.post.entity.Post;
-import net.causw.app.main.domain.community.post.repository.PostRepository;
-import net.causw.app.main.domain.community.post.service.PostService;
-import net.causw.app.main.api.dto.comment.ChildCommentResponseDto;
-import net.causw.app.main.api.dto.comment.CommentCreateRequestDto;
-import net.causw.app.main.api.dto.comment.CommentResponseDto;
-import net.causw.app.main.api.dto.comment.CommentSubscribeResponseDto;
-import net.causw.app.main.api.dto.comment.CommentUpdateRequestDto;
-import net.causw.app.main.api.dto.util.dtoMapper.CommentDtoMapper;
-import net.causw.app.main.domain.campus.circle.entity.Circle;
-import net.causw.app.main.domain.campus.circle.entity.CircleMember;
-import net.causw.app.main.domain.notification.notification.entity.UserCommentSubscribe;
-import net.causw.app.main.domain.campus.circle.enums.CircleMemberStatus;
-import net.causw.app.main.shared.StatusPolicy;
-import net.causw.app.main.domain.campus.circle.repository.CircleMemberRepository;
-import net.causw.app.main.domain.notification.notification.repository.UserCommentSubscribeRepository;
-import net.causw.app.main.domain.notification.notification.service.PostNotificationService;
-import net.causw.app.main.domain.campus.circle.util.CircleMemberStatusValidator;
-import net.causw.app.main.shared.util.ConstraintValidator;
-import net.causw.app.main.shared.util.ContentsAdminValidator;
-import net.causw.app.main.shared.util.TargetIsDeletedValidator;
+import net.causw.app.main.domain.community.post.service.v2.implementation.PostReader;
+import net.causw.app.main.domain.notification.notification.service.v1.PostNotificationService;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.enums.user.Role;
-import net.causw.app.main.domain.user.account.util.UserRoleIsNoneValidator;
-import net.causw.app.main.domain.user.account.util.UserStateIsDeletedValidator;
-import net.causw.app.main.domain.user.account.util.UserStateValidator;
-import net.causw.app.main.domain.user.relation.service.UserBlockEntityService;
-import net.causw.app.main.shared.ValidatorBucket;
-import net.causw.app.main.shared.pageable.PageableFactory;
-import net.causw.app.main.shared.util.UserEqualValidator;
-import net.causw.global.constant.MessageUtil;
-import net.causw.global.constant.StaticValue;
-import net.causw.global.exception.BadRequestException;
-import net.causw.global.exception.ErrorCode;
-import net.causw.global.exception.InternalServerException;
-import net.causw.global.exception.UnauthorizedException;
+import net.causw.app.main.domain.user.account.service.implementation.UserReader;
+import net.causw.app.main.domain.user.relation.service.v1.UserBlockEntityService;
 
-import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 
-@MeasureTime
+/**
+ * 댓글 도메인의 비즈니스 로직을 처리합니다.
+ *
+ * <p>댓글 생성·수정·삭제·목록 조회 및 좋아요·좋아요 취소를 담당합니다.
+ * 집계 데이터(좋아요 수, 구독·차단 여부)는 {@link CommentMetaReader}를 통해 배치 또는 단건으로 조회하며,
+ * 응답 객체 변환은 {@link CommentMapper}에 위임합니다.</p>
+ */
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CommentService {
 
-	private final CommentRepository commentRepository;
-	private final PostRepository postRepository;
-	private final CircleMemberRepository circleMemberRepository;
-	private final ChildCommentRepository childCommentRepository;
-	private final LikeCommentRepository likeCommentRepository;
-	private final LikeChildCommentRepository likeChildCommentRepository;
-	private final PageableFactory pageableFactory;
-	private final Validator validator;
-	private final UserCommentSubscribeRepository userCommentSubscribeRepository;
+	private final PostReader postReader;
+	private final CommentReader commentReader;
+	private final CommentWriter commentWriter;
+	private final LikeCommentWriter likeCommentWriter;
+	private final CommentSubscribeWriter commentSubscribeWriter;
+	private final CommentValidator commentValidator;
 	private final PostNotificationService postNotificationService;
-	private final PostService postService;
 	private final UserBlockEntityService userBlockEntityService;
+	private final BoardConfigReader boardConfigReader;
+	private final CommentMetaReader commentMetaReader;
+	private final CommentMapper commentMapper;
+	private final UserReader userReader;
 
+	/**
+	 * 댓글을 생성하고 응답 객체를 반환합니다.
+	 *
+	 * <p>생성 직후 작성자는 해당 댓글을 자동으로 구독하고, 게시글 구독자에게 알림을 발송합니다.
+	 * 신규 댓글이므로 좋아요·대댓글이 없는 {@link CommentMeta#forNew()} 를 사용합니다.</p>
+	 *
+	 * @param command 댓글 생성 요청 데이터
+	 * @return 생성된 댓글의 응답 객체
+	 */
 	@Transactional
-	public CommentResponseDto createComment(User creator, CommentCreateRequestDto commentCreateDto) {
-		Post post = getPost(commentCreateDto.getPostId());
-		Comment comment = Comment.of(commentCreateDto.getContent(), false, commentCreateDto.getIsAnonymous(), creator,
-			post);
+	public CommentResult createComment(CommentCreateCommand command) {
+		User creator = userReader.findUserByIdNotDeleted(command.creatorId());
+		Post post = postReader.findById(command.postId());
+		Comment comment = Comment.of(command.content(), false, command.isAnonymous(), creator, post);
 
-		ValidatorBucket validatorBucket = initializeValidator(creator, post);
-		validatorBucket.
-			consistOf(ConstraintValidator.of(comment, this.validator));
-		validatorBucket.validate();
-		//1. comment의 구독 여부 저장
-		CommentResponseDto commentResponseDto = toCommentResponseDto(
-			commentRepository.save(comment), creator, post.getBoard()
-			, Set.of());
+		commentValidator.validateForCreate(creator, post);
+		commentWriter.save(comment);
 
-		createCommentSubscribe(creator, comment.getId());
+		// 신규 댓글: 좋아요 0, 대댓글 없음, 구독은 다음 단계에서 생성
+		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
+		CommentResult result = commentMapper.toResult(comment, creator, boardAdminIds, CommentMeta.forNew());
 
-		//2. comment가 달린 게시글의 구독자에게 전송
+		commentSubscribeWriter.createCommentSubscribe(creator, comment.getId());
 		postNotificationService.sendByPostIsSubscribed(post, comment);
 
-		return commentResponseDto;
-	}
-
-	@Transactional(readOnly = true)
-	public Page<CommentResponseDto> findAllComments(User user, String postId, Integer pageNum) {
-		Post post = getPost(postId);
-
-		ValidatorBucket validatorBucket = initializeValidator(user, post);
-		validatorBucket.validate();
-
-		Set<String> blockedUserIds = userBlockEntityService.findBlockeeUserIdsByBlocker(user);
-
-		Page<Comment> comments = commentRepository.findByPost_IdOrderByCreatedAt(
-			postId,
-			pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE)
-		);
-		comments.forEach(
-			comment -> comment.setChildCommentList(childCommentRepository.findByParentComment_Id(comment.getId())));
-
-		return comments.map(comment -> toCommentResponseDto(comment, user, post.getBoard(), blockedUserIds));
-	}
-
-	@Transactional
-	public CommentResponseDto updateComment(
-		User updater,
-		String commentId,
-		CommentUpdateRequestDto commentUpdateRequestDto
-	) {
-		Set<Role> roles = updater.getRoles();
-		Comment comment = getComment(commentId);
-		Post post = getPost(comment.getPost().getId());
-
-		ValidatorBucket validatorBucket = initializeValidator(updater, post);
-		validatorBucket
-			.consistOf(TargetIsDeletedValidator.of(comment.getIsDeleted(), StaticValue.DOMAIN_COMMENT))
-			.consistOf(ConstraintValidator.of(comment, this.validator))
-			.consistOf(ContentsAdminValidator.of(
-				roles,
-				updater.getId(),
-				comment.getWriter().getId(),
-				List.of()
-			));
-		validatorBucket.validate();
-
-		comment.update(commentUpdateRequestDto.getContent());
-
-		return toCommentResponseDto(commentRepository.save(comment), updater, post.getBoard(), Set.of());
-	}
-
-	@Transactional
-	public CommentResponseDto deleteComment(User deleter, String commentId) {
-		Set<Role> roles = deleter.getRoles();
-		Comment comment = getComment(commentId);
-		Post post = getPost(comment.getPost().getId());
-
-		ValidatorBucket validatorBucket = initializeValidator(deleter, post);
-		validatorBucket
-			.consistOf(UserStateValidator.of(deleter.getState()))
-			.consistOf(UserRoleIsNoneValidator.of(roles))
-			.consistOf(TargetIsDeletedValidator.of(comment.getIsDeleted(), StaticValue.DOMAIN_COMMENT));
-
-		Optional<Circle> circles = Optional.ofNullable(post.getBoard().getCircle());
-		circles
-			.filter(circle -> !roles.contains(Role.ADMIN) && !roles.contains(Role.PRESIDENT) && !roles.contains(
-				Role.VICE_PRESIDENT))
-			.ifPresentOrElse(
-				circle -> {
-					CircleMember member = getCircleMember(deleter.getId(), circle.getId());
-
-					validatorBucket
-						.consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-						.consistOf(CircleMemberStatusValidator.of(
-							member.getStatus(),
-							List.of(CircleMemberStatus.MEMBER)
-						))
-						.consistOf(ContentsAdminValidator.of(
-							roles,
-							deleter.getId(),
-							comment.getWriter().getId(),
-							List.of(Role.LEADER_CIRCLE)
-						));
-
-					if (roles.contains(Role.LEADER_CIRCLE) && !comment.getWriter().getId().equals(deleter.getId())) {
-						validatorBucket
-							.consistOf(UserEqualValidator.of(
-								circle.getLeader().map(User::getId).orElseThrow(
-									() -> new InternalServerException(
-										ErrorCode.ROW_DOES_NOT_EXIST,
-										MessageUtil.CIRCLE_WITHOUT_LEADER
-
-									)
-								),
-								deleter.getId()
-							));
-					}
-				},
-				() -> validatorBucket
-					.consistOf(ContentsAdminValidator.of(
-						roles,
-						deleter.getId(),
-						comment.getWriter().getId(),
-						List.of()
-					))
-			);
-		validatorBucket.validate();
-
-		comment.delete();
-
-		return toCommentResponseDto(commentRepository.save(comment), deleter, post.getBoard(), Set.of());
-	}
-
-	@Transactional
-	public void likeComment(User user, String commentId) {
-		Comment comment = getComment(commentId);
-
-		validateWriterNotDeleted(comment);
-
-		if (isCommentLiked(user, commentId)) {
-			throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.COMMENT_ALREADY_LIKED);
-		}
-
-		LikeComment likeComment = LikeComment.of(comment, user);
-		likeCommentRepository.save(likeComment);
-	}
-
-	@Transactional
-	public void cancelLikeComment(final User user, final String commentId) {
-		Comment comment = getComment(commentId);
-
-		this.validateWriterNotDeleted(comment);
-
-		if (!isCommentLiked(user, commentId)) {
-			throw new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.COMMENT_NOT_LIKED);
-		}
-
-		likeCommentRepository.deleteLikeByCommentIdAndUserId(commentId, user.getId());
-	}
-
-	public void createCommentSubscribe(User user, String commentId) {
-		Comment comment = getComment(commentId);
-
-		UserCommentSubscribe userCommentSubscribe = UserCommentSubscribe.of(user, comment, true);
-		userCommentSubscribeRepository.save(userCommentSubscribe);
-	}
-
-	@Transactional
-	public CommentSubscribeResponseDto setCommentSubscribe(User user, String commentId, Boolean isSubscribed) {
-		Comment comment = getComment(commentId);
-
-		UserCommentSubscribe subscription = userCommentSubscribeRepository.findByUserAndComment(user, comment)
-			.map(existing -> {
-				existing.setIsSubscribed(isSubscribed);
-				return existing;
-			})
-			.orElseGet(() -> userCommentSubscribeRepository.save(UserCommentSubscribe.of(user, comment, isSubscribed)));
-
-		return CommentDtoMapper.INSTANCE.toCommentSubscribeResponseDto(subscription);
-	}
-
-	private Boolean isCommentLiked(User user, String commentId) {
-		return likeCommentRepository.existsByCommentIdAndUserId(commentId, user.getId());
-	}
-
-	private Boolean isChildCommentLiked(User user, String childCommentId) {
-		return likeChildCommentRepository.existsByChildCommentIdAndUserId(childCommentId, user.getId());
+		return result;
 	}
 
 	/**
-	 * todo: 리스트용 매핑로직 분리 및 매핑 클래스 분리
-	 * todo: childCommentService 의 공통 로직또한 매핑 클래스로 분리
-	 * @param comment 댓글
-	 * @param user 조회자
-	 * @param board 게시판
-	 * @param blockedUserIds 조회자의 차단 유저 id 리스트 (댓글 리스트에서만 사용)
-	 * @return 댓글 dto
+	 * 게시글에 속한 댓글 목록을 페이지 단위로 조회합니다.
+	 *
+	 * <p>댓글이 없으면 빈 페이지를 즉시 반환합니다(Early Exit).
+	 * N+1 방지를 위해 좋아요·구독·차단 집계 데이터를 {@link CommentMetaReader#fetch}로 배치 조회한 뒤
+	 * 각 댓글에 매핑합니다.</p>
+	 *
+	 * @param query 댓글 목록 조회 쿼리 데이터
+	 * @return 댓글 응답 페이지
 	 */
-	private CommentResponseDto toCommentResponseDto(Comment comment, User user, Board board,
-		Set<String> blockedUserIds) {
-		boolean isBlockedContent = blockedUserIds.contains(comment.getWriter().getId());
+	public Page<CommentResult> findAllComments(CommentListQuery query) {
+		User viewer = userReader.findUserByIdNotDeleted(query.viewerId());
+		Post post = postReader.findById(query.postId());
 
-		CommentResponseDto commentResponseDto = CommentDtoMapper.INSTANCE.toCommentResponseDto(
-			comment,
-			childCommentRepository.countByParentComment_IdAndIsDeletedIsFalse(comment.getId()),
-			getNumOfCommentLikes(comment),
-			isCommentLiked(user, comment.getId()),
-			StatusPolicy.isCommentOwner(comment, user),
-			comment.getChildCommentList().stream()
-				.map(childComment -> toChildCommentResponseDto(childComment, user, board, blockedUserIds))
-				.collect(Collectors.toList()),
-			StatusPolicy.isUpdatable(comment, user),
-			StatusPolicy.isDeletable(comment, user, board),
-			isCommentSubscribed(user, comment),
-			isBlockedContent
-		);
+		commentValidator.validateForFind(viewer, post);
 
-		// 화면에 표시될 닉네임 설정
-		User writer = comment.getWriter();
-		commentResponseDto.setDisplayWriterNickname(
-			postService.getDisplayWriterNickname(writer, commentResponseDto.getIsAnonymous(),
-				commentResponseDto.getWriterNickname())
-		);
+		Page<Comment> comments = commentReader.getComments(query.postId(), query.pageable());
+		if (comments.getContent().isEmpty())
+			return Page.empty(query.pageable());
 
-		if (comment.getIsAnonymous()) {
-			commentResponseDto.updateAnonymousUserInfo();
-		}
+		// 게시판 권한 및 차단 정보 조회
+		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
+		Set<String> blockedUserIds = userBlockEntityService.findBlockeeUserIdsByBlocker(viewer);
 
-		return commentResponseDto;
+		// 댓글·대댓글 집계 데이터 배치 조회
+		Map<String, CommentMeta> metaMap = commentMetaReader.fetch(viewer.getId(), blockedUserIds,
+			comments.getContent());
+
+		return comments.map(c -> commentMapper.toResult(c, viewer, boardAdminIds, metaMap.get(c.getId())));
 	}
 
-	private ChildCommentResponseDto toChildCommentResponseDto(ChildComment childComment, User user, Board board,
-		Set<String> blockedUserIds) {
-		boolean isBlockedContent = blockedUserIds.contains(childComment.getWriter().getId());
+	/**
+	 * 댓글 내용을 수정하고 응답 객체를 반환합니다.
+	 *
+	 * @param command 댓글 수정 요청 데이터
+	 * @return 수정된 댓글의 응답 객체
+	 */
+	@Transactional
+	public CommentResult updateComment(CommentUpdateCommand command) {
+		User updater = userReader.findUserByIdNotDeleted(command.updaterId());
+		Comment comment = commentReader.getComment(command.commentId());
+		Post post = postReader.findById(comment.getPost().getId());
 
-		ChildCommentResponseDto childCommentResponseDto = CommentDtoMapper.INSTANCE.toChildCommentResponseDto(
-			childComment,
-			getNumOfChildCommentLikes(childComment),
-			isChildCommentLiked(user, childComment.getId()),
-			StatusPolicy.isChildCommentOwner(childComment, user),
-			StatusPolicy.isUpdatable(childComment, user),
-			StatusPolicy.isDeletable(childComment, user, board),
-			isBlockedContent
-		);
+		commentValidator.validateForUpdate(updater, post, comment);
+		comment.update(command.content());
+		commentWriter.save(comment);
 
-		// 화면에 표시될 닉네임 설정
-		User writer = childComment.getWriter();
-		childCommentResponseDto.setDisplayWriterNickname(
-			postService.getDisplayWriterNickname(writer, childCommentResponseDto.getIsAnonymous(),
-				childCommentResponseDto.getWriterNickname()));
-
-		if (childCommentResponseDto.getIsAnonymous()) {
-			childCommentResponseDto.updateAnonymousUserInfo();
-		}
-
-		return childCommentResponseDto;
+		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
+		CommentMeta meta = commentMetaReader.fetchForComment(updater, comment);
+		return commentMapper.toResult(comment, updater, boardAdminIds, meta);
 	}
 
-	private Long getNumOfCommentLikes(Comment comment) {
-		return likeCommentRepository.countByCommentId(comment.getId());
+	/**
+	 * 댓글을 소프트 삭제하고 응답 객체를 반환합니다.
+	 *
+	 * @param deleterId 삭제 요청 유저 ID
+	 * @param commentId 삭제할 댓글 ID
+	 * @return 삭제된 댓글의 응답 객체
+	 */
+	@Transactional
+	public CommentResult deleteComment(String deleterId, String commentId) {
+		User deleter = userReader.findUserByIdNotDeleted(deleterId);
+		Comment comment = commentReader.getComment(commentId);
+		Post post = postReader.findById(comment.getPost().getId());
+
+		commentValidator.validateForDelete(deleter, post, comment);
+		comment.delete();
+		commentWriter.save(comment);
+
+		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
+		CommentMeta meta = commentMetaReader.fetchForComment(deleter, comment);
+		return commentMapper.toResult(comment, deleter, boardAdminIds, meta);
 	}
 
-	private Long getNumOfChildCommentLikes(ChildComment childComment) {
-		return likeChildCommentRepository.countByChildCommentId(childComment.getId());
+	/**
+	 * 댓글에 좋아요를 추가합니다.
+	 *
+	 * @param userId    좋아요를 누를 유저 ID
+	 * @param commentId 좋아요를 누를 댓글 ID
+	 */
+	@Transactional
+	public void likeComment(String userId, String commentId) {
+		User user = userReader.findUserByIdNotDeleted(userId);
+		Comment comment = commentReader.getComment(commentId);
+
+		commentValidator.validateForLike(user, comment);
+
+		LikeComment likeComment = LikeComment.of(comment, user);
+		likeCommentWriter.save(likeComment);
 	}
 
-	private ValidatorBucket initializeValidator(User user, Post post) {
-		ValidatorBucket validatorBucket = ValidatorBucket.of();
-		Set<Role> roles = user.getRoles();
-		validatorBucket
-			.consistOf(UserStateValidator.of(user.getState()))
-			.consistOf(UserRoleIsNoneValidator.of(roles))
-			.consistOf(TargetIsDeletedValidator.of(post.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD))
-			.consistOf(TargetIsDeletedValidator.of(post.getIsDeleted(), StaticValue.DOMAIN_POST));
+	/**
+	 * 댓글 좋아요를 취소합니다.
+	 *
+	 * @param userId    좋아요를 취소할 유저 ID
+	 * @param commentId 좋아요를 취소할 댓글 ID
+	 */
+	@Transactional
+	public void cancelLikeComment(String userId, String commentId) {
+		User user = userReader.findUserByIdNotDeleted(userId);
+		Comment comment = commentReader.getComment(commentId);
 
-		Optional<Circle> circles = Optional.ofNullable(post.getBoard().getCircle());
-		circles
-			.filter(circle -> !roles.contains(Role.ADMIN) && !roles.contains(Role.PRESIDENT) && !roles.contains(
-				Role.VICE_PRESIDENT))
-			.ifPresent(circle -> {
-				CircleMember member = getCircleMember(user.getId(), circle.getId());
+		commentValidator.validateForCancelLike(user, comment);
 
-				validatorBucket
-					.consistOf(TargetIsDeletedValidator.of(circle.getIsDeleted(), StaticValue.DOMAIN_CIRCLE))
-					.consistOf(CircleMemberStatusValidator.of(
-						member.getStatus(),
-						List.of(CircleMemberStatus.MEMBER)
-					));
-			});
-		return validatorBucket;
-	}
-
-	private Post getPost(String postId) {
-		return postRepository.findById(postId).orElseThrow(
-			() -> new BadRequestException(
-				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.POST_NOT_FOUND
-			)
-		);
-	}
-
-	private Comment getComment(String commentId) {
-		return commentRepository.findById(commentId).orElseThrow(
-			() -> new BadRequestException(
-				ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.COMMENT_NOT_FOUND
-			)
-		);
-	}
-
-	private CircleMember getCircleMember(String userId, String circleId) {
-		return circleMemberRepository.findByUser_IdAndCircle_Id(userId, circleId).orElseThrow(
-			() -> new UnauthorizedException(
-				ErrorCode.NOT_MEMBER,
-				MessageUtil.CIRCLE_APPLY_INVALID
-			)
-		);
-	}
-
-	private Boolean isCommentSubscribed(User user, Comment comment) {
-		return userCommentSubscribeRepository.findByUserAndComment(user, comment)
-			.map(UserCommentSubscribe::getIsSubscribed)
-			.orElse(false);
-	}
-
-	private void validateWriterNotDeleted(final Comment comment) {
-		ValidatorBucket validatorBucket = ValidatorBucket.of();
-		validatorBucket
-			.consistOf(UserStateIsDeletedValidator.of(comment.getWriter().getState()))
-			.validate();
+		likeCommentWriter.delete(commentId, user.getId());
 	}
 
 }
-
-
-
-
-

@@ -34,10 +34,16 @@ public interface ChildCommentRepository extends JpaRepository<ChildComment, Stri
 		WHERE cc.writer.id = :userId AND cc.isDeleted = false
 		AND (:#{#blockedUserIds.size()} = 0 OR p.writer.id NOT IN :blockedUserIds)
 		ORDER BY p.createdAt DESC
-		"""
-	)
+		""")
 	Page<Post> findPostsByUserId(@Param("userId") String userId, @Param("blockedUserIds") Set<String> blockedUserIds,
 		Pageable pageable);
+
+	@Query("SELECT c FROM ChildComment c " +
+		"LEFT JOIN FETCH c.writer w " +
+		"LEFT JOIN FETCH c.parentComment pc " +
+		"WHERE c.parentComment.id IN :parentCommentIds " +
+		"ORDER BY c.createdAt ASC")
+	List<ChildComment> findChildCommentsByParentCommentIds(@Param("parentCommentIds") List<String> parentCommentIds);
 
 	Optional<ChildComment> findByIdAndIsDeletedFalse(String id);
 }

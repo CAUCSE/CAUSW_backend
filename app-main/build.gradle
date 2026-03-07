@@ -8,10 +8,25 @@ buildscript {
 plugins {
     id 'org.springframework.boot' version '3.2.0'
     id 'org.flywaydb.flyway' version '11.15.0'
+    id 'com.diffplug.spotless' version '8.1.0'
 }
 
 ext {
     queryDslVersion = "6.10.1"
+}
+
+spotless {
+    java {
+        target '**/*.java'
+        lineEndings 'UNIX'
+
+        // 네이버 자바 컨벤션 적용
+        importOrder("java", "javax", "org", "net", "com", "") // import 순서 정리
+        removeUnusedImports()
+
+        // 네이버 코딩 컨벤션 XML 파일 사용
+        eclipse().configFile('naver-eclipse-formatter.xml')
+    }
 }
 
 dependencies {
@@ -26,6 +41,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
 
@@ -99,6 +115,9 @@ dependencies {
     annotationProcessor "io.github.openfeign.querydsl:querydsl-apt:${queryDslVersion}:jpa"
     annotationProcessor "jakarta.annotation:jakarta.annotation-api"
     annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+
+    //Datasource-Proxy
+    implementation 'com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:1.12.1'
 }
 
 bootJar {
