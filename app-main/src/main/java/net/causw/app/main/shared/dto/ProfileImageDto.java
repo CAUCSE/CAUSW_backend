@@ -57,7 +57,7 @@ public record ProfileImageDto(
 	 * 익명 게시글/댓글에서 사용 (프로필 정보 비노출).
 	 */
 	public static ProfileImageDto anonymous() {
-		return null;
+		return GHOST;
 	}
 
 	/**
