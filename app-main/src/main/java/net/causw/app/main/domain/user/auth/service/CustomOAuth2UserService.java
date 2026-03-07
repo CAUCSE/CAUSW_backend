@@ -104,7 +104,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 		Map<String, Object> attributesMap) {
 		OAuthAttributes attributes = OAuthAttributes.of(registrationId, userNameAttributeName, attributesMap);
 		User user = saveOrUpdate(attributes);
-		userValidator.validateUserStatusForLogin(user.getState());
+		userValidator.validateUserStatusForLogin(user);
 		return user;
 	}
 
@@ -138,7 +138,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 				throw AuthErrorCode.UNVERIFIED_SOCIAL_EMAIL.toBaseException();
 			}
 			userValidator.checkAccountExistByUserAndSocialType(existingUser, attributes.socialType());
-			userValidator.validateUserStatusForIntegration(existingUser.getState());
+			userValidator.validateUserStatusForIntegration(existingUser);
 			createAndSaveSocialAccount(attributes, existingUser);
 
 			return existingUser;

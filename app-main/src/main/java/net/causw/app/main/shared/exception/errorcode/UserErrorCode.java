@@ -32,8 +32,14 @@ public enum UserErrorCode implements BaseResponseCode {
 	STUDENT_ID_ALREADY_EXIST(HttpStatus.CONFLICT, "USER_409_008", "이미 존재하는 학번입니다."),
 	ADMISSION_REJECT_REASON_REQUIRED(HttpStatus.BAD_REQUEST, "USER_400_005", "거절 사유를 입력해 주세요."),
 	GRADUATION_YEAR_REQUIRED(HttpStatus.BAD_REQUEST, "USER_400_006", "졸업자는 졸업연도를 입력해 주세요."),
+	NICKNAME_SAME_AS_CURRENT(HttpStatus.BAD_REQUEST, "USER_400_007", "현재 닉네임과 동일한 닉네임으로 변경할 수 없습니다."),
 	USER_DELETED(HttpStatus.UNAUTHORIZED, "USER_401_004", "삭제된 계정입니다."),
-	INVALID_PROFILE_IMAGE_TYPE(HttpStatus.BAD_REQUEST, "USER_400_007",
+	INVALID_ACADEMIC_STATUS(HttpStatus.BAD_REQUEST, "USER_400_008", "유효하지 않은 학적 상태입니다."),
+	INVALID_CURRENT_PASSWORD(HttpStatus.BAD_REQUEST, "USER_400_009", "현재 비밀번호가 일치하지 않습니다."),
+	PASSWORD_CONFIRM_MISMATCH(HttpStatus.BAD_REQUEST, "USER_400_010", "새 비밀번호와 비밀번호 확인이 일치하지 않습니다."),
+	SOCIAL_ONLY_USER_CANNOT_CHANGE_PASSWORD(HttpStatus.BAD_REQUEST, "USER_400_011",
+		"소셜 로그인만 연결된 계정은 비밀번호를 변경할 수 없습니다."),
+	INVALID_PROFILE_IMAGE_TYPE(HttpStatus.BAD_REQUEST, "USER_400_012",
 		"기본 프로필 이미지 타입(MALE_1, MALE_2, FEMALE_1, FEMALE_2)만 허용됩니다.");
 
 	private final HttpStatus status;

@@ -18,7 +18,6 @@ import net.causw.app.main.domain.community.post.service.v2.implementation.PostRe
 import net.causw.app.main.domain.community.post.service.v2.util.LikePostValidator;
 import net.causw.app.main.domain.community.reaction.service.implementation.LikePostWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.enums.user.UserState;
 
 @ExtendWith(MockitoExtension.class)
 public class LikePostServiceTest {
@@ -47,7 +46,7 @@ public class LikePostServiceTest {
 			post = mock(Post.class);
 
 			given(post.getWriter()).willReturn(writer);
-			given(writer.getState()).willReturn(UserState.ACTIVE);
+			given(writer.isDeleted()).willReturn(false);
 			given(postReader.findById("post-id")).willReturn(post);
 		}
 
@@ -92,7 +91,7 @@ public class LikePostServiceTest {
 			post = mock(Post.class);
 
 			given(post.getWriter()).willReturn(writer);
-			given(writer.getState()).willReturn(UserState.ACTIVE);
+			given(writer.isDeleted()).willReturn(false);
 			given(postReader.findById("post-id")).willReturn(post);
 		}
 

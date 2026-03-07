@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,6 +22,8 @@ import net.causw.app.main.domain.user.account.api.v1.dto.UserFcmTokenResponseDto
 import net.causw.app.main.domain.user.account.api.v2.dto.request.AdmissionCreateRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UpdateProfileImageRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserFcmTokenRequest;
+import net.causw.app.main.domain.user.account.api.v2.dto.request.UserNicknameUpdateRequest;
+import net.causw.app.main.domain.user.account.api.v2.dto.request.UserPasswordUpdateRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserRegistrationRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.AdmissionResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.AdmissionStateResponse;
@@ -31,6 +34,7 @@ import net.causw.app.main.domain.user.account.service.UserAccountService;
 import net.causw.app.main.domain.user.account.service.UserNotificationService;
 import net.causw.app.main.domain.user.account.service.UserProfileImageService;
 import net.causw.app.main.domain.user.account.service.dto.request.AdmissionResult;
+import net.causw.app.main.domain.user.account.service.dto.request.UserPasswordUpdateCommand;
 import net.causw.app.main.domain.user.auth.api.v2.dto.AuthDtoMapper;
 import net.causw.app.main.domain.user.auth.api.v2.dto.response.AuthResponse;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
@@ -108,8 +112,6 @@ public class UserController {
 		return ApiResponse.success(userNotificationService.findFcmTokenByUser(userDetails.getUserId()));
 	}
 
-	// ── ONBOARDING ──
-
 	@PatchMapping("/me/registration")
 	@Operation(summary = "소셜로그인 이후 사용자 정보 및 약관 동의 입력 API", description = "GUEST 상태의 유저에게 가입에 필요한 정보를 추가로 받고 AWAIT 상태로 변경한다.")
 	public ApiResponse<AuthResponse> submitRegistration(
@@ -121,6 +123,15 @@ public class UserController {
 		AuthResult dto = userAccountService.completeRegistration(userDetails.getUserId(), body.nickname(),
 			body.phoneNumber(), body.name(), refreshToken);
 		return ApiResponse.success(authDtoMapper.toAuthResponse(dto));
+	}
+
+	@PutMapping("/me/nickname")
+	@Operation(summary = "닉네임 변경 API", description = "현재 로그인한 사용자의 닉네임을 변경합니다. 현재 닉네임과 동일하거나 중복된 닉네임은 변경할 수 없습니다.")
+	public ApiResponse<Void> updateNickname(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@Valid @RequestBody UserNicknameUpdateRequest body) {
+		userAccountService.updateNickname(userDetails.getUserId(), body.nickname());
+		return ApiResponse.success();
 	}
 
 	@GetMapping("/check-nickname")
@@ -136,6 +147,17 @@ public class UserController {
 	public ApiResponse<Void> checkPhoneNumDuplication(
 		@RequestParam String phoneNumber) {
 		userAccountService.checkPhoneNumDuplication(phoneNumber);
+		return ApiResponse.success();
+	}
+
+	@PostMapping("/me/password-change")
+	@Operation(summary = "비밀번호 재설정 API", description = "현재 비밀번호를 확인하고 새 비밀번호로 변경합니다.")
+	public ApiResponse<Void> updatePassword(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@Valid @RequestBody UserPasswordUpdateRequest body) {
+		userAccountService.updatePassword(
+			userDetails.getUserId(),
+			UserPasswordUpdateCommand.from(body));
 		return ApiResponse.success();
 	}
 

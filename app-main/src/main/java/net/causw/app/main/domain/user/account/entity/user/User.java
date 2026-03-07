@@ -2,6 +2,7 @@ package net.causw.app.main.domain.user.account.entity.user;
 
 import static net.causw.global.constant.StaticValue.*;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -125,6 +126,9 @@ public class User extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private UserState state;
 
+	@Column(name = "deleted_at", nullable = true)
+	private LocalDateTime deletedAt;
+
 	@Embedded
 	private TermAgreements agreements;
 
@@ -169,7 +173,11 @@ public class User extends BaseEntity {
 		this.userProfileImage = null;
 		this.graduationYear = null;
 		this.graduationType = null;
-		this.state = UserState.DELETED;
+		this.deletedAt = LocalDateTime.now();
+	}
+
+	public boolean isDeleted() {
+		return this.deletedAt != null;
 	}
 
 	public static User from(
@@ -230,6 +238,10 @@ public class User extends BaseEntity {
 			.agreements(TermAgreements.createRequiredAgreements())
 			.isV2(true)
 			.build();
+	}
+
+	public void updatePassword(String encodedPassword) {
+		this.password = encodedPassword;
 	}
 
 	public static User createSocialUser(OAuthAttributes attributes) {
@@ -319,7 +331,7 @@ public class User extends BaseEntity {
 		return this.fcmTokens.remove(targetToken);
 	}
 
-	public boolean isSocialUser() {
+	public boolean isOnlySocialUser() {
 		return this.password == null;
 	}
 
@@ -331,6 +343,10 @@ public class User extends BaseEntity {
 			return null;
 		}
 		return this.userProfileImage.getUuidFile().getFileUrl();
+	}
+
+	public void updateNickname(String nickname) {
+		this.nickname = nickname;
 	}
 
 	/**

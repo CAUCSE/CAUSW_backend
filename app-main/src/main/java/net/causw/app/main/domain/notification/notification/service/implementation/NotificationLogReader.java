@@ -3,6 +3,8 @@ package net.causw.app.main.domain.notification.notification.service.implementati
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.notification.notification.entity.NotificationLog;
@@ -17,6 +19,10 @@ import lombok.RequiredArgsConstructor;
 public class NotificationLogReader {
 	private final NotificationLogRepository notificationLogRepository;
 	private final PageableFactory pageableFactory;
+
+	public Page<NotificationLog> getNotificationList(String userId, Pageable pageable) {
+		return notificationLogRepository.findByUserId(userId, pageable);
+	}
 
 	public Optional<NotificationLog> getLatestUnread(String userId) {
 

@@ -56,7 +56,7 @@ public class AuthValidator {
 	 * [INVALID_LOGIN] 비밀번호가 일치하지 않는 경우
 	 */
 	public void validateCredential(User user, String inputPassword) {
-		if (user.isSocialUser()) {
+		if (user.isOnlySocialUser()) {
 			throw UserErrorCode.INVALID_LOGIN_SOCIAL_USER.toBaseException();
 		}
 		if (!passwordEncoder.matches(inputPassword, user.getPassword())) {
@@ -68,7 +68,7 @@ public class AuthValidator {
 	 * 비밀번호 포맷 검증 (Private)
 	 * Rule: 영문, 숫자, 특수문자 포함 8자 이상
 	 */
-	private void validatePasswordFormat(String password) {
+	public void validatePasswordFormat(String password) {
 		if (!PASSWORD_PATTERN.matcher(password).matches()) {
 			throw UserErrorCode.INVALID_PASSWORD_REQUEST.toBaseException();
 		}

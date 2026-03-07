@@ -25,7 +25,13 @@ public enum AuthErrorCode implements BaseResponseCode {
 	INVALID_SOCIAL_IDENTIFIER(HttpStatus.UNAUTHORIZED, "AUTH_401_009", "소셜 로그인 토큰의 식별자 정보가 올바르지 않습니다."),
 	NO_PERMISSION_FOR_RESOURCE(HttpStatus.FORBIDDEN, "AUTH_403_001", "해당 자원에 대한 접근 또는 조작 권한이 없습니다."),
 	UNVERIFIED_SOCIAL_EMAIL(HttpStatus.FORBIDDEN, "AUTH_403_002", "소셜로그인 계정의 이메일이 인증되지 않았습니다."),
-	ALREADY_LINKED_SOCIAL_PROVIDER(HttpStatus.CONFLICT, "AUTH_409_001", "하나의 계정에 소셜로그인 별 하나의 계정만 연동 가능합니다.");
+	ALREADY_LINKED_SOCIAL_PROVIDER(HttpStatus.CONFLICT, "AUTH_409_001", "하나의 계정에 소셜로그인 별 하나의 계정만 연동 가능합니다."),
+
+	// 이메일 인증 관련
+	EMAIL_VERIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "AUTH_404_001", "유효한 이메일 인증 정보를 찾을 수 없습니다."),
+	EMAIL_VERIFICATION_EXPIRED(HttpStatus.BAD_REQUEST, "AUTH_400_003", "이메일 인증 유효 시간이 만료되었습니다."),
+	EMAIL_VERIFICATION_CODE_MISMATCH(HttpStatus.BAD_REQUEST, "AUTH_400_004", "이메일 인증 코드가 일치하지 않습니다."),
+	EMAIL_VERIFICATION_SEND_TOO_SOON(HttpStatus.TOO_MANY_REQUESTS, "AUTH_429_001", "인증 메일 재발송은 30초 후에 가능합니다.");
 
 	private final HttpStatus status;
 	private final String code;

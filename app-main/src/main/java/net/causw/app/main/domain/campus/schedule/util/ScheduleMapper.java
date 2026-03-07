@@ -1,7 +1,7 @@
 package net.causw.app.main.domain.campus.schedule.util;
 
 import net.causw.app.main.domain.campus.schedule.entity.Schedule;
-import net.causw.app.main.domain.campus.schedule.service.v2.dto.ScheduleDto;
+import net.causw.app.main.domain.campus.schedule.service.dto.ScheduleDto;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -14,7 +14,8 @@ public class ScheduleMapper {
 			scheduleDto.type(),
 			scheduleDto.start(),
 			scheduleDto.end(),
-			scheduleDto.creator());
+			scheduleDto.creator(),
+			scheduleDto.targetPostId());
 	}
 
 	public static ScheduleDto to(Schedule schedule) {
@@ -25,6 +26,7 @@ public class ScheduleMapper {
 			.start(schedule.getStart())
 			.end(schedule.getEnd())
 			.creator(schedule.getCreator())
+			.targetPostId(schedule.getTargetPostId())
 			.build();
 	}
 

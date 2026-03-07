@@ -24,7 +24,7 @@ public class ChildCommentReader {
 	 *
 	 * @param childCommentId 조회할 대댓글 ID
 	 * @return 조회된 {@link ChildComment} 엔티티
-	 * @throws net.causw.app.main.shared.exception.BaseException 대댓글이 존재하지 않는 경우
+	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception 대댓글이 존재하지 않는 경우
 	 */
 	public ChildComment findById(String childCommentId) {
 		return childCommentRepository.findById(childCommentId).orElseThrow(

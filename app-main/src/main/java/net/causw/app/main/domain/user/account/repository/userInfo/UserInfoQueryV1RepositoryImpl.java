@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class UserInfoQueryRepositoryImpl implements UserInfoQueryRepository {
+public class UserInfoQueryV1RepositoryImpl implements UserInfoQueryV1Repository {
 	private final JPAQueryFactory jpaQueryFactory;
 
 	@Override

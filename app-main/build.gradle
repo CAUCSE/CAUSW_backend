@@ -21,7 +21,7 @@ spotless {
         lineEndings 'UNIX'
 
         // 네이버 자바 컨벤션 적용
-        importOrder("java", "javax", "org", "net", "com", "") // import 순서 정리
+        importOrder("\\#", "java", "javax", "org", "net", "com", "") // import 순서 정리 (\\# = static import 그룹, Eclipse 설정의 # 과 동일)
         removeUnusedImports()
 
         // 네이버 코딩 컨벤션 XML 파일 사용

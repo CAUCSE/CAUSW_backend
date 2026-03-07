@@ -170,6 +170,6 @@ public class UserQueryRepository {
 
 	private static BooleanExpression notDeleted() {
 		QUser user = QUser.user;
-		return user.state.ne(UserState.DELETED);
+		return user.deletedAt.isNull();
 	}
 }
