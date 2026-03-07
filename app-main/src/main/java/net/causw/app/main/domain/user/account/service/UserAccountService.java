@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.dto.request.UserPasswordUpdateCommand;
+import net.causw.app.main.domain.user.account.service.dto.result.UserMeResult;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
@@ -62,6 +63,18 @@ public class UserAccountService {
 		return AuthResult.of(tokens.accessToken(), updatedUser.getName(), updatedUser.getEmail(),
 			updatedUser.getProfileUrl(),
 			tokens.refreshToken());
+	}
+
+	/**
+	 * 현재 로그인한 사용자의 기본 정보를 조회합니다. 내정보 메인페이지 진입 시 사용합니다.
+	 *
+	 * @param userId 조회할 사용자의 고유 식별자 (PK)
+	 * @return {@link UserMeResult} 내 정보 결과 (이름, 닉네임, 프로필이미지, 입학년도, 상태, 권한)
+	 */
+	@Transactional(readOnly = true)
+	public UserMeResult getMyProfile(String userId) {
+		User user = userReader.findDetailById(userId);
+		return UserMeResult.from(user);
 	}
 
 	/**
