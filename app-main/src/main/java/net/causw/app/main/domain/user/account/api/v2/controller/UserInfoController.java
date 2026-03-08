@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.user.account.api.v2.controller;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,6 +21,8 @@ import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoDetail
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoSummaryResponse;
 import net.causw.app.main.domain.user.account.api.v2.mapper.UserInfoDtoMapper;
 import net.causw.app.main.domain.user.account.service.UserInfoService;
+import net.causw.app.main.domain.user.account.service.dto.result.UserInfoDetailResult;
+import net.causw.app.main.domain.user.account.service.dto.result.UserInfoSummaryResult;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 import net.causw.app.main.shared.dto.PageResponse;
@@ -49,7 +52,8 @@ public class UserInfoController {
 	@Operation(summary = "동문 수첩 프로필 상세 조회", description = "동문 수첩 프로필 상세 정보를 조회합니다.")
 	public ApiResponse<UserInfoDetailResponse> getUserInfoDetail(
 		@PathVariable("userInfoId") String userInfoId) {
-		return ApiResponse.success(userInfoService.getDetailUserInfo(userInfoId));
+		UserInfoDetailResult result = userInfoService.getDetailUserInfo(userInfoId);
+		return ApiResponse.success(userInfoDtoMapper.toDetailResponse(result));
 	}
 
 	/**
@@ -62,7 +66,8 @@ public class UserInfoController {
 	@Operation(summary = "내 동문 수첩 프로필 상세 조회", description = "내 동문 수첩 프로필 상세 정보를 조회합니다. (아직 생성되지 않은 경우 생성)")
 	public ApiResponse<UserInfoDetailResponse> getMyUserInfoDetail(
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		return ApiResponse.success(userInfoService.getMyDetailUserInfo(userDetails.getUser()));
+		UserInfoDetailResult result = userInfoService.getMyDetailUserInfo(userDetails.getUser());
+		return ApiResponse.success(userInfoDtoMapper.toDetailResponse(result));
 	}
 
 	/**
@@ -77,9 +82,9 @@ public class UserInfoController {
 	public ApiResponse<UserInfoDetailResponse> updateMyUserInfo(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestBody @Valid UserInfoUpdateRequest request) {
-		UserInfoDetailResponse response = userInfoService.updateUserInfo(userInfoDtoMapper.toUpdateCommand(request),
+		UserInfoDetailResult result = userInfoService.updateUserInfo(userInfoDtoMapper.toUpdateCommand(request),
 			userDetails.getUser());
-		return ApiResponse.success(response);
+		return ApiResponse.success(userInfoDtoMapper.toDetailResponse(result));
 	}
 
 	/**
@@ -94,8 +99,9 @@ public class UserInfoController {
 	public ApiResponse<PageResponse<UserInfoSummaryResponse>> getUserInfoPage(
 		@ModelAttribute UserInfoListRequest request,
 		@RequestParam(name = "pageNum", required = false, defaultValue = "0") Integer pageNum) {
-		PageResponse<UserInfoSummaryResponse> response = PageResponse.from(
-			userInfoService.getUserInfoPage(userInfoDtoMapper.toListCondition(request), pageNum));
-		return ApiResponse.success(response);
+		Page<UserInfoSummaryResult> result = userInfoService.getUserInfoPage(userInfoDtoMapper.toListCondition(request),
+			pageNum);
+		Page<UserInfoSummaryResponse> response = result.map(userInfoDtoMapper::toSummaryResponse);
+		return ApiResponse.success(PageResponse.from(response));
 	}
 }

@@ -9,9 +9,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoDetailResponse;
-import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoSummaryResponse;
-import net.causw.app.main.domain.user.account.api.v2.mapper.UserInfoDtoMapper;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserCareer;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
@@ -20,9 +17,12 @@ import net.causw.app.main.domain.user.account.service.dto.request.UserCareerComm
 import net.causw.app.main.domain.user.account.service.dto.request.UserInfoListCondition;
 import net.causw.app.main.domain.user.account.service.dto.request.UserInfoUpdateCommand;
 import net.causw.app.main.domain.user.account.service.dto.request.UserProjectCommand;
+import net.causw.app.main.domain.user.account.service.dto.result.UserInfoDetailResult;
+import net.causw.app.main.domain.user.account.service.dto.result.UserInfoSummaryResult;
 import net.causw.app.main.domain.user.account.service.implementation.UserInfoCreator;
 import net.causw.app.main.domain.user.account.service.implementation.UserInfoReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserInfoWriter;
+import net.causw.app.main.domain.user.account.service.mapper.UserInfoMapper;
 import net.causw.app.main.shared.exception.errorcode.UserInfoErrorCode;
 import net.causw.app.main.shared.pageable.PageableFactory;
 import net.causw.global.constant.StaticValue;
@@ -35,7 +35,7 @@ public class UserInfoService {
 
 	private final UserInfoCreator userInfoCreator;
 	private final UserInfoReader userInfoReader;
-	private final UserInfoDtoMapper userInfoDtoMapper;
+	private final UserInfoMapper userInfoMapper;
 	private final PageableFactory pageableFactory;
 	private final UserInfoWriter userInfoWriter;
 
@@ -46,7 +46,7 @@ public class UserInfoService {
 	 * @return 사용자 동문 수첩 프로필
 	 */
 	@Transactional
-	public UserInfoDetailResponse updateUserInfo(UserInfoUpdateCommand request, User user) {
+	public UserInfoDetailResult updateUserInfo(UserInfoUpdateCommand request, User user) {
 		// 아직 동문 수첩 프로필 생성되지 않았으면 새로 생성
 		UserInfo userInfo = userInfoReader.findByUserId(user.getId())
 			.orElseGet(() -> userInfoCreator.createAndSave(user));
@@ -69,7 +69,7 @@ public class UserInfoService {
 		replaceStrings(userInfo.getUserInterestDomain(), request.userInterestDomain());
 
 		UserInfo updated = userInfoWriter.save(userInfo);
-		return userInfoDtoMapper.toUserInfoDetailResponse(updated);
+		return userInfoMapper.toUserInfoDetailResult(updated);
 	}
 
 	/**
@@ -78,11 +78,11 @@ public class UserInfoService {
 	 * @return 동문 수첩 프로필 상세
 	 */
 	@Transactional(readOnly = true)
-	public UserInfoDetailResponse getDetailUserInfo(String userInfoId) {
+	public UserInfoDetailResult getDetailUserInfo(String userInfoId) {
 		UserInfo userInfo = userInfoReader.findById(userInfoId)
 			.orElseThrow(UserInfoErrorCode.USERINFO_NOT_FOUND::toBaseException);
 
-		return userInfoDtoMapper.toUserInfoDetailResponse(userInfo);
+		return userInfoMapper.toUserInfoDetailResult(userInfo);
 	}
 
 	/**
@@ -91,12 +91,12 @@ public class UserInfoService {
 	 * @return 내 동문 수첩 프로필 상세
 	 */
 	@Transactional
-	public UserInfoDetailResponse getMyDetailUserInfo(User user) {
+	public UserInfoDetailResult getMyDetailUserInfo(User user) {
 		// 아직 동문 수첩 프로필 생성되지 않았으면 새로 생성
 		UserInfo userInfo = userInfoReader.findByUserId(user.getId())
 			.orElseGet(() -> userInfoCreator.createAndSave(user));
 
-		return userInfoDtoMapper.toMyUserInfoDetailResponse(userInfo);
+		return userInfoMapper.toMyUserInfoDetailResult(userInfo);
 	}
 
 	/**
@@ -106,12 +106,11 @@ public class UserInfoService {
 	 * @return 동문 수첩 프로필 리스트
 	 */
 	@Transactional(readOnly = true)
-	public Page<UserInfoSummaryResponse> getUserInfoPage(UserInfoListCondition condition, Integer pageNum) {
-		Page<UserInfo> userInfos;
+	public Page<UserInfoSummaryResult> getUserInfoPage(UserInfoListCondition condition, Integer pageNum) {
 		Pageable pageable = pageableFactory.create(pageNum, StaticValue.USER_LIST_PAGE_SIZE);
-		userInfos = userInfoReader.findUserInfoWithFilter(condition, pageable);
+		Page<UserInfo> userInfos = userInfoReader.findUserInfoWithFilter(condition, pageable);
 
-		return userInfos.map(userInfoDtoMapper::toUserInfoSummaryResponse);
+		return userInfos.map(userInfoMapper::toUserInfoSummaryResult);
 	}
 
 	// 이력 사항 업데이트

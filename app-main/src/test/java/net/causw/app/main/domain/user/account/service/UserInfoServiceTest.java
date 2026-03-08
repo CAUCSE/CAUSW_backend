@@ -2,7 +2,8 @@ package net.causw.app.main.domain.user.account.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -10,6 +11,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -22,17 +24,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
-import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoDetailResponse;
-import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoSummaryResponse;
-import net.causw.app.main.domain.user.account.api.v2.mapper.UserInfoDtoMapper;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
 import net.causw.app.main.domain.user.account.service.dto.request.UserInfoListCondition;
 import net.causw.app.main.domain.user.account.service.dto.request.UserInfoUpdateCommand;
+import net.causw.app.main.domain.user.account.service.dto.result.UserInfoDetailResult;
+import net.causw.app.main.domain.user.account.service.dto.result.UserInfoSummaryResult;
 import net.causw.app.main.domain.user.account.service.implementation.UserInfoCreator;
 import net.causw.app.main.domain.user.account.service.implementation.UserInfoReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserInfoWriter;
-import net.causw.app.main.domain.user.account.service.implementation.UserReader;
+import net.causw.app.main.domain.user.account.service.mapper.UserInfoMapper;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.UserInfoErrorCode;
 import net.causw.app.main.shared.pageable.PageableFactory;
@@ -48,13 +49,10 @@ class UserInfoServiceTest {
 	private UserInfoReader userInfoReader;
 
 	@Mock
-	private UserInfoDtoMapper userInfoDtoMapper;
+	private UserInfoMapper userInfoMapper;
 
 	@Mock
 	private PageableFactory pageableFactory;
-
-	@Mock
-	private UserReader userReader;
 
 	@Mock
 	private UserInfoWriter userInfoWriter;
@@ -72,19 +70,19 @@ class UserInfoServiceTest {
 			// given
 			String userInfoId = "ui-1";
 			UserInfo userInfo = ObjectFixtures.userInfo();
-			UserInfoDetailResponse response = ObjectFixtures.detailResponse();
+			UserInfoDetailResult resultDto = ObjectFixtures.detailResult();
 
 			when(userInfoReader.findById(userInfoId)).thenReturn(Optional.of(userInfo));
-			when(userInfoDtoMapper.toUserInfoDetailResponse(userInfo)).thenReturn(response);
+			when(userInfoMapper.toUserInfoDetailResult(userInfo)).thenReturn(resultDto);
 
 			// when
-			UserInfoDetailResponse result = userInfoService.getDetailUserInfo(userInfoId);
+			UserInfoDetailResult result = userInfoService.getDetailUserInfo(userInfoId);
 
 			// then
-			assertThat(result).isSameAs(response);
+			assertThat(result).isSameAs(resultDto);
 
 			verify(userInfoReader).findById(userInfoId);
-			verify(userInfoDtoMapper).toUserInfoDetailResponse(userInfo);
+			verify(userInfoMapper).toUserInfoDetailResult(userInfo);
 		}
 
 		@Test
@@ -101,7 +99,7 @@ class UserInfoServiceTest {
 				.isEqualTo(UserInfoErrorCode.USERINFO_NOT_FOUND);
 
 			verify(userInfoReader).findById(userInfoId);
-			verify(userInfoDtoMapper, never()).toUserInfoDetailResponse(any());
+			verify(userInfoMapper, never()).toUserInfoDetailResult(any());
 		}
 	}
 
@@ -118,21 +116,20 @@ class UserInfoServiceTest {
 			when(user.getId()).thenReturn(userId);
 
 			UserInfo userInfo = ObjectFixtures.userInfo();
-			UserInfoDetailResponse response = ObjectFixtures.detailResponse();
+			UserInfoDetailResult resultDto = ObjectFixtures.detailResult();
 
 			when(userInfoReader.findByUserId(userId)).thenReturn(Optional.of(userInfo));
-			when(userInfoDtoMapper.toMyUserInfoDetailResponse(userInfo)).thenReturn(response);
+			when(userInfoMapper.toMyUserInfoDetailResult(userInfo)).thenReturn(resultDto);
 
 			// when
-			UserInfoDetailResponse result = userInfoService.getMyDetailUserInfo(user);
+			UserInfoDetailResult result = userInfoService.getMyDetailUserInfo(user);
 
 			// then
-			assertThat(result).isSameAs(response);
+			assertThat(result).isSameAs(resultDto);
 
 			verify(userInfoReader).findByUserId(userId);
 			verify(userInfoCreator, never()).createAndSave(any(User.class));
-			verify(userInfoDtoMapper).toMyUserInfoDetailResponse(userInfo);
-			verify(userReader, never()).findUserById(any()); // 현재 서비스에서는 안 씀(그래도 안전하게)
+			verify(userInfoMapper).toMyUserInfoDetailResult(userInfo);
 		}
 
 		@Test
@@ -144,22 +141,21 @@ class UserInfoServiceTest {
 			when(user.getId()).thenReturn(userId);
 
 			UserInfo created = ObjectFixtures.userInfo();
-			UserInfoDetailResponse response = ObjectFixtures.detailResponse();
+			UserInfoDetailResult resultDto = ObjectFixtures.detailResult();
 
 			when(userInfoReader.findByUserId(userId)).thenReturn(Optional.empty());
 			when(userInfoCreator.createAndSave(user)).thenReturn(created);
-			when(userInfoDtoMapper.toMyUserInfoDetailResponse(created)).thenReturn(response);
+			when(userInfoMapper.toMyUserInfoDetailResult(created)).thenReturn(resultDto);
 
 			// when
-			UserInfoDetailResponse result = userInfoService.getMyDetailUserInfo(user);
+			UserInfoDetailResult result = userInfoService.getMyDetailUserInfo(user);
 
 			// then
-			assertThat(result).isSameAs(response);
+			assertThat(result).isSameAs(resultDto);
 
 			verify(userInfoReader).findByUserId(userId);
 			verify(userInfoCreator).createAndSave(user);
-			verify(userInfoDtoMapper).toMyUserInfoDetailResponse(created);
-			verify(userReader, never()).findUserById(any()); // 현재 서비스에서는 안 씀
+			verify(userInfoMapper).toMyUserInfoDetailResult(created);
 		}
 	}
 
@@ -179,22 +175,35 @@ class UserInfoServiceTest {
 
 			UserInfo existing = ObjectFixtures.userInfo();
 			UserInfo updated = ObjectFixtures.userInfo();
-			UserInfoDetailResponse response = ObjectFixtures.detailResponse();
+			UserInfoDetailResult resultDto = ObjectFixtures.detailResult();
+
+			@SuppressWarnings("unchecked") Set<String> userTechStack = mock(Set.class);
+			@SuppressWarnings("unchecked") Set<String> userInterestTech = mock(Set.class);
+			@SuppressWarnings("unchecked") Set<String> userInterestDomain = mock(Set.class);
 
 			when(userInfoReader.findByUserId(userId)).thenReturn(Optional.of(existing));
 			when(userInfoWriter.save(existing)).thenReturn(updated);
-			when(userInfoDtoMapper.toUserInfoDetailResponse(updated)).thenReturn(response);
+			when(userInfoMapper.toUserInfoDetailResult(updated)).thenReturn(resultDto);
+
+			doNothing().when(existing).update(any(), any(), any(), anyBoolean());
+			when(existing.getUserTechStack()).thenReturn(userTechStack);
+			when(existing.getUserInterestTech()).thenReturn(userInterestTech);
+			when(existing.getUserInterestDomain()).thenReturn(userInterestDomain);
 
 			// when
-			UserInfoDetailResponse result = userInfoService.updateUserInfo(request, user);
+			UserInfoDetailResult result = userInfoService.updateUserInfo(request, user);
 
 			// then
-			assertThat(result).isSameAs(response);
+			assertThat(result).isSameAs(resultDto);
 
 			verify(userInfoReader).findByUserId(userId);
 			verify(userInfoCreator, never()).createAndSave(any(User.class));
+			verify(existing).update(null, null, List.of(), false);
+			verify(userTechStack).clear();
+			verify(userInterestTech).clear();
+			verify(userInterestDomain).clear();
 			verify(userInfoWriter).save(existing);
-			verify(userInfoDtoMapper).toUserInfoDetailResponse(updated);
+			verify(userInfoMapper).toUserInfoDetailResult(updated);
 		}
 
 		@Test
@@ -209,25 +218,36 @@ class UserInfoServiceTest {
 
 			UserInfo created = ObjectFixtures.userInfo();
 			UserInfo updated = ObjectFixtures.userInfo();
-			UserInfoDetailResponse response = ObjectFixtures.detailResponse();
+			UserInfoDetailResult resultDto = ObjectFixtures.detailResult();
+
+			@SuppressWarnings("unchecked") Set<String> userTechStack = mock(Set.class);
+			@SuppressWarnings("unchecked") Set<String> userInterestTech = mock(Set.class);
+			@SuppressWarnings("unchecked") Set<String> userInterestDomain = mock(Set.class);
 
 			when(userInfoReader.findByUserId(userId)).thenReturn(Optional.empty());
 			when(userInfoCreator.createAndSave(user)).thenReturn(created);
-
-			// 서비스 로직상 created에 변경 적용 후 save(userInfo) 호출
 			when(userInfoWriter.save(created)).thenReturn(updated);
-			when(userInfoDtoMapper.toUserInfoDetailResponse(updated)).thenReturn(response);
+			when(userInfoMapper.toUserInfoDetailResult(updated)).thenReturn(resultDto);
+
+			doNothing().when(created).update(any(), any(), any(), anyBoolean());
+			when(created.getUserTechStack()).thenReturn(userTechStack);
+			when(created.getUserInterestTech()).thenReturn(userInterestTech);
+			when(created.getUserInterestDomain()).thenReturn(userInterestDomain);
 
 			// when
-			UserInfoDetailResponse result = userInfoService.updateUserInfo(request, user);
+			UserInfoDetailResult result = userInfoService.updateUserInfo(request, user);
 
 			// then
-			assertThat(result).isSameAs(response);
+			assertThat(result).isSameAs(resultDto);
 
 			verify(userInfoReader).findByUserId(userId);
 			verify(userInfoCreator).createAndSave(user);
+			verify(created).update(null, null, List.of(), false);
+			verify(userTechStack).clear();
+			verify(userInterestTech).clear();
+			verify(userInterestDomain).clear();
 			verify(userInfoWriter).save(created);
-			verify(userInfoDtoMapper).toUserInfoDetailResponse(updated);
+			verify(userInfoMapper).toUserInfoDetailResult(updated);
 		}
 	}
 
@@ -249,23 +269,23 @@ class UserInfoServiceTest {
 			UserInfo u2 = ObjectFixtures.userInfo();
 			Page<UserInfo> page = new PageImpl<>(List.of(u1, u2), pageable, 2);
 
-			UserInfoSummaryResponse s1 = ObjectFixtures.summaryResponse();
-			UserInfoSummaryResponse s2 = ObjectFixtures.summaryResponse();
+			UserInfoSummaryResult s1 = ObjectFixtures.summaryResult();
+			UserInfoSummaryResult s2 = ObjectFixtures.summaryResult();
 
 			when(userInfoReader.findUserInfoWithFilter(condition, pageable)).thenReturn(page);
-			when(userInfoDtoMapper.toUserInfoSummaryResponse(u1)).thenReturn(s1);
-			when(userInfoDtoMapper.toUserInfoSummaryResponse(u2)).thenReturn(s2);
+			when(userInfoMapper.toUserInfoSummaryResult(u1)).thenReturn(s1);
+			when(userInfoMapper.toUserInfoSummaryResult(u2)).thenReturn(s2);
 
 			// when
-			Page<UserInfoSummaryResponse> result = userInfoService.getUserInfoPage(condition, pageNum);
+			Page<UserInfoSummaryResult> result = userInfoService.getUserInfoPage(condition, pageNum);
 
 			// then
 			assertThat(result.getContent()).containsExactly(s1, s2);
 
 			verify(pageableFactory).create(pageNum, StaticValue.USER_LIST_PAGE_SIZE);
 			verify(userInfoReader).findUserInfoWithFilter(condition, pageable);
-			verify(userInfoDtoMapper).toUserInfoSummaryResponse(u1);
-			verify(userInfoDtoMapper).toUserInfoSummaryResponse(u2);
+			verify(userInfoMapper).toUserInfoSummaryResult(u1);
+			verify(userInfoMapper).toUserInfoSummaryResult(u2);
 		}
 	}
 
@@ -279,15 +299,25 @@ class UserInfoServiceTest {
 		}
 
 		static UserInfoUpdateCommand updateRequest() {
-			return mock(UserInfoUpdateCommand.class);
+			UserInfoUpdateCommand command = mock(UserInfoUpdateCommand.class);
+			when(command.description()).thenReturn(null);
+			when(command.job()).thenReturn(null);
+			when(command.socialLinks()).thenReturn(null);
+			when(command.isPhoneNumberVisible()).thenReturn(false);
+			when(command.userCareer()).thenReturn(null);
+			when(command.userProject()).thenReturn(null);
+			when(command.userTechStack()).thenReturn(null);
+			when(command.userInterestTech()).thenReturn(null);
+			when(command.userInterestDomain()).thenReturn(null);
+			return command;
 		}
 
-		static UserInfoDetailResponse detailResponse() {
-			return mock(UserInfoDetailResponse.class);
+		static UserInfoDetailResult detailResult() {
+			return mock(UserInfoDetailResult.class);
 		}
 
-		static UserInfoSummaryResponse summaryResponse() {
-			return mock(UserInfoSummaryResponse.class);
+		static UserInfoSummaryResult summaryResult() {
+			return mock(UserInfoSummaryResult.class);
 		}
 
 		static UserInfoListCondition listCondition() {
