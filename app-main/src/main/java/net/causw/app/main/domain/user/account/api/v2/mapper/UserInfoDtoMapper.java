@@ -8,8 +8,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 
-import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoDetailResponseDto;
-import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoSummaryResponseDto;
+import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoDetailResponse;
+import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoSummaryResponse;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
 import net.causw.app.main.shared.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
 
@@ -33,13 +33,13 @@ public interface UserInfoDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "userProject", source = "userProject")
 	@Mapping(target = "userInterestTech", source = "userInterestTech", qualifiedByName = "sortStringsAsc")
 	@Mapping(target = "userInterestDomain", source = "userInterestDomain", qualifiedByName = "sortStringsAsc")
-	UserInfoDetailResponseDto toUserInfoDetailResponseDto(UserInfo userInfo);
+	UserInfoDetailResponse toUserInfoDetailResponse(UserInfo userInfo);
 
 	// 내 동문 수첩 프로필 상세 조회
 	@InheritConfiguration(name = "toUserInfoDetailResponseDto")
 	@Mapping(target = "phoneNumber", source = "user.phoneNumber")
 	@Mapping(target = "isPhoneNumberVisible", constant = "true")
-	UserInfoDetailResponseDto toMyUserInfoDetailResponseDto(UserInfo userInfo);
+	UserInfoDetailResponse toMyUserInfoDetailResponse(UserInfo userInfo);
 
 	// 동문 수첩 프로필 리스트 조회
 	@Mapping(target = "id", source = "id")
@@ -49,7 +49,7 @@ public interface UserInfoDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "academicStatus", source = ".", qualifiedByName = "mapAcademicStatus")
 	@Mapping(target = "job", source = "job")
 	@Mapping(target = "description", source = "description")
-	UserInfoSummaryResponseDto toUserInfoSummaryResponseDto(UserInfo userInfo);
+	UserInfoSummaryResponse toUserInfoSummaryResponse(UserInfo userInfo);
 
 	@Named("mapAdmissionYear")
 	static String mapAdmissionYear(UserInfo userInfo) {

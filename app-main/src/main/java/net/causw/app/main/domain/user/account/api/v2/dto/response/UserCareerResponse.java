@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-public record UserCareerDto(
+public record UserCareerResponse(
 	@Schema(description = "사용자 경력 사항 id (null이면 새 경력 사항)", example = "uuid 형식의 String 값입니다") String id,
 
 	@Schema(description = "경력 사항 시작 년도", example = "2025") Integer startYear,

@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-public record UserProjectDto(
+public record UserProjectResponse(
 	@Schema(description = "사용자 대표 프로젝트 id (null이면 새 대표 프로젝트)", example = "uuid 형식의 String 값입니다") String id,
 
 	@Schema(description = "대표 프로젝트 시작 년도", example = "2025") Integer startYear,

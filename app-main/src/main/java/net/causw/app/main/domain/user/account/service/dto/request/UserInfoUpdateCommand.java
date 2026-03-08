@@ -4,7 +4,7 @@ import java.util.List;
 
 import jakarta.validation.constraints.Size;
 
-public record UserInfoUpdateDto(
+public record UserInfoUpdateCommand(
 	@Size(max = 50, message = "직업은 최대 50자까지 입력 가능합니다.") String job,
 
 	@Size(max = 200, message = "소개글은 최대 200자까지 입력 가능합니다.") String description,
