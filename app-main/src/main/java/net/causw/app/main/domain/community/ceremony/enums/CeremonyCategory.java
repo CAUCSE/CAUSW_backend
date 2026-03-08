@@ -12,6 +12,9 @@ public enum CeremonyCategory {
 	FUNERAL("장례식"),
 	ACCIDENT("사고"),
 	ILLNESS("투병"),
+
+	GRADUATION("졸업식"), // TODO: v2에서는 GRADUATION 제거 후 ETC로 대체
+
 	ETC("직접 입력");
 
 	private final String label;
