@@ -3,6 +3,7 @@ package net.causw.app.main.domain.user.account.api.v2.dto.request;
 import java.util.List;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 
 @Schema(description = "동문 수첩 프로필 수정 요청")
@@ -17,9 +18,9 @@ public record UserInfoUpdateRequest(
 
 	@Schema(description = "사용자 기술 스택 수정", example = "[\"Stack0\", \"Stack1\"]") List<String> userTechStack,
 
-	@Schema(description = "사용자 경력 사항 수정") List<UserCareerRequest> userCareer,
+	@Schema(description = "사용자 경력 사항 수정") List<@Valid UserCareerRequest> userCareer,
 
-	@Schema(description = "사용자 대표 프로젝트 수정") List<UserProjectRequest> userProject,
+	@Schema(description = "사용자 대표 프로젝트 수정") List<@Valid UserProjectRequest> userProject,
 
 	@Schema(description = "사용자 관심 기술 수정", example = "[\"Tech0\", \"Tech1\"]") List<String> userInterestTech,
 
