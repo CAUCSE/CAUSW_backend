@@ -1,8 +1,6 @@
 package net.causw.app.main.domain.user.account.api.v2.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 
 public record UserProjectResponse(
 	@Schema(description = "사용자 대표 프로젝트 id", example = "uuid 형식의 String 값입니다") String id,

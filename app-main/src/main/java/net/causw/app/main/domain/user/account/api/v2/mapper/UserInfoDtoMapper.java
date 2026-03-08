@@ -8,10 +8,12 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 
+import net.causw.app.main.domain.user.account.api.v2.dto.request.UserInfoListRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserInfoUpdateRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoDetailResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoSummaryResponse;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
+import net.causw.app.main.domain.user.account.service.dto.request.UserInfoListCondition;
 import net.causw.app.main.domain.user.account.service.dto.request.UserInfoUpdateCommand;
 import net.causw.app.main.shared.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
 
@@ -54,6 +56,8 @@ public interface UserInfoDtoMapper extends UuidFileToUrlDtoMapper {
 	UserInfoSummaryResponse toUserInfoSummaryResponse(UserInfo userInfo);
 
 	UserInfoUpdateCommand toUpdateCommand(UserInfoUpdateRequest request);
+
+	UserInfoListCondition toListCondition(UserInfoListRequest request);
 
 	@Named("mapAdmissionYear")
 	static String mapAdmissionYear(UserInfo userInfo) {

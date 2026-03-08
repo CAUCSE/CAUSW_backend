@@ -14,13 +14,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.causw.app.main.domain.user.account.api.v2.dto.request.UserInfoListRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserInfoUpdateRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoDetailResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoSummaryResponse;
 import net.causw.app.main.domain.user.account.api.v2.mapper.UserInfoDtoMapper;
 import net.causw.app.main.domain.user.account.service.UserInfoService;
-import net.causw.app.main.domain.user.account.service.dto.request.UserInfoListCondition;
-import net.causw.app.main.domain.user.account.service.dto.request.UserInfoUpdateCommand;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 import net.causw.app.main.shared.dto.PageResponse;
@@ -85,7 +84,7 @@ public class UserInfoController {
 
 	/**
 	 * 동문 수첩 프로필 리스트 조회 및 검색
-	 * @param condition 검색어, 필터
+	 * @param request 동문 수첩 프로필 리스트 조회 요청 DTO
 	 * @param pageNum 페이징
 	 * @return 조회된 동문 수첩 프로필 리스트
 	 */
@@ -93,8 +92,10 @@ public class UserInfoController {
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "동문 수첩 프로필 리스트 조회 및 검색", description = "검색어 또는 필터를 포함해 동문 수첩 프로필 리스트를 조회합니다.")
 	public ApiResponse<PageResponse<UserInfoSummaryResponse>> getUserInfoPage(
-		@ModelAttribute UserInfoListCondition condition,
+		@ModelAttribute UserInfoListRequest request,
 		@RequestParam(name = "pageNum", required = false, defaultValue = "0") Integer pageNum) {
-		return ApiResponse.success(PageResponse.from(userInfoService.getUserInfoPage(condition, pageNum)));
+		PageResponse<UserInfoSummaryResponse> response = PageResponse.from(
+			userInfoService.getUserInfoPage(userInfoDtoMapper.toListCondition(request), pageNum));
+		return ApiResponse.success(response);
 	}
 }
