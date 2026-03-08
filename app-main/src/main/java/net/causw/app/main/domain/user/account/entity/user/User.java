@@ -53,7 +53,8 @@ import lombok.Setter;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "tb_user")
-public class User extends BaseEntity {
+public class
+User extends BaseEntity {
 	@Column(name = "email", unique = true, nullable = false)
 	private String email;
 

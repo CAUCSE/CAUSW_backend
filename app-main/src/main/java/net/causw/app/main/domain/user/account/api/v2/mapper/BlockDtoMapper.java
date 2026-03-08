@@ -7,12 +7,20 @@ import net.causw.app.main.domain.user.account.api.v2.dto.response.BlockResponseD
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.relation.service.v2.dto.BlockCreateCommand;
 import net.causw.app.main.domain.user.relation.service.v2.dto.BlockCreateResult;
+import net.causw.app.main.domain.community.block.service.dto.ChildCommentBlockCreateCommand;
+import net.causw.app.main.domain.community.block.service.dto.CommentBlockCreateCommand;
 
 @Mapper(componentModel = "spring")
 public interface BlockDtoMapper {
 
 	@Mapping(target = "blocker", source = "user")
-	BlockCreateCommand toCommand(String postId, User user);
+	BlockCreateCommand toPostCommand(String postId, User user);
+
+	@Mapping(target = "blocker", source = "user")
+	CommentBlockCreateCommand toCommentCommand(String commentId, User user);
+
+	@Mapping(target = "blocker", source = "user")
+	ChildCommentBlockCreateCommand toChildCommentCommand(String childCommentId, User user);
 
 	BlockResponseDto toResponse(BlockCreateResult result);
 }

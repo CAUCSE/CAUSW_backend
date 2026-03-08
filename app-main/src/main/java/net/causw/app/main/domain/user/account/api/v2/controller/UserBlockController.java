@@ -21,21 +21,43 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v2/posts/{postId}")
-@Tag(name = "차단 API (V2)", description = "유저 차단 관련 API")
+@RequestMapping("/api/v2")
+@Tag(name = "Block Public v2", description = "유저 차단 관련 API")
 public class UserBlockController {
 
 	private final BlockService blockService;
 	private final BlockDtoMapper blockDtoMapper;
 
-	@PostMapping("/block")
+	@PostMapping("/posts/{postId}/block")
 	@ResponseStatus(HttpStatus.CREATED)
 	@Operation(summary = "게시글 작성자 차단", description = "게시글을 통해 작성자를 차단합니다. 익명 게시글의 경우 응답에서 신원 정보를 반환하지 않습니다.")
-	public ApiResponse<BlockResponseDto> createBlock(
+	public ApiResponse<BlockResponseDto> createBlockByPost(
 		@PathVariable String postId,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		BlockCreateResult result = blockService.createBlock(
-			blockDtoMapper.toCommand(postId, userDetails.getUser()));
+		BlockCreateResult result = blockService.createBlockByPost(
+			blockDtoMapper.toPostCommand(postId, userDetails.getUser()));
+		return ApiResponse.success(blockDtoMapper.toResponse(result));
+	}
+
+	@PostMapping("/comments/{commentId}/blocks")
+	@ResponseStatus(HttpStatus.CREATED)
+	@Operation(summary = "댓글 작성자 차단", description = "댓글 ID를 기반으로 작성자를 서버에서 직접 조회하여 차단합니다. 익명 댓글의 경우 응답에서 신원 정보를 반환하지 않습니다.")
+	public ApiResponse<BlockResponseDto> createBlockByComment(
+		@PathVariable String commentId,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
+		BlockCreateResult result = blockService.createBlockByComment(
+			blockDtoMapper.toCommentCommand(commentId, userDetails.getUser()));
+		return ApiResponse.success(blockDtoMapper.toResponse(result));
+	}
+
+	@PostMapping("/child-comments/{childCommentId}/blocks")
+	@ResponseStatus(HttpStatus.CREATED)
+	@Operation(summary = "대댓글 작성자 차단", description = "대댓글 ID를 기반으로 작성자를 서버에서 직접 조회하여 차단합니다. 익명 대댓글의 경우 응답에서 신원 정보를 반환하지 않습니다.")
+	public ApiResponse<BlockResponseDto> createBlockByChildComment(
+		@PathVariable String childCommentId,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
+		BlockCreateResult result = blockService.createBlockByChildComment(
+			blockDtoMapper.toChildCommentCommand(childCommentId, userDetails.getUser()));
 		return ApiResponse.success(blockDtoMapper.toResponse(result));
 	}
 }
