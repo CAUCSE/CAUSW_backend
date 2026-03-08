@@ -75,7 +75,7 @@ class UserInfoServiceTest {
 			UserInfoDetailResponse response = ObjectFixtures.detailResponse();
 
 			when(userInfoReader.findById(userInfoId)).thenReturn(Optional.of(userInfo));
-			when(userInfoDtoMapper.toUserInfoDetailResponseDto(userInfo)).thenReturn(response);
+			when(userInfoDtoMapper.toUserInfoDetailResponse(userInfo)).thenReturn(response);
 
 			// when
 			UserInfoDetailResponse result = userInfoService.getDetailUserInfo(userInfoId);
@@ -84,7 +84,7 @@ class UserInfoServiceTest {
 			assertThat(result).isSameAs(response);
 
 			verify(userInfoReader).findById(userInfoId);
-			verify(userInfoDtoMapper).toUserInfoDetailResponseDto(userInfo);
+			verify(userInfoDtoMapper).toUserInfoDetailResponse(userInfo);
 		}
 
 		@Test
@@ -101,7 +101,7 @@ class UserInfoServiceTest {
 				.isEqualTo(UserInfoErrorCode.USERINFO_NOT_FOUND);
 
 			verify(userInfoReader).findById(userInfoId);
-			verify(userInfoDtoMapper, never()).toUserInfoDetailResponseDto(any());
+			verify(userInfoDtoMapper, never()).toUserInfoDetailResponse(any());
 		}
 	}
 
@@ -121,7 +121,7 @@ class UserInfoServiceTest {
 			UserInfoDetailResponse response = ObjectFixtures.detailResponse();
 
 			when(userInfoReader.findByUserId(userId)).thenReturn(Optional.of(userInfo));
-			when(userInfoDtoMapper.toMyUserInfoDetailResponseDto(userInfo)).thenReturn(response);
+			when(userInfoDtoMapper.toMyUserInfoDetailResponse(userInfo)).thenReturn(response);
 
 			// when
 			UserInfoDetailResponse result = userInfoService.getMyDetailUserInfo(user);
@@ -131,7 +131,7 @@ class UserInfoServiceTest {
 
 			verify(userInfoReader).findByUserId(userId);
 			verify(userInfoCreator, never()).createAndSave(any(User.class));
-			verify(userInfoDtoMapper).toMyUserInfoDetailResponseDto(userInfo);
+			verify(userInfoDtoMapper).toMyUserInfoDetailResponse(userInfo);
 			verify(userReader, never()).findUserById(any()); // 현재 서비스에서는 안 씀(그래도 안전하게)
 		}
 
@@ -148,7 +148,7 @@ class UserInfoServiceTest {
 
 			when(userInfoReader.findByUserId(userId)).thenReturn(Optional.empty());
 			when(userInfoCreator.createAndSave(user)).thenReturn(created);
-			when(userInfoDtoMapper.toMyUserInfoDetailResponseDto(created)).thenReturn(response);
+			when(userInfoDtoMapper.toMyUserInfoDetailResponse(created)).thenReturn(response);
 
 			// when
 			UserInfoDetailResponse result = userInfoService.getMyDetailUserInfo(user);
@@ -158,7 +158,7 @@ class UserInfoServiceTest {
 
 			verify(userInfoReader).findByUserId(userId);
 			verify(userInfoCreator).createAndSave(user);
-			verify(userInfoDtoMapper).toMyUserInfoDetailResponseDto(created);
+			verify(userInfoDtoMapper).toMyUserInfoDetailResponse(created);
 			verify(userReader, never()).findUserById(any()); // 현재 서비스에서는 안 씀
 		}
 	}
@@ -183,7 +183,7 @@ class UserInfoServiceTest {
 
 			when(userInfoReader.findByUserId(userId)).thenReturn(Optional.of(existing));
 			when(userInfoWriter.save(existing)).thenReturn(updated);
-			when(userInfoDtoMapper.toUserInfoDetailResponseDto(updated)).thenReturn(response);
+			when(userInfoDtoMapper.toUserInfoDetailResponse(updated)).thenReturn(response);
 
 			// when
 			UserInfoDetailResponse result = userInfoService.updateUserInfo(request, user);
@@ -194,7 +194,7 @@ class UserInfoServiceTest {
 			verify(userInfoReader).findByUserId(userId);
 			verify(userInfoCreator, never()).createAndSave(any(User.class));
 			verify(userInfoWriter).save(existing);
-			verify(userInfoDtoMapper).toUserInfoDetailResponseDto(updated);
+			verify(userInfoDtoMapper).toUserInfoDetailResponse(updated);
 		}
 
 		@Test
@@ -216,7 +216,7 @@ class UserInfoServiceTest {
 
 			// 서비스 로직상 created에 변경 적용 후 save(userInfo) 호출
 			when(userInfoWriter.save(created)).thenReturn(updated);
-			when(userInfoDtoMapper.toUserInfoDetailResponseDto(updated)).thenReturn(response);
+			when(userInfoDtoMapper.toUserInfoDetailResponse(updated)).thenReturn(response);
 
 			// when
 			UserInfoDetailResponse result = userInfoService.updateUserInfo(request, user);
@@ -227,7 +227,7 @@ class UserInfoServiceTest {
 			verify(userInfoReader).findByUserId(userId);
 			verify(userInfoCreator).createAndSave(user);
 			verify(userInfoWriter).save(created);
-			verify(userInfoDtoMapper).toUserInfoDetailResponseDto(updated);
+			verify(userInfoDtoMapper).toUserInfoDetailResponse(updated);
 		}
 	}
 
@@ -253,8 +253,8 @@ class UserInfoServiceTest {
 			UserInfoSummaryResponse s2 = ObjectFixtures.summaryResponse();
 
 			when(userInfoReader.findUserInfoWithFilter(condition, pageable)).thenReturn(page);
-			when(userInfoDtoMapper.toUserInfoSummaryResponseDto(u1)).thenReturn(s1);
-			when(userInfoDtoMapper.toUserInfoSummaryResponseDto(u2)).thenReturn(s2);
+			when(userInfoDtoMapper.toUserInfoSummaryResponse(u1)).thenReturn(s1);
+			when(userInfoDtoMapper.toUserInfoSummaryResponse(u2)).thenReturn(s2);
 
 			// when
 			Page<UserInfoSummaryResponse> result = userInfoService.getUserInfoPage(condition, pageNum);
@@ -264,8 +264,8 @@ class UserInfoServiceTest {
 
 			verify(pageableFactory).create(pageNum, StaticValue.USER_LIST_PAGE_SIZE);
 			verify(userInfoReader).findUserInfoWithFilter(condition, pageable);
-			verify(userInfoDtoMapper).toUserInfoSummaryResponseDto(u1);
-			verify(userInfoDtoMapper).toUserInfoSummaryResponseDto(u2);
+			verify(userInfoDtoMapper).toUserInfoSummaryResponse(u1);
+			verify(userInfoDtoMapper).toUserInfoSummaryResponse(u2);
 		}
 	}
 

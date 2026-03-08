@@ -1,11 +1,11 @@
-package net.causw.app.main.domain.user.account.api.v2.dto.response;
+package net.causw.app.main.domain.user.account.api.v2.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-public record UserProjectResponse(
-	@Schema(description = "사용자 대표 프로젝트 id", example = "uuid 형식의 String 값입니다") String id,
+public record UserProjectRequest(
+	@Schema(description = "사용자 대표 프로젝트 id (null이면 새 대표 프로젝트)", example = "uuid 형식의 String 값입니다") String id,
 
 	@Schema(description = "대표 프로젝트 시작 년도", example = "2025") Integer startYear,
 
@@ -15,5 +15,5 @@ public record UserProjectResponse(
 
 	@Schema(description = "대표 프로젝트 종료 월", example = "12") Integer endMonth,
 
-	@Schema(description = "대표 프로젝트 입력", example = "대표 프로젝트") String description) {
+	@NotNull @Size(max = 50, message = "최대 글자 수 50을 초과했습니다.") @Schema(description = "대표 프로젝트 입력", example = "대표 프로젝트") String description) {
 }

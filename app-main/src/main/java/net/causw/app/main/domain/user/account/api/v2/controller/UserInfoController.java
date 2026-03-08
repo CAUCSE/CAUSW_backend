@@ -14,8 +14,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.causw.app.main.domain.user.account.api.v2.dto.request.UserInfoUpdateRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoDetailResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoSummaryResponse;
+import net.causw.app.main.domain.user.account.api.v2.mapper.UserInfoDtoMapper;
 import net.causw.app.main.domain.user.account.service.UserInfoService;
 import net.causw.app.main.domain.user.account.service.dto.request.UserInfoListCondition;
 import net.causw.app.main.domain.user.account.service.dto.request.UserInfoUpdateCommand;
@@ -36,6 +38,7 @@ import lombok.RequiredArgsConstructor;
 public class UserInfoController {
 
 	private final UserInfoService userInfoService;
+	private final UserInfoDtoMapper userInfoDtoMapper;
 
 	/**
 	 * 동문수첩 프로필 고유 id 값으로 동문 수첩 프로필 세부 정보를 조회하는 API
@@ -66,7 +69,7 @@ public class UserInfoController {
 	/**
 	 * 내 동문 수첩 프로필 수정
 	 * @param userDetails 사용자 본인 정보
-	 * @param userInfoUpdateCommand 수정할 내용
+	 * @param request 프로필 수정 요청 DTO
 	 * @return 수정된 내 동문 수첩 프로필 상세 정보
 	 */
 	@PutMapping(value = "/me", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -74,8 +77,10 @@ public class UserInfoController {
 	@Operation(summary = "내 동문 수첩 프로필 업데이트", description = "내 동문 수첩 프로필을 업데이트합니다. (아직 생성되지 않은 경우 생성)")
 	public ApiResponse<UserInfoDetailResponse> updateMyUserInfo(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
-		@RequestBody @Valid UserInfoUpdateCommand userInfoUpdateCommand) {
-		return ApiResponse.success(userInfoService.updateUserInfo(userInfoUpdateCommand, userDetails.getUser()));
+		@RequestBody @Valid UserInfoUpdateRequest request) {
+		UserInfoDetailResponse response = userInfoService.updateUserInfo(userInfoDtoMapper.toUpdateCommand(request),
+			userDetails.getUser());
+		return ApiResponse.success(response);
 	}
 
 	/**
