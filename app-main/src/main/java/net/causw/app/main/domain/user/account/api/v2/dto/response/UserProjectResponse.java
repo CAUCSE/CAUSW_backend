@@ -13,5 +13,5 @@ public record UserProjectResponse(
 
 	@Schema(description = "대표 프로젝트 종료 월", example = "12") Integer endMonth,
 
-	@Schema(description = "대표 프로젝트 입력", example = "대표 프로젝트") String description) {
+	@Schema(description = "대표 프로젝트명", example = "프로젝트명") String description) {
 }

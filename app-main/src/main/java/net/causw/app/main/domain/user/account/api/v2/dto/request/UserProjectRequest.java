@@ -18,5 +18,5 @@ public record UserProjectRequest(
 
 	@Min(value = 1) @Max(value = 12) @Schema(description = "대표 프로젝트 종료 월", example = "12") Integer endMonth,
 
-	@NotBlank(message = "대표 프로젝트명을 입력해야 합니다.") @Size(max = 50, message = "최대 글자 수 50을 초과했습니다.") @Schema(description = "대표 프로젝트명", example = "프로젝트명") String description) {
+	@NotBlank(message = "대표 프로젝트명을 입력해야 합니다.") @Size(max = 50, message = "대표 프로젝트명은 최대 50자까지 입력 가능합니다.") @Schema(description = "대표 프로젝트명", example = "프로젝트명") String description) {
 }
