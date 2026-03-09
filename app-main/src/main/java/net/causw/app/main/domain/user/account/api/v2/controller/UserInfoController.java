@@ -97,7 +97,7 @@ public class UserInfoController {
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "동문 수첩 프로필 리스트 조회 및 검색", description = "검색어 또는 필터를 포함해 동문 수첩 프로필 리스트를 조회합니다.")
 	public ApiResponse<PageResponse<UserInfoSummaryResponse>> getUserInfoPage(
-		@ModelAttribute UserInfoListRequest request,
+		@ModelAttribute @Valid UserInfoListRequest request,
 		@RequestParam(name = "pageNum", required = false, defaultValue = "0") Integer pageNum) {
 		Page<UserInfoSummaryResult> result = userInfoService.getUserInfoPage(userInfoDtoMapper.toListCondition(request),
 			pageNum);

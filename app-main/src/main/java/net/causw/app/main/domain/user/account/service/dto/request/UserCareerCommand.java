@@ -14,14 +14,21 @@ public record UserCareerCommand(
 	public void validateDate() {
 		int currentYear = LocalDate.now().getYear();
 
-		if (!(1 <= startMonth && startMonth <= 12) || startYear < 1800 || startYear > currentYear) {
+		if (startYear > currentYear) {
 			throw UserInfoErrorCode.INVALID_CAREER_START_DATE.toBaseException();
 		}
-		if (endYear != null && endMonth != null) {
-			if (!(1 <= endMonth && endMonth <= 12) || endYear < 1800 || endYear > currentYear) {
-				throw UserInfoErrorCode.INVALID_CAREER_END_DATE.toBaseException();
-			}
+
+		if ((endYear == null) != (endMonth == null)) {
+			throw UserInfoErrorCode.INVALID_CAREER_END_DATE.toBaseException();
 		}
 
+		if (endYear != null) {
+			if (endYear > currentYear || endYear < startYear) {
+				throw UserInfoErrorCode.INVALID_CAREER_END_DATE.toBaseException();
+			}
+			if (startYear == endYear && endMonth < startMonth) {
+				throw UserInfoErrorCode.CAREER_START_BEFORE_END.toBaseException();
+			}
+		}
 	}
 }
