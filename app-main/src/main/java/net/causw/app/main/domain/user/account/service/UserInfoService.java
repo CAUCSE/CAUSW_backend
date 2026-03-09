@@ -69,7 +69,7 @@ public class UserInfoService {
 		replaceStrings(userInfo.getUserInterestDomain(), request.userInterestDomain());
 
 		UserInfo updated = userInfoWriter.save(userInfo);
-		return userInfoMapper.toUserInfoDetailResult(updated);
+		return userInfoMapper.toDetailResult(updated);
 	}
 
 	/**
@@ -82,7 +82,7 @@ public class UserInfoService {
 		UserInfo userInfo = userInfoReader.findById(userInfoId)
 			.orElseThrow(UserInfoErrorCode.USERINFO_NOT_FOUND::toBaseException);
 
-		return userInfoMapper.toUserInfoDetailResult(userInfo);
+		return userInfoMapper.toDetailResult(userInfo);
 	}
 
 	/**
@@ -96,7 +96,7 @@ public class UserInfoService {
 		UserInfo userInfo = userInfoReader.findByUserId(user.getId())
 			.orElseGet(() -> userInfoCreator.createAndSave(user));
 
-		return userInfoMapper.toMyUserInfoDetailResult(userInfo);
+		return userInfoMapper.toMyDetailResult(userInfo);
 	}
 
 	/**
@@ -110,7 +110,7 @@ public class UserInfoService {
 		Pageable pageable = pageableFactory.create(pageNum, StaticValue.USER_LIST_PAGE_SIZE);
 		Page<UserInfo> userInfos = userInfoReader.findUserInfoWithFilter(condition, pageable);
 
-		return userInfos.map(userInfoMapper::toUserInfoSummaryResult);
+		return userInfos.map(userInfoMapper::toSummaryResult);
 	}
 
 	// 이력 사항 업데이트

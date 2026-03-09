@@ -33,13 +33,13 @@ public interface UserInfoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "userProject", source = "userProject")
 	@Mapping(target = "userInterestTech", source = "userInterestTech", qualifiedByName = "sortStringsAsc")
 	@Mapping(target = "userInterestDomain", source = "userInterestDomain", qualifiedByName = "sortStringsAsc")
-	UserInfoDetailResult toUserInfoDetailResult(UserInfo userInfo);
+	UserInfoDetailResult toDetailResult(UserInfo userInfo);
 
 	// 내 동문 수첩 프로필 상세 조회
-	@InheritConfiguration(name = "toUserInfoDetailResult")
+	@InheritConfiguration(name = "toDetailResult")
 	@Mapping(target = "phoneNumber", source = "user.phoneNumber")
 	@Mapping(target = "isPhoneNumberVisible", constant = "true")
-	UserInfoDetailResult toMyUserInfoDetailResult(UserInfo userInfo);
+	UserInfoDetailResult toMyDetailResult(UserInfo userInfo);
 
 	// 동문 수첩 프로필 리스트 조회
 	@Mapping(target = "id", source = "id")
@@ -49,7 +49,7 @@ public interface UserInfoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "academicStatus", source = ".", qualifiedByName = "mapAcademicStatus")
 	@Mapping(target = "job", source = "job")
 	@Mapping(target = "description", source = "description")
-	UserInfoSummaryResult toUserInfoSummaryResult(UserInfo userInfo);
+	UserInfoSummaryResult toSummaryResult(UserInfo userInfo);
 
 	@Named("mapAdmissionYear")
 	static String mapAdmissionYear(UserInfo userInfo) {

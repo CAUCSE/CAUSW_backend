@@ -73,7 +73,7 @@ class UserInfoServiceTest {
 			UserInfoDetailResult resultDto = ObjectFixtures.detailResult();
 
 			when(userInfoReader.findById(userInfoId)).thenReturn(Optional.of(userInfo));
-			when(userInfoMapper.toUserInfoDetailResult(userInfo)).thenReturn(resultDto);
+			when(userInfoMapper.toDetailResult(userInfo)).thenReturn(resultDto);
 
 			// when
 			UserInfoDetailResult result = userInfoService.getDetailUserInfo(userInfoId);
@@ -82,7 +82,7 @@ class UserInfoServiceTest {
 			assertThat(result).isSameAs(resultDto);
 
 			verify(userInfoReader).findById(userInfoId);
-			verify(userInfoMapper).toUserInfoDetailResult(userInfo);
+			verify(userInfoMapper).toDetailResult(userInfo);
 		}
 
 		@Test
@@ -99,7 +99,7 @@ class UserInfoServiceTest {
 				.isEqualTo(UserInfoErrorCode.USERINFO_NOT_FOUND);
 
 			verify(userInfoReader).findById(userInfoId);
-			verify(userInfoMapper, never()).toUserInfoDetailResult(any());
+			verify(userInfoMapper, never()).toDetailResult(any());
 		}
 	}
 
@@ -119,7 +119,7 @@ class UserInfoServiceTest {
 			UserInfoDetailResult resultDto = ObjectFixtures.detailResult();
 
 			when(userInfoReader.findByUserId(userId)).thenReturn(Optional.of(userInfo));
-			when(userInfoMapper.toMyUserInfoDetailResult(userInfo)).thenReturn(resultDto);
+			when(userInfoMapper.toMyDetailResult(userInfo)).thenReturn(resultDto);
 
 			// when
 			UserInfoDetailResult result = userInfoService.getMyDetailUserInfo(user);
@@ -129,7 +129,7 @@ class UserInfoServiceTest {
 
 			verify(userInfoReader).findByUserId(userId);
 			verify(userInfoCreator, never()).createAndSave(any(User.class));
-			verify(userInfoMapper).toMyUserInfoDetailResult(userInfo);
+			verify(userInfoMapper).toMyDetailResult(userInfo);
 		}
 
 		@Test
@@ -145,7 +145,7 @@ class UserInfoServiceTest {
 
 			when(userInfoReader.findByUserId(userId)).thenReturn(Optional.empty());
 			when(userInfoCreator.createAndSave(user)).thenReturn(created);
-			when(userInfoMapper.toMyUserInfoDetailResult(created)).thenReturn(resultDto);
+			when(userInfoMapper.toMyDetailResult(created)).thenReturn(resultDto);
 
 			// when
 			UserInfoDetailResult result = userInfoService.getMyDetailUserInfo(user);
@@ -155,7 +155,7 @@ class UserInfoServiceTest {
 
 			verify(userInfoReader).findByUserId(userId);
 			verify(userInfoCreator).createAndSave(user);
-			verify(userInfoMapper).toMyUserInfoDetailResult(created);
+			verify(userInfoMapper).toMyDetailResult(created);
 		}
 	}
 
@@ -183,7 +183,7 @@ class UserInfoServiceTest {
 
 			when(userInfoReader.findByUserId(userId)).thenReturn(Optional.of(existing));
 			when(userInfoWriter.save(existing)).thenReturn(updated);
-			when(userInfoMapper.toUserInfoDetailResult(updated)).thenReturn(resultDto);
+			when(userInfoMapper.toDetailResult(updated)).thenReturn(resultDto);
 
 			doNothing().when(existing).update(any(), any(), any(), anyBoolean());
 			when(existing.getUserTechStack()).thenReturn(userTechStack);
@@ -203,7 +203,7 @@ class UserInfoServiceTest {
 			verify(userInterestTech).clear();
 			verify(userInterestDomain).clear();
 			verify(userInfoWriter).save(existing);
-			verify(userInfoMapper).toUserInfoDetailResult(updated);
+			verify(userInfoMapper).toDetailResult(updated);
 		}
 
 		@Test
@@ -227,7 +227,7 @@ class UserInfoServiceTest {
 			when(userInfoReader.findByUserId(userId)).thenReturn(Optional.empty());
 			when(userInfoCreator.createAndSave(user)).thenReturn(created);
 			when(userInfoWriter.save(created)).thenReturn(updated);
-			when(userInfoMapper.toUserInfoDetailResult(updated)).thenReturn(resultDto);
+			when(userInfoMapper.toDetailResult(updated)).thenReturn(resultDto);
 
 			doNothing().when(created).update(any(), any(), any(), anyBoolean());
 			when(created.getUserTechStack()).thenReturn(userTechStack);
@@ -247,7 +247,7 @@ class UserInfoServiceTest {
 			verify(userInterestTech).clear();
 			verify(userInterestDomain).clear();
 			verify(userInfoWriter).save(created);
-			verify(userInfoMapper).toUserInfoDetailResult(updated);
+			verify(userInfoMapper).toDetailResult(updated);
 		}
 	}
 
@@ -273,8 +273,8 @@ class UserInfoServiceTest {
 			UserInfoSummaryResult s2 = ObjectFixtures.summaryResult();
 
 			when(userInfoReader.findUserInfoWithFilter(condition, pageable)).thenReturn(page);
-			when(userInfoMapper.toUserInfoSummaryResult(u1)).thenReturn(s1);
-			when(userInfoMapper.toUserInfoSummaryResult(u2)).thenReturn(s2);
+			when(userInfoMapper.toSummaryResult(u1)).thenReturn(s1);
+			when(userInfoMapper.toSummaryResult(u2)).thenReturn(s2);
 
 			// when
 			Page<UserInfoSummaryResult> result = userInfoService.getUserInfoPage(condition, pageNum);
@@ -284,8 +284,8 @@ class UserInfoServiceTest {
 
 			verify(pageableFactory).create(pageNum, StaticValue.USER_LIST_PAGE_SIZE);
 			verify(userInfoReader).findUserInfoWithFilter(condition, pageable);
-			verify(userInfoMapper).toUserInfoSummaryResult(u1);
-			verify(userInfoMapper).toUserInfoSummaryResult(u2);
+			verify(userInfoMapper).toSummaryResult(u1);
+			verify(userInfoMapper).toSummaryResult(u2);
 		}
 	}
 
