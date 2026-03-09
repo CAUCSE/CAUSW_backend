@@ -42,7 +42,7 @@ public interface UserRepository extends JpaRepository<User, String> {
 
 	List<User> findAllByState(UserState state);
 
-	List<User> findAllByDeletedAtBefore(LocalDateTime deletedAt);
+List<User> findAllByDeletedAtBefore(LocalDateTime deletedAt);
 
 	Optional<User> findByStudentIdAndName(String studentId, String name);
 
