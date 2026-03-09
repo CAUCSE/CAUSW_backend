@@ -6,9 +6,9 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum UserAdminActionType {
-	DROP("drop"),
-	RESTORE("restore"),
-	ROLE_CHANGE("role_change");
+	DROP("유저 추방"),
+	RESTORE("추방 유저 복구"),
+	ROLE_CHANGE("유저 역할 변경");
 
-	private final String value;
+	private final String description;
 }
