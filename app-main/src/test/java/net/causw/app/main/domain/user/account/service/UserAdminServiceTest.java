@@ -218,8 +218,8 @@ class UserAdminServiceTest {
 		}
 
 		@Test
-		@DisplayName("추방이 허용되지 않은 권한의 사용자를 추방하면 USER_NOT_DROPPABLE_ROLE 예외가 발생한다")
-		void givenNotDroppableRole_whenDropUser_thenThrowUserNotDroppableRole() {
+		@DisplayName("추방이 허용되지 않은 권한의 사용자를 추방하면 USER_NOT_DROPPABLE 예외가 발생한다")
+		void givenNotDroppableRole_whenDropUser_thenThrowUserNotDroppable() {
 			// given
 			User adminUser = ObjectFixtures.getCertifiedUserWithId("admin-1");
 			String userId = "user-1";
@@ -237,7 +237,7 @@ class UserAdminServiceTest {
 			assertThat(throwable)
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
-				.isEqualTo(UserErrorCode.USER_NOT_DROPPABLE_ROLE);
+				.isEqualTo(UserErrorCode.USER_NOT_DROPPABLE);
 
 			verify(lockerReader, never()).findByUserId(any());
 			verify(userWriter, never()).dropByAdmin(any(), any());

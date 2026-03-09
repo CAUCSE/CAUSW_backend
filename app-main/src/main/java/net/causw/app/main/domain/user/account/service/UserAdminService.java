@@ -98,19 +98,9 @@ public class UserAdminService {
 	}
 
 	// 대상 사용자가 추방 가능한 상태인지 확인
-	// - ACTIVE 상태여야 하고 이미 탈퇴한(isDeleted) 사용자가 아님
-	// - 권한 있는 역할(ADMIN 등)을 가지고 있으면 추방 불가
 	private void validateDroppableUser(User targetUser) {
-		boolean isDroppableState = targetUser.getState() == UserState.ACTIVE && !targetUser.isDeleted();
-		if (!isDroppableState) {
+		if (!targetUser.isDroppable()) {
 			throw UserErrorCode.USER_NOT_DROPPABLE.toBaseException();
-		}
-
-		Set<Role> targetRoles = targetUser.getRoles();
-		boolean isDroppableRole = targetRoles.stream()
-			.noneMatch(Role.getPrivilegedRoles()::contains);
-		if (!isDroppableRole) {
-			throw UserErrorCode.USER_NOT_DROPPABLE_ROLE.toBaseException();
 		}
 	}
 
