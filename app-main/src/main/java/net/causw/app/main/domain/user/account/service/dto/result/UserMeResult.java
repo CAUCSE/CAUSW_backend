@@ -3,6 +3,7 @@ package net.causw.app.main.domain.user.account.service.dto.result;
 import java.util.List;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 
 public record UserMeResult(
@@ -12,9 +13,10 @@ public record UserMeResult(
 	String profileImageUrl,
 	Integer admissionYear,
 	UserState state,
-	List<String> roles) {
+	List<String> roles,
+	String job) {
 
-	public static UserMeResult from(User user) {
+	public static UserMeResult from(User user, UserInfo userInfo) {
 		return new UserMeResult(
 			user.getId(),
 			user.getName(),
@@ -22,7 +24,8 @@ public record UserMeResult(
 			extractProfileImageUrl(user),
 			user.getAdmissionYear(),
 			user.getState(),
-			user.getRoles().stream().map(Enum::name).toList());
+			user.getRoles().stream().map(Enum::name).toList(),
+			userInfo != null ? userInfo.getJob() : null);
 	}
 
 	private static String extractProfileImageUrl(User user) {

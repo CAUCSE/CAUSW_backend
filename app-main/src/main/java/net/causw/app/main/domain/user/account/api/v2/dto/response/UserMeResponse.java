@@ -21,5 +21,7 @@ public record UserMeResponse(
 
 	@Schema(description = "사용자 상태", example = "ACTIVE") UserState state,
 
-	@Schema(description = "사용자 권한 목록", example = "[\"COMMON\"]") List<String> roles) {
+	@Schema(description = "사용자 권한 목록", example = "[\"COMMON\"]") List<String> roles,
+
+	@Schema(description = "직업", example = "개발자", nullable = true) String job) {
 }
