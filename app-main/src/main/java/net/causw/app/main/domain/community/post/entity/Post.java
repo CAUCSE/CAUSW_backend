@@ -95,7 +95,7 @@ public class Post extends BaseEntity {
 		Boolean isQuestion,
 		Board board,
 		Form form,
-
+		Boolean isCrawled,
 		List<UuidFile> postAttachImageUuidFileList) {
 		Post post = Post.builder()
 			.title(title)
@@ -103,6 +103,7 @@ public class Post extends BaseEntity {
 			.writer(writer)
 			.isAnonymous(isAnonymous)
 			.isQuestion(isQuestion)
+			.isCrawled(isCrawled)
 			.board(board)
 			.form(form)
 			.build();

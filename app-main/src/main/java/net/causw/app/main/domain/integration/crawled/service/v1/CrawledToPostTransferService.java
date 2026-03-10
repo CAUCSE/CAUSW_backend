@@ -99,6 +99,7 @@ public class CrawledToPostTransferService {
 				false,
 				board,
 				null,
+				true,
 				new ArrayList<>());
 			postRepository.save(newPost);
 
