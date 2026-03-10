@@ -10,9 +10,5 @@ ALTER TABLE tb_post
 UPDATE tb_post p
     INNER JOIN tb_board b ON p.board_id = b.id
 SET p.is_crawled = 1
-WHERE b.name = '소프트웨어학부 학부 공지'
-  AND p.is_deleted = 0
-  AND EXISTS (
-      SELECT 1 FROM tb_crawled_notice cn WHERE cn.title = p.title
-  );
+WHERE b.name = '소프트웨어학부 학부 공지';
 
