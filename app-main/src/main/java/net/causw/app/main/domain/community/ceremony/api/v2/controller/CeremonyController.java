@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import net.causw.app.main.domain.community.ceremony.api.v2.dto.request.CreateCeremonyRequestDto;
+import net.causw.app.main.domain.community.ceremony.api.v2.dto.request.CreateCeremonyRequest;
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonyDetailResponseDto;
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonySummaryResponseDto;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyContext;
@@ -42,10 +42,10 @@ public class CeremonyController {
 	@Operation(summary = "사용자 본인의 경조사 생성", description = "사용자 본인의 경조사 생성합니다.")
 	public ApiResponse<CeremonyDetailResponseDto> createCeremony(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
-		@RequestPart(value = "createCeremonyRequestDTO") @Valid CreateCeremonyRequestDto createCeremonyRequestDTO,
+		@RequestPart(value = "createCeremonyRequestDTO") @Valid CreateCeremonyRequest createCeremonyRequest,
 		@RequestPart(value = "imageFileList", required = false) List<MultipartFile> imageFileList) {
 		return ApiResponse
-			.success(ceremonyService.createCeremony(userDetails.getUser(), createCeremonyRequestDTO, imageFileList));
+			.success(ceremonyService.createCeremony(userDetails.getUser(), createCeremonyRequest, imageFileList));
 	}
 
 	@GetMapping("/{ceremonyId}")

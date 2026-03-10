@@ -21,7 +21,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import net.causw.app.main.domain.asset.file.service.v2.UuidFileService;
-import net.causw.app.main.domain.community.ceremony.api.v2.dto.request.CreateCeremonyRequestDto;
+import net.causw.app.main.domain.community.ceremony.api.v2.dto.request.CreateCeremonyRequest;
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonySummaryResponseDto;
 import net.causw.app.main.domain.community.ceremony.api.v2.mapper.CeremonyCreateMapper;
 import net.causw.app.main.domain.community.ceremony.api.v2.mapper.CeremonyDtoMapper;
@@ -66,12 +66,12 @@ public class CeremonyServiceTest {
 	class CreateCeremonyValidationTest {
 
 		private User user;
-		private CreateCeremonyRequestDto dto;
+		private CreateCeremonyRequest dto;
 
 		@BeforeEach
 		void setUp() {
 			user = mock(User.class);
-			dto = mock(CreateCeremonyRequestDto.class);
+			dto = mock(CreateCeremonyRequest.class);
 		}
 
 		@Test
@@ -176,7 +176,7 @@ public class CeremonyServiceTest {
 		User applicant;
 		Ceremony ceremony;
 		User other;
-		CreateCeremonyRequestDto dto;
+		CreateCeremonyRequest dto;
 
 		@BeforeEach
 		void setUp() {
@@ -184,7 +184,7 @@ public class CeremonyServiceTest {
 			applicant = mock(User.class);
 			ceremony = mock(Ceremony.class);
 			other = mock(User.class);
-			dto = mock(CreateCeremonyRequestDto.class);
+			dto = mock(CreateCeremonyRequest.class);
 		}
 
 		@DisplayName("존재하지 않는 경조사 조회하면 실패")

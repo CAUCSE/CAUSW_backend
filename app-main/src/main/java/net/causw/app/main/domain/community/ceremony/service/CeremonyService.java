@@ -15,7 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.asset.file.service.v2.UuidFileService;
-import net.causw.app.main.domain.community.ceremony.api.v2.dto.request.CreateCeremonyRequestDto;
+import net.causw.app.main.domain.community.ceremony.api.v2.dto.request.CreateCeremonyRequest;
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonyDetailResponseDto;
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonySummaryResponseDto;
 import net.causw.app.main.domain.community.ceremony.api.v2.mapper.CeremonyCreateMapper;
@@ -49,19 +49,19 @@ public class CeremonyService {
 	@Transactional
 	public CeremonyDetailResponseDto createCeremony(
 		User user,
-		@Valid CreateCeremonyRequestDto createCeremonyRequestDTO,
+		@Valid CreateCeremonyRequest createCeremonyRequest,
 		List<MultipartFile> imageFileList) {
-		ceremonyValidator.validateForCreate(createCeremonyRequestDTO);
+		ceremonyValidator.validateForCreate(createCeremonyRequest);
 
-		List<String> targetAdmissionYears = createCeremonyRequestDTO.getIsSetAll()
+		List<String> targetAdmissionYears = createCeremonyRequest.isSetAll()
 			? new ArrayList<>()
-			: createCeremonyRequestDTO.getTargetAdmissionYears();
+			: createCeremonyRequest.targetAdmissionYears();
 
 		List<UuidFile> uuidFileList = (imageFileList == null || imageFileList.isEmpty())
 			? List.of()
 			: uuidFileService.saveFileList(imageFileList, FilePath.CEREMONY);
 
-		Ceremony ceremony = ceremonyCreateMapper.fromRequest(user, createCeremonyRequestDTO, targetAdmissionYears,
+		Ceremony ceremony = ceremonyCreateMapper.fromRequest(user, createCeremonyRequest, targetAdmissionYears,
 			uuidFileList);
 		ceremonyCreator.save(ceremony);
 		return ceremonyDtoMapper.toCeremonyDetailResponseDto(ceremony);
