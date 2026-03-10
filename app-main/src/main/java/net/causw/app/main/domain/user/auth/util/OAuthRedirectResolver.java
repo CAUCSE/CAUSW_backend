@@ -112,7 +112,7 @@ public class OAuthRedirectResolver {
 	private ResponseCookie buildEnvCookie(String value, Duration maxAge, HttpServletRequest request) {
 		CookiePolicy policy = CookiePolicy.from(request);
 		return ResponseCookie.from(ENV_COOKIE_NAME, value)
-			.httpOnly(true)
+			.httpOnly(false)
 			.secure(policy.secure())
 			.path("/")
 			.maxAge(maxAge)
@@ -135,8 +135,7 @@ public class OAuthRedirectResolver {
 	private record CookiePolicy(boolean secure, String sameSite) {
 		private static CookiePolicy from(HttpServletRequest request) {
 			boolean secure = request.isSecure();
-			String sameSite = secure ? "None" : "Lax";
-			return new CookiePolicy(secure, sameSite);
+			return new CookiePolicy(secure, "None");
 		}
 	}
 }
