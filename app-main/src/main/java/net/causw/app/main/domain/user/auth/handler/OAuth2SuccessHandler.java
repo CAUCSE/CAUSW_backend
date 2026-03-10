@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
@@ -20,6 +19,7 @@ import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.auth.service.dto.CustomOAuth2User;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
+import net.causw.app.main.domain.user.auth.util.OAuthRedirectResolver;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import net.causw.global.constant.StaticValue;
 
@@ -37,10 +37,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-	@Value("${app.auth.redirect-uri}")
-	private String baseUrl;
 	private final AuthTokenManager authTokenManager;
 	private final UserReader userReader;
+	private final OAuthRedirectResolver oAuthRedirectResolver;
 
 	/**
 	 * 소셜 로그인 성공 시 호출됩니다.
@@ -61,16 +60,20 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 		// 리프레시토큰 생성 및 쿠키 저장
 		String refreshToken = authTokenManager.createRefreshToken(user.getId());
 		ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshToken)
-			.httpOnly(true)
+			.httpOnly(false)
 			.secure(true)
 			.path("/")
 			.maxAge(Duration.ofMillis(StaticValue.JWT_REFRESH_TOKEN_VALID_TIME))
-			.sameSite("Lax")
+			.sameSite("None")
 			.build();
 		response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
+		String baseUrl = oAuthRedirectResolver.resolveRedirectBase(request);
+		ResponseCookie envCookie = oAuthRedirectResolver.clearEnvCookie(request);
+		response.addHeader(HttpHeaders.SET_COOKIE, envCookie.toString());
+
 		// 상태에 따른 리다이렉트 경로 결정
-		String targetUrl = determineTargetUrl(user.getState());
+		String targetUrl = determineTargetUrl(user.getState(), baseUrl);
 
 		// 리다이렉트 실행
 		if (response.isCommitted()) {
@@ -135,7 +138,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 	 * @param state 사용자 상태
 	 * @return redirect 대상 URL
 	 */
-	private String determineTargetUrl(UserState state) {
+	private String determineTargetUrl(UserState state, String baseUrl) {
 		// GUEST 상태라면 추가 정보 입력 페이지로, 아니면 메인으로
 		boolean isFirstLogin = (state == UserState.GUEST);
 		return UriComponentsBuilder.fromUriString(baseUrl)

@@ -13,6 +13,7 @@ import net.causw.app.main.domain.notification.notification.api.v2.dto.response.N
 import net.causw.app.main.domain.notification.notification.api.v2.mapper.NotificationDtoMapper;
 import net.causw.app.main.domain.notification.notification.entity.NotificationLog;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationLogReader;
+import net.causw.app.main.shared.exception.errorcode.NotificationLogErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -51,6 +52,13 @@ public class NotificationLogService {
 		List<NotificationLog> unreadNotificationLogs = notificationLogReader.findUnreadUpToLimit(userId);
 
 		return new NotificationCountResponseDto(unreadNotificationLogs.size());
+	}
+
+	@Transactional
+	public void updateNotificationLogAsRead(String userId, String id) {
+		NotificationLog notificationLog = notificationLogReader.findByIdAndUserId(id, userId)
+			.orElseThrow(NotificationLogErrorCode.NOTIFICATION_LOG_NOT_FOUND::toBaseException);
+		notificationLog.markAsRead();
 	}
 
 }
