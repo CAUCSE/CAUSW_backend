@@ -165,19 +165,30 @@ public class UserAccountService {
 
 	/**
 	 * 이름+이메일 기준으로 비밀번호 초기화용 인증코드를 발송합니다.
+	 * <p>
+	 * 사용자 열거 공격(User Enumeration) 방지를 위해, 해당 이름+이메일 조합의 계정이
+	 * 존재하지 않더라도 예외를 던지지 않습니다. 계정이 존재하는 경우에만 실제로 이메일을
+	 * 발송하며, 존재하지 않는 경우에는 조용히 종료합니다.
+	 * </p>
 	 *
 	 * @param name  사용자 이름
 	 * @param email 인증 코드를 받을 이메일 주소
 	 */
 	@Transactional
 	public void sendPasswordResetVerificationEmail(String name, String email) {
-		emailVerificationValidator.validatePasswordResetSend(name, email);
-		emailVerificationSender.send(email, VerificationStatus.PASSWORD_FIND);
+		boolean userExists = emailVerificationValidator.validatePasswordResetSend(name, email);
+		if (userExists) {
+			emailVerificationSender.send(email, VerificationStatus.PASSWORD_FIND);
+		}
 	}
 
 	/**
 	 * 비밀번호 초기화 인증번호를 검증하고 임시 비밀번호로 재설정합니다.
 	 * 검증 성공 시 해당 인증 레코드는 삭제됩니다.
+	 * <p>
+	 * 사용자 열거 공격(User Enumeration) 방지를 위해, 해당 이름+이메일 조합의 계정이
+	 * 존재하지 않는 경우에도 인증 코드 불일치와 동일한 예외를 반환합니다.
+	 * </p>
 	 *
 	 * @param name             사용자 이름
 	 * @param email            인증할 이메일 주소
@@ -186,7 +197,8 @@ public class UserAccountService {
 	 */
 	@Transactional
 	public String resetPasswordByVerificationCode(String name, String email, String verificationCode) {
-		User user = userReader.findByEmailAndName(email, name);
+		User user = userReader.findByEmailAndNameOptional(email, name)
+			.orElseThrow(UserErrorCode.PASSWORD_RESET_CODE_MISMATCH::toBaseException);
 
 		if (user.isOnlySocialUser()) {
 			throw UserErrorCode.SOCIAL_ONLY_USER_CANNOT_CHANGE_PASSWORD.toBaseException();

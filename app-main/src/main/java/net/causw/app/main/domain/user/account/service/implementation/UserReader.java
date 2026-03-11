@@ -109,4 +109,12 @@ public class UserReader {
 	public boolean existsByEmail(String email) {
 		return userRepository.existsByEmail(email);
 	}
+
+	public boolean existsByEmailAndName(String email, String name) {
+		return userRepository.findByEmailAndName(email, name).isPresent();
+	}
+
+	public Optional<User> findByEmailAndNameOptional(String email, String name) {
+		return userRepository.findByEmailAndName(email, name);
+	}
 }

@@ -1,16 +1,9 @@
 package net.causw.app.main.domain.user.account.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.BDDMockito.*;
+import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
 
@@ -166,14 +159,31 @@ class UserAccountServiceTest {
 	class SendPasswordResetVerificationEmail {
 
 		@Test
-		@DisplayName("성공: 이름+이메일 검증 후 PASSWORD_FIND 상태로 인증코드를 발송한다")
+		@DisplayName("성공: 이름+이메일이 존재하면 PASSWORD_FIND 상태로 인증코드를 발송한다")
 		void success() {
+			// given
+			when(emailVerificationValidator.validatePasswordResetSend(name, email)).thenReturn(true);
+
 			// when
 			userAccountService.sendPasswordResetVerificationEmail(name, email);
 
 			// then
 			verify(emailVerificationValidator).validatePasswordResetSend(name, email);
 			verify(emailVerificationSender).send(email, VerificationStatus.PASSWORD_FIND);
+		}
+
+		@Test
+		@DisplayName("성공(열거 방지): 이름+이메일이 존재하지 않아도 예외 없이 종료하며 이메일을 발송하지 않는다")
+		void successWhenUserNotFound() {
+			// given
+			when(emailVerificationValidator.validatePasswordResetSend(name, email)).thenReturn(false);
+
+			// when
+			userAccountService.sendPasswordResetVerificationEmail(name, email);
+
+			// then
+			verify(emailVerificationValidator).validatePasswordResetSend(name, email);
+			verify(emailVerificationSender, never()).send(anyString(), any());
 		}
 	}
 
