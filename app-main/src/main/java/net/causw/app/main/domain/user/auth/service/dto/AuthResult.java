@@ -5,12 +5,17 @@ public record AuthResult(
 	String name,
 	String email,
 	String profileImgUrl,
-	String refreshToken) {
+	String refreshToken,
+	boolean isTermsAgreed,
+	boolean isAcademicCertified) {
 	public static AuthResult of(String accessToken,
 		String name,
 		String email,
 		String profileImgUrl,
-		String refreshToken) {
-		return new AuthResult(accessToken, name, email, profileImgUrl, refreshToken);
+		String refreshToken,
+		boolean isTermsAgreed,
+		boolean isAcademicCertified) {
+		return new AuthResult(accessToken, name, email, profileImgUrl, refreshToken, isTermsAgreed,
+			isAcademicCertified);
 	}
 }
