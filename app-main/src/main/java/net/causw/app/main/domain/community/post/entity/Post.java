@@ -73,7 +73,8 @@ public class Post extends BaseEntity {
 
 	@Column(name = "is_crawled", nullable = false)
 	@ColumnDefault("false")
-	private Boolean isCrawled;
+	@Builder.Default
+	private Boolean isCrawled = false;
 
 	@ManyToOne(targetEntity = Board.class)
 	@JoinColumn(name = "board_id", nullable = false)
