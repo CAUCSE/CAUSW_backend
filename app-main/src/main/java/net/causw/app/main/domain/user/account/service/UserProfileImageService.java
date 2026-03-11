@@ -39,7 +39,7 @@ public class UserProfileImageService {
 	 */
 	@Transactional
 	public ProfileImageResponse updateToDefaultProfileImage(String userId, ProfileImageType profileImageType) {
-		if (profileImageType == ProfileImageType.CUSTOM) {
+		if (profileImageType == ProfileImageType.CUSTOM || profileImageType == ProfileImageType.GHOST) {
 			throw UserErrorCode.INVALID_PROFILE_IMAGE_TYPE.toBaseException();
 		}
 
