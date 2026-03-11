@@ -11,6 +11,7 @@ import org.mapstruct.Named;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoDetailResponseDto;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoSummaryResponseDto;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
+import net.causw.app.main.shared.dto.ProfileImageDto;
 import net.causw.app.main.shared.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
 
 @Mapper(componentModel = "spring")
@@ -18,7 +19,7 @@ public interface UserInfoDtoMapper extends UuidFileToUrlDtoMapper {
 
 	// 동문 수첩 프로필 상세 조회
 	@Mapping(target = "id", source = "id")
-	@Mapping(target = "profileImageUrl", source = "user.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
+	@Mapping(target = "profileImage", source = ".", qualifiedByName = "mapProfileImage")
 	@Mapping(target = "name", source = "user.name")
 	@Mapping(target = "admissionYear", source = ".", qualifiedByName = "mapAdmissionYear")
 	@Mapping(target = "academicStatus", source = ".", qualifiedByName = "mapAcademicStatus")
@@ -43,13 +44,18 @@ public interface UserInfoDtoMapper extends UuidFileToUrlDtoMapper {
 
 	// 동문 수첩 프로필 리스트 조회
 	@Mapping(target = "id", source = "id")
-	@Mapping(target = "profileImageUrl", source = "user.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
+	@Mapping(target = "profileImage", source = ".", qualifiedByName = "mapProfileImage")
 	@Mapping(target = "name", source = "user.name")
 	@Mapping(target = "admissionYear", source = ".", qualifiedByName = "mapAdmissionYear")
 	@Mapping(target = "academicStatus", source = ".", qualifiedByName = "mapAcademicStatus")
 	@Mapping(target = "job", source = "job")
 	@Mapping(target = "description", source = "description")
 	UserInfoSummaryResponseDto toUserInfoSummaryResponseDto(UserInfo userInfo);
+
+	@Named("mapProfileImage")
+	static ProfileImageDto mapProfileImage(UserInfo userInfo) {
+		return ProfileImageDto.from(userInfo.getUser());
+	}
 
 	@Named("mapAdmissionYear")
 	static String mapAdmissionYear(UserInfo userInfo) {

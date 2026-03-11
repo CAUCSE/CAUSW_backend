@@ -6,6 +6,7 @@ import java.util.Set;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.account.enums.user.Role;
+import net.causw.app.main.shared.dto.ProfileImageDto;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -20,7 +21,7 @@ public class UserInfoResponseDto {
 	private String email;
 	private String phoneNumber;
 	private Integer admissionYear;
-	private String profileImageUrl;
+	private ProfileImageDto profileImage;
 	private String major; // TODO: user 테이블의 major 필드 삭제 후 함께 제거
 	private Department department;
 

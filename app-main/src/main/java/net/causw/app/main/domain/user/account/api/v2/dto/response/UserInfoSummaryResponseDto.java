@@ -1,11 +1,13 @@
 package net.causw.app.main.domain.user.account.api.v2.dto.response;
 
+import net.causw.app.main.shared.dto.ProfileImageDto;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 
 public record UserInfoSummaryResponseDto(
 	@Schema(description = "동문 수첩 프로필 id", example = "uuid 형식의 String 값입니다") String id,
 
-	@Schema(description = "사용자 프로필 이미지 URL") String profileImageUrl,
+	@Schema(description = "사용자 프로필 이미지") ProfileImageDto profileImage,
 
 	@Schema(description = "사용자 이름", example = "홍길동") String name,
 
