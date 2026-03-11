@@ -23,8 +23,8 @@ public record UserProjectCommand(
 		}
 
 		if (endYear != null) {
-			if (endYear > currentYear) {
-				throw UserInfoErrorCode.INVALID_PROJECT_END_DATE.toBaseException();
+			if (endYear > currentYear || endYear < startYear) {
+				throw UserInfoErrorCode.PROJECT_START_BEFORE_END.toBaseException();
 			}
 			if (startYear == endYear && endMonth < startMonth) {
 				throw UserInfoErrorCode.PROJECT_START_BEFORE_END.toBaseException();

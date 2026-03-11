@@ -24,7 +24,7 @@ public record UserCareerCommand(
 
 		if (endYear != null) {
 			if (endYear > currentYear || endYear < startYear) {
-				throw UserInfoErrorCode.INVALID_CAREER_END_DATE.toBaseException();
+				throw UserInfoErrorCode.CAREER_START_BEFORE_END.toBaseException();
 			}
 			if (startYear == endYear && endMonth < startMonth) {
 				throw UserInfoErrorCode.CAREER_START_BEFORE_END.toBaseException();
