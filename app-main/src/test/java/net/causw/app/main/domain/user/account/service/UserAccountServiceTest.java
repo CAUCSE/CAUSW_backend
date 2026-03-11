@@ -3,9 +3,9 @@ package net.causw.app.main.domain.user.account.service;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
-import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -199,7 +199,7 @@ class UserAccountServiceTest {
 			EmailVerification emailVerification = EmailVerification.of(
 				email, code, LocalDateTime.now().plusMinutes(5), VerificationStatus.PASSWORD_FIND);
 
-			given(userReader.findByEmailAndName(email, name)).willReturn(user);
+			given(userReader.findByEmailAndNameOptional(email, name)).willReturn(Optional.of(user));
 			given(user.isOnlySocialUser()).willReturn(false);
 			given(emailVerificationReader.findLatestByEmailAndStatus(email, VerificationStatus.PASSWORD_FIND))
 				.willReturn(emailVerification);
@@ -222,7 +222,7 @@ class UserAccountServiceTest {
 			// given
 			User user = mock(User.class);
 
-			given(userReader.findByEmailAndName(email, name)).willReturn(user);
+			given(userReader.findByEmailAndNameOptional(email, name)).willReturn(Optional.of(user));
 			given(user.isOnlySocialUser()).willReturn(true);
 
 			// when & then
@@ -238,7 +238,7 @@ class UserAccountServiceTest {
 			EmailVerification emailVerification = EmailVerification.of(
 				email, code, LocalDateTime.now().plusMinutes(5), VerificationStatus.PASSWORD_FIND);
 
-			given(userReader.findByEmailAndName(email, name)).willReturn(user);
+			given(userReader.findByEmailAndNameOptional(email, name)).willReturn(Optional.of(user));
 			given(user.isOnlySocialUser()).willReturn(false);
 			given(emailVerificationReader.findLatestByEmailAndStatus(email, VerificationStatus.PASSWORD_FIND))
 				.willReturn(emailVerification);
@@ -256,7 +256,7 @@ class UserAccountServiceTest {
 			EmailVerification expiredVerification = EmailVerification.of(
 				email, code, LocalDateTime.now().minusMinutes(1), VerificationStatus.PASSWORD_FIND);
 
-			given(userReader.findByEmailAndName(email, name)).willReturn(user);
+			given(userReader.findByEmailAndNameOptional(email, name)).willReturn(Optional.of(user));
 			given(user.isOnlySocialUser()).willReturn(false);
 			given(emailVerificationReader.findLatestByEmailAndStatus(email, VerificationStatus.PASSWORD_FIND))
 				.willReturn(expiredVerification);
