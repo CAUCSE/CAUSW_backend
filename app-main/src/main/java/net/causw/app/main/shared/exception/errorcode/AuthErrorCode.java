@@ -15,6 +15,7 @@ public enum AuthErrorCode implements BaseResponseCode {
 	INVALID_REGISTRATION_STATUS(HttpStatus.BAD_REQUEST, "AUTH_400_002", "현재 계정 상태로는 수행할 수 없는 요청입니다."),
 	SOCIAL_EMAIL_REQUIRED(HttpStatus.UNPROCESSABLE_ENTITY, "AUTH_422_001", "소셜로그인 계정의 이메일 정보를 확인할 수 없습니다."),
 	INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH_401_001", "유효하지 않은 토큰입니다"),
+	EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH_401_004", "만료된 토큰입니다"),
 	INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH_401_002", "유효하지 않은 리프레시토큰입니다"),
 	REFRESH_TOKEN_MISSING(HttpStatus.UNAUTHORIZED, "AUTH_401_003", "토큰 값이 존재하지 않습니다."),
 	USER_ROLE_NONE(HttpStatus.UNAUTHORIZED, "AUTH_401_005", "접근 권한이 없습니다. 다시 로그인 해주세요. 문제 반복시 관리자에게 문의해주세요."),
