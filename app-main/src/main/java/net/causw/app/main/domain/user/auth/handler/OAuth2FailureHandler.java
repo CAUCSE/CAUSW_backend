@@ -2,23 +2,26 @@ package net.causw.app.main.domain.user.auth.handler;
 
 import java.io.IOException;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import net.causw.app.main.domain.user.auth.util.OAuthRedirectResolver;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 
 @Component
+@RequiredArgsConstructor
 public class OAuth2FailureHandler extends SimpleUrlAuthenticationFailureHandler {
 
-	@Value("${app.auth.redirect-uri}")
-	private String baseUrl;
+	private final OAuthRedirectResolver oAuthRedirectResolver;
 
 	@Override
 	public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
@@ -46,6 +49,10 @@ public class OAuth2FailureHandler extends SimpleUrlAuthenticationFailureHandler 
 			errorMessage = "로그인을 취소하셨거나 권한을 제공하지 않으셨습니다.";
 			status = HttpServletResponse.SC_UNAUTHORIZED;
 		}
+
+		String baseUrl = oAuthRedirectResolver.resolveRedirectBase(request);
+		ResponseCookie envCookie = oAuthRedirectResolver.clearEnvCookie(request);
+		response.addHeader(HttpHeaders.SET_COOKIE, envCookie.toString());
 
 		String targetUrl = UriComponentsBuilder.fromUriString(baseUrl)
 			.queryParam("error", errorCode)
