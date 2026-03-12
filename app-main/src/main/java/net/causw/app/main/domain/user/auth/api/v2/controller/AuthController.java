@@ -74,7 +74,7 @@ public class AuthController {
 
 		// 쿠키로 리프레시토큰 반환
 		ResponseCookie cookie = ResponseCookie.from("refresh_token", dto.refreshToken())
-			.httpOnly(true)
+			.httpOnly(false)
 			.secure(true)
 			.path("/")
 			.maxAge(Duration.ofMillis(StaticValue.JWT_REFRESH_TOKEN_VALID_TIME))
@@ -96,7 +96,7 @@ public class AuthController {
 
 		// 쿠키로 리프레시토큰 반환
 		ResponseCookie cookie = ResponseCookie.from("refresh_token", dto.refreshToken())
-			.httpOnly(true)
+			.httpOnly(false)
 			.secure(true)
 			.path("/")
 			.maxAge(Duration.ofMillis(StaticValue.JWT_REFRESH_TOKEN_VALID_TIME))
@@ -120,7 +120,7 @@ public class AuthController {
 		authService.signOut(userDetails.getUserId(), tokens, fcmToken);
 		// 쿠키에서 refresh_token 제거
 		ResponseCookie cookie = ResponseCookie.from("refresh_token", "")
-			.httpOnly(true)
+			.httpOnly(false)
 			.secure(true)
 			.path("/")
 			.maxAge(0)

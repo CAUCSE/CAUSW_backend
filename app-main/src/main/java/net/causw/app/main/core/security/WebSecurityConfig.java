@@ -39,6 +39,7 @@ public class WebSecurityConfig {
 	private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 	private final CustomAuthorizationManager authorizationManager;
 	private final AppleOAuth2AuthorizationRequestResolver appleOAuth2AuthorizationRequestResolver;
+	private final OAuth2AuthorizationRequestCookieRepository oAuth2AuthorizationRequestCookieRepository;
 	private final CustomOAuth2UserService customOAuth2UserService;
 	private final OAuth2SuccessHandler oAuth2SuccessHandler;
 	private final OAuth2FailureHandler oAuth2FailureHandler;
@@ -66,12 +67,15 @@ public class WebSecurityConfig {
 			.authorizeHttpRequests(auth -> auth
 				.requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
 				.requestMatchers("/api/v2/auth/logout").authenticated()
-				.requestMatchers("/api/v2/auth/**", "/oauth2/**", "/login/oauth2/**").permitAll()
+				.requestMatchers("/api/v2/auth/**", "/oauth2/**", "/login/oauth2/**", "/api/v2/users/check-nickname",
+					"/api/v2/users/check-phone")
+				.permitAll()
 				.requestMatchers("/api/v2/admin/**").hasRole("ADMIN")
 				.anyRequest().authenticated())
 			.oauth2Login(oauth2 -> oauth2
 				.authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint
-					.authorizationRequestResolver(appleOAuth2AuthorizationRequestResolver))
+					.authorizationRequestResolver(appleOAuth2AuthorizationRequestResolver)
+					.authorizationRequestRepository(oAuth2AuthorizationRequestCookieRepository))
 				.userInfoEndpoint(userInfo -> userInfo
 					.userService(customOAuth2UserService)
 					.oidcUserService(customOAuth2UserService::loadOidcUser))
