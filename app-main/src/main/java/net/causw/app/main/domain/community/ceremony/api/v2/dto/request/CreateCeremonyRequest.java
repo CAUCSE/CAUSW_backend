@@ -52,7 +52,7 @@ public record CreateCeremonyRequest(
 
 	@Pattern(regexp = "^01(?:0|1|[6-9])-(\\d{3}|\\d{4})-\\d{4}$", message = "전화번호 형식에 맞지 않습니다.") @Schema(description = "경조사 문의 연락처", example = "010-1234-5678") String contact,
 
-	@URL(protocol = "https", message = "관련 링크는 https://로 시작해야 합니다.") @Schema(description = "경조사 관련 링크", example = "www.example.com/link") String link,
+	@URL(protocol = "https", message = "관련 링크는 https://로 시작해야 합니다.") @Schema(description = "경조사 관련 링크", example = "https://www.example.com/link") String link,
 
 	@NotNull(message = "전체 알림 전송 여부는 필수 입력 값입니다.") @Schema(description = "모든 학번에게 알림 전송 여부", example = "true") Boolean isSetAll,
 
