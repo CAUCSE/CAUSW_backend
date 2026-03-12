@@ -42,7 +42,7 @@ public record CreateCeremonyRequest(
 
 	@Pattern(regexp = "^(19|20)[0-9]{2}$", message = "동문 학번은 4자리로 입력해야 합니다.") @Schema(description = "경조사 신청자의 동문 학번 (입학년도)", example = "2021") String alumniAdmissionYear,
 
-	@Size(max = 250, message = "경조사 내용은 최대 250자까지 입력 가능합니다.") @Schema(description = "경조사 내용", example = "경조사 내용입니다.") String content,
+	@Schema(description = "경조사 내용", example = "경조사 내용입니다.") String content,
 
 	@Schema(description = "경조사 주소", example = "서울특별시 동작구 흑석로 84") String address,
 
