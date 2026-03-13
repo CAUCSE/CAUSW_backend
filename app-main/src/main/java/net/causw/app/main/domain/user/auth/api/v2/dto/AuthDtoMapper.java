@@ -5,37 +5,37 @@ import java.util.List;
 import org.mapstruct.Mapper;
 
 import net.causw.app.main.domain.user.auth.api.v2.dto.response.AuthResponse;
-import net.causw.app.main.domain.user.auth.api.v2.dto.response.FindEmailResponse;
-import net.causw.app.main.domain.user.auth.api.v2.dto.response.FindEmailSocialAccountResponse;
+import net.causw.app.main.domain.user.auth.api.v2.dto.response.EmailFindResponse;
+import net.causw.app.main.domain.user.auth.api.v2.dto.response.SocialAccountSummaryResponse;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
-import net.causw.app.main.domain.user.auth.service.dto.FindEmailResult;
-import net.causw.app.main.domain.user.auth.service.dto.FindEmailSocialAccountResult;
+import net.causw.app.main.domain.user.auth.service.dto.EmailFindResult;
+import net.causw.app.main.domain.user.auth.service.dto.SocialAccountSummaryResult;
 
 @Mapper(componentModel = "spring")
 public interface AuthDtoMapper {
 
 	AuthResponse toAuthResponse(AuthResult authResult);
 
-	default FindEmailResponse toFindEmailResponse(FindEmailResult findEmailResult) {
-		if (findEmailResult == null) {
+	default EmailFindResponse toFindEmailResponse(EmailFindResult emailFindResult) {
+		if (emailFindResult == null) {
 			return null;
 		}
-		List<FindEmailSocialAccountResponse> socialAccounts = findEmailResult.socialAccounts() == null
+		List<SocialAccountSummaryResponse> socialAccounts = emailFindResult.socialAccounts() == null
 			? List.of()
-			: findEmailResult.socialAccounts()
+			: emailFindResult.socialAccounts()
 				.stream()
 				.map(this::toFindEmailSocialAccountResponse)
 				.toList();
-		return new FindEmailResponse(findEmailResult.email(), findEmailResult.createdAt(), socialAccounts);
+		return new EmailFindResponse(emailFindResult.email(), emailFindResult.createdAt(), socialAccounts);
 	}
 
-	default FindEmailSocialAccountResponse toFindEmailSocialAccountResponse(
-		FindEmailSocialAccountResult findEmailSocialAccountResult) {
-		if (findEmailSocialAccountResult == null) {
+	default SocialAccountSummaryResponse toFindEmailSocialAccountResponse(
+		SocialAccountSummaryResult socialAccountSummaryResult) {
+		if (socialAccountSummaryResult == null) {
 			return null;
 		}
-		return new FindEmailSocialAccountResponse(
-			findEmailSocialAccountResult.provider(),
-			findEmailSocialAccountResult.createdAt());
+		return new SocialAccountSummaryResponse(
+			socialAccountSummaryResult.provider(),
+			socialAccountSummaryResult.createdAt());
 	}
 }

@@ -18,8 +18,8 @@ import net.causw.app.main.domain.user.account.service.implementation.UserValidat
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
-import net.causw.app.main.domain.user.auth.service.dto.FindEmailResult;
-import net.causw.app.main.domain.user.auth.service.dto.FindEmailSocialAccountResult;
+import net.causw.app.main.domain.user.auth.service.dto.EmailFindResult;
+import net.causw.app.main.domain.user.auth.service.dto.SocialAccountSummaryResult;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthValidator;
 import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationValidator;
@@ -101,7 +101,7 @@ public class AuthService {
 	}
 
 	@Transactional
-	public FindEmailResult findEmail(String name, String phoneNumber) {
+	public EmailFindResult findEmail(String name, String phoneNumber) {
 		Optional<User> userOptional = userReader.checkUserExistByPhoneNumAndName(phoneNumber.trim(), name.trim());
 		if (userOptional.isEmpty()) {
 			return null;
@@ -113,19 +113,19 @@ public class AuthService {
 			return null;
 		}
 
-		List<FindEmailSocialAccountResult> socialAccounts = socialAccountReader.findAllByUserId(user.getId())
+		List<SocialAccountSummaryResult> socialAccounts = socialAccountReader.findAllByUserId(user.getId())
 			.stream()
 			.sorted(Comparator.comparing(account -> account.getCreatedAt()))
-			.map(account -> FindEmailSocialAccountResult.of(
+			.map(account -> SocialAccountSummaryResult.of(
 				account.getSocialType().name(),
 				toLocalDate(account.getCreatedAt())))
 			.toList();
 
 		if (user.isOnlySocialUser()) {
-			return FindEmailResult.of(null, null, socialAccounts);
+			return EmailFindResult.of(null, null, socialAccounts);
 		}
 
-		return FindEmailResult.of(maskEmail(user.getEmail()), toLocalDate(user.getCreatedAt()), socialAccounts);
+		return EmailFindResult.of(maskEmail(user.getEmail()), toLocalDate(user.getCreatedAt()), socialAccounts);
 	}
 
 	/**
