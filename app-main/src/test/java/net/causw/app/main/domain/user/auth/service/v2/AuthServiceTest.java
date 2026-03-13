@@ -4,6 +4,9 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -22,14 +25,18 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import net.causw.app.main.domain.user.account.entity.user.SocialAccount;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.enums.user.SocialType;
 import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
+import net.causw.app.main.domain.user.account.service.implementation.SocialAccountReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserPushTokenWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.domain.user.auth.service.AuthService;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
+import net.causw.app.main.domain.user.auth.service.dto.EmailFindResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthValidator;
@@ -64,6 +71,8 @@ public class AuthServiceTest {
 	private UserPushTokenWriter userPushTokenWriter;
 	@Mock
 	private EmailVerificationValidator emailVerificationValidator;
+	@Mock
+	private SocialAccountReader socialAccountReader;
 
 	private static final String USER_ID = "user_id_123";
 	private static final String EMAIL = "test@example.com";
@@ -77,6 +86,7 @@ public class AuthServiceTest {
 	private static final String NEW_ACCESS_TOKEN = "new_access_token";
 	private static final String NEW_REFRESH_TOKEN = "new_refresh_token";
 	private static final String FCM_TOKEN = "fcm_token";
+	private static final String EMAIL_FOR_FIND = "abcdef@cau.ac.kr";
 
 	private UserRegisterDto registerDto;
 	private User user;
@@ -401,6 +411,97 @@ public class AuthServiceTest {
 				verify(userPushTokenWriter, never()).removeFcmToken(any(), anyString());
 				verify(authTokenManager).invalidateTokens(ACCESS_TOKEN, REFRESH_TOKEN);
 			}
+		}
+	}
+
+	@Nested
+	@DisplayName("이메일 찾기 (findEmail)")
+	class FindEmailTest {
+
+		@Test
+		@DisplayName("성공: 일치하는 사용자가 없으면 null을 반환한다.")
+		void return_null_when_user_not_found() {
+			// given
+			given(userReader.checkUserExistByPhoneNumAndName(PHONE, NAME)).willReturn(Optional.empty());
+
+			// when
+			EmailFindResult result = authService.findEmail(NAME, PHONE);
+
+			// then
+			assertThat(result).isNull();
+			verify(socialAccountReader, never()).findAllByUserId(anyString());
+		}
+
+		@Test
+		@DisplayName("성공: 탈퇴한 사용자는 null을 반환한다.")
+		void return_null_when_user_deleted() {
+			// given
+			User deletedUser = mock(User.class);
+			given(userReader.checkUserExistByPhoneNumAndName(PHONE, NAME)).willReturn(Optional.of(deletedUser));
+			given(deletedUser.isDeleted()).willReturn(true);
+
+			// when
+			EmailFindResult result = authService.findEmail(NAME, PHONE);
+
+			// then
+			assertThat(result).isNull();
+			verify(socialAccountReader, never()).findAllByUserId(anyString());
+		}
+
+		@Test
+		@DisplayName("성공: 소셜 전용 계정이면 이메일/계정생성일은 null, 소셜 목록만 반환한다.")
+		void return_social_only_result() {
+			// given
+			User socialOnlyUser = mock(User.class);
+			SocialAccount kakao = mock(SocialAccount.class);
+			SocialAccount apple = mock(SocialAccount.class);
+
+			given(userReader.checkUserExistByPhoneNumAndName(PHONE, NAME)).willReturn(Optional.of(socialOnlyUser));
+			given(socialOnlyUser.isDeleted()).willReturn(false);
+			given(socialOnlyUser.getId()).willReturn(USER_ID);
+			given(socialOnlyUser.isOnlySocialUser()).willReturn(true);
+			given(socialAccountReader.findAllByUserId(USER_ID)).willReturn(List.of(kakao, apple));
+
+			given(kakao.getSocialType()).willReturn(SocialType.KAKAO);
+			given(kakao.getCreatedAt()).willReturn(LocalDateTime.of(2024, 1, 2, 12, 0));
+			given(apple.getSocialType()).willReturn(SocialType.APPLE);
+			given(apple.getCreatedAt()).willReturn(LocalDateTime.of(2024, 1, 1, 12, 0));
+
+			// when
+			EmailFindResult result = authService.findEmail(NAME, PHONE);
+
+			// then
+			assertThat(result).isNotNull();
+			assertThat(result.email()).isNull();
+			assertThat(result.createdAt()).isNull();
+			assertThat(result.socialAccounts()).hasSize(2);
+			assertThat(result.socialAccounts().get(0).provider()).isEqualTo("APPLE");
+			assertThat(result.socialAccounts().get(0).createdAt()).isEqualTo(LocalDate.of(2024, 1, 1));
+			assertThat(result.socialAccounts().get(1).provider()).isEqualTo("KAKAO");
+			assertThat(result.socialAccounts().get(1).createdAt()).isEqualTo(LocalDate.of(2024, 1, 2));
+		}
+
+		@Test
+		@DisplayName("성공: 이메일 계정이 있으면 마스킹 이메일과 생성일을 반환한다.")
+		void return_masked_email_when_email_account_exists() {
+			// given
+			User emailUser = mock(User.class);
+			given(userReader.checkUserExistByPhoneNumAndName(PHONE, NAME)).willReturn(Optional.of(emailUser));
+			given(emailUser.isDeleted()).willReturn(false);
+			given(emailUser.getId()).willReturn(USER_ID);
+			given(emailUser.isOnlySocialUser()).willReturn(false);
+			given(emailUser.getEmail()).willReturn(EMAIL_FOR_FIND);
+			given(emailUser.getCreatedAt()).willReturn(LocalDateTime.of(2020, 1, 2, 0, 0));
+			given(socialAccountReader.findAllByUserId(USER_ID)).willReturn(List.of());
+
+			// when
+			EmailFindResult result = authService.findEmail(NAME, PHONE);
+
+			// then
+			assertThat(result).isNotNull();
+			assertThat(result.email()).isEqualTo("abc***@cau.ac.kr");
+			assertThat(result.createdAt()).isEqualTo(LocalDate.of(2020, 1, 2));
+			assertThat(result.socialAccounts()).isEmpty();
 		}
 	}
 }
