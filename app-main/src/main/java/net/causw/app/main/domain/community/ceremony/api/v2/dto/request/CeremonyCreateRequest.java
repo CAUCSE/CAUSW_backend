@@ -22,7 +22,7 @@ public record CeremonyCreateRequest(
 
 	@NotNull(message = "상세 분류는 필수 입력 값입니다.") @Schema(description = "경조사 상세 분류 (enum)", example = "MARRIAGE") CeremonyCategory ceremonyCategory,
 
-	@Size(max = 30, message = "상세 분륜는 최대 30자까지 입력 가능합니다.") @Schema(description = "경조사 상세 분류 (직접 입력)", example = "졸업식") String ceremonyCustomCategory,
+	@Size(max = 30, message = "상세 분류는 최대 30자까지 입력 가능합니다.") @Schema(description = "경조사 상세 분류 (직접 입력)", example = "졸업식") String ceremonyCustomCategory,
 
 	@NotNull(message = "시작 날짜는 필수 입력 값입니다.") @DateTimeFormat(pattern = "yyyy-MM-dd") @Schema(description = "경조사 시작 날짜", example = "2026-01-01") LocalDate startDate,
 
