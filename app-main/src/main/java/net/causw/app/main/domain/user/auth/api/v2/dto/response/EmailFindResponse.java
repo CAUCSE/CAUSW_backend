@@ -9,5 +9,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public record EmailFindResponse(
 	@Schema(description = "마스킹된 이메일", example = "abc***@cau.ac.kr") String email,
 	@Schema(description = "이메일 계정 생성일", example = "2020-01-02") LocalDate createdAt,
-	@Schema(description = "연동된 소셜 계정 목록") List<SocialAccountSummaryResponse> socialAccounts) {
+	@Schema(description = "연동된 소셜 계정 목록") List<SocialAccountSummary> socialAccounts) {
+
+	@Schema(description = "소셜 계정 정보")
+	public record SocialAccountSummary(
+		@Schema(description = "소셜 로그인 제공자", example = "KAKAO") String provider,
+		@Schema(description = "소셜 계정 연동일", example = "2024-01-01") LocalDate createdAt) {
+	}
 }

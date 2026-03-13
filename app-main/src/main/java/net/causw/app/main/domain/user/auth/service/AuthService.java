@@ -19,7 +19,6 @@ import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.dto.EmailFindResult;
-import net.causw.app.main.domain.user.auth.service.dto.SocialAccountSummaryResult;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthValidator;
 import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationValidator;
@@ -113,10 +112,10 @@ public class AuthService {
 			return null;
 		}
 
-		List<SocialAccountSummaryResult> socialAccounts = socialAccountReader.findAllByUserId(user.getId())
+		List<EmailFindResult.SocialAccountSummary> socialAccounts = socialAccountReader.findAllByUserId(user.getId())
 			.stream()
 			.sorted(Comparator.comparing(account -> account.getCreatedAt()))
-			.map(account -> SocialAccountSummaryResult.of(
+			.map(account -> EmailFindResult.SocialAccountSummary.of(
 				account.getSocialType().name(),
 				toLocalDate(account.getCreatedAt())))
 			.toList();

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
 import net.causw.app.main.domain.user.auth.api.v2.dto.AuthDtoMapper;
+import net.causw.app.main.domain.user.auth.api.v2.dto.EmailFindDtoMapper;
 import net.causw.app.main.domain.user.auth.api.v2.dto.request.EmailLoginRequest;
 import net.causw.app.main.domain.user.auth.api.v2.dto.request.EmailSignupRequest;
 import net.causw.app.main.domain.user.auth.api.v2.dto.request.EmailVerificationSendRequest;
@@ -45,6 +46,7 @@ import lombok.RequiredArgsConstructor;
 public class AuthController {
 
 	private final AuthDtoMapper authDtoMapper;
+	private final EmailFindDtoMapper emailFindDtoMapper;
 	private final AuthService authService;
 	private final EmailVerificationService emailVerificationService;
 
@@ -95,7 +97,7 @@ public class AuthController {
 		if (result == null) {
 			return ApiResponse.success(null);
 		}
-		return ApiResponse.success(authDtoMapper.toFindEmailResponse(result));
+		return ApiResponse.success(emailFindDtoMapper.toEmailFindResponse(result));
 	}
 
 	@Operation(summary = "토큰 재발급 V2", description = "리프레시토큰을 통해 액세스토큰을 재발급 받습니다.")
