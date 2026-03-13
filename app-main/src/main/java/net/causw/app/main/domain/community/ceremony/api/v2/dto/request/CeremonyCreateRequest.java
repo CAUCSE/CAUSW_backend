@@ -17,7 +17,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 @Schema(description = "경조사 신청 요청")
-public record CreateCeremonyRequest(
+public record CeremonyCreateRequest(
 	@NotNull(message = "분류는 필수 입력 값입니다.") @Schema(description = "경조사 분류", requiredMode = Schema.RequiredMode.REQUIRED, example = "CELEBRATION") CeremonyType ceremonyType,
 
 	@NotNull(message = "상세 분류는 필수 입력 값입니다.") @Schema(description = "경조사 상세 분류 (enum)", example = "MARRIAGE") CeremonyCategory ceremonyCategory,

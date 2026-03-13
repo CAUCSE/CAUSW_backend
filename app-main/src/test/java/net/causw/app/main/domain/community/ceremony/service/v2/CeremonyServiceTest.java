@@ -21,10 +21,10 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import net.causw.app.main.domain.asset.file.service.v2.UuidFileService;
-import net.causw.app.main.domain.community.ceremony.api.v2.dto.request.CreateCeremonyRequest;
+import net.causw.app.main.domain.community.ceremony.api.v2.dto.request.CeremonyCreateRequest;
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonySummaryResponse;
-import net.causw.app.main.domain.community.ceremony.api.v2.mapper.CeremonyCreateMapper;
-import net.causw.app.main.domain.community.ceremony.api.v2.mapper.CeremonyDtoMapper;
+import net.causw.app.main.domain.community.ceremony.service.mapper.CeremonyCreateMapper;
+import net.causw.app.main.domain.community.ceremony.service.mapper.CeremonyMapper;
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyContext;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyState;
@@ -53,7 +53,7 @@ public class CeremonyServiceTest {
 	@Mock
 	CeremonyCreateMapper ceremonyCreateMapper;
 	@Mock
-	CeremonyDtoMapper ceremonyDtoMapper;
+	CeremonyMapper ceremonyMapper;
 	@Mock
 	CeremonyValidator ceremonyValidator;
 	@Mock
@@ -66,12 +66,12 @@ public class CeremonyServiceTest {
 	class CreateCeremonyValidationTest {
 
 		private User user;
-		private CreateCeremonyRequest dto;
+		private CeremonyCreateRequest dto;
 
 		@BeforeEach
 		void setUp() {
 			user = mock(User.class);
-			dto = mock(CreateCeremonyRequest.class);
+			dto = mock(CeremonyCreateRequest.class);
 		}
 
 		@Test
@@ -176,7 +176,7 @@ public class CeremonyServiceTest {
 		User applicant;
 		Ceremony ceremony;
 		User other;
-		CreateCeremonyRequest dto;
+		CeremonyCreateRequest dto;
 
 		@BeforeEach
 		void setUp() {
@@ -184,7 +184,7 @@ public class CeremonyServiceTest {
 			applicant = mock(User.class);
 			ceremony = mock(Ceremony.class);
 			other = mock(User.class);
-			dto = mock(CreateCeremonyRequest.class);
+			dto = mock(CeremonyCreateRequest.class);
 		}
 
 		@DisplayName("존재하지 않는 경조사 조회하면 실패")
@@ -259,7 +259,7 @@ public class CeremonyServiceTest {
 			// given
 			given(ceremonyReader.findOngoingOrderByStartedAtDesc(isNull(), any(), any(), eq(pageable)))
 				.willReturn(ceremonyPage);
-			given(ceremonyDtoMapper.toSummaryResponse(any(Ceremony.class)))
+			given(ceremonyMapper.toSummaryResponse(any(Ceremony.class)))
 				.willReturn(mock(CeremonySummaryResponse.class));
 
 			// when
@@ -271,7 +271,7 @@ public class CeremonyServiceTest {
 			then(pageableFactory).should(times(1)).create(eq(1), eq(StaticValue.DEFAULT_PAGE_SIZE));
 			then(ceremonyReader).should(times(1))
 				.findOngoingOrderByStartedAtDesc(isNull(), any(), any(), eq(pageable));
-			then(ceremonyDtoMapper).should(times(2))
+			then(ceremonyMapper).should(times(2))
 				.toSummaryResponse(any(Ceremony.class));
 		}
 
@@ -284,7 +284,7 @@ public class CeremonyServiceTest {
 			// given
 			given(ceremonyReader.findOngoingOrderByStartedAtDesc(eq("celebration"), any(), any(), eq(pageable)))
 				.willReturn(ceremonyPage);
-			given(ceremonyDtoMapper.toSummaryResponse(any(Ceremony.class)))
+			given(ceremonyMapper.toSummaryResponse(any(Ceremony.class)))
 				.willReturn(mock(CeremonySummaryResponse.class));
 
 			// when
@@ -296,7 +296,7 @@ public class CeremonyServiceTest {
 			then(pageableFactory).should(times(1)).create(eq(0), eq(StaticValue.DEFAULT_PAGE_SIZE));
 			then(ceremonyReader).should(times(1))
 				.findOngoingOrderByStartedAtDesc(eq("celebration"), any(), any(), eq(pageable));
-			then(ceremonyDtoMapper).should(times(1))
+			then(ceremonyMapper).should(times(1))
 				.toSummaryResponse(any(Ceremony.class));
 		}
 
@@ -316,7 +316,7 @@ public class CeremonyServiceTest {
 			then(ceremonyReader).should(times(1))
 				.findOngoingOrderByStartedAtDesc(eq("nope"), any(), any(), eq(pageable));
 
-			then(ceremonyDtoMapper).shouldHaveNoInteractions();
+			then(ceremonyMapper).shouldHaveNoInteractions();
 		}
 
 		@Test
@@ -344,7 +344,7 @@ public class CeremonyServiceTest {
 				eq("userId"), eq(CeremonyState.ACCEPT), eq(pageable)))
 				.willReturn(ceremonyPage);
 
-			given(ceremonyDtoMapper.toMySummaryResponse(any(Ceremony.class)))
+			given(ceremonyMapper.toMySummaryResponse(any(Ceremony.class)))
 				.willReturn(mock(CeremonySummaryResponse.class));
 
 			// when
@@ -357,7 +357,7 @@ public class CeremonyServiceTest {
 			then(pageableFactory).should(times(1)).create(eq(1), eq(StaticValue.DEFAULT_PAGE_SIZE));
 			then(ceremonyReader).should(times(1))
 				.findByUserIdAndCeremonyStateOrderByStartedAtDesc(eq("userId"), eq(CeremonyState.ACCEPT), eq(pageable));
-			then(ceremonyDtoMapper).should(times(2))
+			then(ceremonyMapper).should(times(2))
 				.toMySummaryResponse(any(Ceremony.class));
 		}
 	}

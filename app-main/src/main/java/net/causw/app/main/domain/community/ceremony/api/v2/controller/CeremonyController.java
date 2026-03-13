@@ -2,6 +2,7 @@ package net.causw.app.main.domain.community.ceremony.api.v2.controller;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -15,12 +16,16 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import net.causw.app.main.domain.community.ceremony.api.v2.dto.request.CreateCeremonyRequest;
+import net.causw.app.main.domain.community.ceremony.api.v2.dto.request.CeremonyCreateRequest;
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonyDetailResponse;
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonySummaryResponse;
+import net.causw.app.main.domain.community.ceremony.api.v2.mapper.CeremonyDtoMapper;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyContext;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyState;
 import net.causw.app.main.domain.community.ceremony.service.CeremonyService;
+import net.causw.app.main.domain.community.ceremony.service.dto.request.CeremonyCreateCommand;
+import net.causw.app.main.domain.community.ceremony.service.dto.response.CeremonyDetailResult;
+import net.causw.app.main.domain.community.ceremony.service.dto.response.CeremonySummaryResult;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 import net.causw.app.main.shared.dto.PageResponse;
@@ -35,6 +40,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/ceremonies")
 public class CeremonyController {
+	private final CeremonyDtoMapper ceremonyDtoMapper;
 	private final CeremonyService ceremonyService;
 
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -42,10 +48,11 @@ public class CeremonyController {
 	@Operation(summary = "사용자 본인의 경조사 생성", description = "사용자 본인의 경조사 생성합니다.")
 	public ApiResponse<CeremonyDetailResponse> createCeremony(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
-		@RequestPart(value = "createCeremonyRequest") @Valid CreateCeremonyRequest createCeremonyRequest,
+		@RequestPart(value = "CeremonyCreateRequest") @Valid CeremonyCreateRequest request,
 		@RequestPart(value = "imageFileList", required = false) List<MultipartFile> imageFileList) {
-		return ApiResponse
-			.success(ceremonyService.createCeremony(userDetails.getUser(), createCeremonyRequest, imageFileList));
+		CeremonyCreateCommand command = ceremonyDtoMapper.toCreateCommand(request);
+		CeremonyDetailResult result = ceremonyService.createCeremony(userDetails.getUser(), command, imageFileList);
+		return ApiResponse.success(ceremonyDtoMapper.toDetailResponse(result));
 	}
 
 	@GetMapping("/{ceremonyId}")
@@ -58,7 +65,8 @@ public class CeremonyController {
 		@RequestParam(name = "context", required = false, defaultValue = "general") String contextParam,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		CeremonyContext context = CeremonyContext.fromString(contextParam);
-		return ApiResponse.success(ceremonyService.getCeremony(ceremonyId, context, userDetails.getUser()));
+		CeremonyDetailResult result = ceremonyService.getCeremony(ceremonyId, context, userDetails.getUser());
+		return ApiResponse.success(ceremonyDtoMapper.toDetailResponse(result));
 	}
 
 	@GetMapping("/ongoing")
@@ -67,7 +75,9 @@ public class CeremonyController {
 	public ApiResponse<PageResponse<CeremonySummaryResponse>> getOngoingCeremonyPage(
 		@RequestParam(name = "type", required = false, defaultValue = "all") String typeParam,
 		@RequestParam(name = "pageNum", required = false, defaultValue = "0") Integer pageNum) {
-		return ApiResponse.success(PageResponse.from(ceremonyService.getOngoingCeremonyPage(typeParam, pageNum)));
+		Page<CeremonySummaryResult> result = ceremonyService.getOngoingCeremonyPage(typeParam, pageNum);
+		Page<CeremonySummaryResponse> response = result.map(ceremonyDtoMapper::toSummaryResponse);
+		return ApiResponse.success(PageResponse.from(response));
 	}
 
 	@GetMapping("/upcoming")
@@ -76,7 +86,9 @@ public class CeremonyController {
 	public ApiResponse<PageResponse<CeremonySummaryResponse>> getUpcomingCeremonyPage(
 		@RequestParam(name = "type", required = false, defaultValue = "all") String typeParam,
 		@RequestParam(name = "pageNum", required = false, defaultValue = "0") Integer pageNum) {
-		return ApiResponse.success(PageResponse.from(ceremonyService.getUpcomingCeremonyPage(typeParam, pageNum)));
+		Page<CeremonySummaryResult> result = ceremonyService.getUpcomingCeremonyPage(typeParam, pageNum);
+		Page<CeremonySummaryResponse> response = result.map(ceremonyDtoMapper::toSummaryResponse);
+		return ApiResponse.success(PageResponse.from(response));
 	}
 
 	@GetMapping("/past")
@@ -85,7 +97,9 @@ public class CeremonyController {
 	public ApiResponse<PageResponse<CeremonySummaryResponse>> getPastCeremonyPage(
 		@RequestParam(name = "type", required = false, defaultValue = "all") String typeParam,
 		@RequestParam(name = "pageNum", required = false, defaultValue = "0") Integer pageNum) {
-		return ApiResponse.success(PageResponse.from(ceremonyService.getPastCeremonyPage(typeParam, pageNum)));
+		Page<CeremonySummaryResult> result = ceremonyService.getPastCeremonyPage(typeParam, pageNum);
+		Page<CeremonySummaryResponse> response = result.map(ceremonyDtoMapper::toSummaryResponse);
+		return ApiResponse.success(PageResponse.from(response));
 	}
 
 	@GetMapping("/my")
@@ -96,7 +110,8 @@ public class CeremonyController {
 		@RequestParam(name = "pageNum", required = false, defaultValue = "0") Integer pageNum,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		CeremonyState state = CeremonyState.fromString(stateParam);
-		return ApiResponse
-			.success(PageResponse.from(ceremonyService.getMyCeremonyPage(userDetails.getUserId(), state, pageNum)));
+		Page<CeremonySummaryResult> result = ceremonyService.getMyCeremonyPage(userDetails.getUserId(), state, pageNum);
+		Page<CeremonySummaryResponse> response = result.map(ceremonyDtoMapper::toSummaryResponse);
+		return ApiResponse.success(PageResponse.from(response));
 	}
 }

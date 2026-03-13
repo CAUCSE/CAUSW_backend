@@ -2,9 +2,9 @@ package net.causw.app.main.domain.community.ceremony.util;
 
 import org.springframework.stereotype.Component;
 
-import net.causw.app.main.domain.community.ceremony.api.v2.dto.request.CreateCeremonyRequest;
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyState;
+import net.causw.app.main.domain.community.ceremony.service.dto.request.CeremonyCreateCommand;
 import net.causw.app.main.shared.exception.errorcode.CeremonyErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -18,18 +18,18 @@ public class CeremonyValidator {
 	private final CeremonyNotificationValidator ceremonyNotificationValidator;
 	private final CeremonyCategoryValidator ceremonyCategoryValidator;
 
-	public void validateForCreate(CreateCeremonyRequest dto) {
-		ceremonyCategoryValidator.validateCustomCategory(dto.ceremonyCategory(), dto.ceremonyCustomCategory());
+	public void validateForCreate(CeremonyCreateCommand command) {
+		ceremonyCategoryValidator.validateCustomCategory(command.ceremonyCategory(), command.ceremonyCustomCategory());
 
-		ceremonyRelationValidator.validateRelation(dto.relationType(), dto.familyRelation(),
-			dto.alumniRelation(), dto.alumniName(), dto.alumniAdmissionYear());
+		ceremonyRelationValidator.validateRelation(command.relationType(), command.familyRelation(),
+			command.alumniRelation(), command.alumniName(), command.alumniAdmissionYear());
 
-		ceremonyDateTimeValidator.validateDateTime(dto.startDate(), dto.endDate(), dto.startTime(),
-			dto.endTime());
-		ceremonyDateTimeValidator.validateDateTimeRange(dto.startDate(), dto.endDate(), dto.startTime(),
-			dto.endTime());
+		ceremonyDateTimeValidator.validateDateTime(command.startDate(), command.endDate(), command.startTime(),
+			command.endTime());
+		ceremonyDateTimeValidator.validateDateTimeRange(command.startDate(), command.endDate(), command.startTime(),
+			command.endTime());
 
-		ceremonyNotificationValidator.validateNotificationTarget(dto.isSetAll(), dto.targetAdmissionYears());
+		ceremonyNotificationValidator.validateNotificationTarget(command.isSetAll(), command.targetAdmissionYears());
 	}
 
 	public void validateAwaiting(Ceremony ceremony) {

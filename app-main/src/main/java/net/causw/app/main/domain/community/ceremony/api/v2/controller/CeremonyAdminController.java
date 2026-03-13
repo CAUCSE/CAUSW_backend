@@ -1,6 +1,7 @@
 package net.causw.app.main.domain.community.ceremony.api.v2.controller;
 
 import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,10 @@ import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.Ceremony
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonyDetailResponse;
 import net.causw.app.main.domain.community.ceremony.api.v2.mapper.CeremonyAdminListMapper;
 import net.causw.app.main.domain.community.ceremony.api.v2.mapper.CeremonyDtoMapper;
+import net.causw.app.main.domain.community.ceremony.service.dto.request.CeremonyAdminListCondition;
+import net.causw.app.main.domain.community.ceremony.service.dto.response.CeremonyAdminListResult;
+import net.causw.app.main.domain.community.ceremony.service.dto.response.CeremonyDetailResult;
+import net.causw.app.main.domain.community.ceremony.service.mapper.CeremonyMapper;
 import net.causw.app.main.domain.community.ceremony.service.CeremonyAdminService;
 import net.causw.app.main.shared.dto.ApiResponse;
 import net.causw.app.main.shared.dto.PageResponse;
@@ -38,6 +43,7 @@ public class CeremonyAdminController {
 
 	private final CeremonyAdminService ceremonyAdminService;
 	private final CeremonyAdminListMapper ceremonyAdminListMapper;
+	private final CeremonyMapper ceremonyMapper;
 	private final CeremonyDtoMapper ceremonyDtoMapper;
 
 	@GetMapping
@@ -46,10 +52,10 @@ public class CeremonyAdminController {
 	public ApiResponse<PageResponse<CeremonyAdminListResponse>> getCeremonyList(
 		@ParameterObject CeremonyAdminListRequest request,
 		@ParameterObject @PageableDefault(page = 0, size = 10) Pageable pageable) {
-		return ApiResponse.success(
-			PageResponse.from(
-				ceremonyAdminService.getCeremonyList(ceremonyAdminListMapper.toCondition(request), pageable)
-					.map(ceremonyDtoMapper::toAdminListResponse)));
+		CeremonyAdminListCondition condition = ceremonyAdminListMapper.toCondition(request);
+		Page<CeremonyAdminListResult> result = ceremonyAdminService.getCeremonyList(condition, pageable);
+		Page<CeremonyAdminListResponse> response = result.map(ceremonyDtoMapper::toAdminListResponse);
+		return ApiResponse.success(PageResponse.from(response));
 	}
 
 	@GetMapping("/{ceremonyId}")
@@ -57,9 +63,9 @@ public class CeremonyAdminController {
 	@Operation(summary = "경조사 상세 조회", description = "경조사 상세 정보를 조회합니다.")
 	public ApiResponse<CeremonyDetailResponse> getCeremonyDetail(
 		@Parameter(description = "경조사 ID") @PathVariable("ceremonyId") String ceremonyId) {
-		return ApiResponse.success(
-			ceremonyDtoMapper.toAdminDetailResponse(
-				ceremonyAdminService.getCeremonyDetail(ceremonyId)));
+		CeremonyDetailResult result = ceremonyAdminService.getCeremonyDetail(ceremonyId);
+		CeremonyDetailResponse response = ceremonyDtoMapper.toAdminDetailResponse(result);
+		return ApiResponse.success(response);
 	}
 
 	@PostMapping("/{ceremonyId}/approve")
