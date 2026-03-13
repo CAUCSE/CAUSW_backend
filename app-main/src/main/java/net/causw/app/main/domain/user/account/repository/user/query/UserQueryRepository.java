@@ -123,25 +123,11 @@ public class UserQueryRepository {
 		Pageable pageable) {
 		QUser user = QUser.user;
 
-		BooleanBuilder where = new BooleanBuilder();
-
-		if (keyword != null && !keyword.isBlank()) {
-			where.and(
-				user.name.containsIgnoreCase(keyword)
-					.or(user.studentId.containsIgnoreCase(keyword)));
-		}
-
-		if (state != null) {
-			where.and(user.state.eq(state));
-		}
-
-		if (academicStatus != null) {
-			where.and(user.academicStatus.eq(academicStatus));
-		}
-
-		if (department != null) {
-			where.and(user.department.eq(department));
-		}
+		BooleanBuilder where = new BooleanBuilder()
+			.and(keywordSearchCondition(keyword))
+			.and(userStateCondition(state))
+			.and(academicStatusCondition(academicStatus))
+			.and(departmentCondition(department));
 
 		List<User> content = jpaQueryFactory
 			.selectFrom(user)
@@ -149,6 +135,35 @@ public class UserQueryRepository {
 			.offset(pageable.getOffset())
 			.limit(pageable.getPageSize())
 			.orderBy(user.createdAt.desc())
+			.fetch();
+
+		JPAQuery<Long> countQuery = jpaQueryFactory
+			.select(user.count())
+			.from(user)
+			.where(where);
+
+		return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+	}
+
+	public Page<User> findReportedUserList(
+		String keyword,
+		UserState state,
+		AcademicStatus academicStatus,
+		Pageable pageable) {
+		QUser user = QUser.user;
+
+		BooleanBuilder where = new BooleanBuilder()
+			.and(keywordSearchCondition(keyword))
+			.and(userStateCondition(state))
+			.and(academicStatusCondition(academicStatus))
+			.and(reportedUserCondition());
+
+		List<User> content = jpaQueryFactory
+			.selectFrom(user)
+			.where(where)
+			.offset(pageable.getOffset())
+			.limit(pageable.getPageSize())
+			.orderBy(user.reportCount.desc(), user.createdAt.desc())
 			.fetch();
 
 		JPAQuery<Long> countQuery = jpaQueryFactory
@@ -171,5 +186,34 @@ public class UserQueryRepository {
 	private static BooleanExpression notDeleted() {
 		QUser user = QUser.user;
 		return user.deletedAt.isNull();
+	}
+
+	private BooleanExpression keywordSearchCondition(String keyword) {
+		QUser user = QUser.user;
+		if (keyword == null || keyword.isBlank()) {
+			return null;
+		}
+		return user.name.containsIgnoreCase(keyword)
+			.or(user.studentId.containsIgnoreCase(keyword));
+	}
+
+	private BooleanExpression userStateCondition(UserState state) {
+		QUser user = QUser.user;
+		return state == null ? null : user.state.eq(state);
+	}
+
+	private BooleanExpression academicStatusCondition(AcademicStatus academicStatus) {
+		QUser user = QUser.user;
+		return academicStatus == null ? null : user.academicStatus.eq(academicStatus);
+	}
+
+	private BooleanExpression departmentCondition(Department department) {
+		QUser user = QUser.user;
+		return department == null ? null : user.department.eq(department);
+	}
+
+	private BooleanExpression reportedUserCondition() {
+		QUser user = QUser.user;
+		return user.reportCount.gt(0);
 	}
 }
