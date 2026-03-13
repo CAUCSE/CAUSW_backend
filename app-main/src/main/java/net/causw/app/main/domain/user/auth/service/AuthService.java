@@ -1,5 +1,9 @@
 package net.causw.app.main.domain.user.auth.service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -9,10 +13,13 @@ import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
 import net.causw.app.main.domain.user.account.service.implementation.UserPushTokenWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
+import net.causw.app.main.domain.user.account.service.implementation.SocialAccountReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
+import net.causw.app.main.domain.user.auth.service.dto.FindEmailResult;
+import net.causw.app.main.domain.user.auth.service.dto.FindEmailSocialAccountResult;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthValidator;
 import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationValidator;
@@ -38,6 +45,7 @@ public class AuthService {
 	private final AuthTokenManager authTokenManager;
 	private final UserPushTokenWriter userPushTokenWriter;
 	private final EmailVerificationValidator emailVerificationValidator;
+	private final SocialAccountReader socialAccountReader;
 
 	/**
 	 * 이메일 기반의 신규 회원을 등록합니다.
@@ -92,6 +100,34 @@ public class AuthService {
 			tokens.refreshToken());
 	}
 
+	@Transactional
+	public FindEmailResult findEmail(String name, String phoneNumber) {
+		Optional<User> userOptional = userReader.checkUserExistByPhoneNumAndName(phoneNumber.trim(), name.trim());
+		if (userOptional.isEmpty()) {
+			return null;
+		}
+
+		// 탈퇴한 회원일 경우에도 null 처리
+		User user = userOptional.get();
+		if (user.isDeleted()) {
+			return null;
+		}
+
+		List<FindEmailSocialAccountResult> socialAccounts = socialAccountReader.findAllByUserId(user.getId())
+			.stream()
+			.sorted(Comparator.comparing(account -> account.getCreatedAt()))
+			.map(account -> FindEmailSocialAccountResult.of(
+				account.getSocialType().name(),
+				toLocalDate(account.getCreatedAt())))
+			.toList();
+
+		if (user.isOnlySocialUser()) {
+			return FindEmailResult.of(null, null, socialAccounts);
+		}
+
+		return FindEmailResult.of(maskEmail(user.getEmail()), toLocalDate(user.getCreatedAt()), socialAccounts);
+	}
+
 	/**
 	 * 리프레시 토큰을 사용하여 액세스 토큰(및 리프레시 토큰)을 재발급합니다.
 	 * <p>
@@ -137,5 +173,32 @@ public class AuthService {
 		}
 		// jwt 토큰 무효화
 		authTokenManager.invalidateTokens(tokens.accessToken(), tokens.refreshToken());
+	}
+
+	private LocalDate toLocalDate(LocalDateTime dateTime) {
+		if (dateTime == null) {
+			return null;
+		}
+		return dateTime.toLocalDate();
+	}
+
+	// 이메일 마스킹 규칙:
+	// 1) '@' 앞 로컬파트의 앞 3글자(최대)를 노출한다.
+	// 2) 마스킹 '*'는 최소 3개를 보장한다.
+	// 3) '@' 뒤 도메인파트는 그대로 유지한다.
+	// ex) "abcdef@cau.ac.kr" -> "abc***@cau.ac.kr"
+	// ex) "ab@cau.ac.kr" -> "ab***@cau.ac.kr"
+	private String maskEmail(String email) {
+		if (email == null || !email.contains("@")) {
+			return email;
+		}
+		String[] parts = email.split("@", 2);
+		String localPart = parts[0];
+		String domainPart = parts[1];
+
+		int visibleCount = Math.min(3, localPart.length());
+		String visible = localPart.substring(0, visibleCount);
+		String masked = "*".repeat(Math.max(3, localPart.length() - visibleCount));
+		return visible + masked + "@" + domainPart;
 	}
 }

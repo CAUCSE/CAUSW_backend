@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.user.account.repository.user;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -17,4 +18,6 @@ public interface SocialAccountRepository extends JpaRepository<SocialAccount, St
 	Optional<SocialAccount> findBySocialIdAndSocialType(String socialId, SocialType socialType);
 
 	Boolean existsByUserAndSocialType(User user, SocialType socialType);
+
+	List<SocialAccount> findAllByUserId(String userId);
 }
