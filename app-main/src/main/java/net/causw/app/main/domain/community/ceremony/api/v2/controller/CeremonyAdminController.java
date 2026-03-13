@@ -20,11 +20,11 @@ import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.Ceremony
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonyDetailResponse;
 import net.causw.app.main.domain.community.ceremony.api.v2.mapper.CeremonyAdminListMapper;
 import net.causw.app.main.domain.community.ceremony.api.v2.mapper.CeremonyDtoMapper;
+import net.causw.app.main.domain.community.ceremony.service.CeremonyAdminService;
 import net.causw.app.main.domain.community.ceremony.service.dto.request.CeremonyAdminListCondition;
 import net.causw.app.main.domain.community.ceremony.service.dto.response.CeremonyAdminListResult;
 import net.causw.app.main.domain.community.ceremony.service.dto.response.CeremonyDetailResult;
 import net.causw.app.main.domain.community.ceremony.service.mapper.CeremonyMapper;
-import net.causw.app.main.domain.community.ceremony.service.CeremonyAdminService;
 import net.causw.app.main.shared.dto.ApiResponse;
 import net.causw.app.main.shared.dto.PageResponse;
 

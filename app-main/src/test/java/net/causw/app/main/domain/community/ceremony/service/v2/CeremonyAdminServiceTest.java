@@ -26,7 +26,6 @@ import net.causw.app.main.domain.community.ceremony.service.CeremonyAdminService
 import net.causw.app.main.domain.community.ceremony.service.dto.request.CeremonyAdminListCondition;
 import net.causw.app.main.domain.community.ceremony.service.dto.response.CeremonyAdminListResult;
 import net.causw.app.main.domain.community.ceremony.service.dto.response.CeremonyDetailResult;
-import net.causw.app.main.domain.community.ceremony.service.dto.response.CeremonySummaryResult;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyReader;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyWriter;
 import net.causw.app.main.domain.community.ceremony.service.mapper.CeremonyMapper;
@@ -79,7 +78,8 @@ class CeremonyAdminServiceTest {
 
 			// then
 			assertThat(result.getTotalElements()).isEqualTo(2);
-			assertThat(result.getContent()).containsExactly(ceremonyMapper.toAdminListResult(c1), ceremonyMapper.toAdminListResult(c2));
+			assertThat(result.getContent()).containsExactly(ceremonyMapper.toAdminListResult(c1),
+				ceremonyMapper.toAdminListResult(c2));
 
 			then(ceremonyReader).should(times(1))
 				.findAllForAdmin(fromDate, toDate, state, pageable);
