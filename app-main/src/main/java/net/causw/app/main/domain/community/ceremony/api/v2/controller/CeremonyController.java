@@ -48,7 +48,7 @@ public class CeremonyController {
 	@Operation(summary = "사용자 본인의 경조사 생성", description = "사용자 본인의 경조사 생성합니다.")
 	public ApiResponse<CeremonyDetailResponse> createCeremony(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
-		@RequestPart(value = "CeremonyCreateRequest") @Valid CeremonyCreateRequest request,
+		@RequestPart(value = "ceremonyCreateRequest") @Valid CeremonyCreateRequest request,
 		@RequestPart(value = "imageFileList", required = false) List<MultipartFile> imageFileList) {
 		CeremonyCreateCommand command = ceremonyDtoMapper.toCreateCommand(request);
 		CeremonyDetailResult result = ceremonyService.createCeremony(userDetails.getUser(), command, imageFileList);
