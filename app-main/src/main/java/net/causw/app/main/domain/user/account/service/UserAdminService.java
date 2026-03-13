@@ -8,7 +8,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerLogWriter;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
@@ -35,7 +34,6 @@ public class UserAdminService {
 	private final UserWriter userWriter;
 	private final LockerReader lockerReader;
 	private final LockerWriter lockerWriter;
-	private final LockerLogWriter lockerLogWriter;
 	private final UserAdminActionLogWriter userAdminActionLogWriter;
 
 	// 필터링 조건과 페이징 정보를 기반으로 전체 사용자 목록 조회
@@ -62,8 +60,7 @@ public class UserAdminService {
 		Set<Role> beforeRoles = new HashSet<>(targetUser.getRoles());
 
 		lockerReader.findByUserId(targetUser.getId()).ifPresent(locker -> {
-			lockerWriter.returnLocker(locker);
-			lockerLogWriter.logReturn(locker, targetUser);
+			lockerWriter.releaseLocker(locker, adminUser, targetUser.getEmail(), targetUser.getName());
 		});
 
 		User updatedUser = userWriter.dropByAdmin(targetUser, dropReason);
