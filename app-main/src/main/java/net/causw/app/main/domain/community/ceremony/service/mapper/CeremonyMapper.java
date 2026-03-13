@@ -66,9 +66,6 @@ public interface CeremonyMapper {
 	@Named("mapCategory")
 	static String mapCategory(Ceremony ceremony) {
 		if (ceremony.getCeremonyCategory() == CeremonyCategory.ETC) {
-			if (ceremony.getCeremonyCustomCategory() == null) { // v1에서 생성된 경조사
-				return "기타";
-			}
 			return ceremony.getCeremonyCustomCategory();
 		} else {
 			return ceremony.getCeremonyCategory().getLabel();
@@ -77,12 +74,6 @@ public interface CeremonyMapper {
 
 	@Named("mapTitle")
 	static String mapTitle(Ceremony ceremony) {
-		if (ceremony.getRelationType() == null) { // v1에서 생성된 경조사
-			return String.format("%s(%s학번) %s",
-				ceremony.getUser().getName(),
-				ceremony.getUser().getAdmissionYear().toString().substring(2, 4),
-				mapCategory(ceremony));
-		}
 		switch (ceremony.getRelationType()) {
 			case FAMILY -> {
 				return String.format("%s(%s학번) %s %s",
@@ -116,9 +107,6 @@ public interface CeremonyMapper {
 
 	@Named("mapSubject")
 	static String mapSubject(Ceremony ceremony) {
-		if (ceremony.getRelationType() == null) { // v1에서 생성된 경조사
-			return "";
-		}
 		switch (ceremony.getRelationType()) {
 			case FAMILY -> {
 				return String.format("%s %s",

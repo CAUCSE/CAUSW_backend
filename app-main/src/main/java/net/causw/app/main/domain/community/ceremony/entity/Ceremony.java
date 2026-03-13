@@ -147,9 +147,25 @@ public class Ceremony extends BaseEntity {
 			? new HashSet<>(targetAdmissionYears)
 			: new HashSet<>();
 
+		// v2 db 호환
+		String customCategory = null;
+		if (ceremonyCategory == CeremonyCategory.ETC) {
+			customCategory = "기타";
+		}
+		CeremonyType ceremonyType = CeremonyType.CELEBRATION;
+		if (ceremonyCategory == CeremonyCategory.FUNERAL
+			|| ceremonyCategory == CeremonyCategory.ACCIDENT
+			|| ceremonyCategory == CeremonyCategory.ILLNESS) {
+			ceremonyType = CeremonyType.CONDOLENCE;
+		}
+		RelationType relationType = RelationType.ME;
+
 		return Ceremony.builder()
 			.user(user)
+			.ceremonyType(ceremonyType)
 			.ceremonyCategory(ceremonyCategory)
+			.ceremonyCustomCategory(customCategory)
+			.relationType(relationType)
 			.startDate(startDate)
 			.endDate(endDate)
 			.description(description)
