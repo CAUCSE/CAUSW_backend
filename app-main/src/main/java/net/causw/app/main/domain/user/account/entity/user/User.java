@@ -356,6 +356,10 @@ public class User extends BaseEntity {
 		return this.userProfileImage.getUuidFile().getFileUrl();
 	}
 
+	public void updateNickname(String nickname) {
+		this.nickname = nickname;
+	}
+
 	// 신고 관련 메소드
 	public void increaseReportCount() {
 		this.reportCount++;

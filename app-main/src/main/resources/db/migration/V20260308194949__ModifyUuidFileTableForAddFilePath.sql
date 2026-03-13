@@ -1,0 +1,7 @@
+-- Migration: ModifyUuidFileTableForAddFilePath
+
+ALTER TABLE tb_uuid_file
+MODIFY COLUMN file_path ENUM(
+    'USER_PROFILE', 'USER_ADMISSION', 'USER_ACADEMIC_RECORD_APPLICATION',
+    'CIRCLE_PROFILE', 'POST', 'CALENDAR', 'EVENT', 'ETC',
+    'CEREMONY') NOT NULL;
