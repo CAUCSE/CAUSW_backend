@@ -36,8 +36,8 @@ import net.causw.app.main.domain.user.account.service.implementation.UserValidat
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.domain.user.auth.service.AuthService;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
-import net.causw.app.main.domain.user.auth.service.dto.EmailFindResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
+import net.causw.app.main.domain.user.auth.service.dto.EmailFindResult;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthValidator;
 import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationValidator;
