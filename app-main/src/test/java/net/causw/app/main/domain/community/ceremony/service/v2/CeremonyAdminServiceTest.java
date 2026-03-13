@@ -24,8 +24,12 @@ import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyState;
 import net.causw.app.main.domain.community.ceremony.service.CeremonyAdminService;
 import net.causw.app.main.domain.community.ceremony.service.dto.request.CeremonyAdminListCondition;
+import net.causw.app.main.domain.community.ceremony.service.dto.response.CeremonyAdminListResult;
+import net.causw.app.main.domain.community.ceremony.service.dto.response.CeremonyDetailResult;
+import net.causw.app.main.domain.community.ceremony.service.dto.response.CeremonySummaryResult;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyReader;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyWriter;
+import net.causw.app.main.domain.community.ceremony.service.mapper.CeremonyMapper;
 import net.causw.app.main.domain.community.ceremony.util.CeremonyValidator;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.CeremonyErrorCode;
@@ -44,6 +48,9 @@ class CeremonyAdminServiceTest {
 
 	@Mock
 	CeremonyValidator ceremonyValidator;
+
+	@Mock
+	CeremonyMapper ceremonyMapper;
 
 	@Nested
 	@DisplayName("관리자 경조사 목록 조회 테스트")
@@ -68,11 +75,11 @@ class CeremonyAdminServiceTest {
 				.willReturn(ceremonyPage);
 
 			// when
-			Page<Ceremony> result = ceremonyAdminService.getCeremonyList(condition, pageable);
+			Page<CeremonyAdminListResult> result = ceremonyAdminService.getCeremonyList(condition, pageable);
 
 			// then
 			assertThat(result.getTotalElements()).isEqualTo(2);
-			assertThat(result.getContent()).containsExactly(c1, c2);
+			assertThat(result.getContent()).containsExactly(ceremonyMapper.toAdminListResult(c1), ceremonyMapper.toAdminListResult(c2));
 
 			then(ceremonyReader).should(times(1))
 				.findAllForAdmin(fromDate, toDate, state, pageable);
@@ -89,7 +96,7 @@ class CeremonyAdminServiceTest {
 				.willReturn(emptyPage);
 
 			// when
-			Page<Ceremony> result = ceremonyAdminService.getCeremonyList(condition, pageable);
+			Page<CeremonyAdminListResult> result = ceremonyAdminService.getCeremonyList(condition, pageable);
 
 			// then
 			assertThat(result.getTotalElements()).isZero();
@@ -112,7 +119,7 @@ class CeremonyAdminServiceTest {
 				.willReturn(ceremonyPage);
 
 			// when
-			Page<Ceremony> result = ceremonyAdminService.getCeremonyList(condition, pageable);
+			Page<CeremonyAdminListResult> result = ceremonyAdminService.getCeremonyList(condition, pageable);
 
 			// then
 			assertThat(result.getTotalElements()).isEqualTo(1);
@@ -134,10 +141,10 @@ class CeremonyAdminServiceTest {
 			given(ceremonyReader.findById("ceremonyId")).willReturn(Optional.of(ceremony));
 
 			// when
-			Ceremony result = ceremonyAdminService.getCeremonyDetail("ceremonyId");
+			CeremonyDetailResult result = ceremonyAdminService.getCeremonyDetail("ceremonyId");
 
 			// then
-			assertThat(result).isSameAs(ceremony);
+			assertThat(result).isSameAs(ceremonyMapper.toDetailResult(ceremony));
 
 			then(ceremonyReader).should(times(1)).findById("ceremonyId");
 		}
