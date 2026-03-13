@@ -4,9 +4,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
-import static org.mockito.BDDMockito.times;
-import static org.mockito.BDDMockito.verify;
-import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -914,7 +911,9 @@ public class PostServiceTest {
 				() -> assertThat(result.posts()).hasSize(1),
 				() -> assertThat(result.posts().get(0).isAnonymous()).isTrue(),
 				() -> assertThat(result.posts().get(0).writerNickname()).isEqualTo("익명"),
-				() -> assertThat(result.posts().get(0).writerProfileImage()).isNull());
+				() -> assertThat(result.posts().get(0).writerProfileImage().profileImageType())
+					.isEqualTo(ProfileImageType.GHOST),
+				() -> assertThat(result.posts().get(0).writerProfileImage().profileImageUrl()).isNull());
 
 			verify(postReader, times(1)).findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(null));
 		}
@@ -994,8 +993,9 @@ public class PostServiceTest {
 				// 익명 게시글 확인
 				() -> assertThat(result.posts().get(1).isAnonymous()).isTrue(),
 				() -> assertThat(result.posts().get(1).writerNickname()).isEqualTo("익명"),
-				() -> assertThat(result.posts().get(1).writerProfileImage()).isNull());
-
+				() -> assertThat(result.posts().get(1).writerProfileImage().profileImageType())
+					.isEqualTo(ProfileImageType.GHOST),
+				() -> assertThat(result.posts().get(1).writerProfileImage().profileImageUrl()).isNull());
 			verify(postReader, times(1)).findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(null));
 		}
 	}
@@ -1172,7 +1172,8 @@ public class PostServiceTest {
 			assertAll(
 				() -> assertThat(result.isAnonymous()).isTrue(),
 				() -> assertThat(result.displayWriterNickname()).isEqualTo("익명"),
-				() -> assertThat(result.writerProfileImage()).isNull());
+				() -> assertThat(result.writerProfileImage().profileImageType()).isEqualTo(ProfileImageType.GHOST),
+				() -> assertThat(result.writerProfileImage().profileImageUrl()).isNull());
 		}
 
 		@DisplayName("숨겨진 게시판의 게시글은 관리자만 조회 가능")
