@@ -43,7 +43,6 @@ public class CeremonyAdminController {
 
 	private final CeremonyAdminService ceremonyAdminService;
 	private final CeremonyAdminListMapper ceremonyAdminListMapper;
-	private final CeremonyMapper ceremonyMapper;
 	private final CeremonyDtoMapper ceremonyDtoMapper;
 
 	@GetMapping
