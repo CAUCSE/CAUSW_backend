@@ -22,7 +22,7 @@ import org.springframework.data.domain.Pageable;
 
 import net.causw.app.main.domain.asset.file.service.v2.UuidFileService;
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.request.CreateCeremonyRequest;
-import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonySummaryResponseDto;
+import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonySummaryResponse;
 import net.causw.app.main.domain.community.ceremony.api.v2.mapper.CeremonyCreateMapper;
 import net.causw.app.main.domain.community.ceremony.api.v2.mapper.CeremonyDtoMapper;
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
@@ -259,11 +259,11 @@ public class CeremonyServiceTest {
 			// given
 			given(ceremonyReader.findOngoingOrderByStartedAtDesc(isNull(), any(), any(), eq(pageable)))
 				.willReturn(ceremonyPage);
-			given(ceremonyDtoMapper.toCeremonySummaryResponseDto(any(Ceremony.class)))
-				.willReturn(mock(CeremonySummaryResponseDto.class));
+			given(ceremonyDtoMapper.toSummaryResponse(any(Ceremony.class)))
+				.willReturn(mock(CeremonySummaryResponse.class));
 
 			// when
-			Page<CeremonySummaryResponseDto> result = ceremonyService.getOngoingCeremonyPage(null, 1);
+			Page<CeremonySummaryResponse> result = ceremonyService.getOngoingCeremonyPage(null, 1);
 
 			// then
 			assertThat(result.getTotalElements()).isEqualTo(2);
@@ -272,7 +272,7 @@ public class CeremonyServiceTest {
 			then(ceremonyReader).should(times(1))
 				.findOngoingOrderByStartedAtDesc(isNull(), any(), any(), eq(pageable));
 			then(ceremonyDtoMapper).should(times(2))
-				.toCeremonySummaryResponseDto(any(Ceremony.class));
+				.toSummaryResponse(any(Ceremony.class));
 		}
 
 		@Test
@@ -284,11 +284,11 @@ public class CeremonyServiceTest {
 			// given
 			given(ceremonyReader.findOngoingOrderByStartedAtDesc(eq("celebration"), any(), any(), eq(pageable)))
 				.willReturn(ceremonyPage);
-			given(ceremonyDtoMapper.toCeremonySummaryResponseDto(any(Ceremony.class)))
-				.willReturn(mock(CeremonySummaryResponseDto.class));
+			given(ceremonyDtoMapper.toSummaryResponse(any(Ceremony.class)))
+				.willReturn(mock(CeremonySummaryResponse.class));
 
 			// when
-			Page<CeremonySummaryResponseDto> result = ceremonyService.getOngoingCeremonyPage("celebration", 0);
+			Page<CeremonySummaryResponse> result = ceremonyService.getOngoingCeremonyPage("celebration", 0);
 
 			// then
 			assertThat(result.getTotalElements()).isEqualTo(1);
@@ -297,7 +297,7 @@ public class CeremonyServiceTest {
 			then(ceremonyReader).should(times(1))
 				.findOngoingOrderByStartedAtDesc(eq("celebration"), any(), any(), eq(pageable));
 			then(ceremonyDtoMapper).should(times(1))
-				.toCeremonySummaryResponseDto(any(Ceremony.class));
+				.toSummaryResponse(any(Ceremony.class));
 		}
 
 		@Test
@@ -344,11 +344,11 @@ public class CeremonyServiceTest {
 				eq("userId"), eq(CeremonyState.ACCEPT), eq(pageable)))
 				.willReturn(ceremonyPage);
 
-			given(ceremonyDtoMapper.toMyCeremonySummaryResponseDto(any(Ceremony.class)))
-				.willReturn(mock(CeremonySummaryResponseDto.class));
+			given(ceremonyDtoMapper.toMySummaryResponse(any(Ceremony.class)))
+				.willReturn(mock(CeremonySummaryResponse.class));
 
 			// when
-			Page<CeremonySummaryResponseDto> result = ceremonyService.getMyCeremonyPage("userId", CeremonyState.ACCEPT,
+			Page<CeremonySummaryResponse> result = ceremonyService.getMyCeremonyPage("userId", CeremonyState.ACCEPT,
 				1);
 
 			// then
@@ -358,7 +358,7 @@ public class CeremonyServiceTest {
 			then(ceremonyReader).should(times(1))
 				.findByUserIdAndCeremonyStateOrderByStartedAtDesc(eq("userId"), eq(CeremonyState.ACCEPT), eq(pageable));
 			then(ceremonyDtoMapper).should(times(2))
-				.toMyCeremonySummaryResponseDto(any(Ceremony.class));
+				.toMySummaryResponse(any(Ceremony.class));
 		}
 	}
 }

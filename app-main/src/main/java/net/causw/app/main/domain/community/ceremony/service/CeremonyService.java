@@ -16,8 +16,8 @@ import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.asset.file.service.v2.UuidFileService;
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.request.CreateCeremonyRequest;
-import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonyDetailResponseDto;
-import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonySummaryResponseDto;
+import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonyDetailResponse;
+import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonySummaryResponse;
 import net.causw.app.main.domain.community.ceremony.api.v2.mapper.CeremonyCreateMapper;
 import net.causw.app.main.domain.community.ceremony.api.v2.mapper.CeremonyDtoMapper;
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
@@ -47,7 +47,7 @@ public class CeremonyService {
 	private final PageableFactory pageableFactory;
 
 	@Transactional
-	public CeremonyDetailResponseDto createCeremony(
+	public CeremonyDetailResponse createCeremony(
 		User user,
 		@Valid CreateCeremonyRequest createCeremonyRequest,
 		List<MultipartFile> imageFileList) {
@@ -64,11 +64,11 @@ public class CeremonyService {
 		Ceremony ceremony = ceremonyCreateMapper.fromRequest(user, createCeremonyRequest, targetAdmissionYears,
 			uuidFileList);
 		ceremonyCreator.save(ceremony);
-		return ceremonyDtoMapper.toCeremonyDetailResponseDto(ceremony);
+		return ceremonyDtoMapper.toDetailResponse(ceremony);
 	}
 
 	@Transactional(readOnly = true)
-	public CeremonyDetailResponseDto getCeremony(String ceremonyId, CeremonyContext context, User user) {
+	public CeremonyDetailResponse getCeremony(String ceremonyId, CeremonyContext context, User user) {
 		Ceremony ceremony = ceremonyReader.findById(ceremonyId).orElseThrow(
 			CeremonyErrorCode.CEREMONY_NOT_FOUND::toBaseException);
 
@@ -76,56 +76,56 @@ public class CeremonyService {
 			if (!ceremony.getUser().getId().equals(user.getId())) {
 				throw CeremonyErrorCode.ACCESS_ONLY_APPLICANT.toBaseException();
 			}
-			return ceremonyDtoMapper.toMyCeremonyDetailResponseDto(ceremony);
+			return ceremonyDtoMapper.toMyDetailResponse(ceremony);
 		}
 
 		if (ceremony.getCeremonyState() != CeremonyState.ACCEPT) {
 			throw CeremonyErrorCode.CEREMONY_NOT_FOUND.toBaseException();
 		}
-		return ceremonyDtoMapper.toCeremonyDetailResponseDto(ceremony);
+		return ceremonyDtoMapper.toDetailResponse(ceremony);
 	}
 
 	@Transactional(readOnly = true)
-	public Page<CeremonySummaryResponseDto> getOngoingCeremonyPage(String type, Integer pageNum) {
+	public Page<CeremonySummaryResponse> getOngoingCeremonyPage(String type, Integer pageNum) {
 		Page<Ceremony> ceremonies;
 		Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_PAGE_SIZE);
 
 		ceremonies = ceremonyReader.findOngoingOrderByStartedAtDesc(type, LocalDate.now(),
 			LocalTime.now(), pageable);
 
-		return ceremonies.map(ceremonyDtoMapper::toCeremonySummaryResponseDto);
+		return ceremonies.map(ceremonyDtoMapper::toSummaryResponse);
 	}
 
 	@Transactional(readOnly = true)
-	public Page<CeremonySummaryResponseDto> getUpcomingCeremonyPage(String type, Integer pageNum) {
+	public Page<CeremonySummaryResponse> getUpcomingCeremonyPage(String type, Integer pageNum) {
 		Page<Ceremony> ceremonies;
 		Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_PAGE_SIZE);
 
 		ceremonies = ceremonyReader.findUpcomingOrderByStartedAtAsc(type, LocalDate.now(),
 			LocalTime.now(), pageable);
 
-		return ceremonies.map(ceremonyDtoMapper::toCeremonySummaryResponseDto);
+		return ceremonies.map(ceremonyDtoMapper::toSummaryResponse);
 	}
 
 	@Transactional(readOnly = true)
-	public Page<CeremonySummaryResponseDto> getPastCeremonyPage(String type, Integer pageNum) {
+	public Page<CeremonySummaryResponse> getPastCeremonyPage(String type, Integer pageNum) {
 		Page<Ceremony> ceremonies;
 		Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_PAGE_SIZE);
 
 		ceremonies = ceremonyReader.findPastOrderByStartedAtDesc(type, LocalDate.now(),
 			LocalTime.now(), pageable);
 
-		return ceremonies.map(ceremonyDtoMapper::toCeremonySummaryResponseDto);
+		return ceremonies.map(ceremonyDtoMapper::toSummaryResponse);
 	}
 
 	@Transactional(readOnly = true)
-	public Page<CeremonySummaryResponseDto> getMyCeremonyPage(String userId, CeremonyState state, Integer pageNum) {
+	public Page<CeremonySummaryResponse> getMyCeremonyPage(String userId, CeremonyState state, Integer pageNum) {
 		Page<Ceremony> ceremonies;
 		Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_PAGE_SIZE);
 		if (state == CeremonyState.CLOSE) {
 			throw CeremonyErrorCode.INVALID_CEREMONY_STATE.toBaseException();
 		}
 		ceremonies = ceremonyReader.findByUserIdAndCeremonyStateOrderByStartedAtDesc(userId, state, pageable);
-		return ceremonies.map(ceremonyDtoMapper::toMyCeremonySummaryResponseDto);
+		return ceremonies.map(ceremonyDtoMapper::toMySummaryResponse);
 	}
 }
