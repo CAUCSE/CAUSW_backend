@@ -67,7 +67,7 @@ public class AuthService {
 		authValidator.validateRegisterInput(newUser, dto.password(), dto.phoneNumber());
 		User savedUser = userWriter.save(newUser);
 		return AuthResult.of(null, savedUser.getName(), savedUser.getEmail(), savedUser.getProfileUrl(), null,
-			savedUser.isTermsAgreed(), savedUser.isAcademicCertified());
+			savedUser.isTermsAgreed(), savedUser.isAcademicCertified(), savedUser.getAcademicStatus());
 	}
 
 	/**
@@ -90,7 +90,7 @@ public class AuthService {
 		// 토큰 생성
 		AuthTokenPair tokens = authTokenManager.issueTokens(user, null);
 		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), user.getProfileUrl(),
-			tokens.refreshToken(), user.isTermsAgreed(), user.isAcademicCertified());
+			tokens.refreshToken(), user.isTermsAgreed(), user.isAcademicCertified(), user.getAcademicStatus());
 	}
 
 	/**
@@ -116,7 +116,7 @@ public class AuthService {
 		// 토큰 생성
 		AuthTokenPair tokens = authTokenManager.issueTokens(user, refreshToken);
 		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), user.getProfileUrl(),
-			tokens.refreshToken(), user.isTermsAgreed(), user.isAcademicCertified());
+			tokens.refreshToken(), user.isTermsAgreed(), user.isAcademicCertified(), user.getAcademicStatus());
 	}
 
 	/**

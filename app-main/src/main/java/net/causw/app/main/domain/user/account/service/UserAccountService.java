@@ -62,7 +62,7 @@ public class UserAccountService {
 		return AuthResult.of(tokens.accessToken(), updatedUser.getName(), updatedUser.getEmail(),
 			updatedUser.getProfileUrl(),
 			tokens.refreshToken(), updatedUser.isTermsAgreed(),
-			updatedUser.isAcademicCertified());
+			updatedUser.isAcademicCertified(), updatedUser.getAcademicStatus());
 	}
 
 	/**
