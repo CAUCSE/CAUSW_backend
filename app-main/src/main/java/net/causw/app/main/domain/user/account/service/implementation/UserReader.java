@@ -130,8 +130,8 @@ public class UserReader {
 
 	public Optional<User> findByEmailAndNameOptional(String email, String name) {
 		return userRepository.findByEmailAndName(email, name);
-  }
-  
+	}
+
 	private String normalizeKeyword(String keyword) {
 		if (keyword == null || keyword.isBlank()) {
 			return null;
