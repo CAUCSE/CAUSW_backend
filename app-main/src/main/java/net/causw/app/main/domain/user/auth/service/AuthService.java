@@ -100,15 +100,15 @@ public class AuthService {
 	}
 
 	@Transactional(readOnly = true)
-	public EmailFindResult findEmail(String name, String phoneNumber) {
+	public Optional<EmailFindResult> findEmail(String name, String phoneNumber) {
 		Optional<User> userOptional = userReader.checkUserExistByPhoneNumAndName(phoneNumber.trim(), name.trim());
 		if (userOptional.isEmpty()) {
-			return null;
+			return Optional.empty();
 		}
 		// 탈퇴한 회원일 경우에도 null 처리
 		User user = userOptional.get();
 		if (user.isDeleted()) {
-			return null;
+			return Optional.empty();
 		}
 		List<EmailFindResult.SocialAccountSummary> socialAccounts = socialAccountReader.findAllByUserId(user.getId())
 			.stream()
@@ -119,9 +119,9 @@ public class AuthService {
 			.toList();
 
 		if (user.isOnlySocialUser()) {
-			return EmailFindResult.of(null, null, socialAccounts);
+			return Optional.of(EmailFindResult.of(null, null, socialAccounts));
 		}
-		return EmailFindResult.of(maskEmail(user.getEmail()), toLocalDate(user.getCreatedAt()), socialAccounts);
+		return Optional.of(EmailFindResult.of(maskEmail(user.getEmail()), toLocalDate(user.getCreatedAt()), socialAccounts));
 	}
 
 	/**

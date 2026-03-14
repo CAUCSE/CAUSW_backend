@@ -419,21 +419,21 @@ public class AuthServiceTest {
 	class FindEmailTest {
 
 		@Test
-		@DisplayName("성공: 일치하는 사용자가 없으면 null을 반환한다.")
+		@DisplayName("성공: 일치하는 사용자가 없으면 Optional.empty를 반환한다.")
 		void return_null_when_user_not_found() {
 			// given
 			given(userReader.checkUserExistByPhoneNumAndName(PHONE, NAME)).willReturn(Optional.empty());
 
 			// when
-			EmailFindResult result = authService.findEmail(NAME, PHONE);
+			Optional<EmailFindResult> result = authService.findEmail(NAME, PHONE);
 
 			// then
-			assertThat(result).isNull();
+			assertThat(result).isEmpty();
 			verify(socialAccountReader, never()).findAllByUserId(anyString());
 		}
 
 		@Test
-		@DisplayName("성공: 탈퇴한 사용자는 null을 반환한다.")
+		@DisplayName("성공: 탈퇴한 사용자는 Optional.empty를 반환한다.")
 		void return_null_when_user_deleted() {
 			// given
 			User deletedUser = mock(User.class);
@@ -441,10 +441,10 @@ public class AuthServiceTest {
 			given(deletedUser.isDeleted()).willReturn(true);
 
 			// when
-			EmailFindResult result = authService.findEmail(NAME, PHONE);
+			Optional<EmailFindResult> result = authService.findEmail(NAME, PHONE);
 
 			// then
-			assertThat(result).isNull();
+			assertThat(result).isEmpty();
 			verify(socialAccountReader, never()).findAllByUserId(anyString());
 		}
 
@@ -468,17 +468,18 @@ public class AuthServiceTest {
 			given(apple.getCreatedAt()).willReturn(LocalDateTime.of(2024, 1, 1, 12, 0));
 
 			// when
-			EmailFindResult result = authService.findEmail(NAME, PHONE);
+			Optional<EmailFindResult> result = authService.findEmail(NAME, PHONE);
 
 			// then
-			assertThat(result).isNotNull();
-			assertThat(result.email()).isNull();
-			assertThat(result.createdAt()).isNull();
-			assertThat(result.socialAccounts()).hasSize(2);
-			assertThat(result.socialAccounts().get(0).provider()).isEqualTo("APPLE");
-			assertThat(result.socialAccounts().get(0).createdAt()).isEqualTo(LocalDate.of(2024, 1, 1));
-			assertThat(result.socialAccounts().get(1).provider()).isEqualTo("KAKAO");
-			assertThat(result.socialAccounts().get(1).createdAt()).isEqualTo(LocalDate.of(2024, 1, 2));
+			assertThat(result).isPresent();
+			EmailFindResult emailFindResult = result.get();
+			assertThat(emailFindResult.email()).isNull();
+			assertThat(emailFindResult.createdAt()).isNull();
+			assertThat(emailFindResult.socialAccounts()).hasSize(2);
+			assertThat(emailFindResult.socialAccounts().get(0).provider()).isEqualTo("APPLE");
+			assertThat(emailFindResult.socialAccounts().get(0).createdAt()).isEqualTo(LocalDate.of(2024, 1, 1));
+			assertThat(emailFindResult.socialAccounts().get(1).provider()).isEqualTo("KAKAO");
+			assertThat(emailFindResult.socialAccounts().get(1).createdAt()).isEqualTo(LocalDate.of(2024, 1, 2));
 		}
 
 		@Test
@@ -495,13 +496,14 @@ public class AuthServiceTest {
 			given(socialAccountReader.findAllByUserId(USER_ID)).willReturn(List.of());
 
 			// when
-			EmailFindResult result = authService.findEmail(NAME, PHONE);
+			Optional<EmailFindResult> result = authService.findEmail(NAME, PHONE);
 
 			// then
-			assertThat(result).isNotNull();
-			assertThat(result.email()).isEqualTo("abc***@cau.ac.kr");
-			assertThat(result.createdAt()).isEqualTo(LocalDate.of(2020, 1, 2));
-			assertThat(result.socialAccounts()).isEmpty();
+			assertThat(result).isPresent();
+			EmailFindResult emailFindResult = result.get();
+			assertThat(emailFindResult.email()).isEqualTo("abc***@cau.ac.kr");
+			assertThat(emailFindResult.createdAt()).isEqualTo(LocalDate.of(2020, 1, 2));
+			assertThat(emailFindResult.socialAccounts()).isEmpty();
 		}
 	}
 }

@@ -1,6 +1,7 @@
 package net.causw.app.main.domain.user.auth.api.v2.controller;
 
 import java.time.Duration;
+import java.util.Optional;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -93,11 +94,8 @@ public class AuthController {
 	@Operation(summary = "이메일 찾기 V2", description = "이름과 연락처로 가입된 이메일(마스킹) 및 연동된 소셜 계정 정보를 조회합니다.")
 	@PostMapping("/find-email")
 	public ApiResponse<EmailFindResponse> findEmail(@RequestBody @Valid EmailFindRequest request) {
-		EmailFindResult result = authService.findEmail(request.name(), request.phoneNumber());
-		if (result == null) {
-			return ApiResponse.success(null);
-		}
-		return ApiResponse.success(emailFindDtoMapper.toEmailFindResponse(result));
+		Optional<EmailFindResult> result = authService.findEmail(request.name(), request.phoneNumber());
+		return ApiResponse.success(result.map(emailFindDtoMapper::toEmailFindResponse).orElse(null));
 	}
 
 	@Operation(summary = "토큰 재발급 V2", description = "리프레시토큰을 통해 액세스토큰을 재발급 받습니다.")
