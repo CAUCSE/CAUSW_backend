@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.user.account.service.dto.request;
+package net.causw.app.main.domain.user.account.service.dto.response;
 
 import java.time.LocalDateTime;
 import java.util.List;
