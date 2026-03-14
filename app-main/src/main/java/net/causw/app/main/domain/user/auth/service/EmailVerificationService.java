@@ -1,18 +1,13 @@
 package net.causw.app.main.domain.user.auth.service;
 
-import java.security.SecureRandom;
-import java.time.LocalDateTime;
-
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import net.causw.app.main.domain.user.auth.entity.EmailVerification;
 import net.causw.app.main.domain.user.auth.entity.EmailVerification.VerificationStatus;
 import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationReader;
+import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationSender;
 import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationValidator;
-import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationWriter;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
-import net.causw.app.main.shared.infra.mail.event.EmailVerificationEvent;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -26,33 +21,21 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class EmailVerificationService {
 
-	private static final int CODE_LENGTH = 6;
-	private static final int EXPIRATION_MINUTES = 10;
-	private static final String CODE_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-	private final EmailVerificationWriter emailVerificationWriter;
 	private final EmailVerificationReader emailVerificationReader;
 	private final EmailVerificationValidator emailVerificationValidator;
-	private final ApplicationEventPublisher eventPublisher;
+	private final EmailVerificationSender emailVerificationSender;
 
 	/**
 	 * 이메일로 인증 코드를 발송하고 DB에 인증 정보를 저장합니다.
 	 * <p>
-	 * 6자리 숫자 코드를 생성하여 메일로 전송하며, 만료 시간은 10분입니다.
+	 * 6자리 코드를 생성하여 메일로 전송하며, 만료 시간은 10분입니다.
 	 *
 	 * @param email 인증 코드를 받을 이메일 주소
 	 */
 	@Transactional
 	public void sendVerificationEmail(String email) {
 		emailVerificationValidator.validateSend(email);
-
-		String verificationCode = generateVerificationCode();
-		LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(EXPIRATION_MINUTES);
-
-		EmailVerification emailVerification = EmailVerification.of(email, verificationCode, expiresAt);
-		emailVerificationWriter.save(emailVerification);
-
-		eventPublisher.publishEvent(new EmailVerificationEvent(email, verificationCode));
+		emailVerificationSender.send(email, VerificationStatus.PENDING);
 	}
 
 	/**
@@ -79,14 +62,5 @@ public class EmailVerificationService {
 		}
 
 		emailVerification.verify();
-	}
-
-	private String generateVerificationCode() {
-		SecureRandom random = new SecureRandom();
-		StringBuilder code = new StringBuilder(CODE_LENGTH);
-		for (int i = 0; i < CODE_LENGTH; i++) {
-			code.append(CODE_CHARS.charAt(random.nextInt(CODE_CHARS.length())));
-		}
-		return code.toString();
 	}
 }

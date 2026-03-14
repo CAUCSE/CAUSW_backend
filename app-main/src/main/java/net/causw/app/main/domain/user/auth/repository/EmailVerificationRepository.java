@@ -3,6 +3,7 @@ package net.causw.app.main.domain.user.auth.repository;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -40,4 +41,14 @@ public interface EmailVerificationRepository extends JpaRepository<EmailVerifica
 		LIMIT 1
 		""")
 	Optional<EmailVerification> findLatestByEmail(@Param("email") String email);
+
+	@Modifying
+	@Query("""
+		DELETE FROM EmailVerification ev
+		WHERE ev.email = :email
+		  AND ev.status = :status
+		""")
+	void deleteAllByEmailAndStatus(
+		@Param("email") String email,
+		@Param("status") VerificationStatus status);
 }
