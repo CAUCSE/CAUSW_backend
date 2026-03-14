@@ -3,6 +3,7 @@ package net.causw.app.main.core.security;
 import java.io.IOException;
 
 import org.jetbrains.annotations.NotNull;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
@@ -23,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 	private final JwtTokenProvider jwtTokenProvider;
+	private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
 	/**
 	 * JWT 검증 필터를 거치지 않고 통과시킬 요청 경로를 설정합니다.
@@ -56,8 +58,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			} catch (UnauthorizedException exception) {
 				SecurityContextHolder.clearContext();
 				request.setAttribute("exception", exception);
-
-				throw exception;
+				customAuthenticationEntryPoint.commence(
+					request,
+					response,
+					new InsufficientAuthenticationException(exception.getMessage(), exception));
+				return;
 			}
 		}
 

@@ -139,10 +139,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 	 * @return redirect 대상 URL
 	 */
 	private String determineTargetUrl(UserState state, String baseUrl) {
-		// GUEST 상태라면 추가 정보 입력 페이지로, 아니면 메인으로
-		boolean isFirstLogin = (state == UserState.GUEST);
 		return UriComponentsBuilder.fromUriString(baseUrl)
-			.queryParam("isFirstLogin", isFirstLogin)
 			.build().toUriString();
 	}
 }

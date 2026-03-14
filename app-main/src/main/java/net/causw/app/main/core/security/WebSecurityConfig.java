@@ -83,7 +83,8 @@ public class WebSecurityConfig {
 				.failureHandler(oAuth2FailureHandler))
 			.exceptionHandling(exceptionHandling -> exceptionHandling
 				.authenticationEntryPoint(customAuthenticationEntryPoint))
-			.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+			.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, customAuthenticationEntryPoint),
+				UsernamePasswordAuthenticationFilter.class);
 
 		return http.build();
 	}
@@ -115,7 +116,8 @@ public class WebSecurityConfig {
 			})
 			.exceptionHandling(exceptionHandling -> exceptionHandling
 				.authenticationEntryPoint(customAuthenticationEntryPoint))
-			.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+			.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, customAuthenticationEntryPoint),
+				UsernamePasswordAuthenticationFilter.class);
 
 		return http.build();
 	}
