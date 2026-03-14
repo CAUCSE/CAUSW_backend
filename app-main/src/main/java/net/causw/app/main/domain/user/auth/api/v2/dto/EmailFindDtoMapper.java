@@ -14,12 +14,10 @@ public interface EmailFindDtoMapper {
 		if (emailFindResult == null) {
 			return null;
 		}
-		List<EmailFindResponse.SocialAccountSummary> socialAccounts = emailFindResult.socialAccounts() == null
-			? List.of()
-			: emailFindResult.socialAccounts()
-				.stream()
-				.map(this::toSocialAccountSummary)
-				.toList();
+		List<EmailFindResponse.SocialAccountSummary> socialAccounts = emailFindResult.socialAccounts()
+			.stream()
+			.map(this::toSocialAccountSummary)
+			.toList();
 		return new EmailFindResponse(emailFindResult.email(), emailFindResult.createdAt(), socialAccounts);
 	}
 
