@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
@@ -24,7 +25,6 @@ import net.causw.app.main.domain.user.auth.service.implementation.AuthValidator;
 import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationValidator;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -99,19 +99,17 @@ public class AuthService {
 			tokens.refreshToken());
 	}
 
-	@Transactional
+	@Transactional(readOnly = true)
 	public EmailFindResult findEmail(String name, String phoneNumber) {
 		Optional<User> userOptional = userReader.checkUserExistByPhoneNumAndName(phoneNumber.trim(), name.trim());
 		if (userOptional.isEmpty()) {
 			return null;
 		}
-
 		// 탈퇴한 회원일 경우에도 null 처리
 		User user = userOptional.get();
 		if (user.isDeleted()) {
 			return null;
 		}
-
 		List<EmailFindResult.SocialAccountSummary> socialAccounts = socialAccountReader.findAllByUserId(user.getId())
 			.stream()
 			.sorted(Comparator.comparing(account -> account.getCreatedAt()))
@@ -123,7 +121,6 @@ public class AuthService {
 		if (user.isOnlySocialUser()) {
 			return EmailFindResult.of(null, null, socialAccounts);
 		}
-
 		return EmailFindResult.of(maskEmail(user.getEmail()), toLocalDate(user.getCreatedAt()), socialAccounts);
 	}
 
