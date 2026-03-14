@@ -121,7 +121,8 @@ public class AuthService {
 		if (user.isOnlySocialUser()) {
 			return Optional.of(EmailFindResult.of(null, null, socialAccounts));
 		}
-		return Optional.of(EmailFindResult.of(maskEmail(user.getEmail()), toLocalDate(user.getCreatedAt()), socialAccounts));
+		return Optional
+			.of(EmailFindResult.of(maskEmail(user.getEmail()), toLocalDate(user.getCreatedAt()), socialAccounts));
 	}
 
 	/**
