@@ -38,7 +38,11 @@ public enum UserErrorCode implements BaseResponseCode {
 	INVALID_CURRENT_PASSWORD(HttpStatus.BAD_REQUEST, "USER_400_004", "현재 비밀번호가 일치하지 않습니다."),
 	PASSWORD_CONFIRM_MISMATCH(HttpStatus.BAD_REQUEST, "USER_400_005", "새 비밀번호와 비밀번호 확인이 일치하지 않습니다."),
 	SOCIAL_ONLY_USER_CANNOT_CHANGE_PASSWORD(HttpStatus.BAD_REQUEST, "USER_400_006",
-		"소셜 로그인만 연결된 계정은 비밀번호를 변경할 수 없습니다.");
+		"소셜 로그인만 연결된 계정은 비밀번호를 변경할 수 없습니다."),
+	USER_NOT_DROPPABLE(HttpStatus.BAD_REQUEST, "USER_400_008", "추방할 수 없는 사용자입니다."),
+	USER_NOT_RESTORABLE(HttpStatus.BAD_REQUEST, "USER_400_009", "관리자는 추방 상태의 사용자만 복구할 수 있습니다."),
+	USER_ROLE_MISMATCH(HttpStatus.BAD_REQUEST, "USER_400_010", "요청한 현재 역할이 사용자의 역할 목록과 일치하지 않습니다."),
+	USER_NOT_ROLE_UPDATABLE(HttpStatus.BAD_REQUEST, "USER_400_011", "활성된 사용자의 역할만 변경할 수 있습니다.");
 
 	private final HttpStatus status;
 	private final String code;
