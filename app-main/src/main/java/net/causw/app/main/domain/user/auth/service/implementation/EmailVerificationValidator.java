@@ -66,12 +66,19 @@ public class EmailVerificationValidator {
 	}
 
 	/**
-	 * 비밀번호 초기화 인증 메일 발송 전, 이름+이메일에 해당하는 사용자 존재 여부와
-	 * 재발송 간격(30초)을 검증합니다.
+	 * 비밀번호 초기화 인증 메일 발송 전, 재발송 간격(30초)을 검증하고
+	 * 이름+이메일에 해당하는 사용자가 존재하는지 여부를 반환합니다.
+	 * <p>
+	 * 사용자 열거 공격(User Enumeration) 방지를 위해, 사용자가 존재하지 않아도
+	 * 예외를 던지지 않고 false를 반환합니다. 호출자는 이 결과에 관계없이
+	 * 동일한 성공 응답을 반환해야 합니다.
+	 * </p>
+	 *
+	 * @param name  사용자 이름
+	 * @param email 이메일 주소
+	 * @return 해당 이름+이메일 조합의 사용자가 존재하면 true, 그렇지 않으면 false
 	 */
-	public void validatePasswordResetSend(String name, String email) {
-		userReader.findByEmailAndName(email, name); // 유저 존재하는지 검증
-
+	public boolean validatePasswordResetSend(String name, String email) {
 		emailVerificationRepository.findLatestByEmailAndStatus(email, VerificationStatus.PASSWORD_FIND)
 			.ifPresent(latest -> {
 				LocalDateTime allowedAt = latest.getCreatedAt().plusSeconds(RESEND_INTERVAL_SECONDS);
@@ -79,6 +86,8 @@ public class EmailVerificationValidator {
 					throw AuthErrorCode.EMAIL_VERIFICATION_SEND_TOO_SOON.toBaseException();
 				}
 			});
+
+		return userReader.existsByEmailAndName(email, name);
 	}
 
 }

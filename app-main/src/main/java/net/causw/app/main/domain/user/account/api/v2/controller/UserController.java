@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -20,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserFcmTokenResponseDto;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.AdmissionCreateRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserFcmTokenRequest;
+import net.causw.app.main.domain.user.account.api.v2.dto.request.UserNicknameUpdateRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserPasswordUpdateRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserRegistrationRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.AdmissionResponse;
@@ -117,6 +119,15 @@ public class UserController {
 		AuthResult dto = userAccountService.completeRegistration(userDetails.getUserId(), body.nickname(),
 			body.phoneNumber(), body.name(), refreshToken);
 		return ApiResponse.success(authDtoMapper.toAuthResponse(dto));
+	}
+
+	@PutMapping("/me/nickname")
+	@Operation(summary = "닉네임 변경 API", description = "현재 로그인한 사용자의 닉네임을 변경합니다. 현재 닉네임과 동일하거나 중복된 닉네임은 변경할 수 없습니다.")
+	public ApiResponse<Void> updateNickname(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@Valid @RequestBody UserNicknameUpdateRequest body) {
+		userAccountService.updateNickname(userDetails.getUserId(), body.nickname());
+		return ApiResponse.success();
 	}
 
 	@GetMapping("/check-nickname")
