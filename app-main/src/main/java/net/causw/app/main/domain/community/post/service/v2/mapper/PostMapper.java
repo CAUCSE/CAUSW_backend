@@ -12,6 +12,8 @@ import net.causw.app.main.domain.community.post.service.v2.dto.PostDetailResult;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostListResult;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostUpdateResult;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.shared.dto.ProfileImageDto;
 import net.causw.global.constant.StaticValue;
 
 import lombok.AccessLevel;
@@ -58,11 +60,10 @@ public class PostMapper {
 
 	/**
 	 * PostCursorResult를 PostListResult.PostItem으로 변환합니다.
-	 * 익명 게시판인 경우 닉네임을 "익명"으로, 프로필 사진을 null로 설정합니다.
 	 */
 	public static PostListResult.PostItem toPostListItem(PostCursorResult result, List<String> imageUrls) {
-		String writerNickname = result.isAnonymous() ? StaticValue.ANONYMOUS_USER_NICKNAME : result.writerNickname();
-		String writerProfileImageUrl = result.isAnonymous() ? null : result.writerProfileImageUrl();
+		String writerNickname = resolveWriterNickname(result);
+		ProfileImageDto writerProfileImage = resolveWriterProfileImage(result);
 
 		return PostListResult.PostItem.of(
 			result.postId(),
@@ -74,7 +75,7 @@ public class PostMapper {
 			result.voteId(),
 			result.isDeleted(),
 			writerNickname,
-			writerProfileImageUrl,
+			writerProfileImage,
 			result.createdAt(),
 			result.updatedAt(),
 			imageUrls,
@@ -84,7 +85,6 @@ public class PostMapper {
 
 	/**
 	 * Post 엔티티와 관련 데이터를 PostDetailResult로 변환합니다.
-	 * 익명 게시글인 경우 작성자 정보를 보호합니다.
 	 *
 	 * @param post 게시글 엔티티
 	 * @param imageUrls 첨부 이미지 URL 리스트
@@ -110,20 +110,9 @@ public class PostMapper {
 		boolean updatable,
 		boolean deletable) {
 
-		// 작성자 닉네임 및 프로필 이미지 (익명 처리)
-		String displayWriterNickname;
-		String writerProfileImage;
-		if (post.getIsAnonymous()) {
-			displayWriterNickname = StaticValue.ANONYMOUS_USER_NICKNAME;
-			writerProfileImage = null;
-		} else {
-			displayWriterNickname = post.getWriter().getNickname();
-			writerProfileImage = post.getWriter().getUserProfileImage() != null
-				? post.getWriter().getUserProfileImage().getUuidFile().getFileUrl()
-				: null;
-		}
-
-		String voteId = post.getVote() != null ? post.getVote().getId() : null;
+		String displayWriterNickname = resolveWriterNickname(post);
+		ProfileImageDto writerProfileImage = resolveWriterProfileImage(post);
+		String voteId = resolveVoteId(post);
 
 		return PostDetailResult.builder()
 			.id(post.getId())
@@ -147,6 +136,66 @@ public class PostMapper {
 			.boardId(post.getBoard().getId())
 			.boardName(post.getBoard().getName())
 			.build();
+	}
+
+	// ── 비식별 처리 헬퍼 ──────────────────────────────────────────────────────────
+
+	private static String resolveWriterNickname(PostCursorResult result) {
+		if (isInactiveWriter(result.writerUserState(), !result.hasWriter())) {
+			return StaticValue.INACTIVE_USER_NICKNAME;
+		}
+		if (result.isAnonymous()) {
+			return StaticValue.ANONYMOUS_USER_NICKNAME;
+		}
+		return result.writerNickname();
+	}
+
+	private static ProfileImageDto resolveWriterProfileImage(PostCursorResult result) {
+		if (isInactiveWriter(result.writerUserState(), !result.hasWriter()) || result.isAnonymous()) {
+			return ProfileImageDto.GHOST;
+		}
+		return ProfileImageDto.of(result.writerProfileImageType(), result.writerProfileImageUrl());
+	}
+
+	private static String resolveWriterNickname(Post post) {
+		User writer = post.getWriter();
+		if (isInactiveWriter(writer)) {
+			return StaticValue.INACTIVE_USER_NICKNAME;
+		}
+		if (post.getIsAnonymous()) {
+			return StaticValue.ANONYMOUS_USER_NICKNAME;
+		}
+		return writer.getNickname();
+	}
+
+	private static ProfileImageDto resolveWriterProfileImage(Post post) {
+		if (isInactiveWriter(post.getWriter()) || post.getIsAnonymous()) {
+			return ProfileImageDto.GHOST;
+		}
+		return ProfileImageDto.from(post.getWriter());
+	}
+
+	private static String resolveVoteId(Post post) {
+		if (post.getVote() != null) {
+			return post.getVote().getId();
+		}
+		return null;
+	}
+
+	/**
+	 * 작성자가 비활성 상태(추방/탈퇴)인지 확인합니다.
+	 * <ul>
+	 *   <li>state == null: 작성자가 존재하지 않음</li>
+	 *   <li>state == DROP: 추방</li>
+	 *   <li>isDeleted == true: 탈퇴</li>
+	 * </ul>
+	 */
+	private static boolean isInactiveWriter(UserState state, boolean isDeleted) {
+		return state == null || state == UserState.DROP || isDeleted;
+	}
+
+	private static boolean isInactiveWriter(User writer) {
+		return writer == null || writer.isDeleted() || writer.getState() == UserState.DROP;
 	}
 
 }

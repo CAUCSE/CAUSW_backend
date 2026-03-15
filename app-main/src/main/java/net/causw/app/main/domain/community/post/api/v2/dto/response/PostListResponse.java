@@ -3,6 +3,8 @@ package net.causw.app.main.domain.community.post.api.v2.dto.response;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import net.causw.app.main.shared.dto.ProfileImageDto;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "게시글 목록 조회 응답")
@@ -21,7 +23,9 @@ public record PostListResponse(
 		@Schema(description = "투표 ID (투표가 없으면 null)") String voteId,
 		@Schema(description = "삭제 여부") boolean isDeleted,
 		@Schema(description = "작성자 닉네임 (익명인 경우 '익명')") String writerNickname,
-		@Schema(description = "작성자 프로필 이미지 URL (익명인 경우 null)") String writerProfileImageUrl,
+
+		@Schema(description = "작성자 프로필 이미지 정보 (익명인 경우 null)") ProfileImageDto writerProfileImage,
+
 		@Schema(description = "생성일시") LocalDateTime createdAt,
 		@Schema(description = "수정일시") LocalDateTime updatedAt,
 		@Schema(description = "게시물 이미지 URL 목록") List<String> postImageUrls,

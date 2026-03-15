@@ -2,6 +2,7 @@ package net.causw.app.main.domain.community.post.repository.query;
 
 import java.time.LocalDateTime;
 
+import net.causw.app.main.domain.user.account.enums.user.ProfileImageType;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 
 import com.querydsl.core.annotations.QueryProjection;
@@ -23,6 +24,7 @@ public record PostCursorResult(
 	String writerNickname,
 	Integer writerAdmissionYear,
 	UserState writerUserState,
+	ProfileImageType writerProfileImageType,
 	String writerProfileImageUrl,
 	LocalDateTime createdAt,
 	LocalDateTime updatedAt,

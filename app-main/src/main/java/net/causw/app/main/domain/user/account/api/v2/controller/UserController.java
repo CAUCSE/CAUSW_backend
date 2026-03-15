@@ -20,18 +20,21 @@ import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.domain.user.account.api.v1.dto.UserFcmTokenResponseDto;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.AdmissionCreateRequest;
+import net.causw.app.main.domain.user.account.api.v2.dto.request.UpdateProfileImageRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserFcmTokenRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserNicknameUpdateRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserPasswordUpdateRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserRegistrationRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.AdmissionResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.AdmissionStateResponse;
+import net.causw.app.main.domain.user.account.api.v2.dto.response.ProfileImageResponse;
 import net.causw.app.main.domain.user.account.api.v2.mapper.AdmissionDtoMapper;
 import net.causw.app.main.domain.user.account.service.AdmissionService;
 import net.causw.app.main.domain.user.account.service.UserAccountService;
 import net.causw.app.main.domain.user.account.service.UserNotificationService;
+import net.causw.app.main.domain.user.account.service.UserProfileImageService;
+import net.causw.app.main.domain.user.account.service.dto.request.AdmissionResult;
 import net.causw.app.main.domain.user.account.service.dto.request.UserPasswordUpdateCommand;
-import net.causw.app.main.domain.user.account.service.dto.response.AdmissionResult;
 import net.causw.app.main.domain.user.auth.api.v2.dto.AuthDtoMapper;
 import net.causw.app.main.domain.user.auth.api.v2.dto.response.AuthResponse;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
@@ -55,6 +58,7 @@ public class UserController {
 	private final AuthDtoMapper authDtoMapper;
 	private final AdmissionService admissionService;
 	private final AdmissionDtoMapper admissionDtoMapper;
+	private final UserProfileImageService userProfileImageService;
 
 	// ── 재학정보 인증 ──
 
@@ -155,6 +159,28 @@ public class UserController {
 			userDetails.getUserId(),
 			UserPasswordUpdateCommand.from(body));
 		return ApiResponse.success();
+	}
+
+	// ── 프로필 이미지 ──
+
+	@PatchMapping("/me/profile-image/default")
+	@Operation(summary = "기본 프로필 이미지 변경 API", description = "프로필 이미지를 기본 이미지(MALE_1, MALE_2, FEMALE_1, FEMALE_2)로 변경합니다. "
+		+ "기존 커스텀 이미지가 있는 경우 해당 이미지는 삭제됩니다.")
+	public ApiResponse<ProfileImageResponse> updateProfileImageToDefault(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@Valid @RequestBody UpdateProfileImageRequest request) {
+		return ApiResponse.success(
+			userProfileImageService.updateToDefaultProfileImage(userDetails.getUserId(), request.profileImageType()));
+	}
+
+	@PatchMapping(value = "/me/profile-image/custom", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	@Operation(summary = "커스텀 프로필 이미지 변경 API", description = "프로필 이미지를 업로드한 커스텀 이미지로 변경합니다. "
+		+ "커스텀 이미지는 1개만 유지되며, 새 이미지로 변경하면 기존 커스텀 이미지는 삭제됩니다.")
+	public ApiResponse<ProfileImageResponse> updateProfileImageToCustom(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestPart("image") MultipartFile imageFile) {
+		return ApiResponse.success(
+			userProfileImageService.updateToCustomProfileImage(userDetails.getUserId(), imageFile));
 	}
 
 }

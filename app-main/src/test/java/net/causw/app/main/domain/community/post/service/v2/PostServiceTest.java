@@ -1,16 +1,9 @@
 package net.causw.app.main.domain.community.post.service.v2;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.times;
-import static org.mockito.BDDMockito.verify;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -62,6 +55,7 @@ import net.causw.app.main.domain.community.reaction.service.implementation.LikeP
 import net.causw.app.main.domain.community.vote.service.implementation.VoteWriter;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.enums.user.ProfileImageType;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.util.ObjectFixtures;
@@ -524,6 +518,7 @@ public class PostServiceTest {
 				"닉네임",
 				2020,
 				UserState.ACTIVE,
+				ProfileImageType.CUSTOM,
 				"profile-url",
 				LocalDateTime.now(),
 				LocalDateTime.now(),
@@ -587,6 +582,7 @@ public class PostServiceTest {
 				"닉네임1",
 				2020,
 				UserState.ACTIVE,
+				ProfileImageType.CUSTOM,
 				"profile-url-1",
 				LocalDateTime.now(),
 				LocalDateTime.now(),
@@ -607,6 +603,7 @@ public class PostServiceTest {
 				"닉네임2",
 				2021,
 				UserState.ACTIVE,
+				ProfileImageType.CUSTOM,
 				"profile-url-2",
 				LocalDateTime.now(),
 				LocalDateTime.now(),
@@ -669,6 +666,7 @@ public class PostServiceTest {
 				"닉네임",
 				2020,
 				UserState.ACTIVE,
+				ProfileImageType.CUSTOM,
 				"profile-url",
 				LocalDateTime.of(2024, 1, 1, 11, 0),
 				LocalDateTime.of(2024, 1, 1, 11, 0),
@@ -732,6 +730,7 @@ public class PostServiceTest {
 				"닉네임",
 				2020,
 				UserState.ACTIVE,
+				ProfileImageType.CUSTOM,
 				"profile-url",
 				LocalDateTime.now(),
 				LocalDateTime.now(),
@@ -783,6 +782,7 @@ public class PostServiceTest {
 				"닉네임",
 				2020,
 				UserState.ACTIVE,
+				ProfileImageType.CUSTOM,
 				"profile-url",
 				LocalDateTime.now(),
 				LocalDateTime.now(),
@@ -884,6 +884,7 @@ public class PostServiceTest {
 				"닉네임",
 				2020,
 				UserState.ACTIVE,
+				ProfileImageType.CUSTOM,
 				"profile-url",
 				LocalDateTime.now(),
 				LocalDateTime.now(),
@@ -910,7 +911,9 @@ public class PostServiceTest {
 				() -> assertThat(result.posts()).hasSize(1),
 				() -> assertThat(result.posts().get(0).isAnonymous()).isTrue(),
 				() -> assertThat(result.posts().get(0).writerNickname()).isEqualTo("익명"),
-				() -> assertThat(result.posts().get(0).writerProfileImageUrl()).isNull());
+				() -> assertThat(result.posts().get(0).writerProfileImage().profileImageType())
+					.isEqualTo(ProfileImageType.GHOST),
+				() -> assertThat(result.posts().get(0).writerProfileImage().profileImageUrl()).isNull());
 
 			verify(postReader, times(1)).findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(null));
 		}
@@ -936,6 +939,7 @@ public class PostServiceTest {
 				"닉네임1",
 				2020,
 				UserState.ACTIVE,
+				ProfileImageType.CUSTOM,
 				"profile-url-1",
 				LocalDateTime.now(),
 				LocalDateTime.now(),
@@ -956,6 +960,7 @@ public class PostServiceTest {
 				"닉네임2",
 				2021,
 				UserState.ACTIVE,
+				ProfileImageType.CUSTOM,
 				"profile-url-2",
 				LocalDateTime.now(),
 				LocalDateTime.now(),
@@ -983,12 +988,14 @@ public class PostServiceTest {
 				// 일반 게시글 확인
 				() -> assertThat(result.posts().get(0).isAnonymous()).isFalse(),
 				() -> assertThat(result.posts().get(0).writerNickname()).isEqualTo("닉네임1"),
-				() -> assertThat(result.posts().get(0).writerProfileImageUrl()).isEqualTo("profile-url-1"),
+				() -> assertThat(result.posts().get(0).writerProfileImage().profileImageUrl())
+					.isEqualTo("profile-url-1"),
 				// 익명 게시글 확인
 				() -> assertThat(result.posts().get(1).isAnonymous()).isTrue(),
 				() -> assertThat(result.posts().get(1).writerNickname()).isEqualTo("익명"),
-				() -> assertThat(result.posts().get(1).writerProfileImageUrl()).isNull());
-
+				() -> assertThat(result.posts().get(1).writerProfileImage().profileImageType())
+					.isEqualTo(ProfileImageType.GHOST),
+				() -> assertThat(result.posts().get(1).writerProfileImage().profileImageUrl()).isNull());
 			verify(postReader, times(1)).findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(null));
 		}
 	}
@@ -1165,7 +1172,8 @@ public class PostServiceTest {
 			assertAll(
 				() -> assertThat(result.isAnonymous()).isTrue(),
 				() -> assertThat(result.displayWriterNickname()).isEqualTo("익명"),
-				() -> assertThat(result.writerProfileImage()).isNull());
+				() -> assertThat(result.writerProfileImage().profileImageType()).isEqualTo(ProfileImageType.GHOST),
+				() -> assertThat(result.writerProfileImage().profileImageUrl()).isNull());
 		}
 
 		@DisplayName("숨겨진 게시판의 게시글은 관리자만 조회 가능")
