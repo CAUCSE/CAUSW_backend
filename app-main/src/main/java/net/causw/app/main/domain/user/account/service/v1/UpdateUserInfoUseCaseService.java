@@ -54,7 +54,7 @@ public class UpdateUserInfoUseCaseService {
 		// 사용자 상세정보 갱신
 		final UserInfo userInfo = userInfoV1Service.getOrCreateUserInfoFromUser(user);
 
-		userInfo.update(
+		userInfo.updateV1(
 			request.getDescription(), request.getJob(), request.getSocialLinks(), request.getIsPhoneNumberVisible());
 
 		// 사용자 커리어 갱신

@@ -71,17 +71,23 @@ public class BoardQueryRepository {
 	}
 
 	/**
-	 * 게시판 아이디 목록으로 게시판을 조회합니다. 삭제되지 않은 게시판만 조회합니다.
-	 * @param boardIds 게시판 아이디 목록
-	 * @return 게시판 엔티티 목록
+	 * 게시판 ID 목록으로 게시판을 조회합니다. 삭제되지 않은 게시판만 조회하며, 표시 순서(displayOrder) 오름차순으로 반환합니다.
+	 * @param boardIds 게시판 ID 목록
+	 * @return 삭제되지 않은 게시판 엔티티 목록 (displayOrder 오름차순)
 	 */
 	public List<Board> findAllByIdsNotDeleted(List<String> boardIds) {
+		if (boardIds == null || boardIds.isEmpty()) {
+			return List.of();
+		}
 		QBoard board = QBoard.board;
+		QBoardConfig boardConfig = QBoardConfig.boardConfig;
 
 		return jpaQueryFactory
 			.selectFrom(board)
+			.join(boardConfig).on(board.id.eq(boardConfig.boardId))
 			.where(board.id.in(boardIds))
 			.where(notDeleted())
+			.orderBy(boardConfig.displayOrder.asc())
 			.fetch();
 	}
 
