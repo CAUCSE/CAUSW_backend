@@ -5,8 +5,11 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.entity.BaseEntity;
+import net.causw.app.main.shared.exception.errorcode.UserInfoErrorCode;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
@@ -18,7 +21,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import net.causw.app.main.shared.exception.errorcode.UserInfoErrorCode;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -89,6 +91,18 @@ public class UserInfo extends BaseEntity {
 		return UserInfo.builder()
 			.user(user)
 			.build();
+	}
+
+	/**
+	 * v1 API용 업데이트. description, job, socialLinks, isPhoneNumberVisible을 한 번에 갱신한다.
+	 * v1은 API 레이어에서 검증하므로 엔티티 레벨 검증 없이 직접 반영한다.
+	 */
+	@Deprecated(since = "v2 API에서는 description, job, socialLinks, isPhoneNumberVisible을 각각 업데이트하는 별도의 메서드를 사용합니다.")
+	public void updateV1(String description, String job, List<String> socialLinks, boolean isPhoneNumberVisible) {
+		this.description = description;
+		this.job = job;
+		this.socialLinks = socialLinks == null ? new ArrayList<>() : new ArrayList<>(socialLinks);
+		this.isPhoneNumberVisible = isPhoneNumberVisible;
 	}
 
 	public void update(
