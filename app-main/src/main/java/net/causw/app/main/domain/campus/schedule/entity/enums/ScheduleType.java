@@ -10,6 +10,5 @@ public enum ScheduleType {
 	DEPARTMENT, // 학부일정
 	CCSSAA, // 크자회 일정
 	STUDENT_COUNCIL, // 학생회 일정
-	COMPETITION, // 대회/공모전 일정
 	HOLIDAY // 공휴일
 }
