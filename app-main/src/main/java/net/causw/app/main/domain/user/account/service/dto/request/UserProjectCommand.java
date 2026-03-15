@@ -1,7 +1,5 @@
 package net.causw.app.main.domain.user.account.service.dto.request;
 
-import java.time.LocalDate;
-
 import net.causw.app.main.shared.exception.errorcode.UserInfoErrorCode;
 
 public record UserProjectCommand(
@@ -11,8 +9,7 @@ public record UserProjectCommand(
 	Integer endYear,
 	Integer endMonth,
 	String description) {
-	public void validateDate() {
-		int currentYear = LocalDate.now().getYear();
+	public void validateDate(int currentYear) {
 
 		if (startYear > currentYear) {
 			throw UserInfoErrorCode.INVALID_PROJECT_START_DATE.toBaseException();

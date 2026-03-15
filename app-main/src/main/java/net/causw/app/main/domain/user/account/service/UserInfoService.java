@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.user.account.service;
 
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -118,9 +119,10 @@ public class UserInfoService {
 		if (dtoList == null)
 			return;
 		Set<String> requests = new HashSet<>();
+		int currentYear = LocalDate.now().getYear();
 
 		for (UserCareerCommand dto : dtoList) {
-			dto.validateDate();
+			dto.validateDate(currentYear);
 			if (dto.id() == null) { // 이력 사항 추가
 				UserCareer created = userInfoWriter.saveCareer(
 					UserCareer.of(userInfo,
@@ -148,9 +150,10 @@ public class UserInfoService {
 		if (dtoList == null)
 			return;
 		Set<String> requests = new HashSet<>();
+		int currentYear = LocalDate.now().getYear();
 
 		for (UserProjectCommand dto : dtoList) {
-			dto.validateDate();
+			dto.validateDate(currentYear);
 			if (dto.id() == null) { // 데표 프로젝트 추가
 				UserProject created = userInfoWriter.saveProject(
 					UserProject.of(userInfo,
