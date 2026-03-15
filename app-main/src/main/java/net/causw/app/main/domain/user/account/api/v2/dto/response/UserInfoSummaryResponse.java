@@ -2,7 +2,7 @@ package net.causw.app.main.domain.user.account.api.v2.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-public record UserInfoSummaryResponseDto(
+public record UserInfoSummaryResponse(
 	@Schema(description = "동문 수첩 프로필 id", example = "uuid 형식의 String 값입니다") String id,
 
 	@Schema(description = "사용자 프로필 이미지 URL") String profileImageUrl,

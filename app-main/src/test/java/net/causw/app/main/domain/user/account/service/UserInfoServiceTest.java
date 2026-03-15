@@ -2,8 +2,8 @@ package net.causw.app.main.domain.user.account.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -22,20 +22,20 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
-import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoDetailResponseDto;
-import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoSummaryResponseDto;
-import net.causw.app.main.domain.user.account.api.v2.mapper.UserInfoDtoMapper;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
 import net.causw.app.main.domain.user.account.service.dto.request.UserInfoListCondition;
-import net.causw.app.main.domain.user.account.service.dto.request.UserInfoUpdateDto;
+import net.causw.app.main.domain.user.account.service.dto.request.UserInfoUpdateCommand;
+import net.causw.app.main.domain.user.account.service.dto.result.UserInfoDetailResult;
+import net.causw.app.main.domain.user.account.service.dto.result.UserInfoSummaryResult;
 import net.causw.app.main.domain.user.account.service.implementation.UserInfoCreator;
 import net.causw.app.main.domain.user.account.service.implementation.UserInfoReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserInfoWriter;
-import net.causw.app.main.domain.user.account.service.implementation.UserReader;
+import net.causw.app.main.domain.user.account.service.mapper.UserInfoMapper;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.UserInfoErrorCode;
 import net.causw.app.main.shared.pageable.PageableFactory;
+import net.causw.app.main.util.ObjectFixtures;
 import net.causw.global.constant.StaticValue;
 
 @ExtendWith(MockitoExtension.class)
@@ -48,13 +48,10 @@ class UserInfoServiceTest {
 	private UserInfoReader userInfoReader;
 
 	@Mock
-	private UserInfoDtoMapper userInfoDtoMapper;
+	private UserInfoMapper userInfoMapper;
 
 	@Mock
 	private PageableFactory pageableFactory;
-
-	@Mock
-	private UserReader userReader;
 
 	@Mock
 	private UserInfoWriter userInfoWriter;
@@ -71,20 +68,20 @@ class UserInfoServiceTest {
 		void givenValidUserInfoId_whenGetDetailUserInfo_thenReturnsDetailDto() {
 			// given
 			String userInfoId = "ui-1";
-			UserInfo userInfo = ObjectFixtures.userInfo();
-			UserInfoDetailResponseDto response = ObjectFixtures.detailResponse();
+			UserInfo userInfo = ObjectFixtures.getMockUserInfo();
+			UserInfoDetailResult resultDto = ObjectFixtures.getMockUserInfoDetailResult();
 
 			when(userInfoReader.findById(userInfoId)).thenReturn(Optional.of(userInfo));
-			when(userInfoDtoMapper.toUserInfoDetailResponseDto(userInfo)).thenReturn(response);
+			when(userInfoMapper.toDetailResult(userInfo)).thenReturn(resultDto);
 
 			// when
-			UserInfoDetailResponseDto result = userInfoService.getDetailUserInfo(userInfoId);
+			UserInfoDetailResult result = userInfoService.getDetailUserInfo(userInfoId);
 
 			// then
-			assertThat(result).isSameAs(response);
+			assertThat(result).isSameAs(resultDto);
 
 			verify(userInfoReader).findById(userInfoId);
-			verify(userInfoDtoMapper).toUserInfoDetailResponseDto(userInfo);
+			verify(userInfoMapper).toDetailResult(userInfo);
 		}
 
 		@Test
@@ -101,7 +98,7 @@ class UserInfoServiceTest {
 				.isEqualTo(UserInfoErrorCode.USERINFO_NOT_FOUND);
 
 			verify(userInfoReader).findById(userInfoId);
-			verify(userInfoDtoMapper, never()).toUserInfoDetailResponseDto(any());
+			verify(userInfoMapper, never()).toDetailResult(any());
 		}
 	}
 
@@ -114,25 +111,24 @@ class UserInfoServiceTest {
 		void givenExistingUserInfo_whenGetMyDetailUserInfo_thenReturnsMyDetailDto() {
 			// given
 			String userId = "user-1";
-			User user = ObjectFixtures.user();
+			User user = ObjectFixtures.getMockUser();
 			when(user.getId()).thenReturn(userId);
 
-			UserInfo userInfo = ObjectFixtures.userInfo();
-			UserInfoDetailResponseDto response = ObjectFixtures.detailResponse();
+			UserInfo userInfo = ObjectFixtures.getMockUserInfo();
+			UserInfoDetailResult resultDto = ObjectFixtures.getMockUserInfoDetailResult();
 
 			when(userInfoReader.findByUserId(userId)).thenReturn(Optional.of(userInfo));
-			when(userInfoDtoMapper.toMyUserInfoDetailResponseDto(userInfo)).thenReturn(response);
+			when(userInfoMapper.toMyDetailResult(userInfo)).thenReturn(resultDto);
 
 			// when
-			UserInfoDetailResponseDto result = userInfoService.getMyDetailUserInfo(user);
+			UserInfoDetailResult result = userInfoService.getMyDetailUserInfo(user);
 
 			// then
-			assertThat(result).isSameAs(response);
+			assertThat(result).isSameAs(resultDto);
 
 			verify(userInfoReader).findByUserId(userId);
 			verify(userInfoCreator, never()).createAndSave(any(User.class));
-			verify(userInfoDtoMapper).toMyUserInfoDetailResponseDto(userInfo);
-			verify(userReader, never()).findUserById(any()); // 현재 서비스에서는 안 씀(그래도 안전하게)
+			verify(userInfoMapper).toMyDetailResult(userInfo);
 		}
 
 		@Test
@@ -140,26 +136,25 @@ class UserInfoServiceTest {
 		void givenNoUserInfo_whenGetMyDetailUserInfo_thenCreatesAndReturnsMyDetailDto() {
 			// given
 			String userId = "user-1";
-			User user = ObjectFixtures.user();
+			User user = ObjectFixtures.getMockUser();
 			when(user.getId()).thenReturn(userId);
 
-			UserInfo created = ObjectFixtures.userInfo();
-			UserInfoDetailResponseDto response = ObjectFixtures.detailResponse();
+			UserInfo created = ObjectFixtures.getMockUserInfo();
+			UserInfoDetailResult resultDto = ObjectFixtures.getMockUserInfoDetailResult();
 
 			when(userInfoReader.findByUserId(userId)).thenReturn(Optional.empty());
 			when(userInfoCreator.createAndSave(user)).thenReturn(created);
-			when(userInfoDtoMapper.toMyUserInfoDetailResponseDto(created)).thenReturn(response);
+			when(userInfoMapper.toMyDetailResult(created)).thenReturn(resultDto);
 
 			// when
-			UserInfoDetailResponseDto result = userInfoService.getMyDetailUserInfo(user);
+			UserInfoDetailResult result = userInfoService.getMyDetailUserInfo(user);
 
 			// then
-			assertThat(result).isSameAs(response);
+			assertThat(result).isSameAs(resultDto);
 
 			verify(userInfoReader).findByUserId(userId);
 			verify(userInfoCreator).createAndSave(user);
-			verify(userInfoDtoMapper).toMyUserInfoDetailResponseDto(created);
-			verify(userReader, never()).findUserById(any()); // 현재 서비스에서는 안 씀
+			verify(userInfoMapper).toMyDetailResult(created);
 		}
 	}
 
@@ -172,29 +167,40 @@ class UserInfoServiceTest {
 		void givenExistingUserInfo_whenUpdateUserInfo_thenReturnsDetailDto() {
 			// given
 			String userId = "user-1";
-			User user = ObjectFixtures.user();
+			User user = ObjectFixtures.getMockUser();
 			when(user.getId()).thenReturn(userId);
 
-			UserInfoUpdateDto request = ObjectFixtures.updateRequest();
+			UserInfoUpdateCommand request = ObjectFixtures.getUserInfoUpdateCommand();
 
-			UserInfo existing = ObjectFixtures.userInfo();
-			UserInfo updated = ObjectFixtures.userInfo();
-			UserInfoDetailResponseDto response = ObjectFixtures.detailResponse();
+			UserInfo existing = ObjectFixtures.getMockUserInfo();
+			UserInfo updated = ObjectFixtures.getMockUserInfo();
+			UserInfoDetailResult resultDto = ObjectFixtures.getMockUserInfoDetailResult();
 
 			when(userInfoReader.findByUserId(userId)).thenReturn(Optional.of(existing));
 			when(userInfoWriter.save(existing)).thenReturn(updated);
-			when(userInfoDtoMapper.toUserInfoDetailResponseDto(updated)).thenReturn(response);
+			when(userInfoMapper.toDetailResult(updated)).thenReturn(resultDto);
+
+			doNothing().when(existing).update(any(), any(), anyBoolean());
+			doNothing().when(existing).updateSocialLinks(any());
+			doNothing().when(existing).updateTechStack(any());
+			doNothing().when(existing).updateInterestTech(any());
+			doNothing().when(existing).updateInterestDomain(any());
 
 			// when
-			UserInfoDetailResponseDto result = userInfoService.updateUserInfo(request, user);
+			UserInfoDetailResult result = userInfoService.updateUserInfo(request, user);
 
 			// then
-			assertThat(result).isSameAs(response);
+			assertThat(result).isSameAs(resultDto);
 
 			verify(userInfoReader).findByUserId(userId);
 			verify(userInfoCreator, never()).createAndSave(any(User.class));
+			verify(existing).update(null, null, false);
+			verify(existing).updateSocialLinks(null);
+			verify(existing).updateTechStack(null);
+			verify(existing).updateInterestTech(null);
+			verify(existing).updateInterestDomain(null);
 			verify(userInfoWriter).save(existing);
-			verify(userInfoDtoMapper).toUserInfoDetailResponseDto(updated);
+			verify(userInfoMapper).toDetailResult(updated);
 		}
 
 		@Test
@@ -202,32 +208,41 @@ class UserInfoServiceTest {
 		void givenNoUserInfo_whenUpdateUserInfo_thenCreatesAndReturnsDetailDto() {
 			// given
 			String userId = "user-1";
-			User user = ObjectFixtures.user();
+			User user = ObjectFixtures.getMockUser();
 			when(user.getId()).thenReturn(userId);
 
-			UserInfoUpdateDto request = ObjectFixtures.updateRequest();
+			UserInfoUpdateCommand request = ObjectFixtures.getUserInfoUpdateCommand();
 
-			UserInfo created = ObjectFixtures.userInfo();
-			UserInfo updated = ObjectFixtures.userInfo();
-			UserInfoDetailResponseDto response = ObjectFixtures.detailResponse();
+			UserInfo created = ObjectFixtures.getMockUserInfo();
+			UserInfo updated = ObjectFixtures.getMockUserInfo();
+			UserInfoDetailResult resultDto = ObjectFixtures.getMockUserInfoDetailResult();
 
 			when(userInfoReader.findByUserId(userId)).thenReturn(Optional.empty());
 			when(userInfoCreator.createAndSave(user)).thenReturn(created);
-
-			// 서비스 로직상 created에 변경 적용 후 save(userInfo) 호출
 			when(userInfoWriter.save(created)).thenReturn(updated);
-			when(userInfoDtoMapper.toUserInfoDetailResponseDto(updated)).thenReturn(response);
+			when(userInfoMapper.toDetailResult(updated)).thenReturn(resultDto);
+
+			doNothing().when(created).update(any(), any(), anyBoolean());
+			doNothing().when(created).updateSocialLinks(any());
+			doNothing().when(created).updateTechStack(any());
+			doNothing().when(created).updateInterestTech(any());
+			doNothing().when(created).updateInterestDomain(any());
 
 			// when
-			UserInfoDetailResponseDto result = userInfoService.updateUserInfo(request, user);
+			UserInfoDetailResult result = userInfoService.updateUserInfo(request, user);
 
 			// then
-			assertThat(result).isSameAs(response);
+			assertThat(result).isSameAs(resultDto);
 
 			verify(userInfoReader).findByUserId(userId);
 			verify(userInfoCreator).createAndSave(user);
+			verify(created).update(null, null, false);
+			verify(created).updateSocialLinks(null);
+			verify(created).updateTechStack(null);
+			verify(created).updateInterestTech(null);
+			verify(created).updateInterestDomain(null);
 			verify(userInfoWriter).save(created);
-			verify(userInfoDtoMapper).toUserInfoDetailResponseDto(updated);
+			verify(userInfoMapper).toDetailResult(updated);
 		}
 	}
 
@@ -239,63 +254,33 @@ class UserInfoServiceTest {
 		@DisplayName("조건으로 동문 수첩 리스트 조회")
 		void givenConditionAndPageNum_whenGetUserInfoPage_thenReturnsSummaryPage() {
 			// given
-			UserInfoListCondition condition = ObjectFixtures.listCondition();
+			UserInfoListCondition condition = ObjectFixtures.getMockUserInfoListCondition();
 			Integer pageNum = 1;
 
-			Pageable pageable = ObjectFixtures.pageable();
+			Pageable pageable = ObjectFixtures.getMockPageable();
 			when(pageableFactory.create(pageNum, StaticValue.USER_LIST_PAGE_SIZE)).thenReturn(pageable);
 
-			UserInfo u1 = ObjectFixtures.userInfo();
-			UserInfo u2 = ObjectFixtures.userInfo();
+			UserInfo u1 = ObjectFixtures.getMockUserInfo();
+			UserInfo u2 = ObjectFixtures.getMockUserInfo();
 			Page<UserInfo> page = new PageImpl<>(List.of(u1, u2), pageable, 2);
 
-			UserInfoSummaryResponseDto s1 = ObjectFixtures.summaryResponse();
-			UserInfoSummaryResponseDto s2 = ObjectFixtures.summaryResponse();
+			UserInfoSummaryResult s1 = ObjectFixtures.getMockUserInfoSummaryResult();
+			UserInfoSummaryResult s2 = ObjectFixtures.getMockUserInfoSummaryResult();
 
 			when(userInfoReader.findUserInfoWithFilter(condition, pageable)).thenReturn(page);
-			when(userInfoDtoMapper.toUserInfoSummaryResponseDto(u1)).thenReturn(s1);
-			when(userInfoDtoMapper.toUserInfoSummaryResponseDto(u2)).thenReturn(s2);
+			when(userInfoMapper.toSummaryResult(u1)).thenReturn(s1);
+			when(userInfoMapper.toSummaryResult(u2)).thenReturn(s2);
 
 			// when
-			Page<UserInfoSummaryResponseDto> result = userInfoService.getUserInfoPage(condition, pageNum);
+			Page<UserInfoSummaryResult> result = userInfoService.getUserInfoPage(condition, pageNum);
 
 			// then
 			assertThat(result.getContent()).containsExactly(s1, s2);
 
 			verify(pageableFactory).create(pageNum, StaticValue.USER_LIST_PAGE_SIZE);
 			verify(userInfoReader).findUserInfoWithFilter(condition, pageable);
-			verify(userInfoDtoMapper).toUserInfoSummaryResponseDto(u1);
-			verify(userInfoDtoMapper).toUserInfoSummaryResponseDto(u2);
-		}
-	}
-
-	static class ObjectFixtures {
-		static User user() {
-			return mock(User.class);
-		}
-
-		static UserInfo userInfo() {
-			return mock(UserInfo.class);
-		}
-
-		static UserInfoUpdateDto updateRequest() {
-			return mock(UserInfoUpdateDto.class);
-		}
-
-		static UserInfoDetailResponseDto detailResponse() {
-			return mock(UserInfoDetailResponseDto.class);
-		}
-
-		static UserInfoSummaryResponseDto summaryResponse() {
-			return mock(UserInfoSummaryResponseDto.class);
-		}
-
-		static UserInfoListCondition listCondition() {
-			return mock(UserInfoListCondition.class);
-		}
-
-		static Pageable pageable() {
-			return mock(Pageable.class);
+			verify(userInfoMapper).toSummaryResult(u1);
+			verify(userInfoMapper).toSummaryResult(u2);
 		}
 	}
 }
