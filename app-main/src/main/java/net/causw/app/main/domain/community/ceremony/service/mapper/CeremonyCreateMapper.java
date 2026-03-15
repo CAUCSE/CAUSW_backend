@@ -12,7 +12,7 @@ import net.causw.app.main.domain.user.account.entity.user.User;
 @Component
 public class CeremonyCreateMapper {
 
-	public Ceremony fromRequest(
+	public Ceremony toCeremony(
 		User user,
 		CeremonyCreateCommand command,
 		List<String> targetAdmissionYears,

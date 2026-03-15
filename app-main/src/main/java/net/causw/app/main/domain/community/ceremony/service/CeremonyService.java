@@ -61,7 +61,7 @@ public class CeremonyService {
 			? List.of()
 			: uuidFileService.saveFileList(imageFileList, FilePath.CEREMONY);
 
-		Ceremony ceremony = ceremonyCreateMapper.fromRequest(user, command, targetAdmissionYears,
+		Ceremony ceremony = ceremonyCreateMapper.toCeremony(user, command, targetAdmissionYears,
 			uuidFileList);
 		ceremonyCreator.save(ceremony);
 		return ceremonyMapper.toDetailResult(ceremony);

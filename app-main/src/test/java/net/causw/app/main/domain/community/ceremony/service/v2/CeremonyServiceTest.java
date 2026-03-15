@@ -87,7 +87,7 @@ public class CeremonyServiceTest {
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.CUSTOM_CATEGORY_REQUIRED);
 			then(uuidFileService).should(never()).saveFileList(any(), any());
-			then(ceremonyCreateMapper).should(never()).fromRequest(any(), any(), any(), any());
+			then(ceremonyCreateMapper).should(never()).toCeremony(any(), any(), any(), any());
 			then(ceremonyCreator).should(never()).save(any());
 		}
 
@@ -102,7 +102,7 @@ public class CeremonyServiceTest {
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.FAMILY_RELATION_REQUIRED);
 			then(uuidFileService).should(never()).saveFileList(any(), any());
-			then(ceremonyCreateMapper).should(never()).fromRequest(any(), any(), any(), any());
+			then(ceremonyCreateMapper).should(never()).toCeremony(any(), any(), any(), any());
 			then(ceremonyCreator).should(never()).save(any());
 		}
 
@@ -117,7 +117,7 @@ public class CeremonyServiceTest {
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.ALUMNI_NAME_REQUIRED);
 			then(uuidFileService).should(never()).saveFileList(any(), any());
-			then(ceremonyCreateMapper).should(never()).fromRequest(any(), any(), any(), any());
+			then(ceremonyCreateMapper).should(never()).toCeremony(any(), any(), any(), any());
 			then(ceremonyCreator).should(never()).save(any());
 		}
 
@@ -132,7 +132,7 @@ public class CeremonyServiceTest {
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.ALUMNI_ADMISSION_YEAR_REQUIRED);
 			then(uuidFileService).should(never()).saveFileList(any(), any());
-			then(ceremonyCreateMapper).should(never()).fromRequest(any(), any(), any(), any());
+			then(ceremonyCreateMapper).should(never()).toCeremony(any(), any(), any(), any());
 			then(ceremonyCreator).should(never()).save(any());
 		}
 
@@ -148,7 +148,7 @@ public class CeremonyServiceTest {
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.START_TIME_REQUIRED);
 			then(uuidFileService).should(never()).saveFileList(any(), any());
-			then(ceremonyCreateMapper).should(never()).fromRequest(any(), any(), any(), any());
+			then(ceremonyCreateMapper).should(never()).toCeremony(any(), any(), any(), any());
 			then(ceremonyCreator).should(never()).save(any());
 		}
 
@@ -164,7 +164,7 @@ public class CeremonyServiceTest {
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.TARGET_ADMISSION_YEARS_REQUIRED);
 			then(uuidFileService).should(never()).saveFileList(any(), any());
-			then(ceremonyCreateMapper).should(never()).fromRequest(any(), any(), any(), any());
+			then(ceremonyCreateMapper).should(never()).toCeremony(any(), any(), any(), any());
 			then(ceremonyCreator).should(never()).save(any());
 		}
 	}
