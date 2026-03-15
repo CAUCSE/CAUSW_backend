@@ -35,7 +35,6 @@ import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
 import net.causw.app.main.domain.user.account.entity.user.UserAdmissionLog;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserCareer;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
-import net.causw.app.main.shared.dto.ProfileImageDto;
 import net.causw.app.main.shared.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
 import net.causw.global.constant.StaticValue;
 
@@ -220,7 +219,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "name", source = "userInfo.user.name")
 	@Mapping(target = "email", source = "userInfo.user.email")
 	@Mapping(target = "admissionYear", source = "userInfo.user.admissionYear")
-	@Mapping(target = "profileImage", source = "userInfo", qualifiedByName = "mapUserInfoProfileImage")
+	@Mapping(target = "profileImageUrl", source = "userInfo.user.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
 	@Mapping(target = "major", source = "userInfo.user.major")
 	@Mapping(target = "department", source = "userInfo.user.department")
 	@Mapping(target = "description", source = "userInfo.description")
@@ -234,7 +233,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "email", source = "userInfo.user.email")
 	@Mapping(target = "phoneNumber", source = "userInfo.user.phoneNumber", qualifiedByName = "maskPhoneNumber")
 	@Mapping(target = "admissionYear", source = "userInfo.user.admissionYear")
-	@Mapping(target = "profileImage", source = "userInfo", qualifiedByName = "mapUserInfoProfileImage")
+	@Mapping(target = "profileImageUrl", source = "userInfo.user.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
 	@Mapping(target = "major", source = "userInfo.user.major")
 	@Mapping(target = "department", source = "userInfo.user.department")
 	@Mapping(target = "roles", source = "userInfo.user.roles")
@@ -245,11 +244,6 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "socialLinks", source = "userInfo.socialLinks")
 	@Mapping(target = "isPhoneNumberVisible", source = "userInfo.phoneNumberVisible")
 	UserInfoResponseDto toUserInfoResponseDto(UserInfo userInfo);
-
-	@Named("mapUserInfoProfileImage")
-	default ProfileImageDto mapUserInfoProfileImage(UserInfo userInfo) {
-		return ProfileImageDto.from(userInfo.getUser());
-	}
 
 	//TODO : 운영계 반영 성공시 삭제
 	@Named("maskPhoneNumber")
