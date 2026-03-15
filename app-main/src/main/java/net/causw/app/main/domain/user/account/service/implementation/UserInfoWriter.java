@@ -42,41 +42,6 @@ public class UserInfoWriter {
 	}
 
 	/**
-	 * 경력 저장
-	 * @param userCareer 저장할 경력
-	 * @return 저장된 경력
-	 */
-	public UserCareer saveCareer(UserCareer userCareer) {
-		return userCareerRepository.save(userCareer);
-	}
-
-	/**
-	 * 프로젝트 저장
-	 * @param userProject 저장할 프로젝트
-	 * @return 저장된 프로젝트
-	 */
-	public UserProject saveProject(UserProject userProject) {
-		return userProjectRepository.save(userProject);
-	}
-
-	/**
-	 * 경력 ID 목록 일괄 삭제
-	 * @param ids 삭제할 경력 ID 목록
-	 */
-	public void deleteCareerByIds(List<String> ids) {
-		userCareerRepository.deleteAllByIdInBatch(ids);
-	}
-
-	/**
-	 * 프로젝트 ID 목록 일괄 삭제
-	 * @param ids 삭제할 프로젝트 ID 목록
-	 */
-	public void deleteProjectByIds(List<String> ids) {
-		userProjectRepository.deleteAllByIdInBatch(ids);
-	}
-
-
-	/**
 	 * 사용자가 입력한 커리어 리스트와 기존 저장 데이터를 비교하여 동기화한다.
 	 * 신규는 생성, 기존은 수정, 요청에 없는 항목은 삭제한다.
 	 *
@@ -146,5 +111,39 @@ public class UserInfoWriter {
 			.filter(id -> !requests.contains(id))
 			.toList();
 		deleteProjectByIds(toDelete);
+	}
+
+	/**
+	 * 경력 저장
+	 * @param userCareer 저장할 경력
+	 * @return 저장된 경력
+	 */
+	private UserCareer saveCareer(UserCareer userCareer) {
+		return userCareerRepository.save(userCareer);
+	}
+
+	/**
+	 * 프로젝트 저장
+	 * @param userProject 저장할 프로젝트
+	 * @return 저장된 프로젝트
+	 */
+	private UserProject saveProject(UserProject userProject) {
+		return userProjectRepository.save(userProject);
+	}
+
+	/**
+	 * 경력 ID 목록 일괄 삭제
+	 * @param ids 삭제할 경력 ID 목록
+	 */
+	private void deleteCareerByIds(List<String> ids) {
+		userCareerRepository.deleteAllByIdInBatch(ids);
+	}
+
+	/**
+	 * 프로젝트 ID 목록 일괄 삭제
+	 * @param ids 삭제할 프로젝트 ID 목록
+	 */
+	private void deleteProjectByIds(List<String> ids) {
+		userProjectRepository.deleteAllByIdInBatch(ids);
 	}
 }
