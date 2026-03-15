@@ -1,8 +1,7 @@
 package net.causw.app.main.domain.notification.notification.api.v2.controller;
 
-import static net.causw.global.constant.StaticValue.*;
+import java.util.List;
 
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,7 +17,6 @@ import net.causw.app.main.domain.notification.notification.api.v2.dto.response.N
 import net.causw.app.main.domain.notification.notification.service.NotificationLogService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
-import net.causw.app.main.shared.dto.PageResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -32,15 +30,13 @@ public class NotificationLogController {
 	private final NotificationLogService notificationLogService;
 
 	@GetMapping
-	@Operation(summary = "유저의 알림 리스트 조회", description = "유저의 알림 리스트를 조회합니다. 오프셋 페이지네이션 기반이고 기본적으로 한 페이지에 20개의 알림입니다.")
-	public ApiResponse<PageResponse<NotificationResponseDto>> getNotificationList(
+	@Operation(summary = "유저의 알림 리스트 조회", description = "최근 7일의 알림을 리스트로 조회합니다. 알림의 isRead는 읽음 여부입니다. targetId는 게시글, 댓글 등의 id이고, targetParantId는 게시판의 id입니다.")
+	public ApiResponse<List<NotificationResponseDto>> getNotificationList(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
-		@RequestParam(name = "pageNum", required = false, defaultValue = "0") Integer pageNum) {
+		@RequestParam(name = "isRead") boolean isRead) {
 
-		PageRequest pageRequest = PageRequest.of(pageNum, DEFAULT_PAGE_SIZE);
-
-		PageResponse<NotificationResponseDto> response = PageResponse
-			.from(notificationLogService.getNotificationList(userDetails.getUser().getId(), pageRequest));
+		List<NotificationResponseDto> response = notificationLogService
+			.getNotificationList(userDetails.getUser().getId(), isRead);
 
 		return ApiResponse.success(response);
 	}
