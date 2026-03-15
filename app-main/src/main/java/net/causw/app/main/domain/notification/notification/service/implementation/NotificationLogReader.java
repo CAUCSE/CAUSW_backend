@@ -1,10 +1,9 @@
 package net.causw.app.main.domain.notification.notification.service.implementation;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.notification.notification.entity.NotificationLog;
@@ -24,8 +23,10 @@ public class NotificationLogReader {
 		return notificationLogRepository.findByIdAndUserId(id, userId);
 	}
 
-	public Page<NotificationLog> getNotificationList(String userId, Pageable pageable) {
-		return notificationLogRepository.findByUserId(userId, pageable);
+	public List<NotificationLog> getNotificationList(String userId, boolean isRead) {
+		LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
+
+		return notificationLogRepository.findRecentNotifications(userId, isRead, sevenDaysAgo);
 	}
 
 	public Optional<NotificationLog> getLatestUnread(String userId) {
