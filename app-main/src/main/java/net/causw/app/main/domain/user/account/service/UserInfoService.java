@@ -1,23 +1,14 @@
 package net.causw.app.main.domain.user.account.service;
 
-import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.entity.userInfo.UserCareer;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
-import net.causw.app.main.domain.user.account.entity.userInfo.UserProject;
-import net.causw.app.main.domain.user.account.service.dto.request.UserCareerCommand;
 import net.causw.app.main.domain.user.account.service.dto.request.UserInfoListCondition;
 import net.causw.app.main.domain.user.account.service.dto.request.UserInfoUpdateCommand;
-import net.causw.app.main.domain.user.account.service.dto.request.UserProjectCommand;
 import net.causw.app.main.domain.user.account.service.dto.result.UserInfoDetailResult;
 import net.causw.app.main.domain.user.account.service.dto.result.UserInfoSummaryResult;
 import net.causw.app.main.domain.user.account.service.implementation.UserInfoCreator;
@@ -52,14 +43,16 @@ public class UserInfoService {
 		UserInfo userInfo = userInfoReader.findByUserId(user.getId())
 			.orElseGet(() -> userInfoCreator.createAndSave(user));
 
+		// 동문 수첩 정보 및 컬렉션 필드(소셜링크, 기술스택, 관심기술, 관심 도메인 등) 업데이트
 		userInfo.update(request.description(), request.job(), request.isPhoneNumberVisible());
 		userInfo.updateSocialLinks(request.socialLinks());
 		userInfo.updateTechStack(request.userTechStack());
 		userInfo.updateInterestTech(request.userInterestTech());
 		userInfo.updateInterestDomain(request.userInterestDomain());
 
-		updateUserCareer(request.userCareer(), userInfo);
-		updateUserProject(request.userProject(), userInfo);
+		// 경력/프로젝트 엔티티 동기화
+		userInfoWriter.syncCareers(request.userCareer(), userInfo);
+		userInfoWriter.syncProjects(request.userProject(), userInfo);
 
 		UserInfo updated = userInfoWriter.save(userInfo);
 		return userInfoMapper.toDetailResult(updated);
@@ -104,70 +97,6 @@ public class UserInfoService {
 		Page<UserInfo> userInfos = userInfoReader.findUserInfoWithFilter(condition, pageable);
 
 		return userInfos.map(userInfoMapper::toSummaryResult);
-	}
-
-	// 이력 사항 업데이트
-	private void updateUserCareer(List<UserCareerCommand> dtoList, UserInfo userInfo) {
-		if (dtoList == null)
-			return;
-		userInfo.validateCareerCount(dtoList.size());
-		Set<String> requests = new HashSet<>();
-		int currentYear = LocalDate.now().getYear();
-
-		for (UserCareerCommand dto : dtoList) {
-			dto.validateDate(currentYear);
-			if (dto.id() == null) { // 이력 사항 추가
-				UserCareer created = userInfoWriter.saveCareer(
-					UserCareer.of(userInfo,
-						dto.startYear(), dto.startMonth(),
-						dto.endYear(), dto.endMonth(),
-						dto.description()));
-				requests.add(created.getId());
-			} else { // 이력 사항 수정
-				UserCareer exists = userInfoWriter.getCareer(dto.id());
-				exists.update(
-					dto.startYear(), dto.startMonth(),
-					dto.endYear(), dto.endMonth(),
-					dto.description());
-				requests.add(dto.id());
-			}
-		}
-		// 이력 사항 삭제
-		List<String> currentCareerList = userInfoWriter.findCareerByUserInfoId(userInfo.getId());
-		List<String> toDelete = currentCareerList.stream().filter(id -> !requests.contains(id)).toList();
-		userInfoWriter.deleteCareerByIds(toDelete);
-	}
-
-	// 대표 프로젝트 업데이트
-	private void updateUserProject(List<UserProjectCommand> dtoList, UserInfo userInfo) {
-		if (dtoList == null)
-			return;
-		userInfo.validateProjectCount(dtoList.size());
-		Set<String> requests = new HashSet<>();
-		int currentYear = LocalDate.now().getYear();
-
-		for (UserProjectCommand dto : dtoList) {
-			dto.validateDate(currentYear);
-			if (dto.id() == null) { // 데표 프로젝트 추가
-				UserProject created = userInfoWriter.saveProject(
-					UserProject.of(userInfo,
-						dto.startYear(), dto.startMonth(),
-						dto.endYear(), dto.endMonth(),
-						dto.description()));
-				requests.add(created.getId());
-			} else { // 대표 프로젝트 수정
-				UserProject exists = userInfoWriter.getProject(dto.id());
-				exists.update(
-					dto.startYear(), dto.startMonth(),
-					dto.endYear(), dto.endMonth(),
-					dto.description());
-				requests.add(dto.id());
-			}
-		}
-		// 대표 프로젝트 삭제
-		List<String> currentProjectList = userInfoWriter.findProjectByUserInfoId(userInfo.getId());
-		List<String> toDelete = currentProjectList.stream().filter(id -> !requests.contains(id)).toList();
-		userInfoWriter.deleteProjectByIds(toDelete);
 	}
 
 }

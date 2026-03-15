@@ -11,7 +11,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -177,18 +176,15 @@ class UserInfoServiceTest {
 			UserInfo updated = ObjectFixtures.userInfo();
 			UserInfoDetailResult resultDto = ObjectFixtures.detailResult();
 
-			@SuppressWarnings("unchecked") Set<String> userTechStack = mock(Set.class);
-			@SuppressWarnings("unchecked") Set<String> userInterestTech = mock(Set.class);
-			@SuppressWarnings("unchecked") Set<String> userInterestDomain = mock(Set.class);
-
 			when(userInfoReader.findByUserId(userId)).thenReturn(Optional.of(existing));
 			when(userInfoWriter.save(existing)).thenReturn(updated);
 			when(userInfoMapper.toDetailResult(updated)).thenReturn(resultDto);
 
-			doNothing().when(existing).update(any(), any(), any(), anyBoolean());
-			when(existing.getUserTechStack()).thenReturn(userTechStack);
-			when(existing.getUserInterestTech()).thenReturn(userInterestTech);
-			when(existing.getUserInterestDomain()).thenReturn(userInterestDomain);
+			doNothing().when(existing).update(any(), any(), anyBoolean());
+			doNothing().when(existing).updateSocialLinks(any());
+			doNothing().when(existing).updateTechStack(any());
+			doNothing().when(existing).updateInterestTech(any());
+			doNothing().when(existing).updateInterestDomain(any());
 
 			// when
 			UserInfoDetailResult result = userInfoService.updateUserInfo(request, user);
@@ -198,10 +194,11 @@ class UserInfoServiceTest {
 
 			verify(userInfoReader).findByUserId(userId);
 			verify(userInfoCreator, never()).createAndSave(any(User.class));
-			verify(existing).update(null, null, List.of(), false);
-			verify(userTechStack).clear();
-			verify(userInterestTech).clear();
-			verify(userInterestDomain).clear();
+			verify(existing).update(null, null, false);
+			verify(existing).updateSocialLinks(null);
+			verify(existing).updateTechStack(null);
+			verify(existing).updateInterestTech(null);
+			verify(existing).updateInterestDomain(null);
 			verify(userInfoWriter).save(existing);
 			verify(userInfoMapper).toDetailResult(updated);
 		}
@@ -220,19 +217,16 @@ class UserInfoServiceTest {
 			UserInfo updated = ObjectFixtures.userInfo();
 			UserInfoDetailResult resultDto = ObjectFixtures.detailResult();
 
-			@SuppressWarnings("unchecked") Set<String> userTechStack = mock(Set.class);
-			@SuppressWarnings("unchecked") Set<String> userInterestTech = mock(Set.class);
-			@SuppressWarnings("unchecked") Set<String> userInterestDomain = mock(Set.class);
-
 			when(userInfoReader.findByUserId(userId)).thenReturn(Optional.empty());
 			when(userInfoCreator.createAndSave(user)).thenReturn(created);
 			when(userInfoWriter.save(created)).thenReturn(updated);
 			when(userInfoMapper.toDetailResult(updated)).thenReturn(resultDto);
 
-			doNothing().when(created).update(any(), any(), any(), anyBoolean());
-			when(created.getUserTechStack()).thenReturn(userTechStack);
-			when(created.getUserInterestTech()).thenReturn(userInterestTech);
-			when(created.getUserInterestDomain()).thenReturn(userInterestDomain);
+			doNothing().when(created).update(any(), any(), anyBoolean());
+			doNothing().when(created).updateSocialLinks(any());
+			doNothing().when(created).updateTechStack(any());
+			doNothing().when(created).updateInterestTech(any());
+			doNothing().when(created).updateInterestDomain(any());
 
 			// when
 			UserInfoDetailResult result = userInfoService.updateUserInfo(request, user);
@@ -242,10 +236,11 @@ class UserInfoServiceTest {
 
 			verify(userInfoReader).findByUserId(userId);
 			verify(userInfoCreator).createAndSave(user);
-			verify(created).update(null, null, List.of(), false);
-			verify(userTechStack).clear();
-			verify(userInterestTech).clear();
-			verify(userInterestDomain).clear();
+			verify(created).update(null, null, false);
+			verify(created).updateSocialLinks(null);
+			verify(created).updateTechStack(null);
+			verify(created).updateInterestTech(null);
+			verify(created).updateInterestDomain(null);
 			verify(userInfoWriter).save(created);
 			verify(userInfoMapper).toDetailResult(updated);
 		}
