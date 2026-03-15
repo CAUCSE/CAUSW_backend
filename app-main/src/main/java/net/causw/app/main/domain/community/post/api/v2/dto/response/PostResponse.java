@@ -28,6 +28,8 @@ public record PostResponse(
 
 	@Schema(description = "익명글 여부", example = "False") Boolean isAnonymous,
 
+	@Schema(description = "크롤링 게시글 여부", example = "False") Boolean isCrawled,
+
 	@Schema(description = "게시글 작성자 여부", example = "False") Boolean isOwner,
 
 	@Schema(description = "로그인한 사용자가 좋아요를 이미 누른지 여부", example = "False") Boolean isPostLike,
