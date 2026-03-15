@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -25,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
+import net.causw.app.main.util.ObjectFixtures;
 import net.causw.app.main.domain.user.account.service.dto.request.UserInfoListCondition;
 import net.causw.app.main.domain.user.account.service.dto.request.UserInfoUpdateCommand;
 import net.causw.app.main.domain.user.account.service.dto.result.UserInfoDetailResult;
@@ -68,8 +68,8 @@ class UserInfoServiceTest {
 		void givenValidUserInfoId_whenGetDetailUserInfo_thenReturnsDetailDto() {
 			// given
 			String userInfoId = "ui-1";
-			UserInfo userInfo = ObjectFixtures.userInfo();
-			UserInfoDetailResult resultDto = ObjectFixtures.detailResult();
+			UserInfo userInfo = ObjectFixtures.getMockUserInfo();
+			UserInfoDetailResult resultDto = ObjectFixtures.getMockUserInfoDetailResult();
 
 			when(userInfoReader.findById(userInfoId)).thenReturn(Optional.of(userInfo));
 			when(userInfoMapper.toDetailResult(userInfo)).thenReturn(resultDto);
@@ -111,11 +111,11 @@ class UserInfoServiceTest {
 		void givenExistingUserInfo_whenGetMyDetailUserInfo_thenReturnsMyDetailDto() {
 			// given
 			String userId = "user-1";
-			User user = ObjectFixtures.user();
+			User user = ObjectFixtures.getMockUser();
 			when(user.getId()).thenReturn(userId);
 
-			UserInfo userInfo = ObjectFixtures.userInfo();
-			UserInfoDetailResult resultDto = ObjectFixtures.detailResult();
+			UserInfo userInfo = ObjectFixtures.getMockUserInfo();
+			UserInfoDetailResult resultDto = ObjectFixtures.getMockUserInfoDetailResult();
 
 			when(userInfoReader.findByUserId(userId)).thenReturn(Optional.of(userInfo));
 			when(userInfoMapper.toMyDetailResult(userInfo)).thenReturn(resultDto);
@@ -136,11 +136,11 @@ class UserInfoServiceTest {
 		void givenNoUserInfo_whenGetMyDetailUserInfo_thenCreatesAndReturnsMyDetailDto() {
 			// given
 			String userId = "user-1";
-			User user = ObjectFixtures.user();
+			User user = ObjectFixtures.getMockUser();
 			when(user.getId()).thenReturn(userId);
 
-			UserInfo created = ObjectFixtures.userInfo();
-			UserInfoDetailResult resultDto = ObjectFixtures.detailResult();
+			UserInfo created = ObjectFixtures.getMockUserInfo();
+			UserInfoDetailResult resultDto = ObjectFixtures.getMockUserInfoDetailResult();
 
 			when(userInfoReader.findByUserId(userId)).thenReturn(Optional.empty());
 			when(userInfoCreator.createAndSave(user)).thenReturn(created);
@@ -167,14 +167,14 @@ class UserInfoServiceTest {
 		void givenExistingUserInfo_whenUpdateUserInfo_thenReturnsDetailDto() {
 			// given
 			String userId = "user-1";
-			User user = ObjectFixtures.user();
+			User user = ObjectFixtures.getMockUser();
 			when(user.getId()).thenReturn(userId);
 
-			UserInfoUpdateCommand request = ObjectFixtures.updateRequest();
+			UserInfoUpdateCommand request = ObjectFixtures.getUserInfoUpdateCommand();
 
-			UserInfo existing = ObjectFixtures.userInfo();
-			UserInfo updated = ObjectFixtures.userInfo();
-			UserInfoDetailResult resultDto = ObjectFixtures.detailResult();
+			UserInfo existing = ObjectFixtures.getMockUserInfo();
+			UserInfo updated = ObjectFixtures.getMockUserInfo();
+			UserInfoDetailResult resultDto = ObjectFixtures.getMockUserInfoDetailResult();
 
 			when(userInfoReader.findByUserId(userId)).thenReturn(Optional.of(existing));
 			when(userInfoWriter.save(existing)).thenReturn(updated);
@@ -208,14 +208,14 @@ class UserInfoServiceTest {
 		void givenNoUserInfo_whenUpdateUserInfo_thenCreatesAndReturnsDetailDto() {
 			// given
 			String userId = "user-1";
-			User user = ObjectFixtures.user();
+			User user = ObjectFixtures.getMockUser();
 			when(user.getId()).thenReturn(userId);
 
-			UserInfoUpdateCommand request = ObjectFixtures.updateRequest();
+			UserInfoUpdateCommand request = ObjectFixtures.getUserInfoUpdateCommand();
 
-			UserInfo created = ObjectFixtures.userInfo();
-			UserInfo updated = ObjectFixtures.userInfo();
-			UserInfoDetailResult resultDto = ObjectFixtures.detailResult();
+			UserInfo created = ObjectFixtures.getMockUserInfo();
+			UserInfo updated = ObjectFixtures.getMockUserInfo();
+			UserInfoDetailResult resultDto = ObjectFixtures.getMockUserInfoDetailResult();
 
 			when(userInfoReader.findByUserId(userId)).thenReturn(Optional.empty());
 			when(userInfoCreator.createAndSave(user)).thenReturn(created);
@@ -254,18 +254,18 @@ class UserInfoServiceTest {
 		@DisplayName("조건으로 동문 수첩 리스트 조회")
 		void givenConditionAndPageNum_whenGetUserInfoPage_thenReturnsSummaryPage() {
 			// given
-			UserInfoListCondition condition = ObjectFixtures.listCondition();
+			UserInfoListCondition condition = ObjectFixtures.getMockUserInfoListCondition();
 			Integer pageNum = 1;
 
-			Pageable pageable = ObjectFixtures.pageable();
+			Pageable pageable = ObjectFixtures.getMockPageable();
 			when(pageableFactory.create(pageNum, StaticValue.USER_LIST_PAGE_SIZE)).thenReturn(pageable);
 
-			UserInfo u1 = ObjectFixtures.userInfo();
-			UserInfo u2 = ObjectFixtures.userInfo();
+			UserInfo u1 = ObjectFixtures.getMockUserInfo();
+			UserInfo u2 = ObjectFixtures.getMockUserInfo();
 			Page<UserInfo> page = new PageImpl<>(List.of(u1, u2), pageable, 2);
 
-			UserInfoSummaryResult s1 = ObjectFixtures.summaryResult();
-			UserInfoSummaryResult s2 = ObjectFixtures.summaryResult();
+			UserInfoSummaryResult s1 = ObjectFixtures.getMockUserInfoSummaryResult();
+			UserInfoSummaryResult s2 = ObjectFixtures.getMockUserInfoSummaryResult();
 
 			when(userInfoReader.findUserInfoWithFilter(condition, pageable)).thenReturn(page);
 			when(userInfoMapper.toSummaryResult(u1)).thenReturn(s1);
@@ -281,46 +281,6 @@ class UserInfoServiceTest {
 			verify(userInfoReader).findUserInfoWithFilter(condition, pageable);
 			verify(userInfoMapper).toSummaryResult(u1);
 			verify(userInfoMapper).toSummaryResult(u2);
-		}
-	}
-
-	static class ObjectFixtures {
-		static User user() {
-			return mock(User.class);
-		}
-
-		static UserInfo userInfo() {
-			return mock(UserInfo.class);
-		}
-
-		static UserInfoUpdateCommand updateRequest() {
-			UserInfoUpdateCommand command = mock(UserInfoUpdateCommand.class);
-			when(command.description()).thenReturn(null);
-			when(command.job()).thenReturn(null);
-			when(command.socialLinks()).thenReturn(null);
-			when(command.isPhoneNumberVisible()).thenReturn(false);
-			when(command.userCareer()).thenReturn(null);
-			when(command.userProject()).thenReturn(null);
-			when(command.userTechStack()).thenReturn(null);
-			when(command.userInterestTech()).thenReturn(null);
-			when(command.userInterestDomain()).thenReturn(null);
-			return command;
-		}
-
-		static UserInfoDetailResult detailResult() {
-			return mock(UserInfoDetailResult.class);
-		}
-
-		static UserInfoSummaryResult summaryResult() {
-			return mock(UserInfoSummaryResult.class);
-		}
-
-		static UserInfoListCondition listCondition() {
-			return mock(UserInfoListCondition.class);
-		}
-
-		static Pageable pageable() {
-			return mock(Pageable.class);
 		}
 	}
 }
