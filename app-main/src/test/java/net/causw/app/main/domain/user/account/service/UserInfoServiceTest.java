@@ -24,7 +24,6 @@ import org.springframework.data.domain.Pageable;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
-import net.causw.app.main.util.ObjectFixtures;
 import net.causw.app.main.domain.user.account.service.dto.request.UserInfoListCondition;
 import net.causw.app.main.domain.user.account.service.dto.request.UserInfoUpdateCommand;
 import net.causw.app.main.domain.user.account.service.dto.result.UserInfoDetailResult;
@@ -36,6 +35,7 @@ import net.causw.app.main.domain.user.account.service.mapper.UserInfoMapper;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.UserInfoErrorCode;
 import net.causw.app.main.shared.pageable.PageableFactory;
+import net.causw.app.main.util.ObjectFixtures;
 import net.causw.global.constant.StaticValue;
 
 @ExtendWith(MockitoExtension.class)
