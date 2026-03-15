@@ -6,7 +6,7 @@ import net.causw.app.main.shared.dto.ProfileImageDto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-public record UserInfoDetailResponseDto(
+public record UserInfoDetailResponse(
 	@Schema(description = "동문 수첩 프로필 id", example = "uuid 형식의 String 값입니다") String id,
 
 	@Schema(description = "사용자 프로필 이미지") ProfileImageDto profileImage,
@@ -31,9 +31,9 @@ public record UserInfoDetailResponseDto(
 
 	@Schema(description = "사용자 기술 스택", example = "[\"Stack0\", \"Stack1\"]") List<String> techStack,
 
-	@Schema(description = "사용자 경력 사항") List<UserCareerDto> userCareer,
+	@Schema(description = "사용자 경력 사항") List<UserCareerResponse> userCareer,
 
-	@Schema(description = "사용자 대표 프로젝트") List<UserProjectDto> userProject,
+	@Schema(description = "사용자 대표 프로젝트") List<UserProjectResponse> userProject,
 
 	@Schema(description = "사용자 관심 기술", example = "[\"Tech0\", \"Tech1\"]") List<String> userInterestTech,
 

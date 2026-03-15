@@ -46,6 +46,8 @@ public interface NotificationLogRepository extends JpaRepository<NotificationLog
 
 	Optional<NotificationLog> findByIdAndUser(String id, User user);
 
+	Optional<NotificationLog> findByIdAndUserId(String id, String userId);
+
 	@Query("SELECT nl FROM NotificationLog nl " +
 		"WHERE nl.user.id = :userId " +
 		"AND nl.isRead = false")

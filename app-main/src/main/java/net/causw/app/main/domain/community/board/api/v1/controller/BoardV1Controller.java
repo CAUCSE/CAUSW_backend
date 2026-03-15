@@ -45,7 +45,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/boards")
-public class BoardController {
+public class BoardV1Controller {
 	private final BoardV1Service boardService;
 
 	@GetMapping

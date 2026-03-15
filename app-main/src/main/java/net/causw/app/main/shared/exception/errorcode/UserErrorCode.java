@@ -40,7 +40,13 @@ public enum UserErrorCode implements BaseResponseCode {
 	SOCIAL_ONLY_USER_CANNOT_CHANGE_PASSWORD(HttpStatus.BAD_REQUEST, "USER_400_011",
 		"소셜 로그인만 연결된 계정은 비밀번호를 변경할 수 없습니다."),
 	INVALID_PROFILE_IMAGE_TYPE(HttpStatus.BAD_REQUEST, "USER_400_012",
-		"기본 프로필 이미지 타입(MALE_1, MALE_2, FEMALE_1, FEMALE_2)만 허용됩니다.");
+		"기본 프로필 이미지 타입(MALE_1, MALE_2, FEMALE_1, FEMALE_2)만 허용됩니다."),
+	PASSWORD_RESET_EXPIRED(HttpStatus.BAD_REQUEST, "AUTH_400_013", "비밀번호 초기화 인증 유효 시간이 만료되었습니다."),
+	PASSWORD_RESET_CODE_MISMATCH(HttpStatus.BAD_REQUEST, "AUTH_400_014", "비밀번호 초기화 인증 코드가 일치하지 않습니다."),
+	USER_NOT_DROPPABLE(HttpStatus.BAD_REQUEST, "USER_400_015", "추방할 수 없는 사용자입니다."),
+	USER_NOT_RESTORABLE(HttpStatus.BAD_REQUEST, "USER_400_016", "관리자는 추방 상태의 사용자만 복구할 수 있습니다."),
+	USER_ROLE_MISMATCH(HttpStatus.BAD_REQUEST, "USER_400_017", "요청한 현재 역할이 사용자의 역할 목록과 일치하지 않습니다."),
+	USER_NOT_ROLE_UPDATABLE(HttpStatus.BAD_REQUEST, "USER_400_018", "활성된 사용자의 역할만 변경할 수 있습니다.");
 
 	private final HttpStatus status;
 	private final String code;

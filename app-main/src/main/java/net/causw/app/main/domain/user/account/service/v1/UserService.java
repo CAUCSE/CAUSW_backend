@@ -172,6 +172,7 @@ public class UserService {
 	private final CircleQueryRepository circleQueryRepository;
 	private final UserEntityService userEntityService;
 
+	@Deprecated
 	@Transactional
 	public void findPassword(
 		UserFindPasswordRequestDto userFindPasswordRequestDto) {

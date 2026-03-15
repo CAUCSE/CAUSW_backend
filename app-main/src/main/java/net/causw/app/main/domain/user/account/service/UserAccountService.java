@@ -151,5 +151,4 @@ public class UserAccountService {
 
 		user.updatePassword(passwordEncoder.encode(command.newPassword()));
 	}
-
 }

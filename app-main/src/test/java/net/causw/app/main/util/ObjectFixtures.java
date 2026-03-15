@@ -1,9 +1,13 @@
 package net.causw.app.main.util;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -32,11 +36,16 @@ import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.Academic
 import net.causw.app.main.domain.user.account.api.v1.dto.UserCreateRequestDto;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
+import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
 import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.account.enums.user.GraduationType;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.dto.request.AdmissionCreateCommand;
+import net.causw.app.main.domain.user.account.service.dto.request.UserInfoListCondition;
+import net.causw.app.main.domain.user.account.service.dto.request.UserInfoUpdateCommand;
+import net.causw.app.main.domain.user.account.service.dto.result.UserInfoDetailResult;
+import net.causw.app.main.domain.user.account.service.dto.result.UserInfoSummaryResult;
 import net.causw.global.constant.StaticValue;
 
 public class ObjectFixtures {
@@ -367,5 +376,45 @@ public class ObjectFixtures {
 		Locker locker = getLocker(lockerNumber, isActive, user, location, expireDate);
 		ReflectionTestUtils.setField(locker, "id", id);
 		return locker;
+	}
+
+	// UserInfoService 테스트용 mock fixtures
+
+	public static User getMockUser() {
+		return mock(User.class);
+	}
+
+	public static UserInfo getMockUserInfo() {
+		return mock(UserInfo.class);
+	}
+
+	public static UserInfoUpdateCommand getUserInfoUpdateCommand() {
+		UserInfoUpdateCommand command = mock(UserInfoUpdateCommand.class);
+		when(command.description()).thenReturn(null);
+		when(command.job()).thenReturn(null);
+		when(command.socialLinks()).thenReturn(null);
+		when(command.isPhoneNumberVisible()).thenReturn(false);
+		when(command.userCareer()).thenReturn(null);
+		when(command.userProject()).thenReturn(null);
+		when(command.userTechStack()).thenReturn(null);
+		when(command.userInterestTech()).thenReturn(null);
+		when(command.userInterestDomain()).thenReturn(null);
+		return command;
+	}
+
+	public static UserInfoDetailResult getMockUserInfoDetailResult() {
+		return mock(UserInfoDetailResult.class);
+	}
+
+	public static UserInfoSummaryResult getMockUserInfoSummaryResult() {
+		return mock(UserInfoSummaryResult.class);
+	}
+
+	public static UserInfoListCondition getMockUserInfoListCondition() {
+		return mock(UserInfoListCondition.class);
+	}
+
+	public static Pageable getMockPageable() {
+		return mock(Pageable.class);
 	}
 }

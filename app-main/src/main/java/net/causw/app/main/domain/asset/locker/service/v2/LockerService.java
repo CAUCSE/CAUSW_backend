@@ -15,11 +15,11 @@ import net.causw.app.main.domain.asset.locker.service.v2.dto.result.LockerLocati
 import net.causw.app.main.domain.asset.locker.service.v2.dto.result.LockerPeriodStatusResult;
 import net.causw.app.main.domain.asset.locker.service.v2.dto.result.MyLockerResult;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerLocationReader;
-import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerLogWriter;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerPeriodResolver;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerPolicyReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerValidator;
+import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerWriter;
 import net.causw.app.main.domain.asset.locker.util.LockerMapper;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
@@ -44,8 +44,8 @@ public class LockerService {
 	private final LockerLocationReader lockerLocationReader;
 	private final LockerPolicyReader lockerPolicyReader;
 	private final LockerPeriodResolver lockerPeriodResolver;
-	private final LockerLogWriter lockerLogWriter;
 	private final LockerValidator lockerValidator;
+	private final LockerWriter lockerWriter;
 	private final UserReader userReader;
 
 	/**
@@ -69,13 +69,11 @@ public class LockerService {
 
 		// 기존 사물함 보유 시 자동 반납
 		lockerReader.findByUserId(user.getId()).ifPresent(existingLocker -> {
-			existingLocker.returnLocker();
-			lockerLogWriter.logReturn(existingLocker, user);
+			lockerWriter.returnLocker(existingLocker, user);
 		});
 
 		// 사물함 신청
-		locker.register(user, lockerPolicyReader.findExpireDate());
-		lockerLogWriter.logRegister(locker, user);
+		lockerWriter.registerLocker(locker, user, lockerPolicyReader.findExpireDate());
 	}
 
 	/**
@@ -100,8 +98,7 @@ public class LockerService {
 		lockerValidator.validateOwner(locker, user);
 
 		// 사물함 반납
-		locker.returnLocker();
-		lockerLogWriter.logReturn(locker, user);
+		lockerWriter.returnLocker(locker, user);
 	}
 
 	/**
@@ -129,8 +126,7 @@ public class LockerService {
 		LocalDateTime nextExpireDate = lockerPolicyReader.findNextExpireDate();
 		lockerValidator.validateNotAlreadyExtended(locker, nextExpireDate);
 
-		locker.extendExpireDate(nextExpireDate);
-		lockerLogWriter.logExtend(locker, user);
+		lockerWriter.extendLocker(locker, user, nextExpireDate);
 	}
 
 	/**

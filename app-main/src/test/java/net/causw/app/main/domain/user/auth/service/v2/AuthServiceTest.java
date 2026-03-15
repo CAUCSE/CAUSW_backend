@@ -1,9 +1,17 @@
 package net.causw.app.main.domain.user.auth.service.v2;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.doThrow;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.mock;
+import static org.mockito.BDDMockito.never;
+import static org.mockito.BDDMockito.verify;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -28,12 +36,17 @@ import net.causw.app.main.domain.user.account.service.implementation.UserPushTok
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
+import net.causw.app.main.domain.user.auth.entity.EmailVerification;
+import net.causw.app.main.domain.user.auth.entity.EmailVerification.VerificationStatus;
 import net.causw.app.main.domain.user.auth.service.AuthService;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthValidator;
+import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationReader;
+import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationSender;
 import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationValidator;
+import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationWriter;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
@@ -64,6 +77,14 @@ public class AuthServiceTest {
 	private UserPushTokenWriter userPushTokenWriter;
 	@Mock
 	private EmailVerificationValidator emailVerificationValidator;
+	@Mock
+	private EmailVerificationWriter emailVerificationWriter;
+	@Mock
+	private EmailVerificationReader emailVerificationReader;
+	@Mock
+	private EmailVerificationSender emailVerificationSender;
+	@Mock
+	private net.causw.app.main.domain.user.account.service.v1.PasswordGenerator passwordGenerator;
 
 	private static final String USER_ID = "user_id_123";
 	private static final String EMAIL = "test@example.com";
@@ -97,9 +118,13 @@ public class AuthServiceTest {
 		@DisplayName("성공: 모든 검증을 통과하면 사용자가 저장되고 응답을 반환한다.")
 		void success() {
 			// given
+			EmailVerification verifiedEmail = mock(EmailVerification.class);
+
 			given(userReader.checkUserExistByPhoneNumAndName(anyString(), anyString())).willReturn(Optional.empty());
 			given(passwordEncoder.encode(anyString())).willReturn(ENCODED_PASSWORD);
 			given(userWriter.save(any(User.class))).willReturn(user);
+			given(emailVerificationReader.findLatestByEmailAndStatus(EMAIL, VerificationStatus.VERIFIED))
+				.willReturn(verifiedEmail);
 
 			// when
 			AuthResult result = authService.registerEmailUser(registerDto);
@@ -234,6 +259,91 @@ public class AuthServiceTest {
 					verify(userWriter, never()).save(any(User.class));
 				}
 			}
+		}
+	}
+
+	@Nested
+	@DisplayName("비밀번호 초기화")
+	class PasswordResetTest {
+
+		private static final String CODE = "ABC123";
+		private static final String TEMP_PASSWORD = "tmpPass@1234";
+
+		@Test
+		@DisplayName("인증코드 발송 성공")
+		void sendPasswordResetVerificationEmail_success() {
+			authService.sendPasswordResetVerificationEmail(NAME, EMAIL);
+
+			verify(emailVerificationValidator).validatePasswordResetSend(NAME, EMAIL);
+			verify(emailVerificationSender).send(EMAIL, VerificationStatus.PASSWORD_FIND);
+		}
+
+		@Test
+		@DisplayName("인증코드 검증 성공 시 임시 비밀번호를 발급한다")
+		void resetPasswordByVerificationCode_success() {
+			User mockedUser = mock(User.class);
+			EmailVerification emailVerification = EmailVerification.of(
+				EMAIL, CODE, LocalDateTime.now().plusMinutes(5), VerificationStatus.PASSWORD_FIND);
+
+			given(userReader.findByEmailAndName(EMAIL, NAME)).willReturn(mockedUser);
+			given(mockedUser.isOnlySocialUser()).willReturn(false);
+			given(emailVerificationReader.findLatestByEmailAndStatus(EMAIL, VerificationStatus.PASSWORD_FIND))
+				.willReturn(emailVerification);
+			given(passwordGenerator.generate()).willReturn(TEMP_PASSWORD);
+			given(passwordEncoder.encode(TEMP_PASSWORD)).willReturn(ENCODED_PASSWORD);
+
+			String temporaryPassword = authService.resetPasswordByVerificationCode(NAME, EMAIL, CODE);
+
+			assertThat(temporaryPassword).isEqualTo(TEMP_PASSWORD);
+			verify(mockedUser).updatePassword(ENCODED_PASSWORD);
+			verify(userWriter).save(mockedUser);
+			verify(emailVerificationWriter).delete(emailVerification);
+		}
+
+		@Test
+		@DisplayName("소셜 전용 계정은 비밀번호 초기화 불가")
+		void resetPasswordByVerificationCode_fail_socialOnlyUser() {
+			User mockedUser = mock(User.class);
+			given(userReader.findByEmailAndName(EMAIL, NAME)).willReturn(mockedUser);
+			given(mockedUser.isOnlySocialUser()).willReturn(true);
+
+			assertThatThrownBy(() -> authService.resetPasswordByVerificationCode(NAME, EMAIL, CODE))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasMessage(UserErrorCode.SOCIAL_ONLY_USER_CANNOT_CHANGE_PASSWORD.getMessage());
+		}
+
+		@Test
+		@DisplayName("인증 코드 불일치 시 실패")
+		void resetPasswordByVerificationCode_fail_codeMismatch() {
+			User mockedUser = mock(User.class);
+			EmailVerification emailVerification = EmailVerification.of(
+				EMAIL, CODE, LocalDateTime.now().plusMinutes(5), VerificationStatus.PASSWORD_FIND);
+
+			given(userReader.findByEmailAndName(EMAIL, NAME)).willReturn(mockedUser);
+			given(mockedUser.isOnlySocialUser()).willReturn(false);
+			given(emailVerificationReader.findLatestByEmailAndStatus(EMAIL, VerificationStatus.PASSWORD_FIND))
+				.willReturn(emailVerification);
+
+			assertThatThrownBy(() -> authService.resetPasswordByVerificationCode(NAME, EMAIL, "ZZZZZZ"))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasMessage(UserErrorCode.PASSWORD_RESET_CODE_MISMATCH.getMessage());
+		}
+
+		@Test
+		@DisplayName("인증 유효시간 만료 시 실패")
+		void resetPasswordByVerificationCode_fail_expired() {
+			User mockedUser = mock(User.class);
+			EmailVerification expired = EmailVerification.of(
+				EMAIL, CODE, LocalDateTime.now().minusMinutes(1), VerificationStatus.PASSWORD_FIND);
+
+			given(userReader.findByEmailAndName(EMAIL, NAME)).willReturn(mockedUser);
+			given(mockedUser.isOnlySocialUser()).willReturn(false);
+			given(emailVerificationReader.findLatestByEmailAndStatus(EMAIL, VerificationStatus.PASSWORD_FIND))
+				.willReturn(expired);
+
+			assertThatThrownBy(() -> authService.resetPasswordByVerificationCode(NAME, EMAIL, CODE))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasMessage(UserErrorCode.PASSWORD_RESET_EXPIRED.getMessage());
 		}
 	}
 

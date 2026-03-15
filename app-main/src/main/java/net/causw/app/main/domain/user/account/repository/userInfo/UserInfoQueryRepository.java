@@ -119,12 +119,12 @@ public class UserInfoQueryRepository {
 		switch (sortType) {
 			case ADMISSION_YEAR_DESC -> {
 				return new OrderSpecifier[] {
-					userInfo.user.admissionYear.desc(), userInfo.updatedAt.desc()
+					userInfo.user.admissionYear.desc(), userInfo.user.name.asc(), userInfo.updatedAt.desc()
 				};
 			}
 			case ADMISSION_YEAR_ASC -> {
 				return new OrderSpecifier[] {
-					userInfo.user.admissionYear.asc(), userInfo.updatedAt.desc()
+					userInfo.user.admissionYear.asc(), userInfo.user.name.asc(), userInfo.updatedAt.desc()
 				};
 			}
 			case UPDATED_AT_ASC -> {
