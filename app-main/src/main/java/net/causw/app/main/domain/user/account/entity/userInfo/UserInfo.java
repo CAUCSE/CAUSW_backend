@@ -1,14 +1,12 @@
 package net.causw.app.main.domain.user.account.entity.userInfo;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.entity.BaseEntity;
-import net.causw.app.main.shared.exception.errorcode.UserInfoErrorCode;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
@@ -20,6 +18,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import net.causw.app.main.shared.exception.errorcode.UserInfoErrorCode;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,6 +32,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "tb_user_info")
 public class UserInfo extends BaseEntity {
+
+	private static final int MAX_SOCIAL_LINKS = 10;
+	private static final int MAX_TECH_STACK = 10;
+	private static final int MAX_CAREER = 10;
+	private static final int MAX_PROJECT = 10;
+	private static final int MAX_INTEREST_TECH = 10;
+	private static final int MAX_INTEREST_DOMAIN = 10;
 
 	@OneToOne
 	@JoinColumn(name = "user_id", nullable = false)
@@ -88,15 +94,58 @@ public class UserInfo extends BaseEntity {
 	public void update(
 		String description,
 		String job,
-		List<String> socialLinks,
 		boolean isPhoneNumberVisible) {
-		if (socialLinks.size() > 10) {
-			throw UserInfoErrorCode.TOO_MUCH_SOCIAL_LINK.toBaseException();
-		}
-
 		this.description = description;
 		this.job = job;
-		this.socialLinks = socialLinks;
 		this.isPhoneNumberVisible = isPhoneNumberVisible;
+	}
+
+	public void updateSocialLinks(List<String> incoming) {
+		if (incoming != null && incoming.size() > MAX_SOCIAL_LINKS) {
+			throw UserInfoErrorCode.TOO_MUCH_SOCIAL_LINK.toBaseException();
+		}
+		replaceWithFiltered(this.socialLinks, incoming);
+	}
+
+	public void updateTechStack(List<String> incoming) {
+		if (incoming != null && incoming.size() > MAX_TECH_STACK) {
+			throw UserInfoErrorCode.TOO_MUCH_TECH_STACK.toBaseException();
+		}
+		replaceWithFiltered(this.userTechStack, incoming);
+	}
+
+	public void updateInterestTech(List<String> incoming) {
+		if (incoming != null && incoming.size() > MAX_INTEREST_TECH) {
+			throw UserInfoErrorCode.TOO_MUCH_INTEREST_TECH.toBaseException();
+		}
+		replaceWithFiltered(this.userInterestTech, incoming);
+	}
+
+	public void updateInterestDomain(List<String> incoming) {
+		if (incoming != null && incoming.size() > MAX_INTEREST_DOMAIN) {
+			throw UserInfoErrorCode.TOO_MUCH_INTEREST_DOMAIN.toBaseException();
+		}
+		replaceWithFiltered(this.userInterestDomain, incoming);
+	}
+
+	public void validateCareerCount(int size) {
+		if (size > MAX_CAREER) {
+			throw UserInfoErrorCode.TOO_MUCH_CAREER.toBaseException();
+		}
+	}
+
+	public void validateProjectCount(int size) {
+		if (size > MAX_PROJECT) {
+			throw UserInfoErrorCode.TOO_MUCH_PROJECT.toBaseException();
+		}
+	}
+
+	private void replaceWithFiltered(Collection<String> target, List<String> incoming) {
+		target.clear();
+		if (incoming != null) {
+			incoming.stream()
+				.filter(s -> s != null && !s.isBlank())
+				.forEach(target::add);
+		}
 	}
 }

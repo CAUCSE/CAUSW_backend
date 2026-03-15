@@ -52,22 +52,14 @@ public class UserInfoService {
 		UserInfo userInfo = userInfoReader.findByUserId(user.getId())
 			.orElseGet(() -> userInfoCreator.createAndSave(user));
 
-		// 소개글, 직업, SNS, 연락처 공개 여부 업데이트
-		List<String> socialLinks = request.socialLinks() == null ? List.of() : request.socialLinks();
-		userInfo.update(
-			request.description(),
-			request.job(),
-			socialLinks,
-			request.isPhoneNumberVisible());
+		userInfo.update(request.description(), request.job(), request.isPhoneNumberVisible());
+		userInfo.updateSocialLinks(request.socialLinks());
+		userInfo.updateTechStack(request.userTechStack());
+		userInfo.updateInterestTech(request.userInterestTech());
+		userInfo.updateInterestDomain(request.userInterestDomain());
 
-		// 사용자 이력, 대표 프로젝트 업데이트
 		updateUserCareer(request.userCareer(), userInfo);
 		updateUserProject(request.userProject(), userInfo);
-
-		// 기술 스택, 관심 기술, 관심 도메인 업데이트
-		replaceStrings(userInfo.getUserTechStack(), request.userTechStack());
-		replaceStrings(userInfo.getUserInterestTech(), request.userInterestTech());
-		replaceStrings(userInfo.getUserInterestDomain(), request.userInterestDomain());
 
 		UserInfo updated = userInfoWriter.save(userInfo);
 		return userInfoMapper.toDetailResult(updated);
@@ -118,6 +110,7 @@ public class UserInfoService {
 	private void updateUserCareer(List<UserCareerCommand> dtoList, UserInfo userInfo) {
 		if (dtoList == null)
 			return;
+		userInfo.validateCareerCount(dtoList.size());
 		Set<String> requests = new HashSet<>();
 		int currentYear = LocalDate.now().getYear();
 
@@ -149,6 +142,7 @@ public class UserInfoService {
 	private void updateUserProject(List<UserProjectCommand> dtoList, UserInfo userInfo) {
 		if (dtoList == null)
 			return;
+		userInfo.validateProjectCount(dtoList.size());
 		Set<String> requests = new HashSet<>();
 		int currentYear = LocalDate.now().getYear();
 
@@ -176,13 +170,4 @@ public class UserInfoService {
 		userInfoWriter.deleteProjectByIds(toDelete);
 	}
 
-	private void replaceStrings(Set<String> target, List<String> incoming) {
-		target.clear();
-		if (incoming == null)
-			return;
-
-		incoming.stream()
-			.filter(s -> s != null && !s.isBlank())
-			.forEach(target::add);
-	}
 }
