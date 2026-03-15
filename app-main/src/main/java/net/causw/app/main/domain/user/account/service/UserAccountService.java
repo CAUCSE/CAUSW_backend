@@ -5,8 +5,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.domain.user.account.repository.userInfo.UserInfoRepository;
 import net.causw.app.main.domain.user.account.service.dto.request.UserPasswordUpdateCommand;
+import net.causw.app.main.domain.user.account.service.dto.result.UserMeResult;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
@@ -29,6 +32,7 @@ public class UserAccountService {
 	private final AuthValidator authValidator;
 	private final AuthTokenManager authTokenManager;
 	private final PasswordEncoder passwordEncoder;
+	private final UserInfoRepository userInfoRepository;
 
 	/**
 	 * 소셜 로그인을 통해 생성된 임시 유저(GUEST)의 추가 정보를 등록하고 회원가입 절차를 완료합니다.
@@ -62,6 +66,19 @@ public class UserAccountService {
 		return AuthResult.of(tokens.accessToken(), updatedUser.getName(), updatedUser.getEmail(),
 			updatedUser.getProfileUrl(),
 			tokens.refreshToken());
+	}
+
+	/**
+	 * 현재 로그인한 사용자의 기본 정보를 조회합니다. 내정보 메인페이지 진입 시 사용합니다.
+	 *
+	 * @param userId 조회할 사용자의 고유 식별자 (PK)
+	 * @return {@link UserMeResult} 내 정보 결과 (이름, 닉네임, 프로필이미지, 입학년도, 상태, 권한)
+	 */
+	@Transactional(readOnly = true)
+	public UserMeResult getMyProfile(String userId) {
+		User user = userReader.findDetailById(userId);
+		UserInfo userInfo = userInfoRepository.findByUserId(userId).orElse(null);
+		return UserMeResult.from(user, userInfo);
 	}
 
 	/**
