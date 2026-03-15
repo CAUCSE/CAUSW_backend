@@ -8,7 +8,8 @@ import net.causw.app.main.domain.community.ceremony.enums.CeremonyState;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-public record CeremonyDetailResponseDto(
+@Schema(description = "경조사 상세 조회 응답")
+public record CeremonyDetailResponse(
 
 	@Schema(description = "경조사 id", example = "uuid 형식의 String 값입니다.") String id,
 
