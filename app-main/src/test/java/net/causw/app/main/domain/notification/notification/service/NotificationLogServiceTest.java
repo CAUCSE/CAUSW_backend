@@ -43,54 +43,46 @@ class NotificationLogServiceTest {
 	@Mock
 	private NotificationDtoMapper notificationDtoMapper;
 
-	@Nested
-	@DisplayName("최근 7일 알림 리스트 조회 테스트")
-	class GetNotificationListTest {
+	@Test
+	@DisplayName("유저 ID와 읽음 여부로 조회된 알림 엔티티 리스트를 DTO 리스트로 변환하여 반환한다")
+	void givenUserIdAndIsRead_whenGetNotificationList_thenReturnsDtoList() {
+		// given
+		String userId = "user-uuid-123";
+		boolean isRead = false;
 
-		@Test
-		@DisplayName("유저 ID와 읽음 여부로 조회된 알림 엔티티 리스트를 DTO 리스트로 변환하여 반환한다")
-		void givenUserIdAndIsRead_whenGetNotificationList_thenReturnsDtoList() {
-			// given
-			String userId = "user-uuid-123";
-			boolean isRead = false;
-			LocalDateTime currentTime = LocalDateTime.of(2026, 3, 16, 12, 0);
+		User user = ObjectFixtures.getCertifiedUser();
+		Notification notification = ObjectFixtures.getNotification(user);
 
-			User user = ObjectFixtures.getCertifiedUser();
-			Notification notification = ObjectFixtures.getNotification(user);
+		NotificationLog log1 = NotificationLog.of(user, notification);
+		ReflectionTestUtils.setField(log1, "id", "log-1");
+		NotificationLog log2 = NotificationLog.of(user, notification);
+		ReflectionTestUtils.setField(log2, "id", "log-2");
 
-			NotificationLog log1 = NotificationLog.of(user, notification);
-			ReflectionTestUtils.setField(log1, "id", "log-1");
-			NotificationLog log2 = NotificationLog.of(user, notification);
-			ReflectionTestUtils.setField(log2, "id", "log-2");
+		List<NotificationLog> mockLogs = List.of(log1, log2);
 
-			List<NotificationLog> mockLogs = List.of(log1, log2);
+		given(notificationLogReader.getNotificationList(eq(userId), eq(isRead), any(LocalDateTime.class)))
+			.willReturn(mockLogs);
 
-			// Reader 동작 모킹
-			given(notificationLogReader.getNotificationList(userId, isRead, currentTime))
-				.willReturn(mockLogs);
+		// Mapper 동작 모킹
+		NotificationResponseDto dto1 = NotificationResponseDto.builder().notificationLogId("log-1").build();
+		NotificationResponseDto dto2 = NotificationResponseDto.builder().notificationLogId("log-2").build();
 
-			// Mapper 동작 모킹
-			NotificationResponseDto dto1 = NotificationResponseDto.builder().notificationLogId("log-1").build();
-			NotificationResponseDto dto2 = NotificationResponseDto.builder().notificationLogId("log-2").build();
+		given(notificationDtoMapper.toNotificationResponseDto(eq(log1.getId()), any(), anyBoolean(), any()))
+			.willReturn(dto1);
+		given(notificationDtoMapper.toNotificationResponseDto(eq(log2.getId()), any(), anyBoolean(), any()))
+			.willReturn(dto2);
 
-			given(notificationDtoMapper.toNotificationResponseDto(eq(log1.getId()), any(), anyBoolean(), any()))
-				.willReturn(dto1);
-			given(notificationDtoMapper.toNotificationResponseDto(eq(log2.getId()), any(), anyBoolean(), any()))
-				.willReturn(dto2);
+		// when
+		List<NotificationResponseDto> result = notificationLogService.getNotificationList(userId, isRead);
 
-			// when
-			List<NotificationResponseDto> result = notificationLogService.getNotificationList(userId, isRead);
+		// then
+		assertThat(result).isNotNull();
+		assertThat(result.size()).isEqualTo(2);
+		assertThat(result.get(0).notificationLogId()).isEqualTo("log-1");
+		assertThat(result.get(1).notificationLogId()).isEqualTo("log-2");
 
-			// then
-			assertThat(result).isNotNull();
-			assertThat(result.size()).isEqualTo(2);
-			assertThat(result.get(0).notificationLogId()).isEqualTo("log-1");
-			assertThat(result.get(1).notificationLogId()).isEqualTo("log-2");
-
-			// 행위 검증: Reader 1회 호출, Mapper는 리스트 크기(2)만큼 호출되었는지 확인
-			then(notificationLogReader).should().getNotificationList(userId, isRead, currentTime);
-			then(notificationDtoMapper).should(times(2)).toNotificationResponseDto(any(), any(), anyBoolean(), any());
-		}
+		then(notificationLogReader).should().getNotificationList(eq(userId), eq(isRead), any(LocalDateTime.class));
+		then(notificationDtoMapper).should(times(2)).toNotificationResponseDto(any(), any(), anyBoolean(), any());
 	}
 
 	@Nested
