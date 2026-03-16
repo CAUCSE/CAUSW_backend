@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.notification.notification.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,7 +25,8 @@ public class NotificationLogService {
 
 	@Transactional(readOnly = true)
 	public List<NotificationResponseDto> getNotificationList(String userId, boolean isRead) {
-		List<NotificationLog> notificationLog = notificationLogReader.getNotificationList(userId, isRead);
+		List<NotificationLog> notificationLog = notificationLogReader.getNotificationList(userId, isRead,
+			LocalDateTime.now());
 
 		return notificationLog.stream()
 			.map(log -> notificationDtoMapper.toNotificationResponseDto(

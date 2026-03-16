@@ -53,6 +53,7 @@ class NotificationLogServiceTest {
 			// given
 			String userId = "user-uuid-123";
 			boolean isRead = false;
+			LocalDateTime currentTime = LocalDateTime.of(2026, 3, 16, 12, 0);
 
 			User user = ObjectFixtures.getCertifiedUser();
 			Notification notification = ObjectFixtures.getNotification(user);
@@ -65,7 +66,7 @@ class NotificationLogServiceTest {
 			List<NotificationLog> mockLogs = List.of(log1, log2);
 
 			// Reader 동작 모킹
-			given(notificationLogReader.getNotificationList(userId, isRead))
+			given(notificationLogReader.getNotificationList(userId, isRead, currentTime))
 				.willReturn(mockLogs);
 
 			// Mapper 동작 모킹
@@ -87,7 +88,7 @@ class NotificationLogServiceTest {
 			assertThat(result.get(1).notificationLogId()).isEqualTo("log-2");
 
 			// 행위 검증: Reader 1회 호출, Mapper는 리스트 크기(2)만큼 호출되었는지 확인
-			then(notificationLogReader).should().getNotificationList(userId, isRead);
+			then(notificationLogReader).should().getNotificationList(userId, isRead, currentTime);
 			then(notificationDtoMapper).should(times(2)).toNotificationResponseDto(any(), any(), anyBoolean(), any());
 		}
 	}

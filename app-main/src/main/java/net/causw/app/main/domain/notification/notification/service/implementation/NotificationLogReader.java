@@ -23,8 +23,8 @@ public class NotificationLogReader {
 		return notificationLogRepository.findByIdAndUserId(id, userId);
 	}
 
-	public List<NotificationLog> getNotificationList(String userId, boolean isRead) {
-		LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
+	public List<NotificationLog> getNotificationList(String userId, boolean isRead, LocalDateTime currentTime) {
+		LocalDateTime sevenDaysAgo = currentTime.minusDays(7);
 
 		return notificationLogRepository.findRecentNotifications(userId, isRead, sevenDaysAgo);
 	}
