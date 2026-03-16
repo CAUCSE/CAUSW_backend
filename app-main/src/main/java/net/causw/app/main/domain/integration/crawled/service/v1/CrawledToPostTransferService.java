@@ -100,6 +100,7 @@ public class CrawledToPostTransferService {
 				board,
 				null,
 				new ArrayList<>());
+			newPost.setCrawled();
 			postRepository.save(newPost);
 
 			// 새 게시글인 경우에만 알림 전송
