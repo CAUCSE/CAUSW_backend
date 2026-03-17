@@ -37,8 +37,10 @@ public class NotificationLogReader {
 		return notificationLog.stream().findFirst();
 	}
 
-	public List<NotificationLog> findUnreadUpToLimit(String userId) {
-		return notificationLogRepository.findByUserIdUnreadLogsUpToLimit(
-			userId, pageableFactory.create(0, StaticValue.MAX_NOTIFICATION_COUNT));
+	public List<NotificationLog> findUnreadUpToLimit(String userId, LocalDateTime currentTime) {
+		LocalDateTime sevenDaysAgo = currentTime.minusDays(7);
+
+		return notificationLogRepository.findRecentUnreadLogsUpToLimit(
+			userId, sevenDaysAgo, pageableFactory.create(0, StaticValue.MAX_NOTIFICATION_COUNT));
 	}
 }

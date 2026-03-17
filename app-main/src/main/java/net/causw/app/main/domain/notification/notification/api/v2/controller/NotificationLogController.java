@@ -30,7 +30,7 @@ public class NotificationLogController {
 	private final NotificationLogService notificationLogService;
 
 	@GetMapping
-	@Operation(summary = "유저의 알림 리스트 조회", description = "최근 7일의 알림을 리스트로 조회합니다. 알림의 isRead는 읽음 여부입니다. targetId는 게시글, 댓글 등의 id이고, targetParantId는 게시판의 id입니다.")
+	@Operation(summary = "유저의 최신 알림 리스트 조회", description = "최근 7일의 알림을 리스트로 조회합니다. 알림의 isRead는 읽음 여부입니다. targetId는 게시글, 댓글 등의 id이고, targetParantId는 게시판의 id입니다.")
 	public ApiResponse<List<NotificationResponseDto>> getNotificationList(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestParam(name = "isRead") boolean isRead) {
@@ -51,7 +51,7 @@ public class NotificationLogController {
 	}
 
 	@GetMapping("/count")
-	@Operation(summary = "유저에게 온 일반, 경조사 알림 중 읽지 않은 알림 총 개수 반환", description = "유저의 읽지 않은 알림 개수를 반환합니다. 최대 10개까지 카운팅합니다.")
+	@Operation(summary = "유저의 읽지 않은 최신 알림 총 개수 반환", description = "유저의 최근 7일의 읽지 않은 알림 개수를 반환합니다. 최대 10개까지 카운팅합니다, 10개부터는 9+로 표시하는 것을 기준으로 되어있습니다.")
 	public ApiResponse<NotificationCountResponseDto> getNotificationLogCount(
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		NotificationCountResponseDto response = notificationLogService

@@ -51,7 +51,8 @@ public class NotificationLogService {
 
 	@Transactional(readOnly = true)
 	public NotificationCountResponseDto getNotificationLogCount(String userId) {
-		List<NotificationLog> unreadNotificationLogs = notificationLogReader.findUnreadUpToLimit(userId);
+		List<NotificationLog> unreadNotificationLogs = notificationLogReader.findUnreadUpToLimit(userId,
+			LocalDateTime.now());
 
 		return new NotificationCountResponseDto(unreadNotificationLogs.size());
 	}

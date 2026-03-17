@@ -56,8 +56,12 @@ public interface NotificationLogRepository extends JpaRepository<NotificationLog
 
 	@Query("SELECT nl FROM NotificationLog nl " +
 		"WHERE nl.user.id = :userId " +
-		"AND nl.isRead = false")
-	List<NotificationLog> findByUserIdUnreadLogsUpToLimit(@Param("userId") String userId, Pageable pageable);
+		"AND nl.isRead = false " +
+		"AND nl.createdAt >= :sevenDaysAgo")
+	List<NotificationLog> findRecentUnreadLogsUpToLimit(
+		@Param("userId") String userId,
+		@Param("sevenDaysAgo") LocalDateTime sevenDaysAgo,
+		Pageable pageable);
 
 	@Query("SELECT nl FROM NotificationLog nl " +
 		"WHERE nl.user = :user " +

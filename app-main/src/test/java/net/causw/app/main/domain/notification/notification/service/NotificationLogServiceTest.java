@@ -144,7 +144,7 @@ class NotificationLogServiceTest {
 	class GetNotificationLogCountTest {
 
 		@Test
-		@DisplayName("유저의 읽지 않은 알림 목록을 가져와 그 개수를 반환한다")
+		@DisplayName("유저의 읽지 않은 7일 이내의 알림 목록을 가져와 그 개수를 반환한다")
 		void givenUnreadLogs_whenGetNotificationLogCount_thenReturnsNotificationCountResponseDto() {
 			// given
 			String userId = "user-uuid-123";
@@ -154,7 +154,7 @@ class NotificationLogServiceTest {
 				NotificationLog.of(user, notification),
 				NotificationLog.of(user, notification));
 
-			given(notificationLogReader.findUnreadUpToLimit(userId))
+			given(notificationLogReader.findUnreadUpToLimit(eq(userId), any(LocalDateTime.class)))
 				.willReturn(logs);
 
 			// when
@@ -163,7 +163,8 @@ class NotificationLogServiceTest {
 			// then
 			assertThat(result).isNotNull();
 			assertThat(result.notificationLogCount()).isEqualTo(2);
-			then(notificationLogReader).should().findUnreadUpToLimit(userId);
+
+			then(notificationLogReader).should().findUnreadUpToLimit(eq(userId), any(LocalDateTime.class));
 		}
 	}
 
