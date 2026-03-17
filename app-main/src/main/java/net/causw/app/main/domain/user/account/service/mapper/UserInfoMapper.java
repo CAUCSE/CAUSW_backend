@@ -38,7 +38,6 @@ public interface UserInfoMapper extends UuidFileToUrlDtoMapper {
 	// 내 동문 수첩 프로필 상세 조회
 	@InheritConfiguration(name = "toDetailResult")
 	@Mapping(target = "phoneNumber", source = "user.phoneNumber")
-	@Mapping(target = "isPhoneNumberVisible", source = "phoneNumberVisible")
 	UserInfoDetailResult toMyDetailResult(UserInfo userInfo);
 
 	// 동문 수첩 프로필 리스트 조회
