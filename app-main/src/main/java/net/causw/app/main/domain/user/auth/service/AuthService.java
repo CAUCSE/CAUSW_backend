@@ -17,8 +17,8 @@ import net.causw.app.main.domain.user.account.service.implementation.UserPushTok
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
-import net.causw.app.main.domain.user.account.util.masking.EmailMasker;
 import net.causw.app.main.domain.user.account.service.v1.PasswordGenerator;
+import net.causw.app.main.domain.user.account.util.masking.EmailMasker;
 import net.causw.app.main.domain.user.auth.entity.EmailVerification;
 import net.causw.app.main.domain.user.auth.entity.EmailVerification.VerificationStatus;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
