@@ -6,6 +6,5 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 
 public record TermsAgreementRequestDto(
-	@NotEmpty
-	@Schema(description = "동의할 약관 ID 목록") List<String> termsIds) {
+	@NotEmpty @Schema(description = "동의할 약관 ID 목록") List<String> termsIds) {
 }

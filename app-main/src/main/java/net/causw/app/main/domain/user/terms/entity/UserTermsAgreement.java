@@ -23,8 +23,7 @@ import lombok.NoArgsConstructor;
 @Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name = "tb_user_terms_agreement",
-	uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "terms_id"}))
+@Table(name = "tb_user_terms_agreement", uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "terms_id"}))
 public class UserTermsAgreement extends BaseEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY)
