@@ -27,8 +27,9 @@ import lombok.NoArgsConstructor;
 public class EmailVerification extends BaseEntity {
 
 	public enum VerificationStatus {
-		PENDING,
-		VERIFIED
+		PENDING, // 회원가입시 인증 전,
+		VERIFIED, // 회원가입시 인증 후, (가입전)
+		PASSWORD_FIND // 비밀번호 찾기전용
 	}
 
 	@Column(name = "email", nullable = false)
@@ -45,10 +46,18 @@ public class EmailVerification extends BaseEntity {
 	private LocalDateTime expiresAt;
 
 	public static EmailVerification of(String email, String verificationCode, LocalDateTime expiresAt) {
+		return of(email, verificationCode, expiresAt, VerificationStatus.PENDING);
+	}
+
+	public static EmailVerification of(
+		String email,
+		String verificationCode,
+		LocalDateTime expiresAt,
+		VerificationStatus status) {
 		return EmailVerification.builder()
 			.email(email)
 			.verificationCode(verificationCode)
-			.status(VerificationStatus.PENDING)
+			.status(status)
 			.expiresAt(expiresAt)
 			.build();
 	}

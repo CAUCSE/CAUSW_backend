@@ -36,6 +36,18 @@ public enum Role {
 	private final String value;
 	private final String description;
 
+	private static final List<Role> PRIVILEGED_ROLES = List.of(
+		ADMIN,
+		PRESIDENT,
+		VICE_PRESIDENT,
+		COUNCIL,
+		LEADER_1,
+		LEADER_2,
+		LEADER_3,
+		LEADER_4,
+		LEADER_ALUMNI,
+		ALUMNI_MANAGER);
+
 	public static Role of(String value) {
 		return Arrays.stream(values())
 			.filter(v -> value.equalsIgnoreCase(v.value))
@@ -51,17 +63,7 @@ public enum Role {
 	}
 
 	public static List<Role> getPrivilegedRoles() {
-		return List.of(
-			ADMIN,
-			PRESIDENT,
-			VICE_PRESIDENT,
-			COUNCIL,
-			LEADER_1,
-			LEADER_2,
-			LEADER_3,
-			LEADER_4,
-			LEADER_ALUMNI,
-			ALUMNI_MANAGER);
+		return PRIVILEGED_ROLES;
 	}
 
 	@Component("Role")

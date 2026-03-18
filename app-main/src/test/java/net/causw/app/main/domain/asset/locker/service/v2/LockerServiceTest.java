@@ -29,11 +29,11 @@ import net.causw.app.main.domain.asset.locker.service.v2.dto.result.LockerLocati
 import net.causw.app.main.domain.asset.locker.service.v2.dto.result.LockerPeriodStatusResult;
 import net.causw.app.main.domain.asset.locker.service.v2.dto.result.MyLockerResult;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerLocationReader;
-import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerLogWriter;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerPeriodResolver;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerPolicyReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerValidator;
+import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
@@ -56,9 +56,9 @@ class LockerServiceTest {
 	@Mock
 	private LockerPeriodResolver lockerPeriodResolver;
 	@Mock
-	private LockerLogWriter lockerLogWriter;
-	@Mock
 	private LockerValidator lockerValidator;
+	@Mock
+	private LockerWriter lockerWriter;
 	@Mock
 	private UserReader userReader;
 
@@ -104,9 +104,8 @@ class LockerServiceTest {
 			verify(lockerValidator).validateRegisterAvailable(locker);
 			verify(lockerReader).findByUserId(userId);
 
-			verify(locker).register(user, expiredAt);
-			verify(lockerLogWriter).logRegister(locker, user);
-			verify(lockerLogWriter, never()).logReturn(any(Locker.class), any(User.class));
+			verify(lockerWriter).registerLocker(locker, user, expiredAt);
+			verify(lockerWriter, never()).returnLocker(any(Locker.class), any(User.class));
 		}
 
 		@Test
@@ -132,11 +131,8 @@ class LockerServiceTest {
 			lockerService.registerLocker(lockerId, userId);
 
 			// then
-			verify(existingLocker).returnLocker();
-			verify(lockerLogWriter).logReturn(existingLocker, user);
-
-			verify(newLocker).register(user, expiredAt);
-			verify(lockerLogWriter).logRegister(newLocker, user);
+			verify(lockerWriter).returnLocker(existingLocker, user);
+			verify(lockerWriter).registerLocker(newLocker, user, expiredAt);
 		}
 
 		@Test
@@ -190,8 +186,7 @@ class LockerServiceTest {
 			verify(lockerValidator).validateInUse(locker);
 			verify(lockerValidator).validateOwner(locker, user);
 
-			verify(locker).returnLocker();
-			verify(lockerLogWriter).logReturn(locker, user);
+			verify(lockerWriter).returnLocker(locker, user);
 		}
 
 		@Test
@@ -247,8 +242,7 @@ class LockerServiceTest {
 			verify(lockerValidator).validateOwner(locker, user);
 			verify(lockerValidator).validateNotAlreadyExtended(locker, nextExpireDate);
 
-			verify(locker).extendExpireDate(nextExpireDate);
-			verify(lockerLogWriter).logExtend(locker, user);
+			verify(lockerWriter).extendLocker(locker, user, nextExpireDate);
 		}
 
 		@Test

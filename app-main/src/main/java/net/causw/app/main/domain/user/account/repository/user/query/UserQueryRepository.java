@@ -124,6 +124,7 @@ public class UserQueryRepository {
 		QUser user = QUser.user;
 
 		BooleanBuilder where = new BooleanBuilder()
+			.and(notDeleted())
 			.and(keywordSearchCondition(keyword))
 			.and(userStateCondition(state))
 			.and(academicStatusCondition(academicStatus))
@@ -153,6 +154,7 @@ public class UserQueryRepository {
 		QUser user = QUser.user;
 
 		BooleanBuilder where = new BooleanBuilder()
+			.and(notDeleted())
 			.and(keywordSearchCondition(keyword))
 			.and(userStateCondition(state))
 			.and(academicStatusCondition(academicStatus))
