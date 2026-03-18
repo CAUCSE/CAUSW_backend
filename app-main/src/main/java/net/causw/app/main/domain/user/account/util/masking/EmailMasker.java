@@ -2,8 +2,7 @@ package net.causw.app.main.domain.user.account.util.masking;
 
 public final class EmailMasker {
 
-	private EmailMasker() {
-	}
+	private EmailMasker() {}
 
 	/**
 	 * 이메일 마스킹 규칙:

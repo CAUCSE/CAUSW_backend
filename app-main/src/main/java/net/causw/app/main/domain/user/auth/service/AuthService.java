@@ -123,7 +123,8 @@ public class AuthService {
 			return Optional.of(EmailFindResult.of(null, null, socialAccounts));
 		}
 		return Optional
-			.of(EmailFindResult.of(EmailMasker.mask(user.getEmail()), toLocalDate(user.getCreatedAt()), socialAccounts));
+			.of(EmailFindResult.of(EmailMasker.mask(user.getEmail()), toLocalDate(user.getCreatedAt()),
+				socialAccounts));
 	}
 
 	/**
