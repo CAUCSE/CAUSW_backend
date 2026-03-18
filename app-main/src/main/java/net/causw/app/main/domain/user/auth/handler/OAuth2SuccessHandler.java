@@ -15,7 +15,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.SocialType;
-import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.auth.service.dto.CustomOAuth2User;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
@@ -135,10 +134,10 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 	/**
 	 * 사용자 상태에 따라 프론트 redirect URL을 생성합니다.
 	 *
-	 * @param state 사용자 상태
+	 * @param baseUrl 기본 URL
 	 * @return redirect 대상 URL
 	 */
-	private String determineTargetUrl(UserState state, String baseUrl) {
+	private String determineTargetUrl(String baseUrl) {
 		return UriComponentsBuilder.fromUriString(baseUrl)
 			.build().toUriString();
 	}
