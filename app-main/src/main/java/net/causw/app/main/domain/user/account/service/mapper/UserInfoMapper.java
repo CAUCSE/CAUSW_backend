@@ -28,7 +28,7 @@ public interface UserInfoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "phoneNumber", source = ".", qualifiedByName = "mapPhoneNumber")
 	@Mapping(target = "isPhoneNumberVisible", source = "phoneNumberVisible")
 	@Mapping(target = "socialLinks", source = "socialLinks")
-	@Mapping(target = "techStack", source = "userTechStack", qualifiedByName = "sortStringsAsc")
+	@Mapping(target = "userTechStack", source = "userTechStack", qualifiedByName = "sortStringsAsc")
 	@Mapping(target = "userCareer", source = "userCareer")
 	@Mapping(target = "userProject", source = "userProject")
 	@Mapping(target = "userInterestTech", source = "userInterestTech", qualifiedByName = "sortStringsAsc")
