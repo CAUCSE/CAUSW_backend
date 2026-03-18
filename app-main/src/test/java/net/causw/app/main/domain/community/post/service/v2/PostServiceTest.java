@@ -1,16 +1,12 @@
 package net.causw.app.main.domain.community.post.service.v2;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.BDDMockito.given;
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
 import static org.mockito.BDDMockito.times;
 import static org.mockito.BDDMockito.verify;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -519,6 +515,7 @@ public class PostServiceTest {
 				false,
 				null,
 				false,
+				false,
 				true,
 				"작성자",
 				"닉네임",
@@ -582,6 +579,7 @@ public class PostServiceTest {
 				false,
 				null,
 				false,
+				false,
 				true,
 				"작성자1",
 				"닉네임1",
@@ -601,6 +599,7 @@ public class PostServiceTest {
 				2L,
 				false,
 				null,
+				false,
 				false,
 				true,
 				"작성자2",
@@ -663,6 +662,7 @@ public class PostServiceTest {
 				3L,
 				false,
 				null,
+				false,
 				false,
 				true,
 				"작성자",
@@ -727,6 +727,7 @@ public class PostServiceTest {
 				false,
 				null,
 				false,
+				false,
 				true,
 				"작성자",
 				"닉네임",
@@ -777,6 +778,7 @@ public class PostServiceTest {
 				3L,
 				false,
 				null,
+				false,
 				false,
 				true,
 				"작성자",
@@ -879,6 +881,7 @@ public class PostServiceTest {
 				true, // 익명 게시글
 				null,
 				false,
+				false,
 				true,
 				"작성자",
 				"닉네임",
@@ -931,6 +934,7 @@ public class PostServiceTest {
 				false, // 일반 게시글
 				null,
 				false,
+				false,
 				true,
 				"작성자1",
 				"닉네임1",
@@ -950,6 +954,7 @@ public class PostServiceTest {
 				2L,
 				true, // 익명 게시글
 				null,
+				false,
 				false,
 				true,
 				"작성자2",

@@ -73,6 +73,11 @@ public class UserReader {
 		return userRepository.findByEmail(email);
 	}
 
+	public User findByEmailAndName(String email, String name) {
+		return userRepository.findByEmailAndName(email, name)
+			.orElseThrow(UserErrorCode.USER_NOT_FOUND::toBaseException);
+	}
+
 	public List<User> getUsersByIds(List<String> userIds) {
 		return userQueryRepository.findByIds(userIds);
 	}
@@ -117,6 +122,14 @@ public class UserReader {
 
 	public boolean existsByEmail(String email) {
 		return userRepository.existsByEmail(email);
+	}
+
+	public boolean existsByEmailAndName(String email, String name) {
+		return userRepository.findByEmailAndName(email, name).isPresent();
+	}
+
+	public Optional<User> findByEmailAndNameOptional(String email, String name) {
+		return userRepository.findByEmailAndName(email, name);
 	}
 
 	private String normalizeKeyword(String keyword) {

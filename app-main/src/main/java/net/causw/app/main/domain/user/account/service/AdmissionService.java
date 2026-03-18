@@ -13,8 +13,8 @@ import net.causw.app.main.domain.notification.notification.service.AdmissionNoti
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
 import net.causw.app.main.domain.user.account.service.dto.request.AdmissionCreateCommand;
-import net.causw.app.main.domain.user.account.service.dto.request.AdmissionResult;
-import net.causw.app.main.domain.user.account.service.dto.request.AdmissionStateResult;
+import net.causw.app.main.domain.user.account.service.dto.response.AdmissionResult;
+import net.causw.app.main.domain.user.account.service.dto.response.AdmissionStateResult;
 import net.causw.app.main.domain.user.account.service.implementation.AdmissionReader;
 import net.causw.app.main.domain.user.account.service.implementation.AdmissionValidator;
 import net.causw.app.main.domain.user.account.service.implementation.AdmissionWriter;

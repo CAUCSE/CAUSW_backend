@@ -23,6 +23,13 @@ public class MailEventListener {
 
 	@Async("asyncExecutor")
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	public void handlePasswordResetCode(PasswordResetCodeEvent event) {
+		googleMailSender.sendPasswordResetCodeMail(event.email(), event.verificationCode());
+	}
+
+	@Deprecated
+	@Async("asyncExecutor")
+	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void handleFindPassword(FindPasswordEvent event) {
 		googleMailSender.sendNewPasswordMail(event.email(), event.newPassword());
 	}

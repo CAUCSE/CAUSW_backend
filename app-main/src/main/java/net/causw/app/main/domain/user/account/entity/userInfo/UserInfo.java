@@ -1,6 +1,7 @@
 package net.causw.app.main.domain.user.account.entity.userInfo;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -33,6 +34,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "tb_user_info")
 public class UserInfo extends BaseEntity {
+
+	private static final int MAX_SOCIAL_LINKS = 10;
+	private static final int MAX_TECH_STACK = 10;
+	private static final int MAX_CAREER = 10;
+	private static final int MAX_PROJECT = 10;
+	private static final int MAX_INTEREST_TECH = 10;
+	private static final int MAX_INTEREST_DOMAIN = 10;
 
 	@OneToOne
 	@JoinColumn(name = "user_id", nullable = false)
@@ -85,18 +93,73 @@ public class UserInfo extends BaseEntity {
 			.build();
 	}
 
+	/**
+	 * v1 API용 업데이트. description, job, socialLinks, isPhoneNumberVisible을 한 번에 갱신한다.
+	 * v1은 API 레이어에서 검증하므로 엔티티 레벨 검증 없이 직접 반영한다.
+	 */
+	@Deprecated(since = "v2 API에서는 description, job, socialLinks, isPhoneNumberVisible을 각각 업데이트하는 별도의 메서드를 사용합니다.")
+	public void updateV1(String description, String job, List<String> socialLinks, boolean isPhoneNumberVisible) {
+		this.description = description;
+		this.job = job;
+		this.socialLinks = socialLinks == null ? new ArrayList<>() : new ArrayList<>(socialLinks);
+		this.isPhoneNumberVisible = isPhoneNumberVisible;
+	}
+
 	public void update(
 		String description,
 		String job,
-		List<String> socialLinks,
 		boolean isPhoneNumberVisible) {
-		if (socialLinks.size() > 10) {
-			throw UserInfoErrorCode.TOO_MUCH_SOCIAL_LINK.toBaseException();
-		}
-
 		this.description = description;
 		this.job = job;
-		this.socialLinks = socialLinks;
 		this.isPhoneNumberVisible = isPhoneNumberVisible;
+	}
+
+	public void updateSocialLinks(List<String> incoming) {
+		if (incoming != null && incoming.size() > MAX_SOCIAL_LINKS) {
+			throw UserInfoErrorCode.TOO_MUCH_SOCIAL_LINK.toBaseException();
+		}
+		replaceWithFiltered(this.socialLinks, incoming);
+	}
+
+	public void updateTechStack(List<String> incoming) {
+		if (incoming != null && incoming.size() > MAX_TECH_STACK) {
+			throw UserInfoErrorCode.TOO_MUCH_TECH_STACK.toBaseException();
+		}
+		replaceWithFiltered(this.userTechStack, incoming);
+	}
+
+	public void updateInterestTech(List<String> incoming) {
+		if (incoming != null && incoming.size() > MAX_INTEREST_TECH) {
+			throw UserInfoErrorCode.TOO_MUCH_INTEREST_TECH.toBaseException();
+		}
+		replaceWithFiltered(this.userInterestTech, incoming);
+	}
+
+	public void updateInterestDomain(List<String> incoming) {
+		if (incoming != null && incoming.size() > MAX_INTEREST_DOMAIN) {
+			throw UserInfoErrorCode.TOO_MUCH_INTEREST_DOMAIN.toBaseException();
+		}
+		replaceWithFiltered(this.userInterestDomain, incoming);
+	}
+
+	public void validateCareerCount(int size) {
+		if (size > MAX_CAREER) {
+			throw UserInfoErrorCode.TOO_MUCH_CAREER.toBaseException();
+		}
+	}
+
+	public void validateProjectCount(int size) {
+		if (size > MAX_PROJECT) {
+			throw UserInfoErrorCode.TOO_MUCH_PROJECT.toBaseException();
+		}
+	}
+
+	private void replaceWithFiltered(Collection<String> target, List<String> incoming) {
+		target.clear();
+		if (incoming != null) {
+			incoming.stream()
+				.filter(s -> s != null && !s.isBlank())
+				.forEach(target::add);
+		}
 	}
 }
