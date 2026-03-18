@@ -10,8 +10,9 @@ import org.springframework.transaction.annotation.Transactional;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.terms.entity.Terms;
 import net.causw.app.main.domain.user.terms.entity.UserTermsAgreement;
-import net.causw.app.main.domain.user.terms.repository.TermsRepository;
-import net.causw.app.main.domain.user.terms.repository.UserTermsAgreementRepository;
+import net.causw.app.main.domain.user.terms.service.implementation.TermsReader;
+import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementReader;
+import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementWriter;
 import net.causw.app.main.domain.user.terms.service.v2.dto.AgreedTermsInfo;
 import net.causw.app.main.domain.user.terms.service.v2.dto.TermsInfo;
 import net.causw.app.main.domain.user.terms.service.v2.dto.UnagreedTermsInfo;
@@ -25,31 +26,25 @@ import lombok.RequiredArgsConstructor;
 @Transactional(readOnly = true)
 public class TermsService {
 
-	private final TermsRepository termsRepository;
-	private final UserTermsAgreementRepository userTermsAgreementRepository;
+	private final TermsReader termsReader;
+	private final UserTermsAgreementReader userTermsAgreementReader;
+	private final UserTermsAgreementWriter userTermsAgreementWriter;
 
 	public List<TermsInfo> getTerms() {
-		List<TermsInfo> result = termsRepository.findLatestVersionPerType()
+		return termsReader.findLatestVersionPerType()
 			.stream()
 			.map(TermsInfo::from)
 			.toList();
-		if (result.isEmpty()) {
-			throw TermsErrorCode.TERMS_NOT_FOUND.toBaseException();
-		}
-		return result;
 	}
 
 	public UserTermsAgreementStatusInfo getAgreementStatus(User user) {
-		List<Terms> latestTerms = termsRepository.findLatestVersionPerType();
-		if (latestTerms.isEmpty()) {
-			throw TermsErrorCode.TERMS_NOT_FOUND.toBaseException();
-		}
+		List<Terms> latestTerms = termsReader.findLatestVersionPerType();
 
 		Set<String> latestTermsIds = latestTerms.stream()
 			.map(Terms::getId)
 			.collect(Collectors.toSet());
 
-		List<UserTermsAgreement> userAgreements = userTermsAgreementRepository.findByUser(user)
+		List<UserTermsAgreement> userAgreements = userTermsAgreementReader.findByUser(user)
 			.stream()
 			.filter(uta -> latestTermsIds.contains(uta.getTerms().getId()))
 			.toList();
@@ -72,12 +67,12 @@ public class TermsService {
 
 		boolean hasAllRequiredAgreements = agreedTermsIds.containsAll(latestTermsIds);
 
-		return new UserTermsAgreementStatusInfo(agreedTerms, unagreedTerms, hasAllRequiredAgreements);
+		return UserTermsAgreementStatusInfo.of(agreedTerms, unagreedTerms, hasAllRequiredAgreements);
 	}
 
 	@Transactional
 	public void agreeToTerms(User user, List<String> termsIds) {
-		List<Terms> latestTerms = termsRepository.findLatestVersionPerType();
+		List<Terms> latestTerms = termsReader.findLatestVersionPerType();
 
 		Set<String> latestTermsIds = latestTerms.stream()
 			.map(Terms::getId)
@@ -87,11 +82,17 @@ public class TermsService {
 			throw TermsErrorCode.NOT_ALL_TERMS_AGREED.toBaseException();
 		}
 
-		List<Terms> termsToAgree = termsRepository.findAllById(termsIds);
-		for (Terms terms : termsToAgree) {
-			if (!userTermsAgreementRepository.existsByUserAndTerms(user, terms)) {
-				userTermsAgreementRepository.save(UserTermsAgreement.of(user, terms));
-			}
-		}
+		Set<String> alreadyAgreedIds = userTermsAgreementReader.findByUserAndTermsIdIn(user, termsIds)
+			.stream()
+			.map(uta -> uta.getTerms().getId())
+			.collect(Collectors.toSet());
+
+		List<Terms> termsToAgree = termsReader.findAllById(termsIds);
+		List<UserTermsAgreement> newAgreements = termsToAgree.stream()
+			.filter(terms -> !alreadyAgreedIds.contains(terms.getId()))
+			.map(terms -> UserTermsAgreement.of(user, terms))
+			.toList();
+
+		userTermsAgreementWriter.saveAll(newAgreements);
 	}
 }

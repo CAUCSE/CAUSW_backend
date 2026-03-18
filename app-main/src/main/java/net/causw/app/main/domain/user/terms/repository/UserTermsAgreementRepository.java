@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.terms.entity.Terms;
 import net.causw.app.main.domain.user.terms.entity.UserTermsAgreement;
 
 @Repository
@@ -14,5 +13,5 @@ public interface UserTermsAgreementRepository extends JpaRepository<UserTermsAgr
 
 	List<UserTermsAgreement> findByUser(User user);
 
-	boolean existsByUserAndTerms(User user, Terms terms);
+	List<UserTermsAgreement> findByUserAndTerms_IdIn(User user, List<String> termsIds);
 }
