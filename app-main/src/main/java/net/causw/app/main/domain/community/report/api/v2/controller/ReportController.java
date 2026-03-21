@@ -57,10 +57,8 @@ public class ReportController {
 	@PostMapping("/posts/{postId}")
 	@ResponseStatus(HttpStatus.CREATED)
 	@Operation(summary = "게시글 신고", description = """
-		신고 사유 선택 → 확인  → 이 API 호출 순서로 진행생각합니다。근데 확인에 관한 내용이없어 고민중
 		- 본인 게시글 신고 불가 (400)
 		- 동일 게시글 중복 신고 불가 (409)
-		- 신고 접수 후 관리자가 검토하여 처리/반려하는 방향으로 생각중입니다
 		""")
 	public ApiResponse<PostReportResponseDto> createPostReport(
 		@PathVariable String postId,
