@@ -28,7 +28,7 @@ public class UserBlockController {
 	private final BlockService blockService;
 	private final BlockDtoMapper blockDtoMapper;
 
-	@PostMapping("/posts/{postId}/block")
+	@PostMapping("/posts/{postId}/blocks")
 	@ResponseStatus(HttpStatus.CREATED)
 	@Operation(summary = "게시글 작성자 차단", description = "게시글을 통해 작성자를 차단합니다. 익명 게시글의 경우 응답에서 신원 정보를 반환하지 않습니다.")
 	public ApiResponse<BlockResponseDto> createBlockByPost(
