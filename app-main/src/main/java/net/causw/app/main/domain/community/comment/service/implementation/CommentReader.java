@@ -38,6 +38,11 @@ public class CommentReader {
 			CommentErrorCode.COMMENT_NOT_FOUND::toBaseException);
 	}
 
+	public Comment findByIdAndNotDeleted(String commentId) {
+		return commentRepository.findByIdAndIsDeletedFalse(commentId)
+			.orElseThrow(CommentErrorCode.COMMENT_NOT_FOUND::toBaseException);
+	}
+
 	/**
 	 * 게시글에 속한 댓글 목록을 페이지 단위로 조회합니다.
 	 *

@@ -7,8 +7,8 @@ import net.causw.app.main.domain.community.block.service.dto.ChildCommentBlockCr
 import net.causw.app.main.domain.community.block.service.dto.CommentBlockCreateCommand;
 import net.causw.app.main.domain.community.comment.entity.ChildComment;
 import net.causw.app.main.domain.community.comment.entity.Comment;
-import net.causw.app.main.domain.community.comment.service.v2.implementation.ChildCommentReader;
-import net.causw.app.main.domain.community.comment.service.v2.implementation.CommentReader;
+import net.causw.app.main.domain.community.comment.service.implementation.ChildCommentReader;
+import net.causw.app.main.domain.community.comment.service.implementation.CommentReader;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.v2.implementation.PostReader;
 import net.causw.app.main.domain.user.account.entity.user.User;
