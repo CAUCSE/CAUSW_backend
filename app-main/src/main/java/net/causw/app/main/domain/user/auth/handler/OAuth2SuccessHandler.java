@@ -72,7 +72,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 		response.addHeader(HttpHeaders.SET_COOKIE, envCookie.toString());
 
 		// 상태에 따른 리다이렉트 경로 결정
-		String targetUrl = determineTargetUrl(user.getState(), baseUrl);
+		String targetUrl = determineTargetUrl(baseUrl);
 
 		// 리다이렉트 실행
 		if (response.isCommitted()) {

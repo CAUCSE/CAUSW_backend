@@ -30,6 +30,7 @@ import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificat
 import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationSender;
 import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationValidator;
 import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationWriter;
+import net.causw.app.main.shared.dto.ProfileImageDto;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 
@@ -136,7 +137,7 @@ public class AuthService {
 		// 회원가입 완료 후 이메일 인증 정보 삭제
 		emailVerificationWriter.delete(
 			emailVerificationReader.findLatestByEmailAndStatus(dto.email(), VerificationStatus.VERIFIED));
-		return AuthResult.of(null, savedUser.getName(), savedUser.getEmail(), savedUser.getProfileUrl(), null,
+		return AuthResult.of(null, savedUser.getName(), savedUser.getEmail(), ProfileImageDto.from(savedUser), null,
 			savedUser.isTermsAgreed(), savedUser.isAcademicCertified(), savedUser.getAcademicStatus());
 	}
 
@@ -159,35 +160,8 @@ public class AuthService {
 		userValidator.validateUserStatusForLogin(user);
 		// 토큰 생성
 		AuthTokenPair tokens = authTokenManager.issueTokens(user, null);
-		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), user.getProfileUrl(),
+		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), ProfileImageDto.from(user),
 			tokens.refreshToken(), user.isTermsAgreed(), user.isAcademicCertified(), user.getAcademicStatus());
-	}
-
-	@Transactional(readOnly = true)
-	public Optional<EmailFindResult> findEmail(String name, String phoneNumber) {
-		Optional<User> userOptional = userReader.checkUserExistByPhoneNumAndName(phoneNumber.trim(), name.trim());
-		if (userOptional.isEmpty()) {
-			return Optional.empty();
-		}
-		// 탈퇴한 회원일 경우에도 null 처리
-		User user = userOptional.get();
-		if (user.isDeleted()) {
-			return Optional.empty();
-		}
-		List<EmailFindResult.SocialAccountSummary> socialAccounts = socialAccountReader.findAllByUserId(user.getId())
-			.stream()
-			.sorted(Comparator.comparing(account -> account.getCreatedAt()))
-			.map(account -> EmailFindResult.SocialAccountSummary.of(
-				account.getSocialType().name(),
-				toLocalDate(account.getCreatedAt())))
-			.toList();
-
-		if (user.isOnlySocialUser()) {
-			return Optional.of(EmailFindResult.of(null, null, socialAccounts));
-		}
-		return Optional
-			.of(EmailFindResult.of(EmailMasker.mask(user.getEmail()), toLocalDate(user.getCreatedAt()),
-				socialAccounts));
 	}
 
 	@Transactional(readOnly = true)
@@ -239,7 +213,7 @@ public class AuthService {
 		userValidator.validateUser(user);
 		// 토큰 생성
 		AuthTokenPair tokens = authTokenManager.issueTokens(user, refreshToken);
-		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), user.getProfileUrl(),
+		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), ProfileImageDto.from(user),
 			tokens.refreshToken(), user.isTermsAgreed(), user.isAcademicCertified(), user.getAcademicStatus());
 	}
 

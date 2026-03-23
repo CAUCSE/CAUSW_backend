@@ -1,10 +1,9 @@
 package net.causw.app.main.domain.notification.notification.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,14 +24,17 @@ public class NotificationLogService {
 	private final NotificationDtoMapper notificationDtoMapper;
 
 	@Transactional(readOnly = true)
-	public Page<NotificationResponseDto> getNotificationList(String userId, Pageable pageable) {
-		Page<NotificationLog> notificationLog = notificationLogReader.getNotificationList(userId, pageable);
+	public List<NotificationResponseDto> getNotificationList(String userId, boolean isRead) {
+		List<NotificationLog> notificationLog = notificationLogReader.getNotificationList(userId, isRead,
+			LocalDateTime.now());
 
-		return notificationLog.map(log -> notificationDtoMapper.toNotificationResponseDto(
-			log.getId(),
-			log.getNotification(),
-			log.getIsRead(),
-			log.getCreatedAt()));
+		return notificationLog.stream()
+			.map(log -> notificationDtoMapper.toNotificationResponseDto(
+				log.getId(),
+				log.getNotification(),
+				log.getIsRead(),
+				log.getCreatedAt()))
+			.toList();
 	}
 
 	@Transactional(readOnly = true)
@@ -49,7 +51,8 @@ public class NotificationLogService {
 
 	@Transactional(readOnly = true)
 	public NotificationCountResponseDto getNotificationLogCount(String userId) {
-		List<NotificationLog> unreadNotificationLogs = notificationLogReader.findUnreadUpToLimit(userId);
+		List<NotificationLog> unreadNotificationLogs = notificationLogReader.findUnreadUpToLimit(userId,
+			LocalDateTime.now());
 
 		return new NotificationCountResponseDto(unreadNotificationLogs.size());
 	}

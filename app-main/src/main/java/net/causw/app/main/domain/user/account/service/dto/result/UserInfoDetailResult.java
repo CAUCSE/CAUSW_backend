@@ -2,9 +2,11 @@ package net.causw.app.main.domain.user.account.service.dto.result;
 
 import java.util.List;
 
+import net.causw.app.main.shared.dto.ProfileImageDto;
+
 public record UserInfoDetailResult(
 	String id,
-	String profileImageUrl,
+	ProfileImageDto profileImage,
 	String name,
 	String admissionYear,
 	String academicStatus,
@@ -14,7 +16,7 @@ public record UserInfoDetailResult(
 	Boolean isPhoneNumberVisible,
 	String email,
 	List<String> socialLinks,
-	List<String> techStack,
+	List<String> userTechStack,
 	List<UserCareerResult> userCareer,
 	List<UserProjectResult> userProject,
 	List<String> userInterestTech,
