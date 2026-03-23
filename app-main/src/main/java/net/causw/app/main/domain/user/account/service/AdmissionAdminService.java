@@ -11,7 +11,7 @@ import net.causw.app.main.domain.user.academic.event.CertifiedUserCreatedEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
 import net.causw.app.main.domain.user.account.service.dto.request.AdmissionListCondition;
-import net.causw.app.main.domain.user.account.service.dto.request.AdmissionResult;
+import net.causw.app.main.domain.user.account.service.dto.response.AdmissionResult;
 import net.causw.app.main.domain.user.account.service.implementation.AdmissionLogWriter;
 import net.causw.app.main.domain.user.account.service.implementation.AdmissionReader;
 import net.causw.app.main.domain.user.account.service.implementation.AdmissionValidator;

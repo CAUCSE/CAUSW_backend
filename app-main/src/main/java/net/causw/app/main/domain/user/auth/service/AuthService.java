@@ -1,24 +1,38 @@
 package net.causw.app.main.domain.user.auth.service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
+import net.causw.app.main.domain.user.account.service.implementation.SocialAccountReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserPushTokenWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
+import net.causw.app.main.domain.user.account.service.v1.PasswordGenerator;
+import net.causw.app.main.domain.user.account.util.masking.EmailMasker;
+import net.causw.app.main.domain.user.auth.entity.EmailVerification;
+import net.causw.app.main.domain.user.auth.entity.EmailVerification.VerificationStatus;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
+import net.causw.app.main.domain.user.auth.service.dto.EmailFindResult;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthValidator;
+import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationReader;
+import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationSender;
 import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationValidator;
+import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationWriter;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
+import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -38,6 +52,59 @@ public class AuthService {
 	private final AuthTokenManager authTokenManager;
 	private final UserPushTokenWriter userPushTokenWriter;
 	private final EmailVerificationValidator emailVerificationValidator;
+	private final SocialAccountReader socialAccountReader;
+	private final EmailVerificationWriter emailVerificationWriter;
+	private final EmailVerificationReader emailVerificationReader;
+	private final EmailVerificationSender emailVerificationSender;
+	private final PasswordGenerator passwordGenerator;
+
+	/**
+	 * 이름+이메일 기준으로 비밀번호 초기화용 인증코드를 발송합니다.
+	 *
+	 * @param name  사용자 이름
+	 * @param email 인증 코드를 받을 이메일 주소
+	 */
+	@Transactional
+	public void sendPasswordResetVerificationEmail(String name, String email) {
+		emailVerificationValidator.validatePasswordResetSend(name, email);
+		emailVerificationSender.send(email, VerificationStatus.PASSWORD_FIND);
+	}
+
+	/**
+	 * 비밀번호 초기화 인증번호를 검증하고 임시 비밀번호로 재설정합니다.
+	 * 검증 성공 시 해당 인증 레코드는 삭제됩니다.
+	 *
+	 * @param name             사용자 이름
+	 * @param email            인증할 이메일 주소
+	 * @param verificationCode 사용자가 입력한 인증 코드
+	 * @return 화면에 표시할 임시 비밀번호
+	 */
+	@Transactional
+	public String resetPasswordByVerificationCode(String name, String email, String verificationCode) {
+		User user = userReader.findByEmailAndName(email, name);
+
+		if (user.isOnlySocialUser()) {
+			throw UserErrorCode.SOCIAL_ONLY_USER_CANNOT_CHANGE_PASSWORD.toBaseException();
+		}
+
+		EmailVerification emailVerification = emailVerificationReader.findLatestByEmailAndStatus(email,
+			VerificationStatus.PASSWORD_FIND);
+
+		if (emailVerification.isExpired()) {
+			throw UserErrorCode.PASSWORD_RESET_EXPIRED.toBaseException();
+		}
+
+		if (!emailVerification.getVerificationCode().equals(verificationCode)) {
+			throw UserErrorCode.PASSWORD_RESET_CODE_MISMATCH.toBaseException();
+		}
+
+		emailVerificationWriter.delete(emailVerification);
+
+		String temporaryPassword = passwordGenerator.generate();
+		user.updatePassword(passwordEncoder.encode(temporaryPassword));
+		userWriter.save(user);
+		return temporaryPassword;
+	}
 
 	/**
 	 * 이메일 기반의 신규 회원을 등록합니다.
@@ -66,6 +133,9 @@ public class AuthService {
 		User newUser = User.from(dto, passwordEncoder.encode(dto.password()));
 		authValidator.validateRegisterInput(newUser, dto.password(), dto.phoneNumber());
 		User savedUser = userWriter.save(newUser);
+		// 회원가입 완료 후 이메일 인증 정보 삭제
+		emailVerificationWriter.delete(
+			emailVerificationReader.findLatestByEmailAndStatus(dto.email(), VerificationStatus.VERIFIED));
 		return AuthResult.of(null, savedUser.getName(), savedUser.getEmail(), savedUser.getProfileUrl(), null);
 	}
 
@@ -90,6 +160,33 @@ public class AuthService {
 		AuthTokenPair tokens = authTokenManager.issueTokens(user, null);
 		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), user.getProfileUrl(),
 			tokens.refreshToken());
+	}
+
+	@Transactional(readOnly = true)
+	public Optional<EmailFindResult> findEmail(String name, String phoneNumber) {
+		Optional<User> userOptional = userReader.checkUserExistByPhoneNumAndName(phoneNumber.trim(), name.trim());
+		if (userOptional.isEmpty()) {
+			return Optional.empty();
+		}
+		// 탈퇴한 회원일 경우에도 null 처리
+		User user = userOptional.get();
+		if (user.isDeleted()) {
+			return Optional.empty();
+		}
+		List<EmailFindResult.SocialAccountSummary> socialAccounts = socialAccountReader.findAllByUserId(user.getId())
+			.stream()
+			.sorted(Comparator.comparing(account -> account.getCreatedAt()))
+			.map(account -> EmailFindResult.SocialAccountSummary.of(
+				account.getSocialType().name(),
+				toLocalDate(account.getCreatedAt())))
+			.toList();
+
+		if (user.isOnlySocialUser()) {
+			return Optional.of(EmailFindResult.of(null, null, socialAccounts));
+		}
+		return Optional
+			.of(EmailFindResult.of(EmailMasker.mask(user.getEmail()), toLocalDate(user.getCreatedAt()),
+				socialAccounts));
 	}
 
 	/**
@@ -137,5 +234,12 @@ public class AuthService {
 		}
 		// jwt 토큰 무효화
 		authTokenManager.invalidateTokens(tokens.accessToken(), tokens.refreshToken());
+	}
+
+	private LocalDate toLocalDate(LocalDateTime dateTime) {
+		if (dateTime == null) {
+			return null;
+		}
+		return dateTime.toLocalDate();
 	}
 }

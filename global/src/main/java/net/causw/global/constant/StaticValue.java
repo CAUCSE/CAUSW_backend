@@ -116,6 +116,7 @@ public class StaticValue {
 	public static final String HASH_ALGORITHM = "SHA-256";
 
 	// nickname
+	public static final int NICKNAME_MAX_LENGTH = 8;
 	public static final String INACTIVE_USER_NICKNAME = "비활성 유저";
 	public static final String ANONYMOUS_USER_NICKNAME = "익명";
 

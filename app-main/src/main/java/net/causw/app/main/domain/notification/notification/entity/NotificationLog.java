@@ -47,4 +47,8 @@ public class NotificationLog extends BaseEntity {
 		this.isRead = isRead;
 	}
 
+	public void markAsRead() {
+		this.isRead = true;
+	}
+
 }

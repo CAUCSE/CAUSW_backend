@@ -7,10 +7,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
+import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.SocialAccount;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.SocialType;
+import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.repository.user.SocialAccountRepository;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.app.main.domain.user.account.repository.user.query.UserQueryRepository;
@@ -71,6 +73,11 @@ public class UserReader {
 		return userRepository.findByEmail(email);
 	}
 
+	public User findByEmailAndName(String email, String name) {
+		return userRepository.findByEmailAndName(email, name)
+			.orElseThrow(UserErrorCode.USER_NOT_FOUND::toBaseException);
+	}
+
 	public List<User> getUsersByIds(List<String> userIds) {
 		return userQueryRepository.findByIds(userIds);
 	}
@@ -83,10 +90,22 @@ public class UserReader {
 		UserListCondition condition,
 		Pageable pageable) {
 		return userQueryRepository.findUserList(
-			condition.keyword(),
+			normalizeKeyword(condition.keyword()),
 			condition.state(),
 			condition.academicStatus(),
 			condition.department(),
+			pageable);
+	}
+
+	public Page<User> findReportedUserList(
+		String keyword,
+		UserState state,
+		AcademicStatus academicStatus,
+		Pageable pageable) {
+		return userQueryRepository.findReportedUserList(
+			normalizeKeyword(keyword),
+			state,
+			academicStatus,
 			pageable);
 	}
 
@@ -103,5 +122,20 @@ public class UserReader {
 
 	public boolean existsByEmail(String email) {
 		return userRepository.existsByEmail(email);
+	}
+
+	public boolean existsByEmailAndName(String email, String name) {
+		return userRepository.findByEmailAndName(email, name).isPresent();
+	}
+
+	public Optional<User> findByEmailAndNameOptional(String email, String name) {
+		return userRepository.findByEmailAndName(email, name);
+	}
+
+	private String normalizeKeyword(String keyword) {
+		if (keyword == null || keyword.isBlank()) {
+			return null;
+		}
+		return keyword.trim();
 	}
 }

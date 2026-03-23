@@ -1,6 +1,7 @@
 package net.causw.app.main.domain.user.auth.api.v2.controller;
 
 import java.time.Duration;
+import java.util.Optional;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -15,16 +16,23 @@ import org.springframework.web.bind.annotation.RestController;
 
 import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
 import net.causw.app.main.domain.user.auth.api.v2.dto.AuthDtoMapper;
+import net.causw.app.main.domain.user.auth.api.v2.dto.EmailFindDtoMapper;
+import net.causw.app.main.domain.user.auth.api.v2.dto.request.EmailFindRequest;
 import net.causw.app.main.domain.user.auth.api.v2.dto.request.EmailLoginRequest;
 import net.causw.app.main.domain.user.auth.api.v2.dto.request.EmailSignupRequest;
 import net.causw.app.main.domain.user.auth.api.v2.dto.request.EmailVerificationSendRequest;
 import net.causw.app.main.domain.user.auth.api.v2.dto.request.EmailVerificationVerifyRequest;
+import net.causw.app.main.domain.user.auth.api.v2.dto.request.PasswordResetSendRequest;
+import net.causw.app.main.domain.user.auth.api.v2.dto.request.PasswordResetVerifyRequest;
 import net.causw.app.main.domain.user.auth.api.v2.dto.request.SignOutRequest;
 import net.causw.app.main.domain.user.auth.api.v2.dto.response.AuthResponse;
+import net.causw.app.main.domain.user.auth.api.v2.dto.response.EmailFindResponse;
+import net.causw.app.main.domain.user.auth.api.v2.dto.response.PasswordResetResponse;
 import net.causw.app.main.domain.user.auth.service.AuthService;
 import net.causw.app.main.domain.user.auth.service.EmailVerificationService;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
+import net.causw.app.main.domain.user.auth.service.dto.EmailFindResult;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 import net.causw.app.main.shared.util.AuthorizationExtractor;
@@ -42,6 +50,7 @@ import lombok.RequiredArgsConstructor;
 public class AuthController {
 
 	private final AuthDtoMapper authDtoMapper;
+	private final EmailFindDtoMapper emailFindDtoMapper;
 	private final AuthService authService;
 	private final EmailVerificationService emailVerificationService;
 
@@ -50,6 +59,22 @@ public class AuthController {
 	public ApiResponse<Void> sendVerificationEmail(@RequestBody @Valid EmailVerificationSendRequest request) {
 		emailVerificationService.sendVerificationEmail(request.email());
 		return ApiResponse.success();
+	}
+
+	@Operation(summary = "비밀번호 초기화 인증 코드 발송 V2", description = "이름과 이메일을 확인한 뒤 비밀번호 초기화용 인증 코드를 이메일로 발송합니다.")
+	@PostMapping("/password-reset/send")
+	public ApiResponse<Void> sendPasswordResetCode(@RequestBody @Valid PasswordResetSendRequest request) {
+		authService.sendPasswordResetVerificationEmail(request.name(), request.email());
+		return ApiResponse.success();
+	}
+
+	@Operation(summary = "비밀번호 초기화 인증 코드 검증 V2", description = "인증 코드를 검증한 뒤 비밀번호를 초기화하고, 초기화된 임시 비밀번호를 반환합니다.")
+	@PostMapping("/password-reset/verify")
+	public ApiResponse<PasswordResetResponse> verifyPasswordResetCode(
+		@RequestBody @Valid PasswordResetVerifyRequest request) {
+		String temporaryPassword = authService.resetPasswordByVerificationCode(request.name(),
+			request.email(), request.verificationCode());
+		return ApiResponse.success(PasswordResetResponse.of(temporaryPassword));
 	}
 
 	@Operation(summary = "이메일 인증 번호 검증 V2", description = "인증 코드를 검증하고 인증 상태를 VERIFIED로 변경합니다.")
@@ -74,7 +99,7 @@ public class AuthController {
 
 		// 쿠키로 리프레시토큰 반환
 		ResponseCookie cookie = ResponseCookie.from("refresh_token", dto.refreshToken())
-			.httpOnly(true)
+			.httpOnly(false)
 			.secure(true)
 			.path("/")
 			.maxAge(Duration.ofMillis(StaticValue.JWT_REFRESH_TOKEN_VALID_TIME))
@@ -83,6 +108,13 @@ public class AuthController {
 
 		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
 			.body(ApiResponse.success(authDtoMapper.toAuthResponse(dto)));
+	}
+
+	@Operation(summary = "이메일 찾기 V2", description = "이름과 연락처로 가입된 이메일(마스킹) 및 연동된 소셜 계정 정보를 조회합니다.")
+	@PostMapping("/find-email")
+	public ApiResponse<EmailFindResponse> findEmail(@RequestBody @Valid EmailFindRequest request) {
+		Optional<EmailFindResult> result = authService.findEmail(request.name(), request.phoneNumber());
+		return ApiResponse.success(result.map(emailFindDtoMapper::toEmailFindResponse).orElse(null));
 	}
 
 	@Operation(summary = "토큰 재발급 V2", description = "리프레시토큰을 통해 액세스토큰을 재발급 받습니다.")
@@ -96,7 +128,7 @@ public class AuthController {
 
 		// 쿠키로 리프레시토큰 반환
 		ResponseCookie cookie = ResponseCookie.from("refresh_token", dto.refreshToken())
-			.httpOnly(true)
+			.httpOnly(false)
 			.secure(true)
 			.path("/")
 			.maxAge(Duration.ofMillis(StaticValue.JWT_REFRESH_TOKEN_VALID_TIME))
@@ -120,7 +152,7 @@ public class AuthController {
 		authService.signOut(userDetails.getUserId(), tokens, fcmToken);
 		// 쿠키에서 refresh_token 제거
 		ResponseCookie cookie = ResponseCookie.from("refresh_token", "")
-			.httpOnly(true)
+			.httpOnly(false)
 			.secure(true)
 			.path("/")
 			.maxAge(0)

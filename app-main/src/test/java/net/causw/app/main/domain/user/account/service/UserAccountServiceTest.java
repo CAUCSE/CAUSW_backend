@@ -1,7 +1,13 @@
 package net.causw.app.main.domain.user.account.service;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -9,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
@@ -18,6 +25,7 @@ import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
+import net.causw.app.main.domain.user.auth.service.implementation.AuthValidator;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,7 +44,13 @@ class UserAccountServiceTest {
 	private UserValidator userValidator;
 
 	@Mock
+	private AuthValidator authValidator;
+
+	@Mock
 	private AuthTokenManager authTokenManager;
+
+	@Mock
+	private PasswordEncoder passwordEncoder;
 
 	private final String userId = "test-uuid";
 	private final String nickname = "푸앙";

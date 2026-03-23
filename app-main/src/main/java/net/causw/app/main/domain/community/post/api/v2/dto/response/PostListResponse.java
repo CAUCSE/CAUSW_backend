@@ -20,6 +20,7 @@ public record PostListResponse(
 		@Schema(description = "익명 여부") boolean isAnonymous,
 		@Schema(description = "투표 ID (투표가 없으면 null)") String voteId,
 		@Schema(description = "삭제 여부") boolean isDeleted,
+		@Schema(description = "크롤링 게시글 여부") boolean isCrawled,
 		@Schema(description = "작성자 닉네임 (익명인 경우 '익명')") String writerNickname,
 		@Schema(description = "작성자 프로필 이미지 URL (익명인 경우 null)") String writerProfileImageUrl,
 		@Schema(description = "생성일시") LocalDateTime createdAt,

@@ -422,6 +422,7 @@ public class PostQueryRepository {
 			post.id, post.content,
 			totalCommentCount, likeCount, favoriteCount,
 			post.isAnonymous, post.vote.id, post.isDeleted,
+			post.isCrawled,
 			writer.isNotNull(), writer.name, writer.nickname, writer.admissionYear, writer.state,
 			writerProfileImageUrl,
 			post.createdAt, post.updatedAt,

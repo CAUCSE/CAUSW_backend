@@ -48,7 +48,7 @@ public class Ceremony extends BaseEntity {
 	private User user;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "ceremony_type", nullable = false)
+	@Column(name = "ceremony_type")
 	private CeremonyType ceremonyType;
 
 	@Enumerated(EnumType.STRING)
@@ -71,7 +71,7 @@ public class Ceremony extends BaseEntity {
 	private LocalTime endTime;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "relation_type", nullable = false)
+	@Column(name = "relation_type")
 	private RelationType relationType;
 
 	@Column(name = "family_relation")

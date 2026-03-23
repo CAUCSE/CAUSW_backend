@@ -18,6 +18,7 @@ public record PostCursorResult(
 	boolean isAnonymous,
 	String voteId,
 	boolean isDeleted,
+	boolean isCrawled,
 	boolean hasWriter,
 	String writerName,
 	String writerNickname,
