@@ -20,6 +20,7 @@ public record PostDetailResult(
 	Long numFavorite,
 	String voteId,
 	Boolean isAnonymous,
+	Boolean isCrawled,
 	Boolean isOwner,
 	Boolean isPostLike,
 	Boolean isPostFavorite,

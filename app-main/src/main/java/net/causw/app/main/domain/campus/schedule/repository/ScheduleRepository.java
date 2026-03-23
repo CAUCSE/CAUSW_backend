@@ -20,7 +20,7 @@ public interface ScheduleRepository extends JpaRepository<Schedule, String> {
 		SELECT s FROM Schedule s
 		WHERE s.start <= :to
 		AND s.end >= :from
-		AND (:types IS NULL OR s.type IN :types OR s.type = 'HOLIDAY')
+		AND (:types IS NULL OR s.type IN :types)
 		ORDER BY s.start, s.end
 		""")
 	List<Schedule> findAllByCondition(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to,

@@ -74,6 +74,7 @@ public class PostMapper {
 			result.isAnonymous(),
 			result.voteId(),
 			result.isDeleted(),
+			result.isCrawled(),
 			writerNickname,
 			writerProfileImage,
 			result.createdAt(),
@@ -126,6 +127,7 @@ public class PostMapper {
 			.numFavorite(numFavorite)
 			.voteId(voteId)
 			.isAnonymous(post.getIsAnonymous())
+			.isCrawled(post.getIsCrawled())
 			.isOwner(isOwner)
 			.isPostLike(isPostLike)
 			.isPostFavorite(isPostFavorite)

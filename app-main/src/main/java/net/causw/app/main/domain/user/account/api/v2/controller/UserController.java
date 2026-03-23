@@ -28,7 +28,9 @@ import net.causw.app.main.domain.user.account.api.v2.dto.request.UserRegistratio
 import net.causw.app.main.domain.user.account.api.v2.dto.response.AdmissionResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.AdmissionStateResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.ProfileImageResponse;
+import net.causw.app.main.domain.user.account.api.v2.dto.response.UserMeResponse;
 import net.causw.app.main.domain.user.account.api.v2.mapper.AdmissionDtoMapper;
+import net.causw.app.main.domain.user.account.api.v2.mapper.UserMeMapper;
 import net.causw.app.main.domain.user.account.service.AdmissionService;
 import net.causw.app.main.domain.user.account.service.UserAccountService;
 import net.causw.app.main.domain.user.account.service.UserNotificationService;
@@ -59,6 +61,19 @@ public class UserController {
 	private final AdmissionService admissionService;
 	private final AdmissionDtoMapper admissionDtoMapper;
 	private final UserProfileImageService userProfileImageService;
+	private final UserMeMapper userMeMapper;
+
+	// ── 내 정보 ──
+
+	@GetMapping("/me")
+	@ResponseStatus(HttpStatus.OK)
+	@Operation(summary = "내 정보 조회 V2", description = "현재 로그인한 사용자의 기본 정보를 조회합니다. 내정보 메인페이지 진입 시 호출합니다.")
+	public ApiResponse<UserMeResponse> getMyProfile(
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
+		return ApiResponse.success(
+			userMeMapper.toResponse(
+				userAccountService.getMyProfile(userDetails.getUserId())));
+	}
 
 	// ── 재학정보 인증 ──
 

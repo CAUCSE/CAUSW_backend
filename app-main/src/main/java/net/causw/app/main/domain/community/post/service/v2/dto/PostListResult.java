@@ -22,6 +22,7 @@ public record PostListResult(
 		boolean isAnonymous,
 		String voteId, // 투표 ID (투표가 없으면 null)
 		boolean isDeleted,
+		boolean isCrawled,
 		String writerNickname, // 익명인 경우 "익명", 아니면 실제 닉네임
 		ProfileImageDto writerProfileImage, // 익명인 경우 null
 		LocalDateTime createdAt,
@@ -38,6 +39,7 @@ public record PostListResult(
 			boolean isAnonymous,
 			String voteId,
 			boolean isDeleted,
+			boolean isCrawled,
 			String writerNickname,
 			ProfileImageDto writerProfileImage,
 			LocalDateTime createdAt,
@@ -47,7 +49,7 @@ public record PostListResult(
 			String boardName) {
 			return new PostItem(
 				postId, content, numComment, numLike, numFavorite,
-				isAnonymous, voteId, isDeleted,
+				isAnonymous, voteId, isDeleted, isCrawled,
 				writerNickname, writerProfileImage,
 				createdAt, updatedAt, postImageUrls,
 				boardId, boardName);

@@ -1,22 +1,30 @@
 package net.causw.app.main.domain.user.auth.service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 
 import net.causw.app.main.shared.dto.ProfileImageDto;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
+import net.causw.app.main.domain.user.account.service.implementation.SocialAccountReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserPushTokenWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.domain.user.account.service.v1.PasswordGenerator;
+import net.causw.app.main.domain.user.account.util.masking.EmailMasker;
 import net.causw.app.main.domain.user.auth.entity.EmailVerification;
 import net.causw.app.main.domain.user.auth.entity.EmailVerification.VerificationStatus;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
+import net.causw.app.main.domain.user.auth.service.dto.EmailFindResult;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthValidator;
 import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationReader;
@@ -27,7 +35,6 @@ import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificat
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -47,6 +54,7 @@ public class AuthService {
 	private final AuthTokenManager authTokenManager;
 	private final UserPushTokenWriter userPushTokenWriter;
 	private final EmailVerificationValidator emailVerificationValidator;
+	private final SocialAccountReader socialAccountReader;
 	private final EmailVerificationWriter emailVerificationWriter;
 	private final EmailVerificationReader emailVerificationReader;
 	private final EmailVerificationSender emailVerificationSender;
@@ -156,6 +164,33 @@ public class AuthService {
 			tokens.refreshToken());
 	}
 
+	@Transactional(readOnly = true)
+	public Optional<EmailFindResult> findEmail(String name, String phoneNumber) {
+		Optional<User> userOptional = userReader.checkUserExistByPhoneNumAndName(phoneNumber.trim(), name.trim());
+		if (userOptional.isEmpty()) {
+			return Optional.empty();
+		}
+		// 탈퇴한 회원일 경우에도 null 처리
+		User user = userOptional.get();
+		if (user.isDeleted()) {
+			return Optional.empty();
+		}
+		List<EmailFindResult.SocialAccountSummary> socialAccounts = socialAccountReader.findAllByUserId(user.getId())
+			.stream()
+			.sorted(Comparator.comparing(account -> account.getCreatedAt()))
+			.map(account -> EmailFindResult.SocialAccountSummary.of(
+				account.getSocialType().name(),
+				toLocalDate(account.getCreatedAt())))
+			.toList();
+
+		if (user.isOnlySocialUser()) {
+			return Optional.of(EmailFindResult.of(null, null, socialAccounts));
+		}
+		return Optional
+			.of(EmailFindResult.of(EmailMasker.mask(user.getEmail()), toLocalDate(user.getCreatedAt()),
+				socialAccounts));
+	}
+
 	/**
 	 * 리프레시 토큰을 사용하여 액세스 토큰(및 리프레시 토큰)을 재발급합니다.
 	 * <p>
@@ -201,5 +236,12 @@ public class AuthService {
 		}
 		// jwt 토큰 무효화
 		authTokenManager.invalidateTokens(tokens.accessToken(), tokens.refreshToken());
+	}
+
+	private LocalDate toLocalDate(LocalDateTime dateTime) {
+		if (dateTime == null) {
+			return null;
+		}
+		return dateTime.toLocalDate();
 	}
 }

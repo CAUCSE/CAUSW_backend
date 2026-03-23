@@ -29,7 +29,7 @@ public record UserInfoDetailResponse(
 
 	@Schema(description = "사용자 SNS", example = "[\"https://www.example.com\"]") List<String> socialLinks,
 
-	@Schema(description = "사용자 기술 스택", example = "[\"Stack0\", \"Stack1\"]") List<String> techStack,
+	@Schema(description = "사용자 기술 스택", example = "[\"Stack0\", \"Stack1\"]") List<String> userTechStack,
 
 	@Schema(description = "사용자 경력 사항") List<UserCareerResponse> userCareer,
 

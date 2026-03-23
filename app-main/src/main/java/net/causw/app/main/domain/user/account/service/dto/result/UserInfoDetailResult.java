@@ -14,7 +14,7 @@ public record UserInfoDetailResult(
 	Boolean isPhoneNumberVisible,
 	String email,
 	List<String> socialLinks,
-	List<String> techStack,
+	List<String> userTechStack,
 	List<UserCareerResult> userCareer,
 	List<UserProjectResult> userProject,
 	List<String> userInterestTech,

@@ -28,7 +28,7 @@ public interface UserInfoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "phoneNumber", source = ".", qualifiedByName = "mapPhoneNumber")
 	@Mapping(target = "isPhoneNumberVisible", source = "phoneNumberVisible")
 	@Mapping(target = "socialLinks", source = "socialLinks")
-	@Mapping(target = "techStack", source = "userTechStack", qualifiedByName = "sortStringsAsc")
+	@Mapping(target = "userTechStack", source = "userTechStack", qualifiedByName = "sortStringsAsc")
 	@Mapping(target = "userCareer", source = "userCareer")
 	@Mapping(target = "userProject", source = "userProject")
 	@Mapping(target = "userInterestTech", source = "userInterestTech", qualifiedByName = "sortStringsAsc")
@@ -38,7 +38,6 @@ public interface UserInfoMapper extends UuidFileToUrlDtoMapper {
 	// 내 동문 수첩 프로필 상세 조회
 	@InheritConfiguration(name = "toDetailResult")
 	@Mapping(target = "phoneNumber", source = "user.phoneNumber")
-	@Mapping(target = "isPhoneNumberVisible", constant = "true")
 	UserInfoDetailResult toMyDetailResult(UserInfo userInfo);
 
 	// 동문 수첩 프로필 리스트 조회
