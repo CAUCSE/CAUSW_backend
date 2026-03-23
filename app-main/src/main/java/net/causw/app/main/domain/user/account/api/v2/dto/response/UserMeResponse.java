@@ -1,6 +1,7 @@
 package net.causw.app.main.domain.user.account.api.v2.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import net.causw.app.main.shared.dto.ProfileImageDto;
 
 @Schema(description = "내 정보 조회 응답")
 public record UserMeResponse(
@@ -11,7 +12,7 @@ public record UserMeResponse(
 
 	@Schema(description = "닉네임", example = "푸앙") String nickname,
 
-	@Schema(description = "프로필 이미지 URL", example = "https://cdn.causw.net/profile/default.png", nullable = true) String profileImageUrl,
+	@Schema(description = "프로필 이미지 정보") ProfileImageDto profileImage,
 
 	@Schema(description = "입학년도", example = "2020") Integer admissionYear,
 
