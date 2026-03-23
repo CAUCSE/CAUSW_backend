@@ -1,7 +1,8 @@
 package net.causw.app.main.domain.user.account.api.v2.dto.response;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import net.causw.app.main.shared.dto.ProfileImageDto;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "내 정보 조회 응답")
 public record UserMeResponse(
