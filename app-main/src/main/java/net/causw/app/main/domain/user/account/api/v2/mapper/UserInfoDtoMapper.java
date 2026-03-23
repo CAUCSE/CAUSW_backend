@@ -10,15 +10,15 @@ import net.causw.app.main.domain.user.account.service.dto.request.UserInfoListCo
 import net.causw.app.main.domain.user.account.service.dto.request.UserInfoUpdateCommand;
 import net.causw.app.main.domain.user.account.service.dto.result.UserInfoDetailResult;
 import net.causw.app.main.domain.user.account.service.dto.result.UserInfoSummaryResult;
-import net.causw.app.main.shared.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
 
 @Mapper(componentModel = "spring")
-public interface UserInfoDtoMapper extends UuidFileToUrlDtoMapper {
-	UserInfoUpdateCommand toUpdateCommand(UserInfoUpdateRequest request);
-
-	UserInfoListCondition toListCondition(UserInfoListRequest request);
+public interface UserInfoDtoMapper {
 
 	UserInfoDetailResponse toDetailResponse(UserInfoDetailResult result);
 
 	UserInfoSummaryResponse toSummaryResponse(UserInfoSummaryResult result);
+
+	UserInfoUpdateCommand toUpdateCommand(UserInfoUpdateRequest request);
+
+	UserInfoListCondition toListCondition(UserInfoListRequest request);
 }
