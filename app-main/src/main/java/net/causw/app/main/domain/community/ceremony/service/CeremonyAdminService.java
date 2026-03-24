@@ -7,8 +7,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
 import net.causw.app.main.domain.community.ceremony.service.dto.request.CeremonyAdminListCondition;
+import net.causw.app.main.domain.community.ceremony.service.dto.response.CeremonyAdminListResult;
+import net.causw.app.main.domain.community.ceremony.service.dto.response.CeremonyDetailResult;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyReader;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyWriter;
+import net.causw.app.main.domain.community.ceremony.service.mapper.CeremonyMapper;
 import net.causw.app.main.domain.community.ceremony.util.CeremonyValidator;
 import net.causw.app.main.shared.exception.errorcode.CeremonyErrorCode;
 
@@ -22,15 +25,18 @@ public class CeremonyAdminService {
 	private final CeremonyReader ceremonyReader;
 	private final CeremonyWriter ceremonyWriter;
 	private final CeremonyValidator ceremonyValidator;
+	private final CeremonyMapper ceremonyMapper;
 
-	public Page<Ceremony> getCeremonyList(CeremonyAdminListCondition condition, Pageable pageable) {
-		return ceremonyReader.findAllForAdmin(
+	public Page<CeremonyAdminListResult> getCeremonyList(CeremonyAdminListCondition condition, Pageable pageable) {
+		Page<Ceremony> ceremonies = ceremonyReader.findAllForAdmin(
 			condition.fromDate(), condition.toDate(), condition.state(), pageable);
+		return ceremonies.map(ceremonyMapper::toAdminListResult);
 	}
 
-	public Ceremony getCeremonyDetail(String ceremonyId) {
-		return ceremonyReader.findById(ceremonyId)
+	public CeremonyDetailResult getCeremonyDetail(String ceremonyId) {
+		Ceremony ceremony = ceremonyReader.findById(ceremonyId)
 			.orElseThrow(CeremonyErrorCode.CEREMONY_NOT_FOUND::toBaseException);
+		return ceremonyMapper.toAdminDetailResult(ceremony);
 	}
 
 	@Transactional
