@@ -15,6 +15,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtDecoderFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.SocialType;
@@ -64,7 +65,8 @@ public class SocialNativeAuthService {
 	@Transactional
 	public AuthResult login(String provider, String accessToken, String idToken) {
 		String registrationId = provider.toLowerCase(Locale.ROOT);
-		log.info("Native social login requested. provider={}, hasIdToken={}", registrationId, hasText(idToken));
+		log.info("Native social login requested. provider={}, hasIdToken={}", registrationId,
+			StringUtils.hasText(idToken));
 
 		try {
 			SocialType.from(registrationId);
@@ -139,8 +141,8 @@ public class SocialNativeAuthService {
 	private User loadOidcAuthenticatedUser(ClientRegistration clientRegistration, String providerIdToken) {
 		log.debug("Verifying OIDC id token and loading user. provider={}", clientRegistration.getRegistrationId());
 
-		String normalizedIdToken = normalizeIdToken(providerIdToken);
-		if (!hasText(normalizedIdToken)) {
+		String normalizedIdToken = normalizeAccessToken(providerIdToken);
+		if (!StringUtils.hasText(normalizedIdToken)) {
 			log.warn("OIDC provider requested without id token. provider={}", clientRegistration.getRegistrationId());
 			throw AuthErrorCode.INVALID_TOKEN.toBaseException();
 		}
@@ -187,7 +189,7 @@ public class SocialNativeAuthService {
 	 */
 	private void validateOidcClaims(ClientRegistration clientRegistration, Jwt jwt) {
 		String subject = jwt.getClaimAsString(OIDC_SUB_CLAIM);
-		if (!hasText(subject)) {
+		if (!StringUtils.hasText(subject)) {
 			throw AuthErrorCode.INVALID_SOCIAL_IDENTIFIER.toBaseException();
 		}
 
@@ -197,7 +199,7 @@ public class SocialNativeAuthService {
 		}
 
 		String expectedIssuer = resolveExpectedIssuer(clientRegistration);
-		if (hasText(expectedIssuer)
+		if (StringUtils.hasText(expectedIssuer)
 			&& (jwt.getIssuer() == null || !expectedIssuer.equals(jwt.getIssuer().toString()))) {
 			throw AuthErrorCode.INVALID_TOKEN.toBaseException();
 		}
@@ -209,7 +211,7 @@ public class SocialNativeAuthService {
 	 */
 	private String resolveExpectedIssuer(ClientRegistration clientRegistration) {
 		String issuerUri = clientRegistration.getProviderDetails().getIssuerUri();
-		if (hasText(issuerUri)) {
+		if (StringUtils.hasText(issuerUri)) {
 			return issuerUri;
 		}
 
@@ -227,7 +229,7 @@ public class SocialNativeAuthService {
 
 	private OAuth2AccessToken toProviderAccessToken(String accessToken) {
 		String normalizedAccessToken = normalizeAccessToken(accessToken);
-		if (!hasText(normalizedAccessToken)) {
+		if (!StringUtils.hasText(normalizedAccessToken)) {
 			throw AuthErrorCode.INVALID_TOKEN.toBaseException();
 		}
 
@@ -252,16 +254,12 @@ public class SocialNativeAuthService {
 		return clientRegistration.getScopes().contains("openid");
 	}
 
-	private boolean hasText(String value) {
-		return value != null && !value.isBlank();
-	}
-
 	/**
 	 * access token 입력값을 정규화합니다.
 	 * Bearer 접두어가 포함된 경우 제거합니다.
 	 */
 	private String normalizeAccessToken(String accessToken) {
-		if (!hasText(accessToken)) {
+		if (!StringUtils.hasText(accessToken)) {
 			return accessToken;
 		}
 
@@ -273,20 +271,4 @@ public class SocialNativeAuthService {
 		return trimmed;
 	}
 
-	/**
-	 * id token 입력값을 정규화합니다.
-	 * Bearer 접두어가 포함된 경우 제거합니다.
-	 */
-	private String normalizeIdToken(String idToken) {
-		if (!hasText(idToken)) {
-			return idToken;
-		}
-
-		String trimmed = idToken.trim();
-		if (trimmed.regionMatches(true, 0, "Bearer ", 0, 7)) {
-			return trimmed.substring(7).trim();
-		}
-
-		return trimmed;
-	}
 }
