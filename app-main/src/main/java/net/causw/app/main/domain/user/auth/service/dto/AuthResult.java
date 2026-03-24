@@ -9,6 +9,7 @@ public record AuthResult(
 	String email,
 	ProfileImageDto profileImage,
 	String refreshToken,
+	boolean isGuest,
 	boolean isTermsAgreed,
 	boolean isAcademicCertified,
 	AcademicStatus academicStatus) {
@@ -17,10 +18,11 @@ public record AuthResult(
 		String email,
 		ProfileImageDto profileImage,
 		String refreshToken,
+		boolean isGuest,
 		boolean isTermsAgreed,
 		boolean isAcademicCertified,
 		AcademicStatus academicStatus) {
-		return new AuthResult(accessToken, name, email, profileImage, refreshToken, isTermsAgreed,
+		return new AuthResult(accessToken, name, email, profileImage, refreshToken, isGuest, isTermsAgreed,
 			isAcademicCertified, academicStatus);
 	}
 }

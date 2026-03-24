@@ -66,7 +66,7 @@ public class UserAccountService {
 		AuthTokenPair tokens = authTokenManager.issueTokens(updatedUser, refreshToken);
 		return AuthResult.of(tokens.accessToken(), updatedUser.getName(), updatedUser.getEmail(),
 			ProfileImageDto.from(updatedUser),
-			tokens.refreshToken(), updatedUser.isTermsAgreed(),
+			tokens.refreshToken(), updatedUser.isGuest(), updatedUser.isTermsAgreed(),
 			updatedUser.isAcademicCertified(), updatedUser.getAcademicStatus());
 	}
 

@@ -7,6 +7,9 @@ public enum OnboardingStatus {
 	@Schema(description = "약관 동의 필요")
 	TERMS_REQUIRED,
 
+	@Schema(description = "사용자 정보 입력 필요")
+	GUEST,
+
 	@Schema(description = "재학 인증 필요")
 	ACADEMIC_CERTIFICATION_REQUIRED,
 

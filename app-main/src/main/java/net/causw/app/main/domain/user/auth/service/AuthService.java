@@ -138,7 +138,8 @@ public class AuthService {
 		emailVerificationWriter.delete(
 			emailVerificationReader.findLatestByEmailAndStatus(dto.email(), VerificationStatus.VERIFIED));
 		return AuthResult.of(null, savedUser.getName(), savedUser.getEmail(), ProfileImageDto.from(savedUser), null,
-			savedUser.isTermsAgreed(), savedUser.isAcademicCertified(), savedUser.getAcademicStatus());
+			savedUser.isGuest(), savedUser.isTermsAgreed(), savedUser.isAcademicCertified(),
+			savedUser.getAcademicStatus());
 	}
 
 	/**
@@ -161,7 +162,8 @@ public class AuthService {
 		// 토큰 생성
 		AuthTokenPair tokens = authTokenManager.issueTokens(user, null);
 		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), ProfileImageDto.from(user),
-			tokens.refreshToken(), user.isTermsAgreed(), user.isAcademicCertified(), user.getAcademicStatus());
+			tokens.refreshToken(), user.isGuest(), user.isTermsAgreed(), user.isAcademicCertified(),
+			user.getAcademicStatus());
 	}
 
 	@Transactional(readOnly = true)
@@ -214,7 +216,8 @@ public class AuthService {
 		// 토큰 생성
 		AuthTokenPair tokens = authTokenManager.issueTokens(user, refreshToken);
 		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), ProfileImageDto.from(user),
-			tokens.refreshToken(), user.isTermsAgreed(), user.isAcademicCertified(), user.getAcademicStatus());
+			tokens.refreshToken(), user.isGuest(), user.isTermsAgreed(), user.isAcademicCertified(),
+			user.getAcademicStatus());
 	}
 
 	/**

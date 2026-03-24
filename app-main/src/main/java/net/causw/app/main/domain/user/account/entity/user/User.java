@@ -182,6 +182,13 @@ public class User extends BaseEntity {
 	}
 
 	/**
+	 * 온보딩 플로우 분기 기준: 소셜 로그인 완료 여부
+	 */
+	public boolean isGuest() {
+		return this.state == UserState.GUEST;
+	}
+
+	/**
 	 * 온보딩 플로우 분기 기준: 필수 약관 동의 완료 여부
 	 */
 	public boolean isTermsAgreed() {
