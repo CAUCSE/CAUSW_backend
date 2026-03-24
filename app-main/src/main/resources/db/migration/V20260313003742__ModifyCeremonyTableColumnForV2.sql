@@ -14,4 +14,6 @@ UPDATE tb_ceremony
 SET relation_type = 'ME' WHERE relation_type IS NULL;
 
 UPDATE tb_ceremony
-SET ceremony_custom_category = '기타' WHERE ceremony_custom_category IS NULL;
+SET ceremony_custom_category = '기타'
+WHERE ceremony_custom_category IS NULL
+  AND ceremony_category = 'ETC';
