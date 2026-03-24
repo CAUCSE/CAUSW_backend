@@ -23,6 +23,7 @@ import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.dto.CustomOAuth2User;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
+import net.causw.app.main.shared.dto.ProfileImageDto;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 
@@ -80,8 +81,8 @@ public class SocialNativeAuthService {
 
 			log.info("Native social login succeeded. provider={}, userId={}", registrationId, user.getId());
 
-			return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), user.getProfileUrl(),
-				tokens.refreshToken(), user.getState());
+			return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), ProfileImageDto.from(user),
+				tokens.refreshToken());
 		} catch (BaseRunTimeV2Exception e) {
 			log.warn("Native social login failed. provider={}, code={}, message={}", registrationId,
 				e.getErrorCode().getCode(), e.getMessage());
