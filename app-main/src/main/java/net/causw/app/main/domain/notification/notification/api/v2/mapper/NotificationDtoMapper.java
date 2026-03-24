@@ -1,5 +1,7 @@
 package net.causw.app.main.domain.notification.notification.api.v2.mapper;
 
+import java.time.LocalDateTime;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -16,6 +18,7 @@ public interface NotificationDtoMapper {
 	@Mapping(target = "targetId", source = "notification.targetId")
 	@Mapping(target = "targetParentId", source = "notification.targetParentId")
 	@Mapping(target = "isRead", source = "isRead")
+	@Mapping(target = "createdAt", source = "createdAt")
 	NotificationResponseDto toNotificationResponseDto(String notificationLogId, Notification notification,
-		Boolean isRead);
+		Boolean isRead, LocalDateTime createdAt);
 }

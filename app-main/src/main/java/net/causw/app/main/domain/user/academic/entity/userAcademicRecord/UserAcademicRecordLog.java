@@ -165,6 +165,24 @@ public class UserAcademicRecordLog extends BaseEntity {
 		Integer graduationYear,
 		GraduationType graduationType,
 		String note) {
+		return createWithGraduation(
+			controlledUser,
+			targetUser,
+			targetAcademicRecordStatus,
+			graduationYear,
+			graduationType,
+			note,
+			null);
+	}
+
+	public static UserAcademicRecordLog createWithGraduation(
+		User controlledUser,
+		User targetUser,
+		AcademicStatus targetAcademicRecordStatus,
+		Integer graduationYear,
+		GraduationType graduationType,
+		String note,
+		AcademicRecordRequestStatus targetAcademicRecordRequestStatus) {
 		return UserAcademicRecordLog.builder()
 			.controlledUserEmail(controlledUser.getEmail())
 			.controlledUserName(controlledUser.getName())
@@ -173,6 +191,7 @@ public class UserAcademicRecordLog extends BaseEntity {
 			.targetUserName(targetUser.getName())
 			.targetUserStudentId(targetUser.getStudentId())
 			.targetAcademicRecordStatus(targetAcademicRecordStatus)
+			.targetAcademicRecordRequestStatus(targetAcademicRecordRequestStatus)
 			.graduationYear(graduationYear)
 			.graduationType(graduationType)
 			.note(note)

@@ -66,8 +66,8 @@ public class CommentValidator {
 	}
 
 	public void validateForLike(User user, Comment comment) {
-		if (comment.getWriter().getState() == UserState.DELETED) {
-			throw AuthErrorCode.DELETED_USER.toBaseException();
+		if (comment.getWriter().isDeleted()) {
+			throw AuthErrorCode.INACTIVE_USER.toBaseException();
 		}
 		if (likeCommentReader.isCommentLiked(user, comment.getId())) {
 			throw CommentErrorCode.COMMENT_ALREADY_LIKED.toBaseException();
@@ -75,8 +75,8 @@ public class CommentValidator {
 	}
 
 	public void validateForCancelLike(User user, Comment comment) {
-		if (comment.getWriter().getState() == UserState.DELETED) {
-			throw AuthErrorCode.DELETED_USER.toBaseException();
+		if (comment.getWriter().isDeleted()) {
+			throw AuthErrorCode.INACTIVE_USER.toBaseException();
 		}
 		if (!likeCommentReader.isCommentLiked(user, comment.getId())) {
 			throw CommentErrorCode.COMMENT_NOT_LIKE.toBaseException();
@@ -90,10 +90,8 @@ public class CommentValidator {
 		UserState userState = user.getState();
 		if (userState == UserState.DROP)
 			throw AuthErrorCode.DROPPED_USER.toBaseException();
-		if (userState == UserState.INACTIVE)
+		if (user.isDeleted())
 			throw AuthErrorCode.INACTIVE_USER.toBaseException();
-		if (userState == UserState.DELETED)
-			throw AuthErrorCode.DELETED_USER.toBaseException();
 
 		if (user.getRoles().contains(Role.NONE))
 			throw AuthErrorCode.USER_ROLE_NONE.toBaseException();

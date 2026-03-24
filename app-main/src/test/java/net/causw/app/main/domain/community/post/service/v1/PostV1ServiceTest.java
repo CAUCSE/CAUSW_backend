@@ -12,6 +12,7 @@ import static org.mockito.BDDMockito.times;
 import static org.mockito.BDDMockito.verify;
 import static org.mockito.BDDMockito.when;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -116,9 +117,8 @@ public class PostV1ServiceTest {
 			// given
 			String postId = "dummy123";
 
-			UserState userStateNotDeleted = UserState.ACTIVE;
 			given(post.getWriter()).willReturn(writer);
-			given(writer.getState()).willReturn(userStateNotDeleted);
+			given(writer.isDeleted()).willReturn(false);
 
 			when(postRepository.findById(postId)).thenReturn(Optional.of(post));
 			when(likePostRepository.existsByPostIdAndUserId(postId, user.getId())).thenReturn(false);
@@ -136,9 +136,8 @@ public class PostV1ServiceTest {
 			// given
 			String postId = "dummy123";
 
-			UserState userStateDeleted = UserState.DELETED;
 			given(post.getWriter()).willReturn(writer);
-			given(writer.getState()).willReturn(userStateDeleted);
+			given(writer.isDeleted()).willReturn(true);
 
 			when(postRepository.findById(postId)).thenReturn(Optional.of(post));
 
@@ -157,9 +156,8 @@ public class PostV1ServiceTest {
 			// given
 			String postId = "dummy123";
 
-			UserState userStateNotDeleted = UserState.ACTIVE;
 			given(post.getWriter()).willReturn(writer);
-			given(writer.getState()).willReturn(userStateNotDeleted);
+			given(writer.isDeleted()).willReturn(false);
 
 			when(postRepository.findById(postId)).thenReturn(Optional.of(post));
 			when(likePostRepository.existsByPostIdAndUserId(postId, user.getId())).thenReturn(true);
@@ -197,9 +195,8 @@ public class PostV1ServiceTest {
 			String postId = "dummy123";
 			String userId = "dummy1234";
 
-			UserState userStateNotDeleted = UserState.ACTIVE;
 			given(post.getWriter()).willReturn(writer);
-			given(writer.getState()).willReturn(userStateNotDeleted);
+			given(writer.isDeleted()).willReturn(false);
 			given(user.getId()).willReturn(userId);
 
 			when(postRepository.findById(postId)).thenReturn(Optional.of(post));
@@ -218,9 +215,8 @@ public class PostV1ServiceTest {
 			// given
 			String postId = "dummy123";
 
-			UserState userStateDeleted = UserState.DELETED;
 			given(post.getWriter()).willReturn(writer);
-			given(writer.getState()).willReturn(userStateDeleted);
+			given(writer.isDeleted()).willReturn(true);
 
 			when(postRepository.findById(postId)).thenReturn(Optional.of(post));
 
@@ -239,9 +235,8 @@ public class PostV1ServiceTest {
 			// given
 			String postId = "dummy123";
 
-			UserState userStateNotDeleted = UserState.ACTIVE;
 			given(post.getWriter()).willReturn(writer);
-			given(writer.getState()).willReturn(userStateNotDeleted);
+			given(writer.isDeleted()).willReturn(false);
 
 			when(postRepository.findById(postId)).thenReturn(Optional.of(post));
 			when(likePostRepository.existsByPostIdAndUserId(postId, user.getId())).thenReturn(false);
@@ -289,6 +284,7 @@ public class PostV1ServiceTest {
 				post.getWriter().getNickname(),
 				post.getWriter().getAdmissionYear(),
 				post.getWriter().getState(),
+				null,
 				post.getCreatedAt(),
 				post.getUpdatedAt(),
 				null // 썸네일 url
@@ -301,10 +297,9 @@ public class PostV1ServiceTest {
 
 		private static Stream<Arguments> provideUnauthorizedUserCases() {
 			return Stream.of(
-				Arguments.of(Role.NONE, UserState.ACTIVE),
-				Arguments.of(Role.COMMON, UserState.INACTIVE),
-				Arguments.of(Role.COMMON, UserState.DROP),
-				Arguments.of(Role.COMMON, UserState.DELETED));
+				Arguments.of(Role.NONE, UserState.ACTIVE, null),
+				Arguments.of(Role.COMMON, UserState.DROP, null),
+				Arguments.of(Role.COMMON, UserState.ACTIVE, LocalDateTime.now()));
 		}
 
 		private static Stream<Arguments> provideSearchByKeywordSuccessCases() {
@@ -314,13 +309,14 @@ public class PostV1ServiceTest {
 				Arguments.of("제목에 키워드 포함", "내용에 키워드 포함"));
 		}
 
-		@DisplayName("인증되지 않은 사용자는 게시글 조회 불가")
+		@DisplayName("사용자 상태/권한이 유효하지 않으면 게시글 조회 불가")
 		@ParameterizedTest
 		@MethodSource("provideUnauthorizedUserCases")
-		void testUnauthorizedUser(Role role, UserState state) {
+		void testInvalidUserStateOrRole(Role role, UserState state, LocalDateTime deletedAt) {
 			// given
 			user.setRoles(Set.of(role));
 			user.setState(state);
+			user.setDeletedAt(deletedAt);
 
 			// when & then
 			assertThatThrownBy(() -> postV1Service.findAllPost(user, boardId, keyword, pageNum))
@@ -361,6 +357,7 @@ public class PostV1ServiceTest {
 				post.getWriter().getNickname(),
 				post.getWriter().getAdmissionYear(),
 				post.getWriter().getState(),
+				null,
 				post.getCreatedAt(),
 				post.getUpdatedAt(),
 				null // 썸네일 url
@@ -444,6 +441,7 @@ public class PostV1ServiceTest {
 				post.getWriter().getNickname(),
 				post.getWriter().getAdmissionYear(),
 				post.getWriter().getState(),
+				null,
 				post.getCreatedAt(),
 				post.getUpdatedAt(),
 				null // 썸네일 url

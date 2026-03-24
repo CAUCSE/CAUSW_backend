@@ -32,8 +32,8 @@ import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
 import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.dto.request.AdmissionCreateCommand;
-import net.causw.app.main.domain.user.account.service.dto.request.AdmissionResult;
-import net.causw.app.main.domain.user.account.service.dto.request.AdmissionStateResult;
+import net.causw.app.main.domain.user.account.service.dto.response.AdmissionResult;
+import net.causw.app.main.domain.user.account.service.dto.response.AdmissionStateResult;
 import net.causw.app.main.domain.user.account.service.implementation.AdmissionReader;
 import net.causw.app.main.domain.user.account.service.implementation.AdmissionValidator;
 import net.causw.app.main.domain.user.account.service.implementation.AdmissionWriter;
@@ -202,7 +202,7 @@ class AdmissionServiceTest {
 		}
 
 		@Test
-		@DisplayName("요청 학번이 다른 ACTIVE/INACTIVE 사용자와 중복되면 예외가 발생한다")
+		@DisplayName("요청 학번이 다른 ACTIVE/탈퇴(deletedAt) 사용자와 중복되면 예외가 발생한다")
 		void givenDuplicateStudentId_whenCreateAdmission_thenThrowStudentIdAlreadyExistException() {
 			// given
 			User user = ObjectFixtures.getUserWithId("user-6");

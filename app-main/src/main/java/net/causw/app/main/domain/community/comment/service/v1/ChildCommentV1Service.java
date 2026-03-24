@@ -78,7 +78,7 @@ public class ChildCommentV1Service {
 		ValidatorBucket validatorBucket = initializeValidator(creator, post);
 		validatorBucket
 			.consistOf(ConstraintValidator.of(childComment, this.validator))
-			.consistOf(UserStateIsDeletedValidator.of(parentComment.getWriter().getState()));
+			.consistOf(UserStateIsDeletedValidator.of(parentComment.getWriter()));
 		validatorBucket.validate();
 
 		ChildCommentResponseDto childCommentResponseDto = toChildCommentResponseDto(
@@ -219,7 +219,7 @@ public class ChildCommentV1Service {
 		Set<Role> roles = user.getRoles();
 		ValidatorBucket validatorBucket = ValidatorBucket.of();
 		validatorBucket
-			.consistOf(UserStateValidator.of(user.getState()))
+			.consistOf(UserStateValidator.of(user))
 			.consistOf(UserRoleIsNoneValidator.of(roles))
 			.consistOf(TargetIsDeletedValidator.of(post.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD))
 			.consistOf(TargetIsDeletedValidator.of(post.getIsDeleted(), StaticValue.DOMAIN_POST));
@@ -294,7 +294,7 @@ public class ChildCommentV1Service {
 	private void validateWriterNotDeleted(final ChildComment childComment) {
 		ValidatorBucket validatorBucket = ValidatorBucket.of();
 		validatorBucket
-			.consistOf(UserStateIsDeletedValidator.of(childComment.getWriter().getState()))
+			.consistOf(UserStateIsDeletedValidator.of(childComment.getWriter()))
 			.validate();
 	}
 }

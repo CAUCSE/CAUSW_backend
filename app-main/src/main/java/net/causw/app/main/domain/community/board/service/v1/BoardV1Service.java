@@ -95,7 +95,7 @@ public class BoardV1Service {
 		AcademicStatus academicStatus = user.getAcademicStatus();
 
 		ValidatorBucket.of()
-			.consistOf(UserStateValidator.of(user.getState()))
+			.consistOf(UserStateValidator.of(user))
 			.consistOf(UserRoleIsNoneValidator.of(roles))
 			.validate();
 
@@ -137,7 +137,7 @@ public class BoardV1Service {
 		AcademicStatus academicStatus = user.getAcademicStatus();
 
 		ValidatorBucket.of()
-			.consistOf(UserStateValidator.of(user.getState()))
+			.consistOf(UserStateValidator.of(user))
 			.consistOf(UserRoleIsNoneValidator.of(roles))
 			.validate();
 
@@ -402,7 +402,7 @@ public class BoardV1Service {
 		ValidatorBucket validatorBucket = ValidatorBucket.of();
 
 		validatorBucket
-			.consistOf(UserStateValidator.of(restorer.getState()))
+			.consistOf(UserStateValidator.of(restorer))
 			.consistOf(UserRoleIsNoneValidator.of(roles))
 			.consistOf(TargetIsNotDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD));
 
@@ -444,7 +444,7 @@ public class BoardV1Service {
 		ValidatorBucket validatorBucket = ValidatorBucket.of();
 
 		validatorBucket
-			.consistOf(UserStateValidator.of(user.getState()))
+			.consistOf(UserStateValidator.of(user))
 			.consistOf(UserRoleIsNoneValidator.of(roles))
 			.consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD));
 

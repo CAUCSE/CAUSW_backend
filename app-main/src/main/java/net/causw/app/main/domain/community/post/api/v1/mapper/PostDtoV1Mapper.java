@@ -4,6 +4,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -77,12 +78,17 @@ public interface PostDtoV1Mapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "postAttachImage", source = "queryResult.postAttachImage")
 	@Mapping(target = "isPostVote", source = "queryResult.isPostVote")
 	@Mapping(target = "isPostForm", source = "queryResult.isPostForm")
-	@Mapping(target = "displayWriterNickname", expression = "java(getDisplayWriterNickname(queryResult.hasWriter(), queryResult.writerUserState(), queryResult.isAnonymous(), queryResult.writerNickname()))")
+	@Mapping(target = "displayWriterNickname", expression = "java(getDisplayWriterNickname(queryResult.hasWriter(), queryResult.writerUserState(), queryResult.writerDeletedAt(), queryResult.isAnonymous(), queryResult.writerNickname()))")
 	PostsResponseDto toPostsResponseDto(PostQueryResult queryResult);
 
-	default String getDisplayWriterNickname(boolean hasWriter, UserState state, boolean isAnonymous, String nickname) {
+	default String getDisplayWriterNickname(
+		boolean hasWriter,
+		UserState state,
+		LocalDateTime writerDeletedAt,
+		boolean isAnonymous,
+		String nickname) {
 		if (hasWriter &&
-			List.of(UserState.INACTIVE, UserState.DROP, UserState.DELETED).contains(state)) {
+			(writerDeletedAt != null || List.of(UserState.DROP).contains(state))) {
 			return StaticValue.INACTIVE_USER_NICKNAME;
 
 		} else if (isAnonymous) {

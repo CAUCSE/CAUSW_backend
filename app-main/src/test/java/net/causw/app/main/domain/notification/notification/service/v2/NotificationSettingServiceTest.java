@@ -157,7 +157,7 @@ class NotificationSettingServiceTest {
 			User mockUser = mock(User.class);
 			given(userReader.findUserByIdNotDeleted(userId)).willReturn(mockUser);
 			doThrow(AuthErrorCode.DROPPED_USER.toBaseException())
-				.when(userValidator).validateUser(mockUser);
+				.when(userValidator).validateUser(any(User.class));
 
 			// when & then
 			assertThatThrownBy(() -> notificationSettingService.getAllSettings(userId))

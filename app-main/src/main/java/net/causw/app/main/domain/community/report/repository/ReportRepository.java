@@ -6,10 +6,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import net.causw.app.main.domain.community.report.api.v1.dto.ReportedCommentNativeProjection;
-import net.causw.app.main.domain.community.report.api.v1.dto.ReportedPostNativeProjection;
 import net.causw.app.main.domain.community.report.entity.Report;
 import net.causw.app.main.domain.community.report.enums.ReportType;
+import net.causw.app.main.domain.community.report.repository.projection.ReportedCommentNativeProjection;
+import net.causw.app.main.domain.community.report.repository.projection.ReportedPostNativeProjection;
 import net.causw.app.main.domain.user.account.entity.user.User;
 
 public interface ReportRepository extends JpaRepository<Report, String> {
@@ -49,7 +49,7 @@ public interface ReportRepository extends JpaRepository<Report, String> {
 		@Param("userId") String userId,
 		Pageable pageable);
 
-	// 신고된 사용자 목록 조회
+	// 신고된 사용자 목록 조회 (v1)
 	@Query(value = """
 		   SELECT u
 		   FROM User u
@@ -57,10 +57,9 @@ public interface ReportRepository extends JpaRepository<Report, String> {
 		   ORDER BY CASE
 		                WHEN u.state = 'ACTIVE' THEN 0
 		                WHEN u.state = 'AWAIT' THEN 1
-		                WHEN u.state = 'INACTIVE' THEN 2
+		                WHEN u.deletedAt IS NOT NULL THEN 2
 		                WHEN u.state = 'REJECT' THEN 3
 		                WHEN u.state = 'DROP' THEN 4
-		                WHEN u.state = 'DELETED' THEN 5
 		                ELSE 99
 		                END,
 		            u.reportCount DESC

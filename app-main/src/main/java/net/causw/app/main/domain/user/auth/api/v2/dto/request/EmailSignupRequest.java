@@ -15,5 +15,7 @@ public record EmailSignupRequest(
 
 	@NotBlank(message = "연락처를 입력해 주세요.") @Schema(description = "연락처", example = "010-1234-5678", requiredMode = Schema.RequiredMode.REQUIRED) @Pattern(regexp = "^01(?:0|1|[6-9])-(\\d{3}|\\d{4})-\\d{4}$", message = "전화번호 형식에 맞지 않습니다.") String phoneNumber,
 
-	@NotBlank(message = "닉네임을 입력해 주세요.") @Schema(description = "닉네임", example = "푸앙") String nickname) {
+	@NotBlank(message = "닉네임을 입력해 주세요.") @Schema(description = "닉네임", example = "푸앙") String nickname,
+
+	@NotBlank(message = "인증번호를 입력해 주세요.") @Schema(description = "인증확인한 인증번호", example = "1234AB") String emailVerificationCode) {
 }

@@ -1,7 +1,8 @@
 package net.causw.app.main.domain.user.account.entity.user;
 
-import static net.causw.global.constant.StaticValue.NO_PHONE_NUMBER_MESSAGE;
+import static net.causw.global.constant.StaticValue.*;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -19,13 +20,26 @@ import net.causw.app.main.domain.user.account.api.v1.dto.GraduatedUserCommand;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserCreateRequestDto;
 import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.account.enums.user.GraduationType;
+import net.causw.app.main.domain.user.account.enums.user.ProfileImageType;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
 import net.causw.app.main.domain.user.auth.service.dto.OAuthAttributes;
 import net.causw.app.main.shared.entity.BaseEntity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -99,12 +113,21 @@ public class User extends BaseEntity {
 	@BatchSize(size = 100)
 	private Set<Role> roles;
 
-	@OneToOne(cascade = {CascadeType.REMOVE, CascadeType.PERSIST}, mappedBy = "user", fetch = FetchType.LAZY)
+	@Enumerated(EnumType.STRING)
+	@Column(name = "profile_image_type", nullable = false)
+	@Builder.Default
+	private ProfileImageType profileImageType = ProfileImageType.MALE_1;
+
+	@OneToOne(cascade = {CascadeType.REMOVE,
+		CascadeType.PERSIST}, mappedBy = "user", fetch = FetchType.LAZY)
 	private UserProfileImage userProfileImage;
 
 	@Column(name = "state", nullable = false)
 	@Enumerated(EnumType.STRING)
 	private UserState state;
+
+	@Column(name = "deleted_at", nullable = true)
+	private LocalDateTime deletedAt;
 
 	@Embedded
 	private TermAgreements agreements;
@@ -146,10 +169,15 @@ public class User extends BaseEntity {
 		this.studentId = null;
 		this.nickname = null;
 		this.major = null;
+		this.profileImageType = ProfileImageType.GHOST;
 		this.userProfileImage = null;
 		this.graduationYear = null;
 		this.graduationType = null;
-		this.state = UserState.DELETED;
+		this.deletedAt = LocalDateTime.now();
+	}
+
+	public boolean isDeleted() {
+		return this.deletedAt != null;
 	}
 
 	public static User from(
@@ -212,6 +240,10 @@ public class User extends BaseEntity {
 			.build();
 	}
 
+	public void updatePassword(String encodedPassword) {
+		this.password = encodedPassword;
+	}
+
 	public static User createSocialUser(OAuthAttributes attributes) {
 		return User.builder()
 			.email(attributes.email())
@@ -264,6 +296,14 @@ public class User extends BaseEntity {
 		return this.state == UserState.AWAIT || this.state == UserState.REJECT;
 	}
 
+	// 활성 사용자이고 권한 있는 역할이 아닐 경우 추방 가능
+	public boolean isDroppable() {
+		boolean isDroppableState = this.state == UserState.ACTIVE && !this.isDeleted();
+		boolean isDroppableRole = this.roles.stream()
+			.noneMatch(Role.getPrivilegedRoles()::contains);
+		return isDroppableState && isDroppableRole;
+	}
+
 	public void markAsAwait() {
 		this.state = UserState.AWAIT;
 		this.rejectionOrDropReason = null; // 거절 사유 초기화
@@ -278,7 +318,7 @@ public class User extends BaseEntity {
 		this.graduationYear = admission.getRequestedGraduationYear();
 		this.state = UserState.ACTIVE;
 		this.rejectionOrDropReason = null;
-		this.roles = Set.of(Role.COMMON);
+		this.roles = new HashSet<>(Set.of(Role.COMMON));
 	}
 
 	// v2 재학인증 거절 시 사용자 상태를 REJECT로 전이하고 거절 사유를 기록한다.
@@ -287,10 +327,24 @@ public class User extends BaseEntity {
 		this.rejectionOrDropReason = rejectReason;
 	}
 
+	public void dropByAdmin(String dropReason) {
+		this.state = UserState.DROP;
+		this.roles = new HashSet<>(Set.of(Role.NONE));
+		this.rejectionOrDropReason = dropReason;
+	}
+
+	// 탈퇴, 추방된 유저의 계정 복구에 사용
+	public void restore() {
+		this.state = UserState.ACTIVE;
+		this.roles = new HashSet<>(Set.of(Role.COMMON));
+		this.deletedAt = null;
+		this.rejectionOrDropReason = null;
+	}
+
 	public void markAsCertifiedGraduate(Integer graduationYear) {
 		this.graduationYear = graduationYear;
 		this.state = UserState.ACTIVE;
-		this.roles = Set.of(Role.COMMON);
+		this.roles = new HashSet<>(Set.of(Role.COMMON));
 		this.academicStatus = AcademicStatus.GRADUATED;
 		this.rejectionOrDropReason = null; // 거절 사유 초기화
 	}
@@ -299,15 +353,43 @@ public class User extends BaseEntity {
 		return this.fcmTokens.remove(targetToken);
 	}
 
-	public boolean isSocialUser() {
+	public boolean isOnlySocialUser() {
 		return this.password == null;
 	}
 
 	public String getProfileUrl() {
+		if (this.profileImageType != ProfileImageType.CUSTOM) {
+			return null;
+		}
 		if (this.userProfileImage == null || this.userProfileImage.getUuidFile() == null) {
 			return null;
 		}
 		return this.userProfileImage.getUuidFile().getFileUrl();
+	}
+
+	public void updateNickname(String nickname) {
+		this.nickname = nickname;
+	}
+
+	/**
+	 * 프로필 이미지를 기본 이미지(MALE_1, MALE_2, FEMALE_1, FEMALE_2)로 변경합니다.
+	 * 기존 커스텀 이미지(UserProfileImage)는 null로 초기화됩니다.
+	 */
+	public void updateProfileImageToDefault(ProfileImageType defaultType) {
+		if (defaultType == ProfileImageType.CUSTOM) {
+			throw new IllegalArgumentException("기본 이미지 타입만 허용됩니다.");
+		}
+		this.profileImageType = defaultType;
+		this.userProfileImage = null;
+	}
+
+	/**
+	 * 프로필 이미지를 커스텀 이미지로 변경합니다.
+	 * profileImageType을 CUSTOM으로 설정하고 UserProfileImage를 연결합니다.
+	 */
+	public void updateProfileImageToCustom(UserProfileImage newProfileImage) {
+		this.profileImageType = ProfileImageType.CUSTOM;
+		this.userProfileImage = newProfileImage;
 	}
 
 	// 신고 관련 메소드

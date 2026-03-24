@@ -108,7 +108,7 @@ class CustomOAuth2UserServiceTest {
 
 			//verify
 			verify(userReader).findBySocialTypeAndSocialId(any(), any());
-			verify(userValidator).validateUserStatusForLogin(any());
+			verify(userValidator).validateUserStatusForLogin(any(User.class));
 			verify(userWriter, never()).save((User)any());
 		}
 	}
@@ -130,7 +130,7 @@ class CustomOAuth2UserServiceTest {
 
 			//verify
 			verify(userValidator).checkAccountExistByUserAndSocialType(any(), any());
-			verify(userValidator).validateUserStatusForIntegration(any());
+			verify(userValidator).validateUserStatusForIntegration(any(User.class));
 			verify(userWriter).save(any(SocialAccount.class));
 			verify(userWriter, never()).save(any(User.class));
 		}
@@ -198,9 +198,9 @@ class CustomOAuth2UserServiceTest {
 			// 기존 유저가 존재한다고 가정
 			when(userReader.findBySocialTypeAndSocialId(any(), any())).thenReturn(Optional.of(testUser));
 
-			// Validator가 탈퇴한 유저(DELETED) 상태로 판단하여 예외를 던지도록 Mocking
+			// Validator가 deletedAt이 설정된 탈퇴 유저로 판단하여 예외를 던지도록 Mocking
 			doThrow(UserErrorCode.INVALID_LOGIN_USER_DELETED.toBaseException())
-				.when(userValidator).validateUserStatusForLogin(any());
+				.when(userValidator).validateUserStatusForLogin(any(User.class));
 
 			//when & then
 			assertThrows(InternalAuthenticationServiceException.class, () -> {
@@ -208,7 +208,7 @@ class CustomOAuth2UserServiceTest {
 			});
 
 			//verify
-			verify(userValidator).validateUserStatusForLogin(any());
+			verify(userValidator).validateUserStatusForLogin(any(User.class));
 		}
 	}
 
@@ -224,7 +224,7 @@ class CustomOAuth2UserServiceTest {
 
 			// Validator가 추방된 유저(DROP) 상태로 판단하여 통합 불가 예외를 던지도록 Mocking
 			doThrow(UserErrorCode.USER_DROPPED.toBaseException())
-				.when(userValidator).validateUserStatusForIntegration(any());
+				.when(userValidator).validateUserStatusForIntegration(any(User.class));
 
 			//when & then
 			assertThrows(InternalAuthenticationServiceException.class, () -> {
@@ -232,7 +232,7 @@ class CustomOAuth2UserServiceTest {
 			});
 
 			//verify
-			verify(userValidator).validateUserStatusForIntegration(any());
+			verify(userValidator).validateUserStatusForIntegration(any(User.class));
 			verify(userWriter, never()).save(any(SocialAccount.class));
 		}
 	}

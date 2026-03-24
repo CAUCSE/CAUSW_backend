@@ -8,6 +8,7 @@ import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.account.enums.user.GraduationType;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.shared.dto.ProfileImageDto;
 
 public record UserDetailItem(
 	String id,
@@ -16,7 +17,7 @@ public record UserDetailItem(
 	String studentId,
 	Integer admissionYear,
 	List<String> roles,
-	String profileImageUrl,
+	ProfileImageDto profileImage,
 	UserState state,
 	String nickname,
 	String major,
@@ -37,7 +38,7 @@ public record UserDetailItem(
 			user.getStudentId(),
 			user.getAdmissionYear(),
 			user.getRoles().stream().map(Enum::name).toList(),
-			extractProfileImageUrl(user),
+			ProfileImageDto.from(user),
 			user.getState(),
 			user.getNickname(),
 			user.getMajor(),
@@ -49,13 +50,5 @@ public record UserDetailItem(
 			user.getRejectionOrDropReason(),
 			user.getCreatedAt(),
 			user.getUpdatedAt());
-	}
-
-	private static String extractProfileImageUrl(User user) {
-		if (user.getUserProfileImage() == null) {
-			return null;
-		}
-		var uuidFile = user.getUserProfileImage().getUuidFile();
-		return uuidFile != null ? uuidFile.getFileUrl() : null;
 	}
 }

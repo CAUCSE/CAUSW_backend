@@ -109,7 +109,7 @@ public class FindPrivilegedUsersUseCaseService {
 	private void validateRequestUser(User requester) {
 		Set<Role> roles = requester.getRoles();
 		ValidatorBucket.of()
-			.consistOf(UserStateValidator.of(requester.getState()))
+			.consistOf(UserStateValidator.of(requester))
 			.consistOf(UserRoleIsNoneValidator.of(roles))
 			.consistOf(UserRoleValidator.of(roles, Set.of()))
 			.validate();

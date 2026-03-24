@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -91,6 +92,39 @@ public class PostController {
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		PostListQuery query = postDtoMapper.toListQuery(condition, userDetails.getUser());
 		PostListResult result = postService.getPosts(query);
+		return ApiResponse.success(postDtoMapper.toListResponse(result));
+	}
+
+	@GetMapping("/me")
+	@ResponseStatus(HttpStatus.OK)
+	@Operation(summary = "내가 쓴 글 목록 조회", description = "로그인한 사용자가 작성한 게시글 목록을 커서 기반으로 조회합니다. 게시글 목록 조회와 동일한 형식(posts, nextCursor)으로 반환합니다.")
+	public ApiResponse<PostListResponse> getPostsWrittenByMe(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestParam(name = "cursor", required = false) String cursor,
+		@RequestParam(name = "size", required = false) Integer size) {
+		PostListResult result = postService.getPostsWrittenByUser(userDetails.getUser(), cursor, size);
+		return ApiResponse.success(postDtoMapper.toListResponse(result));
+	}
+
+	@GetMapping("/me/liked")
+	@ResponseStatus(HttpStatus.OK)
+	@Operation(summary = "내가 좋아요 누른 글 목록 조회", description = "로그인한 사용자가 좋아요를 누른 게시글 목록을 커서 기반으로 조회합니다. 게시글 목록 조회와 동일한 형식(posts, nextCursor)으로 반환합니다.")
+	public ApiResponse<PostListResponse> getPostsLikedByMe(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestParam(name = "cursor", required = false) String cursor,
+		@RequestParam(name = "size", required = false) Integer size) {
+		PostListResult result = postService.getPostsLikedByUser(userDetails.getUser(), cursor, size);
+		return ApiResponse.success(postDtoMapper.toListResponse(result));
+	}
+
+	@GetMapping("/me/commented")
+	@ResponseStatus(HttpStatus.OK)
+	@Operation(summary = "내가 댓글 단 글 목록 조회", description = "로그인한 사용자가 댓글을 작성한 게시글 목록을 커서 기반으로 조회합니다. 게시글 목록 조회와 동일한 형식(posts, nextCursor)으로 반환합니다.")
+	public ApiResponse<PostListResponse> getPostsCommentedByMe(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestParam(name = "cursor", required = false) String cursor,
+		@RequestParam(name = "size", required = false) Integer size) {
+		PostListResult result = postService.getPostsCommentedByUser(userDetails.getUser(), cursor, size);
 		return ApiResponse.success(postDtoMapper.toListResponse(result));
 	}
 

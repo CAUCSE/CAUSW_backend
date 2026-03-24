@@ -62,11 +62,17 @@ public class LockerQueryRepository {
 		return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
 	}
 
-	public List<Locker> findAllExpiredLockers(LocalDateTime targetTime) {
+	/**
+	 * 만료된 사물함 리스트 조회 (user join fetch)
+	 * @param targetTime 조회 기준 시간 (현재 시간)
+	 * @return 만료된 사물함 리스트
+	 */
+	public List<Locker> findAllExpiredLockersWithUser(LocalDateTime targetTime) {
 		QLocker locker = QLocker.locker;
 
 		return jpaQueryFactory
 			.selectFrom(locker)
+			.leftJoin(locker.user).fetchJoin()
 			.where(locker.expireDate.before(targetTime))
 			.fetch();
 	}

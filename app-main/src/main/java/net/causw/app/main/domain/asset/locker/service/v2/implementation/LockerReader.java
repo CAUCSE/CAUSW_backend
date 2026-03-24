@@ -53,8 +53,14 @@ public class LockerReader {
 		return lockerQueryRepository.findLockers(userKeyword, location, isActive, isOccupied, isExpired, pageable);
 	}
 
+	/**
+	 * 사물함 만료 조회(반납 기간이 지난 사물함 조회)
+	 * <br> user 정보도 함께 조회한다.
+	 * @param targetTime 조회 기준 시간 (보통 현재 시간)
+	 * @return 만료된 사물함 리스트 (반납 기간이 지난 사물함)
+	 */
 	public List<Locker> findExpiredLockers(LocalDateTime targetTime) {
-		return lockerQueryRepository.findAllExpiredLockers(targetTime);
+		return lockerQueryRepository.findAllExpiredLockersWithUser(targetTime);
 	}
 
 	public long countByLocationId(String locationId) {

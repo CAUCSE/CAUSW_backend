@@ -148,7 +148,7 @@ public class CommentV1Service {
 
 		ValidatorBucket validatorBucket = initializeValidator(deleter, post);
 		validatorBucket
-			.consistOf(UserStateValidator.of(deleter.getState()))
+			.consistOf(UserStateValidator.of(deleter))
 			.consistOf(UserRoleIsNoneValidator.of(roles))
 			.consistOf(TargetIsDeletedValidator.of(comment.getIsDeleted(), StaticValue.DOMAIN_COMMENT));
 
@@ -330,7 +330,7 @@ public class CommentV1Service {
 		ValidatorBucket validatorBucket = ValidatorBucket.of();
 		Set<Role> roles = user.getRoles();
 		validatorBucket
-			.consistOf(UserStateValidator.of(user.getState()))
+			.consistOf(UserStateValidator.of(user))
 			.consistOf(UserRoleIsNoneValidator.of(roles))
 			.consistOf(TargetIsDeletedValidator.of(post.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD))
 			.consistOf(TargetIsDeletedValidator.of(post.getIsDeleted(), StaticValue.DOMAIN_POST));
@@ -381,7 +381,7 @@ public class CommentV1Service {
 	private void validateWriterNotDeleted(final Comment comment) {
 		ValidatorBucket validatorBucket = ValidatorBucket.of();
 		validatorBucket
-			.consistOf(UserStateIsDeletedValidator.of(comment.getWriter().getState()))
+			.consistOf(UserStateIsDeletedValidator.of(comment.getWriter()))
 			.validate();
 	}
 

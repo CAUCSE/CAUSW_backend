@@ -25,7 +25,7 @@ import lombok.NoArgsConstructor;
 public class PostValidator {
 
 	public static void validateWriterNotDeleted(Post post) {
-		if (post.getWriter().getState().equals(UserState.DELETED)) {
+		if (post.getWriter().isDeleted()) {
 			throw PostErrorCode.DELETED_WRITER.toBaseException();
 		}
 	}
@@ -72,11 +72,8 @@ public class PostValidator {
 		if (userState == UserState.DROP) {
 			throw UserErrorCode.USER_DROPPED.toBaseException();
 		}
-		if (userState == UserState.INACTIVE) {
+		if (user.isDeleted()) {
 			throw UserErrorCode.USER_INACTIVE_CAN_REJOIN.toBaseException();
-		}
-		if (userState == UserState.DELETED) {
-			throw UserErrorCode.USER_DELETED.toBaseException();
 		}
 
 		// User Role 검증 (NONE 역할이 있으면 안됨)

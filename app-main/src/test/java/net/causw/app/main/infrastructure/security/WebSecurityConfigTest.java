@@ -23,6 +23,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -32,6 +33,7 @@ import net.causw.app.main.core.security.AppleOAuth2AuthorizationRequestResolver;
 import net.causw.app.main.core.security.CustomAuthenticationEntryPoint;
 import net.causw.app.main.core.security.CustomAuthorizationManager;
 import net.causw.app.main.core.security.JwtTokenProvider;
+import net.causw.app.main.core.security.OAuth2AuthorizationRequestCookieRepository;
 import net.causw.app.main.core.security.SecurityEndpoints;
 import net.causw.app.main.core.security.WebSecurityConfig;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
@@ -57,11 +59,15 @@ public class WebSecurityConfigTest {
 	@MockBean
 	private AppleOAuth2AuthorizationRequestResolver appleOAuth2AuthorizationRequestResolver;
 	@MockBean
+	private OAuth2AuthorizationRequestCookieRepository oAuth2AuthorizationRequestCookieRepository;
+	@MockBean
 	private CustomOAuth2UserService customOAuth2UserService;
 	@MockBean
 	private OAuth2SuccessHandler oAuth2SuccessHandler;
 	@MockBean
 	private OAuth2FailureHandler oAuth2FailureHandler;
+	@MockBean
+	private ClientRegistrationRepository clientRegistrationRepository;
 
 	@Nested
 	@DisplayName("AuthorizeHttpRequests 테스트")

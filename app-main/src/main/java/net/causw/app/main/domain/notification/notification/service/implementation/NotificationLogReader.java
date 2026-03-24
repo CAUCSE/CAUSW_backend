@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.notification.notification.service.implementation;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,6 +19,16 @@ public class NotificationLogReader {
 	private final NotificationLogRepository notificationLogRepository;
 	private final PageableFactory pageableFactory;
 
+	public Optional<NotificationLog> findByIdAndUserId(String id, String userId) {
+		return notificationLogRepository.findByIdAndUserId(id, userId);
+	}
+
+	public List<NotificationLog> getNotificationList(String userId, boolean isRead, LocalDateTime currentTime) {
+		LocalDateTime sevenDaysAgo = currentTime.minusDays(7);
+
+		return notificationLogRepository.findRecentNotifications(userId, isRead, sevenDaysAgo);
+	}
+
 	public Optional<NotificationLog> getLatestUnread(String userId) {
 
 		List<NotificationLog> notificationLog = notificationLogRepository.findByUserIdAndIsReadFalseNotification(
@@ -26,8 +37,10 @@ public class NotificationLogReader {
 		return notificationLog.stream().findFirst();
 	}
 
-	public List<NotificationLog> findUnreadUpToLimit(String userId) {
-		return notificationLogRepository.findByUserIdUnreadLogsUpToLimit(
-			userId, pageableFactory.create(0, StaticValue.MAX_NOTIFICATION_COUNT));
+	public List<NotificationLog> findUnreadUpToLimit(String userId, LocalDateTime currentTime) {
+		LocalDateTime sevenDaysAgo = currentTime.minusDays(7);
+
+		return notificationLogRepository.findRecentUnreadLogsUpToLimit(
+			userId, sevenDaysAgo, pageableFactory.create(0, StaticValue.MAX_NOTIFICATION_COUNT));
 	}
 }

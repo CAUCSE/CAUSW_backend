@@ -273,7 +273,7 @@ public class PostV1Service {
 		// 유효성 검사 버킷 초기화
 		ValidatorBucket validatorBucket = ValidatorBucket.of();
 		validatorBucket
-			.consistOf(UserStateValidator.of(creator.getState())) // 사용자 상태 검증
+			.consistOf(UserStateValidator.of(creator)) // 사용자 상태 검증
 			.consistOf(UserRoleIsNoneValidator.of(roles)) // 역할이 NONE인지 검증
 			.consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD)) // 게시판 삭제 여부 검증
 			.consistOf(UserRoleValidator.of( // 게시글 작성 권한 검증
@@ -360,7 +360,7 @@ public class PostV1Service {
 		}
 
 		validatorBucket
-			.consistOf(UserStateValidator.of(creator.getState()))
+			.consistOf(UserStateValidator.of(creator))
 			.consistOf(UserRoleIsNoneValidator.of(roles))
 			.consistOf(PostNumberOfAttachmentsValidator.of(attachImageList))
 			.consistOf(TargetIsDeletedValidator.of(board.getIsDeleted(), StaticValue.DOMAIN_BOARD))
@@ -433,7 +433,7 @@ public class PostV1Service {
 			}
 		}
 		validatorBucket
-			.consistOf(UserStateValidator.of(deleter.getState())) // 사용자 상태 검증
+			.consistOf(UserStateValidator.of(deleter)) // 사용자 상태 검증
 			.consistOf(UserRoleIsNoneValidator.of(roles)) // 역할이 NONE인지 검증
 			.consistOf(TargetIsDeletedValidator.of(post.getIsDeleted(), StaticValue.DOMAIN_POST)); // 이미 삭제되지 않았는지 검증
 
@@ -614,7 +614,7 @@ public class PostV1Service {
 					Set.of()));
 		}
 		validatorBucket
-			.consistOf(UserStateValidator.of(restorer.getState()))
+			.consistOf(UserStateValidator.of(restorer))
 			.consistOf(UserRoleIsNoneValidator.of(roles))
 			.consistOf(TargetIsDeletedValidator.of(post.getBoard().getIsDeleted(), StaticValue.DOMAIN_BOARD))
 			.consistOf(TargetIsNotDeletedValidator.of(post.getIsDeleted(), StaticValue.DOMAIN_POST));
@@ -788,7 +788,7 @@ public class PostV1Service {
 		Set<Role> roles = user.getRoles();
 		ValidatorBucket validatorBucket = ValidatorBucket.of();
 		validatorBucket
-			.consistOf(UserStateValidator.of(user.getState())) // 사용자 상태 검증
+			.consistOf(UserStateValidator.of(user)) // 사용자 상태 검증
 			.consistOf(UserRoleIsNoneValidator.of(roles)); // 역할이 NONE인지 검증
 
 		// 동아리 게시판인 경우 추가 검증
@@ -1090,7 +1090,7 @@ public class PostV1Service {
 	private void validateWriterNotDeleted(final Post post) {
 		ValidatorBucket validatorBucket = ValidatorBucket.of();
 		validatorBucket
-			.consistOf(UserStateIsDeletedValidator.of(post.getWriter().getState()))
+			.consistOf(UserStateIsDeletedValidator.of(post.getWriter()))
 			.validate();
 	}
 
@@ -1128,8 +1128,8 @@ public class PostV1Service {
 	 */
 	// 화면에 표시할 작성자 닉네임 설정 (닉네임 / 비활성 유저 / 익명)
 	public String getDisplayWriterNickname(User writer, Boolean isAnonymous, String originalNickname) {
-		if (writer != null && List.of(UserState.INACTIVE, UserState.DROP, UserState.DELETED)
-			.contains(writer.getState())) {
+		if (writer != null && (writer.isDeleted() || List.of(UserState.DROP)
+			.contains(writer.getState()))) {
 			return StaticValue.INACTIVE_USER_NICKNAME;
 		} else if (Boolean.TRUE.equals(isAnonymous)) {
 			return StaticValue.ANONYMOUS_USER_NICKNAME;
