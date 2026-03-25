@@ -154,12 +154,14 @@ public class Post extends BaseEntity {
 		this.title = title;
 		this.content = content;
 		this.form = form;
-		this.postAttachImageList = postAttachImageList;
+		this.postAttachImageList.clear();
+		this.postAttachImageList.addAll(postAttachImageList);
 	}
 
 	public void updateContentAndImages(String content, List<PostAttachImage> postAttachImageList) {
 		this.content = content;
-		this.postAttachImageList = postAttachImageList;
+		this.postAttachImageList.clear();
+		this.postAttachImageList.addAll(postAttachImageList);
 	}
 
 	public void setIsDeleted(Boolean isDeleted) {

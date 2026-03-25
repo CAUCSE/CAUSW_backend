@@ -21,16 +21,17 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import net.causw.app.main.domain.asset.file.service.v2.UuidFileService;
-import net.causw.app.main.domain.community.ceremony.api.v2.dto.request.CreateCeremonyRequestDto;
-import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonySummaryResponseDto;
-import net.causw.app.main.domain.community.ceremony.api.v2.mapper.CeremonyCreateMapper;
-import net.causw.app.main.domain.community.ceremony.api.v2.mapper.CeremonyDtoMapper;
+import net.causw.app.main.domain.community.ceremony.api.v2.dto.request.CeremonyCreateRequest;
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyContext;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyState;
 import net.causw.app.main.domain.community.ceremony.service.CeremonyService;
+import net.causw.app.main.domain.community.ceremony.service.dto.request.CeremonyCreateCommand;
+import net.causw.app.main.domain.community.ceremony.service.dto.response.CeremonySummaryResult;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyCreator;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyReader;
+import net.causw.app.main.domain.community.ceremony.service.mapper.CeremonyCreateMapper;
+import net.causw.app.main.domain.community.ceremony.service.mapper.CeremonyMapper;
 import net.causw.app.main.domain.community.ceremony.util.CeremonyValidator;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
@@ -53,7 +54,7 @@ public class CeremonyServiceTest {
 	@Mock
 	CeremonyCreateMapper ceremonyCreateMapper;
 	@Mock
-	CeremonyDtoMapper ceremonyDtoMapper;
+	CeremonyMapper ceremonyMapper;
 	@Mock
 	CeremonyValidator ceremonyValidator;
 	@Mock
@@ -66,12 +67,12 @@ public class CeremonyServiceTest {
 	class CreateCeremonyValidationTest {
 
 		private User user;
-		private CreateCeremonyRequestDto dto;
+		private CeremonyCreateCommand command;
 
 		@BeforeEach
 		void setUp() {
 			user = mock(User.class);
-			dto = mock(CreateCeremonyRequestDto.class);
+			command = mock(CeremonyCreateCommand.class);
 		}
 
 		@Test
@@ -79,14 +80,14 @@ public class CeremonyServiceTest {
 		void givenCategoryIsETC_whenCreateCategoryWithCustomCategoryIsNull_thenThrowsException() {
 			// given
 			doThrow(CeremonyErrorCode.CUSTOM_CATEGORY_REQUIRED.toBaseException())
-				.when(ceremonyValidator).validateForCreate(dto);
+				.when(ceremonyValidator).validateForCreate(command);
 
 			// when & then
-			assertThatThrownBy(() -> ceremonyService.createCeremony(user, dto, null))
+			assertThatThrownBy(() -> ceremonyService.createCeremony(user, command, null))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.CUSTOM_CATEGORY_REQUIRED);
 			then(uuidFileService).should(never()).saveFileList(any(), any());
-			then(ceremonyCreateMapper).should(never()).fromRequest(any(), any(), any(), any());
+			then(ceremonyCreateMapper).should(never()).toCeremony(any(), any(), any(), any());
 			then(ceremonyCreator).should(never()).save(any());
 		}
 
@@ -95,13 +96,13 @@ public class CeremonyServiceTest {
 		void givenFamilyRelationIsNull_whenCreateCategoryWithRelationIsFamily_thenThrowsException() {
 			//given
 			doThrow(CeremonyErrorCode.FAMILY_RELATION_REQUIRED.toBaseException())
-				.when(ceremonyValidator).validateForCreate(dto);
+				.when(ceremonyValidator).validateForCreate(command);
 
-			assertThatThrownBy(() -> ceremonyService.createCeremony(user, dto, null))
+			assertThatThrownBy(() -> ceremonyService.createCeremony(user, command, null))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.FAMILY_RELATION_REQUIRED);
 			then(uuidFileService).should(never()).saveFileList(any(), any());
-			then(ceremonyCreateMapper).should(never()).fromRequest(any(), any(), any(), any());
+			then(ceremonyCreateMapper).should(never()).toCeremony(any(), any(), any(), any());
 			then(ceremonyCreator).should(never()).save(any());
 		}
 
@@ -110,13 +111,13 @@ public class CeremonyServiceTest {
 		void givenAlumniNameIsNull_whenCreateCategoryWithRelationInstead_thenThrowsException() {
 			//given
 			doThrow(CeremonyErrorCode.ALUMNI_NAME_REQUIRED.toBaseException())
-				.when(ceremonyValidator).validateForCreate(dto);
+				.when(ceremonyValidator).validateForCreate(command);
 
-			assertThatThrownBy(() -> ceremonyService.createCeremony(user, dto, null))
+			assertThatThrownBy(() -> ceremonyService.createCeremony(user, command, null))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.ALUMNI_NAME_REQUIRED);
 			then(uuidFileService).should(never()).saveFileList(any(), any());
-			then(ceremonyCreateMapper).should(never()).fromRequest(any(), any(), any(), any());
+			then(ceremonyCreateMapper).should(never()).toCeremony(any(), any(), any(), any());
 			then(ceremonyCreator).should(never()).save(any());
 		}
 
@@ -125,13 +126,13 @@ public class CeremonyServiceTest {
 		void givenAlumniAdmissionYearIsNull_whenCreateCategoryWithRelationInstead_thenThrowsException() {
 			//given
 			doThrow(CeremonyErrorCode.ALUMNI_ADMISSION_YEAR_REQUIRED.toBaseException())
-				.when(ceremonyValidator).validateForCreate(dto);
+				.when(ceremonyValidator).validateForCreate(command);
 
-			assertThatThrownBy(() -> ceremonyService.createCeremony(user, dto, null))
+			assertThatThrownBy(() -> ceremonyService.createCeremony(user, command, null))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.ALUMNI_ADMISSION_YEAR_REQUIRED);
 			then(uuidFileService).should(never()).saveFileList(any(), any());
-			then(ceremonyCreateMapper).should(never()).fromRequest(any(), any(), any(), any());
+			then(ceremonyCreateMapper).should(never()).toCeremony(any(), any(), any(), any());
 			then(ceremonyCreator).should(never()).save(any());
 		}
 
@@ -140,14 +141,14 @@ public class CeremonyServiceTest {
 		void givenDateTimeValidatorFail_whenCreateCeremony_thenThrowsException() {
 			// given
 			doThrow(CeremonyErrorCode.START_TIME_REQUIRED.toBaseException())
-				.when(ceremonyValidator).validateForCreate(dto);
+				.when(ceremonyValidator).validateForCreate(command);
 
 			// when & then
-			assertThatThrownBy(() -> ceremonyService.createCeremony(user, dto, null))
+			assertThatThrownBy(() -> ceremonyService.createCeremony(user, command, null))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.START_TIME_REQUIRED);
 			then(uuidFileService).should(never()).saveFileList(any(), any());
-			then(ceremonyCreateMapper).should(never()).fromRequest(any(), any(), any(), any());
+			then(ceremonyCreateMapper).should(never()).toCeremony(any(), any(), any(), any());
 			then(ceremonyCreator).should(never()).save(any());
 		}
 
@@ -156,14 +157,14 @@ public class CeremonyServiceTest {
 		void givenNotificationValidatorFail_whenCreateCeremony_thenThrowsException() {
 			// given
 			doThrow(CeremonyErrorCode.TARGET_ADMISSION_YEARS_REQUIRED.toBaseException())
-				.when(ceremonyValidator).validateForCreate(dto);
+				.when(ceremonyValidator).validateForCreate(command);
 
 			// when & then
-			assertThatThrownBy(() -> ceremonyService.createCeremony(user, dto, null))
+			assertThatThrownBy(() -> ceremonyService.createCeremony(user, command, null))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.TARGET_ADMISSION_YEARS_REQUIRED);
 			then(uuidFileService).should(never()).saveFileList(any(), any());
-			then(ceremonyCreateMapper).should(never()).fromRequest(any(), any(), any(), any());
+			then(ceremonyCreateMapper).should(never()).toCeremony(any(), any(), any(), any());
 			then(ceremonyCreator).should(never()).save(any());
 		}
 	}
@@ -176,7 +177,7 @@ public class CeremonyServiceTest {
 		User applicant;
 		Ceremony ceremony;
 		User other;
-		CreateCeremonyRequestDto dto;
+		CeremonyCreateRequest dto;
 
 		@BeforeEach
 		void setUp() {
@@ -184,7 +185,7 @@ public class CeremonyServiceTest {
 			applicant = mock(User.class);
 			ceremony = mock(Ceremony.class);
 			other = mock(User.class);
-			dto = mock(CreateCeremonyRequestDto.class);
+			dto = mock(CeremonyCreateRequest.class);
 		}
 
 		@DisplayName("존재하지 않는 경조사 조회하면 실패")
@@ -259,11 +260,11 @@ public class CeremonyServiceTest {
 			// given
 			given(ceremonyReader.findOngoingOrderByStartedAtDesc(isNull(), any(), any(), eq(pageable)))
 				.willReturn(ceremonyPage);
-			given(ceremonyDtoMapper.toCeremonySummaryResponseDto(any(Ceremony.class)))
-				.willReturn(mock(CeremonySummaryResponseDto.class));
+			given(ceremonyMapper.toSummaryResult(any(Ceremony.class)))
+				.willReturn(mock(CeremonySummaryResult.class));
 
 			// when
-			Page<CeremonySummaryResponseDto> result = ceremonyService.getOngoingCeremonyPage(null, 1);
+			Page<CeremonySummaryResult> result = ceremonyService.getOngoingCeremonyPage(null, 1);
 
 			// then
 			assertThat(result.getTotalElements()).isEqualTo(2);
@@ -271,8 +272,8 @@ public class CeremonyServiceTest {
 			then(pageableFactory).should(times(1)).create(eq(1), eq(StaticValue.DEFAULT_PAGE_SIZE));
 			then(ceremonyReader).should(times(1))
 				.findOngoingOrderByStartedAtDesc(isNull(), any(), any(), eq(pageable));
-			then(ceremonyDtoMapper).should(times(2))
-				.toCeremonySummaryResponseDto(any(Ceremony.class));
+			then(ceremonyMapper).should(times(2))
+				.toSummaryResult(any(Ceremony.class));
 		}
 
 		@Test
@@ -284,11 +285,11 @@ public class CeremonyServiceTest {
 			// given
 			given(ceremonyReader.findOngoingOrderByStartedAtDesc(eq("celebration"), any(), any(), eq(pageable)))
 				.willReturn(ceremonyPage);
-			given(ceremonyDtoMapper.toCeremonySummaryResponseDto(any(Ceremony.class)))
-				.willReturn(mock(CeremonySummaryResponseDto.class));
+			given(ceremonyMapper.toSummaryResult(any(Ceremony.class)))
+				.willReturn(mock(CeremonySummaryResult.class));
 
 			// when
-			Page<CeremonySummaryResponseDto> result = ceremonyService.getOngoingCeremonyPage("celebration", 0);
+			Page<CeremonySummaryResult> result = ceremonyService.getOngoingCeremonyPage("celebration", 0);
 
 			// then
 			assertThat(result.getTotalElements()).isEqualTo(1);
@@ -296,8 +297,8 @@ public class CeremonyServiceTest {
 			then(pageableFactory).should(times(1)).create(eq(0), eq(StaticValue.DEFAULT_PAGE_SIZE));
 			then(ceremonyReader).should(times(1))
 				.findOngoingOrderByStartedAtDesc(eq("celebration"), any(), any(), eq(pageable));
-			then(ceremonyDtoMapper).should(times(1))
-				.toCeremonySummaryResponseDto(any(Ceremony.class));
+			then(ceremonyMapper).should(times(1))
+				.toSummaryResult(any(Ceremony.class));
 		}
 
 		@Test
@@ -316,7 +317,7 @@ public class CeremonyServiceTest {
 			then(ceremonyReader).should(times(1))
 				.findOngoingOrderByStartedAtDesc(eq("nope"), any(), any(), eq(pageable));
 
-			then(ceremonyDtoMapper).shouldHaveNoInteractions();
+			then(ceremonyMapper).shouldHaveNoInteractions();
 		}
 
 		@Test
@@ -344,11 +345,11 @@ public class CeremonyServiceTest {
 				eq("userId"), eq(CeremonyState.ACCEPT), eq(pageable)))
 				.willReturn(ceremonyPage);
 
-			given(ceremonyDtoMapper.toMyCeremonySummaryResponseDto(any(Ceremony.class)))
-				.willReturn(mock(CeremonySummaryResponseDto.class));
+			given(ceremonyMapper.toMySummaryResult(any(Ceremony.class)))
+				.willReturn(mock(CeremonySummaryResult.class));
 
 			// when
-			Page<CeremonySummaryResponseDto> result = ceremonyService.getMyCeremonyPage("userId", CeremonyState.ACCEPT,
+			Page<CeremonySummaryResult> result = ceremonyService.getMyCeremonyPage("userId", CeremonyState.ACCEPT,
 				1);
 
 			// then
@@ -357,8 +358,8 @@ public class CeremonyServiceTest {
 			then(pageableFactory).should(times(1)).create(eq(1), eq(StaticValue.DEFAULT_PAGE_SIZE));
 			then(ceremonyReader).should(times(1))
 				.findByUserIdAndCeremonyStateOrderByStartedAtDesc(eq("userId"), eq(CeremonyState.ACCEPT), eq(pageable));
-			then(ceremonyDtoMapper).should(times(2))
-				.toMyCeremonySummaryResponseDto(any(Ceremony.class));
+			then(ceremonyMapper).should(times(2))
+				.toMySummaryResult(any(Ceremony.class));
 		}
 	}
 }
