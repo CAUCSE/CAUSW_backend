@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "온보딩 플로우 분기 상태")
 public enum OnboardingStatus {
-	@Schema(description = "약관 동의 필요")
+	@Schema(description = "약관 동의 필요 (v1 유저 대상)")
 	TERMS_REQUIRED,
 
 	@Schema(description = "사용자 정보 입력 필요")
