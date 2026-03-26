@@ -8,4 +8,3 @@ import jakarta.validation.constraints.Size;
 public record OnboardingEmailVerifyRequest(
 	@NotBlank(message = "인증 코드를 입력해 주세요.") @Size(min = 6, max = 6, message = "인증 코드는 6자리여야 합니다.") @Schema(description = "6자리 인증 코드", example = "123456") String verificationCode) {
 }
-
