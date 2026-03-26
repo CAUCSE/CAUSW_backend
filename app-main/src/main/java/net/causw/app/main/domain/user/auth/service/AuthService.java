@@ -137,7 +137,9 @@ public class AuthService {
 		// 회원가입 완료 후 이메일 인증 정보 삭제
 		emailVerificationWriter.delete(
 			emailVerificationReader.findLatestByEmailAndStatus(dto.email(), VerificationStatus.VERIFIED));
-		return AuthResult.of(null, savedUser.getName(), savedUser.getEmail(), ProfileImageDto.from(savedUser), null);
+		return AuthResult.of(null, savedUser.getName(), savedUser.getEmail(), ProfileImageDto.from(savedUser), null,
+			savedUser.isGuest(), savedUser.isTermsAgreed(), savedUser.isAcademicCertified(),
+			savedUser.getAcademicStatus());
 	}
 
 	/**
@@ -160,7 +162,8 @@ public class AuthService {
 		// 토큰 생성
 		AuthTokenPair tokens = authTokenManager.issueTokens(user, null);
 		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), ProfileImageDto.from(user),
-			tokens.refreshToken());
+			tokens.refreshToken(), user.isGuest(), user.isTermsAgreed(), user.isAcademicCertified(),
+			user.getAcademicStatus());
 	}
 
 	@Transactional(readOnly = true)
@@ -213,7 +216,8 @@ public class AuthService {
 		// 토큰 생성
 		AuthTokenPair tokens = authTokenManager.issueTokens(user, refreshToken);
 		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), ProfileImageDto.from(user),
-			tokens.refreshToken());
+			tokens.refreshToken(), user.isGuest(), user.isTermsAgreed(), user.isAcademicCertified(),
+			user.getAcademicStatus());
 	}
 
 	/**

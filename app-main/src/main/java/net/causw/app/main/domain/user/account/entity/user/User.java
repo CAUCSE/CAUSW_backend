@@ -22,6 +22,7 @@ import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.account.enums.user.GraduationType;
 import net.causw.app.main.domain.user.account.enums.user.ProfileImageType;
 import net.causw.app.main.domain.user.account.enums.user.Role;
+import net.causw.app.main.domain.user.account.enums.user.RoleGroup;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
 import net.causw.app.main.domain.user.auth.service.dto.OAuthAttributes;
@@ -178,6 +179,32 @@ public class User extends BaseEntity {
 
 	public boolean isDeleted() {
 		return this.deletedAt != null;
+	}
+
+	/**
+	 * 온보딩 플로우 분기 기준: 소셜 로그인 완료 여부
+	 */
+	public boolean isGuest() {
+		return this.state == UserState.GUEST;
+	}
+
+	/**
+	 * 온보딩 플로우 분기 기준: 필수 약관 동의 완료 여부
+	 */
+	public boolean isTermsAgreed() {
+		return this.agreements != null;
+	}
+
+	/**
+	 * 온보딩 플로우 분기 기준: 재학 인증 완료 여부
+	 */
+	public boolean isAcademicCertified() {
+		if (this.roles != null && this.roles.stream()
+			.anyMatch(RoleGroup.EXECUTIVES_AND_PROFESSOR.getRoles()::contains)) {
+			return true;
+		}
+
+		return this.academicStatus != null && this.academicStatus != AcademicStatus.UNDETERMINED;
 	}
 
 	public static User from(

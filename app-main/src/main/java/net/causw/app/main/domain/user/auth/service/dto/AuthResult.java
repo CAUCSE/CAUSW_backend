@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.user.auth.service.dto;
 
+import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.shared.dto.ProfileImageDto;
 
 public record AuthResult(
@@ -7,12 +8,21 @@ public record AuthResult(
 	String name,
 	String email,
 	ProfileImageDto profileImage,
-	String refreshToken) {
+	String refreshToken,
+	boolean isGuest,
+	boolean isTermsAgreed,
+	boolean isAcademicCertified,
+	AcademicStatus academicStatus) {
 	public static AuthResult of(String accessToken,
 		String name,
 		String email,
 		ProfileImageDto profileImage,
-		String refreshToken) {
-		return new AuthResult(accessToken, name, email, profileImage, refreshToken);
+		String refreshToken,
+		boolean isGuest,
+		boolean isTermsAgreed,
+		boolean isAcademicCertified,
+		AcademicStatus academicStatus) {
+		return new AuthResult(accessToken, name, email, profileImage, refreshToken, isGuest, isTermsAgreed,
+			isAcademicCertified, academicStatus);
 	}
 }
