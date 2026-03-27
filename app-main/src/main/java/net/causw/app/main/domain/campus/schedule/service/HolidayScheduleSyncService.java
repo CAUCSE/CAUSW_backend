@@ -16,8 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.campus.schedule.entity.Schedule;
 import net.causw.app.main.domain.campus.schedule.entity.enums.ScheduleType;
-import net.causw.app.main.domain.campus.schedule.repository.ScheduleRepository;
 import net.causw.app.main.domain.campus.schedule.service.HolidayApiClient.HolidayInfo;
+import net.causw.app.main.domain.campus.schedule.service.implementation.ScheduleReader;
+import net.causw.app.main.domain.campus.schedule.service.implementation.ScheduleWriter;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +31,8 @@ public class HolidayScheduleSyncService {
 	private static final ZoneId KOREA_ZONE_ID = ZoneId.of("Asia/Seoul");
 
 	private final HolidayApiClient holidayApiClient;
-	private final ScheduleRepository scheduleRepository;
+	private final ScheduleReader scheduleReader;
+	private final ScheduleWriter scheduleWriter;
 
 	@EventListener(ApplicationReadyEvent.class)
 	@Transactional
@@ -65,7 +67,7 @@ public class HolidayScheduleSyncService {
 
 			LocalDateTime start = holiday.date().atStartOfDay();
 			LocalDateTime end = holiday.date().atTime(LocalTime.MAX);
-			boolean exists = scheduleRepository.existsByTypeAndTitleAndStartAndEnd(
+			boolean exists = scheduleReader.existsByTypeAndTitleAndStartAndEnd(
 				ScheduleType.HOLIDAY,
 				holiday.name(),
 				start,
@@ -76,7 +78,7 @@ public class HolidayScheduleSyncService {
 				continue;
 			}
 
-			scheduleRepository.save(Schedule.of(
+			scheduleWriter.save(Schedule.of(
 				holiday.name(),
 				ScheduleType.HOLIDAY,
 				start,
