@@ -1,5 +1,7 @@
 package net.causw.app.main.domain.user.account.service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -10,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerWriter;
+import net.causw.app.main.domain.user.account.api.v2.dto.response.UserDailyCountResponse;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
@@ -92,6 +95,16 @@ public class UserAdminService {
 		User updatedUser = userWriter.replaceRole(targetUser, currentRole, newRole);
 		userAdminActionLogWriter.logRoleChange(adminUser, updatedUser, beforeRoles, updatedUser.getRoles());
 		return UserRoleUpdateResult.from(updatedUser);
+	}
+
+	@Transactional
+	public UserDailyCountResponse getDailySignupStats(LocalDate targetDate) {
+		LocalDateTime startOfDay = targetDate.atStartOfDay();
+		LocalDateTime endOfDay = targetDate.atTime(java.time.LocalTime.MAX);
+
+		Long dailyCount = userReader.countByCreatedAtBetween(startOfDay, endOfDay);
+
+		return new UserDailyCountResponse(targetDate, dailyCount);
 	}
 
 	// 대상 사용자가 추방 가능한 상태인지 확인
