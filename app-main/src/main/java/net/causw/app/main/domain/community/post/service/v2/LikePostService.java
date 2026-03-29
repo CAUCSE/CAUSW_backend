@@ -40,6 +40,8 @@ public class LikePostService {
 		likePostWriter.saveLikePost(userId, post);
 
 		User liker = userReader.findUserById(userId);
+
+		// 좋아요 알림 이벤트
 		eventPublisher.publishEvent(new PostLikedEvent(post, liker));
 	}
 
