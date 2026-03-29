@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserDailyCountResponse;
-import net.causw.app.main.domain.user.account.api.v2.mapper.UserStaticsMapper;
 import net.causw.app.main.domain.user.account.service.UserAdminService;
 import net.causw.app.main.shared.dto.ApiResponse;
 
@@ -26,7 +25,6 @@ import lombok.RequiredArgsConstructor;
 public class UserStaticsAdminController {
 
 	private final UserAdminService userAdminService;
-	private final UserStaticsMapper userStaticsMapper;
 
 	@Operation(summary = "일일 신규 가입자 수 조회")
 	@GetMapping("/daily-count")
@@ -35,7 +33,7 @@ public class UserStaticsAdminController {
 		@DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate targetDate
 	) {
 		LocalDate date = (targetDate != null) ? targetDate : LocalDate.now();
-		var result = userAdminService.getDailySignupStats(date);
-		return ApiResponse.success(userStaticsMapper.toDailyCountResponse(result));
+		Long count = userAdminService.getDailySignupStats(date);
+		return ApiResponse.success(new UserDailyCountResponse(date, count));
 	}
 }

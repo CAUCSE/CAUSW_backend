@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerWriter;
-import net.causw.app.main.domain.user.account.api.v2.dto.response.UserDailyCountResponse;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
@@ -97,14 +96,12 @@ public class UserAdminService {
 		return UserRoleUpdateResult.from(updatedUser);
 	}
 
-	@Transactional
-	public UserDailyCountResponse getDailySignupStats(LocalDate targetDate) {
+	@Transactional(readOnly = true)
+	public Long getDailySignupStats(LocalDate targetDate) {
 		LocalDateTime startOfDay = targetDate.atStartOfDay();
 		LocalDateTime endOfDay = targetDate.atTime(java.time.LocalTime.MAX);
 
-		Long dailyCount = userReader.countByCreatedAtBetween(startOfDay, endOfDay);
-
-		return new UserDailyCountResponse(targetDate, dailyCount);
+		return userReader.countByCreatedAtBetween(startOfDay, endOfDay);
 	}
 
 	// 대상 사용자가 추방 가능한 상태인지 확인
