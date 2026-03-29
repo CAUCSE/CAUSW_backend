@@ -2,8 +2,6 @@ package net.causw.app.main.domain.notification.notification.service.handler;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -23,7 +21,6 @@ import net.causw.app.main.domain.notification.notification.service.implementatio
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
-import net.causw.app.main.domain.user.relation.service.v1.UserBlockEntityService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -35,46 +32,70 @@ public class AdmissionNotificationHandler {
 	private final NotificationWriter notificationWriter;
 	private final NotificationPushSender notificationPushSender;
 	private final NotificationSettingReader notificationSettingReader;
-	private final UserBlockEntityService userBlockEntityService;
 
+	/**
+	 * 재학정보 인증 요청 알림 이벤트 핸들러.
+	 * <p>
+	 * 유저가 재학정보 인증을 요청하면, 해당 학적 상태를 처리하는 관리자들에게
+	 * 푸시 알림 및 서비스 알림을 발송합니다.
+	 * <ul>
+	 *   <li>대상: {@code event.targetStatus()} 에 해당하는 학적 상태의 관리자</li>
+	 *   <li>필터: 서비스 알림 설정 ON ({@link UserNotificationSettingKey#SERVICE_NOTICE_ENABLED})</li>
+	 * </ul>
+	 *
+	 * @param event 재학정보 인증 요청 이벤트
+	 */
 	@Async("asyncExecutor")
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	@Transactional
 	public void handleRequest(AdmissionRequestedEvent event) {
 		User requester = event.requester();
 
+		// 해당 학적 상태를 담당하는 관리자 목록 조회
 		List<User> admins = userReader.findAdminsByAcademicStatus(event.targetStatus());
 		if (admins.isEmpty()) {
 			return;
 		}
 
-		Set<String> blockedByRequester = userBlockEntityService.findBlockeeUserIdsByBlocker(requester);
-
-		List<String> adminIds = admins.stream().map(User::getId).collect(Collectors.toList());
+		// 관리자별 알림 설정 일괄 조회
+		List<String> adminIds = admins.stream().map(User::getId).toList();
 		Map<String, UserNotificationSettingMap> settingMaps = notificationSettingReader
 			.findSettingMapByUserIds(adminIds);
 
-		String title = "재학정보 인증 요청";
-		String body = String.format("%s(%s)님이 재학정보 인증을 요청했습니다.", requester.getName(), requester.getStudentId());
+		String pushTitle = "재학정보 인증 요청";
+		String pushBody = String.format("%s(%s)님이 재학정보 인증을 요청했습니다.", requester.getName(), requester.getStudentId());
+		String serviceTitle = String.format("%s(%s)님이 재학정보 인증을 요청했습니다.", requester.getName(), requester.getStudentId());
 
+		// 알림 엔티티 저장 (발송자: 요청자)
 		Notification notification = notificationWriter.save(
-			Notification.of(requester, title, body, NoticeType.ADMISSION, null, null));
+			Notification.of(requester, serviceTitle, serviceTitle, NoticeType.SYSTEM, null, null));
 
+		// 서비스 알림이 활성화된 관리자에게만 발송
 		admins.stream()
-			.filter(admin -> !blockedByRequester.contains(admin.getId()))
 			.filter(admin -> settingMaps.get(admin.getId()).get(UserNotificationSettingKey.SERVICE_NOTICE_ENABLED))
 			.forEach(admin -> {
-				notificationPushSender.sendToUser(admin, title, body);
+				notificationPushSender.sendToUser(admin, pushTitle, pushBody);
 				notificationWriter.saveLog(admin, notification);
 			});
 	}
 
+	/**
+	 * 재학정보 인증 승인 알림 이벤트 핸들러.
+	 * <p>
+	 * 관리자가 재학정보 인증을 승인하면, 해당 유저에게 푸시 알림 및 서비스 알림을 발송합니다.
+	 * <ul>
+	 *   <li>필터: 서비스 알림 설정 ON ({@link UserNotificationSettingKey#SERVICE_NOTICE_ENABLED})</li>
+	 * </ul>
+	 *
+	 * @param event 재학정보 인증 승인 이벤트
+	 */
 	@Async("asyncExecutor")
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	@Transactional
 	public void handleAccepted(AdmissionAcceptedEvent event) {
 		User targetUser = event.targetUser();
 
+		// 서비스 알림 설정 확인
 		UserNotificationSettingMap settingMap = notificationSettingReader.findSettingMap(targetUser.getId());
 		if (!settingMap.get(UserNotificationSettingKey.SERVICE_NOTICE_ENABLED)) {
 			return;
@@ -84,18 +105,30 @@ public class AdmissionNotificationHandler {
 		String body = "재학정보 인증이 완료되었습니다.";
 
 		Notification notification = notificationWriter.save(
-			Notification.of(targetUser, title, body, NoticeType.ADMISSION, null, null));
+			Notification.of(event.admin(), title, body, NoticeType.SYSTEM, null, null));
 
 		notificationPushSender.sendToUser(targetUser, title, body);
 		notificationWriter.saveLog(targetUser, notification);
 	}
 
+	/**
+	 * 재학정보 인증 반려 알림 이벤트 핸들러.
+	 * <p>
+	 * 관리자가 재학정보 인증을 반려하면, 해당 유저에게 반려 사유와 함께
+	 * 푸시 알림 및 서비스 알림을 발송합니다.
+	 * <ul>
+	 *   <li>필터: 서비스 알림 설정 ON ({@link UserNotificationSettingKey#SERVICE_NOTICE_ENABLED})</li>
+	 * </ul>
+	 *
+	 * @param event 재학정보 인증 반려 이벤트 (반려 사유 포함)
+	 */
 	@Async("asyncExecutor")
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	@Transactional
 	public void handleRejected(AdmissionRejectedEvent event) {
 		User targetUser = event.targetUser();
 
+		// 서비스 알림 설정 확인
 		UserNotificationSettingMap settingMap = notificationSettingReader.findSettingMap(targetUser.getId());
 		if (!settingMap.get(UserNotificationSettingKey.SERVICE_NOTICE_ENABLED)) {
 			return;
@@ -105,7 +138,7 @@ public class AdmissionNotificationHandler {
 		String body = String.format("재학정보 인증이 반려되었습니다. 사유: %s", event.rejectMessage());
 
 		Notification notification = notificationWriter.save(
-			Notification.of(targetUser, title, body, NoticeType.ADMISSION, null, null));
+			Notification.of(event.admin(), title, body, NoticeType.SYSTEM, null, null));
 
 		notificationPushSender.sendToUser(targetUser, title, body);
 		notificationWriter.saveLog(targetUser, notification);

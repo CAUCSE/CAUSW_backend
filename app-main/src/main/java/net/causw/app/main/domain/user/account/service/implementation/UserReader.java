@@ -134,8 +134,13 @@ public class UserReader {
 		return userQueryRepository.findAllActive();
 	}
 
+	/**
+	 * 특정 학적 상태에 해당하는 관리자 유저 목록을 조회합니다.
+	 * @param academicStatus 조회할 학적 상태
+	 * @return 해당 학적 상태에 해당하는 관리자 유저 목록
+	 */
 	public List<User> findAdminsByAcademicStatus(AcademicStatus academicStatus) {
-		return userRepository.findByRoleAndAcademicStatusAndState(Role.ADMIN, academicStatus, UserState.ACTIVE);
+		return userQueryRepository.findAdminsByAcademicStatus(academicStatus);
 	}
 
 	public boolean existsByEmail(String email) {

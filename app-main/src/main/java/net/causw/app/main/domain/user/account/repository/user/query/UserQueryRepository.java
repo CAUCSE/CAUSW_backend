@@ -212,6 +212,20 @@ public class UserQueryRepository {
 			.fetch();
 	}
 
+	/**
+	 * 특정 학적 상태에 해당하는 관리자 유저 목록 조회
+	 * @param academicStatus 조회할 학적 상태
+	 * @return 해당 학적 상태에 해당하는 관리자 유저 목록
+	 */
+	public List<User> findAdminsByAcademicStatus(AcademicStatus academicStatus) {
+		return jpaQueryFactory.selectFrom(QUser.user)
+				.where(QUser.user.roles.contains(Role.ADMIN))
+				.where(QUser.user.academicStatus.eq(academicStatus))
+				.where(notDeleted())
+				.fetch();
+	}
+
+
 	private static BooleanExpression notDeleted() {
 		QUser user = QUser.user;
 		return user.deletedAt.isNull();
