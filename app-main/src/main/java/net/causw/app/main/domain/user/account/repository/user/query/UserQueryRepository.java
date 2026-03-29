@@ -219,12 +219,11 @@ public class UserQueryRepository {
 	 */
 	public List<User> findAdminsByAcademicStatus(AcademicStatus academicStatus) {
 		return jpaQueryFactory.selectFrom(QUser.user)
-				.where(QUser.user.roles.contains(Role.ADMIN))
-				.where(QUser.user.academicStatus.eq(academicStatus))
-				.where(notDeleted())
-				.fetch();
+			.where(QUser.user.roles.contains(Role.ADMIN))
+			.where(QUser.user.academicStatus.eq(academicStatus))
+			.where(notDeleted())
+			.fetch();
 	}
-
 
 	private static BooleanExpression notDeleted() {
 		QUser user = QUser.user;
