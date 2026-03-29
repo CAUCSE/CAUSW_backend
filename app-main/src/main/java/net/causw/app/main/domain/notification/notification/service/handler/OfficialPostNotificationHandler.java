@@ -45,27 +45,35 @@ public class OfficialPostNotificationHandler {
 		Post post = event.post();
 		User writer = post.getWriter();
 
+		// 공지글이 아닌 경우, 게시판이 공개되지 않은 경우 알림을 보내지 않음
 		BoardConfig boardConfig = boardConfigReader.getByBoardId(board.getId());
 		if (!boardConfig.isNotice() || boardConfig.getVisibility() != BoardVisibility.VISIBLE) {
 			return;
 		}
 
+		// 게시판 구독자 중 읽기 범위에 해당하는 유저들에게 알림 발송
 		List<UserBoardSubscribe> subscribers = userBoardSubscribeReader.findForNotification(board, Set.of());
 
+		// 게시판 읽기 범위에 해당하는 유저 필터링
 		BoardReadScope readScope = boardConfig.getReadScope();
 		List<User> targets = subscribers.stream()
 			.map(UserBoardSubscribe::getUser)
 			.filter(user -> isInReadScope(user.getAcademicStatus(), readScope))
 			.toList();
 
+		// 알림 발송
+		// 푸시알림 제목: 게시판 이름
+		// 푸시알림 내용: 공지글 내용 (최대 60자, 그 이상은 ...으로 표시)
+		// 서비스 알림 제목: 공지글 내용 (최대 20자, 그 이상은 ...으로 표시)
 		String sanitizedContent = NotificationTextUtil.sanitize(post.getContent());
 		String pushTitle = board.getName();
 		String pushBody = NotificationTextUtil.ellipsis(sanitizedContent, NotificationTextUtil.PUSH_BODY_MAX_LENGTH);
 		String serviceTitle = NotificationTextUtil.ellipsis(sanitizedContent,
 			NotificationTextUtil.SERVICE_TITLE_MAX_LENGTH);
 
+		// 알림 발송자를 게시글 작성자로 설정하여 알림 저장
 		Notification notification = notificationWriter.save(
-			Notification.of(writer, serviceTitle, pushBody, NoticeType.BOARD, post.getId(), board.getId()));
+			Notification.of(writer, serviceTitle, pushBody, NoticeType.OFFICIAL, post.getId(), board.getId()));
 
 		notificationPushSender.sendToUsers(targets, pushTitle, pushBody);
 		notificationWriter.saveLogs(targets, notification);

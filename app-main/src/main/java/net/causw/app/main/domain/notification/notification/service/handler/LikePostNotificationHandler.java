@@ -74,6 +74,7 @@ public class LikePostNotificationHandler {
 		String serviceBody = String.format("내 게시글에 좋아요가 %d개 달렸어요.", likeCount);
 		String pushTitle = String.format("게시물 좋아요 %d개 달성", likeCount);
 
+		// 알림 발송자를 게시글 작성자로 설정하여 알림 생성
 		Notification notification = notificationWriter.save(
 			Notification.of(postWriter, serviceTitle, serviceBody, NoticeType.COMMUNITY, post.getId(),
 				post.getBoard().getId()));

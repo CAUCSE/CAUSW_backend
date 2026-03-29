@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.user.account.service.implementation;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -78,10 +79,6 @@ public class UserReader {
 			.orElseThrow(UserErrorCode.USER_NOT_FOUND::toBaseException);
 	}
 
-	public List<User> getUsersByIds(List<String> userIds) {
-		return userQueryRepository.findByIds(userIds);
-	}
-
 	public List<User> searchByCondition(UserQueryCondition condition) {
 		return userQueryRepository.searchByCondition(condition);
 	}
@@ -118,6 +115,23 @@ public class UserReader {
 	public Optional<User> findBySocialTypeAndSocialId(SocialType socialType, String socialId) {
 		return socialAccountRepository.findBySocialIdAndSocialType(socialId, socialType)
 			.map(SocialAccount::getUser);
+	}
+
+	/**
+	 * 입학년도 목록에 해당하는 유저를 조회합니다.
+	 * @param admissionYears 조회할 입학년도 목록
+	 * @return 해당 입학년도 유저 목록
+	 */
+	public List<User> findUsersByAdmissionYears(Collection<Integer> admissionYears) {
+		return userQueryRepository.findByAdmissionYearIn(admissionYears);
+	}
+
+	/**
+	 * 모든 활동 가능한 유저를 조회합니다.
+	 * @return 활성 유저 목록
+	 */
+	public List<User> findAllActive() {
+		return userQueryRepository.findAllActive();
 	}
 
 	public List<User> findAdminsByAcademicStatus(AcademicStatus academicStatus) {

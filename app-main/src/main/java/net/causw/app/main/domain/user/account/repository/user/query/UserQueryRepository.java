@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.user.account.repository.user.query;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -183,6 +184,32 @@ public class UserQueryRepository {
 			.where(user.id.eq(userId))
 			.where(notDeleted())
 			.fetchOne());
+	}
+
+	/**
+	 * 입학년도에 해당하는 활성 유저 목록 조회
+	 * @param admissionYears 조회할 입학년도 목록
+	 * @return 해당 입학년도에 해당하는 활성 유저 목록
+	 */
+	public List<User> findByAdmissionYearIn(Collection<Integer> admissionYears) {
+		QUser user = QUser.user;
+		return jpaQueryFactory.selectFrom(user)
+			.where(user.admissionYear.in(admissionYears))
+			.where(user.state.eq(UserState.ACTIVE))
+			.where(notDeleted())
+			.fetch();
+	}
+
+	/**
+	 * 모든 활성 유저 목록 조회
+	 * @return 활성 유저 목록
+	 */
+	public List<User> findAllActive() {
+		QUser user = QUser.user;
+		return jpaQueryFactory.selectFrom(user)
+			.where(user.state.eq(UserState.ACTIVE))
+			.where(notDeleted())
+			.fetch();
 	}
 
 	private static BooleanExpression notDeleted() {

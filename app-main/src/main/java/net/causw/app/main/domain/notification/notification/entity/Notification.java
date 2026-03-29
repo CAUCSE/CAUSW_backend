@@ -48,7 +48,7 @@ public class Notification extends BaseEntity {
 
 	/**
 	 * 알림 생성 메서드
-	 * @param user 알림을 받을 유저
+	 * @param user 알림 발송자
 	 * @param title 알림 제목
 	 * @param body 알림 내용
 	 * @param noticeType 알림 유형

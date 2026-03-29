@@ -71,6 +71,9 @@ public class CommentNotificationHandler {
 		String displayName = resolveDisplayName(commentWriter, post);
 		String sanitizedContent = NotificationTextUtil.sanitize(comment.getContent());
 
+		// 푸시알림 제목: "내 글에 댓글"
+		// 푸시알림 내용: "작성자 님이 댓글을 남겼어요
+		// 서비스알림 제목: "작성자 님이 댓글을 남겼어요: " + "댓글 내용 일부"
 		String pushTitle = "내 글에 댓글";
 		String pushBody = NotificationTextUtil.ellipsis(displayName + "님이 댓글을 남겼어요",
 			NotificationTextUtil.PUSH_BODY_MAX_LENGTH);
@@ -81,7 +84,7 @@ public class CommentNotificationHandler {
 			+ "\"";
 
 		Notification notification = notificationWriter.save(
-			Notification.of(postWriter, serviceTitle, pushBody, NoticeType.COMMUNITY, post.getId(),
+			Notification.of(commentWriter, serviceTitle, pushBody, NoticeType.COMMUNITY, post.getId(),
 				post.getBoard().getId()));
 
 		notificationPushSender.sendToUser(postWriter, pushTitle, pushBody);
@@ -127,17 +130,20 @@ public class CommentNotificationHandler {
 		String displayName = resolveDisplayName(childCommentWriter, post);
 		String sanitizedContent = NotificationTextUtil.sanitize(childComment.getContent());
 
+		// 푸시알림 제목: "내 댓글에 답글"
+		// 푸시알림 내용: "작성자 님이 답글을 남겼어요"
+		// 서비스알림 제목: "작성자 님이 답글을 남겼어요: " + "대댓글 내용 일부"
 		String pushTitle = "내 댓글에 답글";
 		String pushBody = NotificationTextUtil.ellipsis(displayName + "님이 답글을 남겼어요",
 			NotificationTextUtil.PUSH_BODY_MAX_LENGTH);
 
-		String servicePrefix = displayName + "님이 대댓글을 남겼어요: ";
+		String servicePrefix = displayName + "님이 답글을 남겼어요: ";
 		int contentSlot = NotificationTextUtil.SERVICE_TITLE_MAX_LENGTH - servicePrefix.length() - 2;
 		String serviceTitle = servicePrefix + "\"" + NotificationTextUtil.ellipsis(sanitizedContent, contentSlot)
 			+ "\"";
 
 		Notification notification = notificationWriter.save(
-			Notification.of(commentWriter, serviceTitle, pushBody, NoticeType.COMMUNITY, post.getId(),
+			Notification.of(childCommentWriter, serviceTitle, pushBody, NoticeType.COMMUNITY, post.getId(),
 				post.getBoard().getId()));
 
 		notificationPushSender.sendToUser(commentWriter, pushTitle, pushBody);
