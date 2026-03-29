@@ -74,15 +74,13 @@ public class PostController {
 
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@ResponseStatus(HttpStatus.CREATED)
-	@Operation(
-		summary = "게시글 생성",
-		description = """
-			새로운 게시글을 생성합니다. multipart/form-data 형식으로 요청합니다.
-			- **request** 파트 (JSON): 게시글 메타데이터(content, boardId, isAnonymous)와 이미지 메타데이터(images[])를 포함합니다.
-			- **images** 파트 (파일 배열, 선택): 업로드할 이미지 파일 목록. request.images[].fileIndex로 매핑됩니다.
-			
-			이미지 메타데이터의 order로 최종 이미지 순서가 결정되며, isRepresentative=true인 항목이 대표 이미지로 지정됩니다.
-			""")
+	@Operation(summary = "게시글 생성", description = """
+		새로운 게시글을 생성합니다. multipart/form-data 형식으로 요청합니다.
+		- **request** 파트 (JSON): 게시글 메타데이터(content, boardId, isAnonymous)와 이미지 메타데이터(images[])를 포함합니다.
+		- **images** 파트 (파일 배열, 선택): 업로드할 이미지 파일 목록. request.images[].fileIndex로 매핑됩니다.
+
+		이미지 메타데이터의 order로 최종 이미지 순서가 결정되며, isRepresentative=true인 항목이 대표 이미지로 지정됩니다.
+		""")
 	public ApiResponse<PostCreateResponse> create(
 		@Valid @RequestPart(value = "request") PostCreateRequest request,
 		@RequestPart(value = "images", required = false) List<MultipartFile> images,
@@ -159,20 +157,18 @@ public class PostController {
 
 	@PutMapping(value = "/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@ResponseStatus(HttpStatus.OK)
-	@Operation(
-		summary = "게시글 수정",
-		description = """
-			게시글의 내용과 첨부 이미지를 수정합니다. multipart/form-data 형식으로 요청합니다.
-			- **request** 파트 (JSON): 수정할 메타데이터(content, isAnonymous)와 이미지 메타데이터(images[])를 포함합니다.
-			- **images** 파트 (파일 배열, 선택): 새로 업로드할 이미지 파일 목록. type=new인 항목의 fileIndex로 매핑됩니다.
-			
-			이미지 메타데이터의 type으로 기존 이미지 유지/새 이미지 업로드를 구분합니다:
-			- type=existing: 기존 이미지를 유지합니다. url 필드가 필수입니다.
-			- type=new: 새 파일을 업로드합니다. fileIndex 필드가 필수입니다.
-			
-			기존 이미지 중 images[]에 포함되지 않은 이미지는 자동으로 삭제됩니다.
-			order로 최종 이미지 순서가 결정되며, isRepresentative=true인 항목이 대표 이미지로 지정됩니다.
-			""")
+	@Operation(summary = "게시글 수정", description = """
+		게시글의 내용과 첨부 이미지를 수정합니다. multipart/form-data 형식으로 요청합니다.
+		- **request** 파트 (JSON): 수정할 메타데이터(content, isAnonymous)와 이미지 메타데이터(images[])를 포함합니다.
+		- **images** 파트 (파일 배열, 선택): 새로 업로드할 이미지 파일 목록. type=new인 항목의 fileIndex로 매핑됩니다.
+
+		이미지 메타데이터의 type으로 기존 이미지 유지/새 이미지 업로드를 구분합니다:
+		- type=existing: 기존 이미지를 유지합니다. url 필드가 필수입니다.
+		- type=new: 새 파일을 업로드합니다. fileIndex 필드가 필수입니다.
+
+		기존 이미지 중 images[]에 포함되지 않은 이미지는 자동으로 삭제됩니다.
+		order로 최종 이미지 순서가 결정되며, isRepresentative=true인 항목이 대표 이미지로 지정됩니다.
+		""")
 	public ApiResponse<PostUpdateResponse> update(
 		@PathVariable String postId,
 		@Valid @RequestPart(value = "request") PostUpdateRequest request,

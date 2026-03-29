@@ -90,7 +90,6 @@ public class PostServiceTest {
 	@Mock
 	FavoritePostReader favoritePostReader;
 
-
 	@Mock
 	VoteWriter voteWriter;
 

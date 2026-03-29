@@ -12,4 +12,3 @@ public record ImageCreateMeta(
 	int fileIndex,
 	boolean isRepresentative) {
 }
-

@@ -21,4 +21,3 @@ public record ImageUpdateMeta(
 		NEW
 	}
 }
-
