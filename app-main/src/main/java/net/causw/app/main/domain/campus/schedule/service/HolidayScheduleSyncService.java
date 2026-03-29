@@ -108,5 +108,3 @@ public class HolidayScheduleSyncService {
 		return holiday.date() + ":" + holiday.name();
 	}
 }
-
-

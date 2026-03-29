@@ -22,8 +22,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import net.causw.app.main.domain.campus.schedule.entity.Schedule;
 import net.causw.app.main.domain.campus.schedule.entity.enums.ScheduleType;
-import net.causw.app.main.domain.campus.schedule.repository.ScheduleRepository;
 import net.causw.app.main.domain.campus.schedule.service.HolidayApiClient.HolidayInfo;
+import net.causw.app.main.domain.campus.schedule.service.implementation.ScheduleReader;
+import net.causw.app.main.domain.campus.schedule.service.implementation.ScheduleWriter;
 
 @ExtendWith(MockitoExtension.class)
 class HolidayScheduleSyncServiceTest {
@@ -32,7 +33,10 @@ class HolidayScheduleSyncServiceTest {
 	private HolidayApiClient holidayApiClient;
 
 	@Mock
-	private ScheduleRepository scheduleRepository;
+	private ScheduleReader scheduleReader;
+
+	@Mock
+	private ScheduleWriter scheduleWriter;
 
 	@InjectMocks
 	private HolidayScheduleSyncService holidayScheduleSyncService;
@@ -50,32 +54,32 @@ class HolidayScheduleSyncServiceTest {
 			.willReturn(List.of(newYear, duplicateInApi, alreadySaved))
 			.willReturn(List.of(nextYearHoliday));
 
-		given(scheduleRepository.existsByTypeAndTitleAndStartAndEnd(
+		given(scheduleReader.existsByTypeAndTitleAndStartAndEnd(
 			ScheduleType.HOLIDAY,
 			newYear.name(),
 			newYear.date().atStartOfDay(),
 			newYear.date().atTime(LocalTime.MAX))).willReturn(false);
 
-		given(scheduleRepository.existsByTypeAndTitleAndStartAndEnd(
+		given(scheduleReader.existsByTypeAndTitleAndStartAndEnd(
 			ScheduleType.HOLIDAY,
 			alreadySaved.name(),
 			alreadySaved.date().atStartOfDay(),
 			alreadySaved.date().atTime(LocalTime.MAX))).willReturn(true);
 
-		given(scheduleRepository.existsByTypeAndTitleAndStartAndEnd(
+		given(scheduleReader.existsByTypeAndTitleAndStartAndEnd(
 			ScheduleType.HOLIDAY,
 			nextYearHoliday.name(),
 			nextYearHoliday.date().atStartOfDay(),
 			nextYearHoliday.date().atTime(LocalTime.MAX))).willReturn(false);
 
-		given(scheduleRepository.save(any(Schedule.class))).willAnswer(invocation -> invocation.getArgument(0));
+		given(scheduleWriter.save(any(Schedule.class))).willAnswer(invocation -> invocation.getArgument(0));
 
 		// when
 		holidayScheduleSyncService.syncHolidays("test-trigger");
 
 		// then
 		ArgumentCaptor<Schedule> scheduleCaptor = ArgumentCaptor.forClass(Schedule.class);
-		then(scheduleRepository).should(times(2)).save(scheduleCaptor.capture());
+		then(scheduleWriter).should(times(2)).save(scheduleCaptor.capture());
 
 		List<Schedule> savedSchedules = scheduleCaptor.getAllValues();
 		assertThat(savedSchedules)
@@ -91,4 +95,3 @@ class HolidayScheduleSyncServiceTest {
 				LocalDateTime.of(2027, 1, 1, 0, 0));
 	}
 }
-

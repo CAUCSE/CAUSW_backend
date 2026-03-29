@@ -86,7 +86,8 @@ public class HolidayApiClient {
 		String resultCode = response.response().header() != null ? response.response().header().resultCode() : "";
 		if (!"00".equals(resultCode)) {
 			String resultMsg = response.response().header() != null ? response.response().header().resultMsg() : "";
-			log.warn("공휴일 API 비정상 응답: resultCode={}, resultMsg={}, year={}, pageNo={}", resultCode, resultMsg, year, pageNo);
+			log.warn("공휴일 API 비정상 응답: resultCode={}, resultMsg={}, year={}, pageNo={}", resultCode, resultMsg, year,
+				pageNo);
 			return HolidayPageResponse.empty();
 		}
 
@@ -128,8 +129,3 @@ public class HolidayApiClient {
 	private record HolidayItemResponse(String locdate, String dateName, String isHoliday) {
 	}
 }
-
-
-
-
-
