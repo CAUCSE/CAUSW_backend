@@ -10,8 +10,6 @@ import net.causw.app.main.domain.community.post.service.v2.util.LikePostValidato
 import net.causw.app.main.domain.community.post.service.v2.util.PostValidator;
 import net.causw.app.main.domain.community.reaction.service.implementation.LikePostWriter;
 import net.causw.app.main.domain.notification.notification.event.PostLikedEvent;
-import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,7 +20,6 @@ public class LikePostService {
 	private final PostReader postReader;
 	private final LikePostWriter likePostWriter;
 	private final LikePostValidator likePostValidator;
-	private final UserReader userReader;
 	private final ApplicationEventPublisher eventPublisher;
 
 	/**
@@ -39,10 +36,8 @@ public class LikePostService {
 
 		likePostWriter.saveLikePost(userId, post);
 
-		User liker = userReader.findUserById(userId);
-
 		// 좋아요 알림 이벤트
-		eventPublisher.publishEvent(new PostLikedEvent(post, liker));
+		eventPublisher.publishEvent(new PostLikedEvent(postId, userId));
 	}
 
 	/**

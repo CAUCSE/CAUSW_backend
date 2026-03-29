@@ -85,7 +85,7 @@ public class AdmissionAdminService {
 		// 신청 삭제
 		admissionWriter.delete(admission);
 
-		eventPublisher.publishEvent(new AdmissionAcceptedEvent(adminUser, targetUser));
+		eventPublisher.publishEvent(new AdmissionAcceptedEvent(adminUser.getId(), targetUser.getId()));
 	}
 
 	/**
@@ -116,6 +116,6 @@ public class AdmissionAdminService {
 		// 신청 삭제
 		admissionWriter.delete(admission);
 
-		eventPublisher.publishEvent(new AdmissionRejectedEvent(adminUser, targetUser, rejectReason));
+		eventPublisher.publishEvent(new AdmissionRejectedEvent(adminUser.getId(), targetUser.getId(), rejectReason));
 	}
 }

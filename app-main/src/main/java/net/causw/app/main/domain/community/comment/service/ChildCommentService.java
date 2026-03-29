@@ -80,7 +80,7 @@ public class ChildCommentService {
 		ChildCommentResult result = childCommentMapper.toResult(
 			childComment, creator, new ChildCommentMeta(boardAdminIds, 0L, false, false));
 
-		eventPublisher.publishEvent(new CommentChildCommentCreatedEvent(parentComment, childComment));
+		eventPublisher.publishEvent(new CommentChildCommentCreatedEvent(parentComment.getId(), childComment.getId()));
 
 		return result;
 	}

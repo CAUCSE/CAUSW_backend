@@ -81,7 +81,7 @@ public class CommentService {
 		CommentResult result = commentMapper.toResult(comment, creator, boardAdminIds, CommentMeta.forNew());
 
 		commentSubscribeWriter.createCommentSubscribe(creator, comment.getId());
-		eventPublisher.publishEvent(new PostCommentCreatedEvent(post, comment));
+		eventPublisher.publishEvent(new PostCommentCreatedEvent(post.getId(), comment.getId()));
 
 		return result;
 	}

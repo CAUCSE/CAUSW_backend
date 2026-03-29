@@ -49,7 +49,8 @@ public class AdmissionNotificationHandler {
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	@Transactional
 	public void handleRequest(AdmissionRequestedEvent event) {
-		User requester = event.requester();
+		// ID로 요청자 조회
+		User requester = userReader.findUserById(event.requesterId());
 
 		// 해당 학적 상태를 담당하는 관리자 목록 조회
 		List<User> admins = userReader.findAdminsByAcademicStatus(event.targetStatus());
@@ -93,7 +94,9 @@ public class AdmissionNotificationHandler {
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	@Transactional
 	public void handleAccepted(AdmissionAcceptedEvent event) {
-		User targetUser = event.targetUser();
+		// ID로 관리자·대상 유저 조회
+		User admin = userReader.findUserById(event.adminId());
+		User targetUser = userReader.findUserById(event.targetUserId());
 
 		// 서비스 알림 설정 확인
 		UserNotificationSettingMap settingMap = notificationSettingReader.findSettingMap(targetUser.getId());
@@ -105,7 +108,7 @@ public class AdmissionNotificationHandler {
 		String body = "재학정보 인증이 완료되었습니다.";
 
 		Notification notification = notificationWriter.save(
-			Notification.of(event.admin(), title, body, NoticeType.SYSTEM, null, null));
+			Notification.of(admin, title, body, NoticeType.SYSTEM, null, null));
 
 		notificationPushSender.sendToUser(targetUser, title, body);
 		notificationWriter.saveLog(targetUser, notification);
@@ -126,7 +129,9 @@ public class AdmissionNotificationHandler {
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	@Transactional
 	public void handleRejected(AdmissionRejectedEvent event) {
-		User targetUser = event.targetUser();
+		// ID로 관리자·대상 유저 조회
+		User admin = userReader.findUserById(event.adminId());
+		User targetUser = userReader.findUserById(event.targetUserId());
 
 		// 서비스 알림 설정 확인
 		UserNotificationSettingMap settingMap = notificationSettingReader.findSettingMap(targetUser.getId());
@@ -138,7 +143,7 @@ public class AdmissionNotificationHandler {
 		String body = String.format("재학정보 인증이 반려되었습니다. 사유: %s", event.rejectMessage());
 
 		Notification notification = notificationWriter.save(
-			Notification.of(event.admin(), title, body, NoticeType.SYSTEM, null, null));
+			Notification.of(admin, title, body, NoticeType.SYSTEM, null, null));
 
 		notificationPushSender.sendToUser(targetUser, title, body);
 		notificationWriter.saveLog(targetUser, notification);

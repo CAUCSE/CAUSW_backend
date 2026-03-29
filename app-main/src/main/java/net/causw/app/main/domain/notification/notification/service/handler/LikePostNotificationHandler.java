@@ -7,6 +7,7 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.service.v2.implementation.PostReader;
 import net.causw.app.main.domain.community.reaction.service.implementation.LikePostReader;
 import net.causw.app.main.domain.notification.notification.entity.Notification;
 import net.causw.app.main.domain.notification.notification.enums.NoticeType;
@@ -17,6 +18,7 @@ import net.causw.app.main.domain.notification.notification.service.implementatio
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationSettingReader;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.relation.service.v2.implementation.BlockReader;
 
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class LikePostNotificationHandler {
 
+	private final PostReader postReader;
+	private final UserReader userReader;
 	private final LikePostReader likePostReader;
 	private final NotificationWriter notificationWriter;
 	private final NotificationPushSender notificationPushSender;
@@ -43,8 +47,9 @@ public class LikePostNotificationHandler {
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	@Transactional
 	public void handle(PostLikedEvent event) {
-		Post post = event.post();
-		User liker = event.liker();
+		// ID로 게시글·좋아요 누른 유저 조회
+		Post post = postReader.findById(event.postId());
+		User liker = userReader.findUserById(event.likerId());
 		User postWriter = post.getWriter();
 
 		// 작성자가 좋아요를 누른 경우 알림을 보내지 않음

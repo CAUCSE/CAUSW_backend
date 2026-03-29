@@ -8,7 +8,10 @@ import org.springframework.transaction.event.TransactionalEventListener;
 
 import net.causw.app.main.domain.community.comment.entity.ChildComment;
 import net.causw.app.main.domain.community.comment.entity.Comment;
+import net.causw.app.main.domain.community.comment.service.implementation.ChildCommentReader;
+import net.causw.app.main.domain.community.comment.service.implementation.CommentReader;
 import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.service.v2.implementation.PostReader;
 import net.causw.app.main.domain.notification.notification.entity.Notification;
 import net.causw.app.main.domain.notification.notification.enums.NoticeType;
 import net.causw.app.main.domain.notification.notification.enums.UserNotificationSettingKey;
@@ -29,6 +32,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CommentNotificationHandler {
 
+	private final PostReader postReader;
+	private final CommentReader commentReader;
+	private final ChildCommentReader childCommentReader;
 	private final NotificationWriter notificationWriter;
 	private final NotificationPushSender notificationPushSender;
 	private final NotificationSettingReader notificationSettingReader;
@@ -47,8 +53,9 @@ public class CommentNotificationHandler {
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	@Transactional
 	public void handleComment(PostCommentCreatedEvent event) {
-		Post post = event.post();
-		Comment comment = event.comment();
+		// ID로 게시글·댓글 조회
+		Post post = postReader.findById(event.postId());
+		Comment comment = commentReader.getComment(event.commentId());
 		User postWriter = post.getWriter();
 		User commentWriter = comment.getWriter();
 
@@ -105,8 +112,9 @@ public class CommentNotificationHandler {
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	@Transactional
 	public void handleChildComment(CommentChildCommentCreatedEvent event) {
-		Comment comment = event.comment();
-		ChildComment childComment = event.childComment();
+		// ID로 댓글·대댓글 조회
+		Comment comment = commentReader.getComment(event.commentId());
+		ChildComment childComment = childCommentReader.findById(event.childCommentId());
 		Post post = comment.getPost();
 		User commentWriter = comment.getWriter();
 		User childCommentWriter = childComment.getWriter();

@@ -1,6 +1,4 @@
 package net.causw.app.main.domain.notification.notification.event;
 
-import net.causw.app.main.domain.user.account.entity.user.User;
-
-public record AdmissionAcceptedEvent(User admin, User targetUser) {
+public record AdmissionAcceptedEvent(String adminId, String targetUserId) {
 }

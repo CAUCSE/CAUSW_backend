@@ -14,7 +14,9 @@ import net.causw.app.main.domain.community.board.entity.BoardConfig;
 import net.causw.app.main.domain.community.board.entity.BoardReadScope;
 import net.causw.app.main.domain.community.board.entity.BoardVisibility;
 import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
+import net.causw.app.main.domain.community.board.service.implementation.BoardReader;
 import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.service.v2.implementation.PostReader;
 import net.causw.app.main.domain.notification.notification.entity.Notification;
 import net.causw.app.main.domain.notification.notification.entity.UserBoardSubscribe;
 import net.causw.app.main.domain.notification.notification.enums.NoticeType;
@@ -32,6 +34,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class OfficialPostNotificationHandler {
 
+	private final BoardReader boardReader;
+	private final PostReader postReader;
 	private final UserBoardSubscribeReader userBoardSubscribeReader;
 	private final NotificationWriter notificationWriter;
 	private final NotificationPushSender notificationPushSender;
@@ -41,8 +45,9 @@ public class OfficialPostNotificationHandler {
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	@Transactional
 	public void handle(OfficialPostEvent event) {
-		Board board = event.board();
-		Post post = event.post();
+		// ID로 게시판·게시글 조회
+		Board board = boardReader.getById(event.boardId());
+		Post post = postReader.findById(event.postId());
 		User writer = post.getWriter();
 
 		// 공지글이 아닌 경우, 게시판이 공개되지 않은 경우 알림을 보내지 않음

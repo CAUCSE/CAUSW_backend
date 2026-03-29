@@ -19,16 +19,34 @@ public class NotificationLogReader {
 	private final NotificationLogRepository notificationLogRepository;
 	private final PageableFactory pageableFactory;
 
+	/**
+	 * 알림 로그 ID와 유저 ID로 알림 로그 조회
+	 * @param id 알림 로그 ID
+	 * @param userId 유저 ID
+	 * @return 알림 로그 Optional
+	 */
 	public Optional<NotificationLog> findByIdAndUserId(String id, String userId) {
 		return notificationLogRepository.findByIdAndUserId(id, userId);
 	}
 
+	/**
+	 * 유저 ID와 읽음 여부로 최근 7일간의 알림 로그 조회
+	 * @param userId 유저 ID
+	 * @param isRead 읽음 여부
+	 * @param currentTime 현재 시간
+	 * @return 알림 로그 리스트
+	 */
 	public List<NotificationLog> getNotificationList(String userId, boolean isRead, LocalDateTime currentTime) {
 		LocalDateTime sevenDaysAgo = currentTime.minusDays(7);
 
 		return notificationLogRepository.findRecentNotifications(userId, isRead, sevenDaysAgo);
 	}
 
+	/**
+	 * 유저 ID로 가장 최근의 읽지 않은 알림 로그 조회
+	 * @param userId 유저 ID
+	 * @return 알림 로그 Optional
+	 */
 	public Optional<NotificationLog> getLatestUnread(String userId) {
 
 		List<NotificationLog> notificationLog = notificationLogRepository.findByUserIdAndIsReadFalseNotification(
@@ -37,6 +55,12 @@ public class NotificationLogReader {
 		return notificationLog.stream().findFirst();
 	}
 
+	/**
+	 * 유저 ID로 최근 7일간의 읽지 않은 알림 로그를 최대 20개까지 조회
+	 * @param userId 유저 ID
+	 * @param currentTime 현재 시간
+	 * @return 알림 로그 리스트
+	 */
 	public List<NotificationLog> findUnreadUpToLimit(String userId, LocalDateTime currentTime) {
 		LocalDateTime sevenDaysAgo = currentTime.minusDays(7);
 
