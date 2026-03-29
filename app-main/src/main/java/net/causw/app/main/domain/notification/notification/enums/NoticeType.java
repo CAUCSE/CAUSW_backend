@@ -16,7 +16,7 @@ public enum NoticeType {
 	CEREMONY("경조사 알림", "경조사 알림 - v1, v2 공통"),
 
 	// v2
-	COMMUNITY("커뮤니티 알림","커뮤니티 알림 - v2"),
+	COMMUNITY("커뮤니티 알림", "커뮤니티 알림 - v2"),
 	SYSTEM("시스템 알림", "시스템 알림 - v2"),
 	OFFICIAL("공식계정 글 알림", "공식 알림 - v2");
 

@@ -1,13 +1,5 @@
 package net.causw.app.main.domain.notification.notification.service.handler;
 
-import net.causw.app.main.domain.community.post.entity.Post;
-import net.causw.app.main.domain.notification.notification.enums.UserNotificationSettingKey;
-import net.causw.app.main.domain.notification.notification.service.dto.UserNotificationSettingMap;
-import net.causw.app.main.domain.notification.notification.event.PostCommentCreatedEvent;
-import net.causw.app.main.domain.notification.notification.service.implementation.NotificationPushSender;
-import net.causw.app.main.domain.notification.notification.service.implementation.NotificationSettingReader;
-import net.causw.app.main.domain.notification.notification.service.implementation.NotificationWriter;
-import net.causw.app.main.domain.user.relation.service.v2.implementation.BlockReader;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,10 +8,18 @@ import org.springframework.transaction.event.TransactionalEventListener;
 
 import net.causw.app.main.domain.community.comment.entity.ChildComment;
 import net.causw.app.main.domain.community.comment.entity.Comment;
+import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.notification.notification.entity.Notification;
 import net.causw.app.main.domain.notification.notification.enums.NoticeType;
+import net.causw.app.main.domain.notification.notification.enums.UserNotificationSettingKey;
 import net.causw.app.main.domain.notification.notification.event.CommentChildCommentCreatedEvent;
+import net.causw.app.main.domain.notification.notification.event.PostCommentCreatedEvent;
+import net.causw.app.main.domain.notification.notification.service.dto.UserNotificationSettingMap;
+import net.causw.app.main.domain.notification.notification.service.implementation.NotificationPushSender;
+import net.causw.app.main.domain.notification.notification.service.implementation.NotificationSettingReader;
+import net.causw.app.main.domain.notification.notification.service.implementation.NotificationWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.relation.service.v2.implementation.BlockReader;
 
 import lombok.RequiredArgsConstructor;
 
@@ -69,7 +69,7 @@ public class CommentNotificationHandler {
 		String title = NoticeType.COMMUNITY.getTitle();
 		String body = comment.getContent();
 		Notification notification = notificationWriter.save(
-				Notification.of(postWriter, title, body, NoticeType.COMMUNITY, post.getId(), post.getBoard().getId()));
+			Notification.of(postWriter, title, body, NoticeType.COMMUNITY, post.getId(), post.getBoard().getId()));
 
 		notificationPushSender.sendToUser(postWriter, "댓글에 ", body);
 		notificationWriter.saveLog(postWriter, notification);
@@ -115,7 +115,7 @@ public class CommentNotificationHandler {
 		String body = childComment.getContent();
 
 		Notification notification = notificationWriter.save(
-				Notification.of(commentWriter, title, body, NoticeType.COMMUNITY, post.getId(), post.getBoard().getId()));
+			Notification.of(commentWriter, title, body, NoticeType.COMMUNITY, post.getId(), post.getBoard().getId()));
 
 		notificationPushSender.sendToUser(commentWriter, "대댓글에 ", body);
 		notificationWriter.saveLog(commentWriter, notification);

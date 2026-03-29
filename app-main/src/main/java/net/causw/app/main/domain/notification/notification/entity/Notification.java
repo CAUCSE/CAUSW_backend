@@ -26,26 +26,25 @@ import lombok.NoArgsConstructor;
 @Table(name = "tb_notification")
 public class Notification extends BaseEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = true)
-    private User user;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id", nullable = true)
+	private User user;
 
-    @Column(name = "title")
-    private String title;
+	@Column(name = "title")
+	private String title;
 
-    @Column(name = "body")
-    private String body;
+	@Column(name = "body")
+	private String body;
 
-    @Column(name = "notice_type")
-    @Enumerated(EnumType.STRING)
-    private NoticeType noticeType;
+	@Column(name = "notice_type")
+	@Enumerated(EnumType.STRING)
+	private NoticeType noticeType;
 
-    @Column(name = "target_id")
-    private String targetId;
+	@Column(name = "target_id")
+	private String targetId;
 
-    @Column(name = "target_parent_id")
-    private String targetParentId;
-
+	@Column(name = "target_parent_id")
+	private String targetParentId;
 
 	/**
 	 * 알림 생성 메서드
@@ -58,19 +57,19 @@ public class Notification extends BaseEntity {
 	 * @return 알림 Notification 객체
 	 */
 	public static Notification of(
-			User user,
-			String title,
-			String body,
-			NoticeType noticeType,
-			String targetId,
-			String targetParentId) {
+		User user,
+		String title,
+		String body,
+		NoticeType noticeType,
+		String targetId,
+		String targetParentId) {
 		return Notification.builder()
-				.user(user)
-				.title(title)
-				.body(body)
-				.noticeType(noticeType)
-				.targetId(targetId)
-				.targetParentId(targetParentId)
-				.build();
+			.user(user)
+			.title(title)
+			.body(body)
+			.noticeType(noticeType)
+			.targetId(targetId)
+			.targetParentId(targetParentId)
+			.build();
 	}
 }

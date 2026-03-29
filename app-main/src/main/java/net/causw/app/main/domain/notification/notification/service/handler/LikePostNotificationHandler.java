@@ -1,9 +1,5 @@
 package net.causw.app.main.domain.notification.notification.service.handler;
 
-import net.causw.app.main.domain.notification.notification.service.implementation.NotificationPushSender;
-import net.causw.app.main.domain.notification.notification.service.implementation.NotificationSettingReader;
-import net.causw.app.main.domain.notification.notification.service.implementation.NotificationWriter;
-import net.causw.app.main.domain.user.relation.service.v2.implementation.BlockReader;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,9 +11,13 @@ import net.causw.app.main.domain.community.reaction.service.implementation.LikeP
 import net.causw.app.main.domain.notification.notification.entity.Notification;
 import net.causw.app.main.domain.notification.notification.enums.NoticeType;
 import net.causw.app.main.domain.notification.notification.enums.UserNotificationSettingKey;
-import net.causw.app.main.domain.notification.notification.service.dto.UserNotificationSettingMap;
 import net.causw.app.main.domain.notification.notification.event.PostLikedEvent;
+import net.causw.app.main.domain.notification.notification.service.dto.UserNotificationSettingMap;
+import net.causw.app.main.domain.notification.notification.service.implementation.NotificationPushSender;
+import net.causw.app.main.domain.notification.notification.service.implementation.NotificationSettingReader;
+import net.causw.app.main.domain.notification.notification.service.implementation.NotificationWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.relation.service.v2.implementation.BlockReader;
 
 import lombok.RequiredArgsConstructor;
 
@@ -70,7 +70,8 @@ public class LikePostNotificationHandler {
 		}
 
 		// 게시글 좋아요 알림 생성
-		Notification postLikeNotification = createPostLikeNotification(postWriter, likeCount, post.getId(), post.getBoard().getId());
+		Notification postLikeNotification = createPostLikeNotification(postWriter, likeCount, post.getId(),
+			post.getBoard().getId());
 		Notification notification = notificationWriter.save(postLikeNotification);
 
 		// 작성자에게 푸시 알림 발송 및 알림 로그 저장
@@ -87,7 +88,8 @@ public class LikePostNotificationHandler {
 	 * @return 게시물 좋아요 알림 Notification 객체
 	 *
 	 */
-	private static Notification createPostLikeNotification(User user, long postLikeCount, String postId, String boardId) {
+	private static Notification createPostLikeNotification(User user, long postLikeCount, String postId,
+		String boardId) {
 		String title = NoticeType.COMMUNITY.getTitle();
 		String body = String.format("게시물이 좋아요 %d개를 달성했습니다!", postLikeCount);
 
