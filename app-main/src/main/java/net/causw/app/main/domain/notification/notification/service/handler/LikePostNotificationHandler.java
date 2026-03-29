@@ -70,30 +70,17 @@ public class LikePostNotificationHandler {
 		}
 
 		// 게시글 좋아요 알림 생성
-		Notification postLikeNotification = createPostLikeNotification(postWriter, likeCount, post.getId(),
-			post.getBoard().getId());
-		Notification notification = notificationWriter.save(postLikeNotification);
+		String serviceTitle = String.format("게시물이 좋아요 %d개를 달성했습니다!", likeCount);
+		String serviceBody = String.format("내 게시글에 좋아요가 %d개 달렸어요.", likeCount);
+		String pushTitle = String.format("게시물 좋아요 %d개 달성", likeCount);
+
+		Notification notification = notificationWriter.save(
+			Notification.of(postWriter, serviceTitle, serviceBody, NoticeType.COMMUNITY, post.getId(),
+				post.getBoard().getId()));
 
 		// 작성자에게 푸시 알림 발송 및 알림 로그 저장
-		notificationPushSender.sendToUser(postWriter, "내 게시글에 좋아요가 달렸습니다!", postLikeNotification.getBody());
+		notificationPushSender.sendToUser(postWriter, pushTitle, serviceBody);
 		notificationWriter.saveLog(postWriter, notification);
-	}
-
-	/**
-	 * 게시물 좋아요 알림 생성 메서드
-	 * @param user 알림을 받을 유저
-	 * @param postLikeCount 게시물이 달성한 좋아요 수
-	 * @param postId 알림의 대상이 되는 게시물의 ID
-	 * @param boardId 알림의 대상이 되는 게시물이 속한 게시판의 ID
-	 * @return 게시물 좋아요 알림 Notification 객체
-	 *
-	 */
-	private static Notification createPostLikeNotification(User user, long postLikeCount, String postId,
-		String boardId) {
-		String title = NoticeType.COMMUNITY.getTitle();
-		String body = String.format("게시물이 좋아요 %d개를 달성했습니다!", postLikeCount);
-
-		return Notification.of(user, title, body, NoticeType.COMMUNITY, postId, boardId);
 	}
 
 	/**

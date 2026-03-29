@@ -1,5 +1,7 @@
 package net.causw.app.main.domain.notification.notification.service.implementation;
 
+import java.util.List;
+
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,5 +27,12 @@ public class NotificationWriter {
 
 	public void saveLog(User user, Notification notification) {
 		notificationLogRepository.save(NotificationLog.of(user, notification));
+	}
+
+	public void saveLogs(List<User> users, Notification notification) {
+		List<NotificationLog> logs = users.stream()
+			.map(user -> NotificationLog.of(user, notification))
+			.toList();
+		notificationLogRepository.saveAll(logs);
 	}
 }

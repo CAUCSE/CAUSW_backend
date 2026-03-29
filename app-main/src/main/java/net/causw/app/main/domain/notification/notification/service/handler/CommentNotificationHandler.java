@@ -18,8 +18,10 @@ import net.causw.app.main.domain.notification.notification.service.dto.UserNotif
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationPushSender;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationSettingReader;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationWriter;
+import net.causw.app.main.domain.notification.notification.util.NotificationTextUtil;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.relation.service.v2.implementation.BlockReader;
+import net.causw.global.constant.StaticValue;
 
 import lombok.RequiredArgsConstructor;
 
@@ -66,12 +68,23 @@ public class CommentNotificationHandler {
 			return;
 		}
 
-		String title = NoticeType.COMMUNITY.getTitle();
-		String body = comment.getContent();
-		Notification notification = notificationWriter.save(
-			Notification.of(postWriter, title, body, NoticeType.COMMUNITY, post.getId(), post.getBoard().getId()));
+		String displayName = resolveDisplayName(commentWriter, post);
+		String sanitizedContent = NotificationTextUtil.sanitize(comment.getContent());
 
-		notificationPushSender.sendToUser(postWriter, "댓글에 ", body);
+		String pushTitle = "내 글에 댓글";
+		String pushBody = NotificationTextUtil.ellipsis(displayName + "님이 댓글을 남겼어요",
+			NotificationTextUtil.PUSH_BODY_MAX_LENGTH);
+
+		String servicePrefix = displayName + "님이 댓글을 남겼어요. ";
+		int contentSlot = NotificationTextUtil.SERVICE_TITLE_MAX_LENGTH - servicePrefix.length() - 2;
+		String serviceTitle = servicePrefix + "\"" + NotificationTextUtil.ellipsis(sanitizedContent, contentSlot)
+			+ "\"";
+
+		Notification notification = notificationWriter.save(
+			Notification.of(postWriter, serviceTitle, pushBody, NoticeType.COMMUNITY, post.getId(),
+				post.getBoard().getId()));
+
+		notificationPushSender.sendToUser(postWriter, pushTitle, pushBody);
 		notificationWriter.saveLog(postWriter, notification);
 	}
 
@@ -111,13 +124,32 @@ public class CommentNotificationHandler {
 			return;
 		}
 
-		String title = NoticeType.COMMUNITY.getTitle();
-		String body = childComment.getContent();
+		String displayName = resolveDisplayName(childCommentWriter, post);
+		String sanitizedContent = NotificationTextUtil.sanitize(childComment.getContent());
+
+		String pushTitle = "내 댓글에 답글";
+		String pushBody = NotificationTextUtil.ellipsis(displayName + "님이 답글을 남겼어요",
+			NotificationTextUtil.PUSH_BODY_MAX_LENGTH);
+
+		String servicePrefix = displayName + "님이 대댓글을 남겼어요: ";
+		int contentSlot = NotificationTextUtil.SERVICE_TITLE_MAX_LENGTH - servicePrefix.length() - 2;
+		String serviceTitle = servicePrefix + "\"" + NotificationTextUtil.ellipsis(sanitizedContent, contentSlot)
+			+ "\"";
 
 		Notification notification = notificationWriter.save(
-			Notification.of(commentWriter, title, body, NoticeType.COMMUNITY, post.getId(), post.getBoard().getId()));
+			Notification.of(commentWriter, serviceTitle, pushBody, NoticeType.COMMUNITY, post.getId(),
+				post.getBoard().getId()));
 
-		notificationPushSender.sendToUser(commentWriter, "대댓글에 ", body);
+		notificationPushSender.sendToUser(commentWriter, pushTitle, pushBody);
 		notificationWriter.saveLog(commentWriter, notification);
 	}
+
+	private static String resolveDisplayName(User user, Post post) {
+		if (post.getIsAnonymous()) {
+			return StaticValue.ANONYMOUS_USER_NICKNAME;
+		}
+
+		return user.getNickname() != null ? user.getNickname() : StaticValue.INACTIVE_USER_NICKNAME;
+	}
+
 }
