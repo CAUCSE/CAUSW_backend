@@ -1,5 +1,8 @@
-package net.causw.app.main.domain.notification.notification.service.implementation;
+package net.causw.app.main.domain.notification.notification.service.handler;
 
+import net.causw.app.main.domain.notification.notification.service.implementation.NotificationPushSender;
+import net.causw.app.main.domain.notification.notification.service.implementation.NotificationSettingReader;
+import net.causw.app.main.domain.notification.notification.service.implementation.NotificationWriter;
 import net.causw.app.main.domain.user.relation.service.v2.implementation.BlockReader;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -13,9 +16,8 @@ import net.causw.app.main.domain.notification.notification.entity.Notification;
 import net.causw.app.main.domain.notification.notification.enums.NoticeType;
 import net.causw.app.main.domain.notification.notification.enums.UserNotificationSettingKey;
 import net.causw.app.main.domain.notification.notification.service.dto.UserNotificationSettingMap;
-import net.causw.app.main.domain.notification.notification.service.v2.event.PostLikedEvent;
+import net.causw.app.main.domain.notification.notification.event.PostLikedEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.relation.service.v1.UserBlockEntityService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -86,16 +88,16 @@ public class LikePostNotificationHandler {
 	 *
 	 */
 	private static Notification createPostLikeNotification(User user, long postLikeCount, String postId, String boardId) {
-		String title = "게시물 좋아요 알림";
+		String title = NoticeType.COMMUNITY.getTitle();
 		String body = String.format("게시물이 좋아요 %d개를 달성했습니다!", postLikeCount);
 
 		return Notification.of(user, title, body, NoticeType.COMMUNITY, postId, boardId);
 	}
 
 	/**
-	 * 
-	 * @param count
-	 * @return
+	 *
+	 * @param count 좋아요 수가 특정 마일스톤(5, 10, 50, 100, 500, 1000의 배수)에 도달했는지 확인하는 메서드
+	 * @return 좋아요 수가 마일스톤에 도달했으면 true, 그렇지 않으면 false
 	 */
 	private boolean isLikeCountMilestone(long count) {
 		if (count == 5 || count == 10 || count == 50 || count == 100 || count == 500)

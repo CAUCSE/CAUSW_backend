@@ -9,7 +9,7 @@ import net.causw.app.main.domain.community.post.service.v2.implementation.PostRe
 import net.causw.app.main.domain.community.post.service.v2.util.LikePostValidator;
 import net.causw.app.main.domain.community.post.service.v2.util.PostValidator;
 import net.causw.app.main.domain.community.reaction.service.implementation.LikePostWriter;
-import net.causw.app.main.domain.notification.notification.service.v2.event.PostLikedEvent;
+import net.causw.app.main.domain.notification.notification.event.PostLikedEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 

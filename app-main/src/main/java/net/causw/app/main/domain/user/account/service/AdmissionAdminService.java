@@ -6,8 +6,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.domain.notification.notification.service.v2.event.AdmissionAcceptedEvent;
-import net.causw.app.main.domain.notification.notification.service.v2.event.AdmissionRejectedEvent;
+import net.causw.app.main.domain.notification.notification.event.AdmissionAcceptedEvent;
+import net.causw.app.main.domain.notification.notification.event.AdmissionRejectedEvent;
 import net.causw.app.main.domain.user.academic.event.CertifiedUserCreatedEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.user.UserAdmission;

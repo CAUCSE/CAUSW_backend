@@ -1,10 +1,13 @@
-package net.causw.app.main.domain.notification.notification.service.implementation;
+package net.causw.app.main.domain.notification.notification.service.handler;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import net.causw.app.main.domain.notification.notification.service.implementation.NotificationPushSender;
+import net.causw.app.main.domain.notification.notification.service.implementation.NotificationSettingReader;
+import net.causw.app.main.domain.notification.notification.service.implementation.NotificationWriter;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,9 +18,9 @@ import net.causw.app.main.domain.notification.notification.entity.Notification;
 import net.causw.app.main.domain.notification.notification.enums.NoticeType;
 import net.causw.app.main.domain.notification.notification.enums.UserNotificationSettingKey;
 import net.causw.app.main.domain.notification.notification.service.dto.UserNotificationSettingMap;
-import net.causw.app.main.domain.notification.notification.service.v2.event.AdmissionAcceptedEvent;
-import net.causw.app.main.domain.notification.notification.service.v2.event.AdmissionRejectedEvent;
-import net.causw.app.main.domain.notification.notification.service.v2.event.AdmissionRequestedEvent;
+import net.causw.app.main.domain.notification.notification.event.AdmissionAcceptedEvent;
+import net.causw.app.main.domain.notification.notification.event.AdmissionRejectedEvent;
+import net.causw.app.main.domain.notification.notification.event.AdmissionRequestedEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.relation.service.v1.UserBlockEntityService;
