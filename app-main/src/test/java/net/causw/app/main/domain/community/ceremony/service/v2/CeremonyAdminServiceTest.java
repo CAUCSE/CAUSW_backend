@@ -8,7 +8,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import net.causw.app.main.domain.notification.notification.event.CeremonyNotificationEvent;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -32,6 +31,7 @@ import net.causw.app.main.domain.community.ceremony.service.implementation.Cerem
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyWriter;
 import net.causw.app.main.domain.community.ceremony.service.mapper.CeremonyMapper;
 import net.causw.app.main.domain.community.ceremony.util.CeremonyValidator;
+import net.causw.app.main.domain.notification.notification.event.CeremonyNotificationEvent;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.CeremonyErrorCode;
 
@@ -55,7 +55,6 @@ class CeremonyAdminServiceTest {
 
 	@Mock
 	private ApplicationEventPublisher eventPublisher;
-
 
 	@Nested
 	@DisplayName("관리자 경조사 목록 조회 테스트")

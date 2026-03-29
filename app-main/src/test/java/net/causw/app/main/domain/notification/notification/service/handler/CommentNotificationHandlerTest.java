@@ -171,7 +171,7 @@ class CommentNotificationHandlerTest {
 			given(post.getBoard()).willReturn(board);
 
 			Comment comment = commentWithWriter(commentWriter);
-			given(comment.getIsAnonymous()).willReturn(true);  // 익명 처리
+			given(comment.getIsAnonymous()).willReturn(true); // 익명 처리
 			given(comment.getContent()).willReturn("댓글 내용");
 
 			given(postReader.findById("postId")).willReturn(post);

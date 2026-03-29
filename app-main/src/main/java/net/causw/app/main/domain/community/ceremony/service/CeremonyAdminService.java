@@ -1,6 +1,5 @@
 package net.causw.app.main.domain.community.ceremony.service;
 
-import net.causw.app.main.domain.notification.notification.event.CeremonyNotificationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,6 +14,7 @@ import net.causw.app.main.domain.community.ceremony.service.implementation.Cerem
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyWriter;
 import net.causw.app.main.domain.community.ceremony.service.mapper.CeremonyMapper;
 import net.causw.app.main.domain.community.ceremony.util.CeremonyValidator;
+import net.causw.app.main.domain.notification.notification.event.CeremonyNotificationEvent;
 import net.causw.app.main.shared.exception.errorcode.CeremonyErrorCode;
 
 import lombok.RequiredArgsConstructor;
