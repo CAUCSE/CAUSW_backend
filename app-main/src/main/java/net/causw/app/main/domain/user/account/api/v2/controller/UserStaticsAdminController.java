@@ -29,9 +29,7 @@ public class UserStaticsAdminController {
 	@Operation(summary = "일일 신규 가입자 수 조회")
 	@GetMapping("/daily-count")
 	public ApiResponse<UserDailyCountResponse> getDailySignupCount(
-		@RequestParam(value = "targetDate", required = false)
-		@DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate targetDate
-	) {
+		@RequestParam(value = "targetDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate targetDate) {
 		LocalDate date = (targetDate != null) ? targetDate : LocalDate.now();
 		Long count = userAdminService.getDailySignupStats(date);
 		return ApiResponse.success(new UserDailyCountResponse(date, count));
