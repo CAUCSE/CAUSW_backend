@@ -91,7 +91,7 @@ public class PostService {
 
 		// 공식 공지글인 경우 알림 발송 이벤트
 		if (boardConfig.isNotice()) {
-			eventPublisher.publishEvent(new OfficialPostEvent(savedPost.getId(), savedPost.getBoard().getId()));
+			eventPublisher.publishEvent(new OfficialPostEvent(savedPost.getBoard().getId(), savedPost.getId()));
 		}
 
 		return PostMapper.toCreateResult(savedPost, images.stream().map(UuidFile::getFileUrl).toList());
