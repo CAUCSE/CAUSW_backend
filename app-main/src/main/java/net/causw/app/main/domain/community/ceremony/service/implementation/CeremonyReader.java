@@ -53,4 +53,8 @@ public class CeremonyReader {
 		Pageable pageable) {
 		return ceremonyQueryRepository.findAllForAdmin(fromDate, toDate, state, pageable);
 	}
+
+	public long countByCeremonyState(CeremonyState ceremonyState) {
+		return ceremonyRepository.countByCeremonyState(ceremonyState);
+	}
 }

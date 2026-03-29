@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
+import net.causw.app.main.domain.community.ceremony.enums.CeremonyState;
 import net.causw.app.main.domain.community.ceremony.service.dto.request.CeremonyAdminListCondition;
 import net.causw.app.main.domain.community.ceremony.service.dto.response.CeremonyAdminListResult;
 import net.causw.app.main.domain.community.ceremony.service.dto.response.CeremonyDetailResult;
@@ -31,6 +32,10 @@ public class CeremonyAdminService {
 		Page<Ceremony> ceremonies = ceremonyReader.findAllForAdmin(
 			condition.fromDate(), condition.toDate(), condition.state(), pageable);
 		return ceremonies.map(ceremonyMapper::toAdminListResult);
+	}
+
+	public long getPendingCeremonyCount() {
+		return ceremonyReader.countByCeremonyState(CeremonyState.AWAIT);
 	}
 
 	public CeremonyDetailResult getCeremonyDetail(String ceremonyId) {
