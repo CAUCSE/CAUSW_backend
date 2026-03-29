@@ -16,6 +16,9 @@ import org.springframework.security.config.annotation.web.configurers.HeadersCon
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.oidc.authentication.OidcIdTokenDecoderFactory;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.jwt.JwtDecoderFactory;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -39,6 +42,7 @@ public class WebSecurityConfig {
 	private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 	private final CustomAuthorizationManager authorizationManager;
 	private final AppleOAuth2AuthorizationRequestResolver appleOAuth2AuthorizationRequestResolver;
+	private final OAuth2AuthorizationRequestCookieRepository oAuth2AuthorizationRequestCookieRepository;
 	private final CustomOAuth2UserService customOAuth2UserService;
 	private final OAuth2SuccessHandler oAuth2SuccessHandler;
 	private final OAuth2FailureHandler oAuth2FailureHandler;
@@ -66,12 +70,15 @@ public class WebSecurityConfig {
 			.authorizeHttpRequests(auth -> auth
 				.requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
 				.requestMatchers("/api/v2/auth/logout").authenticated()
-				.requestMatchers("/api/v2/auth/**", "/oauth2/**", "/login/oauth2/**").permitAll()
+				.requestMatchers("/api/v2/auth/**", "/oauth2/**", "/login/oauth2/**",
+					"/api/v2/users/check-nickname", "/api/v2/users/check-phone")
+				.permitAll()
 				.requestMatchers("/api/v2/admin/**").hasRole("ADMIN")
 				.anyRequest().authenticated())
 			.oauth2Login(oauth2 -> oauth2
 				.authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint
-					.authorizationRequestResolver(appleOAuth2AuthorizationRequestResolver))
+					.authorizationRequestResolver(appleOAuth2AuthorizationRequestResolver)
+					.authorizationRequestRepository(oAuth2AuthorizationRequestCookieRepository))
 				.userInfoEndpoint(userInfo -> userInfo
 					.userService(customOAuth2UserService)
 					.oidcUserService(customOAuth2UserService::loadOidcUser))
@@ -79,7 +86,8 @@ public class WebSecurityConfig {
 				.failureHandler(oAuth2FailureHandler))
 			.exceptionHandling(exceptionHandling -> exceptionHandling
 				.authenticationEntryPoint(customAuthenticationEntryPoint))
-			.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+			.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, customAuthenticationEntryPoint),
+				UsernamePasswordAuthenticationFilter.class);
 
 		return http.build();
 	}
@@ -111,7 +119,8 @@ public class WebSecurityConfig {
 			})
 			.exceptionHandling(exceptionHandling -> exceptionHandling
 				.authenticationEntryPoint(customAuthenticationEntryPoint))
-			.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+			.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, customAuthenticationEntryPoint),
+				UsernamePasswordAuthenticationFilter.class);
 
 		return http.build();
 	}
@@ -146,5 +155,10 @@ public class WebSecurityConfig {
 	@Bean
 	public WebSecurityCustomizer webSecurityCustomizer() {
 		return (web) -> web.ignoring().requestMatchers("/webjars/**");
+	}
+
+	@Bean
+	public JwtDecoderFactory<ClientRegistration> oidcIdTokenDecoderFactory() {
+		return new OidcIdTokenDecoderFactory();
 	}
 }

@@ -3,6 +3,8 @@ package net.causw.app.main.domain.community.post.service.v2.dto;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import net.causw.app.main.shared.dto.ProfileImageDto;
+
 import lombok.Builder;
 
 @Builder
@@ -11,13 +13,14 @@ public record PostDetailResult(
 	String content,
 	Boolean isDeleted,
 	String displayWriterNickname,
-	String writerProfileImage,
+	ProfileImageDto writerProfileImage,
 	List<String> fileUrlList,
 	Long numComment,
 	Long numLike,
 	Long numFavorite,
 	String voteId,
 	Boolean isAnonymous,
+	Boolean isCrawled,
 	Boolean isOwner,
 	Boolean isPostLike,
 	Boolean isPostFavorite,

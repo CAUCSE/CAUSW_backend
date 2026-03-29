@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.notification.notification.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,8 +19,13 @@ public interface NotificationLogRepository extends JpaRepository<NotificationLog
 	@Query("SELECT nl FROM NotificationLog nl " +
 		"JOIN FETCH nl.notification n " +
 		"WHERE nl.user.id = :userId " +
+		"AND nl.isRead = :isRead " +
+		"AND nl.createdAt >= :sevenDaysAgo " +
 		"ORDER BY nl.createdAt DESC")
-	Page<NotificationLog> findByUserId(@Param("userId") String userId, Pageable pageable);
+	List<NotificationLog> findRecentNotifications(
+		@Param("userId") String userId,
+		@Param("isRead") boolean isRead,
+		@Param("sevenDaysAgo") LocalDateTime sevenDaysAgo);
 
 	@Query("SELECT nl FROM NotificationLog nl " +
 		"JOIN FETCH nl.notification n " +
@@ -46,10 +52,16 @@ public interface NotificationLogRepository extends JpaRepository<NotificationLog
 
 	Optional<NotificationLog> findByIdAndUser(String id, User user);
 
+	Optional<NotificationLog> findByIdAndUserId(String id, String userId);
+
 	@Query("SELECT nl FROM NotificationLog nl " +
 		"WHERE nl.user.id = :userId " +
-		"AND nl.isRead = false")
-	List<NotificationLog> findByUserIdUnreadLogsUpToLimit(@Param("userId") String userId, Pageable pageable);
+		"AND nl.isRead = false " +
+		"AND nl.createdAt >= :sevenDaysAgo")
+	List<NotificationLog> findRecentUnreadLogsUpToLimit(
+		@Param("userId") String userId,
+		@Param("sevenDaysAgo") LocalDateTime sevenDaysAgo,
+		Pageable pageable);
 
 	@Query("SELECT nl FROM NotificationLog nl " +
 		"WHERE nl.user = :user " +

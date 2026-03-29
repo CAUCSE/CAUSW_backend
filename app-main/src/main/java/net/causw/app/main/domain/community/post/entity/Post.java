@@ -71,6 +71,11 @@ public class Post extends BaseEntity {
 	@ColumnDefault("false")
 	private Boolean isQuestion;
 
+	@Column(name = "is_crawled", nullable = false)
+	@ColumnDefault("false")
+	@Builder.Default
+	private Boolean isCrawled = false;
+
 	@ManyToOne(targetEntity = Board.class)
 	@JoinColumn(name = "board_id", nullable = false)
 	private Board board;
@@ -91,7 +96,6 @@ public class Post extends BaseEntity {
 		Boolean isQuestion,
 		Board board,
 		Form form,
-
 		List<UuidFile> postAttachImageUuidFileList) {
 		Post post = Post.builder()
 			.title(title)
@@ -150,12 +154,14 @@ public class Post extends BaseEntity {
 		this.title = title;
 		this.content = content;
 		this.form = form;
-		this.postAttachImageList = postAttachImageList;
+		this.postAttachImageList.clear();
+		this.postAttachImageList.addAll(postAttachImageList);
 	}
 
 	public void updateContentAndImages(String content, List<PostAttachImage> postAttachImageList) {
 		this.content = content;
-		this.postAttachImageList = postAttachImageList;
+		this.postAttachImageList.clear();
+		this.postAttachImageList.addAll(postAttachImageList);
 	}
 
 	public void setIsDeleted(Boolean isDeleted) {
@@ -171,5 +177,9 @@ public class Post extends BaseEntity {
 
 	public void updateVote(Vote vote) {
 		this.vote = vote;
+	}
+
+	public void setCrawled() {
+		this.isCrawled = true;
 	}
 }

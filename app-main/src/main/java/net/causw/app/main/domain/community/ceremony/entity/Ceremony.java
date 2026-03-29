@@ -48,7 +48,7 @@ public class Ceremony extends BaseEntity {
 	private User user;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "ceremony_type", nullable = false)
+	@Column(name = "ceremony_type")
 	private CeremonyType ceremonyType;
 
 	@Enumerated(EnumType.STRING)
@@ -71,7 +71,7 @@ public class Ceremony extends BaseEntity {
 	private LocalTime endTime;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "relation_type", nullable = false)
+	@Column(name = "relation_type")
 	private RelationType relationType;
 
 	@Column(name = "family_relation")
@@ -86,7 +86,7 @@ public class Ceremony extends BaseEntity {
 	@Column(name = "alumni_admission_year")
 	private String alumniAdmissionYear;
 
-	@Column(name = "description")
+	@Column(name = "description", columnDefinition = "TEXT")
 	private String description;
 
 	@Column(name = "address")
@@ -147,9 +147,25 @@ public class Ceremony extends BaseEntity {
 			? new HashSet<>(targetAdmissionYears)
 			: new HashSet<>();
 
+		// v2 db 호환
+		String customCategory = null;
+		if (ceremonyCategory == CeremonyCategory.ETC) {
+			customCategory = "기타";
+		}
+		CeremonyType ceremonyType = CeremonyType.CELEBRATION;
+		if (ceremonyCategory == CeremonyCategory.FUNERAL
+			|| ceremonyCategory == CeremonyCategory.ACCIDENT
+			|| ceremonyCategory == CeremonyCategory.ILLNESS) {
+			ceremonyType = CeremonyType.CONDOLENCE;
+		}
+		RelationType relationType = RelationType.ME;
+
 		return Ceremony.builder()
 			.user(user)
+			.ceremonyType(ceremonyType)
 			.ceremonyCategory(ceremonyCategory)
+			.ceremonyCustomCategory(customCategory)
+			.relationType(relationType)
 			.startDate(startDate)
 			.endDate(endDate)
 			.description(description)

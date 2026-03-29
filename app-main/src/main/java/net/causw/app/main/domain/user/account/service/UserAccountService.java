@@ -1,17 +1,25 @@
 package net.causw.app.main.domain.user.account.service;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.domain.user.account.repository.userInfo.UserInfoRepository;
+import net.causw.app.main.domain.user.account.service.dto.request.UserPasswordUpdateCommand;
+import net.causw.app.main.domain.user.account.service.dto.result.UserMeResult;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
+import net.causw.app.main.domain.user.auth.service.implementation.AuthValidator;
+import net.causw.app.main.shared.dto.ProfileImageDto;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
+import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,7 +30,10 @@ public class UserAccountService {
 	private final UserReader userReader;
 	private final UserWriter userWriter;
 	private final UserValidator userValidator;
+	private final AuthValidator authValidator;
 	private final AuthTokenManager authTokenManager;
+	private final PasswordEncoder passwordEncoder;
+	private final UserInfoRepository userInfoRepository;
 
 	/**
 	 * 소셜 로그인을 통해 생성된 임시 유저(GUEST)의 추가 정보를 등록하고 회원가입 절차를 완료합니다.
@@ -54,8 +65,45 @@ public class UserAccountService {
 		User updatedUser = userWriter.save(guestUser);
 		AuthTokenPair tokens = authTokenManager.issueTokens(updatedUser, refreshToken);
 		return AuthResult.of(tokens.accessToken(), updatedUser.getName(), updatedUser.getEmail(),
-			updatedUser.getProfileUrl(),
-			tokens.refreshToken());
+			ProfileImageDto.from(updatedUser),
+			tokens.refreshToken(), updatedUser.isGuest(), updatedUser.isTermsAgreed(),
+			updatedUser.isAcademicCertified(), updatedUser.getAcademicStatus());
+	}
+
+	/**
+	 * 현재 로그인한 사용자의 기본 정보를 조회합니다. 내정보 메인페이지 진입 시 사용합니다.
+	 *
+	 * @param userId 조회할 사용자의 고유 식별자 (PK)
+	 * @return {@link UserMeResult} 내 정보 결과 (이름, 닉네임, 프로필이미지, 입학년도, 직업)
+	 */
+	@Transactional(readOnly = true)
+	public UserMeResult getMyProfile(String userId) {
+		User user = userReader.findDetailById(userId);
+		UserInfo userInfo = userInfoRepository.findByUserId(userId).orElse(null);
+		return UserMeResult.from(user, userInfo);
+	}
+
+	/**
+	 * 현재 로그인한 사용자의 닉네임을 변경합니다.
+	 * <p>
+	 * 현재 닉네임과 동일한 값이면 예외를 발생시키고,
+	 * 중복 닉네임 검사 후 성공 시 닉네임을 저장합니다.
+	 * </p>
+	 *
+	 * @param userId   닉네임을 변경할 사용자의 고유 식별자 (PK)
+	 * @param nickname 변경할 닉네임
+	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
+	 * [NICKNAME_SAME_AS_CURRENT] 현재 닉네임과 동일한 경우,
+	 * [NICKNAME_ALREADY_EXIST] 이미 사용 중인 닉네임인 경우
+	 */
+	@Transactional
+	public void updateNickname(String userId, String nickname) {
+		User user = userReader.findUserById(userId);
+		if (nickname.equals(user.getNickname())) {
+			throw UserErrorCode.NICKNAME_SAME_AS_CURRENT.toBaseException();
+		}
+		userValidator.checkNicknameDuplication(nickname);
+		user.updateNickname(nickname);
 	}
 
 	/**
@@ -84,5 +132,41 @@ public class UserAccountService {
 	@Transactional(readOnly = true)
 	public void checkPhoneNumDuplication(String phoneNumber) {
 		userValidator.checkPhoneNumDuplication(phoneNumber);
+	}
+
+	/**
+	 * 현재 비밀번호를 확인하고 새 비밀번호로 변경합니다.
+	 * <p>
+	 * 소셜 로그인 전용 계정(비밀번호 없음)은 변경할 수 없으며,
+	 * 현재 비밀번호 일치 여부, 새 비밀번호 형식, 새 비밀번호 확인 일치 여부를 검사합니다.
+	 * </p>
+	 *
+	 * @param userId             비밀번호를 변경할 유저의 고유 식별자 (PK)
+	 * @param command			비밀번호 재설정 command
+	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
+	 * [SOCIAL_USER_CANNOT_CHANGE_PASSWORD] 소셜 로그인 전용 계정인 경우,
+	 * [INVALID_CURRENT_PASSWORD] 현재 비밀번호가 일치하지 않는 경우,
+	 * [INVALID_PASSWORD_REQUEST] 새 비밀번호 형식이 잘못된 경우,
+	 * [PASSWORD_CONFIRM_MISMATCH] 새 비밀번호와 확인 값이 일치하지 않는 경우
+	 */
+	@Transactional
+	public void updatePassword(String userId, UserPasswordUpdateCommand command) {
+		User user = userReader.findUserById(userId);
+
+		if (user.isOnlySocialUser()) {
+			throw UserErrorCode.SOCIAL_ONLY_USER_CANNOT_CHANGE_PASSWORD.toBaseException();
+		}
+
+		if (!passwordEncoder.matches(command.currentPassword(), user.getPassword())) {
+			throw UserErrorCode.INVALID_CURRENT_PASSWORD.toBaseException();
+		}
+
+		if (!command.newPassword().equals(command.newPasswordConfirm())) {
+			throw UserErrorCode.PASSWORD_CONFIRM_MISMATCH.toBaseException();
+		}
+
+		authValidator.validatePasswordFormat(command.newPassword());
+
+		user.updatePassword(passwordEncoder.encode(command.newPassword()));
 	}
 }

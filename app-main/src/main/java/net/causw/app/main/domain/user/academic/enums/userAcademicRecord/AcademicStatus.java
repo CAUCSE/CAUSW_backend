@@ -1,5 +1,7 @@
 package net.causw.app.main.domain.user.academic.enums.userAcademicRecord;
 
+import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -17,4 +19,15 @@ public enum AcademicStatus {
 
 	private final String value;
 
+	public static AcademicStatus fromString(String academicStatus) {
+		if (academicStatus == null || academicStatus.isEmpty()) {
+			throw UserErrorCode.INVALID_ACADEMIC_STATUS.toBaseException();
+		}
+		for (AcademicStatus status : AcademicStatus.values()) {
+			if (status.name().equalsIgnoreCase(academicStatus)) {
+				return status;
+			}
+		}
+		throw UserErrorCode.INVALID_ACADEMIC_STATUS.toBaseException();
+	}
 }
