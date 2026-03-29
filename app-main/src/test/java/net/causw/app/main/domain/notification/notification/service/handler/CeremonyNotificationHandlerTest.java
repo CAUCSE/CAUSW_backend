@@ -10,7 +10,6 @@ import static org.mockito.Mockito.mock;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -30,12 +29,10 @@ import net.causw.app.main.domain.community.ceremony.service.implementation.Cerem
 import net.causw.app.main.domain.notification.notification.entity.Notification;
 import net.causw.app.main.domain.notification.notification.enums.UserNotificationSettingKey;
 import net.causw.app.main.domain.notification.notification.event.CeremonyNotificationEvent;
-import net.causw.app.main.domain.notification.notification.service.dto.UserNotificationSettingMap;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationPushSender;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationSettingReader;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 
 @ExtendWith(MockitoExtension.class)
@@ -52,8 +49,6 @@ class CeremonyNotificationHandlerTest {
 	private NotificationPushSender notificationPushSender;
 	@Mock
 	private NotificationSettingReader notificationSettingReader;
-	@Mock
-	private UserReader userReader;
 
 	@Nested
 	@DisplayName("경조사 알림 (handle)")
@@ -64,23 +59,20 @@ class CeremonyNotificationHandlerTest {
 		void givenSetAll_whenHandle_thenSendToAllActiveUsers() {
 			// given
 			Ceremony ceremony = celebrationSetAll();
-			User target1 = userWithId("user1");
-			User target2 = userWithId("user2");
-			List<User> allUsers = List.of(target1, target2);
+			User target1 = mock(User.class);
+			User target2 = mock(User.class);
 
 			given(ceremonyReader.findById("ceremonyId")).willReturn(Optional.of(ceremony));
-			given(userReader.findAllActive()).willReturn(allUsers);
-			given(notificationSettingReader.findSettingMapByUserIds(List.of("user1", "user2")))
-				.willReturn(Map.of(
-					"user1", settingMapAllOn(),
-					"user2", settingMapAllOn()));
+			// isSetAll=true → admissionYears=[] 로 전체 대상 쿼리
+			given(notificationSettingReader.findCeremonyNotificationTargets(
+				List.of(), UserNotificationSettingKey.CEREMONY_NOTIFICATION_ENABLED))
+				.willReturn(List.of(target1, target2));
 			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
 
 			// when
 			handler.handle(new CeremonyNotificationEvent("ceremonyId"));
 
 			// then
-			verify(userReader).findAllActive();
 			verify(notificationWriter).save(any());
 			verify(notificationPushSender).sendToUsers(any(), any(), any());
 			verify(notificationWriter).saveLogs(any(), any());
@@ -91,19 +83,19 @@ class CeremonyNotificationHandlerTest {
 		void givenTargetYears_whenHandle_thenSendToTargetYearUsers() {
 			// given
 			Ceremony ceremony = celebrationWithTargetYears(Set.of("24", "25")); // 2024, 2025
-			User target = userWithId("userId");
+			User target = mock(User.class);
 
 			given(ceremonyReader.findById("ceremonyId")).willReturn(Optional.of(ceremony));
-			given(userReader.findUsersByAdmissionYears(any())).willReturn(List.of(target));
-			given(notificationSettingReader.findSettingMapByUserIds(List.of("userId")))
-				.willReturn(Map.of("userId", settingMapAllOn()));
+			// isSetAll=false → admissionYears=[2024,2025] 로 대상 쿼리 (순서 무관하므로 any())
+			given(notificationSettingReader.findCeremonyNotificationTargets(
+				any(), eq(UserNotificationSettingKey.CEREMONY_NOTIFICATION_ENABLED)))
+				.willReturn(List.of(target));
 			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
 
 			// when
 			handler.handle(new CeremonyNotificationEvent("ceremonyId"));
 
 			// then
-			verify(userReader).findUsersByAdmissionYears(any());
 			verify(notificationPushSender).sendToUsers(any(), any(), any());
 		}
 
@@ -112,21 +104,19 @@ class CeremonyNotificationHandlerTest {
 		void givenCeremonyNotificationOff_whenHandle_thenExcludeUser() {
 			// given
 			Ceremony ceremony = celebrationSetAll();
-			User userOn = userWithId("userOnId");
-			User userOff = userWithId("userOffId");
+			User userOn = mock(User.class);
+			// userOff는 QueryRepository에서 제외되어 반환 목록에 포함되지 않음
 
 			given(ceremonyReader.findById("ceremonyId")).willReturn(Optional.of(ceremony));
-			given(userReader.findAllActive()).willReturn(List.of(userOn, userOff));
-			given(notificationSettingReader.findSettingMapByUserIds(List.of("userOnId", "userOffId")))
-				.willReturn(Map.of(
-					"userOnId", settingMapAllOn(),
-					"userOffId", settingMapWith(UserNotificationSettingKey.CEREMONY_NOTIFICATION_ENABLED, false)));
+			given(notificationSettingReader.findCeremonyNotificationTargets(
+				List.of(), UserNotificationSettingKey.CEREMONY_NOTIFICATION_ENABLED))
+				.willReturn(List.of(userOn));
 			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
 
 			// when
 			handler.handle(new CeremonyNotificationEvent("ceremonyId"));
 
-			// then: userOff는 targets에서 제외 → saveLogs에 userOn만 포함
+			// then: disabled 유저가 제외된 결과가 QueryRepository에서 반환됨
 			verify(notificationWriter).saveLogs(eq(List.of(userOn)), any());
 		}
 
@@ -146,12 +136,12 @@ class CeremonyNotificationHandlerTest {
 		void givenCondolenceCeremony_whenHandle_thenPushTitleIsCondolence() {
 			// given
 			Ceremony ceremony = condolenceSetAll();
-			User target = userWithId("userId");
+			User target = mock(User.class);
 
 			given(ceremonyReader.findById("ceremonyId")).willReturn(Optional.of(ceremony));
-			given(userReader.findAllActive()).willReturn(List.of(target));
-			given(notificationSettingReader.findSettingMapByUserIds(List.of("userId")))
-				.willReturn(Map.of("userId", settingMapAllOn()));
+			given(notificationSettingReader.findCeremonyNotificationTargets(
+				List.of(), UserNotificationSettingKey.CEREMONY_NOTIFICATION_ENABLED))
+				.willReturn(List.of(target));
 			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
 
 			// when
@@ -165,12 +155,6 @@ class CeremonyNotificationHandlerTest {
 	// ─────────────────────────────────────────────────
 	// 헬퍼
 	// ─────────────────────────────────────────────────
-
-	private User userWithId(String id) {
-		User user = mock(User.class);
-		given(user.getId()).willReturn(id);
-		return user;
-	}
 
 	/** isSetAll=true, 경사(CELEBRATION), 본인(ME) */
 	private Ceremony celebrationSetAll() {
@@ -214,13 +198,5 @@ class CeremonyNotificationHandlerTest {
 		given(ceremony.getEndDate()).willReturn(LocalDate.of(2025, 5, 12));
 		// FUNERAL 분기는 getStartDate()를 호출하지 않으므로 stub 생략
 		return ceremony;
-	}
-
-	private UserNotificationSettingMap settingMapAllOn() {
-		return UserNotificationSettingMap.ofFull(Map.of());
-	}
-
-	private UserNotificationSettingMap settingMapWith(UserNotificationSettingKey key, boolean value) {
-		return UserNotificationSettingMap.ofFull(Map.of(key, value));
 	}
 }
