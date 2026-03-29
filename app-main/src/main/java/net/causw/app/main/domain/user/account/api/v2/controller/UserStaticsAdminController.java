@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v2/admin/users/")
+@RequestMapping("/api/v2/admin/users")
 @PreAuthorize("@security.hasRole(@Role.ADMIN)")
 @Tag(name = "User Admin v2", description = "관리자용 사용자 관련 집계 및 통계 API")
 public class UserStaticsAdminController {
