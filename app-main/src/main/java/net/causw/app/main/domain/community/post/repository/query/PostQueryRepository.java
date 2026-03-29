@@ -27,6 +27,8 @@ import net.causw.app.main.domain.user.account.entity.user.QUser;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.SubQueryExpression;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
@@ -438,13 +440,14 @@ public class PostQueryRepository {
 	 */
 	public Map<String, List<String>> findPostImagesByPostIds(List<String> postIds) {
 		QPostAttachImage postAttachImage = QPostAttachImage.postAttachImage;
+		NumberPath<Integer> imageOrder = Expressions.numberPath(Integer.class, postAttachImage, "imageOrder");
 
 		List<Tuple> results = jpaQueryFactory
 			.select(postAttachImage.post.id, postAttachImage.uuidFile.fileUrl)
 			.from(postAttachImage)
 			.where(postAttachImage.post.id.in(postIds)
 				.and(postAttachImage.uuidFile.extension.in(FileExtensionType.IMAGE.getExtensionList())))
-			.orderBy(postAttachImage.post.id.asc(), postAttachImage.uuidFile.createdAt.asc())
+			.orderBy(postAttachImage.post.id.asc(), imageOrder.asc())
 			.fetch();
 
 		return results.stream()

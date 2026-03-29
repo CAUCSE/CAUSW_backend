@@ -1,6 +1,5 @@
 package net.causw.app.main.domain.community.post.service.v2;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -10,12 +9,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.PostAttachImage;
-import net.causw.app.main.domain.asset.file.enums.FilePath;
-import net.causw.app.main.domain.asset.file.service.v2.implementation.FileReader;
-import net.causw.app.main.domain.asset.file.service.v2.implementation.FileWriter;
-import net.causw.app.main.domain.asset.file.service.v2.implementation.PostAttachImageWriter;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
 import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
@@ -30,6 +24,7 @@ import net.causw.app.main.domain.community.post.service.v2.dto.PostListQuery;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostListResult;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostUpdateCommand;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostUpdateResult;
+import net.causw.app.main.domain.community.post.service.v2.implementation.PostImageManager;
 import net.causw.app.main.domain.community.post.service.v2.implementation.PostReader;
 import net.causw.app.main.domain.community.post.service.v2.implementation.PostWriter;
 import net.causw.app.main.domain.community.post.service.v2.mapper.PostMapper;
@@ -50,18 +45,17 @@ public class PostService {
 
 	private final PostReader postReader;
 	private final PostWriter postWriter;
+	private final PostImageManager postImageManager;
 	private final BoardReader boardReader;
 	private final BoardConfigReader boardConfigReader;
-	private final FileWriter fileWriter;
-	private final FileReader fileReader;
 	private final LikePostReader likePostReader;
 	private final FavoritePostReader favoritePostReader;
-	private final PostAttachImageWriter postAttachImageWriter;
 	private final BlockReader userBlockReader;
 
 	/**
 	 * 게시글을 생성합니다. 게시글 내용과 첨부 이미지를 저장합니다.
-	 * @param command 생성에 필요한 정보 (작성자, 게시판 ID, 내용, 이미지 파일 등)
+	 *
+	 * @param command 생성에 필요한 정보 (작성자, 게시판 ID, 내용, 이미지 파일·메타 등)
 	 * @return 생성된 게시글 정보 (게시글 ID, 내용, 이미지 URL 목록 등)
 	 */
 	@Transactional
@@ -74,18 +68,23 @@ public class PostService {
 
 		PostValidator.validateCreate(writer, board, boardConfig, boardAdminIds, command.isAnonymous());
 
-		// 이미지 업로드 (FileWriter 사용)
-		List<UuidFile> images;
-		if (command.images() != null && !command.images().isEmpty()) {
-			images = fileWriter.uploadAndSaveList(command.images(), FilePath.POST);
-		} else {
-			images = new ArrayList<>();
+		// Post 엔티티 생성 (이미지 없이 먼저 생성)
+		Post post = PostMapper.fromCreateCommand(command, writer, board, List.of());
+		Post savedPost = postWriter.save(post);
+
+		// 이미지 업로드 및 PostAttachImage 구성 (PostImageManager에 위임)
+		List<PostAttachImage> postAttachImages = postImageManager.uploadAndBuildForCreate(
+			savedPost, command.imageFiles(), command.imageMetas());
+
+		if (!postAttachImages.isEmpty()) {
+			savedPost.updateContentAndImages(savedPost.getContent(), postAttachImages);
 		}
 
-		Post post = PostMapper.fromCreateCommand(command, writer, board, images);
+		List<String> imageUrls = postAttachImages.stream()
+			.map(img -> img.getUuidFile().getFileUrl())
+			.toList();
 
-		Post savedPost = postWriter.save(post);
-		return PostMapper.toCreateResult(savedPost, images.stream().map(UuidFile::getFileUrl).toList());
+		return PostMapper.toCreateResult(savedPost, imageUrls);
 	}
 
 	@Transactional
@@ -99,31 +98,13 @@ public class PostService {
 	}
 
 	/**
-	 * 게시글의 첨부 이미지 DB 정보를 삭제하고, 실제 파일 삭제를 위한 파일 ID 목록을 반환합니다.
-	 * 실제 파일 삭제는 트랜잭션 커밋 후에 수행되어야 합니다.
-	 *
-	 * @param post 게시글 엔티티
-	 * @return 삭제할 파일 ID 목록
-	 */
-	private List<String> deletePostAttachImages(Post post) {
-		List<PostAttachImage> images = post.getPostAttachImageList();
-		if (images == null || images.isEmpty()) {
-			return List.of();
-		}
-
-		// 1. UuidFile ID 목록을 미리 추출
-		List<String> fileIds = images.stream().map(it -> it.getUuidFile().getId()).toList();
-
-		// 2. PostAttachImage 삭제
-		postAttachImageWriter.deleteAllInBatch(images);
-
-		// 4. 실제 파일 삭제를 위한 파일 ID 반환
-		return fileIds;
-	}
-
-	/**
 	 * 게시글을 수정합니다. 게시글 내용과 첨부 이미지를 업데이트할 수 있습니다.
-	 * @param command 수정에 필요한 정보 (게시글 ID, 수정자, 새 내용, 새 이미지 파일 등)
+	 * <p>
+	 * imageMetas의 type=EXISTING 항목은 기존 이미지를 유지하고,
+	 * type=NEW 항목은 새 파일을 업로드합니다.
+	 * 기존 이미지 중 imageMetas에 포함되지 않은 이미지는 삭제됩니다.
+	 *
+	 * @param command 수정에 필요한 정보 (게시글 ID, 수정자, 새 내용, 이미지 파일·메타 등)
 	 * @return 수정된 게시글 정보 (게시글 ID, 새 내용, 새 이미지 URL 목록 등)
 	 */
 	@Transactional
@@ -135,34 +116,22 @@ public class PostService {
 
 		PostValidator.validateUpdate(updater, post, boardAdminIds, boardConfig, command.isAnonymous());
 
-		// 기존 이미지 DB 정보 삭제 (파일 ID 목록 반환)
-		List<String> deletedFileIds = deletePostAttachImages(post);
-
-		// 새 이미지 업로드
-		List<UuidFile> newImages;
-		if (command.images() != null && !command.images().isEmpty()) {
-			newImages = fileWriter.uploadAndSaveList(command.images(), FilePath.POST);
-		} else {
-			newImages = new ArrayList<>();
-		}
-
-		// PostAttachImage 엔티티 생성
-		List<PostAttachImage> newPostAttachImages = postAttachImageWriter.createPostAttachImages(newImages, post);
+		// 이미지 병합 처리 (PostImageManager에 위임)
+		PostImageManager.ImageUpdateResult imageResult = postImageManager.mergeAndBuildForUpdate(
+			post, command.newImageFiles(), command.imageMetas());
 
 		// 게시글 업데이트
-		Post updatedPost = postWriter.updateContentAndImages(post, command.content(), newPostAttachImages);
+		Post updatedPost = postWriter.updateContentAndImages(
+			post, command.content(), imageResult.finalImages());
 
-		List<String> imageUrls = newImages.stream()
-			.map(UuidFile::getFileUrl)
+		List<String> imageUrls = imageResult.finalImages().stream()
+			.map(img -> img.getUuidFile().getFileUrl())
 			.toList();
 
 		PostUpdateResult result = PostMapper.toUpdateResult(updatedPost, imageUrls);
 
-		// 트랜잭션 커밋 후 실제 스토리지 파일 삭제 (DB 작업이 성공한 경우에만)
-		if (!deletedFileIds.isEmpty()) {
-			List<UuidFile> files = fileReader.findByIds(deletedFileIds);
-			fileWriter.deleteList(files);
-		}
+		// 트랜잭션 커밋 후 실제 스토리지 파일 삭제
+		postImageManager.deleteOrphanedFiles(imageResult.deletedFileIds());
 
 		return result;
 	}
