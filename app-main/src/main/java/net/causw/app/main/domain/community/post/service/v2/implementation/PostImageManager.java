@@ -19,6 +19,7 @@ import net.causw.app.main.domain.asset.file.service.v2.implementation.PostAttach
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.v2.dto.ImageCreateMeta;
 import net.causw.app.main.domain.community.post.service.v2.dto.ImageUpdateMeta;
+import net.causw.app.main.domain.community.post.service.v2.util.PostValidator;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -55,6 +56,9 @@ public class PostImageManager {
 		if (uploadedFiles.isEmpty()) {
 			return List.of();
 		}
+
+		// 이미지 메타데이터 검증
+		PostValidator.validateCreateImageMetas(imageMetas, uploadedFiles.size());
 
 		List<PostAttachImage> result = new ArrayList<>();
 
@@ -100,6 +104,10 @@ public class PostImageManager {
 				img -> img.getUuidFile().getFileUrl(),
 				img -> img));
 
+		// 이미지 메타데이터 검증
+		int newFileCount = (newImageFiles != null) ? newImageFiles.size() : 0;
+		PostValidator.validateUpdateImageMetas(imageMetas, newFileCount, existingByUrl.keySet());
+
 		// 유지할 기존 이미지 URL 목록 추출
 		Set<String> existingUrlsToKeep = (imageMetas != null)
 			? imageMetas.stream()
@@ -126,6 +134,7 @@ public class PostImageManager {
 
 		// 최종 PostAttachImage 리스트 구성
 		List<PostAttachImage> finalImages = new ArrayList<>();
+		List<PostAttachImage> newImages = new ArrayList<>();
 		if (imageMetas != null && !imageMetas.isEmpty()) {
 			for (ImageUpdateMeta meta : imageMetas) {
 				if (meta.type() == ImageUpdateMeta.Type.EXISTING) {
@@ -135,9 +144,15 @@ public class PostImageManager {
 					finalImages.add(existing);
 				} else {
 					UuidFile newFile = newUploadedFiles.get(meta.fileIndex());
-					finalImages.add(PostAttachImage.of(post, newFile, meta.order(), meta.isRepresentative()));
+					newImages.add(PostAttachImage.of(post, newFile, meta.order(), meta.isRepresentative()));
 				}
 			}
+		}
+
+		// 신규 이미지를 명시적으로 저장하여 post_id가 올바르게 설정되도록 합니다.
+		if (!newImages.isEmpty()) {
+			List<PostAttachImage> savedNewImages = postAttachImageWriter.saveAll(newImages);
+			finalImages.addAll(savedNewImages);
 		}
 
 		finalImages.sort(Comparator.comparingInt(PostAttachImage::getImageOrder));

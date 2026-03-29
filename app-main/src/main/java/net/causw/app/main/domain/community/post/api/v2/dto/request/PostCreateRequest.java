@@ -23,10 +23,10 @@ public record PostCreateRequest(
 
 	@Valid
 	@Schema(description = "이미지 메타데이터 목록. 각 항목의 fileIndex는 'images' 파트의 파일 배열 인덱스와 매핑됩니다.")
-	List<ImageMeta> images) {
+	List<ImageCreateMeta> images) {
 
 	@Schema(description = "게시글 생성 시 이미지 메타데이터")
-	public record ImageMeta(
+	public record ImageCreateMeta(
 		@NotNull(message = "이미지 순서를 입력해 주세요.")
 		@Schema(description = "최종 이미지 순서 (0부터 시작)", example = "0")
 		Integer order,

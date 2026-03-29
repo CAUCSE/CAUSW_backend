@@ -21,10 +21,10 @@ public record PostUpdateRequest(
 
 	@Valid
 	@Schema(description = "이미지 메타데이터 목록. type=existing은 기존 이미지 유지(url 필수), type=new는 새 파일 업로드(fileIndex 필수)")
-	List<ImageMeta> images) {
+	List<ImageUpdateMeta> images) {
 
 	@Schema(description = "게시글 수정 시 이미지 메타데이터")
-	public record ImageMeta(
+	public record ImageUpdateMeta(
 		@NotNull(message = "이미지 순서를 입력해 주세요.")
 		@Schema(description = "최종 이미지 순서 (0부터 시작)", example = "0")
 		Integer order,
