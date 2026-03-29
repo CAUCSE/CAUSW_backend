@@ -49,8 +49,7 @@ public class UserBoardSubscribeQueryRepository {
 			.from(ubs)
 			.where(
 				ubs.board.id.eq(boardId),
-				ubs.isSubscribed.isFalse()
-			)
+				ubs.isSubscribed.isFalse())
 			.fetch();
 
 		// ACTIVE + 미삭제 + 학적 조건을 만족하며 구독 거부하지 않은 유저 조회
@@ -60,8 +59,7 @@ public class UserBoardSubscribeQueryRepository {
 				user.state.eq(UserState.ACTIVE),
 				user.deletedAt.isNull(),
 				academicStatusCondition(user, targetAcademicStatuses),
-				unsubscribedIds.isEmpty() ? null : user.id.notIn(unsubscribedIds)
-			)
+				unsubscribedIds.isEmpty() ? null : user.id.notIn(unsubscribedIds))
 			.fetch();
 	}
 

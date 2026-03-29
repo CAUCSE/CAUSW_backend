@@ -15,7 +15,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import net.causw.app.main.domain.community.comment.entity.ChildComment;
 import net.causw.app.main.domain.community.comment.entity.Comment;

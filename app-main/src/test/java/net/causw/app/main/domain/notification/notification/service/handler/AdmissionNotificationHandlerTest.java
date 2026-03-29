@@ -67,8 +67,7 @@ class AdmissionNotificationHandlerTest {
 			given(notificationSettingReader.findSettingMapByUserIds(List.of("adminId1", "adminId2")))
 				.willReturn(Map.of(
 					"adminId1", settingMapAllOn(),
-					"adminId2", settingMapAllOn()
-				));
+					"adminId2", settingMapAllOn()));
 			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
 
 			// when
@@ -109,8 +108,7 @@ class AdmissionNotificationHandlerTest {
 			given(notificationSettingReader.findSettingMapByUserIds(List.of("adminOnId", "adminOffId")))
 				.willReturn(Map.of(
 					"adminOnId", settingMapAllOn(),
-					"adminOffId", settingMapWith(UserNotificationSettingKey.SERVICE_NOTICE_ENABLED, false)
-				));
+					"adminOffId", settingMapWith(UserNotificationSettingKey.SERVICE_NOTICE_ENABLED, false)));
 			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
 
 			// when
@@ -228,8 +226,10 @@ class AdmissionNotificationHandlerTest {
 	private User mockUserWithId(String id, String name, String studentId) {
 		User user = mock(User.class);
 		given(user.getId()).willReturn(id);
-		if (name != null) given(user.getName()).willReturn(name);
-		if (studentId != null) given(user.getStudentId()).willReturn(studentId);
+		if (name != null)
+			given(user.getName()).willReturn(name);
+		if (studentId != null)
+			given(user.getStudentId()).willReturn(studentId);
 		return user;
 	}
 

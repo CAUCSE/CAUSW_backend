@@ -46,6 +46,7 @@ public class UserBoardSubscribeReader {
 	 * @return 알림 발송 대상 유저 목록
 	 */
 	public List<User> findNotificationTargets(String boardId, BoardReadScope readScope) {
-		return userBoardSubscribeQueryRepository.findNotificationTargets(boardId, readScope.getTargetAcademicStatuses());
+		return userBoardSubscribeQueryRepository.findNotificationTargets(boardId,
+			readScope.getTargetAcademicStatuses());
 	}
 }

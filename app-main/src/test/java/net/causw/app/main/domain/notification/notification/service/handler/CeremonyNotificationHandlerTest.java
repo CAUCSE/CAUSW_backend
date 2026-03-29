@@ -73,8 +73,7 @@ class CeremonyNotificationHandlerTest {
 			given(notificationSettingReader.findSettingMapByUserIds(List.of("user1", "user2")))
 				.willReturn(Map.of(
 					"user1", settingMapAllOn(),
-					"user2", settingMapAllOn()
-				));
+					"user2", settingMapAllOn()));
 			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
 
 			// when
@@ -123,8 +122,7 @@ class CeremonyNotificationHandlerTest {
 			given(notificationSettingReader.findSettingMapByUserIds(List.of("userOnId", "userOffId")))
 				.willReturn(Map.of(
 					"userOnId", settingMapAllOn(),
-					"userOffId", settingMapWith(UserNotificationSettingKey.CEREMONY_NOTIFICATION_ENABLED, false)
-				));
+					"userOffId", settingMapWith(UserNotificationSettingKey.CEREMONY_NOTIFICATION_ENABLED, false)));
 			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
 
 			// when

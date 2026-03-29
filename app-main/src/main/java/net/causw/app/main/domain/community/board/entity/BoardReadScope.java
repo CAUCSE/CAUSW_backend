@@ -34,8 +34,7 @@ public enum BoardReadScope {
 				AcademicStatus.ENROLLED,
 				AcademicStatus.LEAVE_OF_ABSENCE,
 				AcademicStatus.SUSPEND,
-				AcademicStatus.PROFESSOR
-			);
+				AcademicStatus.PROFESSOR);
 			case GRADUATED -> List.of(AcademicStatus.GRADUATED);
 			case BOTH -> List.of(); // 빈 리스트 = 모든 학적 허용
 		};
