@@ -4,14 +4,14 @@ import java.util.List;
 
 import org.springframework.stereotype.Repository;
 
-import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.jpa.impl.JPAQueryFactory;
-
 import net.causw.app.main.domain.notification.notification.entity.QUserNotificationSetting;
 import net.causw.app.main.domain.notification.notification.enums.UserNotificationSettingKey;
 import net.causw.app.main.domain.user.account.entity.user.QUser;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
+
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
 
