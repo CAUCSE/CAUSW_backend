@@ -27,7 +27,6 @@ import net.causw.app.main.domain.notification.notification.service.implementatio
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
-import net.causw.app.main.domain.user.relation.service.v2.implementation.BlockReader;
 import net.causw.app.main.shared.exception.errorcode.CeremonyErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -41,7 +40,6 @@ public class CeremonyNotificationHandler {
 	private final NotificationPushSender notificationPushSender;
 	private final NotificationSettingReader notificationSettingReader;
 	private final UserReader userReader;
-	private final BlockReader blockReader;
 
 	/**
 	 * 경조사 알림 이벤트 핸들러.

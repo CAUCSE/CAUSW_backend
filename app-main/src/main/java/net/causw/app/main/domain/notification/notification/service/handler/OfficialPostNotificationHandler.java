@@ -1,7 +1,6 @@
 package net.causw.app.main.domain.notification.notification.service.handler;
 
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -18,14 +17,12 @@ import net.causw.app.main.domain.community.board.service.implementation.BoardRea
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.v2.implementation.PostReader;
 import net.causw.app.main.domain.notification.notification.entity.Notification;
-import net.causw.app.main.domain.notification.notification.entity.UserBoardSubscribe;
 import net.causw.app.main.domain.notification.notification.enums.NoticeType;
 import net.causw.app.main.domain.notification.notification.event.OfficialPostEvent;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationPushSender;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationWriter;
 import net.causw.app.main.domain.notification.notification.service.implementation.UserBoardSubscribeReader;
 import net.causw.app.main.domain.notification.notification.util.NotificationTextUtil;
-import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
 
 import lombok.RequiredArgsConstructor;
@@ -56,15 +53,11 @@ public class OfficialPostNotificationHandler {
 			return;
 		}
 
-		// 게시판 구독자 중 읽기 범위에 해당하는 유저들에게 알림 발송
-		List<UserBoardSubscribe> subscribers = userBoardSubscribeReader.findForNotification(board, Set.of());
-
-		// 게시판 읽기 범위에 해당하는 유저 필터링
+		// UserBoardSubscribe row가 없으면 기본 구독(true)으로 간주.
+		// isSubscribed=false인 row가 명시적으로 존재하는 경우에만 알림 대상에서 제외.
+		// ACTIVE + 미삭제 + readScope 조건을 만족하며 구독 거부하지 않은 유저 목록 조회
 		BoardReadScope readScope = boardConfig.getReadScope();
-		List<User> targets = subscribers.stream()
-			.map(UserBoardSubscribe::getUser)
-			.filter(user -> isInReadScope(user.getAcademicStatus(), readScope))
-			.toList();
+		List<User> targets = userBoardSubscribeReader.findNotificationTargets(board.getId(), readScope);
 
 		// 알림 발송
 		// 푸시알림 제목: 게시판 이름
@@ -82,13 +75,5 @@ public class OfficialPostNotificationHandler {
 
 		notificationPushSender.sendToUsers(targets, pushTitle, pushBody);
 		notificationWriter.saveLogs(targets, notification);
-	}
-
-	private static boolean isInReadScope(AcademicStatus status, BoardReadScope readScope) {
-		return switch (readScope) {
-			case ENROLLED -> status != AcademicStatus.GRADUATED;
-			case GRADUATED -> status == AcademicStatus.GRADUATED;
-			case BOTH -> true;
-		};
 	}
 }
