@@ -75,7 +75,7 @@ public class CommentNotificationHandler {
 			return;
 		}
 
-		String displayName = resolveDisplayName(commentWriter, post);
+		String displayName = resolveDisplayName(commentWriter, comment.getIsAnonymous());
 		String sanitizedContent = NotificationTextUtil.sanitize(comment.getContent());
 
 		// 푸시알림 제목: "내 글에 댓글"
@@ -135,7 +135,7 @@ public class CommentNotificationHandler {
 			return;
 		}
 
-		String displayName = resolveDisplayName(childCommentWriter, post);
+		String displayName = resolveDisplayName(childCommentWriter, childComment.getIsAnonymous());
 		String sanitizedContent = NotificationTextUtil.sanitize(childComment.getContent());
 
 		// 푸시알림 제목: "내 댓글에 답글"
@@ -158,12 +158,12 @@ public class CommentNotificationHandler {
 		notificationWriter.saveLog(commentWriter, notification);
 	}
 
-	private static String resolveDisplayName(User user, Post post) {
-		if (post.getIsAnonymous()) {
+	private static String resolveDisplayName(User user, boolean isAnonymous) {
+		if (isAnonymous) {
 			return StaticValue.ANONYMOUS_USER_NICKNAME;
 		}
 
-		return user.getNickname() != null ? user.getNickname() : StaticValue.INACTIVE_USER_NICKNAME;
+		return user.getNickname() != null ? user.getNickname() : user.getName();
 	}
 
 }
