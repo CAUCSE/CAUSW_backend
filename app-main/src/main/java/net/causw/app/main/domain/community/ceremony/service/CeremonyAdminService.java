@@ -1,5 +1,7 @@
 package net.causw.app.main.domain.community.ceremony.service;
 
+import net.causw.app.main.domain.notification.notification.event.CeremonyNotificationEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,7 @@ public class CeremonyAdminService {
 	private final CeremonyWriter ceremonyWriter;
 	private final CeremonyValidator ceremonyValidator;
 	private final CeremonyMapper ceremonyMapper;
+	private final ApplicationEventPublisher eventPublisher;
 
 	public Page<CeremonyAdminListResult> getCeremonyList(CeremonyAdminListCondition condition, Pageable pageable) {
 		Page<Ceremony> ceremonies = ceremonyReader.findAllForAdmin(
@@ -47,7 +50,9 @@ public class CeremonyAdminService {
 		ceremonyValidator.validateAwaiting(ceremony);
 		ceremonyWriter.approve(ceremony);
 
-		// TODO: 푸시알림 전송 (v2 알림 서비스 완성 후 구현)
+		// 승인 시 알림 발송
+		eventPublisher.publishEvent(new CeremonyNotificationEvent(ceremonyId));
+
 	}
 
 	@Transactional

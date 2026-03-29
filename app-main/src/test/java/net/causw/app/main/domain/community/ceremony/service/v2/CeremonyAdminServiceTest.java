@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import net.causw.app.main.domain.notification.notification.event.CeremonyNotificationEvent;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -50,6 +52,10 @@ class CeremonyAdminServiceTest {
 
 	@Mock
 	CeremonyMapper ceremonyMapper;
+
+	@Mock
+	private ApplicationEventPublisher eventPublisher;
+
 
 	@Nested
 	@DisplayName("관리자 경조사 목록 조회 테스트")
@@ -183,6 +189,8 @@ class CeremonyAdminServiceTest {
 			// then
 			then(ceremonyValidator).should(times(1)).validateAwaiting(ceremony);
 			then(ceremonyWriter).should(times(1)).approve(ceremony);
+
+			verify(eventPublisher).publishEvent(any(CeremonyNotificationEvent.class));
 		}
 
 		@Test

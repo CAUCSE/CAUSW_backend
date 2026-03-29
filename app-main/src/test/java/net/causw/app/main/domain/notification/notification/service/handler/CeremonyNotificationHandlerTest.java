@@ -2,6 +2,7 @@ package net.causw.app.main.domain.notification.notification.service.handler;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.verify;
 import static org.mockito.Mockito.mock;
@@ -62,10 +63,9 @@ class CeremonyNotificationHandlerTest {
 		@DisplayName("성공: isSetAll=true이면 전체 활성 유저 대상으로 알림 발송")
 		void givenSetAll_whenHandle_thenSendToAllActiveUsers() {
 			// given
-			User ceremonyUser = mockUser("ceremonyUserId");
-			Ceremony ceremony = mockCelebrationSetAll(ceremonyUser);
-			User target1 = mockUser("user1");
-			User target2 = mockUser("user2");
+			Ceremony ceremony = celebrationSetAll();
+			User target1 = userWithId("user1");
+			User target2 = userWithId("user2");
 			List<User> allUsers = List.of(target1, target2);
 
 			given(ceremonyReader.findById("ceremonyId")).willReturn(Optional.of(ceremony));
@@ -90,9 +90,8 @@ class CeremonyNotificationHandlerTest {
 		@DisplayName("성공: isSetAll=false이면 대상 입학년도 유저에게만 알림 발송")
 		void givenTargetYears_whenHandle_thenSendToTargetYearUsers() {
 			// given
-			User ceremonyUser = mockUser("ceremonyUserId");
-			Ceremony ceremony = mockCelebrationTargetYears(ceremonyUser, Set.of("24", "25")); // 2024, 2025
-			User target = mockUser("userId");
+			Ceremony ceremony = celebrationWithTargetYears(Set.of("24", "25")); // 2024, 2025
+			User target = userWithId("userId");
 
 			given(ceremonyReader.findById("ceremonyId")).willReturn(Optional.of(ceremony));
 			given(userReader.findUsersByAdmissionYears(any())).willReturn(List.of(target));
@@ -112,10 +111,9 @@ class CeremonyNotificationHandlerTest {
 		@DisplayName("스킵: 경조사 알림 설정 OFF인 유저는 발송 제외")
 		void givenCeremonyNotificationOff_whenHandle_thenExcludeUser() {
 			// given
-			User ceremonyUser = mockUser("ceremonyUserId");
-			Ceremony ceremony = mockCelebrationSetAll(ceremonyUser);
-			User userOn = mockUser("userOnId");
-			User userOff = mockUser("userOffId");
+			Ceremony ceremony = celebrationSetAll();
+			User userOn = userWithId("userOnId");
+			User userOff = userWithId("userOffId");
 
 			given(ceremonyReader.findById("ceremonyId")).willReturn(Optional.of(ceremony));
 			given(userReader.findAllActive()).willReturn(List.of(userOn, userOff));
@@ -128,8 +126,8 @@ class CeremonyNotificationHandlerTest {
 			// when
 			handler.handle(new CeremonyNotificationEvent("ceremonyId"));
 
-			// then: userOff는 targets에서 제외 → saveLogs에 userOn만 포함된 리스트 전달
-			verify(notificationWriter).saveLogs(List.of(userOn), any());
+			// then: userOff는 targets에서 제외 → saveLogs에 userOn만 포함
+			verify(notificationWriter).saveLogs(eq(List.of(userOn)), any());
 		}
 
 		@Test
@@ -144,15 +142,14 @@ class CeremonyNotificationHandlerTest {
 		}
 
 		@Test
-		@DisplayName("성공: 조사(CONDOLENCE) 경사이면 푸시 타이틀이 '조사 소식'")
+		@DisplayName("성공: 조사(CONDOLENCE)이면 푸시 타이틀이 '조사 소식'")
 		void givenCondolenceCeremony_whenHandle_thenPushTitleIsCondolence() {
 			// given
-			User ceremonyUser = mockUser("ceremonyUserId");
-			Ceremony ceremony = mockCondolence(ceremonyUser);
-			List<User> targets = List.of(mockUser("userId"));
+			Ceremony ceremony = condolenceSetAll();
+			User target = userWithId("userId");
 
 			given(ceremonyReader.findById("ceremonyId")).willReturn(Optional.of(ceremony));
-			given(userReader.findAllActive()).willReturn(targets);
+			given(userReader.findAllActive()).willReturn(List.of(target));
 			given(notificationSettingReader.findSettingMapByUserIds(List.of("userId")))
 				.willReturn(Map.of("userId", settingMapAllOn()));
 			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
@@ -161,7 +158,7 @@ class CeremonyNotificationHandlerTest {
 			handler.handle(new CeremonyNotificationEvent("ceremonyId"));
 
 			// then
-			verify(notificationPushSender).sendToUsers(any(), org.mockito.ArgumentMatchers.eq("조사 소식"), any());
+			verify(notificationPushSender).sendToUsers(any(), eq("조사 소식"), any());
 		}
 	}
 
@@ -169,18 +166,20 @@ class CeremonyNotificationHandlerTest {
 	// 헬퍼
 	// ─────────────────────────────────────────────────
 
-	private User mockUser(String id) {
+	private User userWithId(String id) {
 		User user = mock(User.class);
 		given(user.getId()).willReturn(id);
-		given(user.getName()).willReturn("이름" + id);
 		return user;
 	}
 
-	/** isSetAll=true, 경사(CELEBRATION), 본인(ME) 기본 경조사 */
-	private Ceremony mockCelebrationSetAll(User user) {
+	/** isSetAll=true, 경사(CELEBRATION), 본인(ME) */
+	private Ceremony celebrationSetAll() {
+		User ceremonyUser = mock(User.class);
+		given(ceremonyUser.getName()).willReturn("홍길동");
+
 		Ceremony ceremony = mock(Ceremony.class);
 		given(ceremony.getId()).willReturn("ceremonyId");
-		given(ceremony.getUser()).willReturn(user);
+		given(ceremony.getUser()).willReturn(ceremonyUser);
 		given(ceremony.isSetAll()).willReturn(true);
 		given(ceremony.getCeremonyType()).willReturn(CeremonyType.CELEBRATION);
 		given(ceremony.getCeremonyCategory()).willReturn(CeremonyCategory.MARRIAGE);
@@ -192,26 +191,28 @@ class CeremonyNotificationHandlerTest {
 	}
 
 	/** isSetAll=false, 특정 입학년도 대상 */
-	private Ceremony mockCelebrationTargetYears(User user, Set<String> targetYears) {
-		Ceremony ceremony = mockCelebrationSetAll(user);
+	private Ceremony celebrationWithTargetYears(Set<String> targetYears) {
+		Ceremony ceremony = celebrationSetAll();
 		given(ceremony.isSetAll()).willReturn(false);
 		given(ceremony.getTargetAdmissionYears()).willReturn(targetYears);
 		return ceremony;
 	}
 
-	/** 조사(CONDOLENCE), isSetAll=true */
-	private Ceremony mockCondolence(User user) {
+	/** 조사(CONDOLENCE, FUNERAL), isSetAll=true */
+	private Ceremony condolenceSetAll() {
+		User ceremonyUser = mock(User.class);
+		given(ceremonyUser.getName()).willReturn("홍길동");
+
 		Ceremony ceremony = mock(Ceremony.class);
 		given(ceremony.getId()).willReturn("ceremonyId");
-		given(ceremony.getUser()).willReturn(user);
+		given(ceremony.getUser()).willReturn(ceremonyUser);
 		given(ceremony.isSetAll()).willReturn(true);
 		given(ceremony.getCeremonyType()).willReturn(CeremonyType.CONDOLENCE);
 		given(ceremony.getCeremonyCategory()).willReturn(CeremonyCategory.FUNERAL);
 		given(ceremony.getRelationType()).willReturn(RelationType.ME);
 		given(ceremony.getAddress()).willReturn("빈소 주소");
 		given(ceremony.getEndDate()).willReturn(LocalDate.of(2025, 5, 12));
-		given(ceremony.getStartDate()).willReturn(LocalDate.of(2025, 5, 10));
-		given(ceremony.getStartTime()).willReturn(null);
+		// FUNERAL 분기는 getStartDate()를 호출하지 않으므로 stub 생략
 		return ceremony;
 	}
 

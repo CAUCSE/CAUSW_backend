@@ -18,6 +18,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.v2.implementation.PostReader;
 import net.causw.app.main.domain.community.reaction.service.implementation.LikePostReader;
@@ -62,9 +63,14 @@ class LikePostNotificationHandlerTest {
 		@DisplayName("성공: 마일스톤 도달 시 알림 저장 및 푸시 발송")
 		void givenMilestoneCount_whenHandle_thenSendNotification(long likeCount) {
 			// given
-			User postWriter = mockUserWithId("postWriterId");
-			User liker = mockUserWithId("likerId");
-			Post post = mockPost(postWriter);
+			User postWriter = userWithId("postWriterId");
+			User liker = userWithId("likerId");
+			Post post = postWithWriter(postWriter);
+			// 성공 경로에서만 사용되는 stub
+			given(post.getId()).willReturn("postId");
+			Board board = mock(Board.class);
+			given(board.getId()).willReturn("boardId");
+			given(post.getBoard()).willReturn(board);
 
 			given(postReader.findById("postId")).willReturn(post);
 			given(userReader.findUserById("likerId")).willReturn(liker);
@@ -87,9 +93,10 @@ class LikePostNotificationHandlerTest {
 		@DisplayName("스킵: 마일스톤 미도달 시 알림 미발송")
 		void givenNonMilestoneCount_whenHandle_thenSkip(long likeCount) {
 			// given
-			User postWriter = mockUserWithId("postWriterId");
-			User liker = mockUserWithId("likerId");
-			Post post = mockPost(postWriter);
+			User postWriter = userWithId("postWriterId");
+			User liker = userWithId("likerId");
+			Post post = postWithWriter(postWriter);
+			given(post.getId()).willReturn("postId");
 
 			given(postReader.findById("postId")).willReturn(post);
 			given(userReader.findUserById("likerId")).willReturn(liker);
@@ -108,8 +115,8 @@ class LikePostNotificationHandlerTest {
 		@DisplayName("스킵: 게시글 작성자가 좋아요를 누른 경우 알림 미발송")
 		void givenPostWriterLiked_whenHandle_thenSkip() {
 			// given
-			User postWriter = mockUserWithId("userId");
-			Post post = mockPost(postWriter);
+			User postWriter = userWithId("userId");
+			Post post = postWithWriter(postWriter);
 
 			given(postReader.findById("postId")).willReturn(post);
 			given(userReader.findUserById("userId")).willReturn(postWriter);
@@ -125,9 +132,9 @@ class LikePostNotificationHandlerTest {
 		@DisplayName("스킵: 게시글 작성자가 좋아요 알림 설정 OFF면 알림 미발송")
 		void givenLikeNotificationDisabled_whenHandle_thenSkip() {
 			// given
-			User postWriter = mockUserWithId("postWriterId");
-			User liker = mockUserWithId("likerId");
-			Post post = mockPost(postWriter);
+			User postWriter = userWithId("postWriterId");
+			User liker = userWithId("likerId");
+			Post post = postWithWriter(postWriter);
 
 			given(postReader.findById("postId")).willReturn(post);
 			given(userReader.findUserById("likerId")).willReturn(liker);
@@ -145,9 +152,9 @@ class LikePostNotificationHandlerTest {
 		@DisplayName("스킵: 게시글 작성자가 좋아요 누른 유저를 차단한 경우 알림 미발송")
 		void givenPostWriterBlockedLiker_whenHandle_thenSkip() {
 			// given
-			User postWriter = mockUserWithId("postWriterId");
-			User liker = mockUserWithId("likerId");
-			Post post = mockPost(postWriter);
+			User postWriter = userWithId("postWriterId");
+			User liker = userWithId("likerId");
+			Post post = postWithWriter(postWriter);
 
 			given(postReader.findById("postId")).willReturn(post);
 			given(userReader.findUserById("likerId")).willReturn(liker);
@@ -166,19 +173,16 @@ class LikePostNotificationHandlerTest {
 	// 헬퍼
 	// ─────────────────────────────────────────────────
 
-	private User mockUserWithId(String id) {
+	private User userWithId(String id) {
 		User user = mock(User.class);
 		given(user.getId()).willReturn(id);
 		return user;
 	}
 
-	private Post mockPost(User writer) {
+	/** getWriter()만 stub */
+	private Post postWithWriter(User writer) {
 		Post post = mock(Post.class);
 		given(post.getWriter()).willReturn(writer);
-		given(post.getId()).willReturn("postId");
-		var board = mock(net.causw.app.main.domain.community.board.entity.Board.class);
-		given(board.getId()).willReturn("boardId");
-		given(post.getBoard()).willReturn(board);
 		return post;
 	}
 

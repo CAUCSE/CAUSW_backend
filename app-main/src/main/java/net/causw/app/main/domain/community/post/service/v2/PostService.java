@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.causw.app.main.domain.notification.notification.event.OfficialPostEvent;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,6 +60,7 @@ public class PostService {
 	private final FavoritePostReader favoritePostReader;
 	private final PostAttachImageWriter postAttachImageWriter;
 	private final BlockReader userBlockReader;
+	private final ApplicationEventPublisher eventPublisher;
 
 	/**
 	 * 게시글을 생성합니다. 게시글 내용과 첨부 이미지를 저장합니다.
@@ -85,6 +88,12 @@ public class PostService {
 		Post post = PostMapper.fromCreateCommand(command, writer, board, images);
 
 		Post savedPost = postWriter.save(post);
+
+		// 공식 공지글인 경우 알림 발송 이벤트
+		if (boardConfig.isNotice()) {
+			eventPublisher.publishEvent(new OfficialPostEvent(savedPost.getId(), savedPost.getBoard().getId()));
+		}
+
 		return PostMapper.toCreateResult(savedPost, images.stream().map(UuidFile::getFileUrl).toList());
 	}
 

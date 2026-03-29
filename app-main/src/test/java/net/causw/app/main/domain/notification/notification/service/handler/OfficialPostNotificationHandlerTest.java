@@ -60,15 +60,18 @@ class OfficialPostNotificationHandlerTest {
 		void givenNoticeAndVisibleBoard_whenHandle_thenSendToSubscribers() {
 			// given
 			Board board = mockBoard("boardId");
-			Post post = mockPost(board);
-			BoardConfig boardConfig = mockBoardConfig(true, BoardVisibility.VISIBLE, BoardReadScope.BOTH);
+			Post post = mockPost();
+			BoardConfig boardConfig = mockVisibleNoticeConfig(BoardReadScope.BOTH);
 			List<User> targets = List.of(mock(User.class), mock(User.class));
 
 			given(boardReader.getById("boardId")).willReturn(board);
 			given(postReader.findById("postId")).willReturn(post);
 			given(boardConfigReader.getByBoardId("boardId")).willReturn(boardConfig);
-			given(userBoardSubscribeReader.findNotificationTargets("boardId", BoardReadScope.BOTH))
-				.willReturn(targets);
+			given(userBoardSubscribeReader.findNotificationTargets("boardId", BoardReadScope.BOTH)).willReturn(targets);
+			// 성공 경로에서만 사용되는 stub
+			given(post.getContent()).willReturn("공지 내용입니다.");
+			given(board.getName()).willReturn("공지 게시판");
+			given(post.getId()).willReturn("postId");
 			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
 
 			// when
@@ -85,8 +88,9 @@ class OfficialPostNotificationHandlerTest {
 		void givenNotNotice_whenHandle_thenSkip() {
 			// given
 			Board board = mockBoard("boardId");
-			Post post = mockPost(board);
-			BoardConfig boardConfig = mockBoardConfig(false, BoardVisibility.VISIBLE, BoardReadScope.BOTH);
+			Post post = mockPost();
+			BoardConfig boardConfig = mock(BoardConfig.class);
+			given(boardConfig.isNotice()).willReturn(false);
 
 			given(boardReader.getById("boardId")).willReturn(board);
 			given(postReader.findById("postId")).willReturn(post);
@@ -105,8 +109,10 @@ class OfficialPostNotificationHandlerTest {
 		void givenHiddenBoard_whenHandle_thenSkip() {
 			// given
 			Board board = mockBoard("boardId");
-			Post post = mockPost(board);
-			BoardConfig boardConfig = mockBoardConfig(true, BoardVisibility.HIDDEN, BoardReadScope.BOTH);
+			Post post = mockPost();
+			BoardConfig boardConfig = mock(BoardConfig.class);
+			given(boardConfig.isNotice()).willReturn(true);
+			given(boardConfig.getVisibility()).willReturn(BoardVisibility.HIDDEN);
 
 			given(boardReader.getById("boardId")).willReturn(board);
 			given(postReader.findById("postId")).willReturn(post);
@@ -124,14 +130,18 @@ class OfficialPostNotificationHandlerTest {
 		void givenEmptyTargets_whenHandle_thenSaveNotificationOnly() {
 			// given
 			Board board = mockBoard("boardId");
-			Post post = mockPost(board);
-			BoardConfig boardConfig = mockBoardConfig(true, BoardVisibility.VISIBLE, BoardReadScope.ENROLLED);
+			Post post = mockPost();
+			BoardConfig boardConfig = mockVisibleNoticeConfig(BoardReadScope.ENROLLED);
 
 			given(boardReader.getById("boardId")).willReturn(board);
 			given(postReader.findById("postId")).willReturn(post);
 			given(boardConfigReader.getByBoardId("boardId")).willReturn(boardConfig);
 			given(userBoardSubscribeReader.findNotificationTargets("boardId", BoardReadScope.ENROLLED))
 				.willReturn(List.of());
+			// 성공 경로 stub
+			given(post.getContent()).willReturn("공지 내용입니다.");
+			given(board.getName()).willReturn("공지 게시판");
+			given(post.getId()).willReturn("postId");
 			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
 
 			// when
@@ -147,8 +157,8 @@ class OfficialPostNotificationHandlerTest {
 		void givenEnrolledReadScope_whenHandle_thenQueryWithEnrolledScope() {
 			// given
 			Board board = mockBoard("boardId");
-			Post post = mockPost(board);
-			BoardConfig boardConfig = mockBoardConfig(true, BoardVisibility.VISIBLE, BoardReadScope.ENROLLED);
+			Post post = mockPost();
+			BoardConfig boardConfig = mockVisibleNoticeConfig(BoardReadScope.ENROLLED);
 			List<User> targets = List.of(mock(User.class));
 
 			given(boardReader.getById("boardId")).willReturn(board);
@@ -156,6 +166,10 @@ class OfficialPostNotificationHandlerTest {
 			given(boardConfigReader.getByBoardId("boardId")).willReturn(boardConfig);
 			given(userBoardSubscribeReader.findNotificationTargets("boardId", BoardReadScope.ENROLLED))
 				.willReturn(targets);
+			// 성공 경로 stub
+			given(post.getContent()).willReturn("공지 내용입니다.");
+			given(board.getName()).willReturn("공지 게시판");
+			given(post.getId()).willReturn("postId");
 			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
 
 			// when
@@ -167,32 +181,29 @@ class OfficialPostNotificationHandlerTest {
 	}
 
 	// ─────────────────────────────────────────────────
-	// 헬퍼
+	// 헬퍼 — 항상 필요한 stub만 등록
 	// ─────────────────────────────────────────────────
 
+	/** board.getId()만 stub (항상 boardConfigReader.getByBoardId에서 사용) */
 	private Board mockBoard(String boardId) {
 		Board board = mock(Board.class);
 		given(board.getId()).willReturn(boardId);
-		given(board.getName()).willReturn("공지 게시판");
 		return board;
 	}
 
-	private Post mockPost(Board board) {
+	/** post.getWriter()만 stub (항상 writer 변수에 할당) */
+	private Post mockPost() {
 		Post post = mock(Post.class);
 		given(post.getWriter()).willReturn(mock(User.class));
-		given(post.getId()).willReturn("postId");
-		given(post.getBoard()).willReturn(board);
-		given(post.getContent()).willReturn("공지 내용입니다.");
 		return post;
 	}
 
-	private BoardConfig mockBoardConfig(boolean isNotice, BoardVisibility visibility, BoardReadScope readScope) {
+	/** isNotice=true, VISIBLE 조건 통과 후 readScope까지 필요한 config */
+	private BoardConfig mockVisibleNoticeConfig(BoardReadScope readScope) {
 		BoardConfig config = mock(BoardConfig.class);
-		given(config.isNotice()).willReturn(isNotice);
-		given(config.getVisibility()).willReturn(visibility);
-		if (isNotice && visibility == BoardVisibility.VISIBLE) {
-			given(config.getReadScope()).willReturn(readScope);
-		}
+		given(config.isNotice()).willReturn(true);
+		given(config.getVisibility()).willReturn(BoardVisibility.VISIBLE);
+		given(config.getReadScope()).willReturn(readScope);
 		return config;
 	}
 }

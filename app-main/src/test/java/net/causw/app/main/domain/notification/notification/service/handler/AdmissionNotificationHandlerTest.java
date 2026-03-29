@@ -1,6 +1,7 @@
 package net.causw.app.main.domain.notification.notification.service.handler;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.never;
 import static org.mockito.BDDMockito.verify;
@@ -57,9 +58,13 @@ class AdmissionNotificationHandlerTest {
 		@DisplayName("성공: 알림 설정 ON인 관리자에게 알림 발송")
 		void givenAdminsWithNotificationOn_whenHandleRequest_thenSendToAdmins() {
 			// given
-			User requester = mockUserWithId("requesterId", "홍길동", "20191234");
-			User admin1 = mockUserWithId("adminId1", "관리자1", null);
-			User admin2 = mockUserWithId("adminId2", "관리자2", null);
+			User requester = mock(User.class);
+			// 성공 경로에서 pushBody 포맷에 사용되는 stub
+			given(requester.getName()).willReturn("홍길동");
+			given(requester.getStudentId()).willReturn("20191234");
+
+			User admin1 = userWithId("adminId1");
+			User admin2 = userWithId("adminId2");
 			List<User> admins = List.of(admin1, admin2);
 
 			given(userReader.findUserById("requesterId")).willReturn(requester);
@@ -75,15 +80,15 @@ class AdmissionNotificationHandlerTest {
 
 			// then
 			verify(notificationWriter).save(any());
-			verify(notificationPushSender).sendToUser(admin1, any(), any());
-			verify(notificationPushSender).sendToUser(admin2, any(), any());
+			verify(notificationPushSender).sendToUser(eq(admin1), any(), any());
+			verify(notificationPushSender).sendToUser(eq(admin2), any(), any());
 		}
 
 		@Test
 		@DisplayName("스킵: 관리자 목록이 비어있으면 알림 미발송")
 		void givenNoAdmins_whenHandleRequest_thenSkip() {
-			// given
-			User requester = mockUserWithId("requesterId", "홍길동", "20191234");
+			// given — admins.isEmpty() 조기 리턴 전에 requester.getId()는 호출되지 않음
+			User requester = mock(User.class);
 			given(userReader.findUserById("requesterId")).willReturn(requester);
 			given(userReader.findAdminsByAcademicStatus(AcademicStatus.ENROLLED)).willReturn(List.of());
 
@@ -98,9 +103,12 @@ class AdmissionNotificationHandlerTest {
 		@DisplayName("스킵: 알림 설정 OFF인 관리자는 발송 제외")
 		void givenAdminWithNotificationOff_whenHandleRequest_thenExcludeAdmin() {
 			// given
-			User requester = mockUserWithId("requesterId", "홍길동", "20191234");
-			User adminOn = mockUserWithId("adminOnId", "관리자On", null);
-			User adminOff = mockUserWithId("adminOffId", "관리자Off", null);
+			User requester = mock(User.class);
+			given(requester.getName()).willReturn("홍길동");
+			given(requester.getStudentId()).willReturn("20191234");
+
+			User adminOn = userWithId("adminOnId");
+			User adminOff = userWithId("adminOffId");
 			List<User> admins = List.of(adminOn, adminOff);
 
 			given(userReader.findUserById("requesterId")).willReturn(requester);
@@ -115,8 +123,8 @@ class AdmissionNotificationHandlerTest {
 			handler.handleRequest(new AdmissionRequestedEvent("requesterId", AcademicStatus.ENROLLED));
 
 			// then
-			verify(notificationPushSender).sendToUser(adminOn, any(), any());
-			verify(notificationPushSender, never()).sendToUser(adminOff, any(), any());
+			verify(notificationPushSender).sendToUser(eq(adminOn), any(), any());
+			verify(notificationPushSender, never()).sendToUser(eq(adminOff), any(), any());
 		}
 	}
 
@@ -132,8 +140,8 @@ class AdmissionNotificationHandlerTest {
 		@DisplayName("성공: 알림 설정 ON이면 대상 유저에게 승인 알림 발송")
 		void givenNotificationOn_whenHandleAccepted_thenSendToUser() {
 			// given
-			User admin = mockUserWithId("adminId", "관리자", null);
-			User targetUser = mockUserWithId("targetUserId", "홍길동", "20191234");
+			User admin = mock(User.class);
+			User targetUser = userWithId("targetUserId");
 
 			given(userReader.findUserById("adminId")).willReturn(admin);
 			given(userReader.findUserById("targetUserId")).willReturn(targetUser);
@@ -153,8 +161,8 @@ class AdmissionNotificationHandlerTest {
 		@DisplayName("스킵: 대상 유저가 서비스 알림 설정 OFF면 알림 미발송")
 		void givenNotificationOff_whenHandleAccepted_thenSkip() {
 			// given
-			User admin = mockUserWithId("adminId", "관리자", null);
-			User targetUser = mockUserWithId("targetUserId", "홍길동", "20191234");
+			User admin = mock(User.class);
+			User targetUser = userWithId("targetUserId");
 
 			given(userReader.findUserById("adminId")).willReturn(admin);
 			given(userReader.findUserById("targetUserId")).willReturn(targetUser);
@@ -182,8 +190,8 @@ class AdmissionNotificationHandlerTest {
 		@DisplayName("성공: 알림 설정 ON이면 대상 유저에게 반려 알림 발송")
 		void givenNotificationOn_whenHandleRejected_thenSendToUser() {
 			// given
-			User admin = mockUserWithId("adminId", "관리자", null);
-			User targetUser = mockUserWithId("targetUserId", "홍길동", "20191234");
+			User admin = mock(User.class);
+			User targetUser = userWithId("targetUserId");
 
 			given(userReader.findUserById("adminId")).willReturn(admin);
 			given(userReader.findUserById("targetUserId")).willReturn(targetUser);
@@ -203,8 +211,8 @@ class AdmissionNotificationHandlerTest {
 		@DisplayName("스킵: 대상 유저가 서비스 알림 설정 OFF면 알림 미발송")
 		void givenNotificationOff_whenHandleRejected_thenSkip() {
 			// given
-			User admin = mockUserWithId("adminId", "관리자", null);
-			User targetUser = mockUserWithId("targetUserId", "홍길동", "20191234");
+			User admin = mock(User.class);
+			User targetUser = userWithId("targetUserId");
 
 			given(userReader.findUserById("adminId")).willReturn(admin);
 			given(userReader.findUserById("targetUserId")).willReturn(targetUser);
@@ -223,13 +231,10 @@ class AdmissionNotificationHandlerTest {
 	// 헬퍼
 	// ─────────────────────────────────────────────────
 
-	private User mockUserWithId(String id, String name, String studentId) {
+	/** getId()만 stub */
+	private User userWithId(String id) {
 		User user = mock(User.class);
 		given(user.getId()).willReturn(id);
-		if (name != null)
-			given(user.getName()).willReturn(name);
-		if (studentId != null)
-			given(user.getStudentId()).willReturn(studentId);
 		return user;
 	}
 
