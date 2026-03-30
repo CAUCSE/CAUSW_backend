@@ -18,7 +18,7 @@ public interface CommentRepository extends JpaRepository<Comment, String> {
 
 	@Query("SELECT c FROM Comment c " +
 		"LEFT JOIN FETCH c.writer w " +
-		"WHERE c.post.id = :postId AND c.isDeleted = false " +
+		"WHERE c.post.id = :postId " +
 		"ORDER BY c.createdAt ASC")
 	Page<Comment> findByPost_IdOrderByCreatedAt(@Param("postId") String postId, Pageable pageable);
 
