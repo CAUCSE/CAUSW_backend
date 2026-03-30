@@ -15,7 +15,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.SocialType;
-import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.auth.service.dto.CustomOAuth2User;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
@@ -73,7 +72,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 		response.addHeader(HttpHeaders.SET_COOKIE, envCookie.toString());
 
 		// 상태에 따른 리다이렉트 경로 결정
-		String targetUrl = determineTargetUrl(user.getState(), baseUrl);
+		String targetUrl = determineTargetUrl(baseUrl);
 
 		// 리다이렉트 실행
 		if (response.isCommitted()) {
@@ -135,14 +134,11 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 	/**
 	 * 사용자 상태에 따라 프론트 redirect URL을 생성합니다.
 	 *
-	 * @param state 사용자 상태
+	 * @param baseUrl 기본 URL
 	 * @return redirect 대상 URL
 	 */
-	private String determineTargetUrl(UserState state, String baseUrl) {
-		// GUEST 상태라면 추가 정보 입력 페이지로, 아니면 메인으로
-		boolean isFirstLogin = (state == UserState.GUEST);
+	private String determineTargetUrl(String baseUrl) {
 		return UriComponentsBuilder.fromUriString(baseUrl)
-			.queryParam("isFirstLogin", isFirstLogin)
 			.build().toUriString();
 	}
 }

@@ -2,12 +2,13 @@ package net.causw.app.main.domain.user.account.service.dto.result;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
+import net.causw.app.main.shared.dto.ProfileImageDto;
 
 public record UserMeResult(
 	String id,
 	String name,
 	String nickname,
-	String profileImageUrl,
+	ProfileImageDto profileImage,
 	Integer admissionYear,
 	String job) {
 
@@ -16,7 +17,7 @@ public record UserMeResult(
 			user.getId(),
 			user.getName(),
 			user.getNickname(),
-			user.getProfileUrl(),
+			ProfileImageDto.from(user),
 			user.getAdmissionYear(),
 			userInfo != null ? userInfo.getJob() : null);
 	}

@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.user.account.entity.user;
 
-import static net.causw.global.constant.StaticValue.NO_PHONE_NUMBER_MESSAGE;
+import static net.causw.global.constant.StaticValue.*;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -20,7 +20,9 @@ import net.causw.app.main.domain.user.account.api.v1.dto.GraduatedUserCommand;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserCreateRequestDto;
 import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.account.enums.user.GraduationType;
+import net.causw.app.main.domain.user.account.enums.user.ProfileImageType;
 import net.causw.app.main.domain.user.account.enums.user.Role;
+import net.causw.app.main.domain.user.account.enums.user.RoleGroup;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
 import net.causw.app.main.domain.user.auth.service.dto.OAuthAttributes;
@@ -112,7 +114,13 @@ public class User extends BaseEntity {
 	@BatchSize(size = 100)
 	private Set<Role> roles;
 
-	@OneToOne(cascade = {CascadeType.REMOVE, CascadeType.PERSIST}, mappedBy = "user", fetch = FetchType.LAZY)
+	@Enumerated(EnumType.STRING)
+	@Column(name = "profile_image_type", nullable = false)
+	@Builder.Default
+	private ProfileImageType profileImageType = ProfileImageType.MALE_1;
+
+	@OneToOne(cascade = {CascadeType.REMOVE,
+		CascadeType.PERSIST}, mappedBy = "user", fetch = FetchType.LAZY)
 	private UserProfileImage userProfileImage;
 
 	@Column(name = "state", nullable = false)
@@ -162,6 +170,7 @@ public class User extends BaseEntity {
 		this.studentId = null;
 		this.nickname = null;
 		this.major = null;
+		this.profileImageType = ProfileImageType.GHOST;
 		this.userProfileImage = null;
 		this.graduationYear = null;
 		this.graduationType = null;
@@ -170,6 +179,32 @@ public class User extends BaseEntity {
 
 	public boolean isDeleted() {
 		return this.deletedAt != null;
+	}
+
+	/**
+	 * 온보딩 플로우 분기 기준: 소셜 로그인 완료 여부
+	 */
+	public boolean isGuest() {
+		return this.state == UserState.GUEST;
+	}
+
+	/**
+	 * 온보딩 플로우 분기 기준: 필수 약관 동의 완료 여부
+	 */
+	public boolean isTermsAgreed() {
+		return this.agreements != null;
+	}
+
+	/**
+	 * 온보딩 플로우 분기 기준: 재학 인증 완료 여부
+	 */
+	public boolean isAcademicCertified() {
+		if (this.roles != null && this.roles.stream()
+			.anyMatch(RoleGroup.EXECUTIVES_AND_PROFESSOR.getRoles()::contains)) {
+			return true;
+		}
+
+		return this.academicStatus != null && this.academicStatus != AcademicStatus.UNDETERMINED;
 	}
 
 	public static User from(
@@ -350,6 +385,9 @@ public class User extends BaseEntity {
 	}
 
 	public String getProfileUrl() {
+		if (this.profileImageType != ProfileImageType.CUSTOM) {
+			return null;
+		}
 		if (this.userProfileImage == null || this.userProfileImage.getUuidFile() == null) {
 			return null;
 		}
@@ -358,6 +396,27 @@ public class User extends BaseEntity {
 
 	public void updateNickname(String nickname) {
 		this.nickname = nickname;
+	}
+
+	/**
+	 * 프로필 이미지를 기본 이미지(MALE_1, MALE_2, FEMALE_1, FEMALE_2)로 변경합니다.
+	 * 기존 커스텀 이미지(UserProfileImage)는 null로 초기화됩니다.
+	 */
+	public void updateProfileImageToDefault(ProfileImageType defaultType) {
+		if (defaultType == ProfileImageType.CUSTOM) {
+			throw new IllegalArgumentException("기본 이미지 타입만 허용됩니다.");
+		}
+		this.profileImageType = defaultType;
+		this.userProfileImage = null;
+	}
+
+	/**
+	 * 프로필 이미지를 커스텀 이미지로 변경합니다.
+	 * profileImageType을 CUSTOM으로 설정하고 UserProfileImage를 연결합니다.
+	 */
+	public void updateProfileImageToCustom(UserProfileImage newProfileImage) {
+		this.profileImageType = ProfileImageType.CUSTOM;
+		this.userProfileImage = newProfileImage;
 	}
 
 	// 신고 관련 메소드

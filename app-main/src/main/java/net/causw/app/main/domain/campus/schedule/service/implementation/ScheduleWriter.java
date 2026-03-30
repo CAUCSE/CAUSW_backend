@@ -19,6 +19,16 @@ public class ScheduleWriter {
 	private final PostReader postReader;
 
 	/**
+	 * Schedule Entity를 직접 저장합니다.
+	 *
+	 * @param schedule 저장할 Schedule Entity
+	 * @return 저장된 Schedule Entity
+	 */
+	public Schedule save(Schedule schedule) {
+		return scheduleRepository.save(schedule);
+	}
+
+	/**
 	 * 새로운 Schedule을 생성합니다.
 	 *
 	 * @param dto 일정 생성 DTO

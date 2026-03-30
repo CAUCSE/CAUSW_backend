@@ -25,11 +25,13 @@ import net.causw.app.main.domain.user.auth.api.v2.dto.request.EmailVerificationV
 import net.causw.app.main.domain.user.auth.api.v2.dto.request.PasswordResetSendRequest;
 import net.causw.app.main.domain.user.auth.api.v2.dto.request.PasswordResetVerifyRequest;
 import net.causw.app.main.domain.user.auth.api.v2.dto.request.SignOutRequest;
+import net.causw.app.main.domain.user.auth.api.v2.dto.request.SocialNativeLoginRequest;
 import net.causw.app.main.domain.user.auth.api.v2.dto.response.AuthResponse;
 import net.causw.app.main.domain.user.auth.api.v2.dto.response.EmailFindResponse;
 import net.causw.app.main.domain.user.auth.api.v2.dto.response.PasswordResetResponse;
 import net.causw.app.main.domain.user.auth.service.AuthService;
 import net.causw.app.main.domain.user.auth.service.EmailVerificationService;
+import net.causw.app.main.domain.user.auth.service.SocialNativeAuthService;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.dto.EmailFindResult;
@@ -43,7 +45,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-@Tag(name = "Auth Public v2", description = "회원가입/로그인 API")
+@Tag(name = "Auth Public v2", description = "회원가입/로그인 API v2")
 @RestController
 @RequestMapping("api/v2/auth")
 @RequiredArgsConstructor
@@ -52,6 +54,7 @@ public class AuthController {
 	private final AuthDtoMapper authDtoMapper;
 	private final EmailFindDtoMapper emailFindDtoMapper;
 	private final AuthService authService;
+	private final SocialNativeAuthService socialNativeAuthService;
 	private final EmailVerificationService emailVerificationService;
 
 	@Operation(summary = "이메일 인증 코드 발송 V2", description = "이메일로 인증 코드를 발송하고 DB에 인증 정보를 저장합니다. (유효 시간: 10분)")
@@ -96,18 +99,7 @@ public class AuthController {
 	@PostMapping("/login")
 	public ResponseEntity<ApiResponse<AuthResponse>> emailSignIn(@RequestBody @Valid EmailLoginRequest request) {
 		AuthResult dto = authService.loginEmailUser(request.email(), request.password());
-
-		// 쿠키로 리프레시토큰 반환
-		ResponseCookie cookie = ResponseCookie.from("refresh_token", dto.refreshToken())
-			.httpOnly(false)
-			.secure(true)
-			.path("/")
-			.maxAge(Duration.ofMillis(StaticValue.JWT_REFRESH_TOKEN_VALID_TIME))
-			.sameSite("None")
-			.build();
-
-		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
-			.body(ApiResponse.success(authDtoMapper.toAuthResponse(dto)));
+		return createAuthResponse(dto);
 	}
 
 	@Operation(summary = "이메일 찾기 V2", description = "이름과 연락처로 가입된 이메일(마스킹) 및 연동된 소셜 계정 정보를 조회합니다.")
@@ -125,18 +117,15 @@ public class AuthController {
 		// CSRF 방어 로직
 		AuthorizationExtractor.validate(authHeader);
 		AuthResult dto = authService.updateToken(refreshToken);
+		return createAuthResponse(dto);
+	}
 
-		// 쿠키로 리프레시토큰 반환
-		ResponseCookie cookie = ResponseCookie.from("refresh_token", dto.refreshToken())
-			.httpOnly(false)
-			.secure(true)
-			.path("/")
-			.maxAge(Duration.ofMillis(StaticValue.JWT_REFRESH_TOKEN_VALID_TIME))
-			.sameSite("None")
-			.build();
-
-		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
-			.body(ApiResponse.success(authDtoMapper.toAuthResponse(dto)));
+	@Operation(summary = "네이티브 소셜 로그인 V2", description = "provider 특성에 따라 access token 또는 OIDC id token 검증으로 소셜 로그인을 완료합니다.")
+	@PostMapping("/login/native")
+	public ResponseEntity<ApiResponse<AuthResponse>> loginNativeSocial(
+		@RequestBody @Valid SocialNativeLoginRequest request) {
+		AuthResult dto = socialNativeAuthService.login(request.provider(), request.accessToken(), request.idToken());
+		return createAuthResponse(dto);
 	}
 
 	@Operation(summary = "로그아웃 V2", description = "토큰을 만료시킵니다.")
@@ -160,5 +149,22 @@ public class AuthController {
 			.build();
 		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
 			.body(ApiResponse.success("로그아웃 성공"));
+	}
+
+	private ResponseEntity<ApiResponse<AuthResponse>> createAuthResponse(AuthResult dto) {
+		ResponseCookie cookie = buildRefreshTokenCookie(dto.refreshToken());
+		return ResponseEntity.ok()
+			.header(HttpHeaders.SET_COOKIE, cookie.toString())
+			.body(ApiResponse.success(authDtoMapper.toAuthResponse(dto)));
+	}
+
+	private ResponseCookie buildRefreshTokenCookie(String refreshToken) {
+		return ResponseCookie.from("refresh_token", refreshToken)
+			.httpOnly(false)
+			.secure(true)
+			.path("/")
+			.maxAge(Duration.ofMillis(StaticValue.JWT_REFRESH_TOKEN_VALID_TIME))
+			.sameSite("None")
+			.build();
 	}
 }

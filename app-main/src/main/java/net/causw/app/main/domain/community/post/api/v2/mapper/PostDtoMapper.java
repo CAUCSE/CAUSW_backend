@@ -44,6 +44,7 @@ public interface PostDtoMapper {
 	@Mapping(target = "viewer", source = "user")
 	PostListQuery toListQuery(PostListCondition condition, User user);
 
+	@Mapping(target = "posts", source = "posts")
 	PostListResponse toListResponse(PostListResult result);
 
 	@Mapping(target = "viewer", source = "user")
