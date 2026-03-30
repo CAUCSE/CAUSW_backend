@@ -57,6 +57,7 @@ public class CommentMapper {
 			content,
 			comment.getCreatedAt(),
 			comment.getUpdatedAt(),
+			comment.getIsDeleted(),
 			comment.getPost().getId(),
 			authorInfo,
 			meta.isLiked(),

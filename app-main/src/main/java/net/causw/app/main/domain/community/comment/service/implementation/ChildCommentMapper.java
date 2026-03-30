@@ -41,6 +41,7 @@ public class ChildCommentMapper {
 		return new ChildCommentResult(
 			childComment.getId(),
 			content,
+			childComment.getIsDeleted(),
 			childComment.getCreatedAt(),
 			childComment.getUpdatedAt(),
 			authorInfo,
