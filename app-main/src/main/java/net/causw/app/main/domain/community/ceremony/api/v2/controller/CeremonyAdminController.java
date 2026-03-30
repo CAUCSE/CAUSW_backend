@@ -60,8 +60,8 @@ public class CeremonyAdminController {
 	@GetMapping("/pending-count")
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "미처리 경조사수 조회", description = "대기 중인 경조사 수를 조회합니다.")
-	public ApiResponse<CeremonyPendingCountResponse> getPendingCeremonyCount() {
-		long count = ceremonyAdminService.getPendingCeremonyCount();
+	public ApiResponse<CeremonyPendingCountResponse> getPendingCount() {
+		long count = ceremonyAdminService.getPendingCount();
 		return ApiResponse.success(new CeremonyPendingCountResponse(count));
 	}
 

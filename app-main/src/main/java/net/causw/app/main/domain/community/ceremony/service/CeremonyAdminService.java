@@ -34,7 +34,7 @@ public class CeremonyAdminService {
 		return ceremonies.map(ceremonyMapper::toAdminListResult);
 	}
 
-	public long getPendingCeremonyCount() {
+	public long getPendingCount() {
 		return ceremonyReader.countByCeremonyState(CeremonyState.AWAIT);
 	}
 
