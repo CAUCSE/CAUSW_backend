@@ -1,7 +1,5 @@
 package net.causw.app.main.domain.user.account.service;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -96,13 +94,7 @@ public class UserAdminService {
 		return UserRoleUpdateResult.from(updatedUser);
 	}
 
-	@Transactional(readOnly = true)
-	public Long getDailySignupStats(LocalDate targetDate) {
-		LocalDateTime startOfDay = targetDate.atStartOfDay();
-		LocalDateTime endOfDay = targetDate.atTime(java.time.LocalTime.MAX);
 
-		return userReader.countByCreatedAtBetween(startOfDay, endOfDay);
-	}
 
 	// 대상 사용자가 추방 가능한 상태인지 확인
 	private void validateDroppableUser(User targetUser) {

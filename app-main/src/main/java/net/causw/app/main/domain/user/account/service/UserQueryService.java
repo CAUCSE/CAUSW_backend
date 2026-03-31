@@ -1,5 +1,8 @@
 package net.causw.app.main.domain.user.account.service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,5 +21,12 @@ public class UserQueryService {
 
 	public UserSearchListResult searchUsers(UserQueryCondition condition) {
 		return UserSearchListResult.from(userReader.searchByCondition(condition));
+	}
+
+	public Long getDailySignupStats(LocalDate targetDate) {
+		LocalDateTime startOfDay = targetDate.atStartOfDay();
+		LocalDateTime endOfDay = targetDate.atTime(java.time.LocalTime.MAX);
+
+		return userReader.countByCreatedAtBetween(startOfDay, endOfDay);
 	}
 }
