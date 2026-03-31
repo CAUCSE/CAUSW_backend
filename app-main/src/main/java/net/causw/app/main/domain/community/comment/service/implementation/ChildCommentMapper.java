@@ -32,11 +32,16 @@ public class ChildCommentMapper {
 	 * @return 변환된 {@code ChildCommentResult}
 	 */
 	public ChildCommentResult toResult(ChildComment childComment, User user, ChildCommentMeta data) {
+
+		// 삭제된 대댓글이면 익명처리
+		Boolean isAnonymous = childComment.getIsDeleted() ? Boolean.TRUE : childComment.getIsAnonymous();
+
 		CommentAuthorInfo authorInfo = CommentAuthorInfo.of(
-			childComment.getWriter(), childComment.getIsAnonymous(), user,
+			childComment.getWriter(), isAnonymous, user,
 			data.boardAdminIds(), data.isBlocked());
 
-		String content = data.isBlocked() ? null : childComment.getContent();
+		// 차단 대댓글이거나 삭제된 대댓글의 경우 content를 null로 처리
+		String content = (data.isBlocked() || childComment.getIsDeleted()) ? null : childComment.getContent();
 
 		return new ChildCommentResult(
 			childComment.getId(),
