@@ -3,11 +3,15 @@ package net.causw.app.main.domain.user.account.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+
+import java.util.List;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,7 +30,11 @@ import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthValidator;
+import net.causw.app.main.domain.user.terms.entity.Terms;
+import net.causw.app.main.domain.user.terms.service.implementation.TermsReader;
+import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementWriter;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
+import net.causw.app.main.shared.exception.errorcode.TermsErrorCode;
 
 @ExtendWith(MockitoExtension.class)
 class UserAccountServiceTest {
@@ -52,6 +60,12 @@ class UserAccountServiceTest {
 	@Mock
 	private PasswordEncoder passwordEncoder;
 
+	@Mock
+	private TermsReader termsReader;
+
+	@Mock
+	private UserTermsAgreementWriter userTermsAgreementWriter;
+
 	private final String userId = "test-uuid";
 	private final String nickname = "푸앙";
 	private final String phoneNumber = "01012345678";
@@ -71,9 +85,11 @@ class UserAccountServiceTest {
 		when(authTokenManager.issueTokens(guestUser, refreshToken)).thenReturn(tokenPair);
 		when(tokenPair.accessToken()).thenReturn("new-access-token");
 		when(tokenPair.refreshToken()).thenReturn("new-refresh-token");
+		when(termsReader.findLatestVersionPerType()).thenReturn(List.of(mock(Terms.class), mock(Terms.class)));
 
 		//when
-		AuthResult result = userAccountService.completeRegistration(userId, nickname, phoneNumber, name, refreshToken);
+		AuthResult result = userAccountService.completeRegistration(userId, nickname, phoneNumber, name, true, true,
+			refreshToken);
 
 		//then
 		assertNotNull(result);
@@ -85,7 +101,24 @@ class UserAccountServiceTest {
 		verify(userValidator).checkPhoneNumDuplication(phoneNumber);
 		verify(guestUser).submitRegistration(name, nickname, phoneNumber);
 		verify(userWriter).save(guestUser);
+		verify(userTermsAgreementWriter).saveAll(any());
 		verify(authTokenManager).issueTokens(guestUser, refreshToken);
+	}
+
+	@Test
+	@DisplayName("필수 약관 미동의 시 실패")
+	void completeRegistration_Fail_TermsNotAgreed() {
+		User guestUser = mock(User.class);
+		when(userReader.findUserById(userId)).thenReturn(guestUser);
+		when(guestUser.getState()).thenReturn(UserState.GUEST);
+
+		BaseRunTimeV2Exception ex = assertThrows(BaseRunTimeV2Exception.class,
+			() -> userAccountService.completeRegistration(userId, nickname, phoneNumber, name, false, true,
+				refreshToken));
+
+		assertEquals(TermsErrorCode.NOT_ALL_TERMS_AGREED.getMessage(), ex.getMessage());
+		verifyNoInteractions(termsReader);
+		verifyNoInteractions(userTermsAgreementWriter);
 	}
 
 	@Test
@@ -100,7 +133,8 @@ class UserAccountServiceTest {
 		//when
 		//then
 		assertThrows(BaseRunTimeV2Exception.class,
-			() -> userAccountService.completeRegistration(userId, nickname, phoneNumber, name, refreshToken));
+			() -> userAccountService.completeRegistration(userId, nickname, phoneNumber, name, true, true,
+				refreshToken));
 
 		//verify
 		verify(userReader).findUserById(userId);

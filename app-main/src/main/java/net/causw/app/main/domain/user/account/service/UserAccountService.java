@@ -1,5 +1,7 @@
 package net.causw.app.main.domain.user.account.service;
 
+import java.util.List;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,8 +19,13 @@ import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthValidator;
+import net.causw.app.main.domain.user.terms.entity.Terms;
+import net.causw.app.main.domain.user.terms.entity.UserTermsAgreement;
+import net.causw.app.main.domain.user.terms.service.implementation.TermsReader;
+import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementWriter;
 import net.causw.app.main.shared.dto.ProfileImageDto;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
+import net.causw.app.main.shared.exception.errorcode.TermsErrorCode;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -34,6 +41,8 @@ public class UserAccountService {
 	private final AuthTokenManager authTokenManager;
 	private final PasswordEncoder passwordEncoder;
 	private final UserInfoRepository userInfoRepository;
+	private final TermsReader termsReader;
+	private final UserTermsAgreementWriter userTermsAgreementWriter;
 
 	/**
 	 * 소셜 로그인을 통해 생성된 임시 유저(GUEST)의 추가 정보를 등록하고 회원가입 절차를 완료합니다.
@@ -45,24 +54,39 @@ public class UserAccountService {
 	 * @param userId       정보를 등록할 유저의 고유 식별자 (PK)
 	 * @param nickname     사용할 닉네임 (중복 검사 대상)
 	 * @param phoneNumber  사용할 전화번호 (중복 검사 대상)
-	 * @param name         사용자의 실명(이름)
-	 * @param refreshToken 갱신할 기존 리프레시 토큰
+	 * @param name                  사용자의 실명(이름)
+	 * @param serviceTermsAgreed    (필수) 서비스 이용약관 동의 여부
+	 * @param privacyTermsAgreed    (필수) 개인정보 수집·이용 동의 여부
+	 * @param refreshToken          갱신할 기존 리프레시 토큰
 	 * @return {@link AuthResult} 변경된 권한이 반영된 새로운 토큰 세트와 유저 정보
 	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
 	 * [INVALID_REGISTRATION_STATUS] 유저 상태가 GUEST가 아닌 경우,
-	 * 닉네임 또는 전화번호가 중복된 경우
+	 * 닉네임 또는 전화번호가 중복된 경우,
+	 * 필수 약관에 동의하지 않은 경우, 등록된 약관이 없는 경우
 	 */
 	@Transactional
 	public AuthResult completeRegistration(String userId, String nickname, String phoneNumber, String name,
-		String refreshToken) {
+		boolean serviceTermsAgreed, boolean privacyTermsAgreed, String refreshToken) {
 		User guestUser = userReader.findUserById(userId);
 		if (guestUser.getState() != UserState.GUEST) {
 			throw AuthErrorCode.INVALID_REGISTRATION_STATUS.toBaseException();
+		}
+		if (!serviceTermsAgreed || !privacyTermsAgreed) {
+			throw TermsErrorCode.NOT_ALL_TERMS_AGREED.toBaseException();
 		}
 		userValidator.checkNicknameDuplication(nickname);
 		userValidator.checkPhoneNumDuplication(phoneNumber);
 		guestUser.submitRegistration(name, nickname, phoneNumber);
 		User updatedUser = userWriter.save(guestUser);
+
+		// 타입별 최신 약관에 대한 동의 저장.
+		// 현재는 모든 약관이 필수지만, 선택 약관이 추가될 경우 동의 대상 조회/저장 로직을 수정 필요.
+		List<Terms> latestTerms = termsReader.findLatestVersionPerType();
+		List<UserTermsAgreement> newAgreements = latestTerms.stream()
+			.map(terms -> UserTermsAgreement.of(updatedUser, terms))
+			.toList();
+		userTermsAgreementWriter.saveAll(newAgreements);
+
 		AuthTokenPair tokens = authTokenManager.issueTokens(updatedUser, refreshToken);
 		return AuthResult.of(tokens.accessToken(), updatedUser.getName(), updatedUser.getEmail(),
 			ProfileImageDto.from(updatedUser),
