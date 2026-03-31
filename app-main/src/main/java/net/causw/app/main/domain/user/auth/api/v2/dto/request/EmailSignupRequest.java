@@ -17,5 +17,9 @@ public record EmailSignupRequest(
 
 	@NotBlank(message = "닉네임을 입력해 주세요.") @Schema(description = "닉네임", example = "푸앙") String nickname,
 
-	@NotBlank(message = "인증번호를 입력해 주세요.") @Schema(description = "인증확인한 인증번호", example = "1234AB") String emailVerificationCode) {
+	@NotBlank(message = "인증번호를 입력해 주세요.") @Schema(description = "인증확인한 인증번호", example = "1234AB") String emailVerificationCode,
+
+	@Schema(description = "(필수) 서비스 이용약관 동의 여부") boolean serviceTermsAgreed,
+
+	@Schema(description = "(필수) 개인정보 수집·이용 동의 여부") boolean privacyTermsAgreed) {
 }

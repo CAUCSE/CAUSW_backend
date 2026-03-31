@@ -8,7 +8,9 @@ public record UserRegisterDto(
 	String name,
 	String nickname,
 	String phoneNumber,
-	String emailVerificationCode) {
+	String emailVerificationCode,
+	boolean serviceTermsAgreed,
+	boolean privacyTermsAgreed) {
 	public static UserRegisterDto from(EmailSignupRequest request) {
 		return new UserRegisterDto(
 			request.email(),
@@ -16,6 +18,8 @@ public record UserRegisterDto(
 			request.name(),
 			request.nickname(),
 			request.phoneNumber(),
-			request.emailVerificationCode());
+			request.emailVerificationCode(),
+			request.serviceTermsAgreed(),
+			request.privacyTermsAgreed());
 	}
 }
