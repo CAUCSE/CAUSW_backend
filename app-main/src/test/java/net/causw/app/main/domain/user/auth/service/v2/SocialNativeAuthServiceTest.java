@@ -73,7 +73,7 @@ class SocialNativeAuthServiceTest {
 
 	@BeforeEach
 	void setUp() {
-		lenient().when(termsReader.findLatestRequiredVersionPerType()).thenReturn(List.of());
+		lenient().when(termsReader.findLatestPerTypeIfRequired()).thenReturn(List.of());
 		lenient().when(userTermsAgreementReader.hasAgreedToAllTerms(any(User.class), any(Set.class))).thenReturn(true);
 	}
 

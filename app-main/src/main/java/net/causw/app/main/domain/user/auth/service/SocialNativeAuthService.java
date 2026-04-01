@@ -283,7 +283,7 @@ public class SocialNativeAuthService {
 	}
 
 	private boolean hasAgreedToAllRequiredLatestTerms(User user) {
-		Set<String> requiredLatestTermIds = termsReader.findLatestRequiredVersionPerType().stream()
+		Set<String> requiredLatestTermIds = termsReader.findLatestPerTypeIfRequired().stream()
 			.map(Terms::getId)
 			.collect(Collectors.toSet());
 		return userTermsAgreementReader.hasAgreedToAllTerms(user, requiredLatestTermIds);

@@ -129,7 +129,7 @@ public class AuthServiceTest {
 		registerDto = new UserRegisterDto(EMAIL, PASSWORD, NAME, NICKNAME, PHONE, "ABCD12", true, true);
 		user = User.from(registerDto, ENCODED_PASSWORD);
 		authTokenPair = new AuthTokenPair(ACCESS_TOKEN, REFRESH_TOKEN);
-		lenient().when(termsReader.findLatestRequiredVersionPerType()).thenReturn(List.of());
+		lenient().when(termsReader.findLatestPerTypeIfRequired()).thenReturn(List.of());
 		lenient().when(userTermsAgreementReader.hasAgreedToAllTerms(any(User.class), any(Set.class))).thenReturn(true);
 	}
 
