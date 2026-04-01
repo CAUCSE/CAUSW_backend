@@ -27,4 +27,11 @@ public class TermsReader {
 	public List<Terms> findAllById(List<String> ids) {
 		return termsRepository.findAllById(ids);
 	}
+
+	/**
+	 * 타입별 최신 약관 중 필수인 항목만 조회합니다.
+	 */
+	public List<Terms> findLatestRequiredVersionPerType() {
+		return termsRepository.findLatestRequiredVersionPerType();
+	}
 }
