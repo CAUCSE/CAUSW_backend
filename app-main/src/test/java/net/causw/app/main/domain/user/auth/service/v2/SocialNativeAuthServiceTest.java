@@ -11,6 +11,7 @@ import static org.mockito.Mockito.verify;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -35,7 +36,8 @@ import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.dto.CustomOAuth2User;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
-import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementComplianceChecker;
+import net.causw.app.main.domain.user.terms.service.implementation.TermsReader;
+import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementReader;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 
@@ -64,11 +66,15 @@ class SocialNativeAuthServiceTest {
 	private AuthTokenManager authTokenManager;
 
 	@Mock
-	private UserTermsAgreementComplianceChecker userTermsAgreementComplianceChecker;
+	private TermsReader termsReader;
+
+	@Mock
+	private UserTermsAgreementReader userTermsAgreementReader;
 
 	@BeforeEach
 	void setUp() {
-		lenient().when(userTermsAgreementComplianceChecker.hasAgreedToAllRequiredLatestTerms(any(User.class))).thenReturn(true);
+		lenient().when(termsReader.findLatestRequiredVersionPerType()).thenReturn(List.of());
+		lenient().when(userTermsAgreementReader.hasAgreedToAllTerms(any(User.class), any(Set.class))).thenReturn(true);
 	}
 
 	@Test

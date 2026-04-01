@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -37,7 +39,7 @@ import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 import net.causw.app.main.domain.user.terms.entity.Terms;
 import net.causw.app.main.domain.user.terms.entity.UserTermsAgreement;
 import net.causw.app.main.domain.user.terms.service.implementation.TermsReader;
-import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementComplianceChecker;
+import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementReader;
 import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementWriter;
 
 import lombok.RequiredArgsConstructor;
@@ -66,7 +68,7 @@ public class AuthService {
 	private final PasswordGenerator passwordGenerator;
 	private final TermsReader termsReader;
 	private final UserTermsAgreementWriter userTermsAgreementWriter;
-	private final UserTermsAgreementComplianceChecker userTermsAgreementComplianceChecker;
+	private final UserTermsAgreementReader userTermsAgreementReader;
 
 	/**
 	 * 이름+이메일 기준으로 비밀번호 초기화용 인증코드를 발송합니다.
@@ -188,7 +190,7 @@ public class AuthService {
 		// 토큰 생성
 		AuthTokenPair tokens = authTokenManager.issueTokens(user, null);
 		// 최신 필수 약관 동의 여부 확인
-		boolean hasAllRequiredLatestTerms = userTermsAgreementComplianceChecker.hasAgreedToAllRequiredLatestTerms(user);
+		boolean hasAllRequiredLatestTerms = hasAgreedToAllRequiredLatestTerms(user);
 
 		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), ProfileImageDto.from(user),
 			tokens.refreshToken(), user.isGuest(), hasAllRequiredLatestTerms, user.isAcademicCertified(),
@@ -245,8 +247,8 @@ public class AuthService {
 		// 토큰 생성
 		AuthTokenPair tokens = authTokenManager.issueTokens(user, refreshToken);
 		// 최신 필수 약관 동의 여부 확인
-		boolean hasAllRequiredLatestTerms = userTermsAgreementComplianceChecker.hasAgreedToAllRequiredLatestTerms(user);
-		
+		boolean hasAllRequiredLatestTerms = hasAgreedToAllRequiredLatestTerms(user);
+
 		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), ProfileImageDto.from(user),
 			tokens.refreshToken(), user.isGuest(), hasAllRequiredLatestTerms, user.isAcademicCertified(),
 			user.getAcademicStatus());
@@ -271,6 +273,13 @@ public class AuthService {
 		}
 		// jwt 토큰 무효화
 		authTokenManager.invalidateTokens(tokens.accessToken(), tokens.refreshToken());
+	}
+
+	private boolean hasAgreedToAllRequiredLatestTerms(User user) {
+		Set<String> requiredLatestTermIds = termsReader.findLatestRequiredVersionPerType().stream()
+			.map(Terms::getId)
+			.collect(Collectors.toSet());
+		return userTermsAgreementReader.hasAgreedToAllTerms(user, requiredLatestTermIds);
 	}
 
 	private LocalDate toLocalDate(LocalDateTime dateTime) {

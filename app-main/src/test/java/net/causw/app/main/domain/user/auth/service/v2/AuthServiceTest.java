@@ -56,7 +56,7 @@ import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificat
 import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationWriter;
 import net.causw.app.main.domain.user.terms.entity.Terms;
 import net.causw.app.main.domain.user.terms.service.implementation.TermsReader;
-import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementComplianceChecker;
+import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementReader;
 import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementWriter;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
@@ -104,7 +104,7 @@ public class AuthServiceTest {
 	@Mock
 	private UserTermsAgreementWriter userTermsAgreementWriter;
 	@Mock
-	private UserTermsAgreementComplianceChecker userTermsAgreementComplianceChecker;
+	private UserTermsAgreementReader userTermsAgreementReader;
 
 	private static final String USER_ID = "user_id_123";
 	private static final String EMAIL = "test@example.com";
@@ -129,7 +129,8 @@ public class AuthServiceTest {
 		registerDto = new UserRegisterDto(EMAIL, PASSWORD, NAME, NICKNAME, PHONE, "ABCD12", true, true);
 		user = User.from(registerDto, ENCODED_PASSWORD);
 		authTokenPair = new AuthTokenPair(ACCESS_TOKEN, REFRESH_TOKEN);
-		lenient().when(userTermsAgreementComplianceChecker.hasAgreedToAllRequiredLatestTerms(any(User.class))).thenReturn(true);
+		lenient().when(termsReader.findLatestRequiredVersionPerType()).thenReturn(List.of());
+		lenient().when(userTermsAgreementReader.hasAgreedToAllTerms(any(User.class), any(Set.class))).thenReturn(true);
 	}
 
 	@Nested
@@ -168,7 +169,7 @@ public class AuthServiceTest {
 			verify(authValidator).validateRegisterInput(any(User.class), eq(PASSWORD), eq(PHONE));
 			verify(userWriter).save(any(User.class));
 			verify(userTermsAgreementWriter).saveAll(any());
-			verify(userTermsAgreementComplianceChecker, never()).hasAgreedToAllRequiredLatestTerms(any(User.class));
+			verify(userTermsAgreementReader, never()).hasAgreedToAllTerms(any(User.class), any(Set.class));
 		}
 
 		@Test
