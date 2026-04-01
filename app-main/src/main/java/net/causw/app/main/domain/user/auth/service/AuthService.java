@@ -32,15 +32,15 @@ import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificat
 import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationSender;
 import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationValidator;
 import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationWriter;
-import net.causw.app.main.shared.dto.ProfileImageDto;
-import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
-import net.causw.app.main.shared.exception.errorcode.TermsErrorCode;
-import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 import net.causw.app.main.domain.user.terms.entity.Terms;
 import net.causw.app.main.domain.user.terms.entity.UserTermsAgreement;
 import net.causw.app.main.domain.user.terms.service.implementation.TermsReader;
 import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementReader;
 import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementWriter;
+import net.causw.app.main.shared.dto.ProfileImageDto;
+import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
+import net.causw.app.main.shared.exception.errorcode.TermsErrorCode;
+import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -165,7 +165,7 @@ public class AuthService {
 			.map(terms -> UserTermsAgreement.of(savedUser, terms))
 			.toList();
 		userTermsAgreementWriter.saveAll(newAgreements);
-		
+
 		return AuthResult.of(null, savedUser.getName(), savedUser.getEmail(), ProfileImageDto.from(savedUser), null,
 			savedUser.isGuest(), true, savedUser.isAcademicCertified(), savedUser.getAcademicStatus());
 	}
