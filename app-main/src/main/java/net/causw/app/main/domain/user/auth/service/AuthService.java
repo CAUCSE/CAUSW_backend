@@ -37,6 +37,7 @@ import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 import net.causw.app.main.domain.user.terms.entity.Terms;
 import net.causw.app.main.domain.user.terms.entity.UserTermsAgreement;
 import net.causw.app.main.domain.user.terms.service.implementation.TermsReader;
+import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementComplianceChecker;
 import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementWriter;
 
 import lombok.RequiredArgsConstructor;
@@ -65,6 +66,7 @@ public class AuthService {
 	private final PasswordGenerator passwordGenerator;
 	private final TermsReader termsReader;
 	private final UserTermsAgreementWriter userTermsAgreementWriter;
+	private final UserTermsAgreementComplianceChecker userTermsAgreementComplianceChecker;
 
 	/**
 	 * 이름+이메일 기준으로 비밀번호 초기화용 인증코드를 발송합니다.
@@ -163,8 +165,7 @@ public class AuthService {
 		userTermsAgreementWriter.saveAll(newAgreements);
 		
 		return AuthResult.of(null, savedUser.getName(), savedUser.getEmail(), ProfileImageDto.from(savedUser), null,
-			savedUser.isGuest(), savedUser.isTermsAgreed(), savedUser.isAcademicCertified(),
-			savedUser.getAcademicStatus());
+			savedUser.isGuest(), true, savedUser.isAcademicCertified(), savedUser.getAcademicStatus());
 	}
 
 	/**
@@ -186,8 +187,11 @@ public class AuthService {
 		userValidator.validateUserStatusForLogin(user);
 		// 토큰 생성
 		AuthTokenPair tokens = authTokenManager.issueTokens(user, null);
+		// 최신 필수 약관 동의 여부 확인
+		boolean hasAllRequiredLatestTerms = userTermsAgreementComplianceChecker.hasAgreedToAllRequiredLatestTerms(user);
+
 		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), ProfileImageDto.from(user),
-			tokens.refreshToken(), user.isGuest(), user.isTermsAgreed(), user.isAcademicCertified(),
+			tokens.refreshToken(), user.isGuest(), hasAllRequiredLatestTerms, user.isAcademicCertified(),
 			user.getAcademicStatus());
 	}
 
@@ -240,8 +244,11 @@ public class AuthService {
 		userValidator.validateUser(user);
 		// 토큰 생성
 		AuthTokenPair tokens = authTokenManager.issueTokens(user, refreshToken);
+		// 최신 필수 약관 동의 여부 확인
+		boolean hasAllRequiredLatestTerms = userTermsAgreementComplianceChecker.hasAgreedToAllRequiredLatestTerms(user);
+		
 		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), ProfileImageDto.from(user),
-			tokens.refreshToken(), user.isGuest(), user.isTermsAgreed(), user.isAcademicCertified(),
+			tokens.refreshToken(), user.isGuest(), hasAllRequiredLatestTerms, user.isAcademicCertified(),
 			user.getAcademicStatus());
 	}
 

@@ -23,6 +23,7 @@ import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.dto.CustomOAuth2User;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
+import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementComplianceChecker;
 import net.causw.app.main.shared.dto.ProfileImageDto;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
@@ -54,6 +55,7 @@ public class SocialNativeAuthService {
 	private final CustomOAuth2UserService customOAuth2UserService;
 	private final JwtDecoderFactory<ClientRegistration> oidcIdTokenDecoderFactory;
 	private final AuthTokenManager authTokenManager;
+	private final UserTermsAgreementComplianceChecker userTermsAgreementComplianceChecker;
 
 	/**
 	 * provider 특성에 따라 access token 또는 id token 기반 네이티브 소셜 로그인을 수행합니다.
@@ -81,8 +83,11 @@ public class SocialNativeAuthService {
 
 			log.info("Native social login succeeded. provider={}, userId={}", registrationId, user.getId());
 
+			boolean hasAllRequiredLatestTerms =
+				userTermsAgreementComplianceChecker.hasAgreedToAllRequiredLatestTerms(user);
+				
 			return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), ProfileImageDto.from(user),
-				tokens.refreshToken(), user.isGuest(), user.isTermsAgreed(), user.isAcademicCertified(),
+				tokens.refreshToken(), user.isGuest(), hasAllRequiredLatestTerms, user.isAcademicCertified(),
 				user.getAcademicStatus());
 		} catch (BaseRunTimeV2Exception e) {
 			log.warn("Native social login failed. provider={}, code={}, message={}", registrationId,
