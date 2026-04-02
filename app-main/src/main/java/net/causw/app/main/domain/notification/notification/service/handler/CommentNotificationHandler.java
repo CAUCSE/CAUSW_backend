@@ -52,7 +52,7 @@ public class CommentNotificationHandler {
 	 */
 	@Async("asyncExecutor")
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	@Transactional
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void handleComment(PostCommentCreatedEvent event) {
 		// ID로 게시글·댓글 조회
 		Post post = postReader.findById(event.postId());

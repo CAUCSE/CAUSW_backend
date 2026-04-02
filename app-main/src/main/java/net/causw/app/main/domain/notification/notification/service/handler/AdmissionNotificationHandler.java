@@ -93,7 +93,7 @@ public class AdmissionNotificationHandler {
 	 */
 	@Async("asyncExecutor")
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	@Transactional
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void handleAccepted(AdmissionAcceptedEvent event) {
 		// ID로 관리자·대상 유저 조회
 		User admin = userReader.findUserById(event.adminId());
@@ -128,7 +128,7 @@ public class AdmissionNotificationHandler {
 	 */
 	@Async("asyncExecutor")
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	@Transactional
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void handleRejected(AdmissionRejectedEvent event) {
 		// ID로 관리자·대상 유저 조회
 		User admin = userReader.findUserById(event.adminId());
