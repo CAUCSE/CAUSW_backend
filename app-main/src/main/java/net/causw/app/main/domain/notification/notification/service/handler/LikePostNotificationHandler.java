@@ -2,6 +2,7 @@ package net.causw.app.main.domain.notification.notification.service.handler;
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -45,7 +46,7 @@ public class LikePostNotificationHandler {
 	 */
 	@Async("asyncExecutor")
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	@Transactional
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void handle(PostLikedEvent event) {
 		// ID로 게시글·좋아요 누른 유저 조회
 		Post post = postReader.findById(event.postId());
