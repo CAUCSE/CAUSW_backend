@@ -15,6 +15,7 @@ public class ChildCommentResponseDtoMapper {
 		return ChildCommentResponseDto.builder()
 			.id(result.id())
 			.content(result.content())
+			.isDeleted(result.isDeleted())
 			.createdAt(result.createdAt())
 			.updatedAt(result.updatedAt())
 			.writerName(author.writerName())
