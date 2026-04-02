@@ -12,11 +12,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.v2.implementation.PostReader;
 import net.causw.app.main.domain.community.post.service.v2.util.LikePostValidator;
 import net.causw.app.main.domain.community.reaction.service.implementation.LikePostWriter;
+import net.causw.app.main.domain.notification.notification.event.PostLikedEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 
 @ExtendWith(MockitoExtension.class)
@@ -33,6 +35,9 @@ public class LikePostServiceTest {
 
 	@Mock
 	LikePostValidator likePostValidator;
+
+	@Mock
+	ApplicationEventPublisher eventPublisher;
 
 	@Nested
 	@DisplayName("게시글 좋아요 테스트")
@@ -61,6 +66,7 @@ public class LikePostServiceTest {
 			// then
 			verify(likePostValidator, times(1)).validateForLike("user-id", "post-id");
 			verify(likePostWriter, times(1)).saveLikePost("user-id", post);
+			verify(eventPublisher, times(1)).publishEvent(any(PostLikedEvent.class));
 		}
 
 		@DisplayName("이미 좋아요를 누른 경우 예외 발생")

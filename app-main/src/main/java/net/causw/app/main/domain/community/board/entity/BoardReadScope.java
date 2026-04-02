@@ -23,6 +23,24 @@ public enum BoardReadScope {
 	private final String description;
 
 	/**
+	 * 이 읽기 범위에 해당하는 학적 상태 목록 반환.
+	 * <p>빈 리스트는 모든 학적 상태를 허용함({@code BOTH})을 의미합니다.
+	 *
+	 * @return 해당 읽기 범위에 접근 가능한 학적 상태 목록
+	 */
+	public List<AcademicStatus> getTargetAcademicStatuses() {
+		return switch (this) {
+			case ENROLLED -> List.of(
+				AcademicStatus.ENROLLED,
+				AcademicStatus.LEAVE_OF_ABSENCE,
+				AcademicStatus.SUSPEND,
+				AcademicStatus.PROFESSOR);
+			case GRADUATED -> List.of(AcademicStatus.GRADUATED);
+			case BOTH -> List.of(); // 빈 리스트 = 모든 학적 허용
+		};
+	}
+
+	/**
 	 * 사용자의 학적 상태에 따른 읽기 범위 리스트 반환
 	 *
 	 * @param academicStatus 사용자의 학적 상태

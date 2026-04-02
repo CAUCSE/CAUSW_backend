@@ -14,7 +14,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import net.causw.app.main.domain.notification.notification.api.v2.dto.response.NotificationCountResponseDto;
 import net.causw.app.main.domain.notification.notification.api.v2.dto.response.NotificationResponseDto;
+import net.causw.app.main.domain.notification.notification.api.v2.mapper.NotificationDtoMapper;
 import net.causw.app.main.domain.notification.notification.service.NotificationLogService;
+import net.causw.app.main.domain.notification.notification.service.dto.NotificationLogResult;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 
@@ -28,6 +30,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v2/notifications/log")
 public class NotificationLogController {
 	private final NotificationLogService notificationLogService;
+	private final NotificationDtoMapper notificationDtoMapper;
 
 	@GetMapping
 	@Operation(summary = "유저의 최신 알림 리스트 조회", description = "최근 7일의 알림을 리스트로 조회합니다. 알림의 isRead는 읽음 여부입니다. targetId는 게시글, 댓글 등의 id이고, targetParantId는 게시판의 id입니다.")
@@ -36,7 +39,10 @@ public class NotificationLogController {
 		@RequestParam(name = "isRead") boolean isRead) {
 
 		List<NotificationResponseDto> response = notificationLogService
-			.getNotificationList(userDetails.getUser().getId(), isRead);
+			.getNotificationList(userDetails.getUser().getId(), isRead)
+			.stream()
+			.map(notificationDtoMapper::toResponse)
+			.toList();
 
 		return ApiResponse.success(response);
 	}
@@ -45,7 +51,8 @@ public class NotificationLogController {
 	@Operation(summary = "유저에게 온 최신 알림 조회(없을 시 null 반환)", description = "유저의 최신 알림을 조회합니다. 해당 api는 홈 화면에서 읽지 않은 최신 알림 1개를 표시할 때 사용됩니다.")
 	public ApiResponse<NotificationResponseDto> getNotificationTop1(
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		NotificationResponseDto response = notificationLogService.getLatestUnread(userDetails.getUser().getId());
+		NotificationLogResult result = notificationLogService.getLatestUnread(userDetails.getUser().getId());
+		NotificationResponseDto response = result != null ? notificationDtoMapper.toResponse(result) : null;
 
 		return ApiResponse.success(response);
 	}
@@ -54,8 +61,8 @@ public class NotificationLogController {
 	@Operation(summary = "유저의 읽지 않은 최신 알림 총 개수 반환", description = "유저의 최근 7일의 읽지 않은 알림 개수를 반환합니다. 최대 10개까지 카운팅합니다, 10개부터는 9+로 표시하는 것을 기준으로 되어있습니다.")
 	public ApiResponse<NotificationCountResponseDto> getNotificationLogCount(
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		NotificationCountResponseDto response = notificationLogService
-			.getNotificationLogCount(userDetails.getUser().getId());
+		NotificationCountResponseDto response = notificationDtoMapper.toCountResponse(
+			notificationLogService.getNotificationLogCount(userDetails.getUser().getId()));
 
 		return ApiResponse.success(response);
 	}

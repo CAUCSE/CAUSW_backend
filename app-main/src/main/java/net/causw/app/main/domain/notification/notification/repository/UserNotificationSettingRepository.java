@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.notification.notification.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,4 +16,6 @@ public interface UserNotificationSettingRepository extends JpaRepository<UserNot
 	List<UserNotificationSetting> findAllByUserId(String userId);
 
 	Optional<UserNotificationSetting> findByUserIdAndSettingKey(String userId, UserNotificationSettingKey settingKey);
+
+	List<UserNotificationSetting> findAllByUserIdIn(Collection<String> userIds);
 }
