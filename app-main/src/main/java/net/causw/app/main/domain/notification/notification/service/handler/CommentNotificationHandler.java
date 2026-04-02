@@ -2,6 +2,7 @@ package net.causw.app.main.domain.notification.notification.service.handler;
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -110,7 +111,7 @@ public class CommentNotificationHandler {
 	 */
 	@Async("asyncExecutor")
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	@Transactional
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void handleChildComment(CommentChildCommentCreatedEvent event) {
 		// ID로 댓글·대댓글 조회
 		Comment comment = commentReader.getComment(event.commentId());
