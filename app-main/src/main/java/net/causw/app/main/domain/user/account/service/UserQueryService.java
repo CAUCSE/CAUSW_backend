@@ -1,5 +1,7 @@
 package net.causw.app.main.domain.user.account.service;
 
+import static java.time.LocalTime.MAX;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -25,7 +27,7 @@ public class UserQueryService {
 
 	public Long getDailySignupStats(LocalDate targetDate) {
 		LocalDateTime startOfDay = targetDate.atStartOfDay();
-		LocalDateTime endOfDay = targetDate.atTime(java.time.LocalTime.MAX);
+		LocalDateTime endOfDay = targetDate.atTime(MAX);
 
 		return userReader.countByCreatedAtBetween(startOfDay, endOfDay);
 	}
