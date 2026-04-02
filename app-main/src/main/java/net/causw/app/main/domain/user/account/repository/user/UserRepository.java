@@ -110,4 +110,6 @@ public interface UserRepository extends JpaRepository<User, String> {
 	List<User> findByRoleAndAcademicStatusAndState(@Param("role") Role role,
 		@Param("academicStatus") AcademicStatus academicStatus,
 		@Param("state") UserState state);
+
+	Long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 }

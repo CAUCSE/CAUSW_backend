@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.user.account.service.implementation;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -153,6 +154,10 @@ public class UserReader {
 
 	public Optional<User> findByEmailAndNameOptional(String email, String name) {
 		return userRepository.findByEmailAndName(email, name);
+	}
+
+	public Long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end) {
+		return userRepository.countByCreatedAtBetween(start, end);
 	}
 
 	private String normalizeKeyword(String keyword) {
