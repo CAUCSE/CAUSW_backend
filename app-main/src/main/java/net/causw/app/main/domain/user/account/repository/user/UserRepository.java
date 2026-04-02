@@ -105,4 +105,6 @@ public interface UserRepository extends JpaRepository<User, String> {
 	List<String> findAllIds();
 
 	Optional<User> findByIdAndRolesContaining(String id, Role role);
+
+	Long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 }
