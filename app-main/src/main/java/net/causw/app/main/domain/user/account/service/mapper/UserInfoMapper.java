@@ -1,5 +1,8 @@
 package net.causw.app.main.domain.user.account.service.mapper;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -28,7 +31,7 @@ public interface UserInfoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "email", source = "user.email")
 	@Mapping(target = "phoneNumber", source = ".", qualifiedByName = "mapPhoneNumber")
 	@Mapping(target = "isPhoneNumberVisible", source = "phoneNumberVisible")
-	@Mapping(target = "socialLinks", source = "socialLinks")
+	@Mapping(target = "socialLinks", source = "socialLinks", qualifiedByName = "sortSocialLinksByDomain")
 	@Mapping(target = "userTechStack", source = "userTechStack", qualifiedByName = "sortStringsAsc")
 	@Mapping(target = "userCareer", source = "userCareer")
 	@Mapping(target = "userProject", source = "userProject")
@@ -89,5 +92,33 @@ public interface UserInfoMapper extends UuidFileToUrlDtoMapper {
 			.filter(s -> s != null && !s.isBlank())
 			.sorted(String.CASE_INSENSITIVE_ORDER)
 			.toList();
+	}
+
+	@Named("sortSocialLinksByDomain")
+	static List<String> sortSocialLinksByDomain(List<String> socialLinks) {
+		if (socialLinks == null || socialLinks.isEmpty())
+			return List.of();
+
+		// 도메인으로 우선 정렬, 같은 도메인이면 전체 URL로 2차 정렬
+		Comparator<String> byDomainThenFullUrl = Comparator
+			.comparing(UserInfoMapper::extractSortDomainKey, String.CASE_INSENSITIVE_ORDER)
+			.thenComparing(String.CASE_INSENSITIVE_ORDER);
+
+		return socialLinks.stream()
+			.filter(s -> s != null && !s.isBlank())
+			.sorted(byDomainThenFullUrl)
+			.toList();
+	}
+
+	private static String extractSortDomainKey(String url) {
+		try {
+			String host = new URI(url).getHost();
+			if (host == null || host.isBlank()) {
+				return url;
+			}
+			return host.startsWith("www.") ? host.substring(4) : host;
+		} catch (URISyntaxException e) {
+			return url;
+		}
 	}
 }
