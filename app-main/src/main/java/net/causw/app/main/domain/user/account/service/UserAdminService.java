@@ -94,8 +94,6 @@ public class UserAdminService {
 		return UserRoleUpdateResult.from(updatedUser);
 	}
 
-
-
 	// 대상 사용자가 추방 가능한 상태인지 확인
 	private void validateDroppableUser(User targetUser) {
 		if (!targetUser.isDroppable()) {
