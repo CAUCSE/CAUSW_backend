@@ -15,8 +15,15 @@ import jakarta.servlet.http.HttpServletRequest;
 @Component
 public class AppleOAuth2AuthorizationRequestResolver implements OAuth2AuthorizationRequestResolver {
 	private static final String APPLE_REGISTRATION_ID = "apple";
+	private static final String GOOGLE_REGISTRATION_ID = "google";
 	private static final String RESPONSE_MODE_PARAMETER_NAME = "response_mode";
 	private static final String RESPONSE_MODE_FORM_POST = "form_post";
+	private static final String ACCESS_TYPE_PARAMETER_NAME = "access_type";
+	private static final String ACCESS_TYPE_OFFLINE = "offline";
+	private static final String PROMPT_PARAMETER_NAME = "prompt";
+	private static final String PROMPT_CONSENT = "consent";
+	private static final String INCLUDE_GRANTED_SCOPES_PARAMETER_NAME = "include_granted_scopes";
+	private static final String INCLUDE_GRANTED_SCOPES_TRUE = "true";
 	private static final String DEFAULT_AUTHORIZATION_REQUEST_BASE_URI = "/oauth2/authorization";
 
 	private final OAuth2AuthorizationRequestResolver delegate;
@@ -43,12 +50,19 @@ public class AppleOAuth2AuthorizationRequestResolver implements OAuth2Authorizat
 		}
 
 		String registrationId = authorizationRequest.getAttribute(OAuth2ParameterNames.REGISTRATION_ID);
-		if (!APPLE_REGISTRATION_ID.equalsIgnoreCase(registrationId)) {
+		if (registrationId == null || registrationId.isBlank()) {
 			return authorizationRequest;
 		}
 
 		Map<String, Object> additionalParameters = new LinkedHashMap<>(authorizationRequest.getAdditionalParameters());
-		additionalParameters.put(RESPONSE_MODE_PARAMETER_NAME, RESPONSE_MODE_FORM_POST);
+		if (APPLE_REGISTRATION_ID.equalsIgnoreCase(registrationId)) {
+			additionalParameters.put(RESPONSE_MODE_PARAMETER_NAME, RESPONSE_MODE_FORM_POST);
+		}
+		if (GOOGLE_REGISTRATION_ID.equalsIgnoreCase(registrationId)) {
+			additionalParameters.put(ACCESS_TYPE_PARAMETER_NAME, ACCESS_TYPE_OFFLINE);
+			additionalParameters.put(PROMPT_PARAMETER_NAME, PROMPT_CONSENT);
+			additionalParameters.put(INCLUDE_GRANTED_SCOPES_PARAMETER_NAME, INCLUDE_GRANTED_SCOPES_TRUE);
+		}
 
 		return OAuth2AuthorizationRequest.from(authorizationRequest)
 			.additionalParameters(additionalParameters)

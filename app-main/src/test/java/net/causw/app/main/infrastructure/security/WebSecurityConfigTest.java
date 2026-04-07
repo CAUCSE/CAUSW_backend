@@ -42,6 +42,7 @@ import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.auth.handler.OAuth2FailureHandler;
 import net.causw.app.main.domain.user.auth.handler.OAuth2SuccessHandler;
 import net.causw.app.main.domain.user.auth.service.CustomOAuth2UserService;
+import net.causw.app.main.domain.user.auth.service.implementation.OAuth2RefreshTokenCaptureClient;
 import net.causw.app.main.domain.user.auth.service.v1.SecurityService;
 import net.causw.app.main.util.DummyController;
 import net.causw.app.main.util.WithMockCustomUser;
@@ -66,6 +67,8 @@ public class WebSecurityConfigTest {
 	private OAuth2SuccessHandler oAuth2SuccessHandler;
 	@MockBean
 	private OAuth2FailureHandler oAuth2FailureHandler;
+	@MockBean
+	private OAuth2RefreshTokenCaptureClient oAuth2RefreshTokenCaptureClient;
 	@MockBean
 	private ClientRegistrationRepository clientRegistrationRepository;
 

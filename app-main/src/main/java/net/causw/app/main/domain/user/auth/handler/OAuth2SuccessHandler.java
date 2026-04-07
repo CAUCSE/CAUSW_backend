@@ -7,10 +7,12 @@ import java.util.Optional;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
@@ -18,6 +20,8 @@ import net.causw.app.main.domain.user.account.enums.user.SocialType;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.auth.service.dto.CustomOAuth2User;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
+import net.causw.app.main.domain.user.auth.service.implementation.OAuth2RefreshTokenCaptureClient;
+import net.causw.app.main.domain.user.auth.service.implementation.SocialAccountOauthRefreshStore;
 import net.causw.app.main.domain.user.auth.util.OAuthRedirectResolver;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import net.causw.global.constant.StaticValue;
@@ -39,6 +43,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 	private final AuthTokenManager authTokenManager;
 	private final UserReader userReader;
 	private final OAuthRedirectResolver oAuthRedirectResolver;
+	private final SocialAccountOauthRefreshStore socialAccountOauthRefreshStore;
 
 	/**
 	 * 소셜 로그인 성공 시 호출됩니다.
@@ -55,6 +60,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
 		Authentication authentication) throws IOException {
 		User user = resolveAuthenticatedUser(authentication);
+		saveProviderOAuthRefreshTokenIfPresent(request, authentication, user);
 
 		// 리프레시토큰 생성 및 쿠키 저장
 		String refreshToken = authTokenManager.createRefreshToken(user.getId());
@@ -89,6 +95,23 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 	 * @param authentication 인증 컨텍스트
 	 * @return 로그인 대상 사용자 엔티티
 	 */
+	private void saveProviderOAuthRefreshTokenIfPresent(HttpServletRequest request, Authentication authentication,
+		User user) {
+		if (!(authentication instanceof OAuth2AuthenticationToken oauth2Token)) {
+			return;
+		}
+		String regId = oauth2Token.getAuthorizedClientRegistrationId();
+		if (!"google".equalsIgnoreCase(regId) && !"apple".equalsIgnoreCase(regId)) {
+			return;
+		}
+		String refresh = (String)request.getAttribute(OAuth2RefreshTokenCaptureClient.REQUEST_ATTR_REFRESH_TOKEN);
+		if (!StringUtils.hasText(refresh)) {
+			return;
+		}
+		SocialType type = SocialType.from(regId);
+		socialAccountOauthRefreshStore.saveEncryptedRefreshToken(user.getId(), type, refresh);
+	}
+
 	private User resolveAuthenticatedUser(Authentication authentication) {
 		Object principal = authentication.getPrincipal();
 

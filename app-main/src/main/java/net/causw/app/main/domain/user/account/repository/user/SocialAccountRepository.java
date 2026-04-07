@@ -17,6 +17,8 @@ public interface SocialAccountRepository extends JpaRepository<SocialAccount, St
 	@EntityGraph(attributePaths = {"user"})
 	Optional<SocialAccount> findBySocialIdAndSocialType(String socialId, SocialType socialType);
 
+	Optional<SocialAccount> findByUser_IdAndSocialType(String userId, SocialType socialType);
+
 	Boolean existsByUserAndSocialType(User user, SocialType socialType);
 
 	List<SocialAccount> findAllByUserId(String userId);
