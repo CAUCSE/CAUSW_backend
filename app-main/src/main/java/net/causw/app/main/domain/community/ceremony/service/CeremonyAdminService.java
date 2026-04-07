@@ -36,6 +36,10 @@ public class CeremonyAdminService {
 		return ceremonies.map(ceremonyMapper::toAdminListResult);
 	}
 
+	public long getPendingCount() {
+		return ceremonyReader.countAwaitCeremony();
+	}
+
 	public CeremonyDetailResult getCeremonyDetail(String ceremonyId) {
 		Ceremony ceremony = ceremonyReader.findById(ceremonyId)
 			.orElseThrow(CeremonyErrorCode.CEREMONY_NOT_FOUND::toBaseException);
