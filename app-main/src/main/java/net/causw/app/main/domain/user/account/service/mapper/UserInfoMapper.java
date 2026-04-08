@@ -106,13 +106,15 @@ public interface UserInfoMapper extends UuidFileToUrlDtoMapper {
 
 		return socialLinks.stream()
 			.filter(s -> s != null && !s.isBlank())
+			.map(String::trim)
 			.sorted(byDomainThenFullUrl)
 			.toList();
 	}
 
 	private static String extractSortDomainKey(String url) {
 		try {
-			String host = new URI(url).getHost();
+			String urlToParse = (url.contains("://") || url.startsWith("//")) ? url : "https://" + url;
+			String host = new URI(urlToParse).getHost();
 			if (host == null || host.isBlank()) {
 				return url;
 			}
