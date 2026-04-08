@@ -52,13 +52,13 @@ public class PostImageManager {
 		List<MultipartFile> imageFiles,
 		List<ImageCreateMeta> imageMetas) {
 
-		List<UuidFile> uploadedFiles = uploadFiles(imageFiles);
-		if (uploadedFiles.isEmpty()) {
+		int fileCount = (imageFiles != null) ? imageFiles.size() : 0;
+		if (fileCount == 0) {
 			return List.of();
 		}
+		PostValidator.validateCreateImageMetas(imageMetas, fileCount);
 
-		// 이미지 메타데이터 검증
-		PostValidator.validateCreateImageMetas(imageMetas, uploadedFiles.size());
+		List<UuidFile> uploadedFiles = uploadFiles(imageFiles);
 
 		List<PostAttachImage> result = new ArrayList<>();
 
