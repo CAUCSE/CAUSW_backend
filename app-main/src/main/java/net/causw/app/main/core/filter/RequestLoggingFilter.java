@@ -48,25 +48,25 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
 		// 응답 상태 코드를 가로채기 위해 response 래핑
 		StatusCaptureWrapper wrappedResponse = new StatusCaptureWrapper(response);
 
-		// traceId: 같은 요청에 속한 로그를 묶어서 추적하기 위한 식별자
-		// 형식: (현재 시각 끝 5자리)-(요청 순번 끝 4자리), 예) 23456-0001
-		String traceId = String.format("%d-%04d",
-			System.currentTimeMillis() % 100000,
-			Math.abs(requestId % 10000));
-		MDC.put("traceId", traceId);
-
 		String requestURI = request.getRequestURI();
 		String method = request.getMethod();
-		MDC.put("path", requestURI);
-		MDC.put("httpMethod", method);
-		MDC.put("remoteIP", getClientIp(request));
-
-		// 인증된 사용자인 경우에만 userId를 MDC에 추가
-		String userId = getUserId();
-		if (userId != null)
-			MDC.put("userId", userId);
 
 		try {
+			// traceId: 같은 요청에 속한 로그를 묶어서 추적하기 위한 식별자
+			// 형식: (현재 시각 끝 5자리)-(요청 순번 끝 4자리), 예) 23456-0001
+			String traceId = String.format("%d-%04d",
+				start % 100000,
+				Math.abs(requestId % 10000));
+			MDC.put("traceId", traceId);
+			MDC.put("path", requestURI);
+			MDC.put("httpMethod", method);
+			MDC.put("remoteIP", getClientIp(request));
+
+			// 인증된 사용자인 경우에만 userId를 MDC에 추가
+			String userId = getUserId();
+			if (userId != null)
+				MDC.put("userId", userId);
+
 			filterChain.doFilter(request, wrappedResponse);
 		} finally {
 			// 예외 발생 여부와 관계없이 항상 로그를 남기고 MDC를 초기화
