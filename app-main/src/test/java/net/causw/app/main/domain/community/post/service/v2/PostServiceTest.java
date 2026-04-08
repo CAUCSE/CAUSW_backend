@@ -189,7 +189,7 @@ public class PostServiceTest {
 
 			PostAttachImage mockAttachImage = PostAttachImage.of(null, mockUuidFile, 0, true);
 
-			Post mockPost = Post.of(null, "테스트 게시글 내용", writer, false, board, List.of(mockUuidFile));
+			Post mockPost = Post.of(null, "테스트 게시글 내용", writer, false, board, List.of());
 			ReflectionTestUtils.setField(mockPost, "id", "post-id");
 			ReflectionTestUtils.setField(mockPost, "createdAt", LocalDateTime.now());
 			ReflectionTestUtils.setField(mockPost, "updatedAt", LocalDateTime.now());
