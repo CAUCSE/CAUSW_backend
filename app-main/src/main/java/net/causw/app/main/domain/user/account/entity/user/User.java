@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.user.account.entity.user;
 
-import static net.causw.global.constant.StaticValue.*;
+import static net.causw.global.constant.StaticValue.NO_PHONE_NUMBER_MESSAGE;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -404,6 +404,10 @@ public class User extends BaseEntity {
 
 	public void markEmailAsVerified() {
 		this.isEmailVerified = true;
+	}
+
+	public boolean checkEmailVerification() {
+		return this.isEmailVerified;
 	}
 
 	@Override
