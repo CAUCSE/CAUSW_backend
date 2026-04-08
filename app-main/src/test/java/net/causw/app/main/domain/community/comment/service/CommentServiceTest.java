@@ -22,6 +22,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -44,7 +45,7 @@ import net.causw.app.main.domain.community.comment.service.implementation.LikeCo
 import net.causw.app.main.domain.community.comment.util.CommentValidator;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.v2.implementation.PostReader;
-import net.causw.app.main.domain.notification.notification.service.v1.PostNotificationService;
+import net.causw.app.main.domain.notification.notification.event.PostCommentCreatedEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.relation.service.v1.UserBlockEntityService;
@@ -70,7 +71,7 @@ public class CommentServiceTest {
 	@Mock
 	CommentValidator commentValidator;
 	@Mock
-	PostNotificationService postNotificationService;
+	ApplicationEventPublisher eventPublisher;
 	@Mock
 	UserBlockEntityService userBlockEntityService;
 	@Mock
@@ -118,7 +119,7 @@ public class CommentServiceTest {
 			verify(commentValidator, times(1)).validateForCreate(eq(creator), eq(post));
 			verify(commentWriter, times(1)).save(any(Comment.class));
 			verify(commentSubscribeWriter, times(1)).createCommentSubscribe(eq(creator), any());
-			verify(postNotificationService, times(1)).sendByPostIsSubscribed(eq(post), any(Comment.class));
+			verify(eventPublisher, times(1)).publishEvent(any(PostCommentCreatedEvent.class));
 		}
 	}
 

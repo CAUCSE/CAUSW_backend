@@ -1,12 +1,18 @@
 package net.causw.app.main.domain.user.account.api.v2.controller;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserSearchCondition;
+import net.causw.app.main.domain.user.account.api.v2.dto.response.UserDailyCountResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserSearchListResponse;
 import net.causw.app.main.domain.user.account.api.v2.mapper.UserSearchConditionMapper;
 import net.causw.app.main.domain.user.account.api.v2.mapper.UserSearchListMapper;
@@ -37,5 +43,14 @@ public class UserQueryAdminController {
 		UserSearchListResponse response = userSearchListMapper.toResponse(result);
 
 		return ApiResponse.success(response);
+	}
+
+	@Operation(summary = "일일 신규 가입자 수 조회")
+	@GetMapping("/daily-count")
+	public ApiResponse<UserDailyCountResponse> getDailySignupCount(
+		@RequestParam(value = "targetDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate targetDate) {
+		LocalDate date = (targetDate != null) ? targetDate : LocalDate.now(ZoneId.of("Asia/Seoul"));
+		Long count = userQueryService.getDailySignupStats(date);
+		return ApiResponse.success(new UserDailyCountResponse(date, count));
 	}
 }

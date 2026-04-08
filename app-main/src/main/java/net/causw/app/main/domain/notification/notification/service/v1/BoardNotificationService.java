@@ -76,7 +76,7 @@ public class BoardNotificationService implements NotificationService {
 	 * </ol>
 	 *
 	 * @param board 게시글이 작성된 게시판
-	 * @param post 작성된 게시글
+	 * @param post  작성된 게시글
 	 */
 	@Async("asyncExecutor")
 	@Transactional

@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
  *
  * @param id                 대댓글 ID
  * @param content            대댓글 내용 (작성자가 차단된 경우 {@code null})
+ * @param isDeleted          대댓글 삭제 여부
  * @param createdAt          대댓글 작성 시각
  * @param updatedAt          대댓글 최종 수정 시각
  * @param authorInfo         작성자 정보 및 접근 권한 정보
@@ -19,6 +20,7 @@ import java.time.LocalDateTime;
 public record ChildCommentResult(
 	String id,
 	String content,
+	Boolean isDeleted,
 	LocalDateTime createdAt,
 	LocalDateTime updatedAt,
 	CommentAuthorInfo authorInfo,

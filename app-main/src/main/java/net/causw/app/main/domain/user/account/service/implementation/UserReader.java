@@ -1,5 +1,7 @@
 package net.causw.app.main.domain.user.account.service.implementation;
 
+import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -78,10 +80,6 @@ public class UserReader {
 			.orElseThrow(UserErrorCode.USER_NOT_FOUND::toBaseException);
 	}
 
-	public List<User> getUsersByIds(List<String> userIds) {
-		return userQueryRepository.findByIds(userIds);
-	}
-
 	public List<User> searchByCondition(UserQueryCondition condition) {
 		return userQueryRepository.searchByCondition(condition);
 	}
@@ -120,6 +118,32 @@ public class UserReader {
 			.map(SocialAccount::getUser);
 	}
 
+	/**
+	 * 입학년도 목록에 해당하는 유저를 조회합니다.
+	 * @param admissionYears 조회할 입학년도 목록
+	 * @return 해당 입학년도 유저 목록
+	 */
+	public List<User> findUsersByAdmissionYears(Collection<Integer> admissionYears) {
+		return userQueryRepository.findByAdmissionYearIn(admissionYears);
+	}
+
+	/**
+	 * 모든 활동 가능한 유저를 조회합니다.
+	 * @return 활성 유저 목록
+	 */
+	public List<User> findAllActive() {
+		return userQueryRepository.findAllActive();
+	}
+
+	/**
+	 * 특정 학적 상태에 해당하는 관리자 유저 목록을 조회합니다.
+	 * @param academicStatus 조회할 학적 상태
+	 * @return 해당 학적 상태에 해당하는 관리자 유저 목록
+	 */
+	public List<User> findAdminsByAcademicStatus(AcademicStatus academicStatus) {
+		return userQueryRepository.findAdminsByAcademicStatus(academicStatus);
+	}
+
 	public boolean existsByEmail(String email) {
 		return userRepository.existsByEmail(email);
 	}
@@ -130,6 +154,10 @@ public class UserReader {
 
 	public Optional<User> findByEmailAndNameOptional(String email, String name) {
 		return userRepository.findByEmailAndName(email, name);
+	}
+
+	public Long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end) {
+		return userRepository.countByCreatedAtBetween(start, end);
 	}
 
 	private String normalizeKeyword(String keyword) {

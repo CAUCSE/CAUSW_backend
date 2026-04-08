@@ -15,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -30,6 +31,7 @@ import net.causw.app.main.domain.community.ceremony.service.implementation.Cerem
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyWriter;
 import net.causw.app.main.domain.community.ceremony.service.mapper.CeremonyMapper;
 import net.causw.app.main.domain.community.ceremony.util.CeremonyValidator;
+import net.causw.app.main.domain.notification.notification.event.CeremonyNotificationEvent;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.CeremonyErrorCode;
 
@@ -50,6 +52,9 @@ class CeremonyAdminServiceTest {
 
 	@Mock
 	CeremonyMapper ceremonyMapper;
+
+	@Mock
+	private ApplicationEventPublisher eventPublisher;
 
 	@Nested
 	@DisplayName("관리자 경조사 목록 조회 테스트")
@@ -183,6 +188,8 @@ class CeremonyAdminServiceTest {
 			// then
 			then(ceremonyValidator).should(times(1)).validateAwaiting(ceremony);
 			then(ceremonyWriter).should(times(1)).approve(ceremony);
+
+			verify(eventPublisher).publishEvent(any(CeremonyNotificationEvent.class));
 		}
 
 		@Test

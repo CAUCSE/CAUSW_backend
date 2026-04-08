@@ -18,6 +18,7 @@ import net.causw.app.main.domain.community.ceremony.api.v2.dto.request.CeremonyA
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.request.CeremonyRejectRequest;
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonyAdminListResponse;
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonyDetailResponse;
+import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonyPendingCountResponse;
 import net.causw.app.main.domain.community.ceremony.api.v2.mapper.CeremonyAdminListMapper;
 import net.causw.app.main.domain.community.ceremony.api.v2.mapper.CeremonyDtoMapper;
 import net.causw.app.main.domain.community.ceremony.service.CeremonyAdminService;
@@ -54,6 +55,14 @@ public class CeremonyAdminController {
 		Page<CeremonyAdminListResult> result = ceremonyAdminService.getCeremonyList(condition, pageable);
 		Page<CeremonyAdminListResponse> response = result.map(ceremonyDtoMapper::toAdminListResponse);
 		return ApiResponse.success(PageResponse.from(response));
+	}
+
+	@GetMapping("/pending-count")
+	@ResponseStatus(HttpStatus.OK)
+	@Operation(summary = "미처리 경조사수 조회", description = "대기 중인 경조사 수를 조회합니다.")
+	public ApiResponse<CeremonyPendingCountResponse> getPendingCount() {
+		long count = ceremonyAdminService.getPendingCount();
+		return ApiResponse.success(new CeremonyPendingCountResponse(count));
 	}
 
 	@GetMapping("/{ceremonyId}")
