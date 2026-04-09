@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserSearchCondition;
+import net.causw.app.main.domain.user.account.api.v2.dto.response.TotalUserCountResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserDailyCountResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserSearchListResponse;
 import net.causw.app.main.domain.user.account.api.v2.mapper.UserSearchConditionMapper;
@@ -52,5 +53,15 @@ public class UserQueryAdminController {
 		LocalDate date = (targetDate != null) ? targetDate : LocalDate.now(ZoneId.of("Asia/Seoul"));
 		Long count = userQueryService.getDailySignupStats(date);
 		return ApiResponse.success(new UserDailyCountResponse(date, count));
+	}
+
+	@GetMapping("count")
+	@Operation(summary = "총 사용자 수 조회", description = "DB에 존재하는 총 사용자 수를 반환합니다.")
+	public ApiResponse<TotalUserCountResponse> getTotalUserCount() {
+		return ApiResponse.success(
+			TotalUserCountResponse.builder()
+				.totalUserCount(
+					userQueryService.getTotalUserCount())
+				.build());
 	}
 }

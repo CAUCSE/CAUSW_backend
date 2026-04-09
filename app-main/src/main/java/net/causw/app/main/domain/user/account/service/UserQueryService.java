@@ -31,4 +31,8 @@ public class UserQueryService {
 
 		return userReader.countByCreatedAtBetween(startOfDay, endOfDay);
 	}
+
+	public Long getTotalUserCount() {
+		return userReader.getTotalUserCount();
+	}
 }

@@ -1,5 +1,7 @@
 package net.causw.app.main.domain.user.account.repository.user.query;
 
+import static net.causw.app.main.domain.user.account.entity.user.QUser.user;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -29,6 +31,11 @@ import lombok.RequiredArgsConstructor;
 public class UserQueryRepository {
 
 	private final JPAQueryFactory jpaQueryFactory;
+
+	private static BooleanExpression notDeleted() {
+		QUser user = QUser.user;
+		return user.deletedAt.isNull();
+	}
 
 	public List<User> findAllActiveUsersByRoles(List<Role> roles) {
 		QUser user = QUser.user;
@@ -218,16 +225,19 @@ public class UserQueryRepository {
 	 * @return 해당 학적 상태에 해당하는 관리자 유저 목록
 	 */
 	public List<User> findAdminsByAcademicStatus(AcademicStatus academicStatus) {
-		return jpaQueryFactory.selectFrom(QUser.user)
-			.where(QUser.user.roles.contains(Role.ADMIN))
-			.where(QUser.user.academicStatus.eq(academicStatus))
+		return jpaQueryFactory.selectFrom(user)
+			.where(user.roles.contains(Role.ADMIN))
+			.where(user.academicStatus.eq(academicStatus))
 			.where(notDeleted())
 			.fetch();
 	}
 
-	private static BooleanExpression notDeleted() {
-		QUser user = QUser.user;
-		return user.deletedAt.isNull();
+	public Long countTotalUsers() {
+		return jpaQueryFactory
+			.select(user.count())
+			.where(user.state.eq(UserState.ACTIVE))
+			.where(notDeleted())
+			.fetchOne();
 	}
 
 	private BooleanExpression keywordSearchCondition(String keyword) {
