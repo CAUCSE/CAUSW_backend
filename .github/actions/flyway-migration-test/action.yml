@@ -12,11 +12,11 @@ inputs:
     default: test
   pr-head-sha:
     # composite action에서는 github 컨텍스트를 직접 참조할 수 없어 호출부에서 전달
-    description: "PR head commit SHA (${{ github.event.pull_request.head.sha }})"
+    description: "PR head commit SHA"
     required: true
   repository:
     # composite action에서는 github 컨텍스트를 직접 참조할 수 없어 호출부에서 전달
-    description: "GitHub repository (${{ github.repository }})"
+    description: "GitHub repository"
     required: true
 
 runs:
