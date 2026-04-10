@@ -233,8 +233,9 @@ public class UserQueryRepository {
 	}
 
 	public Long countTotalUsers() {
-		return jpaQueryFactory.selectFrom(user)
+		return jpaQueryFactory
 			.select(user.count())
+			.from(user)
 			.where(user.state.eq(UserState.ACTIVE))
 			.where(notDeleted())
 			.fetchOne();
