@@ -19,6 +19,21 @@ permissions:
 
 # 변경된 모듈 감지 및 라벨에 따른 Flyway 마이그레이션 테스트, JUnit 테스트 실행
 jobs:
+  flyway-version-check:
+    name: Flyway Version Order Check
+    if: ${{ !github.event.pull_request.draft }}
+    runs-on: ubuntu-22.04
+    steps:
+      # fetch-depth: 0 — 베이스 브랜치와의 git diff를 위해 전체 히스토리 필요
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check Flyway version order
+        uses: ./.github/actions/flyway-version-check
+
+
   detect-changes:
     name: Detect Changed Modules
     if: ${{ !github.event.pull_request.draft && github.event.action != 'labeled' }}

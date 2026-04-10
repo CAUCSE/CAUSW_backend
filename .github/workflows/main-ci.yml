@@ -10,6 +10,20 @@ permissions:
   checks: write
 
 jobs:
+  flyway-version-check:
+    name: Flyway Version Order Check
+    runs-on: ubuntu-22.04
+    steps:
+      # fetch-depth: 0 — 베이스 브랜치와의 git diff를 위해 전체 히스토리 필요
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check Flyway version order
+        uses: ./.github/actions/flyway-version-check
+
+
   migration-test:
     name: Flyway Migration Test in Github Actions
     if: ${{ contains(github.event.pull_request.labels.*.name, 'db-change') }}

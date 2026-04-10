@@ -1,0 +1,108 @@
+name: Flyway Version Order Check
+description: PR에 추가된 Flyway 마이그레이션 파일의 버전이 베이스 브랜치 최신 버전보다 높은지 검사
+
+inputs:
+  migration-path:
+    description: "Flyway 마이그레이션 파일 디렉토리 경로 (리포지토리 루트 기준)"
+    required: false
+    default: "app-main/src/main/resources/db/migration"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Check Flyway migration version order
+      shell: bash
+      run: |
+        set -e
+
+        MIGRATION_PATH="${{ inputs.migration-path }}"
+
+        # GITHUB_BASE_REF: PR 대상 브랜치 (예: dev, main)
+        BASE_BRANCH="${GITHUB_BASE_REF}"
+
+        echo "Base branch   : ${BASE_BRANCH}"
+        echo "Migration path: ${MIGRATION_PATH}"
+        echo ""
+
+        # ── 1. 이 PR에서 새로 추가된 Flyway 파일 목록 ──────────────────────
+        # --diff-filter=A: Added 파일만 (수정/삭제 제외)
+        NEW_FILES=$(git diff --name-only --diff-filter=A \
+          "origin/${BASE_BRANCH}...HEAD" \
+          -- "${MIGRATION_PATH}/V*.sql" || true)
+
+        if [ -z "$NEW_FILES" ]; then
+          echo "새로 추가된 Flyway 마이그레이션 파일이 없습니다. 검사를 건너뜁니다."
+          exit 0
+        fi
+
+        echo "새로 추가된 마이그레이션 파일:"
+        echo "$NEW_FILES"
+        echo ""
+
+        # ── 2. 베이스 브랜치에서 현재 최신 버전 추출 ──────────────────────
+        # git ls-tree로 베이스 브랜치의 파일 목록을 읽어 버전 숫자만 추출한 뒤
+        # sort -V(version sort)로 정렬해 가장 마지막 값을 최신 버전으로 사용
+        BASE_MAX_VERSION=$(git ls-tree -r --name-only "origin/${BASE_BRANCH}" \
+          -- "${MIGRATION_PATH}" \
+          | grep -E '/V[0-9].*\.sql$' \
+          | grep -oE 'V[0-9_]+__' \
+          | grep -oE '[0-9_]+' \
+          | sed 's/_/\./g' \
+          | sort -V \
+          | tail -1)
+
+        if [ -z "$BASE_MAX_VERSION" ]; then
+          echo "베이스 브랜치에 기존 마이그레이션 파일이 없습니다. 검사를 건너뜁니다."
+          exit 0
+        fi
+
+        echo "베이스 브랜치(${BASE_BRANCH}) 최신 버전: V${BASE_MAX_VERSION}"
+        echo ""
+
+        # ── 3. 새 파일 각각의 버전이 최신 버전보다 높은지 검사 ─────────────
+        FAILED=false
+
+        for FILE in $NEW_FILES; do
+          FILENAME=$(basename "$FILE")
+
+          # 파일명에서 버전 숫자 추출 (예: V20250706143554__ → 20250706143554)
+          NEW_VERSION=$(echo "$FILENAME" \
+            | grep -oE 'V[0-9_]+__' \
+            | grep -oE '[0-9_]+' \
+            | sed 's/_/\./g')
+
+          if [ -z "$NEW_VERSION" ]; then
+            echo "⚠️  버전 파싱 실패: ${FILENAME} — 파일명 형식을 확인하세요 (V{version}__{description}.sql)"
+            FAILED=true
+            continue
+          fi
+
+          # sort -V로 두 버전을 정렬했을 때 NEW_VERSION이 마지막에 와야 더 높은 버전
+          HIGHER=$(printf '%s\n%s\n' "$BASE_MAX_VERSION" "$NEW_VERSION" | sort -V | tail -1)
+
+          if [ "$NEW_VERSION" = "$BASE_MAX_VERSION" ]; then
+            echo "❌ FAIL: ${FILENAME}"
+            echo "   V${NEW_VERSION} 은 베이스 브랜치 최신 버전 V${BASE_MAX_VERSION} 과 동일합니다."
+            FAILED=true
+          elif [ "$HIGHER" != "$NEW_VERSION" ]; then
+            echo "❌ FAIL: ${FILENAME}"
+            echo "   V${NEW_VERSION} 은 베이스 브랜치 최신 버전 V${BASE_MAX_VERSION} 보다 낮습니다."
+            FAILED=true
+          else
+            echo "✅ OK  : ${FILENAME} (V${NEW_VERSION} > V${BASE_MAX_VERSION})"
+          fi
+        done
+
+        echo ""
+
+        if [ "$FAILED" = "true" ]; then
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "Flyway 버전 순서 검사 실패"
+          echo "새 마이그레이션 파일의 버전은 V${BASE_MAX_VERSION} 보다 높아야 합니다."
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          exit 1
+        fi
+
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "Flyway 버전 순서 검사 통과"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
