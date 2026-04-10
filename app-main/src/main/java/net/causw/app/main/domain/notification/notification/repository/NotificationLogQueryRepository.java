@@ -34,8 +34,7 @@ public class NotificationLogQueryRepository {
 				.where(
 					nl.id.eq(id),
 					nl.user.id.eq(userId))
-				.fetchOne()
-		);
+				.fetchOne());
 	}
 
 	/**

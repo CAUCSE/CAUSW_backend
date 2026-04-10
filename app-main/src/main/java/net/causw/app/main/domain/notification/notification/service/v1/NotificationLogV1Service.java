@@ -14,7 +14,6 @@ import net.causw.app.main.domain.notification.notification.api.v1.mapper.Notific
 import net.causw.app.main.domain.notification.notification.entity.NotificationLog;
 import net.causw.app.main.domain.notification.notification.enums.NoticeType;
 import net.causw.app.main.domain.notification.notification.repository.NotificationLogRepository;
-
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.pageable.PageableFactory;
 import net.causw.global.constant.MessageUtil;
@@ -89,8 +88,9 @@ public class NotificationLogV1Service {
 
 	@Transactional(readOnly = true)
 	public NotificationCountResponseDto getNotificationLogCount(User user) {
-		List<NotificationLog> unreadNotificationLogs = notificationLogRepository.findByUserAndIsReadFalseNotificationTypes(
-			user, NoticeType.V1_TYPES, pageableFactory.create(0, StaticValue.MAX_NOTIFICATION_COUNT));
+		List<NotificationLog> unreadNotificationLogs = notificationLogRepository
+			.findByUserAndIsReadFalseNotificationTypes(
+				user, NoticeType.V1_TYPES, pageableFactory.create(0, StaticValue.MAX_NOTIFICATION_COUNT));
 
 		return NotificationCountResponseDto.builder()
 			.notificationLogCount(unreadNotificationLogs.size())

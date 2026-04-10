@@ -1,6 +1,5 @@
 package net.causw.app.main.domain.notification.notification.repository;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
