@@ -40,7 +40,8 @@ public class NotificationLogQueryRepository {
 	/**
 	 * 유저 ID와 읽음 여부로 최근 7일간의 알림 로그 조회 (notification JOIN FETCH) (v1 알림 제외)
 	 */
-	public List<NotificationLog> findNotificationLogByUserIdAndIsRead(String userId, boolean isRead, LocalDateTime sevenDaysAgo) {
+	public List<NotificationLog> findNotificationLogByUserIdAndIsRead(String userId, boolean isRead,
+		LocalDateTime sevenDaysAgo) {
 		QNotificationLog nl = QNotificationLog.notificationLog;
 		QNotification n = QNotification.notification;
 
@@ -72,8 +73,7 @@ public class NotificationLogQueryRepository {
 					nl.isRead.isFalse(),
 					n.noticeType.notIn(NoticeType.V1_TYPES))
 				.orderBy(nl.createdAt.desc())
-				.fetchFirst()
-		);
+				.fetchFirst());
 	}
 
 	/**
@@ -113,7 +113,7 @@ public class NotificationLogQueryRepository {
 				notificationLog.user.id.eq(userId),
 				notificationLog.isRead.isFalse(),
 				notificationLog.createdAt.goe(sevenDaysAgo),
-					notification.noticeType.notIn(NoticeType.V1_TYPES))
+				notification.noticeType.notIn(NoticeType.V1_TYPES))
 			.orderBy(notificationLog.createdAt.desc())
 			.offset(pageable.getOffset())
 			.limit(pageable.getPageSize())
