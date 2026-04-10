@@ -1,0 +1,132 @@
+name: Flyway Migration Test
+description: Flyway 마이그레이션 실행, 스키마 유효성 검사, PR 코멘트 게시
+
+# 호출 시 전달해야 하는 입력값
+inputs:
+  env-content:
+    description: ".env 파일 내용 (예: ENV_TEST secret)"
+    required: true
+  env-name:
+    description: "Gradle env 파라미터 (예: test, dev)"
+    required: false
+    default: test
+  pr-head-sha:
+    # composite action에서는 github 컨텍스트를 직접 참조할 수 없어 호출부에서 전달
+    description: "PR head commit SHA (${{ github.event.pull_request.head.sha }})"
+    required: true
+  repository:
+    # composite action에서는 github 컨텍스트를 직접 참조할 수 없어 호출부에서 전달
+    description: "GitHub repository (${{ github.repository }})"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    # JDK 17 설정 및 Gradle 캐시 복원
+    - name: Setup JDK and Gradle
+      uses: ./.github/actions/setup-jdk-gradle
+
+    # secret에서 전달받은 내용으로 .env 파일 생성
+    - name: Copy .env file from secret
+      shell: bash
+      run: |
+        cat <<EOF > .env.${{ inputs.env-name }}
+        ${{ inputs.env-content }}
+        EOF
+
+    # Flyway 마이그레이션 실행
+    - name: Run Flyway migration
+      shell: bash
+      run: ./gradlew flywayMigrate -Penv=${{ inputs.env-name }}
+
+    # 마이그레이션 결과(Success/Failed/Pending 수)를 집계해 마크다운으로 저장
+    # 이후 단계가 실패해도 항상 실행되도록 always() 조건 사용
+    - name: Generate Flyway info summary
+      if: ${{ always() }}
+      shell: bash
+      run: |
+        ./gradlew flywayInfo -Penv=${{ inputs.env-name }} --console=plain > flyway-info.txt
+
+        success_count=$(grep -c 'Success' flyway-info.txt || true)
+        failed_count=$(grep -c 'Failed' flyway-info.txt || true)
+        pending_count=$(grep -c 'Pending' flyway-info.txt || true)
+
+        cat << EOF > flyway-summary.md
+        Migration Result 📦
+        ---------------------------
+
+        | Status  | Count |
+        |---------|-------|
+        | ✅ Success | $success_count |
+        | ❌ Failed  | $failed_count |
+        | ⏳ Pending | $pending_count |
+
+        EOF
+
+    # JPA 엔티티와 실제 DB 스키마 간 불일치 여부를 검사
+    # 결과는 /tmp/jpa-test.log에 저장해 다음 단계에서 파싱
+    - name: Run schema validation test
+      shell: bash
+      run: ./gradlew schemaValidationTest --console=plain --no-daemon | tee /tmp/jpa-test.log || true
+
+    # 스키마 검사 로그에서 FAILED 항목을 추출해 마크다운으로 정리
+    # awk로 "FAILED" 라인과 그 다음 "Caused by:" 라인을 함께 출력
+    - name: Generate schema validation summary
+      if: ${{ always() }}
+      shell: bash
+      run: |
+        cat << EOF > jpa-entity-summary.md
+        Schema Validation Result 🔍
+        ---------------------------------------
+
+        EOF
+
+        FAIL_LOG=$(awk '
+        /> .*\(.*\) FAILED/ && found_failed == 0 {
+          print "⚠️ " $0
+          getline
+          print
+          found_failed=1
+          next
+        }
+        found_failed && /Caused by:/ {
+          line = $0
+          getline nextline
+          sub(/^[ \t]+/, "", nextline)
+          print line " " nextline
+        }
+          ' /tmp/jpa-test.log)
+
+        if [[ -n "$FAIL_LOG" ]]; then
+          echo '```' >> jpa-entity-summary.md
+          echo "$FAIL_LOG" >> jpa-entity-summary.md
+          echo '```' >> jpa-entity-summary.md
+        else
+          echo "✅ No schema mismatches detected." >> jpa-entity-summary.md
+        fi
+
+    # Flyway 요약과 스키마 검사 요약을 하나의 파일로 합치고 커밋 링크 추가
+    - name: Combine Flyway & JPA summaries
+      if: ${{ always() }}
+      shell: bash
+      run: |
+        COMMIT_SHA=${{ inputs.pr-head-sha }}
+        COMMIT_URL="https://github.com/${{ inputs.repository }}/commit/${COMMIT_SHA}"
+
+        cat > db-summary.md << EOF
+        $(cat flyway-summary.md)
+
+        $(cat jpa-entity-summary.md)
+
+        Results for commit [\`${COMMIT_SHA::7}\`]($COMMIT_URL)
+
+        ♻️ This comment has been updated with latest results.
+        EOF
+
+    # PR에 결과를 sticky 코멘트로 게시 (같은 header면 덮어씀)
+    - name: Publish Flyway & JPA test results to pr
+      uses: marocchino/sticky-pull-request-comment@v2
+      if: ${{ always() }}
+      with:
+        header: db-schema-status
+        path: db-summary.md

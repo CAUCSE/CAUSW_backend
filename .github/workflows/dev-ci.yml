@@ -1,5 +1,6 @@
-name: 동문네트워크 백엔드 CI 테스트 자동화(dev branch PR 시 작동)
+name: CI - Develop
 
+# dev 브랜치로 PR이 열리거나 업데이트될 때, 또는 'db-change' 라벨이 붙을 때 실행
 on:
   pull_request:
     branches: [ "dev" ]
@@ -16,6 +17,7 @@ permissions:
   pull-requests: write
   checks: write
 
+# 변경된 모듈 감지 및 라벨에 따른 Flyway 마이그레이션 테스트, JUnit 테스트 실행
 jobs:
   detect-changes:
     name: Detect Changed Modules
@@ -23,7 +25,6 @@ jobs:
     runs-on: ubuntu-22.04
     outputs:
       app-main: ${{ steps.filter.outputs.app-main }}
-      app-chat: ${{ steps.filter.outputs.app-chat }}
     steps:
       - name: Checkout branch
         uses: actions/checkout@v4
@@ -39,13 +40,8 @@ jobs:
               - 'build.gradle'
               - 'settings.gradle'
               - 'gradle/**'
-            app-chat:
-              - 'app-chat/**'
-              - 'global/**'
-              - 'build.gradle'
-              - 'settings.gradle'
-              - 'gradle/**'
 
+# PR에 'db-change' 라벨이 붙은 경우 Flyway 마이그레이션 테스트 실행
   migration-test:
     name: Flyway Migration Test in Github Actions
     if: ${{ !github.event.pull_request.draft && contains(github.event.pull_request.labels.*.name, 'db-change') }}
@@ -70,111 +66,13 @@ jobs:
       - name: Checkout branch
         uses: actions/checkout@v4
 
-      # JDK & Gradle 설정
-      - name: Setup JDK and Gradle
-        uses: ./.github/actions/setup-jdk-gradle
-
-      # .env.test 파일 추가
-      - name: Copy .env.test from secret
-        env:
-          ENV_TEST: ${{ secrets.ENV_TEST }}
-        run: |
-          cat <<EOF > .env.test
-          $ENV_TEST
-          EOF
-
-      # Flyway 마이그레이션 및 결과 요약
-      - name: Run Flyway migration
-        run: ./gradlew flywayMigrate -Penv=test
-
-      - name: Generate Flyway info summary
-        if: ${{ always() }}
-        run: |
-          # Flyway 마이그레이션 정보 수집 및 분석
-          ./gradlew flywayInfo -Penv=test --console=plain > flyway-info.txt
-
-          success_count=$(grep -c 'Success' flyway-info.txt || true)
-          failed_count=$(grep -c 'Failed' flyway-info.txt || true)
-          pending_count=$(grep -c 'Pending' flyway-info.txt || true)
-
-          # Flyway 마이그레이션 결과 요약 생성
-          cat << EOF > flyway-summary.md
-          Migration Result 📦
-          ---------------------------
-          
-          | Status  | Count |
-          |---------|-------|
-          | ✅ Success | $success_count |
-          | ❌ Failed  | $failed_count |
-          | ⏳ Pending | $pending_count |
-          
-          EOF
-
-      # 스키마 유효성 검사 결과 요약
-      - name: Run schema validation test
-        run: ./gradlew schemaValidationTest --console=plain --no-daemon | tee /tmp/jpa-test.log || true
-
-      - name: Generate schema validation summary
-        if: ${{ always() }}
-        run: |
-          cat << EOF > jpa-entity-summary.md
-          Schema Validation Result 🔍
-          ---------------------------------------
-          
-          EOF
-          
-          if [[ "${{ steps.flyway.outputs.flyway_status }}" == "failure" ]]; then
-            echo "⚠️ Flyway migration failed. Schema validation was skipped." >> jpa-entity-summary.md
-          else
-            # 스키마 유효성 검사 실패 로그 추출
-            FAIL_LOG=$(awk '
-            /> .*\(.*\) FAILED/ && found_failed == 0 {
-              print "⚠️ " $0    
-              getline
-              print              
-              found_failed=1
-              next
-            }
-            found_failed && /Caused by:/ {
-              line = $0           
-              getline nextline    
-              sub(/^[ \t]+/, "", nextline)  
-              print line " " nextline       
-            }
-              ' /tmp/jpa-test.log)
-          
-            if [[ -n "$FAIL_LOG" ]]; then
-              echo '```' >> jpa-entity-summary.md
-              echo "$FAIL_LOG" >> jpa-entity-summary.md
-              echo '```' >> jpa-entity-summary.md
-            else
-              echo "✅ No schema mismatches detected." >> jpa-entity-summary.md
-            fi
-          fi
-
-      # Flyway 마이그레이션 & 스키마 유효성 검사 결과 통합 및 PR 코멘트 작성
-      - name: Combine Flyway & JPA summaries
-        if: ${{ always() }}
-        run: |
-          COMMIT_SHA=${{ github.event.pull_request.head.sha }}
-          COMMIT_URL="https://github.com/${{ github.repository }}/commit/${COMMIT_SHA}"
-
-          cat > db-summary.md << EOF
-          $(cat flyway-summary.md)
-          
-          $(cat jpa-entity-summary.md)
-          
-          Results for commit [\`${COMMIT_SHA::7}\`]($COMMIT_URL)
-          
-          ♻️ This comment has been updated with latest results.
-          EOF
-
-      - name: Publish Flyway & JPA test results to pr
-        uses: marocchino/sticky-pull-request-comment@v2
-        if: ${{ always() }}
+      - name: Run Flyway migration test
+        uses: ./.github/actions/flyway-migration-test
         with:
-          header: db-schema-status
-          path: db-summary.md
+          env-content: ${{ secrets.ENV_TEST }}
+          env-name: test
+          pr-head-sha: ${{ github.event.pull_request.head.sha }}
+          repository: ${{ github.repository }}
 
 
   junit-test-app-main:
@@ -229,63 +127,11 @@ jobs:
           path: ./app-main/build/test-results/test
 
 
-  junit-test-app-chat:
-    name: JUnit Test app-chat Module
-    needs: [detect-changes]
-    if: ${{ needs.detect-changes.outputs.app-chat == 'true' }}
-    runs-on: ubuntu-22.04
-
-    steps:
-      # 작업 엑세스 가능하게 $GITHUB_WORKSPACE에서 저장소를 체크아웃
-      - name: Checkout branch
-        uses: actions/checkout@v4
-
-      # JDK & Gradle 설정
-      - name: Setup JDK and Gradle
-        uses: ./.github/actions/setup-jdk-gradle
-
-      # git ignore한 yml 파일들 github secret에서 복사해 오기
-      - name: Copy secrets for app-chat
-        env:
-          APPLICATION_FILE: ${{ secrets.APPLICATION_PROFILE_DEV }}
-          APPLICATION_DEV_FILE: ${{ secrets.APPLICATION_DEV_APP_CHAT }}
-          DIR: ./app-chat/src/main/resources
-
-          APPLICATION_FILE_NAME: application.yml
-          APPLICATION_DEV_FILE_NAME: application-dev.yml
-        run: |
-          mkdir -p $DIR
-          touch $DIR/$APPLICATION_FILE_NAME
-          touch $DIR/$APPLICATION_DEV_FILE_NAME
-          echo "$APPLICATION_FILE" > $DIR/$APPLICATION_FILE_NAME
-          echo "$APPLICATION_DEV_FILE" > $DIR/$APPLICATION_DEV_FILE_NAME
-
-      # 테스트 실행
-      - name: Test with Gradle (app-chat)
-        run: ./gradlew :app-chat:test
-        shell: bash
-
-      # 테스트 실패 시 fail된 부분 마크
-      - name: Publish check comment on test failure
-        uses: mikepenz/action-junit-report@v3
-        if: ${{ failure() }}
-        with:
-          report_paths: ./app-chat/build/test-results/test/TEST-*.xml
-          check_name: "JUnit Failure Report (app-chat)"
-
-      # 테스트 결과 아티팩트 업로드
-      - name: Upload test results
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-chat-test-results
-          path: ./app-chat/build/test-results/test
-
-
   junit-test-result-summary:
     name: Report JUnit Test Result Summary
-    if: ${{ always() && !github.event.pull_request.draft && github.event.action != 'labeled' && (needs.junit-test-app-main.result == 'success' || needs.junit-test-app-main.result == 'failure' || needs.junit-test-app-chat.result == 'success' || needs.junit-test-app-chat.result == 'failure') }}
+    if: ${{ always() && !github.event.pull_request.draft && github.event.action != 'labeled' && (needs.junit-test-app-main.result == 'success' || needs.junit-test-app-main.result == 'failure') }}
     runs-on: ubuntu-22.04
-    needs: [detect-changes, junit-test-app-main, junit-test-app-chat]
+    needs: [detect-changes, junit-test-app-main]
 
     steps:
       # 테스트 결과 아티팩트 다운로드
