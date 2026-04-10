@@ -45,8 +45,7 @@ runs:
         BASE_MAX_VERSION=$(git ls-tree -r --name-only "origin/${BASE_BRANCH}" \
           -- "${MIGRATION_PATH}" \
           | grep -E '/V[0-9].*\.sql$' \
-          | grep -oE 'V[0-9_]+__' \
-          | grep -oE '[0-9_]+' \
+          | sed -n 's|.*/V\([0-9_][0-9_]*\)__.*\.sql$|\1|p' \
           | sed 's/_/\./g' \
           | sort -V \
           | tail -1)
@@ -67,8 +66,7 @@ runs:
 
           # 파일명에서 버전 숫자 추출 (예: V20250706143554__ → 20250706143554)
           NEW_VERSION=$(echo "$FILENAME" \
-            | grep -oE 'V[0-9_]+__' \
-            | grep -oE '[0-9_]+' \
+            | sed -n 's|^V\([0-9_][0-9_]*\)__.*\.sql$|\1|p' \
             | sed 's/_/\./g')
 
           if [ -z "$NEW_VERSION" ]; then
