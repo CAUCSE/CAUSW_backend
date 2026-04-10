@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import net.causw.app.main.domain.notification.notification.entity.NotificationLog;
@@ -96,27 +95,5 @@ public class NotificationLogQueryRepository {
 
 		// npe 방지 위해 null 체크 후 0L 반환
 		return count != null ? count : 0L;
-	}
-
-	/**
-	 * 유저 ID로 최근 7일간의 읽지 않은 알림 로그를 최대 N개까지 조회 (v1 알림 제외)
-	 */
-	public List<NotificationLog> findRecentUnreadLogsUpToLimit(String userId, LocalDateTime sevenDaysAgo,
-		Pageable pageable) {
-		QNotificationLog notificationLog = QNotificationLog.notificationLog;
-		QNotification notification = QNotification.notification;
-
-		return jpaQueryFactory
-			.selectFrom(notificationLog)
-			.join(notificationLog.notification, notification).fetchJoin()
-			.where(
-				notificationLog.user.id.eq(userId),
-				notificationLog.isRead.isFalse(),
-				notificationLog.createdAt.goe(sevenDaysAgo),
-				notification.noticeType.notIn(NoticeType.V1_TYPES))
-			.orderBy(notificationLog.createdAt.desc())
-			.offset(pageable.getOffset())
-			.limit(pageable.getPageSize())
-			.fetch();
 	}
 }
