@@ -66,8 +66,12 @@ runs:
     # JPA 엔티티와 실제 DB 스키마 간 불일치 여부를 검사 (항상 .env.test 사용)
     # 결과는 /tmp/jpa-test.log에 저장해 다음 단계에서 파싱
     - name: Run schema validation test
+      id: schema_validation
+      continue-on-error: true
       shell: bash
-      run: ./gradlew schemaValidationTest --console=plain --no-daemon | tee /tmp/jpa-test.log || true
+      run: |
+        set -o pipefail
+        ./gradlew schemaValidationTest --console=plain --no-daemon | tee /tmp/jpa-test.log
 
     # 스키마 검사 로그에서 FAILED 항목을 추출해 마크다운으로 정리
     # awk로 "FAILED" 라인과 그 다음 "Caused by:" 라인을 함께 출력
@@ -130,3 +134,10 @@ runs:
       with:
         header: db-schema-status
         path: db-summary.md
+
+    - name: Fail if schema validation test failed
+      if: ${{ always() && steps.schema_validation.outcome == 'failure' }}
+      shell: bash
+      run: |
+        echo "Schema validation test failed."
+        exit 1
