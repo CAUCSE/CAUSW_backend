@@ -80,17 +80,17 @@ public class CeremonyV1Service {
 		if (createCeremonyRequestDTO.getIsSetAll()) {
 			targetAdmissionYears = List.of();
 			// 전체 알림 전송이 true인 경우, 대상 학번은 빈 리스트로 설정
-		}else{
+		} else {
 			targetAdmissionYears = Optional.of(createCeremonyRequestDTO)
-					.map(CreateCeremonyRequestDto::getTargetAdmissionYears)
-					.orElse(List.of())
-					.stream()
-					.filter(Objects::nonNull)
-					.map(s -> {
-						int year = Integer.parseInt(s);
-						return year >= 72 ? 1900 + year : 2000 + year;
-					})
-					.toList();
+				.map(CreateCeremonyRequestDto::getTargetAdmissionYears)
+				.orElse(List.of())
+				.stream()
+				.filter(Objects::nonNull)
+				.map(s -> {
+					int year = Integer.parseInt(s);
+					return year >= 72 ? 1900 + year : 2000 + year;
+				})
+				.toList();
 		}
 
 		List<UuidFile> uuidFileList = (imageFileList == null || imageFileList.isEmpty())
