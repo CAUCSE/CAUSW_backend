@@ -79,7 +79,6 @@ public class CeremonyV1Service {
 		List<Integer> targetAdmissionYears;
 		if (createCeremonyRequestDTO.getIsSetAll()) {
 			targetAdmissionYears = List.of();
-			// 전체 알림 전송이 true인 경우, 대상 학번은 빈 리스트로 설정
 		} else {
 			targetAdmissionYears = Optional.of(createCeremonyRequestDTO)
 				.map(CreateCeremonyRequestDto::getTargetAdmissionYears)
