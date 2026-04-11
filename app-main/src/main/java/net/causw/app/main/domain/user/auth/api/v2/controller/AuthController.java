@@ -124,7 +124,7 @@ public class AuthController {
 	@PostMapping("/login/native")
 	public ResponseEntity<ApiResponse<AuthResponse>> loginNativeSocial(
 		@RequestBody @Valid SocialNativeLoginRequest request) {
-		AuthResult dto = socialNativeAuthService.login(request.provider(), request.accessToken(), request.idToken());
+		AuthResult dto = socialNativeAuthService.login(request.provider(), request.accessToken(), request.idToken(), request.isKeepLogin());
 		return createAuthResponse(dto);
 	}
 

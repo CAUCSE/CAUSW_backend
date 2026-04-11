@@ -64,7 +64,7 @@ public class SocialNativeAuthService {
 	 * @return 서비스 전용 access/refresh token이 포함된 인증 결과
 	 */
 	@Transactional
-	public AuthResult login(String provider, String accessToken, String idToken) {
+	public AuthResult login(String provider, String accessToken, String idToken, boolean isKeepLogin) {
 		String registrationId = provider.toLowerCase(Locale.ROOT);
 		log.info("Native social login requested. provider={}, hasIdToken={}", registrationId,
 			StringUtils.hasText(idToken));
@@ -83,7 +83,7 @@ public class SocialNativeAuthService {
 
 			return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), ProfileImageDto.from(user),
 				tokens.refreshToken(), user.isGuest(), user.isTermsAgreed(), user.isAcademicCertified(),
-				user.getAcademicStatus());
+				user.getAcademicStatus(), isKeepLogin);
 		} catch (BaseRunTimeV2Exception e) {
 			log.warn("Native social login failed. provider={}, code={}, message={}", registrationId,
 				e.getErrorCode().getCode(), e.getMessage());

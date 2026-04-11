@@ -2,6 +2,7 @@ package net.causw.app.main.domain.user.auth.api.v2.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 @Schema(description = "네이티브 소셜 로그인 요청 DTO")
 public record SocialNativeLoginRequest(
@@ -9,5 +10,7 @@ public record SocialNativeLoginRequest(
 
 	@Schema(description = "네이티브 SDK에서 획득한 provider access token", nullable = true) String accessToken,
 
-	@Schema(description = "OIDC provider(google/apple)에서 획득한 id token", nullable = true) String idToken) {
+	@Schema(description = "OIDC provider(google/apple)에서 획득한 id token", nullable = true) String idToken,
+
+	@NotNull(message = "로그인 상태 유지 여부를 입력해주세요.") @Schema(description = "로그인 상태 유지 여부 (true: 유지, false: 유지 안함)", example = "true") Boolean isKeepLogin) {
 }
