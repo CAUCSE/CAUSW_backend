@@ -5,9 +5,6 @@ files:
     destination: /home/ubuntu/app/app-main/
     overwrite: yes
 
-  - source: /app-chat/build/libs/
-    destination: /home/ubuntu/app/app-chat/
-    overwrite: yes
 
 permissions:
   - object: /
