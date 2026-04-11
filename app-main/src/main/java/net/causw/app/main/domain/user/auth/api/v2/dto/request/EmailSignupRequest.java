@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.user.auth.api.v2.dto.request;
 
+import net.causw.app.main.domain.user.account.policy.PasswordPolicy;
 import net.causw.global.constant.StaticValue;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -11,7 +12,7 @@ import jakarta.validation.constraints.Size;
 public record EmailSignupRequest(
 	@NotBlank(message = "이메일을 입력해 주세요.") @Pattern(regexp = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~.-]+@[a-zA-Z0-9.-]+$", message = "이메일 형식에 맞지 않습니다.") @Schema(description = "이메일", example = "user@cau.ac.kr") String email,
 
-	@NotBlank(message = "비밀번호를 입력해 주세요.") @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*()-_?]).{8,20}$", message = "비밀번호는 8자 이상 20자 이하이며, 영문, 숫자, 특수문자가 각 1개 이상 포함되어야 합니다.") @Schema(description = "비밀번호", example = "password00!!") String password,
+	@NotBlank(message = "비밀번호를 입력해 주세요.") @Pattern(regexp = PasswordPolicy.REGEX, message = PasswordPolicy.VALIDATION_MESSAGE) @Schema(description = "비밀번호", example = "password00!!") String password,
 
 	@NotBlank(message = "이름을 입력해 주세요.") @Size(max = 20, message = "이름은 20자 이하로 입력해 주세요.") @Schema(description = "이름 (본명)", example = "홍길동") String name,
 
