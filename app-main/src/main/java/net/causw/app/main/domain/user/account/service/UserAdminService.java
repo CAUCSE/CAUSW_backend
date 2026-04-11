@@ -8,6 +8,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
+import net.causw.app.main.domain.asset.file.repository.UserProfileImageRepository;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
@@ -35,6 +37,7 @@ public class UserAdminService {
 	private final LockerReader lockerReader;
 	private final LockerWriter lockerWriter;
 	private final UserAdminActionLogWriter userAdminActionLogWriter;
+	private final UserProfileImageRepository userProfileImageRepository;
 
 	// 필터링 조건과 페이징 정보를 기반으로 전체 사용자 목록 조회
 	@Transactional(readOnly = true)
@@ -48,7 +51,8 @@ public class UserAdminService {
 	@Transactional(readOnly = true)
 	public UserDetailItem getUserDetail(String userId) {
 		User user = userReader.findDetailById(userId);
-		return UserDetailItem.from(user);
+		UserProfileImage profileImage = userProfileImageRepository.findByUserId(userId).orElse(null);
+		return UserDetailItem.from(user, profileImage);
 	}
 
 	@Transactional

@@ -44,9 +44,8 @@ public class UserProfileImageService {
 		}
 
 		User user = userReader.findUserById(userId);
-		UserProfileImage existingProfileImage = user.getUserProfileImage();
+		UserProfileImage existingProfileImage = userProfileImageRepository.findByUserId(userId).orElse(null);
 
-		// 먼저 User의 userProfileImage 참조를 null로 설정
 		user.updateProfileImageToDefault(profileImageType);
 		userWriter.save(user);
 
@@ -75,7 +74,7 @@ public class UserProfileImageService {
 	@Transactional
 	public ProfileImageResponse updateToCustomProfileImage(String userId, MultipartFile imageFile) {
 		User user = userReader.findUserById(userId);
-		UserProfileImage existingProfileImage = user.getUserProfileImage();
+		UserProfileImage existingProfileImage = userProfileImageRepository.findByUserId(userId).orElse(null);
 
 		// 새 파일 먼저 업로드
 		UuidFile newUuidFile = uuidFileService.saveFile(imageFile, FilePath.USER_PROFILE);
@@ -83,9 +82,10 @@ public class UserProfileImageService {
 		if (existingProfileImage != null) {
 			UuidFile oldUuidFile = existingProfileImage.getUuidFile();
 
-			// 기존 UserProfileImage에 새 파일 연결 후 User에 반영
+			// 기존 UserProfileImage에 새 파일 연결
 			existingProfileImage.setUuidFile(newUuidFile);
-			user.updateProfileImageToCustom(existingProfileImage);
+			userProfileImageRepository.save(existingProfileImage);
+			user.updateProfileImageToCustom();
 			userWriter.save(user);
 
 			// 기존 파일 삭제 (User save 이후 수행)
@@ -93,12 +93,13 @@ public class UserProfileImageService {
 				uuidFileService.deleteFile(oldUuidFile.getId());
 			}
 		} else {
-			// 새 UserProfileImage 생성 및 User에 연결
+			// 새 UserProfileImage 생성 및 저장
 			UserProfileImage newProfileImage = UserProfileImage.of(user, newUuidFile);
-			user.updateProfileImageToCustom(newProfileImage);
+			userProfileImageRepository.save(newProfileImage);
+			user.updateProfileImageToCustom();
 			userWriter.save(user);
 		}
 
-		return ProfileImageResponse.of(ProfileImageType.CUSTOM, user.getProfileUrl());
+		return ProfileImageResponse.of(ProfileImageType.CUSTOM, newUuidFile.getFileUrl());
 	}
 }

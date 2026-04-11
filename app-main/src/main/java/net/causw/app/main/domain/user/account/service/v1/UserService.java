@@ -876,23 +876,24 @@ public class UserService {
 			validatePhoneNumberUniqueness(userUpdateRequestDto.getPhoneNumber(), srcUser);
 		}
 
-		UserProfileImage userProfileImage = srcUser.getUserProfileImage();
+		UserProfileImage userProfileImage = userProfileImageRepository.findByUserId(srcUser.getId()).orElse(null);
 
 		if (profileImage != null && !profileImage.isEmpty()) {
-			if (srcUser.getUserProfileImage() == null) {
+			if (userProfileImage == null) {
 				userProfileImage = UserProfileImage.of(
 					user,
 					uuidFileService.saveFile(profileImage, FilePath.USER_PROFILE));
+				userProfileImageRepository.save(userProfileImage);
 			} else {
 				userProfileImage.setUuidFile(
 					uuidFileService.updateFile(
-						srcUser.getUserProfileImage().getUuidFile(),
+						userProfileImage.getUuidFile(),
 						profileImage,
 						FilePath.USER_PROFILE));
 			}
 		}
 
-		srcUser.updateProfile(userUpdateRequestDto.getNickname(), userProfileImage,
+		srcUser.updateProfile(userUpdateRequestDto.getNickname(),
 			userUpdateRequestDto.getPhoneNumber());
 
 		User updatedUser = userRepository.save(srcUser);
@@ -1030,6 +1031,7 @@ public class UserService {
 
 		userRepository.findAllByDeletedAtBefore(dueDate).stream()
 			.forEach(user -> {
+				userProfileImageRepository.deleteByUserId(user.getId());
 				user.delete();
 				userRepository.save(user);
 			});

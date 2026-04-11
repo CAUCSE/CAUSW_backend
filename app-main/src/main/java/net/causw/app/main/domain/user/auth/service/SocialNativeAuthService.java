@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
+import net.causw.app.main.domain.asset.file.repository.UserProfileImageRepository;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.SocialType;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
@@ -54,6 +56,7 @@ public class SocialNativeAuthService {
 	private final CustomOAuth2UserService customOAuth2UserService;
 	private final JwtDecoderFactory<ClientRegistration> oidcIdTokenDecoderFactory;
 	private final AuthTokenManager authTokenManager;
+	private final UserProfileImageRepository userProfileImageRepository;
 
 	/**
 	 * provider 특성에 따라 access token 또는 id token 기반 네이티브 소셜 로그인을 수행합니다.
@@ -78,10 +81,12 @@ public class SocialNativeAuthService {
 
 			User user = loadAuthenticatedUser(clientRegistration, accessToken, idToken);
 			AuthTokenPair tokens = authTokenManager.issueTokens(user, null);
+			UserProfileImage profileImage = userProfileImageRepository.findByUserId(user.getId()).orElse(null);
 
 			log.info("Native social login succeeded. provider={}, userId={}", registrationId, user.getId());
 
-			return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), ProfileImageDto.from(user),
+			return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(),
+				ProfileImageDto.from(user, profileImage),
 				tokens.refreshToken(), user.isGuest(), user.isTermsAgreed(), user.isAcademicCertified(),
 				user.getAcademicStatus());
 		} catch (BaseRunTimeV2Exception e) {

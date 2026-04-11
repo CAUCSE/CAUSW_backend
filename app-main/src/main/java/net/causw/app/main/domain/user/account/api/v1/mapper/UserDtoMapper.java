@@ -52,7 +52,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "studentId", source = "user.studentId")
 	@Mapping(target = "admissionYear", source = "user.admissionYear")
 	@Mapping(target = "roles", source = "user.roles")
-	@Mapping(target = "profileImageUrl", source = "user.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
+	@Mapping(target = "profileImageUrl", expression = "java(null)")
 	@Mapping(target = "state", source = "user.state")
 	@Mapping(target = "nickname", source = "user.nickname")
 	@Mapping(target = "major", source = "user.major")
@@ -74,7 +74,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "studentId", source = "user.studentId")
 	@Mapping(target = "admissionYear", source = "user.admissionYear")
 	@Mapping(target = "roles", source = "user.roles")
-	@Mapping(target = "profileImageUrl", source = "user.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
+	@Mapping(target = "profileImageUrl", expression = "java(null)")
 	@Mapping(target = "state", source = "user.state")
 	@Mapping(target = "nickname", source = "user.nickname")
 	@Mapping(target = "major", source = "user.major")
@@ -96,7 +96,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "name", source = "user.name")
 	@Mapping(target = "studentId", source = "user.studentId")
 	@Mapping(target = "admissionYear", source = "user.admissionYear")
-	@Mapping(target = "profileImageUrl", source = "user.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
+	@Mapping(target = "profileImageUrl", expression = "java(null)")
 	@Mapping(target = "posts", source = "post")
 	UserPostsResponseDto toUserPostsResponseDto(User user, Page<PostsResponseDto> post);
 
@@ -115,7 +115,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "name", source = "user.name")
 	@Mapping(target = "studentId", source = "user.studentId")
 	@Mapping(target = "admissionYear", source = "user.admissionYear")
-	@Mapping(target = "profileImageUrl", source = "user.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
+	@Mapping(target = "profileImageUrl", expression = "java(null)")
 	UserCommentsResponseDto toUserCommentsResponseDto(User user, Page<CommentsOfUserResponseDto> comment);
 
 	@Mapping(target = "id", source = "comment.id")
@@ -219,7 +219,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "name", source = "userInfo.user.name")
 	@Mapping(target = "email", source = "userInfo.user.email")
 	@Mapping(target = "admissionYear", source = "userInfo.user.admissionYear")
-	@Mapping(target = "profileImageUrl", source = "userInfo.user.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
+	@Mapping(target = "profileImageUrl", expression = "java(null)")
 	@Mapping(target = "major", source = "userInfo.user.major")
 	@Mapping(target = "department", source = "userInfo.user.department")
 	@Mapping(target = "description", source = "userInfo.description")
@@ -233,7 +233,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "email", source = "userInfo.user.email")
 	@Mapping(target = "phoneNumber", source = "userInfo.user.phoneNumber", qualifiedByName = "maskPhoneNumber")
 	@Mapping(target = "admissionYear", source = "userInfo.user.admissionYear")
-	@Mapping(target = "profileImageUrl", source = "userInfo.user.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
+	@Mapping(target = "profileImageUrl", expression = "java(null)")
 	@Mapping(target = "major", source = "userInfo.user.major")
 	@Mapping(target = "department", source = "userInfo.user.department")
 	@Mapping(target = "roles", source = "userInfo.user.roles")

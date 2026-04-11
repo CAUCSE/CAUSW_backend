@@ -10,7 +10,6 @@ import java.util.Set;
 
 import org.hibernate.annotations.BatchSize;
 
-import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.campus.circle.entity.CircleMember;
 import net.causw.app.main.domain.community.vote.entity.VoteRecord;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
@@ -26,7 +25,6 @@ import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDt
 import net.causw.app.main.domain.user.auth.service.dto.OAuthAttributes;
 import net.causw.app.main.shared.entity.BaseEntity;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -37,7 +35,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -117,10 +114,6 @@ public class User extends BaseEntity {
 	@Builder.Default
 	private ProfileImageType profileImageType = ProfileImageType.MALE_1;
 
-	@OneToOne(cascade = {CascadeType.REMOVE,
-		CascadeType.PERSIST}, mappedBy = "user", fetch = FetchType.LAZY)
-	private UserProfileImage userProfileImage;
-
 	@Column(name = "state", nullable = false)
 	@Enumerated(EnumType.STRING)
 	private UserState state;
@@ -163,7 +156,6 @@ public class User extends BaseEntity {
 		this.nickname = null;
 		this.major = null;
 		this.profileImageType = ProfileImageType.GHOST;
-		this.userProfileImage = null;
 		this.graduationYear = null;
 		this.graduationType = null;
 		this.deletedAt = LocalDateTime.now();
@@ -274,9 +266,8 @@ public class User extends BaseEntity {
 			.build();
 	}
 
-	public void updateProfile(String nickname, UserProfileImage userProfileImage, String phoneNumber) {
+	public void updateProfile(String nickname, String phoneNumber) {
 		this.nickname = nickname;
-		this.userProfileImage = userProfileImage;
 		if (phoneNumber != null && !NO_PHONE_NUMBER_MESSAGE.equals(phoneNumber)) {
 			this.phoneNumber = phoneNumber;
 		}
@@ -376,16 +367,6 @@ public class User extends BaseEntity {
 		return this.password == null;
 	}
 
-	public String getProfileUrl() {
-		if (this.profileImageType != ProfileImageType.CUSTOM) {
-			return null;
-		}
-		if (this.userProfileImage == null || this.userProfileImage.getUuidFile() == null) {
-			return null;
-		}
-		return this.userProfileImage.getUuidFile().getFileUrl();
-	}
-
 	public void updateNickname(String nickname) {
 		this.nickname = nickname;
 	}
@@ -399,16 +380,10 @@ public class User extends BaseEntity {
 			throw new IllegalArgumentException("기본 이미지 타입만 허용됩니다.");
 		}
 		this.profileImageType = defaultType;
-		this.userProfileImage = null;
 	}
 
-	/**
-	 * 프로필 이미지를 커스텀 이미지로 변경합니다.
-	 * profileImageType을 CUSTOM으로 설정하고 UserProfileImage를 연결합니다.
-	 */
-	public void updateProfileImageToCustom(UserProfileImage newProfileImage) {
+	public void updateProfileImageToCustom() {
 		this.profileImageType = ProfileImageType.CUSTOM;
-		this.userProfileImage = newProfileImage;
 	}
 
 	// 신고 관련 메소드

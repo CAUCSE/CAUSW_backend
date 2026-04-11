@@ -44,7 +44,7 @@ public interface ReportDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "userName", source = "name")
 	@Mapping(target = "userNickname", source = "nickname")
 	@Mapping(target = "totalReportCount", source = "reportCount")
-	@Mapping(target = "profileImage", source = "userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
+	@Mapping(target = "profileImage", expression = "java(null)")
 	@Mapping(target = "userState", source = "state")
 	ReportedUserResponseDto toReportedUserDto(User user);
 

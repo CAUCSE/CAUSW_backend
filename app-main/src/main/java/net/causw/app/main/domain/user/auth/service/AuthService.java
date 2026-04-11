@@ -10,6 +10,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
+import net.causw.app.main.domain.asset.file.repository.UserProfileImageRepository;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
 import net.causw.app.main.domain.user.account.service.implementation.SocialAccountReader;
@@ -58,6 +60,7 @@ public class AuthService {
 	private final EmailVerificationReader emailVerificationReader;
 	private final EmailVerificationSender emailVerificationSender;
 	private final PasswordGenerator passwordGenerator;
+	private final UserProfileImageRepository userProfileImageRepository;
 
 	/**
 	 * 이름+이메일 기준으로 비밀번호 초기화용 인증코드를 발송합니다.
@@ -137,7 +140,9 @@ public class AuthService {
 		// 회원가입 완료 후 이메일 인증 정보 삭제
 		emailVerificationWriter.delete(
 			emailVerificationReader.findLatestByEmailAndStatus(dto.email(), VerificationStatus.VERIFIED));
-		return AuthResult.of(null, savedUser.getName(), savedUser.getEmail(), ProfileImageDto.from(savedUser), null,
+		// 신규 가입 유저는 커스텀 프로필 이미지가 없으므로 null 전달
+		return AuthResult.of(null, savedUser.getName(), savedUser.getEmail(),
+			ProfileImageDto.from(savedUser, null), null,
 			savedUser.isGuest(), savedUser.isTermsAgreed(), savedUser.isAcademicCertified(),
 			savedUser.getAcademicStatus());
 	}
@@ -161,7 +166,9 @@ public class AuthService {
 		userValidator.validateUserStatusForLogin(user);
 		// 토큰 생성
 		AuthTokenPair tokens = authTokenManager.issueTokens(user, null);
-		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), ProfileImageDto.from(user),
+		UserProfileImage profileImage = userProfileImageRepository.findByUserId(user.getId()).orElse(null);
+		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(),
+			ProfileImageDto.from(user, profileImage),
 			tokens.refreshToken(), user.isGuest(), user.isTermsAgreed(), user.isAcademicCertified(),
 			user.getAcademicStatus());
 	}
@@ -215,7 +222,9 @@ public class AuthService {
 		userValidator.validateUser(user);
 		// 토큰 생성
 		AuthTokenPair tokens = authTokenManager.issueTokens(user, refreshToken);
-		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), ProfileImageDto.from(user),
+		UserProfileImage profileImage = userProfileImageRepository.findByUserId(user.getId()).orElse(null);
+		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(),
+			ProfileImageDto.from(user, profileImage),
 			tokens.refreshToken(), user.isGuest(), user.isTermsAgreed(), user.isAcademicCertified(),
 			user.getAcademicStatus());
 	}

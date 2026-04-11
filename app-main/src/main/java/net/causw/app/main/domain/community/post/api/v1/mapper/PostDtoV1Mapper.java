@@ -115,7 +115,7 @@ public interface PostDtoV1Mapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "isOwner", source = "isOwner")
 	@Mapping(target = "updatable", source = "updatable")
 	@Mapping(target = "deletable", source = "deletable")
-	@Mapping(target = "writerProfileImage", source = "post.writer.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
+	@Mapping(target = "writerProfileImage", expression = "java(null)")
 	@Mapping(target = "formResponseDto", source = "formResponseDto")
 	@Mapping(target = "voteResponseDto", source = "voteResponseDto")
 	@Mapping(target = "isPostVote", source = "isPostVote")

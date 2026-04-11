@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
+import net.causw.app.main.domain.asset.file.repository.UserProfileImageRepository;
 import net.causw.app.main.domain.community.comment.entity.ChildComment;
 import net.causw.app.main.domain.community.comment.service.dto.ChildCommentMeta;
 import net.causw.app.main.domain.community.comment.service.dto.ChildCommentResult;
@@ -21,6 +23,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ChildCommentMapper {
 
+	private final UserProfileImageRepository userProfileImageRepository;
+
 	/**
 	 * 대댓글 엔티티와 렌더 데이터를 조합하여 {@link ChildCommentResult}를 생성합니다.
 	 *
@@ -36,8 +40,11 @@ public class ChildCommentMapper {
 		// 삭제된 대댓글이면 익명처리
 		Boolean isAnonymous = childComment.getIsDeleted() ? Boolean.TRUE : childComment.getIsAnonymous();
 
+		UserProfileImage writerProfileImage = (childComment.getWriter() != null)
+			? userProfileImageRepository.findByUserId(childComment.getWriter().getId()).orElse(null)
+			: null;
 		CommentAuthorInfo authorInfo = CommentAuthorInfo.of(
-			childComment.getWriter(), isAnonymous, user,
+			childComment.getWriter(), writerProfileImage, isAnonymous, user,
 			data.boardAdminIds(), data.isBlocked());
 
 		// 차단 대댓글이거나 삭제된 대댓글의 경우 content를 null로 처리

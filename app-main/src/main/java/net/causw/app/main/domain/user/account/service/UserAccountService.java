@@ -4,6 +4,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
+import net.causw.app.main.domain.asset.file.repository.UserProfileImageRepository;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
@@ -34,6 +36,7 @@ public class UserAccountService {
 	private final AuthTokenManager authTokenManager;
 	private final PasswordEncoder passwordEncoder;
 	private final UserInfoRepository userInfoRepository;
+	private final UserProfileImageRepository userProfileImageRepository;
 
 	/**
 	 * 소셜 로그인을 통해 생성된 임시 유저(GUEST)의 추가 정보를 등록하고 회원가입 절차를 완료합니다.
@@ -64,8 +67,9 @@ public class UserAccountService {
 		guestUser.submitRegistration(name, nickname, phoneNumber);
 		User updatedUser = userWriter.save(guestUser);
 		AuthTokenPair tokens = authTokenManager.issueTokens(updatedUser, refreshToken);
+		// 신규 등록 유저는 커스텀 프로필 이미지가 없으므로 null 전달
 		return AuthResult.of(tokens.accessToken(), updatedUser.getName(), updatedUser.getEmail(),
-			ProfileImageDto.from(updatedUser),
+			ProfileImageDto.from(updatedUser, null),
 			tokens.refreshToken(), updatedUser.isGuest(), updatedUser.isTermsAgreed(),
 			updatedUser.isAcademicCertified(), updatedUser.getAcademicStatus());
 	}
@@ -80,7 +84,8 @@ public class UserAccountService {
 	public UserMeResult getMyProfile(String userId) {
 		User user = userReader.findDetailById(userId);
 		UserInfo userInfo = userInfoRepository.findByUserId(userId).orElse(null);
-		return UserMeResult.from(user, userInfo);
+		UserProfileImage profileImage = userProfileImageRepository.findByUserId(userId).orElse(null);
+		return UserMeResult.from(user, userInfo, profileImage);
 	}
 
 	/**

@@ -16,6 +16,7 @@ import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 
 import net.causw.app.main.domain.asset.file.entity.joinEntity.QPostAttachImage;
+import net.causw.app.main.domain.asset.file.entity.joinEntity.QUserProfileImage;
 import net.causw.app.main.domain.asset.file.enums.FileExtensionType;
 import net.causw.app.main.domain.community.comment.entity.QChildComment;
 import net.causw.app.main.domain.community.comment.entity.QComment;
@@ -411,12 +412,12 @@ public class PostQueryRepository {
 			.from(favoritePost)
 			.where(favoritePost.post.eq(post));
 
-		// 작성자 프로필 이미지 URL 서브쿼리
-		SubQueryExpression<String> writerProfileImageUrl = JPAExpressions.select(
-			writer.userProfileImage.uuidFile.fileUrl)
-			.from(writer)
-			.where(writer.eq(post.writer)
-				.and(writer.userProfileImage.isNotNull()));
+		// 작성자 프로필 이미지 URL 서브쿼리 (UserProfileImage owning side 기준)
+		QUserProfileImage upi = QUserProfileImage.userProfileImage;
+		SubQueryExpression<String> writerProfileImageUrl = JPAExpressions
+			.select(upi.uuidFile.fileUrl)
+			.from(upi)
+			.where(upi.user.id.eq(post.writer.id));
 
 		return new QPostCursorResult(
 			post.id, post.content,
