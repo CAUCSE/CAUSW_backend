@@ -1,9 +1,6 @@
 package net.causw.app.main.domain.community.ceremony.service.v1;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
@@ -79,14 +76,22 @@ public class CeremonyV1Service {
 
 		// 전체 알림 전송이 true인 경우, 대상 학번은 빈 리스트로 설정
 		// 2자리 문자열 학번을 4자리 연도 정수로 변환 (72 이상 → 1900년대, 미만 → 2000년대)
-		List<Integer> targetAdmissionYears = createCeremonyRequestDTO.getIsSetAll()
-			? new ArrayList<>()
-			: createCeremonyRequestDTO.getTargetAdmissionYears().stream()
-				.map(s -> {
-					int year = Integer.parseInt(s);
-					return year >= 72 ? 1900 + year : 2000 + year;
-				})
-				.toList();
+		List<Integer> targetAdmissionYears;
+		if (createCeremonyRequestDTO.getIsSetAll()) {
+			targetAdmissionYears = List.of();
+			// 전체 알림 전송이 true인 경우, 대상 학번은 빈 리스트로 설정
+		}else{
+			targetAdmissionYears = Optional.of(createCeremonyRequestDTO)
+					.map(CreateCeremonyRequestDto::getTargetAdmissionYears)
+					.orElse(List.of())
+					.stream()
+					.filter(Objects::nonNull)
+					.map(s -> {
+						int year = Integer.parseInt(s);
+						return year >= 72 ? 1900 + year : 2000 + year;
+					})
+					.toList();
+		}
 
 		List<UuidFile> uuidFileList = (imageFileList == null || imageFileList.isEmpty())
 			? List.of()
@@ -191,7 +196,7 @@ public class CeremonyV1Service {
 	@Transactional
 	public CeremonyNotificationSettingResponseDto createCeremonyNotificationSettings(User user,
 		CreateCeremonyNotificationSettingDto createCeremonyNotificationSettingDTO) {
-		Set<String> admissionYears = validateAdmissionYears(createCeremonyNotificationSettingDTO);
+		Set<Integer> admissionYears = validateAdmissionYears(createCeremonyNotificationSettingDTO);
 
 		CeremonyNotificationSetting ceremonyNotificationSetting = CeremonyNotificationSetting.of(
 			admissionYears,
@@ -238,7 +243,7 @@ public class CeremonyV1Service {
 					ErrorCode.ROW_DOES_NOT_EXIST,
 					MessageUtil.CEREMONY_NOTIFICATION_SETTING_NOT_FOUND));
 
-		Set<String> admissionYears = validateAdmissionYears(createCeremonyNotificationSettingDTO);
+		Set<Integer> admissionYears = validateAdmissionYears(createCeremonyNotificationSettingDTO);
 
 		ceremonyNotificationSetting.getSubscribedAdmissionYears().clear();
 		ceremonyNotificationSetting.getSubscribedAdmissionYears().addAll(admissionYears);
@@ -252,8 +257,8 @@ public class CeremonyV1Service {
 
 	}
 
-	// 입학년도 유효성 검사 및 반환
-	private Set<String> validateAdmissionYears(CreateCeremonyNotificationSettingDto dto) {
+	// 입학년도 유효성 검사 및 4자리 정수 Set으로 반환
+	private Set<Integer> validateAdmissionYears(CreateCeremonyNotificationSettingDto dto) {
 		// setAll이 true인 경우 빈 Set 반환 (검증 불필요)
 		if (dto.isSetAll()) {
 			return new HashSet<>();
@@ -275,7 +280,13 @@ public class CeremonyV1Service {
 			}
 		}
 
-		return dto.getSubscribedAdmissionYears();
+		// 2자리 문자열 학번을 4자리 연도 정수로 변환 (72 이상 → 1900년대, 미만 → 2000년대)
+		return dto.getSubscribedAdmissionYears().stream()
+			.map(s -> {
+				int year = Integer.parseInt(s);
+				return year >= 72 ? 1900 + year : 2000 + year;
+			})
+			.collect(java.util.stream.Collectors.toSet());
 	}
 
 }

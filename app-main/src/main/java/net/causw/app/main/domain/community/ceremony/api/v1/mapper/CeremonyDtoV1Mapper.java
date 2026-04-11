@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.community.ceremony.api.v1.mapper;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -64,7 +65,7 @@ public interface CeremonyDtoV1Mapper {
 
 	@Mapping(target = "isNotificationActive", source = "notificationActive")
 	@Mapping(target = "isSetAll", source = "setAll")
-	@Mapping(target = "subscribedAdmissionYears", source = "subscribedAdmissionYears")
+	@Mapping(target = "subscribedAdmissionYears", source = "subscribedAdmissionYears", qualifiedByName = "mapAdmissionYearsToSet")
 	CeremonyNotificationSettingResponseDto toCeremonyNotificationSettingResponseDto(
 		CeremonyNotificationSetting ceremonyNotificationSetting);
 
@@ -75,14 +76,25 @@ public interface CeremonyDtoV1Mapper {
 			.collect(Collectors.toList());
 	}
 
-	// Set<Integer> (4자리 연도) → List<String> (2자리 학번) 변환
+	// Set<Integer> (4자리 연도) → List<String> (2자리 학번) 변환 (경조사 응답용)
 	@Named("mapAdmissionYears")
 	default List<String> mapAdmissionYears(Set<Integer> years) {
 		if (years == null) {
 			return List.of();
 		}
 		return years.stream()
-			.map(year -> String.valueOf(year).substring(2))
+			.map(year -> String.format("%02d", year % 100))
 			.collect(Collectors.toList());
+	}
+
+	// Set<Integer> (4자리 연도) → Set<String> (2자리 학번) 변환 (알림 설정 응답용)
+	@Named("mapAdmissionYearsToSet")
+	default Set<String> mapAdmissionYearsToSet(Set<Integer> years) {
+		if (years == null) {
+			return new HashSet<>();
+		}
+		return years.stream()
+			.map(year -> String.format("%02d", year % 100))
+			.collect(Collectors.toSet());
 	}
 }
