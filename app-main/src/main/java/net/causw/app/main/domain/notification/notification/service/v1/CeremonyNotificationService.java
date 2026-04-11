@@ -87,16 +87,8 @@ public class CeremonyNotificationService implements NotificationService {
 				blockerUserIdsByBlockee);
 		} else {
 			// 특정 학번에게만 알림
-			// 1차 필터링
-			List<Integer> targetYears = ceremony.getTargetAdmissionYears().stream()
-				.map(studentId -> {
-					int year = Integer.parseInt(studentId);
-					// 72~99는 19xx, 나머지는 20xx
-					return year >= 72 ? 1900 + year : 2000 + year;
-				})
-				.collect(Collectors.toList());
 			List<CeremonyNotificationSetting> filteredSettings = ceremonyNotificationSettingRepository
-				.findByAdmissionYearsIn(targetYears, blockerUserIdsByBlockee);
+				.findByAdmissionYearsIn(ceremony.getTargetAdmissionYears().stream().toList(), blockerUserIdsByBlockee);
 
 			// 2차 필터링
 			ceremonyNotificationSettings = filteredSettings.stream()
