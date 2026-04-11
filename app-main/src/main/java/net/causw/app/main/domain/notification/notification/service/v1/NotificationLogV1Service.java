@@ -88,8 +88,9 @@ public class NotificationLogV1Service {
 
 	@Transactional(readOnly = true)
 	public NotificationCountResponseDto getNotificationLogCount(User user) {
-		List<NotificationLog> unreadNotificationLogs = notificationLogRepository.findUnreadLogsUpToLimit(user,
-			pageableFactory.create(0, StaticValue.MAX_NOTIFICATION_COUNT));
+		List<NotificationLog> unreadNotificationLogs = notificationLogRepository
+			.findByUserAndIsReadFalseNotificationTypes(
+				user, NoticeType.V1_TYPES, pageableFactory.create(0, StaticValue.MAX_NOTIFICATION_COUNT));
 
 		return NotificationCountResponseDto.builder()
 			.notificationLogCount(unreadNotificationLogs.size())

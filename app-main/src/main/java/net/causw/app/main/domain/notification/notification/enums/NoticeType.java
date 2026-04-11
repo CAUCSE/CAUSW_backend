@@ -1,5 +1,7 @@
 package net.causw.app.main.domain.notification.notification.enums;
 
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -22,4 +24,6 @@ public enum NoticeType {
 
 	private final String title;
 	private final String type;
+
+	public static final List<NoticeType> V1_TYPES = List.of(POST, COMMENT, CEREMONY, BOARD, ADMISSION);
 }
