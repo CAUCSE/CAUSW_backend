@@ -152,19 +152,28 @@ public class AuthController {
 	}
 
 	private ResponseEntity<ApiResponse<AuthResponse>> createAuthResponse(AuthResult dto) {
-		ResponseCookie cookie = buildRefreshTokenCookie(dto.refreshToken());
+		ResponseCookie cookie = buildRefreshTokenCookie(dto.refreshToken(), dto.isKeepLogin());
 		return ResponseEntity.ok()
 			.header(HttpHeaders.SET_COOKIE, cookie.toString())
 			.body(ApiResponse.success(authDtoMapper.toAuthResponse(dto)));
 	}
 
-	private ResponseCookie buildRefreshTokenCookie(String refreshToken) {
-		return ResponseCookie.from("refresh_token", refreshToken)
+	private ResponseCookie buildRefreshTokenCookie(String refreshToken, boolean isKeepLogin) {
+		ResponseCookie.ResponseCookieBuilder cookieBuilder = ResponseCookie.from("refresh_token", refreshToken)
 			.httpOnly(false)
 			.secure(true)
 			.path("/")
-			.maxAge(Duration.ofMillis(StaticValue.JWT_REFRESH_TOKEN_VALID_TIME))
-			.sameSite("None")
-			.build();
+			.sameSite("None");
+
+		// 로그인 상태 유지 여부에 따라 쿠키 유효 기간 설정
+		if (isKeepLogin) {
+			// 영속 쿠키
+			cookieBuilder.maxAge(Duration.ofMillis(StaticValue.JWT_REFRESH_TOKEN_VALID_TIME));
+		} else {
+			// 세션 쿠키
+			cookieBuilder.maxAge(-1);
+		}
+
+		return cookieBuilder.build();
 	}
 }
