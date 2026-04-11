@@ -1,9 +1,14 @@
 package net.causw.app.main.domain.user.account.service;
 
+import java.time.LocalDateTime;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerReader;
+import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerWriter;
+import net.causw.app.main.domain.user.account.api.v2.dto.response.UserWithdrawResponse;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
@@ -17,9 +22,11 @@ import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthValidator;
+import net.causw.app.main.domain.user.auth.service.implementation.SocialAccountWriter;
 import net.causw.app.main.shared.dto.ProfileImageDto;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
+import net.causw.app.main.shared.infra.firebase.FcmUtils;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,9 +36,13 @@ public class UserAccountService {
 
 	private final UserReader userReader;
 	private final UserWriter userWriter;
+	private final SocialAccountWriter socialAccountWriter;
+	private final LockerReader lockerReader;
+	private final LockerWriter lockerWriter;
 	private final UserValidator userValidator;
 	private final AuthValidator authValidator;
 	private final AuthTokenManager authTokenManager;
+	private final FcmUtils fcmUtils;
 	private final PasswordEncoder passwordEncoder;
 	private final UserInfoRepository userInfoRepository;
 
@@ -168,5 +179,33 @@ public class UserAccountService {
 		authValidator.validatePasswordFormat(command.newPassword());
 
 		user.updatePassword(passwordEncoder.encode(command.newPassword()));
+	}
+
+	// 회원 탈퇴
+	@Transactional
+	public UserWithdrawResponse withdraw(String userId, String accessToken, String refreshToken) {
+		User user = userReader.findUserById(userId);
+
+		if (user.isDeleted()) {
+			throw UserErrorCode.USER_DELETED.toBaseException();
+		}
+
+		if (user.getState() == UserState.DROP) {
+			throw UserErrorCode.USER_DROPPED.toBaseException();
+		}
+
+		// 소셜 계정 unlink + provider refresh token 제거
+		socialAccountWriter.unlinkAllByUser(user);
+		// 현재 access / refresh token 무효화
+		authTokenManager.invalidateTokens(accessToken, refreshToken);
+		// 부가 처리
+		lockerReader.findByUserId(user.getId())
+			.ifPresent(locker -> lockerWriter.returnLocker(locker, user));
+		fcmUtils.clearFcmTokens(user);
+
+		user.withdraw(LocalDateTime.now());
+		userWriter.save(user);
+
+		return UserWithdrawResponse.of(user.getDeletedAt());
 	}
 }

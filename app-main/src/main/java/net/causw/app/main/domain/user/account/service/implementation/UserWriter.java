@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.user.account.service.implementation;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -60,7 +61,7 @@ public class UserWriter {
 	}
 
 	public User dropByAdmin(User user, String dropReason) {
-		user.dropByAdmin(dropReason);
+		user.dropByAdmin(dropReason, LocalDateTime.now());
 		return this.userRepository.save(user);
 	}
 
