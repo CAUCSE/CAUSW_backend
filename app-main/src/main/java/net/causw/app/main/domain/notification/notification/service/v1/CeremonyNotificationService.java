@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.notification.notification.service.v1;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -87,8 +88,9 @@ public class CeremonyNotificationService implements NotificationService {
 				blockerUserIdsByBlockee);
 		} else {
 			// 특정 학번에게만 알림
+			Set<Integer> targetYears = new HashSet<>(ceremony.getTargetAdmissionYears());
 			List<CeremonyNotificationSetting> filteredSettings = ceremonyNotificationSettingRepository
-				.findByAdmissionYearsIn(ceremony.getTargetAdmissionYears().stream().toList(), blockerUserIdsByBlockee);
+				.findByAdmissionYearsIn(targetYears.stream().toList(), blockerUserIdsByBlockee);
 
 			// 2차 필터링
 			ceremonyNotificationSettings = filteredSettings.stream()
@@ -104,9 +106,8 @@ public class CeremonyNotificationService implements NotificationService {
 						return true;
 					}
 
-					// 특정 입학년도만 수신
-					Integer ceremonyWriterYear = ceremonyUser.getAdmissionYear();
-					return setting.getSubscribedAdmissionYears().contains(ceremonyWriterYear);
+					// 구독 학번이 경조사 대상 학번과 겹치는 경우만 수신
+					return !Collections.disjoint(setting.getSubscribedAdmissionYears(), targetYears);
 				})
 				.collect(Collectors.toList());
 		}
