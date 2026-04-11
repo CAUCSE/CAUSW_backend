@@ -34,7 +34,7 @@ public class UserNotificationSettingQueryRepository {
 	 * @param key            판별할 알림 설정 키
 	 * @return 발송 대상 User 목록
 	 */
-	public List<User> findCeremonyNotificationTargets(List<Integer> admissionYears, UserNotificationSettingKey key) {
+	public List<User> findNotificationTargetsByAdmissionYears(List<Integer> admissionYears, UserNotificationSettingKey key) {
 		QUser user = QUser.user;
 		QUserNotificationSetting setting = QUserNotificationSetting.userNotificationSetting;
 

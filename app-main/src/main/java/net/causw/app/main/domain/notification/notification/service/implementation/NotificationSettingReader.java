@@ -58,7 +58,7 @@ public class NotificationSettingReader {
 	 * @return 발송 대상 User 목록
 	 */
 	public List<User> findCeremonyNotificationTargets(List<Integer> admissionYears, UserNotificationSettingKey key) {
-		return userNotificationSettingQueryRepository.findCeremonyNotificationTargets(admissionYears, key);
+		return userNotificationSettingQueryRepository.findNotificationTargetsByAdmissionYears(admissionYears, key);
 	}
 
 	/**

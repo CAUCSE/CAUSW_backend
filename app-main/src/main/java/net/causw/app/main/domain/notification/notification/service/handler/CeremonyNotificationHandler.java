@@ -59,6 +59,7 @@ public class CeremonyNotificationHandler {
 		User ceremonyUser = ceremony.getUser();
 
 		// 입학년도 + 알림 설정을 단일 쿼리로 처리
+		// isSetAll=true → admissionYears=[]
 		List<Integer> admissionYears = resolveAdmissionYears(ceremony);
 		List<User> targets = notificationSettingReader.findCeremonyNotificationTargets(
 			admissionYears, UserNotificationSettingKey.CEREMONY_NOTIFICATION_ENABLED);
