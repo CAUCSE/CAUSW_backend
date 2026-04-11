@@ -44,8 +44,6 @@ public class UserInfoQueryV1RepositoryImpl implements UserInfoQueryV1Repository 
 			.join(userInfo.user, user).fetchJoin()
 			.leftJoin(user.userProfileImage, userProfileImage).fetchJoin()
 			.leftJoin(userProfileImage.uuidFile, uuidFile).fetchJoin()
-			.leftJoin(user.ceremonyNotificationSetting).fetchJoin()
-			.leftJoin(user.locker).fetchJoin()
 			.where(user.state.eq(UserState.ACTIVE))
 			.where(user.academicStatus.ne(AcademicStatus.UNDETERMINED))
 			.where(predicate)

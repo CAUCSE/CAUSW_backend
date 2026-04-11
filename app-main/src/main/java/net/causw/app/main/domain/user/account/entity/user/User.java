@@ -11,10 +11,8 @@ import java.util.Set;
 import org.hibernate.annotations.BatchSize;
 
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
-import net.causw.app.main.domain.asset.locker.entity.Locker;
 import net.causw.app.main.domain.campus.circle.entity.CircleMember;
 import net.causw.app.main.domain.community.vote.entity.VoteRecord;
-import net.causw.app.main.domain.notification.notification.entity.CeremonyNotificationSetting;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.api.v1.dto.GraduatedUserCommand;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserCreateRequestDto;
@@ -133,12 +131,6 @@ public class User extends BaseEntity {
 	@Embedded
 	private TermAgreements agreements;
 
-	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
-	private Locker locker;
-
-	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
-	private CeremonyNotificationSetting ceremonyNotificationSetting;
-
 	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
 	private List<CircleMember> circleMemberList;
 
@@ -153,7 +145,7 @@ public class User extends BaseEntity {
 	@Builder.Default
 	private Boolean isV2 = true;
 
-	@ElementCollection(fetch = FetchType.EAGER)
+	@ElementCollection(fetch = FetchType.LAZY)
 	@CollectionTable(name = "tb_user_fcm_token", joinColumns = @JoinColumn(name = "user_id"))
 	@Column(name = "fcm_token_value")
 	private Set<String> fcmTokens = new HashSet<>();
