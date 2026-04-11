@@ -12,7 +12,8 @@ public record AuthResult(
 	boolean isGuest,
 	boolean isTermsAgreed,
 	boolean isAcademicCertified,
-	AcademicStatus academicStatus) {
+	AcademicStatus academicStatus,
+	boolean isKeepLogin) {
 	public static AuthResult of(String accessToken,
 		String name,
 		String email,
@@ -21,8 +22,9 @@ public record AuthResult(
 		boolean isGuest,
 		boolean isTermsAgreed,
 		boolean isAcademicCertified,
-		AcademicStatus academicStatus) {
+		AcademicStatus academicStatus,
+		boolean isKeepLogin) {
 		return new AuthResult(accessToken, name, email, profileImage, refreshToken, isGuest, isTermsAgreed,
-			isAcademicCertified, academicStatus);
+			isAcademicCertified, academicStatus, isKeepLogin);
 	}
 }

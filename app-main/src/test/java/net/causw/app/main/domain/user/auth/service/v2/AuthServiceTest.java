@@ -107,6 +107,7 @@ public class AuthServiceTest {
 	private static final String NEW_REFRESH_TOKEN = "new_refresh_token";
 	private static final String FCM_TOKEN = "fcm_token";
 	private static final String EMAIL_FOR_FIND = "abcdef@cau.ac.kr";
+	private static final boolean IS_KEEP_LOGIN = false;
 
 	private UserRegisterDto registerDto;
 	private User user;
@@ -368,7 +369,7 @@ public class AuthServiceTest {
 			given(authTokenManager.issueTokens(any(User.class), any())).willReturn(authTokenPair);
 
 			// when
-			AuthResult result = authService.loginEmailUser(EMAIL, PASSWORD);
+			AuthResult result = authService.loginEmailUser(EMAIL, PASSWORD, IS_KEEP_LOGIN);
 
 			// then
 			assertThat(result).isNotNull();
@@ -393,7 +394,7 @@ public class AuthServiceTest {
 					.willThrow(UserErrorCode.INVALID_LOGIN.toBaseException());
 
 				// when & then
-				assertThatThrownBy(() -> authService.loginEmailUser(EMAIL, PASSWORD))
+				assertThatThrownBy(() -> authService.loginEmailUser(EMAIL, PASSWORD, IS_KEEP_LOGIN))
 					.isInstanceOf(BaseRunTimeV2Exception.class)
 					.hasMessage(UserErrorCode.INVALID_LOGIN.getMessage());
 
@@ -411,7 +412,7 @@ public class AuthServiceTest {
 					.when(authValidator).validateCredential(user, PASSWORD);
 
 				// when & then
-				assertThatThrownBy(() -> authService.loginEmailUser(EMAIL, PASSWORD))
+				assertThatThrownBy(() -> authService.loginEmailUser(EMAIL, PASSWORD, IS_KEEP_LOGIN))
 					.isInstanceOf(BaseRunTimeV2Exception.class)
 					.hasMessage(UserErrorCode.INVALID_LOGIN.getMessage());
 
@@ -433,7 +434,7 @@ public class AuthServiceTest {
 					.when(authValidator).validateCredential(user, PASSWORD);
 
 				// when & then
-				assertThatThrownBy(() -> authService.loginEmailUser(EMAIL, PASSWORD))
+				assertThatThrownBy(() -> authService.loginEmailUser(EMAIL, PASSWORD, IS_KEEP_LOGIN))
 					.isInstanceOf(BaseRunTimeV2Exception.class)
 					.hasMessage(errorCode.getMessage());
 			}

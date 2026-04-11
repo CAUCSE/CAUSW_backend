@@ -153,7 +153,7 @@ public class AuthService {
 	 * [INVALID_LOGIN_USER_...] 로그인 불가능한 상태(탈퇴, 추방, 휴면)인 경우
 	 */
 	@Transactional
-	public AuthResult loginEmailUser(String email, String password) {
+	public AuthResult loginEmailUser(String email, String password, boolean isKeepLogin) {
 		// 이메일에 대한 유저가 존재하는지 확인
 		User user = userReader.findByEmailOrElseThrow(email);
 		// 유효성 검증 수행 (비밀번호, 유저 상태)
@@ -163,7 +163,7 @@ public class AuthService {
 		AuthTokenPair tokens = authTokenManager.issueTokens(user, null);
 		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), ProfileImageDto.from(user),
 			tokens.refreshToken(), user.isGuest(), user.isTermsAgreed(), user.isAcademicCertified(),
-			user.getAcademicStatus());
+			user.getAcademicStatus(), isKeepLogin);
 	}
 
 	@Transactional(readOnly = true)

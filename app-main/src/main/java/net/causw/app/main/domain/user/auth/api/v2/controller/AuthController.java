@@ -98,7 +98,7 @@ public class AuthController {
 	@Operation(summary = "이메일 로그인 V2", description = "이메일을 활용하여 사용자 계정에 로그인합니다.")
 	@PostMapping("/login")
 	public ResponseEntity<ApiResponse<AuthResponse>> emailSignIn(@RequestBody @Valid EmailLoginRequest request) {
-		AuthResult dto = authService.loginEmailUser(request.email(), request.password());
+		AuthResult dto = authService.loginEmailUser(request.email(), request.password(), request.isKeepLogin());
 		return createAuthResponse(dto);
 	}
 
