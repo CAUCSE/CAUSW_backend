@@ -77,10 +77,16 @@ public class CeremonyV1Service {
 			}
 		}
 
-		// 전체 알림 전송이 true인 경우, 대상 학번은 빈 리스트(null)로 설정
-		List<String> targetAdmissionYears = createCeremonyRequestDTO.getIsSetAll()
+		// 전체 알림 전송이 true인 경우, 대상 학번은 빈 리스트로 설정
+		// 2자리 문자열 학번을 4자리 연도 정수로 변환 (72 이상 → 1900년대, 미만 → 2000년대)
+		List<Integer> targetAdmissionYears = createCeremonyRequestDTO.getIsSetAll()
 			? new ArrayList<>()
-			: createCeremonyRequestDTO.getTargetAdmissionYears();
+			: createCeremonyRequestDTO.getTargetAdmissionYears().stream()
+				.map(s -> {
+					int year = Integer.parseInt(s);
+					return year >= 72 ? 1900 + year : 2000 + year;
+				})
+				.toList();
 
 		List<UuidFile> uuidFileList = (imageFileList == null || imageFileList.isEmpty())
 			? List.of()

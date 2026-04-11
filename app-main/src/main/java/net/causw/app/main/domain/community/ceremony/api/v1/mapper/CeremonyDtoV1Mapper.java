@@ -1,6 +1,7 @@
 package net.causw.app.main.domain.community.ceremony.api.v1.mapper;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.mapstruct.Mapper;
@@ -49,7 +50,7 @@ public interface CeremonyDtoV1Mapper {
 	@Mapping(target = "applicantName", source = "user.name")
 	@Mapping(target = "title", source = ".", qualifiedByName = "mapTitle")
 	@Mapping(target = "isSetAll", source = "ceremony.setAll") // 상세 조회에서는 표시
-	@Mapping(target = "targetAdmissionYears", source = "targetAdmissionYears")
+	@Mapping(target = "targetAdmissionYears", source = "targetAdmissionYears", qualifiedByName = "mapAdmissionYears")
 	// 상세 조회에서는 표시
 	CeremonyResponseDto toDetailedCeremonyResponseDto(Ceremony ceremony);
 
@@ -71,6 +72,17 @@ public interface CeremonyDtoV1Mapper {
 	default List<String> mapAttachedImages(List<CeremonyAttachImage> images) {
 		return images.stream()
 			.map(image -> image.getUuidFile().getFileUrl())
+			.collect(Collectors.toList());
+	}
+
+	// Set<Integer> (4자리 연도) → List<String> (2자리 학번) 변환
+	@Named("mapAdmissionYears")
+	default List<String> mapAdmissionYears(Set<Integer> years) {
+		if (years == null) {
+			return List.of();
+		}
+		return years.stream()
+			.map(year -> String.valueOf(year).substring(2))
 			.collect(Collectors.toList());
 	}
 }
