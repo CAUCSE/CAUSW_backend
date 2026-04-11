@@ -163,18 +163,33 @@ public class User extends BaseEntity {
 	@Builder.Default
 	private Integer reportCount = 0;
 
-	public void delete() {
+	// 자진 탈퇴 처리
+	public void withdraw(LocalDateTime now) {
+		this.deletedAt = now;
+	}
+
+	/*
+	 * 개인정보 익명화
+	 * - row는 유지하고 개인정보만 제거
+	 */
+	public void anonymize() {
 		this.email = "deleted_" + this.getId();
 		this.name = "탈퇴한 사용자";
 		this.phoneNumber = null;
+		this.password = null;
 		this.studentId = null;
+		this.admissionYear = null;
 		this.nickname = null;
 		this.major = null;
+		this.department = null;
+		this.currentCompletedSemester = null;
+		this.academicStatus = null;
 		this.profileImageType = ProfileImageType.GHOST;
 		this.userProfileImage = null;
 		this.graduationYear = null;
 		this.graduationType = null;
-		this.deletedAt = LocalDateTime.now();
+		this.agreements = null;
+		this.fcmTokens.clear();
 	}
 
 	public boolean isDeleted() {
@@ -354,10 +369,11 @@ public class User extends BaseEntity {
 		this.rejectionOrDropReason = rejectReason;
 	}
 
-	public void dropByAdmin(String dropReason) {
+	public void dropByAdmin(String dropReason, LocalDateTime now) {
 		this.state = UserState.DROP;
 		this.roles = new HashSet<>(Set.of(Role.NONE));
 		this.rejectionOrDropReason = dropReason;
+		this.deletedAt = now;
 	}
 
 	// 탈퇴, 추방된 유저의 계정 복구에 사용
