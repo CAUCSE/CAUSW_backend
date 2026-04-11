@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
-import net.causw.app.main.domain.asset.file.repository.UserProfileImageRepository;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
@@ -36,7 +36,7 @@ public class UserAccountService {
 	private final AuthTokenManager authTokenManager;
 	private final PasswordEncoder passwordEncoder;
 	private final UserInfoRepository userInfoRepository;
-	private final UserProfileImageRepository userProfileImageRepository;
+	private final UserProfileImageReader userProfileImageReader;
 
 	/**
 	 * 소셜 로그인을 통해 생성된 임시 유저(GUEST)의 추가 정보를 등록하고 회원가입 절차를 완료합니다.
@@ -84,7 +84,7 @@ public class UserAccountService {
 	public UserMeResult getMyProfile(String userId) {
 		User user = userReader.findDetailById(userId);
 		UserInfo userInfo = userInfoRepository.findByUserId(userId).orElse(null);
-		UserProfileImage profileImage = userProfileImageRepository.findByUserId(userId).orElse(null);
+		UserProfileImage profileImage = userProfileImageReader.findByUserIdOrNull(userId);
 		return UserMeResult.from(user, userInfo, profileImage);
 	}
 

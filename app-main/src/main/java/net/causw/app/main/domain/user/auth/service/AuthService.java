@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
-import net.causw.app.main.domain.asset.file.repository.UserProfileImageRepository;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
 import net.causw.app.main.domain.user.account.service.implementation.SocialAccountReader;
@@ -60,7 +60,7 @@ public class AuthService {
 	private final EmailVerificationReader emailVerificationReader;
 	private final EmailVerificationSender emailVerificationSender;
 	private final PasswordGenerator passwordGenerator;
-	private final UserProfileImageRepository userProfileImageRepository;
+	private final UserProfileImageReader userProfileImageReader;
 
 	/**
 	 * 이름+이메일 기준으로 비밀번호 초기화용 인증코드를 발송합니다.
@@ -166,7 +166,7 @@ public class AuthService {
 		userValidator.validateUserStatusForLogin(user);
 		// 토큰 생성
 		AuthTokenPair tokens = authTokenManager.issueTokens(user, null);
-		UserProfileImage profileImage = userProfileImageRepository.findByUserId(user.getId()).orElse(null);
+		UserProfileImage profileImage = userProfileImageReader.findByUserIdOrNull(user.getId());
 		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(),
 			ProfileImageDto.from(user, profileImage),
 			tokens.refreshToken(), user.isGuest(), user.isTermsAgreed(), user.isAcademicCertified(),
@@ -222,7 +222,7 @@ public class AuthService {
 		userValidator.validateUser(user);
 		// 토큰 생성
 		AuthTokenPair tokens = authTokenManager.issueTokens(user, refreshToken);
-		UserProfileImage profileImage = userProfileImageRepository.findByUserId(user.getId()).orElse(null);
+		UserProfileImage profileImage = userProfileImageReader.findByUserIdOrNull(user.getId());
 		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(),
 			ProfileImageDto.from(user, profileImage),
 			tokens.refreshToken(), user.isGuest(), user.isTermsAgreed(), user.isAcademicCertified(),

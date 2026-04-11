@@ -7,8 +7,9 @@ import org.springframework.web.multipart.MultipartFile;
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
-import net.causw.app.main.domain.asset.file.repository.UserProfileImageRepository;
 import net.causw.app.main.domain.asset.file.service.v2.UuidFileService;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageWriter;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.ProfileImageResponse;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.ProfileImageType;
@@ -25,7 +26,8 @@ public class UserProfileImageService {
 	private final UserReader userReader;
 	private final UserWriter userWriter;
 	private final UuidFileService uuidFileService;
-	private final UserProfileImageRepository userProfileImageRepository;
+	private final UserProfileImageReader userProfileImageReader;
+	private final UserProfileImageWriter userProfileImageWriter;
 
 	/**
 	 * 프로필 이미지를 기본 이미지로 변경합니다.
@@ -44,7 +46,7 @@ public class UserProfileImageService {
 		}
 
 		User user = userReader.findUserById(userId);
-		UserProfileImage existingProfileImage = userProfileImageRepository.findByUserId(userId).orElse(null);
+		UserProfileImage existingProfileImage = userProfileImageReader.findByUserIdOrNull(userId);
 
 		user.updateProfileImageToDefault(profileImageType);
 		userWriter.save(user);
@@ -52,7 +54,7 @@ public class UserProfileImageService {
 		// 기존 커스텀 이미지 삭제 (User save 이후 수행)
 		if (existingProfileImage != null) {
 			UuidFile oldUuidFile = existingProfileImage.getUuidFile();
-			userProfileImageRepository.delete(existingProfileImage);
+			userProfileImageWriter.delete(existingProfileImage);
 			if (oldUuidFile != null) {
 				uuidFileService.deleteFile(oldUuidFile.getId());
 			}
@@ -74,7 +76,7 @@ public class UserProfileImageService {
 	@Transactional
 	public ProfileImageResponse updateToCustomProfileImage(String userId, MultipartFile imageFile) {
 		User user = userReader.findUserById(userId);
-		UserProfileImage existingProfileImage = userProfileImageRepository.findByUserId(userId).orElse(null);
+		UserProfileImage existingProfileImage = userProfileImageReader.findByUserIdOrNull(userId);
 
 		// 새 파일 먼저 업로드
 		UuidFile newUuidFile = uuidFileService.saveFile(imageFile, FilePath.USER_PROFILE);
@@ -84,7 +86,7 @@ public class UserProfileImageService {
 
 			// 기존 UserProfileImage에 새 파일 연결
 			existingProfileImage.setUuidFile(newUuidFile);
-			userProfileImageRepository.save(existingProfileImage);
+			userProfileImageWriter.save(existingProfileImage);
 			user.updateProfileImageToCustom();
 			userWriter.save(user);
 
@@ -94,8 +96,7 @@ public class UserProfileImageService {
 			}
 		} else {
 			// 새 UserProfileImage 생성 및 저장
-			UserProfileImage newProfileImage = UserProfileImage.of(user, newUuidFile);
-			userProfileImageRepository.save(newProfileImage);
+			userProfileImageWriter.saveNew(user, newUuidFile);
 			user.updateProfileImageToCustom();
 			userWriter.save(user);
 		}

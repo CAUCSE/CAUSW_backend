@@ -15,10 +15,10 @@ import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.PostAttachImage;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
-import net.causw.app.main.domain.asset.file.repository.UserProfileImageRepository;
 import net.causw.app.main.domain.asset.file.service.v2.implementation.FileReader;
 import net.causw.app.main.domain.asset.file.service.v2.implementation.FileWriter;
 import net.causw.app.main.domain.asset.file.service.v2.implementation.PostAttachImageWriter;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
 import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
@@ -63,7 +63,7 @@ public class PostService {
 	private final PostAttachImageWriter postAttachImageWriter;
 	private final BlockReader userBlockReader;
 	private final ApplicationEventPublisher eventPublisher;
-	private final UserProfileImageRepository userProfileImageRepository;
+	private final UserProfileImageReader userProfileImageReader;
 
 	/**
 	 * 게시글을 생성합니다. 게시글 내용과 첨부 이미지를 저장합니다.
@@ -290,7 +290,7 @@ public class PostService {
 
 		// 작성자 프로필 이미지 조회
 		UserProfileImage writerProfileImage = (post.getWriter() != null)
-			? userProfileImageRepository.findByUserId(post.getWriter().getId()).orElse(null)
+			? userProfileImageReader.findByUserIdOrNull(post.getWriter().getId())
 			: null;
 
 		// PostMapper를 사용하여 PostDetailResult 생성

@@ -2,7 +2,6 @@ package net.causw.app.main.domain.user.account.service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -11,7 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
-import net.causw.app.main.domain.asset.file.repository.UserProfileImageRepository;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
 import net.causw.app.main.domain.user.account.service.dto.request.UserInfoListCondition;
@@ -37,7 +36,7 @@ public class UserInfoService {
 	private final UserInfoMapper userInfoMapper;
 	private final PageableFactory pageableFactory;
 	private final UserInfoWriter userInfoWriter;
-	private final UserProfileImageRepository userProfileImageRepository;
+	private final UserProfileImageReader userProfileImageReader;
 
 	/**
 	 * 내 동문 수첩 프로필 수정
@@ -63,7 +62,7 @@ public class UserInfoService {
 		userInfoWriter.syncProjects(request.userProject(), userInfo);
 
 		UserInfo updated = userInfoWriter.save(userInfo);
-		UserProfileImage profileImage = userProfileImageRepository.findByUserId(user.getId()).orElse(null);
+		UserProfileImage profileImage = userProfileImageReader.findByUserIdOrNull(user.getId());
 		return userInfoMapper.toDetailResult(updated, profileImage);
 	}
 
@@ -77,8 +76,8 @@ public class UserInfoService {
 		UserInfo userInfo = userInfoReader.findById(userInfoId)
 			.orElseThrow(UserInfoErrorCode.USERINFO_NOT_FOUND::toBaseException);
 
-		UserProfileImage profileImage = userProfileImageRepository.findByUserId(
-			userInfo.getUser().getId()).orElse(null);
+		UserProfileImage profileImage = userProfileImageReader.findByUserIdOrNull(
+			userInfo.getUser().getId());
 		return userInfoMapper.toDetailResult(userInfo, profileImage);
 	}
 
@@ -93,7 +92,7 @@ public class UserInfoService {
 		UserInfo userInfo = userInfoReader.findByUserId(user.getId())
 			.orElseGet(() -> userInfoCreator.createAndSave(user));
 
-		UserProfileImage profileImage = userProfileImageRepository.findByUserId(user.getId()).orElse(null);
+		UserProfileImage profileImage = userProfileImageReader.findByUserIdOrNull(user.getId());
 		return userInfoMapper.toMyDetailResult(userInfo, profileImage);
 	}
 
@@ -111,8 +110,7 @@ public class UserInfoService {
 		List<String> userIds = userInfos.getContent().stream()
 			.map(ui -> ui.getUser().getId())
 			.collect(Collectors.toList());
-		Map<String, UserProfileImage> profileImageMap = userProfileImageRepository.findByUserIdIn(userIds)
-			.stream().collect(Collectors.toMap(upi -> upi.getUser().getId(), Function.identity()));
+		Map<String, UserProfileImage> profileImageMap = userProfileImageReader.findMapByUserIds(userIds);
 
 		return userInfos.map(ui -> userInfoMapper.toSummaryResult(ui,
 			profileImageMap.get(ui.getUser().getId())));

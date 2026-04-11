@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
-import net.causw.app.main.domain.asset.file.repository.UserProfileImageRepository;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.community.comment.service.dto.ChildCommentResult;
 import net.causw.app.main.domain.community.comment.service.dto.CommentAuthorInfo;
@@ -26,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 public class CommentMapper {
 
 	private final ChildCommentMapper childCommentMapper;
-	private final UserProfileImageRepository userProfileImageRepository;
+	private final UserProfileImageReader userProfileImageReader;
 
 	/**
 	 * 댓글 엔티티와 집계 메타 데이터를 조합하여 {@link CommentResult}를 생성합니다.
@@ -53,7 +53,7 @@ public class CommentMapper {
 		Boolean isAnonymous = comment.getIsDeleted() ? Boolean.TRUE : comment.getIsAnonymous();
 
 		UserProfileImage writerProfileImage = (comment.getWriter() != null)
-			? userProfileImageRepository.findByUserId(comment.getWriter().getId()).orElse(null)
+			? userProfileImageReader.findByUserIdOrNull(comment.getWriter().getId())
 			: null;
 		CommentAuthorInfo authorInfo = CommentAuthorInfo.of(
 			comment.getWriter(), writerProfileImage, isAnonymous, user,
