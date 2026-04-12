@@ -41,6 +41,7 @@ import net.causw.app.main.domain.user.account.service.implementation.UserPushTok
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
+import net.causw.app.main.domain.user.account.util.BlockedUserIdentifierValidator;
 import net.causw.app.main.domain.user.auth.entity.EmailVerification;
 import net.causw.app.main.domain.user.auth.entity.EmailVerification.VerificationStatus;
 import net.causw.app.main.domain.user.auth.service.AuthService;
@@ -91,6 +92,8 @@ public class AuthServiceTest {
 	private EmailVerificationReader emailVerificationReader;
 	@Mock
 	private EmailVerificationSender emailVerificationSender;
+	@Mock
+	private BlockedUserIdentifierValidator blockedUserIdentifierValidator;
 	@Mock
 	private net.causw.app.main.domain.user.account.service.v1.PasswordGenerator passwordGenerator;
 
@@ -145,6 +148,9 @@ public class AuthServiceTest {
 			assertThat(result.refreshToken()).isNull();
 
 			// verify
+			verify(blockedUserIdentifierValidator).validateEmail(EMAIL);
+			verify(blockedUserIdentifierValidator).validatePhone(PHONE);
+
 			verify(userValidator).checkEmailDuplication(EMAIL);
 			verify(userValidator).checkNicknameDuplication(NICKNAME);
 			verify(userValidator).checkPhoneNumDuplication(PHONE);
@@ -267,6 +273,44 @@ public class AuthServiceTest {
 					// verify
 					verify(userWriter, never()).save(any(User.class));
 				}
+			}
+
+			@Test
+			@DisplayName("실패: 추방 이력이 있는 이메일이면 회원가입을 차단한다.")
+			void fail_blocked_email() {
+				// given
+				doThrow(UserErrorCode.USER_DROPPED.toBaseException())
+					.when(blockedUserIdentifierValidator).validateEmail(EMAIL);
+
+				// when & then
+				assertThatThrownBy(() -> authService.registerEmailUser(registerDto))
+					.isInstanceOf(BaseRunTimeV2Exception.class)
+					.hasMessage(UserErrorCode.USER_DROPPED.getMessage());
+
+				// verify
+				verify(blockedUserIdentifierValidator).validateEmail(EMAIL);
+				verify(blockedUserIdentifierValidator, never()).validatePhone(anyString());
+				verify(userReader, never()).checkUserExistByPhoneNumAndName(anyString(), anyString());
+				verify(userWriter, never()).save(any(User.class));
+			}
+
+			@Test
+			@DisplayName("실패: 추방 이력이 있는 전화번호면 회원가입을 차단한다.")
+			void fail_blocked_phone() {
+				// given
+				doThrow(UserErrorCode.USER_DROPPED.toBaseException())
+					.when(blockedUserIdentifierValidator).validatePhone(PHONE);
+
+				// when & then
+				assertThatThrownBy(() -> authService.registerEmailUser(registerDto))
+					.isInstanceOf(BaseRunTimeV2Exception.class)
+					.hasMessage(UserErrorCode.USER_DROPPED.getMessage());
+
+				// verify
+				verify(blockedUserIdentifierValidator).validateEmail(EMAIL);
+				verify(blockedUserIdentifierValidator).validatePhone(PHONE);
+				verify(userReader, never()).checkUserExistByPhoneNumAndName(anyString(), anyString());
+				verify(userWriter, never()).save(any(User.class));
 			}
 		}
 	}
@@ -614,4 +658,5 @@ public class AuthServiceTest {
 			assertThat(emailFindResult.socialAccounts()).isEmpty();
 		}
 	}
+
 }
