@@ -18,6 +18,7 @@ import net.causw.app.main.domain.user.account.api.v2.dto.response.UserDetailResp
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserDropResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserListItemResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserRestoreResponse;
+import net.causw.app.main.domain.user.account.api.v2.dto.response.UserRestoreWithdrawalResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserRoleUpdateResponse;
 import net.causw.app.main.domain.user.account.api.v2.mapper.AdmissionDtoMapper;
 import net.causw.app.main.domain.user.account.api.v2.mapper.UserDetailMapper;
@@ -94,6 +95,16 @@ public class UserAdminController {
 		return ApiResponse.success(
 			userManagementMapper.toRestoreResponse(
 				userAdminService.restoreUser(userDetails.getUser(), userId)));
+	}
+
+	@Operation(summary = "자진 탈퇴 회원 복구 V2", description = "관리자가 자진 탈퇴한 사용자를 복구합니다. 복구 시 사용자 상태가 ACTIVE로 변경됩니다.")
+	@PatchMapping("/{userId}/withdrawal/restore")
+	public ApiResponse<UserRestoreWithdrawalResponse> restoreWithdrawnUser(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable String userId) {
+		return ApiResponse.success(
+			userManagementMapper.toRestoreWithdrawalResponse(
+				userAdminService.restoreWithdrawnUser(userDetails.getUser(), userId)));
 	}
 
 	@Operation(summary = "회원 권한 변경 V2", description = "관리자가 회원의 현재 권한을 확인한 뒤 지정한 권한으로 변경합니다.")

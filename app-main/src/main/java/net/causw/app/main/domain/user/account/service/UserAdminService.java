@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.user.account.service;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -18,6 +19,7 @@ import net.causw.app.main.domain.user.account.service.dto.response.UserDetailIte
 import net.causw.app.main.domain.user.account.service.dto.response.UserDropResult;
 import net.causw.app.main.domain.user.account.service.dto.response.UserListItem;
 import net.causw.app.main.domain.user.account.service.dto.response.UserRestoreResult;
+import net.causw.app.main.domain.user.account.service.dto.response.UserRestoreWithdrawalResult;
 import net.causw.app.main.domain.user.account.service.dto.response.UserRoleUpdateResult;
 import net.causw.app.main.domain.user.account.service.implementation.BlockedUserIdentifierWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserAdminActionLogWriter;
@@ -87,6 +89,21 @@ public class UserAdminService {
 	}
 
 	@Transactional
+	public UserRestoreWithdrawalResult restoreWithdrawnUser(User adminUser, String userId) {
+		User targetUser = userReader.findUserById(userId);
+		validateRestorableWithdrawnUser(targetUser);
+
+		UserState beforeState = targetUser.getState();
+		Set<Role> beforeRoles = new HashSet<>(targetUser.getRoles());
+
+		User recoveredUser = userWriter.restoreWithdrawnUser(targetUser);
+
+		userAdminActionLogWriter.logRestore(adminUser, recoveredUser, beforeState, beforeRoles);
+
+		return UserRestoreWithdrawalResult.from(recoveredUser);
+	}
+
+	@Transactional
 	public UserRoleUpdateResult replaceUserRole(User adminUser, String userId, Role currentRole, Role newRole) {
 		User targetUser = userReader.findUserById(userId);
 		validateRoleUpdatableUser(targetUser);
@@ -128,6 +145,21 @@ public class UserAdminService {
 		boolean roleUpdatable = targetUser.getState() == UserState.ACTIVE && !targetUser.isDeleted();
 		if (!roleUpdatable) {
 			throw UserErrorCode.USER_NOT_ROLE_UPDATABLE.toBaseException();
+		}
+	}
+
+	private void validateRestorableWithdrawnUser(User targetUser) {
+		if (targetUser.getState() == UserState.DROP) {
+			throw UserErrorCode.USER_NOT_RESTORABLE.toBaseException();
+		}
+
+		if (!targetUser.isDeleted()) {
+			throw UserErrorCode.USER_NOT_RESTORABLE.toBaseException();
+		}
+
+		LocalDateTime graceDeadline = targetUser.getDeletedAt().plusDays(30);
+		if (graceDeadline.isBefore(LocalDateTime.now())) {
+			throw UserErrorCode.USER_NOT_RESTORABLE.toBaseException();
 		}
 	}
 }
