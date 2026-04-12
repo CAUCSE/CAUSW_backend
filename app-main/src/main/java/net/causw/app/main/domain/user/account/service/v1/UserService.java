@@ -16,7 +16,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.access.WebInvocationPrivilegeEvaluator;
 import org.springframework.stereotype.Service;
@@ -1024,16 +1023,16 @@ public class UserService {
 		return UserDtoMapper.INSTANCE.toUserResponseDto(entity, null, null);
 	}
 
-	@Scheduled(cron = "0 0 0 * * ?")
-	public void deleteUser() {
-		LocalDateTime dueDate = LocalDateTime.now().minusYears(5);
-
-		userRepository.findAllByDeletedAtBefore(dueDate).stream()
-			.forEach(user -> {
-				user.delete();
-				userRepository.save(user);
-			});
-	}
+	// @Scheduled(cron = "0 0 0 * * ?")
+	// public void deleteUser() {
+	// 	LocalDateTime dueDate = LocalDateTime.now().minusYears(5);
+	//
+	// 	userRepository.findAllByDeletedAtBefore(dueDate).stream()
+	// 		.forEach(user -> {
+	// 			user.delete();
+	// 			userRepository.save(user);
+	// 		});
+	// }
 
 	private Optional<CircleMember> updateStatus(String applicationId, CircleMemberStatus targetStatus) {
 		return this.circleMemberRepository.findById(applicationId).map(
