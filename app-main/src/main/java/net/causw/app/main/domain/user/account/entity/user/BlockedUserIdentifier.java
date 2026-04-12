@@ -20,13 +20,10 @@ import lombok.NoArgsConstructor;
 @Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(
-	name = "tb_blocked_user_identifier",
-	indexes = {
-		@Index(name = "idx_blocked_identifier_type_hash", columnList = "identifier_type, identifier_hash"),
-		@Index(name = "idx_blocked_user_id", columnList = "user_id")
-	}
-)
+@Table(name = "tb_blocked_user_identifier", indexes = {
+	@Index(name = "idx_blocked_identifier_type_hash", columnList = "identifier_type, identifier_hash"),
+	@Index(name = "idx_blocked_user_id", columnList = "user_id")
+})
 public class BlockedUserIdentifier extends BaseEntity {
 
 	@Column(name = "user_id", nullable = false)
@@ -46,8 +43,7 @@ public class BlockedUserIdentifier extends BaseEntity {
 		String userId,
 		BlockedIdentifierType identifierType,
 		String identifierHash,
-		String reason
-	) {
+		String reason) {
 		return BlockedUserIdentifier.builder()
 			.userId(userId)
 			.identifierType(identifierType)

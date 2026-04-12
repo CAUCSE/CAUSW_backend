@@ -38,7 +38,6 @@ public class BlockedUserIdentifierWriter {
 		}
 
 		blockedUserIdentifierRepository.save(
-			BlockedUserIdentifier.of(userId, type, hash, reason)
-		);
+			BlockedUserIdentifier.of(userId, type, hash, reason));
 	}
 }
