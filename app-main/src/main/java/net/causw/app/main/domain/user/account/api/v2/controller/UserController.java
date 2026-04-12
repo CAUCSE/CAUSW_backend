@@ -10,9 +10,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.domain.user.account.api.v1.dto.UserFcmTokenResponseDto;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.AdmissionCreateRequest;
+import net.causw.app.main.domain.user.account.api.v2.dto.request.SocialLinkRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UpdateProfileImageRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserFcmTokenRequest;
-import net.causw.app.main.domain.user.account.api.v2.dto.request.SocialLinkRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserNicknameUpdateRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserPasswordUpdateRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserRegistrationRequest;

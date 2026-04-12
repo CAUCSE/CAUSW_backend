@@ -148,8 +148,8 @@ public class UserAccountService {
 		// 현재 유저에 동일 provider 이미 연동됐는지 먼저 확인 (신규 SocialAccount 존재 여부 무관)
 		userValidator.checkAccountExistByUserAndSocialType(currentUser, attributes.socialType());
 
-		Optional<SocialAccount> existingSocialAccount =
-			socialAccountRepository.findBySocialIdAndSocialType(attributes.socialId(), attributes.socialType());
+		Optional<SocialAccount> existingSocialAccount = socialAccountRepository
+			.findBySocialIdAndSocialType(attributes.socialId(), attributes.socialType());
 
 		if (existingSocialAccount.isEmpty()) {
 			// 1. SocialAccount 없음 → 신규 생성 + 현재 유저에 연결
