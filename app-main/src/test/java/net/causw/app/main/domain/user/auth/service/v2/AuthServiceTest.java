@@ -149,7 +149,7 @@ public class AuthServiceTest {
 			given(userReader.checkUserExistByPhoneNumAndName(anyString(), anyString())).willReturn(Optional.empty());
 			given(passwordEncoder.encode(anyString())).willReturn(ENCODED_PASSWORD);
 			given(userWriter.save(any(User.class))).willReturn(user);
-			given(termsReader.findLatestVersionPerType()).willReturn(List.of(serviceTerms, privacyTerms));
+			given(termsReader.findLatestPerTypeIfRequired()).willReturn(List.of(serviceTerms, privacyTerms));
 			given(emailVerificationReader.findLatestByEmailAndStatus(EMAIL, VerificationStatus.VERIFIED))
 				.willReturn(verifiedEmail);
 
@@ -182,11 +182,11 @@ public class AuthServiceTest {
 
 			assertThatThrownBy(() -> authService.registerEmailUser(serviceNotAgreed))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
-				.hasMessage(TermsErrorCode.NOT_ALL_TERMS_AGREED.getMessage());
+				.hasMessage(TermsErrorCode.NOT_ALL_REQUIRED_TERMS_AGREED.getMessage());
 
 			assertThatThrownBy(() -> authService.registerEmailUser(privacyNotAgreed))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
-				.hasMessage(TermsErrorCode.NOT_ALL_TERMS_AGREED.getMessage());
+				.hasMessage(TermsErrorCode.NOT_ALL_REQUIRED_TERMS_AGREED.getMessage());
 		}
 
 		@Nested

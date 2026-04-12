@@ -85,7 +85,7 @@ class UserAccountServiceTest {
 		when(authTokenManager.issueTokens(guestUser, refreshToken)).thenReturn(tokenPair);
 		when(tokenPair.accessToken()).thenReturn("new-access-token");
 		when(tokenPair.refreshToken()).thenReturn("new-refresh-token");
-		when(termsReader.findLatestVersionPerType()).thenReturn(List.of(mock(Terms.class), mock(Terms.class)));
+		when(termsReader.findLatestPerTypeIfRequired()).thenReturn(List.of(mock(Terms.class), mock(Terms.class)));
 
 		//when
 		AuthResult result = userAccountService.completeRegistration(userId, nickname, phoneNumber, name, true, true,
@@ -116,7 +116,7 @@ class UserAccountServiceTest {
 			() -> userAccountService.completeRegistration(userId, nickname, phoneNumber, name, false, true,
 				refreshToken));
 
-		assertEquals(TermsErrorCode.NOT_ALL_TERMS_AGREED.getMessage(), ex.getMessage());
+		assertEquals(TermsErrorCode.NOT_ALL_REQUIRED_TERMS_AGREED.getMessage(), ex.getMessage());
 		verifyNoInteractions(termsReader);
 		verifyNoInteractions(userTermsAgreementWriter);
 	}

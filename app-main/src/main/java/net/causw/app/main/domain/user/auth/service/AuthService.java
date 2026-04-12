@@ -127,7 +127,7 @@ public class AuthService {
 	 * 4. 필수 약관(서비스 이용약관, 개인정보 수집·이용) 동의 여부 확인<br>
 	 * 5. 비밀번호 암호화 및 신규 유저 생성 후 저장<br>
 	 * 6. 회원가입 완료 후 이메일 인증 정보 삭제<br>
-	 * 7. 약관 타입별 최신 버전에 대한 {@code UserTermsAgreement} 저장
+	 * 7. 약관 타입별 최신 버전 중 필수 항목에 대한 {@code UserTermsAgreement} 저장
 	 *
 	 * @param dto 회원가입에 필요한 정보가 담긴 DTO (이메일, 비밀번호, 이름, 약관 동의 여부 등)
 	 * @return 가입된 사용자 정보 (토큰은 포함되지 않음)
@@ -147,7 +147,7 @@ public class AuthService {
 		userValidator.checkPhoneNumDuplication(dto.phoneNumber());
 		emailVerificationValidator.validateVerified(dto.email(), dto.emailVerificationCode());
 		if (!dto.serviceTermsAgreed() || !dto.privacyTermsAgreed()) {
-			throw TermsErrorCode.NOT_ALL_TERMS_AGREED.toBaseException();
+			throw TermsErrorCode.NOT_ALL_REQUIRED_TERMS_AGREED.toBaseException();
 		}
 
 		// 신규 사용자 생성 및 검증
@@ -158,9 +158,8 @@ public class AuthService {
 		emailVerificationWriter.delete(
 			emailVerificationReader.findLatestByEmailAndStatus(dto.email(), VerificationStatus.VERIFIED));
 
-		// 타입별 최신 약관에 대한 동의 저장. 
-		// 현재는 모든 약관이 필수지만, 선택 약관이 추가될 경우 동의 대상 조회/저장 로직을 수정 필요.
-		List<Terms> latestTerms = termsReader.findLatestVersionPerType();
+		// 타입별 최신 약관 중 필수 항목에 대한 동의 저장.
+		List<Terms> latestTerms = termsReader.findLatestPerTypeIfRequired();
 		List<UserTermsAgreement> newAgreements = latestTerms.stream()
 			.map(terms -> UserTermsAgreement.of(savedUser, terms))
 			.toList();

@@ -11,13 +11,13 @@ import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.terms.entity.Terms;
 import net.causw.app.main.domain.user.terms.entity.UserTermsAgreement;
 import net.causw.app.main.domain.user.terms.service.implementation.TermsReader;
+import net.causw.app.main.domain.user.terms.service.implementation.TermsValidator;
 import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementReader;
 import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementWriter;
 import net.causw.app.main.domain.user.terms.service.v2.dto.AgreedTermsInfo;
 import net.causw.app.main.domain.user.terms.service.v2.dto.TermsInfo;
 import net.causw.app.main.domain.user.terms.service.v2.dto.UnagreedTermsInfo;
 import net.causw.app.main.domain.user.terms.service.v2.dto.UserTermsAgreementStatusInfo;
-import net.causw.app.main.shared.exception.errorcode.TermsErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -27,6 +27,7 @@ import lombok.RequiredArgsConstructor;
 public class TermsService {
 
 	private final TermsReader termsReader;
+	private final TermsValidator termsValidator;
 	private final UserTermsAgreementReader userTermsAgreementReader;
 	private final UserTermsAgreementWriter userTermsAgreementWriter;
 
@@ -72,15 +73,7 @@ public class TermsService {
 
 	@Transactional
 	public void agreeToTerms(User user, List<String> termsIds) {
-		List<Terms> latestTerms = termsReader.findLatestVersionPerType();
-
-		Set<String> latestTermsIds = latestTerms.stream()
-			.map(Terms::getId)
-			.collect(Collectors.toSet());
-
-		if (!Set.copyOf(termsIds).containsAll(latestTermsIds)) {
-			throw TermsErrorCode.NOT_ALL_TERMS_AGREED.toBaseException();
-		}
+		termsValidator.validateForAgreement(termsIds);
 
 		Set<String> alreadyAgreedIds = userTermsAgreementReader.findByUserAndTermsIdIn(user, termsIds)
 			.stream()

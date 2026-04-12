@@ -72,16 +72,15 @@ public class UserAccountService {
 			throw AuthErrorCode.INVALID_REGISTRATION_STATUS.toBaseException();
 		}
 		if (!serviceTermsAgreed || !privacyTermsAgreed) {
-			throw TermsErrorCode.NOT_ALL_TERMS_AGREED.toBaseException();
+			throw TermsErrorCode.NOT_ALL_REQUIRED_TERMS_AGREED.toBaseException();
 		}
 		userValidator.checkNicknameDuplication(nickname);
 		userValidator.checkPhoneNumDuplication(phoneNumber);
 		guestUser.submitRegistration(name, nickname, phoneNumber);
 		User updatedUser = userWriter.save(guestUser);
 
-		// 타입별 최신 약관에 대한 동의 저장.
-		// 현재는 모든 약관이 필수지만, 선택 약관이 추가될 경우 동의 대상 조회/저장 로직을 수정 필요.
-		List<Terms> latestTerms = termsReader.findLatestVersionPerType();
+		// 타입별 최신 약관 중 필수 항목에 대한 동의 저장.
+		List<Terms> latestTerms = termsReader.findLatestPerTypeIfRequired();
 		List<UserTermsAgreement> newAgreements = latestTerms.stream()
 			.map(terms -> UserTermsAgreement.of(updatedUser, terms))
 			.toList();
