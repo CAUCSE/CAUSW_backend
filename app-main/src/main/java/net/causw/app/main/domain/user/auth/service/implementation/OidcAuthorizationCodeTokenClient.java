@@ -16,19 +16,22 @@ import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * OIDC/OAuth2 공급자 토큰 엔드포인트에 authorization code grant로 요청해 리프레시 토큰을 획득합니다.
  */
 @Component
-@RequiredArgsConstructor
 @Slf4j
 public class OidcAuthorizationCodeTokenClient {
 
 	private final ObjectMapper objectMapper;
-	private final RestClient restClient = RestClient.create();
+	private final RestClient restClient;
+
+	public OidcAuthorizationCodeTokenClient(ObjectMapper objectMapper, RestClient.Builder restClientBuilder) {
+		this.objectMapper = objectMapper;
+		this.restClient = restClientBuilder.build();
+	}
 
 	/**
 	 * @param codeVerifier PKCE 사용 시 필수, 미사용 시 null

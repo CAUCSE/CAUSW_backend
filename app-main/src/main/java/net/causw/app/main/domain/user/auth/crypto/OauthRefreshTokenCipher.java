@@ -16,7 +16,7 @@ import org.springframework.util.StringUtils;
 /**
  * OAuth 리프레시 토큰을 AES-256-GCM으로 암·복호화합니다.
  * <p>
- * {@code app.oauth.refresh-token.aes-key-base64}에 URL-safe Base64로 인코딩된 32바이트 키를 설정해야 합니다.
+ * {@code app.oauth.refresh-token.aes-key-base64}에 Base64로 인코딩된 32바이트 키를 설정해야 합니다.
  */
 @Component
 public class OauthRefreshTokenCipher {
