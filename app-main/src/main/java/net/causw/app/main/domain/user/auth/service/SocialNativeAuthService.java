@@ -230,11 +230,11 @@ public class SocialNativeAuthService {
 		}
 
 		String registrationId = clientRegistration.getRegistrationId();
-		if ("apple".equalsIgnoreCase(registrationId)) {
+		if (SocialType.APPLE.matchesRegistrationId(registrationId)) {
 			return APPLE_ISSUER;
 		}
 
-		if ("google".equalsIgnoreCase(registrationId)) {
+		if (SocialType.GOOGLE.matchesRegistrationId(registrationId)) {
 			return GOOGLE_ISSUER;
 		}
 

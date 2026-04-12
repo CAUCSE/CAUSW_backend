@@ -101,7 +101,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 			return;
 		}
 		String regId = oauth2Token.getAuthorizedClientRegistrationId();
-		if (!"google".equalsIgnoreCase(regId) && !"apple".equalsIgnoreCase(regId)) {
+		if (!SocialType.GOOGLE.matchesRegistrationId(regId) && !SocialType.APPLE.matchesRegistrationId(regId)) {
 			return;
 		}
 		String refresh = (String)request.getAttribute(OAuth2RefreshTokenCaptureClient.REQUEST_ATTR_REFRESH_TOKEN);

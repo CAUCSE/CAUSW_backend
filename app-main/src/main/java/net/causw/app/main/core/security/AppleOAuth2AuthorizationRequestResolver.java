@@ -10,12 +10,12 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequ
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.stereotype.Component;
 
+import net.causw.app.main.domain.user.account.enums.user.SocialType;
+
 import jakarta.servlet.http.HttpServletRequest;
 
 @Component
 public class AppleOAuth2AuthorizationRequestResolver implements OAuth2AuthorizationRequestResolver {
-	private static final String APPLE_REGISTRATION_ID = "apple";
-	private static final String GOOGLE_REGISTRATION_ID = "google";
 	private static final String RESPONSE_MODE_PARAMETER_NAME = "response_mode";
 	private static final String RESPONSE_MODE_FORM_POST = "form_post";
 	private static final String ACCESS_TYPE_PARAMETER_NAME = "access_type";
@@ -55,10 +55,10 @@ public class AppleOAuth2AuthorizationRequestResolver implements OAuth2Authorizat
 		}
 
 		Map<String, Object> additionalParameters = new LinkedHashMap<>(authorizationRequest.getAdditionalParameters());
-		if (APPLE_REGISTRATION_ID.equalsIgnoreCase(registrationId)) {
+		if (SocialType.APPLE.matchesRegistrationId(registrationId)) {
 			additionalParameters.put(RESPONSE_MODE_PARAMETER_NAME, RESPONSE_MODE_FORM_POST);
 		}
-		if (GOOGLE_REGISTRATION_ID.equalsIgnoreCase(registrationId)) {
+		if (SocialType.GOOGLE.matchesRegistrationId(registrationId)) {
 			additionalParameters.put(ACCESS_TYPE_PARAMETER_NAME, ACCESS_TYPE_OFFLINE);
 			additionalParameters.put(PROMPT_PARAMETER_NAME, PROMPT_CONSENT);
 			additionalParameters.put(INCLUDE_GRANTED_SCOPES_PARAMETER_NAME, INCLUDE_GRANTED_SCOPES_TRUE);
