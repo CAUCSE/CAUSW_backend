@@ -1,14 +1,20 @@
 package net.causw.app.main.domain.user.account.service;
 
+import java.util.List;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.domain.user.account.entity.user.SocialAccount;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
+import net.causw.app.main.domain.user.account.enums.user.SocialType;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.domain.user.account.repository.user.SocialAccountRepository;
 import net.causw.app.main.domain.user.account.repository.userInfo.UserInfoRepository;
 import net.causw.app.main.domain.user.account.service.dto.request.UserPasswordUpdateCommand;
+import net.causw.app.main.domain.user.account.service.dto.result.SocialAccountsResult;
 import net.causw.app.main.domain.user.account.service.dto.result.UserMeResult;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
@@ -34,6 +40,7 @@ public class UserAccountService {
 	private final AuthTokenManager authTokenManager;
 	private final PasswordEncoder passwordEncoder;
 	private final UserInfoRepository userInfoRepository;
+	private final SocialAccountRepository socialAccountRepository;
 
 	/**
 	 * 소셜 로그인을 통해 생성된 임시 유저(GUEST)의 추가 정보를 등록하고 회원가입 절차를 완료합니다.
@@ -81,6 +88,25 @@ public class UserAccountService {
 		User user = userReader.findDetailById(userId);
 		UserInfo userInfo = userInfoRepository.findByUserId(userId).orElse(null);
 		return UserMeResult.from(user, userInfo);
+	}
+
+	/**
+	 * 현재 로그인한 사용자의 소셜 계정 연동 현황을 조회합니다.
+	 * <p>
+	 * provider(GOOGLE, KAKAO, APPLE)별 연동 여부를 반환합니다.
+	 * JWT 필터에서 유저 존재가 이미 보장되므로 별도의 유저 조회 없이 소셜 계정만 조회합니다.
+	 * </p>
+	 *
+	 * @param userId 조회할 사용자의 고유 식별자 (PK)
+	 * @return {@link SocialAccountsResult} provider별 연동 여부
+	 */
+	@Transactional(readOnly = true)
+	public SocialAccountsResult getSocialAccounts(String userId) {
+		List<SocialAccount> accounts = socialAccountRepository.findAllByUserId(userId);
+		return new SocialAccountsResult(
+			accounts.stream().anyMatch(a -> a.getSocialType() == SocialType.GOOGLE),
+			accounts.stream().anyMatch(a -> a.getSocialType() == SocialType.KAKAO),
+			accounts.stream().anyMatch(a -> a.getSocialType() == SocialType.APPLE));
 	}
 
 	/**
