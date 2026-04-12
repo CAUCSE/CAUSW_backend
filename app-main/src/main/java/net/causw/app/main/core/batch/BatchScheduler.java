@@ -15,6 +15,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
+import net.causw.app.main.domain.user.account.service.implementation.AdmissionWriter;
+import net.causw.app.main.domain.user.account.service.implementation.SocialAccountWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserInfoWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.shared.infra.firebase.FcmUtils;
@@ -39,7 +41,9 @@ public class BatchScheduler {
 	private final PageableFactory pageableFactory;
 	private final UserInfoWriter userInfoWriter;
 	private final CeremonyWriter ceremonyWriter;
+	private final SocialAccountWriter socialAccountWriter;
 	private final UserWriter userWriter;
+	private final AdmissionWriter admissionWriter;
 
 	@Resource(name = "cleanUpUnusedFilesJob")
 	private Job cleanUpUnusedFilesJob;
@@ -91,6 +95,8 @@ public class BatchScheduler {
 
 			userInfoWriter.deleteByUsers(withdrawnUsers);
 			ceremonyWriter.deleteByUsers(withdrawnUsers);
+			socialAccountWriter.deleteByUsers(withdrawnUsers);
+			admissionWriter.deleteByUsers(withdrawnUsers);
 			userWriter.cleanupWithdrawnUsers(withdrawnUsers);
 
 			log.info("[유저 정리 배치] 탈퇴 유저 후처리 완료");
