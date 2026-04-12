@@ -5,17 +5,7 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.domain.user.account.api.v1.dto.UserFcmTokenResponseDto;
@@ -223,6 +213,17 @@ public class UserController {
 		@Valid @RequestBody SocialLinkRequest body) {
 		userAccountService.linkSocialAccount(
 			userDetails.getUserId(), body.provider(), body.accessToken(), body.idToken());
+		return ApiResponse.success();
+	}
+
+	@DeleteMapping("/me/social-accounts/{provider}")
+	@ResponseStatus(HttpStatus.OK)
+	@Operation(summary = "소셜 계정 연동 해제", description = "현재 로그인한 사용자의 소셜 계정 연동을 해제합니다. "
+		+ "비밀번호 없는 계정의 마지막 소셜 계정은 해제할 수 없습니다.")
+	public ApiResponse<Void> unlinkSocialAccount(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable String provider) {
+		userAccountService.unlinkSocialAccount(userDetails.getUserId(), provider);
 		return ApiResponse.success();
 	}
 }

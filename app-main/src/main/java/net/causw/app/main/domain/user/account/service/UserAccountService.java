@@ -1,6 +1,7 @@
 package net.causw.app.main.domain.user.account.service;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -169,6 +170,42 @@ public class UserAccountService {
 
 		// 3. GUEST가 아닌 다른 유저에 연결됨 → 관리자 문의
 		throw AuthErrorCode.SOCIAL_ACCOUNT_LINKED_TO_OTHER_USER.toBaseException();
+	}
+
+	/**
+	 * 현재 로그인한 사용자의 소셜 계정 연동을 해제합니다.
+	 * <p>
+	 * 비밀번호가 없는 계정(소셜 전용)에서 마지막 남은 소셜 계정을 해제하려 할 경우 예외를 발생시킵니다.
+	 * </p>
+	 *
+	 * @param userId   연동을 해제할 사용자의 고유 식별자 (PK)
+	 * @param provider 해제할 소셜 provider (kakao, google, apple)
+	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
+	 * [INVALID_REGISTRATION_STATUS] ACTIVE 상태가 아닌 유저가 요청한 경우,
+	 * [SOCIAL_ACCOUNT_NOT_FOUND] 해당 provider가 연동되어 있지 않은 경우,
+	 * [CANNOT_UNLINK_LAST_LOGIN_METHOD] 비밀번호 없는 계정의 마지막 소셜 계정을 해제하려는 경우
+	 */
+	@Transactional
+	public void unlinkSocialAccount(String userId, String provider) {
+		User currentUser = userReader.findUserById(userId);
+
+		if (currentUser.getState() != UserState.ACTIVE) {
+			throw AuthErrorCode.INVALID_REGISTRATION_STATUS.toBaseException();
+		}
+
+		SocialType socialType = SocialType.from(provider.toLowerCase(Locale.ROOT));
+
+		SocialAccount socialAccount = socialAccountRepository.findByUserAndSocialType(currentUser, socialType)
+			.orElseThrow(AuthErrorCode.SOCIAL_ACCOUNT_NOT_FOUND::toBaseException);
+
+		if (currentUser.isOnlySocialUser()) {
+			long linkedCount = socialAccountRepository.findAllByUserId(userId).size();
+			if (linkedCount <= 1) {
+				throw AuthErrorCode.CANNOT_UNLINK_LAST_LOGIN_METHOD.toBaseException();
+			}
+		}
+
+		socialAccountRepository.delete(socialAccount);
 	}
 
 	/**
