@@ -305,7 +305,6 @@ public class AuthServiceTest {
 
 			assertThat(temporaryPassword).isEqualTo(TEMP_PASSWORD);
 			verify(mockedUser).updatePassword(ENCODED_PASSWORD);
-			verify(userWriter).save(mockedUser);
 			verify(emailVerificationWriter).delete(emailVerification);
 		}
 

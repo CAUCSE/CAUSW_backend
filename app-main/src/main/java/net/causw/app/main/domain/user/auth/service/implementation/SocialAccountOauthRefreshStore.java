@@ -38,6 +38,5 @@ public class SocialAccountOauthRefreshStore {
 		}
 		SocialAccount account = accountOpt.get();
 		account.replaceEncryptedOauthRefreshToken(oauthRefreshTokenCipher.encrypt(plainRefreshToken));
-		socialAccountRepository.save(account);
 	}
 }
