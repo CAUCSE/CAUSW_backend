@@ -126,14 +126,9 @@ class NotificationLogServiceTest {
 		void givenUnreadLogs_whenGetNotificationLogCount_thenReturnsNotificationCountResult() {
 			// given
 			String userId = "user-uuid-123";
-			User user = ObjectFixtures.getCertifiedUser();
-			Notification notification = ObjectFixtures.getNotification(user);
-			List<NotificationLog> logs = List.of(
-				NotificationLog.of(user, notification),
-				NotificationLog.of(user, notification));
 
-			given(notificationLogReader.findUnreadUpToLimit(eq(userId), any(LocalDateTime.class)))
-				.willReturn(logs);
+			given(notificationLogReader.countUnreadUpToLimit(eq(userId), any(LocalDateTime.class)))
+				.willReturn(2);
 
 			// when
 			NotificationCountResult result = notificationLogService.getNotificationLogCount(userId);
@@ -142,7 +137,7 @@ class NotificationLogServiceTest {
 			assertThat(result).isNotNull();
 			assertThat(result.notificationLogCount()).isEqualTo(2);
 
-			then(notificationLogReader).should().findUnreadUpToLimit(eq(userId), any(LocalDateTime.class));
+			then(notificationLogReader).should().countUnreadUpToLimit(eq(userId), any(LocalDateTime.class));
 		}
 	}
 

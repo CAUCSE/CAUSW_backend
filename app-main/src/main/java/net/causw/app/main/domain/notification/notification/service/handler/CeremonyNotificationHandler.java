@@ -2,9 +2,8 @@ package net.causw.app.main.domain.notification.notification.service.handler;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -60,6 +59,7 @@ public class CeremonyNotificationHandler {
 		User ceremonyUser = ceremony.getUser();
 
 		// 입학년도 + 알림 설정을 단일 쿼리로 처리
+		// isSetAll=true → admissionYears=[]
 		List<Integer> admissionYears = resolveAdmissionYears(ceremony);
 		List<User> targets = notificationSettingReader.findCeremonyNotificationTargets(
 			admissionYears, UserNotificationSettingKey.CEREMONY_NOTIFICATION_ENABLED);
@@ -86,25 +86,7 @@ public class CeremonyNotificationHandler {
 		if (ceremony.isSetAll()) {
 			return List.of();
 		}
-		return parseAdmissionYears(ceremony.getTargetAdmissionYears());
-	}
-
-	/**
-	 * 경조사 대상 입학년도 문자열 집합을 정수 리스트로 변환합니다.
-	 * <p>
-	 * 두 자리 연도를 처리합니다: 72 이상이면 1900년대, 미만이면 2000년대로 간주합니다.
-	 *
-	 * @param rawYears 원본 입학년도 문자열 집합
-	 * @return 변환된 입학년도 정수 리스트
-	 * todo: 대상 입학년도 4자리로 변경 시 이 로직 제거
-	 */
-	private static List<Integer> parseAdmissionYears(Set<String> rawYears) {
-		return rawYears.stream()
-			.map(s -> {
-				int year = Integer.parseInt(s);
-				return year >= 72 ? 1900 + year : 2000 + year;
-			})
-			.collect(Collectors.toList());
+		return new ArrayList<>(ceremony.getTargetAdmissionYears());
 	}
 
 	/**

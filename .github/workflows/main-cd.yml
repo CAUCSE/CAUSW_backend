@@ -1,4 +1,4 @@
-name: Caucse Main Java CI/DE with Gradle(main branch)
+name: CD - Production
 
 on:
   push:
@@ -110,89 +110,12 @@ jobs:
             sleep 15
             APP_MAIN_JAR=$(ls -t /home/ubuntu/app/app-main/*.jar | head -n 1)
             sudo mkdir -p /var/log/spring-boot/app-main
-            sudo nohup java -DLOG_DIR=/var/log/spring-boot/app-main -jar "$APP_MAIN_JAR" 1>/dev/null 2>&1 & 
-
-
-  app-chat-build:
-    name: Build & Deploy app-chat Module in Github Actions
-    runs-on: ubuntu-22.04
-
-    steps:
-      # 작업 엑세스 가능하게 $GITHUB_WORKSPACE에서 저장소를 체크아웃
-      - name: Checkout branch
-        uses: actions/checkout@v4
-
-      # JDK & Gradle 설정
-      - name: Setup JDK and Gradle
-        uses: ./.github/actions/setup-jdk-gradle
-
-      # .gitignore된 yml 파일들 github secret에서 복사
-      - name: Copy production secrets for app-chat
-        env:
-          APPLICATION_FILE: ${{ secrets.APPLICATION_PROFILE_PROD }}
-          APPLICATION_PROD_FILE: ${{ secrets.APPLICATION_PROD_APP_CHAT }}
-          DIR: ./app-chat/src/main/resources
-
-          APPLICATION_FILE_NAME: application.yml
-          APPLICATION_PROD_FILE_NAME: application-prod.yml
-        run: |
-          touch $DIR/$APPLICATION_FILE_NAME
-          touch $DIR/$APPLICATION_PROD_FILE_NAME
-          echo "$APPLICATION_FILE" > $DIR/$APPLICATION_FILE_NAME
-          echo "$APPLICATION_PROD_FILE" > $DIR/$APPLICATION_PROD_FILE_NAME
-
-      # Build -> jar 파일 생성
-      - name: Build app-chat module
-        run: ./gradlew clean :app-chat:bootJar -x test
-
-      - name: Upload Build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-chat-artifact
-          path: "app-chat/build/libs/*.jar"
-  
-
-  app-chat-deploy:
-    name: CD app-chat Module with SSH
-    needs: app-chat-build
-    runs-on: ubuntu-22.04
-
-    steps:
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: app-chat-artifact
-
-      # app-chat JAR 파일 EC2에 전송
-      - name: SCP app-chat JAR to EC2
-        if: github.actor != 'nektos/act'
-        uses: appleboy/scp-action@master
-        with:
-          key: ${{ secrets.EC2_KEY_PROD }}
-          host: ${{ secrets.EC2_HOST_PROD }}
-          username: ${{ secrets.EC2_USER_PROD }}
-          source: "*.jar"
-          target: "/home/ubuntu/app/app-chat"
-
-      # 기존 서버 종료 및 app-chat JAR 실행
-      - name: Deploy app-chat
-        if: github.actor != 'nektos/act'
-        uses: appleboy/ssh-action@master
-        with:
-          key: ${{ secrets.EC2_KEY_PROD }}
-          host: ${{ secrets.EC2_HOST_PROD }}
-          username: ${{ secrets.EC2_USER_PROD }}
-          script: |
-            sudo fuser -k -n tcp 8081 || true
-            sleep 15
-            APP_CHAT_JAR=$(ls -t /home/ubuntu/app/app-chat/*.jar | head -n 1)
-            sudo mkdir -p /var/log/spring-boot/app-chat
-            sudo nohup java -DLOG_DIR=/var/log/spring-boot/app-chat -jar "$APP_CHAT_JAR" 1>/dev/null 2>&1 &
+            sudo nohup java -DLOG_DIR=/var/log/spring-boot/app-main -jar "$APP_MAIN_JAR" 1>/dev/null 2>&1 &
 
 
   notify:
     name: Discord Notify
-    needs: [ app-main-deploy, app-chat-deploy ]
+    needs: [ app-main-deploy ]
     runs-on: ubuntu-22.04
     if: always()
 
@@ -202,7 +125,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Notify Success
-        if: ${{ github.actor != 'nektos/act' && needs.app-main-deploy.result == 'success' && needs.app-chat-deploy.result == 'success' }}
+        if: ${{ github.actor != 'nektos/act' && needs.app-main-deploy.result == 'success' }}
         uses: ./.github/actions/discord-notify
         with:
           status: success
@@ -214,7 +137,7 @@ jobs:
           role_id: ${{ secrets.DISCORD_BACKEND_ROLE_ID }}
 
       - name: Notify Failure
-        if: ${{ github.actor != 'nektos/act' && (needs.app-main-deploy.result != 'success' || needs.app-chat-deploy.result != 'success') }}
+        if: ${{ github.actor != 'nektos/act' && needs.app-main-deploy.result != 'success' }}
         uses: ./.github/actions/discord-notify
         with:
           status: failure

@@ -33,6 +33,7 @@ public class UserReader {
 
 	/**
 	 * 유저 ID로 유저 조회(삭제 여부 상관 없음)
+	 *
 	 * @param userId 유저 ID
 	 * @return 유저 Entity
 	 */
@@ -43,6 +44,7 @@ public class UserReader {
 
 	/**
 	 * 유저 ID로 유저 조회(삭제된 유저는 제외)
+	 *
 	 * @param userId 유저 ID
 	 * @return 유저 Entity
 	 */
@@ -158,6 +160,10 @@ public class UserReader {
 
 	public Long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end) {
 		return userRepository.countByCreatedAtBetween(start, end);
+	}
+
+	public Long getTotalUserCount() {
+		return userQueryRepository.countTotalUsers();
 	}
 
 	private String normalizeKeyword(String keyword) {
