@@ -19,6 +19,7 @@ import net.causw.app.main.domain.user.account.service.dto.response.UserDropResul
 import net.causw.app.main.domain.user.account.service.dto.response.UserListItem;
 import net.causw.app.main.domain.user.account.service.dto.response.UserRestoreResult;
 import net.causw.app.main.domain.user.account.service.dto.response.UserRoleUpdateResult;
+import net.causw.app.main.domain.user.account.service.implementation.BlockedUserIdentifierWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserAdminActionLogWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
@@ -35,6 +36,7 @@ public class UserAdminService {
 	private final LockerReader lockerReader;
 	private final LockerWriter lockerWriter;
 	private final UserAdminActionLogWriter userAdminActionLogWriter;
+	private final BlockedUserIdentifierWriter blockedUserIdentifierWriter;
 
 	// 필터링 조건과 페이징 정보를 기반으로 전체 사용자 목록 조회
 	@Transactional(readOnly = true)
@@ -64,6 +66,9 @@ public class UserAdminService {
 		});
 
 		User updatedUser = userWriter.dropByAdmin(targetUser, dropReason);
+
+		blockedUserIdentifierWriter.saveBlockedIdentifiers(updatedUser);
+
 		userAdminActionLogWriter.logDrop(adminUser, updatedUser, beforeState, beforeRoles, dropReason);
 		return UserDropResult.from(updatedUser);
 	}
