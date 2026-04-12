@@ -29,6 +29,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import net.causw.app.main.domain.user.auth.handler.OAuth2FailureHandler;
 import net.causw.app.main.domain.user.auth.handler.OAuth2SuccessHandler;
 import net.causw.app.main.domain.user.auth.service.CustomOAuth2UserService;
+import net.causw.app.main.domain.user.auth.service.implementation.OAuth2RefreshTokenCaptureClient;
 
 import lombok.RequiredArgsConstructor;
 
@@ -46,6 +47,7 @@ public class WebSecurityConfig {
 	private final CustomOAuth2UserService customOAuth2UserService;
 	private final OAuth2SuccessHandler oAuth2SuccessHandler;
 	private final OAuth2FailureHandler oAuth2FailureHandler;
+	private final OAuth2RefreshTokenCaptureClient oAuth2RefreshTokenCaptureClient;
 
 	@Value("${app.cors.allowed-origins:http://localhost:3000}")
 	private String corsAllowedOrigins;
@@ -79,6 +81,8 @@ public class WebSecurityConfig {
 				.authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint
 					.authorizationRequestResolver(appleOAuth2AuthorizationRequestResolver)
 					.authorizationRequestRepository(oAuth2AuthorizationRequestCookieRepository))
+				.tokenEndpoint(tokenEndpoint -> tokenEndpoint
+					.accessTokenResponseClient(oAuth2RefreshTokenCaptureClient))
 				.userInfoEndpoint(userInfo -> userInfo
 					.userService(customOAuth2UserService)
 					.oidcUserService(customOAuth2UserService::loadOidcUser))
