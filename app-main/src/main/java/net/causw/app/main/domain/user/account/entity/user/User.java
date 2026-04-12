@@ -183,7 +183,7 @@ public class User extends BaseEntity {
 		this.major = null;
 		this.department = null;
 		this.currentCompletedSemester = null;
-		this.academicStatus = null;
+		this.academicStatus = AcademicStatus.UNDETERMINED;
 		this.profileImageType = ProfileImageType.GHOST;
 		this.userProfileImage = null;
 		this.graduationYear = null;
