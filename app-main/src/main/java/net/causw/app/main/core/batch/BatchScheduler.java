@@ -93,6 +93,11 @@ public class BatchScheduler {
 			LocalDateTime dueDate = LocalDateTime.now().minusDays(30);
 			List<User> withdrawnUsers = userRepository.findAllByDeletedAtIsNotNullAndDeletedAtBefore(dueDate);
 
+			if (withdrawnUsers.isEmpty()) {
+				log.info("[유저 정리 배치] 후처리 대상 없음");
+				return;
+			}
+
 			userInfoWriter.deleteByUsers(withdrawnUsers);
 			ceremonyWriter.deleteByUsers(withdrawnUsers);
 			socialAccountWriter.deleteByUsers(withdrawnUsers);
