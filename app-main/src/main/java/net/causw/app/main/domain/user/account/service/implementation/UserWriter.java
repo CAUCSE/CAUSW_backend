@@ -2,9 +2,11 @@ package net.causw.app.main.domain.user.account.service.implementation;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.user.account.entity.user.SocialAccount;
 import net.causw.app.main.domain.user.account.entity.user.User;
@@ -77,5 +79,27 @@ public class UserWriter {
 		roles.add(newRole);
 		user.setRoles(roles);
 		return this.userRepository.save(user);
+	}
+
+	// 회원 탈퇴를 위한 익명화
+	@Transactional
+	public void cleanupWithdrawnUsers(List<User> users) {
+		if (users == null || users.isEmpty()) {
+			return;
+		}
+
+		for (User user : users) {
+			if (isAlreadyAnonymized(user)) {
+				continue;
+			}
+
+			user.anonymize();
+		}
+
+		userRepository.saveAll(users);
+	}
+
+	private boolean isAlreadyAnonymized(User user) {
+		return user.getEmail() != null && user.getEmail().startsWith("deleted_");
 	}
 }

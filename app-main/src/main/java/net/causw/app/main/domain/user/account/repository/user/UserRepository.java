@@ -112,4 +112,6 @@ public interface UserRepository extends JpaRepository<User, String> {
 		@Param("state") UserState state);
 
 	Long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
+가
+	List<User> findAllByDeletedAtIsNotNullAndDeletedAtBefore(LocalDateTime dateTime);
 }
