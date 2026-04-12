@@ -10,6 +10,7 @@ import net.causw.app.main.domain.user.account.entity.user.SocialAccount;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.SocialType;
 import net.causw.app.main.domain.user.account.repository.user.SocialAccountRepository;
+import net.causw.app.main.domain.user.auth.crypto.OauthRefreshTokenCipher;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 public class SocialAccountWriter {
 
 	private final SocialAccountRepository socialAccountRepository;
-	private final OAuthRefreshTokenCipher oAuthRefreshTokenCipher;
+	private final OauthRefreshTokenCipher oauthRefreshTokenCipher;
 	private final GoogleOAuthRevokeClient googleOAuthRevokeClient;
 	private final AppleOAuthRevokeClient appleOAuthRevokeClient;
 	private final KakaoOAuthUnlinkClient kakaoOAuthUnlinkClient;
