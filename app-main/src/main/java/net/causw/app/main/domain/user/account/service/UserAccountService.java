@@ -1,6 +1,7 @@
 package net.causw.app.main.domain.user.account.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -19,8 +20,10 @@ import net.causw.app.main.domain.user.account.service.dto.result.UserMeResult;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
+import net.causw.app.main.domain.user.auth.service.SocialNativeAuthService;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
+import net.causw.app.main.domain.user.auth.service.dto.OAuthAttributes;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthValidator;
 import net.causw.app.main.shared.dto.ProfileImageDto;
@@ -41,6 +44,7 @@ public class UserAccountService {
 	private final PasswordEncoder passwordEncoder;
 	private final UserInfoRepository userInfoRepository;
 	private final SocialAccountRepository socialAccountRepository;
+	private final SocialNativeAuthService socialNativeAuthService;
 
 	/**
 	 * 소셜 로그인을 통해 생성된 임시 유저(GUEST)의 추가 정보를 등록하고 회원가입 절차를 완료합니다.
@@ -107,6 +111,64 @@ public class UserAccountService {
 			accounts.stream().anyMatch(a -> a.getSocialType() == SocialType.GOOGLE),
 			accounts.stream().anyMatch(a -> a.getSocialType() == SocialType.KAKAO),
 			accounts.stream().anyMatch(a -> a.getSocialType() == SocialType.APPLE));
+	}
+
+	/**
+	 * 현재 로그인한 사용자에게 소셜 계정을 연동합니다.
+	 * <p>
+	 * provider 토큰을 검증해 socialId/socialType을 추출합니다.
+	 * 해당하는 SocialAccount가 있는지 확인 후, 아래 케이스에 따라 처리합니다.
+	 * <ul>
+	 *   <li>SocialAccount 없음 + 현재 유저에 동일 provider 없음 → 신규 생성 후 연결</li>
+	 *   <li>SocialAccount 있음 + 다른 GUEST 유저에 연결됨 → 현재 유저로 재연결</li>
+	 *   <li>SocialAccount 있음 + GUEST가 아닌 다른 유저에 연결됨 → 관리자 문의 에러</li>
+	 * </ul>
+	 * </p>
+	 *
+	 * @param userId      연동할 사용자의 고유 식별자 (PK)
+	 * @param provider    소셜 provider (kakao, google, apple)
+	 * @param accessToken 카카오용 access token (구글/애플은 null)
+	 * @param idToken     구글/애플용 id token (카카오는 null)
+	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
+	 * [INVALID_REGISTRATION_STATUS] ACTIVE 상태가 아닌 유저가 요청한 경우,
+	 * [ALREADY_LINKED_SOCIAL_PROVIDER] 현재 유저에 동일 provider가 이미 연동된 경우,
+	 * [SOCIAL_ACCOUNT_LINKED_TO_OTHER_USER] 해당 소셜 계정이 다른 활성 유저에 연결된 경우
+	 */
+	@Transactional
+	public void linkSocialAccount(String userId, String provider, String accessToken, String idToken) {
+		User currentUser = userReader.findUserById(userId);
+
+		if (currentUser.getState() != UserState.ACTIVE) {
+			throw AuthErrorCode.INVALID_REGISTRATION_STATUS.toBaseException();
+		}
+
+		OAuthAttributes attributes = socialNativeAuthService.extractAttributes(provider, accessToken, idToken);
+
+		// 현재 유저에 동일 provider 이미 연동됐는지 먼저 확인 (신규 SocialAccount 존재 여부 무관)
+		userValidator.checkAccountExistByUserAndSocialType(currentUser, attributes.socialType());
+
+		Optional<SocialAccount> existingSocialAccount =
+			socialAccountRepository.findBySocialIdAndSocialType(attributes.socialId(), attributes.socialType());
+
+		if (existingSocialAccount.isEmpty()) {
+			// 1. SocialAccount 없음 → 신규 생성 + 현재 유저에 연결
+			userWriter.save(SocialAccount.of(
+				attributes.socialType(), attributes.socialId(), attributes.email(), currentUser));
+			return;
+		}
+
+		// 해당 SocialAccount 있는 경우
+		SocialAccount socialAccount = existingSocialAccount.get();
+		User linkedUser = socialAccount.getUser();
+
+		if (linkedUser.getState() == UserState.GUEST) {
+			// 2. 다른 GUEST 유저에 연결됨 → 현재 유저로 재연결
+			socialAccount.relink(currentUser);
+			return;
+		}
+
+		// 3. GUEST가 아닌 다른 유저에 연결됨 → 관리자 문의
+		throw AuthErrorCode.SOCIAL_ACCOUNT_LINKED_TO_OTHER_USER.toBaseException();
 	}
 
 	/**

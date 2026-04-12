@@ -22,6 +22,7 @@ import net.causw.app.main.domain.user.account.api.v1.dto.UserFcmTokenResponseDto
 import net.causw.app.main.domain.user.account.api.v2.dto.request.AdmissionCreateRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UpdateProfileImageRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserFcmTokenRequest;
+import net.causw.app.main.domain.user.account.api.v2.dto.request.SocialLinkRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserNicknameUpdateRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserPasswordUpdateRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserRegistrationRequest;
@@ -211,5 +212,17 @@ public class UserController {
 		return ApiResponse.success(
 			socialAccountsMapper.toResponse(
 				userAccountService.getSocialAccounts(userDetails.getUserId())));
+	}
+
+	@PostMapping("/me/social-accounts")
+	@ResponseStatus(HttpStatus.OK)
+	@Operation(summary = "소셜 계정 연동", description = "provider 토큰을 검증하여 현재 로그인한 사용자에게 소셜 계정을 연동합니다. "
+		+ "카카오는 accessToken, 구글/애플은 idToken을 전달합니다.")
+	public ApiResponse<Void> linkSocialAccount(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@Valid @RequestBody SocialLinkRequest body) {
+		userAccountService.linkSocialAccount(
+			userDetails.getUserId(), body.provider(), body.accessToken(), body.idToken());
+		return ApiResponse.success();
 	}
 }

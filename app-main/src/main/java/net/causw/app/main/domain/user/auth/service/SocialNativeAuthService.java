@@ -8,8 +8,10 @@ import java.util.Optional;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtDecoderFactory;
@@ -22,6 +24,7 @@ import net.causw.app.main.domain.user.account.enums.user.SocialType;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.dto.CustomOAuth2User;
+import net.causw.app.main.domain.user.auth.service.dto.OAuthAttributes;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
 import net.causw.app.main.shared.dto.ProfileImageDto;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
@@ -95,6 +98,41 @@ public class SocialNativeAuthService {
 	}
 
 	/**
+	 * provider 토큰을 검증하고 소셜 계정 속성만 반환합니다. 계정 생성/연동은 수행하지 않습니다.
+	 * 마이페이지 소셜 계정 연동 시 토큰 유효성 검증 및 socialId/socialType 추출 용도로 사용합니다.
+	 *
+	 * @param provider    provider registration id (kakao, google, apple)
+	 * @param accessToken 카카오용 access token
+	 * @param idToken     구글/애플용 id token
+	 * @return 표준화된 소셜 계정 속성 (socialId, socialType, email 포함)
+	 */
+	public OAuthAttributes extractAttributes(String provider, String accessToken, String idToken) {
+		String registrationId = provider.toLowerCase(Locale.ROOT);
+		log.info("Social account link token extraction requested. provider={}", registrationId);
+
+		try {
+			SocialType.from(registrationId);
+
+			ClientRegistration clientRegistration = Optional.ofNullable(
+				clientRegistrationRepository.findByRegistrationId(registrationId))
+				.orElseThrow(AuthErrorCode.UNSUPPORTED_SOCIAL_PROVIDER::toBaseException);
+
+			if (isOidcProvider(clientRegistration)) {
+				return extractOidcAttributes(clientRegistration, registrationId, idToken);
+			}
+
+			return extractOAuth2Attributes(clientRegistration, registrationId, accessToken);
+		} catch (BaseRunTimeV2Exception e) {
+			log.warn("Social account link token extraction failed. provider={}, code={}, message={}",
+				registrationId, e.getErrorCode().getCode(), e.getMessage());
+			throw e;
+		} catch (RuntimeException e) {
+			log.error("Unexpected error during social account link token extraction. provider={}", registrationId, e);
+			throw e;
+		}
+	}
+
+	/**
 	 * provider 설정(openid scope 여부)에 따라 OAuth2(access token) 또는 OIDC(id token) 검증 경로를 선택합니다.
 	 */
 	private User loadAuthenticatedUser(ClientRegistration clientRegistration, String providerAccessToken,
@@ -162,6 +200,42 @@ public class SocialNativeAuthService {
 		} catch (RuntimeException e) {
 			log.warn("OIDC user mapping failed unexpectedly. provider={}, exceptionType={}",
 				clientRegistration.getRegistrationId(), e.getClass().getSimpleName());
+			throw AuthErrorCode.INVALID_TOKEN.toBaseException();
+		}
+	}
+
+	/**
+	 * OIDC id token을 검증하고 {@link OAuthAttributes}를 반환합니다. 계정 생성/연동은 수행하지 않습니다.
+	 */
+	private OAuthAttributes extractOidcAttributes(ClientRegistration clientRegistration, String registrationId,
+		String idToken) {
+		String normalizedIdToken = normalizeAccessToken(idToken);
+		if (!StringUtils.hasText(normalizedIdToken)) {
+			throw AuthErrorCode.INVALID_TOKEN.toBaseException();
+		}
+		Jwt jwt = decodeOidcIdToken(clientRegistration, normalizedIdToken);
+		validateOidcClaims(clientRegistration, jwt);
+		return OAuthAttributes.of(registrationId, "sub", jwt.getClaims());
+	}
+
+	/**
+	 * OAuth2 access token으로 provider user-info API를 호출하고 {@link OAuthAttributes}를 반환합니다.
+	 * 계정 생성/연동은 수행하지 않습니다.
+	 */
+	private OAuthAttributes extractOAuth2Attributes(ClientRegistration clientRegistration, String registrationId,
+		String accessToken) {
+		OAuth2UserRequest userRequest = new OAuth2UserRequest(clientRegistration,
+			toProviderAccessToken(accessToken));
+		try {
+			// 카카오 user-info API에 HTTP 요청을 보내서 액세스 토큰 유효성 검증
+			DefaultOAuth2UserService delegate = new DefaultOAuth2UserService();
+			OAuth2User oAuth2User = delegate.loadUser(userRequest);
+			String userNameAttributeName = clientRegistration.getProviderDetails()
+				.getUserInfoEndpoint().getUserNameAttributeName();
+			return OAuthAttributes.of(registrationId, userNameAttributeName, oAuth2User.getAttributes());
+		} catch (RuntimeException e) {
+			log.warn("OAuth2 attributes extraction failed. provider={}, exceptionType={}, message={}",
+				registrationId, e.getClass().getSimpleName(), e.getMessage());
 			throw AuthErrorCode.INVALID_TOKEN.toBaseException();
 		}
 	}
