@@ -8,6 +8,7 @@ import java.util.Set;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserCareer;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserProject;
@@ -111,6 +112,25 @@ public class UserInfoWriter {
 			.filter(id -> !requests.contains(id))
 			.toList();
 		deleteProjectByIds(toDelete);
+	}
+
+	// 탈퇴 -> 동문수첩 삭제
+	public void deleteByUsers(List<User> users) {
+		List<String> userIds = users.stream()
+			.map(User::getId)
+			.toList();
+
+		if (userIds.isEmpty()) {
+			return;
+		}
+
+		List<UserInfo> userInfos = userInfoRepository.findAllByUser_IdIn(userIds);
+
+		if (userInfos.isEmpty()) {
+			return;
+		}
+
+		userInfoRepository.deleteAll(userInfos);
 	}
 
 	/**
