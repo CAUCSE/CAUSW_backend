@@ -1,7 +1,10 @@
 package net.causw.app.main.domain.user.account.api.v2.dto.request;
 
+import java.util.List;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 
 public record UserRegistrationRequest(
@@ -11,7 +14,5 @@ public record UserRegistrationRequest(
 
 	@NotBlank(message = "닉네임을 입력해 주세요.") @Schema(description = "닉네임", example = "푸앙") String nickname,
 
-	@Schema(description = "(필수) 서비스 이용약관 동의 여부") boolean serviceTermsAgreed,
-
-	@Schema(description = "(필수) 개인정보 수집·이용 동의 여부") boolean privacyTermsAgreed) {
+	@NotEmpty(message = "동의할 약관 ID를 입력해 주세요.") @Schema(description = "동의한 약관 ID 목록 (타입별 최신 필수 약관 ID 포함)") List<String> agreedTermsIds) {
 }

@@ -136,7 +136,7 @@ public class UserController {
 			throw AuthErrorCode.REFRESH_TOKEN_MISSING.toBaseException();
 		}
 		AuthResult dto = userAccountService.completeRegistration(userDetails.getUserId(), body.nickname(),
-			body.phoneNumber(), body.name(), body.serviceTermsAgreed(), body.privacyTermsAgreed(), refreshToken);
+			body.phoneNumber(), body.name(), body.agreedTermsIds(), refreshToken);
 		return ApiResponse.success(authDtoMapper.toAuthResponse(dto));
 	}
 

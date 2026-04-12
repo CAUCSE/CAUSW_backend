@@ -1,5 +1,7 @@
 package net.causw.app.main.domain.user.account.service.dto.request;
 
+import java.util.List;
+
 import net.causw.app.main.domain.user.auth.api.v2.dto.request.EmailSignupRequest;
 
 public record UserRegisterDto(
@@ -9,8 +11,7 @@ public record UserRegisterDto(
 	String nickname,
 	String phoneNumber,
 	String emailVerificationCode,
-	boolean serviceTermsAgreed,
-	boolean privacyTermsAgreed) {
+	List<String> agreedTermsIds) {
 	public static UserRegisterDto from(EmailSignupRequest request) {
 		return new UserRegisterDto(
 			request.email(),
@@ -19,7 +20,6 @@ public record UserRegisterDto(
 			request.nickname(),
 			request.phoneNumber(),
 			request.emailVerificationCode(),
-			request.serviceTermsAgreed(),
-			request.privacyTermsAgreed());
+			request.agreedTermsIds());
 	}
 }

@@ -35,11 +35,11 @@ import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificat
 import net.causw.app.main.domain.user.terms.entity.Terms;
 import net.causw.app.main.domain.user.terms.entity.UserTermsAgreement;
 import net.causw.app.main.domain.user.terms.service.implementation.TermsReader;
+import net.causw.app.main.domain.user.terms.service.implementation.TermsValidator;
 import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementReader;
 import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementWriter;
 import net.causw.app.main.shared.dto.ProfileImageDto;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
-import net.causw.app.main.shared.exception.errorcode.TermsErrorCode;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -67,6 +67,7 @@ public class AuthService {
 	private final EmailVerificationSender emailVerificationSender;
 	private final PasswordGenerator passwordGenerator;
 	private final TermsReader termsReader;
+	private final TermsValidator termsValidator;
 	private final UserTermsAgreementWriter userTermsAgreementWriter;
 	private final UserTermsAgreementReader userTermsAgreementReader;
 
@@ -124,10 +125,10 @@ public class AuthService {
 	 * 1. 기존 가입 정보(전화번호, 이름) 확인 및 상태 검증<br>
 	 * 2. 이메일, 닉네임, 전화번호 중복 검사<br>
 	 * 3. 이메일 인증 코드 검증<br>
-	 * 4. 필수 약관(서비스 이용약관, 개인정보 수집·이용) 동의 여부 확인<br>
+	 * 4. 동의 약관 ID 존재 여부 및 타입별 최신 필수 약관 포함 여부 검증<br>
 	 * 5. 비밀번호 암호화 및 신규 유저 생성 후 저장<br>
 	 * 6. 회원가입 완료 후 이메일 인증 정보 삭제<br>
-	 * 7. 약관 타입별 최신 버전 중 필수 항목에 대한 {@code UserTermsAgreement} 저장
+	 * 7. 요청에 포함된 약관 ID에 대한 {@code UserTermsAgreement} 저장
 	 *
 	 * @param dto 회원가입에 필요한 정보가 담긴 DTO (이메일, 비밀번호, 이름, 약관 동의 여부 등)
 	 * @return 가입된 사용자 정보 (토큰은 포함되지 않음)
@@ -146,9 +147,8 @@ public class AuthService {
 		userValidator.checkNicknameDuplication(dto.nickname());
 		userValidator.checkPhoneNumDuplication(dto.phoneNumber());
 		emailVerificationValidator.validateVerified(dto.email(), dto.emailVerificationCode());
-		if (!dto.serviceTermsAgreed() || !dto.privacyTermsAgreed()) {
-			throw TermsErrorCode.NOT_ALL_REQUIRED_TERMS_AGREED.toBaseException();
-		}
+		List<String> agreedTermsIds = dto.agreedTermsIds().stream().distinct().toList();
+		termsValidator.validateForAgreement(agreedTermsIds);
 
 		// 신규 사용자 생성 및 검증
 		User newUser = User.from(dto, passwordEncoder.encode(dto.password()));
@@ -158,9 +158,8 @@ public class AuthService {
 		emailVerificationWriter.delete(
 			emailVerificationReader.findLatestByEmailAndStatus(dto.email(), VerificationStatus.VERIFIED));
 
-		// 타입별 최신 약관 중 필수 항목에 대한 동의 저장.
-		List<Terms> latestTerms = termsReader.findLatestPerTypeIfRequired();
-		List<UserTermsAgreement> newAgreements = latestTerms.stream()
+		List<Terms> termsToSave = termsReader.findAllById(agreedTermsIds);
+		List<UserTermsAgreement> newAgreements = termsToSave.stream()
 			.map(terms -> UserTermsAgreement.of(savedUser, terms))
 			.toList();
 		userTermsAgreementWriter.saveAll(newAgreements);

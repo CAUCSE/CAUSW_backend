@@ -3,8 +3,11 @@ package net.causw.app.main.domain.user.account.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -32,6 +35,7 @@ import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManag
 import net.causw.app.main.domain.user.auth.service.implementation.AuthValidator;
 import net.causw.app.main.domain.user.terms.entity.Terms;
 import net.causw.app.main.domain.user.terms.service.implementation.TermsReader;
+import net.causw.app.main.domain.user.terms.service.implementation.TermsValidator;
 import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementWriter;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.TermsErrorCode;
@@ -64,6 +68,9 @@ class UserAccountServiceTest {
 	private TermsReader termsReader;
 
 	@Mock
+	private TermsValidator termsValidator;
+
+	@Mock
 	private UserTermsAgreementWriter userTermsAgreementWriter;
 
 	private final String userId = "test-uuid";
@@ -71,6 +78,7 @@ class UserAccountServiceTest {
 	private final String phoneNumber = "01012345678";
 	private final String name = "홍길동";
 	private final String refreshToken = "old-refresh-token";
+	private final List<String> agreedTermsIds = List.of("term-id-1", "term-id-2");
 
 	@Test
 	@DisplayName("GUEST 유저의 추가 정보 등록 및 회원가입 완료 성공")
@@ -85,10 +93,11 @@ class UserAccountServiceTest {
 		when(authTokenManager.issueTokens(guestUser, refreshToken)).thenReturn(tokenPair);
 		when(tokenPair.accessToken()).thenReturn("new-access-token");
 		when(tokenPair.refreshToken()).thenReturn("new-refresh-token");
-		when(termsReader.findLatestPerTypeIfRequired()).thenReturn(List.of(mock(Terms.class), mock(Terms.class)));
+		doNothing().when(termsValidator).validateForAgreement(anyList());
+		when(termsReader.findAllById(agreedTermsIds)).thenReturn(List.of(mock(Terms.class), mock(Terms.class)));
 
 		//when
-		AuthResult result = userAccountService.completeRegistration(userId, nickname, phoneNumber, name, true, true,
+		AuthResult result = userAccountService.completeRegistration(userId, nickname, phoneNumber, name, agreedTermsIds,
 			refreshToken);
 
 		//then
@@ -111,9 +120,12 @@ class UserAccountServiceTest {
 		User guestUser = mock(User.class);
 		when(userReader.findUserById(userId)).thenReturn(guestUser);
 		when(guestUser.getState()).thenReturn(UserState.GUEST);
+		doThrow(TermsErrorCode.NOT_ALL_REQUIRED_TERMS_AGREED.toBaseException())
+			.when(termsValidator)
+			.validateForAgreement(anyList());
 
 		BaseRunTimeV2Exception ex = assertThrows(BaseRunTimeV2Exception.class,
-			() -> userAccountService.completeRegistration(userId, nickname, phoneNumber, name, false, true,
+			() -> userAccountService.completeRegistration(userId, nickname, phoneNumber, name, agreedTermsIds,
 				refreshToken));
 
 		assertEquals(TermsErrorCode.NOT_ALL_REQUIRED_TERMS_AGREED.getMessage(), ex.getMessage());
@@ -133,7 +145,7 @@ class UserAccountServiceTest {
 		//when
 		//then
 		assertThrows(BaseRunTimeV2Exception.class,
-			() -> userAccountService.completeRegistration(userId, nickname, phoneNumber, name, true, true,
+			() -> userAccountService.completeRegistration(userId, nickname, phoneNumber, name, agreedTermsIds,
 				refreshToken));
 
 		//verify
