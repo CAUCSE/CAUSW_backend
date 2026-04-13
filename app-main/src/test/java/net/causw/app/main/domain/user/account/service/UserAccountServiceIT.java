@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerReader;
@@ -44,6 +46,12 @@ class UserAccountServiceIT {
 
 	@MockBean
 	private FirebaseConfig firebaseConfig;
+
+	@MockBean
+	private RedisTemplate<String, String> redisTemplate;
+
+	@MockBean
+	private StringRedisTemplate stringRedisTemplate;
 
 	@Test
 	@DisplayName("탈퇴 시 deletedAt이 저장된다")
