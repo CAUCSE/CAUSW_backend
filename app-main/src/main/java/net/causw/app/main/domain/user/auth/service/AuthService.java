@@ -206,7 +206,7 @@ public class AuthService {
 	 * [BLOCKED/INACTIVE_USER] 유저 상태가 활동 불가능한 경우(탈퇴 포함)
 	 */
 	@Transactional
-	public AuthResult updateToken(String refreshToken) {
+	public SignInResult updateToken(String refreshToken) {
 		if (refreshToken == null) {
 			throw AuthErrorCode.REFRESH_TOKEN_MISSING.toBaseException();
 		}
@@ -218,9 +218,9 @@ public class AuthService {
 
 		// 토큰 생성
 		AuthTokenPair tokens = authTokenManager.issueTokens(user, refreshToken, isKeepLogin);
-		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), ProfileImageDto.from(user),
+		return SignInResult.of(tokens.accessToken(), user.getName(), user.getEmail(), ProfileImageDto.from(user),
 			tokens.refreshToken(), user.isGuest(), user.isTermsAgreed(), user.isAcademicCertified(),
-			user.getAcademicStatus());
+			user.getAcademicStatus(), isKeepLogin);
 	}
 
 	/**

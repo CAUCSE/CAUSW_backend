@@ -456,7 +456,7 @@ public class AuthServiceTest {
 				given(authTokenManager.issueTokens(user, REFRESH_TOKEN, IS_KEEP_LOGIN)).willReturn(newTokens);
 
 				// when
-				AuthResult result = authService.updateToken(REFRESH_TOKEN);
+				SignInResult result = authService.updateToken(REFRESH_TOKEN);
 
 				// then
 				assertThat(result.accessToken()).isEqualTo(NEW_ACCESS_TOKEN);

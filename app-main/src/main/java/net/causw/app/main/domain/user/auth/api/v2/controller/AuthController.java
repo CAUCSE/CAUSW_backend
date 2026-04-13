@@ -117,7 +117,7 @@ public class AuthController {
 		@RequestHeader(value = "Authorization", required = false) String authHeader) {
 		// CSRF 방어 로직
 		AuthorizationExtractor.validate(authHeader);
-		AuthResult dto = authService.updateToken(refreshToken);
+		SignInResult dto = authService.updateToken(refreshToken);
 		return createAuthResponse(dto);
 	}
 
