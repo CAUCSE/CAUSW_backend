@@ -366,7 +366,7 @@ public class AuthServiceTest {
 		void success() {
 			// given
 			given(userReader.findByEmailOrElseThrow(EMAIL)).willReturn(user);
-			given(authTokenManager.issueTokens(any(User.class), any())).willReturn(authTokenPair);
+			given(authTokenManager.issueTokens(any(User.class), any(), IS_KEEP_LOGIN)).willReturn(authTokenPair);
 
 			// when
 			SignInResult result = authService.loginEmailUser(EMAIL, PASSWORD, IS_KEEP_LOGIN);
@@ -380,7 +380,7 @@ public class AuthServiceTest {
 			// verify
 			verify(authValidator).validateCredential(user, PASSWORD);
 			verify(userValidator).validateUserStatusForLogin(user);
-			verify(authTokenManager).issueTokens(user, null);
+			verify(authTokenManager).issueTokens(user, null, IS_KEEP_LOGIN);
 		}
 
 		@Nested
@@ -418,7 +418,7 @@ public class AuthServiceTest {
 					.hasMessage(UserErrorCode.INVALID_LOGIN.getMessage());
 
 				// verify
-				verify(authTokenManager, never()).issueTokens(any(), any());
+				verify(authTokenManager, never()).issueTokens(any(), any(), IS_KEEP_LOGIN);
 			}
 
 			@ParameterizedTest(name = "실패: 사용자 상태 오류 ({0})")
@@ -453,7 +453,7 @@ public class AuthServiceTest {
 
 				given(authTokenManager.getUserIdFromRefreshToken(REFRESH_TOKEN)).willReturn(USER_ID);
 				given(userReader.findUserById(USER_ID)).willReturn(user);
-				given(authTokenManager.issueTokens(user, REFRESH_TOKEN)).willReturn(newTokens);
+				given(authTokenManager.issueTokens(user, REFRESH_TOKEN, IS_KEEP_LOGIN)).willReturn(newTokens);
 
 				// when
 				AuthResult result = authService.updateToken(REFRESH_TOKEN);
@@ -464,7 +464,7 @@ public class AuthServiceTest {
 
 				// verify
 				verify(userValidator).validateUser(user);
-				verify(authTokenManager).issueTokens(user, REFRESH_TOKEN);
+				verify(authTokenManager).issueTokens(user, REFRESH_TOKEN, IS_KEEP_LOGIN);
 			}
 
 			@Test
@@ -475,7 +475,7 @@ public class AuthServiceTest {
 					.isInstanceOf(BaseRunTimeV2Exception.class)
 					.hasMessage(AuthErrorCode.REFRESH_TOKEN_MISSING.getMessage());
 
-				verify(authTokenManager, never()).issueTokens(any(), any());
+				verify(authTokenManager, never()).issueTokens(any(), any(), IS_KEEP_LOGIN);
 			}
 
 			@Test

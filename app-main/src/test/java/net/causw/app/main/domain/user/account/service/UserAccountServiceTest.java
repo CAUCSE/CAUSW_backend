@@ -68,7 +68,7 @@ class UserAccountServiceTest {
 		when(userReader.findUserById(userId)).thenReturn(guestUser);
 		when(guestUser.getState()).thenReturn(UserState.GUEST);
 		when(userWriter.save(guestUser)).thenReturn(guestUser);
-		when(authTokenManager.issueTokens(guestUser, refreshToken)).thenReturn(tokenPair);
+		when(authTokenManager.issueTokens(guestUser, refreshToken, false)).thenReturn(tokenPair);
 		when(tokenPair.accessToken()).thenReturn("new-access-token");
 		when(tokenPair.refreshToken()).thenReturn("new-refresh-token");
 
@@ -85,7 +85,7 @@ class UserAccountServiceTest {
 		verify(userValidator).checkPhoneNumDuplication(phoneNumber);
 		verify(guestUser).submitRegistration(name, nickname, phoneNumber);
 		verify(userWriter).save(guestUser);
-		verify(authTokenManager).issueTokens(guestUser, refreshToken);
+		verify(authTokenManager).issueTokens(guestUser, refreshToken, false);
 	}
 
 	@Test

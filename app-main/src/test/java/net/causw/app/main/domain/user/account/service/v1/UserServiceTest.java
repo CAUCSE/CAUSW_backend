@@ -404,7 +404,7 @@ class UserServiceTest {
 			// given
 			given(userRepository.findByEmail("test@cau.ac.kr"))
 				.willReturn(Optional.of(inactiveUser));
-			given(jwtTokenProvider.createRefreshToken()).willReturn("refresh-token");
+			given(jwtTokenProvider.createRefreshToken(false)).willReturn("refresh-token");
 			given(jwtTokenProvider.createAccessToken(
 				eq("test-user-id"),
 				eq(Set.of(Role.COMMON)),

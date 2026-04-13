@@ -78,7 +78,7 @@ class SocialNativeAuthServiceTest {
 		given(clientRegistrationRepository.findByRegistrationId("kakao")).willReturn(kakao);
 		given(customOAuth2UserService.loadUser(any(OAuth2UserRequest.class)))
 			.willReturn(new CustomOAuth2User(user, Map.of("id", "kakao-id"), "id"));
-		given(authTokenManager.issueTokens(user, null))
+		given(authTokenManager.issueTokens(user, null, IS_KEEP_LOGIN))
 			.willReturn(AuthTokenPair.of(APP_ACCESS_TOKEN, APP_REFRESH_TOKEN));
 
 		SignInResult result = socialNativeAuthService.login("kakao", PROVIDER_ACCESS_TOKEN, null, null, null, null, IS_KEEP_LOGIN);
@@ -89,7 +89,7 @@ class SocialNativeAuthServiceTest {
 		assertThat(result.isKeepLogin()).isEqualTo(IS_KEEP_LOGIN);
 
 		verify(customOAuth2UserService).loadUser(any(OAuth2UserRequest.class));
-		verify(authTokenManager).issueTokens(user, null);
+		verify(authTokenManager).issueTokens(user, null, IS_KEEP_LOGIN);
 		verify(oidcAuthorizationCodeTokenClient, never()).exchangeAuthorizationCode(any(), any(), any(), any());
 	}
 
@@ -102,7 +102,7 @@ class SocialNativeAuthServiceTest {
 		given(clientRegistrationRepository.findByRegistrationId("kakao")).willReturn(kakao);
 		given(customOAuth2UserService.loadUser(any(OAuth2UserRequest.class)))
 			.willReturn(new CustomOAuth2User(user, Map.of("id", "kakao-id"), "id"));
-		given(authTokenManager.issueTokens(user, null))
+		given(authTokenManager.issueTokens(user, null, IS_KEEP_LOGIN))
 			.willReturn(AuthTokenPair.of(APP_ACCESS_TOKEN, APP_REFRESH_TOKEN));
 
 		SignInResult result = socialNativeAuthService.login("kakao", BEARER_PROVIDER_ACCESS_TOKEN, null, null, null,
@@ -130,7 +130,7 @@ class SocialNativeAuthServiceTest {
 		given(oidcIdTokenDecoderFactory.createDecoder(google)).willReturn(jwtDecoder);
 		given(jwtDecoder.decode(PROVIDER_ID_TOKEN)).willReturn(jwt);
 		given(customOAuth2UserService.loadUserFromOidcClaims("google", jwt.getClaims())).willReturn(user);
-		given(authTokenManager.issueTokens(user, null))
+		given(authTokenManager.issueTokens(user, null, IS_KEEP_LOGIN))
 			.willReturn(AuthTokenPair.of(APP_ACCESS_TOKEN, APP_REFRESH_TOKEN));
 
 		SignInResult result = socialNativeAuthService.login("google", null, PROVIDER_ID_TOKEN, null, null, null, IS_KEEP_LOGIN);
@@ -161,7 +161,7 @@ class SocialNativeAuthServiceTest {
 		given(oidcIdTokenDecoderFactory.createDecoder(apple)).willReturn(jwtDecoder);
 		given(jwtDecoder.decode(PROVIDER_ID_TOKEN)).willReturn(jwt);
 		given(customOAuth2UserService.loadUserFromOidcClaims("apple", jwt.getClaims())).willReturn(user);
-		given(authTokenManager.issueTokens(user, null))
+		given(authTokenManager.issueTokens(user, null, IS_KEEP_LOGIN))
 			.willReturn(AuthTokenPair.of(APP_ACCESS_TOKEN, APP_REFRESH_TOKEN));
 
 		SignInResult result = socialNativeAuthService.login("apple", null, PROVIDER_ID_TOKEN, null, null, null, IS_KEEP_LOGIN);
@@ -225,7 +225,7 @@ class SocialNativeAuthServiceTest {
 			.isInstanceOf(BaseRunTimeV2Exception.class)
 			.hasMessage(AuthErrorCode.SOCIAL_EMAIL_REQUIRED.getMessage());
 
-		verify(authTokenManager, never()).issueTokens(any(User.class), any());
+		verify(authTokenManager, never()).issueTokens(any(User.class), any(), IS_KEEP_LOGIN);
 	}
 
 	@Test
@@ -241,7 +241,7 @@ class SocialNativeAuthServiceTest {
 			.isInstanceOf(BaseRunTimeV2Exception.class)
 			.hasMessage(AuthErrorCode.INVALID_TOKEN.getMessage());
 
-		verify(authTokenManager, never()).issueTokens(any(User.class), any());
+		verify(authTokenManager, never()).issueTokens(any(User.class), any(), IS_KEEP_LOGIN);
 	}
 
 	@Test
@@ -266,7 +266,7 @@ class SocialNativeAuthServiceTest {
 			.isInstanceOf(BaseRunTimeV2Exception.class)
 			.hasMessage(AuthErrorCode.SOCIAL_EMAIL_REQUIRED.getMessage());
 
-		verify(authTokenManager, never()).issueTokens(any(User.class), any());
+		verify(authTokenManager, never()).issueTokens(any(User.class), any(), IS_KEEP_LOGIN);
 	}
 
 	private ClientRegistration clientRegistration(String registrationId, String... scopes) {
