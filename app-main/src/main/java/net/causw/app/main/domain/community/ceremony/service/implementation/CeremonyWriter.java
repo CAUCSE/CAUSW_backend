@@ -37,7 +37,7 @@ public class CeremonyWriter {
 		ceremony.updateNote(rejectReason);
 	}
 
-	public void deleteByUsers(List<User> users) {
+	public void deleteCeremonyByUsers(List<User> users) {
 		List<String> userIds = users.stream()
 			.map(User::getId)
 			.toList();

@@ -57,7 +57,7 @@ public class AdmissionWriter {
 		userAdmissionRepository.delete(admission);
 	}
 
-	public void deleteByUsers(List<User> users) {
+	public void deleteAdmissionByUsers(List<User> users) {
 		List<String> userIds = users.stream()
 			.map(User::getId)
 			.toList();

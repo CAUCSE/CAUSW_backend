@@ -60,7 +60,7 @@ public class SocialAccountWriter {
 	}
 
 	@Transactional
-	public void deleteByUsers(List<User> users) {
+	public void deleteSocialAccountsByUsers(List<User> users) {
 		List<String> userIds = users.stream()
 			.map(User::getId)
 			.toList();

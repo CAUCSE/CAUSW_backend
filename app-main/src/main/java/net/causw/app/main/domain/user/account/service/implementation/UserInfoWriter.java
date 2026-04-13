@@ -115,7 +115,7 @@ public class UserInfoWriter {
 	}
 
 	// 탈퇴 -> 동문수첩 삭제
-	public void deleteByUsers(List<User> users) {
+	public void deleteUserInfoByUsers(List<User> users) {
 		List<String> userIds = users.stream()
 			.map(User::getId)
 			.toList();

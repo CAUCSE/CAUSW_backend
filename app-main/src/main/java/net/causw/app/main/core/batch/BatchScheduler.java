@@ -98,10 +98,10 @@ public class BatchScheduler {
 				return;
 			}
 
-			userInfoWriter.deleteByUsers(withdrawnUsers);
-			ceremonyWriter.deleteByUsers(withdrawnUsers);
-			socialAccountWriter.deleteByUsers(withdrawnUsers);
-			admissionWriter.deleteByUsers(withdrawnUsers);
+			userInfoWriter.deleteUserInfoByUsers(withdrawnUsers);
+			ceremonyWriter.deleteCeremonyByUsers(withdrawnUsers);
+			socialAccountWriter.deleteSocialAccountsByUsers(withdrawnUsers);
+			admissionWriter.deleteAdmissionByUsers(withdrawnUsers);
 			userWriter.cleanupWithdrawnUsers(withdrawnUsers);
 
 			log.info("[유저 정리 배치] 탈퇴 유저 후처리 완료");

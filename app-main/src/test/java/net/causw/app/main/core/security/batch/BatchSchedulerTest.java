@@ -68,9 +68,9 @@ public class BatchSchedulerTest {
 
 		// then
 		verify(userRepository).findAllByDeletedAtIsNotNullAndDeletedAtBefore(any(LocalDateTime.class));
-		verify(userInfoWriter).deleteByUsers(withdrawnUsers);
+		verify(userInfoWriter).deleteUserInfoByUsers(withdrawnUsers);
 		verify(ceremonyWriter).deleteByUsers(withdrawnUsers);
-		verify(socialAccountWriter).deleteByUsers(withdrawnUsers);
+		verify(socialAccountWriter).deleteSocialAccountsByUsers(withdrawnUsers);
 		verify(userAdmissionWriter).deleteByUsers(withdrawnUsers);
 		verify(userWriter).cleanupWithdrawnUsers(withdrawnUsers);
 	}
