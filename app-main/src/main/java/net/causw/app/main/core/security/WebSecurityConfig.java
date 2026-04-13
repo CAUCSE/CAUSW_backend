@@ -38,7 +38,7 @@ import lombok.RequiredArgsConstructor;
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
-public class 	WebSecurityConfig {
+public class WebSecurityConfig {
 
 	private final JwtTokenProvider jwtTokenProvider;
 	private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
