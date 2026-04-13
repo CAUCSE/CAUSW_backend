@@ -19,6 +19,7 @@ import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
 import net.causw.app.main.domain.user.account.service.implementation.SocialAccountWriter;
+import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
 import net.causw.app.main.shared.infra.firebase.FcmUtils;
 import net.causw.app.main.shared.infra.firebase.FirebaseConfig;
 
@@ -48,10 +49,7 @@ class UserAccountServiceIT {
 	private FirebaseConfig firebaseConfig;
 
 	@MockBean
-	private RedisTemplate<String, String> redisTemplate;
-
-	@MockBean
-	private StringRedisTemplate stringRedisTemplate;
+	private AuthTokenManager authTokenManager;
 
 	@Test
 	@DisplayName("탈퇴 시 deletedAt이 저장된다")
