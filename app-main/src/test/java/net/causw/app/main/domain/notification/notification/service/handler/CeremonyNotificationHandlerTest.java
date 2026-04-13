@@ -82,7 +82,7 @@ class CeremonyNotificationHandlerTest {
 		@DisplayName("성공: isSetAll=false이면 대상 입학년도 유저에게만 알림 발송")
 		void givenTargetYears_whenHandle_thenSendToTargetYearUsers() {
 			// given
-			Ceremony ceremony = celebrationWithTargetYears(Set.of("24", "25")); // 2024, 2025
+			Ceremony ceremony = celebrationWithTargetYears(Set.of(2024, 2025));
 			User target = mock(User.class);
 
 			given(ceremonyReader.findById("ceremonyId")).willReturn(Optional.of(ceremony));
@@ -175,7 +175,7 @@ class CeremonyNotificationHandlerTest {
 	}
 
 	/** isSetAll=false, 특정 입학년도 대상 */
-	private Ceremony celebrationWithTargetYears(Set<String> targetYears) {
+	private Ceremony celebrationWithTargetYears(Set<Integer> targetYears) {
 		Ceremony ceremony = celebrationSetAll();
 		given(ceremony.isSetAll()).willReturn(false);
 		given(ceremony.getTargetAdmissionYears()).willReturn(targetYears);

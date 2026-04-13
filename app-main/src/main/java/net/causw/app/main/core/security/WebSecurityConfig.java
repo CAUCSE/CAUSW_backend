@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -29,6 +30,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import net.causw.app.main.domain.user.auth.handler.OAuth2FailureHandler;
 import net.causw.app.main.domain.user.auth.handler.OAuth2SuccessHandler;
 import net.causw.app.main.domain.user.auth.service.CustomOAuth2UserService;
+import net.causw.app.main.domain.user.auth.service.implementation.OAuth2RefreshTokenCaptureClient;
 
 import lombok.RequiredArgsConstructor;
 
@@ -46,6 +48,7 @@ public class WebSecurityConfig {
 	private final CustomOAuth2UserService customOAuth2UserService;
 	private final OAuth2SuccessHandler oAuth2SuccessHandler;
 	private final OAuth2FailureHandler oAuth2FailureHandler;
+	private final OAuth2RefreshTokenCaptureClient oAuth2RefreshTokenCaptureClient;
 
 	@Value("${app.cors.allowed-origins:http://localhost:3000}")
 	private String corsAllowedOrigins;
@@ -73,12 +76,16 @@ public class WebSecurityConfig {
 				.requestMatchers("/api/v2/auth/**", "/oauth2/**", "/login/oauth2/**",
 					"/api/v2/users/check-nickname", "/api/v2/users/check-phone")
 				.permitAll()
+				.requestMatchers(HttpMethod.GET, "/api/v2/terms")
+				.permitAll()
 				.requestMatchers("/api/v2/admin/**").hasRole("ADMIN")
 				.anyRequest().authenticated())
 			.oauth2Login(oauth2 -> oauth2
 				.authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint
 					.authorizationRequestResolver(appleOAuth2AuthorizationRequestResolver)
 					.authorizationRequestRepository(oAuth2AuthorizationRequestCookieRepository))
+				.tokenEndpoint(tokenEndpoint -> tokenEndpoint
+					.accessTokenResponseClient(oAuth2RefreshTokenCaptureClient))
 				.userInfoEndpoint(userInfo -> userInfo
 					.userService(customOAuth2UserService)
 					.oidcUserService(customOAuth2UserService::loadOidcUser))

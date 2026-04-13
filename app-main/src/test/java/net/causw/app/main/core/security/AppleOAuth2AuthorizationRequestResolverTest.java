@@ -46,6 +46,22 @@ class AppleOAuth2AuthorizationRequestResolverTest {
 		assertNull(authorizationRequest.getAdditionalParameters().get("response_mode"));
 	}
 
+	@Test
+	@DisplayName("google authorization 요청에는 refresh_token 발급 유도 파라미터를 추가한다")
+	void resolve_GoogleRegistration_AddsOfflineConsentParameters() {
+		AppleOAuth2AuthorizationRequestResolver resolver = new AppleOAuth2AuthorizationRequestResolver(
+			new InMemoryClientRegistrationRepository(appleClientRegistration(), googleClientRegistration()));
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/");
+
+		OAuth2AuthorizationRequest authorizationRequest = resolver.resolve(request, "google");
+
+		assertNotNull(authorizationRequest);
+		Map<String, Object> additionalParameters = authorizationRequest.getAdditionalParameters();
+		assertEquals("offline", additionalParameters.get("access_type"));
+		assertEquals("consent", additionalParameters.get("prompt"));
+		assertEquals("true", additionalParameters.get("include_granted_scopes"));
+	}
+
 	private ClientRegistration appleClientRegistration() {
 		return ClientRegistration.withRegistrationId("apple")
 			.clientId("apple-client")

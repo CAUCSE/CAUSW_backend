@@ -1,5 +1,4 @@
 rootProject.name = 'CAUSW_backend'
 include 'global'
 include 'app-main'
-include 'app-chat'
 

@@ -47,7 +47,7 @@ public record CeremonyDetailResponse(
 
 	@Schema(description = "모든 학번에게 알림 전송 여부 (권한 없으면 null)", example = "true") Boolean isSetAll,
 
-	@Schema(description = "알림 대상 학번 (권한 없으면 null)", example = "[19, 21, 22]") List<String> targetAdmissionYears,
+	@Schema(description = "알림 대상 학번 (권한 없으면 null)", example = "[2019, 2021, 2022]") List<Integer> targetAdmissionYears,
 
 	@Schema(description = "신청한 경조사 상태", example = "AWAIT") CeremonyState state,
 
