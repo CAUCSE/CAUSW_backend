@@ -240,5 +240,13 @@ public class WebSecurityConfigTest {
 			mockMvc.perform(MockMvcRequestBuilders.get("/api/v2/admin/test"))
 				.andExpect(status().isNotFound());
 		}
+
+		@Test
+		@WithAnonymousUser
+		@DisplayName("/api/v2/terms 경로는 인증 없이 접근 허용")
+		void shouldAllowV2TermsAccess_WhenAnonymous() throws Exception {
+			mockMvc.perform(MockMvcRequestBuilders.get("/api/v2/terms"))
+				.andExpect(status().isNotFound());
+		}
 	}
 }

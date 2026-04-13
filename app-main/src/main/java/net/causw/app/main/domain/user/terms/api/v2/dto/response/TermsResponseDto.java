@@ -8,6 +8,7 @@ import net.causw.app.main.domain.user.terms.service.v2.dto.TermsInfo;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 public record TermsResponseDto(
+	@Schema(description = "약관 ID") String id,
 	@Schema(description = "제목") String title,
 	@Schema(description = "약관 종류") TermsType type,
 	@Schema(description = "필수 동의 여부") boolean isRequired,
@@ -17,6 +18,7 @@ public record TermsResponseDto(
 
 	public static TermsResponseDto from(TermsInfo info) {
 		return new TermsResponseDto(
+			info.id(),
 			info.title(),
 			info.type(),
 			info.isRequired(),
