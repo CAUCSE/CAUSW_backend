@@ -1,7 +1,6 @@
 package net.causw.app.main.domain.user.terms.service.implementation;
 
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.stereotype.Component;
 
