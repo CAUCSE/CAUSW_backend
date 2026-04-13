@@ -40,8 +40,9 @@ public class UserInfoReader {
 	 * @param pageable 페이징 정보
 	 * @return 동문 수첩 프로필 페이지
 	 */
-	public Page<UserInfo> findUserInfoWithFilter(UserInfoListCondition condition, Pageable pageable) {
-		return userInfoQueryRepository.findAllWithFilter(condition, pageable);
+	public Page<UserInfo> findUserInfoWithFilter(UserInfoListCondition condition, Pageable pageable,
+		String excludeUserId) {
+		return userInfoQueryRepository.findAllWithFilter(condition, pageable, excludeUserId);
 	}
 
 	/**
