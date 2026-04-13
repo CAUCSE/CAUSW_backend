@@ -138,9 +138,8 @@ public class AuthServiceTest {
 			List.of(TERM_ID_SERVICE, TERM_ID_PRIVACY));
 		user = User.from(registerDto, ENCODED_PASSWORD);
 		authTokenPair = new AuthTokenPair(ACCESS_TOKEN, REFRESH_TOKEN);
-		lenient().when(termsReader.findLatestPerTypeIfRequired()).thenReturn(List.of());
 		lenient().when(termsReader.findAllById(anyList())).thenReturn(List.of());
-		lenient().when(userTermsAgreementReader.hasAgreedToAllTerms(any(User.class), any(Set.class))).thenReturn(true);
+		lenient().when(userTermsAgreementReader.hasAgreedToAllRequiredLatestTerms(any(User.class))).thenReturn(true);
 	}
 
 	@Nested
@@ -180,7 +179,7 @@ public class AuthServiceTest {
 			verify(authValidator).validateRegisterInput(any(User.class), eq(PASSWORD), eq(PHONE));
 			verify(userWriter).save(any(User.class));
 			verify(userTermsAgreementWriter).saveAll(any());
-			verify(userTermsAgreementReader, never()).hasAgreedToAllTerms(any(User.class), any(Set.class));
+			verify(userTermsAgreementReader, never()).hasAgreedToAllRequiredLatestTerms(any(User.class));
 		}
 
 		@Test

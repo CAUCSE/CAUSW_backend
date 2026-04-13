@@ -5,8 +5,6 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -188,7 +186,7 @@ public class AuthService {
 		// 토큰 생성
 		AuthTokenPair tokens = authTokenManager.issueTokens(user, null);
 		// 최신 필수 약관 동의 여부 확인
-		boolean hasAllRequiredLatestTerms = hasAgreedToAllRequiredLatestTerms(user);
+		boolean hasAllRequiredLatestTerms = userTermsAgreementReader.hasAgreedToAllRequiredLatestTerms(user);
 
 		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), ProfileImageDto.from(user),
 			tokens.refreshToken(), user.isGuest(), hasAllRequiredLatestTerms, user.isAcademicCertified(),
@@ -245,7 +243,7 @@ public class AuthService {
 		// 토큰 생성
 		AuthTokenPair tokens = authTokenManager.issueTokens(user, refreshToken);
 		// 최신 필수 약관 동의 여부 확인
-		boolean hasAllRequiredLatestTerms = hasAgreedToAllRequiredLatestTerms(user);
+		boolean hasAllRequiredLatestTerms = userTermsAgreementReader.hasAgreedToAllRequiredLatestTerms(user);
 
 		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), ProfileImageDto.from(user),
 			tokens.refreshToken(), user.isGuest(), hasAllRequiredLatestTerms, user.isAcademicCertified(),
@@ -271,13 +269,6 @@ public class AuthService {
 		}
 		// jwt 토큰 무효화
 		authTokenManager.invalidateTokens(tokens.accessToken(), tokens.refreshToken());
-	}
-
-	private boolean hasAgreedToAllRequiredLatestTerms(User user) {
-		Set<String> requiredLatestTermIds = termsReader.findLatestPerTypeIfRequired().stream()
-			.map(Terms::getId)
-			.collect(Collectors.toSet());
-		return userTermsAgreementReader.hasAgreedToAllTerms(user, requiredLatestTermIds);
 	}
 
 	private LocalDate toLocalDate(LocalDateTime dateTime) {

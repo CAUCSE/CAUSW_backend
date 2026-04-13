@@ -4,8 +4,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
@@ -25,8 +23,6 @@ import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.dto.CustomOAuth2User;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
-import net.causw.app.main.domain.user.terms.entity.Terms;
-import net.causw.app.main.domain.user.terms.service.implementation.TermsReader;
 import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementReader;
 import net.causw.app.main.shared.dto.ProfileImageDto;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
@@ -59,7 +55,6 @@ public class SocialNativeAuthService {
 	private final CustomOAuth2UserService customOAuth2UserService;
 	private final JwtDecoderFactory<ClientRegistration> oidcIdTokenDecoderFactory;
 	private final AuthTokenManager authTokenManager;
-	private final TermsReader termsReader;
 	private final UserTermsAgreementReader userTermsAgreementReader;
 
 	/**
@@ -88,7 +83,7 @@ public class SocialNativeAuthService {
 
 			log.info("Native social login succeeded. provider={}, userId={}", registrationId, user.getId());
 
-			boolean hasAllRequiredLatestTerms = hasAgreedToAllRequiredLatestTerms(user);
+			boolean hasAllRequiredLatestTerms = userTermsAgreementReader.hasAgreedToAllRequiredLatestTerms(user);
 
 			return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), ProfileImageDto.from(user),
 				tokens.refreshToken(), user.isGuest(), hasAllRequiredLatestTerms, user.isAcademicCertified(),
@@ -280,13 +275,6 @@ public class SocialNativeAuthService {
 		}
 
 		return trimmed;
-	}
-
-	private boolean hasAgreedToAllRequiredLatestTerms(User user) {
-		Set<String> requiredLatestTermIds = termsReader.findLatestPerTypeIfRequired().stream()
-			.map(Terms::getId)
-			.collect(Collectors.toSet());
-		return userTermsAgreementReader.hasAgreedToAllTerms(user, requiredLatestTermIds);
 	}
 
 }

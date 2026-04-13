@@ -25,14 +25,7 @@ public class UserTermsAgreementReader {
 		return userTermsAgreementRepository.findByUserAndTerms_IdIn(user, termsIds);
 	}
 
-	/**
-	 * {@code termsIds}에 담긴 약관 ID 각각에 대해 동의 행이 하나씩 있는지 여부입니다.
-	 * 빈 집합이면 {@code true}입니다.
-	 */
-	public boolean hasAgreedToAllTerms(User user, Set<String> termsIds) {
-		if (termsIds == null || termsIds.isEmpty()) {
-			return true;
-		}
-		return userTermsAgreementRepository.countByUserAndTerms_IdIn(user, termsIds) == termsIds.size();
+	public boolean hasAgreedToAllRequiredLatestTerms(User user) {
+		return userTermsAgreementRepository.hasAgreedToAllRequiredLatestTerms(user);
 	}
 }
