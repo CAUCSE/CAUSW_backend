@@ -1,14 +1,18 @@
 package net.causw.app.main.domain.community.comment.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
 import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.community.comment.entity.LikeComment;
@@ -57,6 +61,7 @@ public class CommentService {
 	private final CommentMetaReader commentMetaReader;
 	private final CommentMapper commentMapper;
 	private final UserReader userReader;
+	private final UserProfileImageReader userProfileImageReader;
 
 	/**
 	 * 댓글을 생성하고 응답 객체를 반환합니다.
@@ -78,7 +83,10 @@ public class CommentService {
 
 		// 신규 댓글: 좋아요 0, 대댓글 없음, 구독은 다음 단계에서 생성
 		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
-		CommentResult result = commentMapper.toResult(comment, creator, boardAdminIds, CommentMeta.forNew());
+		Map<String, UserProfileImage> profileImageMap = userProfileImageReader.findMapByUserIds(
+			List.of(creator.getId()));
+		CommentResult result = commentMapper.toResult(comment, creator, boardAdminIds, CommentMeta.forNew(),
+			profileImageMap);
 
 		commentSubscribeWriter.createCommentSubscribe(creator, comment.getId());
 		eventPublisher.publishEvent(new PostCommentCreatedEvent(post.getId(), comment.getId()));
@@ -114,7 +122,24 @@ public class CommentService {
 		Map<String, CommentMeta> metaMap = commentMetaReader.fetch(viewer.getId(), blockedUserIds,
 			comments.getContent());
 
-		return comments.map(c -> commentMapper.toResult(c, viewer, boardAdminIds, metaMap.get(c.getId())));
+		// 댓글·대댓글 작성자 프로필 이미지 일괄 조회
+		List<String> writerIds = comments.getContent().stream()
+			.flatMap(c -> {
+				List<String> ids = new ArrayList<>();
+				if (c.getWriter() != null)
+					ids.add(c.getWriter().getId());
+				c.getChildCommentList().forEach(child -> {
+					if (child.getWriter() != null)
+						ids.add(child.getWriter().getId());
+				});
+				return ids.stream();
+			})
+			.distinct()
+			.collect(Collectors.toList());
+		Map<String, UserProfileImage> profileImageMap = userProfileImageReader.findMapByUserIds(writerIds);
+
+		return comments.map(c -> commentMapper.toResult(c, viewer, boardAdminIds, metaMap.get(c.getId()),
+			profileImageMap));
 	}
 
 	/**
@@ -135,7 +160,9 @@ public class CommentService {
 
 		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
 		CommentMeta meta = commentMetaReader.fetchForComment(updater, comment);
-		return commentMapper.toResult(comment, updater, boardAdminIds, meta);
+		Map<String, UserProfileImage> profileImageMap = userProfileImageReader.findMapByUserIds(
+			collectCommentWriterIds(comment));
+		return commentMapper.toResult(comment, updater, boardAdminIds, meta, profileImageMap);
 	}
 
 	/**
@@ -157,7 +184,9 @@ public class CommentService {
 
 		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
 		CommentMeta meta = commentMetaReader.fetchForComment(deleter, comment);
-		return commentMapper.toResult(comment, deleter, boardAdminIds, meta);
+		Map<String, UserProfileImage> profileImageMap = userProfileImageReader.findMapByUserIds(
+			collectCommentWriterIds(comment));
+		return commentMapper.toResult(comment, deleter, boardAdminIds, meta, profileImageMap);
 	}
 
 	/**
@@ -191,6 +220,18 @@ public class CommentService {
 		commentValidator.validateForCancelLike(user, comment);
 
 		likeCommentWriter.delete(commentId, user.getId());
+	}
+
+	/** 댓글과 그 대댓글의 작성자 ID를 중복 없이 수집합니다. */
+	private List<String> collectCommentWriterIds(Comment comment) {
+		List<String> ids = new ArrayList<>();
+		if (comment.getWriter() != null)
+			ids.add(comment.getWriter().getId());
+		comment.getChildCommentList().forEach(child -> {
+			if (child.getWriter() != null)
+				ids.add(child.getWriter().getId());
+		});
+		return ids.stream().distinct().collect(Collectors.toList());
 	}
 
 }
