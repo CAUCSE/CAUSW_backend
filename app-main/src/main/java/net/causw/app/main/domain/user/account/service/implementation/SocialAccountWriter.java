@@ -2,9 +2,9 @@ package net.causw.app.main.domain.user.account.service.implementation;
 
 import java.util.List;
 
-import org.flywaydb.core.internal.util.StringUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import net.causw.app.main.domain.user.account.entity.user.SocialAccount;
 import net.causw.app.main.domain.user.account.entity.user.User;
