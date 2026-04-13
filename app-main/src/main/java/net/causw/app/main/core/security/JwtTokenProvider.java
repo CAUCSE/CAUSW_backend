@@ -59,10 +59,15 @@ public class JwtTokenProvider {
 			.compact();
 	}
 
-	public String createRefreshToken() {
+	public String createRefreshToken(boolean isKeepLogin) {
 		Date now = new Date();
 
+		// 로그인 유지 여부를 Refresh Token 클레임으로 포함
+		Claims claims = Jwts.claims();
+		claims.put("isKeepLogin", isKeepLogin);
+
 		return Jwts.builder()
+			.setClaims(claims)
 			.setExpiration(new Date(now.getTime() + StaticValue.JWT_REFRESH_TOKEN_VALID_TIME))
 			.signWith(SignatureAlgorithm.HS256, this.secretKey)
 			.compact();
@@ -116,5 +121,16 @@ public class JwtTokenProvider {
 			.setSigningKey(this.secretKey)
 			.parseClaimsJws(token)
 			.getBody();
+	}
+
+	// Refresh Token 안에서 isKeepLogin 클레임 추출
+	public boolean getKeepLoginFromRefreshToken(String refreshToken) {
+		try {
+			Claims claims = parseClaims(refreshToken);
+			Boolean isKeepLogin = claims.get("isKeepLogin", Boolean.class);
+			return isKeepLogin != null ? isKeepLogin : false;
+		} catch (JwtException e) {
+			throw new UnauthorizedException(ErrorCode.INVALID_JWT, MessageUtil.INVALID_TOKEN);
+		}
 	}
 }

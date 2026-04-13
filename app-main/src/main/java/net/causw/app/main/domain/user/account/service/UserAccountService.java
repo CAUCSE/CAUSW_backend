@@ -39,7 +39,7 @@ public class UserAccountService {
 	 * 소셜 로그인을 통해 생성된 임시 유저(GUEST)의 추가 정보를 등록하고 회원가입 절차를 완료합니다.
 	 * <p>
 	 * 이 과정에서 닉네임, 전화번호 등의 중복 검사를 수행하며,
-	 * 성공 시 유저의 상태를 GUEST에서 AWAIT(승인 대기)으로 변경하고 새로운 인증 토큰을 발급합니다.
+	 * 성공 시 유저의 상태를 GUEST에서 AWAIT(승인 대기)으로 변경하고 새로운 인증 토큰(세션)을 발급합니다.
 	 * </p>
 	 *
 	 * @param userId       정보를 등록할 유저의 고유 식별자 (PK)
@@ -63,7 +63,7 @@ public class UserAccountService {
 		userValidator.checkPhoneNumDuplication(phoneNumber);
 		guestUser.submitRegistration(name, nickname, phoneNumber);
 		User updatedUser = userWriter.save(guestUser);
-		AuthTokenPair tokens = authTokenManager.issueTokens(updatedUser, refreshToken);
+		AuthTokenPair tokens = authTokenManager.issueTokens(updatedUser, refreshToken, false);
 		return AuthResult.of(tokens.accessToken(), updatedUser.getName(), updatedUser.getEmail(),
 			ProfileImageDto.from(updatedUser),
 			tokens.refreshToken(), updatedUser.isGuest(), updatedUser.isTermsAgreed(),

@@ -62,13 +62,13 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 		User user = resolveAuthenticatedUser(authentication);
 		saveProviderOAuthRefreshTokenIfPresent(request, authentication, user);
 
-		// 리프레시토큰 생성 및 쿠키 저장
-		String refreshToken = authTokenManager.createRefreshToken(user.getId());
+		// 리프레시토큰 생성 및 쿠키 저장 (세션)
+		String refreshToken = authTokenManager.createRefreshToken(user.getId(), false);
 		ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshToken)
 			.httpOnly(false)
 			.secure(true)
 			.path("/")
-			.maxAge(Duration.ofMillis(StaticValue.JWT_REFRESH_TOKEN_VALID_TIME))
+			.maxAge(-1)
 			.sameSite("None")
 			.build();
 		response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());

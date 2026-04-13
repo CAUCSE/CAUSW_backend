@@ -160,7 +160,7 @@ public class AuthService {
 		authValidator.validateCredential(user, password);
 		userValidator.validateUserStatusForLogin(user);
 		// 토큰 생성
-		AuthTokenPair tokens = authTokenManager.issueTokens(user, null);
+		AuthTokenPair tokens = authTokenManager.issueTokens(user, null, isKeepLogin);
 		return SignInResult.of(tokens.accessToken(), user.getName(), user.getEmail(), ProfileImageDto.from(user),
 			tokens.refreshToken(), user.isGuest(), user.isTermsAgreed(), user.isAcademicCertified(),
 			user.getAcademicStatus(), isKeepLogin);
@@ -213,8 +213,11 @@ public class AuthService {
 		String userId = authTokenManager.getUserIdFromRefreshToken(refreshToken);
 		User user = userReader.findUserById(userId);
 		userValidator.validateUser(user);
+
+		boolean isKeepLogin = authTokenManager.getKeepLoginFromRefreshToken(refreshToken);
+
 		// 토큰 생성
-		AuthTokenPair tokens = authTokenManager.issueTokens(user, refreshToken);
+		AuthTokenPair tokens = authTokenManager.issueTokens(user, refreshToken, isKeepLogin);
 		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), ProfileImageDto.from(user),
 			tokens.refreshToken(), user.isGuest(), user.isTermsAgreed(), user.isAcademicCertified(),
 			user.getAcademicStatus());

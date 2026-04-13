@@ -37,18 +37,18 @@ public class AuthTokenManager {
 	 * @param oldRefreshToken 교체할 기존 리프레시 토큰 (로그인 시에는 null, 재발급 시에는 필수)
 	 * @return 새로 생성된 Access Token과 Refresh Token이 담긴 객체
 	 */
-	public AuthTokenPair issueTokens(User user, String oldRefreshToken) {
+	public AuthTokenPair issueTokens(User user, String oldRefreshToken, boolean isKeepLogin) {
 		String accessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getRoles(), user.getState());
 		if (oldRefreshToken != null) {
 			redisUtils.deleteRefreshTokenData(oldRefreshToken);
 		}
-		String refreshToken = jwtTokenProvider.createRefreshToken();
+		String refreshToken = jwtTokenProvider.createRefreshToken(isKeepLogin);
 		redisUtils.setRefreshTokenData(refreshToken, user.getId(), StaticValue.JWT_REFRESH_TOKEN_VALID_TIME);
 		return new AuthTokenPair(accessToken, refreshToken);
 	}
 
-	public String createRefreshToken(String userId) {
-		String refreshToken = jwtTokenProvider.createRefreshToken();
+	public String createRefreshToken(String userId, boolean isKeepLogin) {
+		String refreshToken = jwtTokenProvider.createRefreshToken(isKeepLogin);
 		redisUtils.setRefreshTokenData(refreshToken, userId, StaticValue.JWT_REFRESH_TOKEN_VALID_TIME);
 		return refreshToken;
 	}
@@ -83,5 +83,14 @@ public class AuthTokenManager {
 		if (refreshToken != null && !refreshToken.isBlank()) {
 			redisUtils.deleteRefreshTokenData(refreshToken);
 		}
+	}
+
+	/**
+	 * 리프레시 토큰에서 로그인 유지 여부를 추출하여 반환합니다.
+	 * @param refreshToken
+	 * @return
+	 */
+	public boolean getKeepLoginFromRefreshToken(String refreshToken) {
+		return jwtTokenProvider.getKeepLoginFromRefreshToken(refreshToken);
 	}
 }

@@ -89,7 +89,7 @@ public class SocialNativeAuthService {
 				persistOidcRefreshTokenFromAuthorizationCode(clientRegistration, user, authorizationCode, redirectUri,
 					codeVerifier);
 			}
-			AuthTokenPair tokens = authTokenManager.issueTokens(user, null);
+			AuthTokenPair tokens = authTokenManager.issueTokens(user, null, isKeepLogin);
 
 			log.info("Native social login succeeded. provider={}, userId={}", registrationId, user.getId());
 
