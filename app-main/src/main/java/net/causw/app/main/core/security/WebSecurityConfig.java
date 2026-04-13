@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -37,7 +38,7 @@ import lombok.RequiredArgsConstructor;
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
-public class WebSecurityConfig {
+public class 	WebSecurityConfig {
 
 	private final JwtTokenProvider jwtTokenProvider;
 	private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
@@ -75,7 +76,7 @@ public class WebSecurityConfig {
 				.requestMatchers("/api/v2/auth/**", "/oauth2/**", "/login/oauth2/**",
 					"/api/v2/users/check-nickname", "/api/v2/users/check-phone")
 				.permitAll()
-				.requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v2/terms")
+				.requestMatchers(HttpMethod.GET, "/api/v2/terms")
 				.permitAll()
 				.requestMatchers("/api/v2/admin/**").hasRole("ADMIN")
 				.anyRequest().authenticated())
