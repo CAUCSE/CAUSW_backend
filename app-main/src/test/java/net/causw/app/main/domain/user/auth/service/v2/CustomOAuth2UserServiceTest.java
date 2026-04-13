@@ -36,6 +36,7 @@ import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
+import net.causw.app.main.domain.user.account.util.BlockedUserIdentifierValidator;
 import net.causw.app.main.domain.user.auth.service.CustomOAuth2UserService;
 import net.causw.app.main.domain.user.auth.service.dto.CustomOAuth2User;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
@@ -56,6 +57,9 @@ class CustomOAuth2UserServiceTest {
 
 	@Mock
 	private UserValidator userValidator;
+
+	@Mock
+	private BlockedUserIdentifierValidator blockedUserIdentifierValidator;
 
 	private OAuth2UserRequest userRequest;
 	private OAuth2User oAuth2User;
@@ -99,6 +103,7 @@ class CustomOAuth2UserServiceTest {
 		try (MockedConstruction<DefaultOAuth2UserService> mocked = mockConstruction(DefaultOAuth2UserService.class,
 			(mock, context) -> when(mock.loadUser(any())).thenReturn(oAuth2User))) {
 			when(userReader.findBySocialTypeAndSocialId(any(), any())).thenReturn(Optional.of(testUser));
+			when(testUser.getEmail()).thenReturn("test@test.com");
 
 			//when
 			CustomOAuth2User result = customOAuth2UserService.loadUser(userRequest);
@@ -108,6 +113,7 @@ class CustomOAuth2UserServiceTest {
 
 			//verify
 			verify(userReader).findBySocialTypeAndSocialId(any(), any());
+			verify(blockedUserIdentifierValidator).validateEmail("test@test.com");
 			verify(userValidator).validateUserStatusForLogin(any(User.class));
 			verify(userWriter, never()).save((User)any());
 		}
@@ -129,6 +135,7 @@ class CustomOAuth2UserServiceTest {
 			assertNotNull(result);
 
 			//verify
+			verify(blockedUserIdentifierValidator).validateEmail("test@test.com");
 			verify(userValidator).checkAccountExistByUserAndSocialType(any(), any());
 			verify(userValidator).validateUserStatusForIntegration(any(User.class));
 			verify(userWriter).save(any(SocialAccount.class));
@@ -152,6 +159,7 @@ class CustomOAuth2UserServiceTest {
 			assertNotNull(result);
 
 			//verify
+			verify(blockedUserIdentifierValidator).validateEmail("test@test.com");
 			verify(userWriter).save(any(User.class));
 			verify(userWriter).save(any(SocialAccount.class));
 		}
@@ -316,11 +324,13 @@ class CustomOAuth2UserServiceTest {
 		try (MockedConstruction<OidcUserService> mocked = mockConstruction(OidcUserService.class,
 			(mock, context) -> when(mock.loadUser(any())).thenReturn(oidcUser))) {
 			when(userReader.findBySocialTypeAndSocialId(any(), any())).thenReturn(Optional.of(testUser));
+			when(testUser.getEmail()).thenReturn("apple@test.com");
 
 			OidcUser result = customOAuth2UserService.loadOidcUser(oidcUserRequest);
 
 			assertNotNull(result);
 
+			verify(blockedUserIdentifierValidator).validateEmail("apple@test.com");
 			verify(userReader).findBySocialTypeAndSocialId(any(), any());
 			verify(userReader, never()).findByEmail(any());
 			verify(userWriter, never()).save(any(User.class));

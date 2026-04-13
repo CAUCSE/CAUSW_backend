@@ -18,6 +18,7 @@ import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
 import net.causw.app.main.domain.user.account.service.implementation.SocialAccountWriter;
 import net.causw.app.main.shared.infra.firebase.FcmUtils;
+import net.causw.app.main.shared.infra.firebase.FirebaseConfig;
 
 @SpringBootTest
 @Transactional
@@ -40,6 +41,9 @@ class UserAccountServiceIT {
 
 	@MockBean
 	private FcmUtils fcmUtils;
+
+	@MockBean
+	private FirebaseConfig firebaseConfig;
 
 	@Test
 	@DisplayName("탈퇴 시 deletedAt이 저장된다")
