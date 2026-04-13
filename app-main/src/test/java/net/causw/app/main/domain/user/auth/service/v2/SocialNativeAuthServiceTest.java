@@ -29,9 +29,9 @@ import org.springframework.security.oauth2.jwt.JwtDecoderFactory;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.auth.service.CustomOAuth2UserService;
 import net.causw.app.main.domain.user.auth.service.SocialNativeAuthService;
-import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.dto.CustomOAuth2User;
+import net.causw.app.main.domain.user.auth.service.dto.SignInResult;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
@@ -73,11 +73,12 @@ class SocialNativeAuthServiceTest {
 		given(authTokenManager.issueTokens(user, null))
 			.willReturn(AuthTokenPair.of(APP_ACCESS_TOKEN, APP_REFRESH_TOKEN));
 
-		AuthResult result = socialNativeAuthService.login("kakao", PROVIDER_ACCESS_TOKEN, null, IS_KEEP_LOGIN);
+		SignInResult result = socialNativeAuthService.login("kakao", PROVIDER_ACCESS_TOKEN, null, IS_KEEP_LOGIN);
 
 		assertThat(result.accessToken()).isEqualTo(APP_ACCESS_TOKEN);
 		assertThat(result.refreshToken()).isEqualTo(APP_REFRESH_TOKEN);
 		assertThat(result.email()).isEqualTo("user@cau.ac.kr");
+		assertThat(result.isKeepLogin()).isEqualTo(IS_KEEP_LOGIN);
 
 		verify(customOAuth2UserService).loadUser(any(OAuth2UserRequest.class));
 		verify(authTokenManager).issueTokens(user, null);
@@ -95,10 +96,11 @@ class SocialNativeAuthServiceTest {
 		given(authTokenManager.issueTokens(user, null))
 			.willReturn(AuthTokenPair.of(APP_ACCESS_TOKEN, APP_REFRESH_TOKEN));
 
-		AuthResult result = socialNativeAuthService.login("kakao", BEARER_PROVIDER_ACCESS_TOKEN, null, IS_KEEP_LOGIN);
+		SignInResult result = socialNativeAuthService.login("kakao", BEARER_PROVIDER_ACCESS_TOKEN, null, IS_KEEP_LOGIN);
 
 		assertThat(result.accessToken()).isEqualTo(APP_ACCESS_TOKEN);
 		assertThat(result.refreshToken()).isEqualTo(APP_REFRESH_TOKEN);
+		assertThat(result.isKeepLogin()).isEqualTo(IS_KEEP_LOGIN);
 	}
 
 	@Test
@@ -121,10 +123,11 @@ class SocialNativeAuthServiceTest {
 		given(authTokenManager.issueTokens(user, null))
 			.willReturn(AuthTokenPair.of(APP_ACCESS_TOKEN, APP_REFRESH_TOKEN));
 
-		AuthResult result = socialNativeAuthService.login("google", null, PROVIDER_ID_TOKEN, IS_KEEP_LOGIN);
+		SignInResult result = socialNativeAuthService.login("google", null, PROVIDER_ID_TOKEN, IS_KEEP_LOGIN);
 
 		assertThat(result.accessToken()).isEqualTo(APP_ACCESS_TOKEN);
 		assertThat(result.refreshToken()).isEqualTo(APP_REFRESH_TOKEN);
+		assertThat(result.isKeepLogin()).isEqualTo(IS_KEEP_LOGIN);
 
 		verify(customOAuth2UserService).loadUserFromOidcClaims("google", jwt.getClaims());
 		verify(customOAuth2UserService, never()).loadUser(any(OAuth2UserRequest.class));
@@ -150,10 +153,11 @@ class SocialNativeAuthServiceTest {
 		given(authTokenManager.issueTokens(user, null))
 			.willReturn(AuthTokenPair.of(APP_ACCESS_TOKEN, APP_REFRESH_TOKEN));
 
-		AuthResult result = socialNativeAuthService.login("apple", null, PROVIDER_ID_TOKEN, IS_KEEP_LOGIN);
+		SignInResult result = socialNativeAuthService.login("apple", null, PROVIDER_ID_TOKEN, IS_KEEP_LOGIN);
 
 		assertThat(result.accessToken()).isEqualTo(APP_ACCESS_TOKEN);
 		assertThat(result.refreshToken()).isEqualTo(APP_REFRESH_TOKEN);
+		assertThat(result.isKeepLogin()).isEqualTo(IS_KEEP_LOGIN);
 
 		verify(customOAuth2UserService).loadUserFromOidcClaims("apple", jwt.getClaims());
 	}

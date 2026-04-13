@@ -3,7 +3,7 @@ package net.causw.app.main.domain.user.auth.service.dto;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.shared.dto.ProfileImageDto;
 
-public record AuthResult(
+public record SignInResult(
 	String accessToken,
 	String name,
 	String email,
@@ -12,8 +12,9 @@ public record AuthResult(
 	boolean isGuest,
 	boolean isTermsAgreed,
 	boolean isAcademicCertified,
-	AcademicStatus academicStatus) {
-	public static AuthResult of(String accessToken,
+	AcademicStatus academicStatus,
+	boolean isKeepLogin) {
+	public static SignInResult of(String accessToken,
 		String name,
 		String email,
 		ProfileImageDto profileImage,
@@ -21,8 +22,9 @@ public record AuthResult(
 		boolean isGuest,
 		boolean isTermsAgreed,
 		boolean isAcademicCertified,
-		AcademicStatus academicStatus) {
-		return new AuthResult(accessToken, name, email, profileImage, refreshToken, isGuest, isTermsAgreed,
-			isAcademicCertified, academicStatus);
+		AcademicStatus academicStatus,
+		boolean isKeepLogin) {
+		return new SignInResult(accessToken, name, email, profileImage, refreshToken, isGuest, isTermsAgreed,
+			isAcademicCertified, academicStatus, isKeepLogin);
 	}
 }

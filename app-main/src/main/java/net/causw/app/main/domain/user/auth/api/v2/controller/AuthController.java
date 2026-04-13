@@ -35,6 +35,7 @@ import net.causw.app.main.domain.user.auth.service.SocialNativeAuthService;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.dto.EmailFindResult;
+import net.causw.app.main.domain.user.auth.service.dto.SignInResult;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 import net.causw.app.main.shared.util.AuthorizationExtractor;
@@ -98,7 +99,7 @@ public class AuthController {
 	@Operation(summary = "이메일 로그인 V2", description = "이메일을 활용하여 사용자 계정에 로그인합니다.")
 	@PostMapping("/login")
 	public ResponseEntity<ApiResponse<AuthResponse>> emailSignIn(@RequestBody @Valid EmailLoginRequest request) {
-		AuthResult dto = authService.loginEmailUser(request.email(), request.password(), request.isKeepLogin());
+		SignInResult dto = authService.loginEmailUser(request.email(), request.password(), request.isKeepLogin());
 		return createAuthResponse(dto);
 	}
 
@@ -124,7 +125,7 @@ public class AuthController {
 	@PostMapping("/login/native")
 	public ResponseEntity<ApiResponse<AuthResponse>> loginNativeSocial(
 		@RequestBody @Valid SocialNativeLoginRequest request) {
-		AuthResult dto = socialNativeAuthService.login(request.provider(), request.accessToken(), request.idToken(), request.isKeepLogin());
+		SignInResult dto = socialNativeAuthService.login(request.provider(), request.accessToken(), request.idToken(), request.isKeepLogin());
 		return createAuthResponse(dto);
 	}
 
@@ -151,8 +152,17 @@ public class AuthController {
 			.body(ApiResponse.success("로그아웃 성공"));
 	}
 
-	private ResponseEntity<ApiResponse<AuthResponse>> createAuthResponse(AuthResult dto) {
+	// 로그인용 (SignInResult 연결)
+	private ResponseEntity<ApiResponse<AuthResponse>> createAuthResponse(SignInResult dto) {
 		ResponseCookie cookie = buildRefreshTokenCookie(dto.refreshToken(), dto.isKeepLogin());
+		return ResponseEntity.ok()
+			.header(HttpHeaders.SET_COOKIE, cookie.toString())
+			.body(ApiResponse.success(authDtoMapper.toAuthResponse(dto)));
+	}
+
+	// 회원가입, 재발급용 (AuthResult 연결)
+	private ResponseEntity<ApiResponse<AuthResponse>> createAuthResponse(AuthResult dto) {
+		ResponseCookie cookie = buildRefreshTokenCookie(dto.refreshToken(), false);
 		return ResponseEntity.ok()
 			.header(HttpHeaders.SET_COOKIE, cookie.toString())
 			.body(ApiResponse.success(authDtoMapper.toAuthResponse(dto)));

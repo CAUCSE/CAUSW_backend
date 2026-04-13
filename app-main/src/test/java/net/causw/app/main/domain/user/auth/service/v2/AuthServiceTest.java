@@ -47,6 +47,7 @@ import net.causw.app.main.domain.user.auth.service.AuthService;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.dto.EmailFindResult;
+import net.causw.app.main.domain.user.auth.service.dto.SignInResult;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthValidator;
 import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationReader;
@@ -369,12 +370,13 @@ public class AuthServiceTest {
 			given(authTokenManager.issueTokens(any(User.class), any())).willReturn(authTokenPair);
 
 			// when
-			AuthResult result = authService.loginEmailUser(EMAIL, PASSWORD, IS_KEEP_LOGIN);
+			SignInResult result = authService.loginEmailUser(EMAIL, PASSWORD, IS_KEEP_LOGIN);
 
 			// then
 			assertThat(result).isNotNull();
 			assertThat(result.accessToken()).isEqualTo(ACCESS_TOKEN);
 			assertThat(result.refreshToken()).isEqualTo(REFRESH_TOKEN);
+			assertThat(result.isKeepLogin()).isEqualTo(IS_KEEP_LOGIN);
 
 			// verify
 			verify(authValidator).validateCredential(user, PASSWORD);

@@ -24,6 +24,7 @@ import net.causw.app.main.domain.user.auth.entity.EmailVerification.Verification
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.dto.EmailFindResult;
+import net.causw.app.main.domain.user.auth.service.dto.SignInResult;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthValidator;
 import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationReader;
@@ -153,7 +154,7 @@ public class AuthService {
 	 * [INVALID_LOGIN_USER_...] 로그인 불가능한 상태(탈퇴, 추방, 휴면)인 경우
 	 */
 	@Transactional
-	public AuthResult loginEmailUser(String email, String password, boolean isKeepLogin) {
+	public SignInResult loginEmailUser(String email, String password, boolean isKeepLogin) {
 		// 이메일에 대한 유저가 존재하는지 확인
 		User user = userReader.findByEmailOrElseThrow(email);
 		// 유효성 검증 수행 (비밀번호, 유저 상태)
@@ -161,7 +162,7 @@ public class AuthService {
 		userValidator.validateUserStatusForLogin(user);
 		// 토큰 생성
 		AuthTokenPair tokens = authTokenManager.issueTokens(user, null);
-		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), ProfileImageDto.from(user),
+		return SignInResult.of(tokens.accessToken(), user.getName(), user.getEmail(), ProfileImageDto.from(user),
 			tokens.refreshToken(), user.isGuest(), user.isTermsAgreed(), user.isAcademicCertified(),
 			user.getAcademicStatus(), isKeepLogin);
 	}

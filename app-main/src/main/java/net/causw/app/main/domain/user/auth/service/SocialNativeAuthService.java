@@ -19,9 +19,9 @@ import org.springframework.util.StringUtils;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.SocialType;
-import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.dto.CustomOAuth2User;
+import net.causw.app.main.domain.user.auth.service.dto.SignInResult;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
 import net.causw.app.main.shared.dto.ProfileImageDto;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
@@ -64,7 +64,7 @@ public class SocialNativeAuthService {
 	 * @return 서비스 전용 access/refresh token이 포함된 인증 결과
 	 */
 	@Transactional
-	public AuthResult login(String provider, String accessToken, String idToken, boolean isKeepLogin) {
+	public SignInResult login(String provider, String accessToken, String idToken, boolean isKeepLogin) {
 		String registrationId = provider.toLowerCase(Locale.ROOT);
 		log.info("Native social login requested. provider={}, hasIdToken={}", registrationId,
 			StringUtils.hasText(idToken));
@@ -81,7 +81,7 @@ public class SocialNativeAuthService {
 
 			log.info("Native social login succeeded. provider={}, userId={}", registrationId, user.getId());
 
-			return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), ProfileImageDto.from(user),
+			return SignInResult.of(tokens.accessToken(), user.getName(), user.getEmail(), ProfileImageDto.from(user),
 				tokens.refreshToken(), user.isGuest(), user.isTermsAgreed(), user.isAcademicCertified(),
 				user.getAcademicStatus(), isKeepLogin);
 		} catch (BaseRunTimeV2Exception e) {
