@@ -2,7 +2,7 @@ package net.causw.app.main.domain.user.auth.service.v2;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -231,7 +231,7 @@ class SocialNativeAuthServiceTest {
 			.isInstanceOf(BaseRunTimeV2Exception.class)
 			.hasMessage(AuthErrorCode.SOCIAL_EMAIL_REQUIRED.getMessage());
 
-		verify(authTokenManager, never()).issueTokens(any(User.class), any(), IS_KEEP_LOGIN);
+		verify(authTokenManager, never()).issueTokens(any(User.class), any(), anyBoolean());
 	}
 
 	@Test
@@ -248,7 +248,7 @@ class SocialNativeAuthServiceTest {
 			.isInstanceOf(BaseRunTimeV2Exception.class)
 			.hasMessage(AuthErrorCode.INVALID_TOKEN.getMessage());
 
-		verify(authTokenManager, never()).issueTokens(any(User.class), any(), IS_KEEP_LOGIN);
+		verify(authTokenManager, never()).issueTokens(any(User.class), any(), anyBoolean());
 	}
 
 	@Test
@@ -275,7 +275,7 @@ class SocialNativeAuthServiceTest {
 			.isInstanceOf(BaseRunTimeV2Exception.class)
 			.hasMessage(AuthErrorCode.SOCIAL_EMAIL_REQUIRED.getMessage());
 
-		verify(authTokenManager, never()).issueTokens(any(User.class), any(), IS_KEEP_LOGIN);
+		verify(authTokenManager, never()).issueTokens(any(User.class), any(), anyBoolean());
 	}
 
 	private ClientRegistration clientRegistration(String registrationId, String... scopes) {

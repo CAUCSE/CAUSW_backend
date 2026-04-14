@@ -2,9 +2,7 @@ package net.causw.app.main.domain.user.auth.service.v2;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.doThrow;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.mock;
@@ -366,7 +364,7 @@ public class AuthServiceTest {
 		void success() {
 			// given
 			given(userReader.findByEmailOrElseThrow(EMAIL)).willReturn(user);
-			given(authTokenManager.issueTokens(any(User.class), any(), IS_KEEP_LOGIN)).willReturn(authTokenPair);
+			given(authTokenManager.issueTokens(any(User.class), any(), eq(IS_KEEP_LOGIN))).willReturn(authTokenPair);
 
 			// when
 			SignInResult result = authService.loginEmailUser(EMAIL, PASSWORD, IS_KEEP_LOGIN);
@@ -395,7 +393,7 @@ public class AuthServiceTest {
 					.willThrow(UserErrorCode.INVALID_LOGIN.toBaseException());
 
 				// when & then
-				assertThatThrownBy(() -> authService.loginEmailUser(EMAIL, PASSWORD, IS_KEEP_LOGIN))
+				assertThatThrownBy(() -> authService.loginEmailUser(EMAIL, PASSWORD, anyBoolean()))
 					.isInstanceOf(BaseRunTimeV2Exception.class)
 					.hasMessage(UserErrorCode.INVALID_LOGIN.getMessage());
 
@@ -475,7 +473,7 @@ public class AuthServiceTest {
 					.isInstanceOf(BaseRunTimeV2Exception.class)
 					.hasMessage(AuthErrorCode.REFRESH_TOKEN_MISSING.getMessage());
 
-				verify(authTokenManager, never()).issueTokens(any(), any(), IS_KEEP_LOGIN);
+				verify(authTokenManager, never()).issueTokens(any(), any(), anyBoolean());
 			}
 
 			@Test
