@@ -14,6 +14,8 @@ import net.causw.app.main.domain.community.post.api.v2.dto.response.PostCreateRe
 import net.causw.app.main.domain.community.post.api.v2.dto.response.PostListResponse;
 import net.causw.app.main.domain.community.post.api.v2.dto.response.PostResponse;
 import net.causw.app.main.domain.community.post.api.v2.dto.response.PostUpdateResponse;
+import net.causw.app.main.domain.community.post.service.v2.dto.ImageCreateMeta;
+import net.causw.app.main.domain.community.post.service.v2.dto.ImageUpdateMeta;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostCreateCommand;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostCreateResult;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostDetailQuery;
@@ -29,15 +31,55 @@ public interface PostDtoMapper {
 
 	PostDtoMapper INSTANCE = Mappers.getMapper(PostDtoMapper.class);
 
-	@Mapping(target = "writer", source = "user")
-	@Mapping(target = "images", source = "files")
-	PostCreateCommand toCommand(PostCreateRequest request, User user, List<MultipartFile> files);
+	default PostCreateCommand toCommand(PostCreateRequest request, User user, List<MultipartFile> files) {
+		List<ImageCreateMeta> imageMetas = null;
+		if (request.images() != null) {
+			imageMetas = request.images().stream()
+				.map(img -> new ImageCreateMeta(img.order(), img.fileIndex(), img.isRepresentative()))
+				.toList();
+		}
+		return new PostCreateCommand(
+			request.content(),
+			request.boardId(),
+			request.isAnonymous(),
+			user,
+			files,
+			imageMetas);
+	}
 
 	PostCreateResponse toResponse(PostCreateResult result);
 
-	@Mapping(target = "updater", source = "user")
-	@Mapping(target = "images", source = "files")
-	PostUpdateCommand toUpdateCommand(String postId, PostUpdateRequest request, User user, List<MultipartFile> files);
+	default PostUpdateCommand toUpdateCommand(String postId, PostUpdateRequest request, User user,
+		List<MultipartFile> files) {
+		List<ImageUpdateMeta> imageMetas = null;
+		if (request.images() != null) {
+			imageMetas = request.images().stream()
+				.map(img -> new ImageUpdateMeta(
+					img.order(),
+					mapImageType(img.type()),
+					img.url(),
+					img.fileIndex(),
+					img.isRepresentative()))
+				.toList();
+		}
+		return new PostUpdateCommand(
+			postId,
+			request.content(),
+			request.isAnonymous(),
+			user,
+			files,
+			imageMetas);
+	}
+
+	default ImageUpdateMeta.Type mapImageType(PostUpdateRequest.ImageType type) {
+		if (type == null) {
+			return null;
+		}
+		return switch (type) {
+			case EXISTING -> ImageUpdateMeta.Type.EXISTING;
+			case NEW -> ImageUpdateMeta.Type.NEW;
+		};
+	}
 
 	PostUpdateResponse toUpdateResponse(PostUpdateResult result);
 
