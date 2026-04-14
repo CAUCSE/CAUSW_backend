@@ -68,15 +68,16 @@ class SocialNativeAuthServiceTest {
 	@Mock
 	private UserTermsAgreementReader userTermsAgreementReader;
 
-	@BeforeEach
-	void setUp() {
-		lenient().when(userTermsAgreementReader.hasAgreedToAllRequiredLatestTerms(any(User.class))).thenReturn(true);
-	}
-
+	@Mock
 	private OidcAuthorizationCodeTokenClient oidcAuthorizationCodeTokenClient;
 
 	@Mock
 	private SocialAccountOauthRefreshStore socialAccountOauthRefreshStore;
+
+	@BeforeEach
+	void setUp() {
+		lenient().when(userTermsAgreementReader.hasAgreedToAllRequiredLatestTerms(any(User.class))).thenReturn(true);
+	}
 
 	@Test
 	@DisplayName("성공: Kakao access token 검증 후 앱 토큰을 발급한다")
