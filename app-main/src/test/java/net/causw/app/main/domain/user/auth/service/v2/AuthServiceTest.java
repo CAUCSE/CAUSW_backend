@@ -416,7 +416,7 @@ public class AuthServiceTest {
 					.hasMessage(UserErrorCode.INVALID_LOGIN.getMessage());
 
 				// verify
-				verify(authTokenManager, never()).issueTokens(any(), any(), IS_KEEP_LOGIN);
+				verify(authTokenManager, never()).issueTokens(any(), any(), anyBoolean());
 			}
 
 			@ParameterizedTest(name = "실패: 사용자 상태 오류 ({0})")
