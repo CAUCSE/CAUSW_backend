@@ -153,17 +153,8 @@ public class AuthController {
 			.body(ApiResponse.success("로그아웃 성공"));
 	}
 
-	// 로그인용 (SignInResult 연결)
 	private ResponseEntity<ApiResponse<AuthResponse>> createAuthResponse(SignInResult dto) {
 		ResponseCookie cookie = buildRefreshTokenCookie(dto.refreshToken(), dto.isKeepLogin());
-		return ResponseEntity.ok()
-			.header(HttpHeaders.SET_COOKIE, cookie.toString())
-			.body(ApiResponse.success(authDtoMapper.toAuthResponse(dto)));
-	}
-
-	// 회원가입, 재발급용 (AuthResult 연결)
-	private ResponseEntity<ApiResponse<AuthResponse>> createAuthResponse(AuthResult dto) {
-		ResponseCookie cookie = buildRefreshTokenCookie(dto.refreshToken(), false);
 		return ResponseEntity.ok()
 			.header(HttpHeaders.SET_COOKIE, cookie.toString())
 			.body(ApiResponse.success(authDtoMapper.toAuthResponse(dto)));
