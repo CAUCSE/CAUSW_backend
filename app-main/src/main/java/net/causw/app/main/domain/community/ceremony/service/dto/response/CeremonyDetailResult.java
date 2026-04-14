@@ -25,7 +25,7 @@ public record CeremonyDetailResult(
 	String contact,
 	String link,
 	Boolean isSetAll,
-	List<String> targetAdmissionYears,
+	List<Integer> targetAdmissionYears,
 	CeremonyState state,
 	String note) {
 }

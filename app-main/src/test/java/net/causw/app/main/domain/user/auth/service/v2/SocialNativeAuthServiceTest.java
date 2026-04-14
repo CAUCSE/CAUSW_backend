@@ -36,6 +36,8 @@ import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.dto.CustomOAuth2User;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
 import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementReader;
+import net.causw.app.main.domain.user.auth.service.implementation.OidcAuthorizationCodeTokenClient;
+import net.causw.app.main.domain.user.auth.service.implementation.SocialAccountOauthRefreshStore;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 
@@ -71,6 +73,11 @@ class SocialNativeAuthServiceTest {
 		lenient().when(userTermsAgreementReader.hasAgreedToAllRequiredLatestTerms(any(User.class))).thenReturn(true);
 	}
 
+	private OidcAuthorizationCodeTokenClient oidcAuthorizationCodeTokenClient;
+
+	@Mock
+	private SocialAccountOauthRefreshStore socialAccountOauthRefreshStore;
+
 	@Test
 	@DisplayName("성공: Kakao access token 검증 후 앱 토큰을 발급한다")
 	void login_kakao_success() {
@@ -83,7 +90,7 @@ class SocialNativeAuthServiceTest {
 		given(authTokenManager.issueTokens(user, null))
 			.willReturn(AuthTokenPair.of(APP_ACCESS_TOKEN, APP_REFRESH_TOKEN));
 
-		AuthResult result = socialNativeAuthService.login("kakao", PROVIDER_ACCESS_TOKEN, null);
+		AuthResult result = socialNativeAuthService.login("kakao", PROVIDER_ACCESS_TOKEN, null, null, null, null);
 
 		assertThat(result.accessToken()).isEqualTo(APP_ACCESS_TOKEN);
 		assertThat(result.refreshToken()).isEqualTo(APP_REFRESH_TOKEN);
@@ -91,6 +98,7 @@ class SocialNativeAuthServiceTest {
 
 		verify(customOAuth2UserService).loadUser(any(OAuth2UserRequest.class));
 		verify(authTokenManager).issueTokens(user, null);
+		verify(oidcAuthorizationCodeTokenClient, never()).exchangeAuthorizationCode(any(), any(), any(), any());
 	}
 
 	@Test
@@ -105,7 +113,8 @@ class SocialNativeAuthServiceTest {
 		given(authTokenManager.issueTokens(user, null))
 			.willReturn(AuthTokenPair.of(APP_ACCESS_TOKEN, APP_REFRESH_TOKEN));
 
-		AuthResult result = socialNativeAuthService.login("kakao", BEARER_PROVIDER_ACCESS_TOKEN, null);
+		AuthResult result = socialNativeAuthService.login("kakao", BEARER_PROVIDER_ACCESS_TOKEN, null, null, null,
+			null);
 
 		assertThat(result.accessToken()).isEqualTo(APP_ACCESS_TOKEN);
 		assertThat(result.refreshToken()).isEqualTo(APP_REFRESH_TOKEN);
@@ -131,13 +140,14 @@ class SocialNativeAuthServiceTest {
 		given(authTokenManager.issueTokens(user, null))
 			.willReturn(AuthTokenPair.of(APP_ACCESS_TOKEN, APP_REFRESH_TOKEN));
 
-		AuthResult result = socialNativeAuthService.login("google", null, PROVIDER_ID_TOKEN);
+		AuthResult result = socialNativeAuthService.login("google", null, PROVIDER_ID_TOKEN, null, null, null);
 
 		assertThat(result.accessToken()).isEqualTo(APP_ACCESS_TOKEN);
 		assertThat(result.refreshToken()).isEqualTo(APP_REFRESH_TOKEN);
 
 		verify(customOAuth2UserService).loadUserFromOidcClaims("google", jwt.getClaims());
 		verify(customOAuth2UserService, never()).loadUser(any(OAuth2UserRequest.class));
+		verify(oidcAuthorizationCodeTokenClient, never()).exchangeAuthorizationCode(any(), any(), any(), any());
 	}
 
 	@Test
@@ -160,12 +170,13 @@ class SocialNativeAuthServiceTest {
 		given(authTokenManager.issueTokens(user, null))
 			.willReturn(AuthTokenPair.of(APP_ACCESS_TOKEN, APP_REFRESH_TOKEN));
 
-		AuthResult result = socialNativeAuthService.login("apple", null, PROVIDER_ID_TOKEN);
+		AuthResult result = socialNativeAuthService.login("apple", null, PROVIDER_ID_TOKEN, null, null, null);
 
 		assertThat(result.accessToken()).isEqualTo(APP_ACCESS_TOKEN);
 		assertThat(result.refreshToken()).isEqualTo(APP_REFRESH_TOKEN);
 
 		verify(customOAuth2UserService).loadUserFromOidcClaims("apple", jwt.getClaims());
+		verify(oidcAuthorizationCodeTokenClient, never()).exchangeAuthorizationCode(any(), any(), any(), any());
 	}
 
 	@Test
@@ -175,7 +186,7 @@ class SocialNativeAuthServiceTest {
 
 		given(clientRegistrationRepository.findByRegistrationId("apple")).willReturn(apple);
 
-		assertThatThrownBy(() -> socialNativeAuthService.login("apple", PROVIDER_ACCESS_TOKEN, null))
+		assertThatThrownBy(() -> socialNativeAuthService.login("apple", PROVIDER_ACCESS_TOKEN, null, null, null, null))
 			.isInstanceOf(BaseRunTimeV2Exception.class)
 			.hasMessage(AuthErrorCode.INVALID_TOKEN.getMessage());
 
@@ -192,7 +203,7 @@ class SocialNativeAuthServiceTest {
 		given(oidcIdTokenDecoderFactory.createDecoder(google)).willReturn(jwtDecoder);
 		given(jwtDecoder.decode(PROVIDER_ID_TOKEN)).willThrow(new RuntimeException("bad id token"));
 
-		assertThatThrownBy(() -> socialNativeAuthService.login("google", null, PROVIDER_ID_TOKEN))
+		assertThatThrownBy(() -> socialNativeAuthService.login("google", null, PROVIDER_ID_TOKEN, null, null, null))
 			.isInstanceOf(BaseRunTimeV2Exception.class)
 			.hasMessage(AuthErrorCode.INVALID_TOKEN.getMessage());
 	}
@@ -215,7 +226,7 @@ class SocialNativeAuthServiceTest {
 		given(jwtDecoder.decode(PROVIDER_ID_TOKEN)).willReturn(jwt);
 		given(customOAuth2UserService.loadUserFromOidcClaims("google", jwt.getClaims())).willThrow(domainException);
 
-		assertThatThrownBy(() -> socialNativeAuthService.login("google", null, PROVIDER_ID_TOKEN))
+		assertThatThrownBy(() -> socialNativeAuthService.login("google", null, PROVIDER_ID_TOKEN, null, null, null))
 			.isInstanceOf(BaseRunTimeV2Exception.class)
 			.hasMessage(AuthErrorCode.SOCIAL_EMAIL_REQUIRED.getMessage());
 
@@ -231,7 +242,7 @@ class SocialNativeAuthServiceTest {
 		given(customOAuth2UserService.loadUser(any(OAuth2UserRequest.class)))
 			.willThrow(new RuntimeException("provider rejected token"));
 
-		assertThatThrownBy(() -> socialNativeAuthService.login("kakao", PROVIDER_ACCESS_TOKEN, null))
+		assertThatThrownBy(() -> socialNativeAuthService.login("kakao", PROVIDER_ACCESS_TOKEN, null, null, null, null))
 			.isInstanceOf(BaseRunTimeV2Exception.class)
 			.hasMessage(AuthErrorCode.INVALID_TOKEN.getMessage());
 
@@ -241,7 +252,7 @@ class SocialNativeAuthServiceTest {
 	@Test
 	@DisplayName("실패: 지원하지 않는 provider면 예외를 반환한다")
 	void login_fail_when_provider_unsupported() {
-		assertThatThrownBy(() -> socialNativeAuthService.login("naver", PROVIDER_ACCESS_TOKEN, null))
+		assertThatThrownBy(() -> socialNativeAuthService.login("naver", PROVIDER_ACCESS_TOKEN, null, null, null, null))
 			.isInstanceOf(BaseRunTimeV2Exception.class)
 			.hasMessage(AuthErrorCode.UNSUPPORTED_SOCIAL_PROVIDER.getMessage());
 	}
@@ -256,7 +267,7 @@ class SocialNativeAuthServiceTest {
 		given(customOAuth2UserService.loadUser(any(OAuth2UserRequest.class)))
 			.willThrow(new InternalAuthenticationServiceException("social login failed", domainException));
 
-		assertThatThrownBy(() -> socialNativeAuthService.login("kakao", PROVIDER_ACCESS_TOKEN, null))
+		assertThatThrownBy(() -> socialNativeAuthService.login("kakao", PROVIDER_ACCESS_TOKEN, null, null, null, null))
 			.isInstanceOf(BaseRunTimeV2Exception.class)
 			.hasMessage(AuthErrorCode.SOCIAL_EMAIL_REQUIRED.getMessage());
 

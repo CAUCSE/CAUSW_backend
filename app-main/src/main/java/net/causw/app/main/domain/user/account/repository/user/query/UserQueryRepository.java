@@ -1,5 +1,8 @@
 package net.causw.app.main.domain.user.account.repository.user.query;
 
+import static net.causw.app.main.domain.user.account.entity.user.QUser.user;
+
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,6 +31,11 @@ import lombok.RequiredArgsConstructor;
 public class UserQueryRepository {
 
 	private final JPAQueryFactory jpaQueryFactory;
+
+	private static BooleanExpression notDeleted() {
+		QUser user = QUser.user;
+		return user.deletedAt.isNull();
+	}
 
 	public List<User> findAllActiveUsersByRoles(List<Role> roles) {
 		QUser user = QUser.user;
@@ -185,9 +193,52 @@ public class UserQueryRepository {
 			.fetchOne());
 	}
 
-	private static BooleanExpression notDeleted() {
+	/**
+	 * 입학년도에 해당하는 활성 유저 목록 조회
+	 * @param admissionYears 조회할 입학년도 목록
+	 * @return 해당 입학년도에 해당하는 활성 유저 목록
+	 */
+	public List<User> findByAdmissionYearIn(Collection<Integer> admissionYears) {
 		QUser user = QUser.user;
-		return user.deletedAt.isNull();
+		return jpaQueryFactory.selectFrom(user)
+			.where(user.admissionYear.in(admissionYears))
+			.where(user.state.eq(UserState.ACTIVE))
+			.where(notDeleted())
+			.fetch();
+	}
+
+	/**
+	 * 모든 활성 유저 목록 조회
+	 * @return 활성 유저 목록
+	 */
+	public List<User> findAllActive() {
+		QUser user = QUser.user;
+		return jpaQueryFactory.selectFrom(user)
+			.where(user.state.eq(UserState.ACTIVE))
+			.where(notDeleted())
+			.fetch();
+	}
+
+	/**
+	 * 특정 학적 상태에 해당하는 관리자 유저 목록 조회
+	 * @param academicStatus 조회할 학적 상태
+	 * @return 해당 학적 상태에 해당하는 관리자 유저 목록
+	 */
+	public List<User> findAdminsByAcademicStatus(AcademicStatus academicStatus) {
+		return jpaQueryFactory.selectFrom(user)
+			.where(user.roles.contains(Role.ADMIN))
+			.where(user.academicStatus.eq(academicStatus))
+			.where(notDeleted())
+			.fetch();
+	}
+
+	public Long countTotalUsers() {
+		return jpaQueryFactory
+			.select(user.count())
+			.from(user)
+			.where(user.state.eq(UserState.ACTIVE))
+			.where(notDeleted())
+			.fetchOne();
 	}
 
 	private BooleanExpression keywordSearchCondition(String keyword) {

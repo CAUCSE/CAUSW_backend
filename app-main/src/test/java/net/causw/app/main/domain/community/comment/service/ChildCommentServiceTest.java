@@ -18,6 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
@@ -37,7 +38,7 @@ import net.causw.app.main.domain.community.comment.service.implementation.LikeCh
 import net.causw.app.main.domain.community.comment.util.ChildCommentValidator;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.v2.implementation.PostReader;
-import net.causw.app.main.domain.notification.notification.service.v1.CommentNotificationService;
+import net.causw.app.main.domain.notification.notification.event.CommentChildCommentCreatedEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 
@@ -62,7 +63,7 @@ public class ChildCommentServiceTest {
 	@Mock
 	ChildCommentValidator childCommentValidator;
 	@Mock
-	CommentNotificationService commentNotificationService;
+	ApplicationEventPublisher eventPublisher;
 	@Mock
 	BoardConfigReader boardConfigReader;
 	@Mock
@@ -113,8 +114,7 @@ public class ChildCommentServiceTest {
 			assertThat(result).isNotNull();
 			verify(childCommentValidator, times(1)).validateForCreate(eq(creator), eq(post), eq(parentComment));
 			verify(childCommentWriter, times(1)).save(any(ChildComment.class));
-			verify(commentNotificationService, times(1)).sendByCommentIsSubscribed(eq(parentComment),
-				any(ChildComment.class));
+			verify(eventPublisher, times(1)).publishEvent(any(CommentChildCommentCreatedEvent.class));
 		}
 	}
 

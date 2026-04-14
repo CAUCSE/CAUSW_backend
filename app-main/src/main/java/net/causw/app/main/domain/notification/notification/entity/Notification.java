@@ -46,6 +46,16 @@ public class Notification extends BaseEntity {
 	@Column(name = "target_parent_id")
 	private String targetParentId;
 
+	/**
+	 * 알림 생성 메서드
+	 * @param user 알림 발송자
+	 * @param title 알림 제목
+	 * @param body 알림 내용
+	 * @param noticeType 알림 유형
+	 * @param targetId 알림의 대상이 되는 엔티티의 ID (예: 게시물 ID, 댓글 ID 등)
+	 * @param targetParentId 알림의 대상이 되는 엔티티의 상위 엔티티 ID (예: 게시물이 속한 게시판 ID 등)
+	 * @return 알림 Notification 객체
+	 */
 	public static Notification of(
 		User user,
 		String title,
@@ -62,5 +72,4 @@ public class Notification extends BaseEntity {
 			.targetParentId(targetParentId)
 			.build();
 	}
-
 }

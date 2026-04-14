@@ -17,6 +17,7 @@ public class CommentResponseDtoMapper {
 			.content(result.content())
 			.createdAt(result.createdAt())
 			.updatedAt(result.updatedAt())
+			.isDeleted(result.isDeleted())
 			.postId(result.postId())
 			.writerName(author.writerName())
 			.writerNickname(author.writerNickname())

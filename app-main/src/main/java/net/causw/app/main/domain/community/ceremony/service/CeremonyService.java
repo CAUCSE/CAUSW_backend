@@ -53,7 +53,7 @@ public class CeremonyService {
 		List<MultipartFile> imageFileList) {
 		ceremonyValidator.validateForCreate(command);
 
-		List<String> targetAdmissionYears = command.isSetAll()
+		List<Integer> targetAdmissionYears = command.isSetAll()
 			? new ArrayList<>()
 			: command.targetAdmissionYears();
 

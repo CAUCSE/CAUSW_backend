@@ -98,7 +98,7 @@ public class CommentNotificationService implements NotificationService {
 	/**
 	 * 해당 댓글들에 대해 차단을 진행한 user의 id 가져오는 로직
 	 *
-	 * @param commentWriter 댓글 작성자
+	 * @param commentWriter      댓글 작성자
 	 * @param childCommentWriter 대댓글 작성자
 	 * @return 차단한 유저 ids Set
 	 */

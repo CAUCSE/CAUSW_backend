@@ -46,17 +46,22 @@ public class CommentMapper {
 				meta.blockedChildIds().contains(child.getId())))
 			.toList();
 
+		// 삭제된 댓글이면 익명처리
+		Boolean isAnonymous = comment.getIsDeleted() ? Boolean.TRUE : comment.getIsAnonymous();
+
 		CommentAuthorInfo authorInfo = CommentAuthorInfo.of(
-			comment.getWriter(), comment.getIsAnonymous(), user,
+			comment.getWriter(), isAnonymous, user,
 			boardAdminIds, meta.isBlocked());
 
-		String content = meta.isBlocked() ? null : comment.getContent();
+		// 차단 댓글이거나 삭제된 댓글의 경우 content를 null로 처리
+		String content = (meta.isBlocked() || comment.getIsDeleted()) ? null : comment.getContent();
 
 		return new CommentResult(
 			comment.getId(),
 			content,
 			comment.getCreatedAt(),
 			comment.getUpdatedAt(),
+			comment.getIsDeleted(),
 			comment.getPost().getId(),
 			authorInfo,
 			meta.isLiked(),

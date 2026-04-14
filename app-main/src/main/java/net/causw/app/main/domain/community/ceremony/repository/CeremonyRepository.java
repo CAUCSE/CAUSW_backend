@@ -11,4 +11,6 @@ public interface CeremonyRepository extends JpaRepository<Ceremony, String> {
 
 	Page<Ceremony> findByUser_IdAndCeremonyStateOrderByStartDateDescStartTimeDesc(String userId,
 		CeremonyState ceremonyState, Pageable pageable);
+
+	long countByCeremonyState(CeremonyState ceremonyState);
 }

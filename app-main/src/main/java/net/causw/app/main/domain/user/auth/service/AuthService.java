@@ -113,7 +113,6 @@ public class AuthService {
 
 		String temporaryPassword = passwordGenerator.generate();
 		user.updatePassword(passwordEncoder.encode(temporaryPassword));
-		userWriter.save(user);
 		return temporaryPassword;
 	}
 
