@@ -1,7 +1,6 @@
 package net.causw.app.main.domain.user.auth.handler;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.util.Optional;
 
 import org.springframework.http.HttpHeaders;
@@ -24,7 +23,6 @@ import net.causw.app.main.domain.user.auth.service.implementation.OAuth2RefreshT
 import net.causw.app.main.domain.user.auth.service.implementation.SocialAccountOauthRefreshStore;
 import net.causw.app.main.domain.user.auth.util.OAuthRedirectResolver;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
-import net.causw.global.constant.StaticValue;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

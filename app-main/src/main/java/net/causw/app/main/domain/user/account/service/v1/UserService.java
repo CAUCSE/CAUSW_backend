@@ -753,7 +753,7 @@ public class UserService {
 			.validate();
 
 		// refreshToken은 redis에 보관
-		String refreshToken = jwtTokenProvider.createRefreshToken(false);	// v1에서는 false 고정
+		String refreshToken = jwtTokenProvider.createRefreshToken(false); // v1에서는 false 고정
 		redisUtils.setRefreshTokenData(refreshToken, user.getId(), StaticValue.JWT_REFRESH_TOKEN_VALID_TIME);
 
 		return UserDtoMapper.INSTANCE.toUserSignInResponseDto(
@@ -1723,7 +1723,7 @@ public class UserService {
 		userRepository.save(user);
 
 		// 토큰 발급
-		String refreshToken = jwtTokenProvider.createRefreshToken(false);	// v1에서는 false 고정
+		String refreshToken = jwtTokenProvider.createRefreshToken(false); // v1에서는 false 고정
 		redisUtils.setRefreshTokenData(refreshToken, user.getId(), StaticValue.JWT_REFRESH_TOKEN_VALID_TIME);
 
 		return UserDtoMapper.INSTANCE.toUserSignInResponseDto(
