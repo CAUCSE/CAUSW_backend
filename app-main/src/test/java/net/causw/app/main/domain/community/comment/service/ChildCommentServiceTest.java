@@ -108,7 +108,8 @@ public class ChildCommentServiceTest {
 			given(commentReader.getComment("parent-comment-id")).willReturn(parentComment);
 			given(postReader.findById("post-id")).willReturn(post);
 			given(boardConfigReader.getAdminIdsByBoardId("board-id")).willReturn(java.util.List.of("admin-id"));
-			given(childCommentMapper.toResult(any(ChildComment.class), eq(creator), any(ChildCommentMeta.class), anyMap()))
+			given(childCommentMapper.toResult(any(ChildComment.class), eq(creator), any(ChildCommentMeta.class),
+				anyMap()))
 				.willReturn(expectedResult);
 
 			// when
@@ -149,7 +150,7 @@ public class ChildCommentServiceTest {
 			given(boardConfigReader.getAdminIdsByBoardId("board-id")).willReturn(java.util.List.of("admin-id"));
 			given(likeChildCommentReader.getNumOfChildCommentLikes(childComment)).willReturn(2L);
 			given(likeChildCommentReader.isChildCommentLiked(updater, childComment.getId())).willReturn(false);
-		given(childCommentMapper.toResult(eq(childComment), eq(updater), any(ChildCommentMeta.class), anyMap()))
+			given(childCommentMapper.toResult(eq(childComment), eq(updater), any(ChildCommentMeta.class), anyMap()))
 				.willReturn(expectedResult);
 
 			// when
