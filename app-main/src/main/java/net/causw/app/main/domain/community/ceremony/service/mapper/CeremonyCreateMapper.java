@@ -15,7 +15,7 @@ public class CeremonyCreateMapper {
 	public Ceremony toCeremony(
 		User user,
 		CeremonyCreateCommand command,
-		List<String> targetAdmissionYears,
+		List<Integer> targetAdmissionYears,
 		List<UuidFile> uuidFileList) {
 		return Ceremony.createWithImages(
 			user,

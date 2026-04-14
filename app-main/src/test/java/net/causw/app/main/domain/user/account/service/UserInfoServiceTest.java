@@ -280,6 +280,7 @@ class UserInfoServiceTest {
 			// given
 			UserInfoListCondition condition = ObjectFixtures.getMockUserInfoListCondition();
 			Integer pageNum = 1;
+			String userId = "test-user-id";
 
 			Pageable pageable = ObjectFixtures.getMockPageable();
 			when(pageableFactory.create(pageNum, StaticValue.USER_LIST_PAGE_SIZE)).thenReturn(pageable);
@@ -298,19 +299,20 @@ class UserInfoServiceTest {
 			UserInfoSummaryResult s1 = ObjectFixtures.getMockUserInfoSummaryResult();
 			UserInfoSummaryResult s2 = ObjectFixtures.getMockUserInfoSummaryResult();
 
-			when(userInfoReader.findUserInfoWithFilter(condition, pageable)).thenReturn(page);
+            when(userInfoReader.findUserInfoWithFilter(condition, pageable, userId)).thenReturn(page);
 			when(userProfileImageReader.findMapByUserIds(List.of("user-1", "user-2"))).thenReturn(Map.of());
-			when(userInfoMapper.toSummaryResult(u1, null)).thenReturn(s1);
 			when(userInfoMapper.toSummaryResult(u2, null)).thenReturn(s2);
+			when(userInfoMapper.toSummaryResult(u1, null)).thenReturn(s1);
+			
 
 			// when
-			Page<UserInfoSummaryResult> result = userInfoService.getUserInfoPage(condition, pageNum);
+			Page<UserInfoSummaryResult> result = userInfoService.getUserInfoPage(condition, pageNum, userId);
 
 			// then
 			assertThat(result.getContent()).containsExactly(s1, s2);
 
 			verify(pageableFactory).create(pageNum, StaticValue.USER_LIST_PAGE_SIZE);
-			verify(userInfoReader).findUserInfoWithFilter(condition, pageable);
+			verify(userInfoReader).findUserInfoWithFilter(condition, pageable, userId);
 			verify(userProfileImageReader).findMapByUserIds(List.of("user-1", "user-2"));
 			verify(userInfoMapper).toSummaryResult(u1, null);
 			verify(userInfoMapper).toSummaryResult(u2, null);

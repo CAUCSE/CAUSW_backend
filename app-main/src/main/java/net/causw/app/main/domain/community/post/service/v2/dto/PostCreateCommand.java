@@ -11,5 +11,6 @@ public record PostCreateCommand(
 	String boardId,
 	Boolean isAnonymous,
 	User writer,
-	List<MultipartFile> images) {
+	List<MultipartFile> imageFiles,
+	List<ImageCreateMeta> imageMetas) {
 }

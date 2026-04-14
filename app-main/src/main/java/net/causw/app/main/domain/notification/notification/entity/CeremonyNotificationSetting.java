@@ -34,7 +34,7 @@ public class CeremonyNotificationSetting extends BaseEntity {
 	@CollectionTable(name = "TB_CEREMONY_SUBSCRIBE_YEAR", joinColumns = @JoinColumn(name = "notification_id"))
 	@Column(name = "admission_year")
 	@BatchSize(size = 100)
-	private Set<String> subscribedAdmissionYears = new HashSet<>();
+	private Set<Integer> subscribedAdmissionYears = new HashSet<>();
 
 	@Column(name = "is_notification_active", nullable = false)
 	private boolean isNotificationActive = true;
@@ -47,7 +47,7 @@ public class CeremonyNotificationSetting extends BaseEntity {
 	private User user;
 
 	public static CeremonyNotificationSetting of(
-		Set<String> subscribedAdmissionYears,
+		Set<Integer> subscribedAdmissionYears,
 		boolean isSetAll,
 		boolean receivePushNotification,
 		User user) {
