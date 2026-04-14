@@ -137,6 +137,7 @@ jobs:
       # 테스트 결과 아티팩트 업로드
       - name: Upload test results
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: app-main-test-results
           path: ./app-main/build/test-results/test
