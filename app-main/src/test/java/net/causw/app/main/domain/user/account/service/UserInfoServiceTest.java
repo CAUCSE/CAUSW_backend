@@ -299,11 +299,10 @@ class UserInfoServiceTest {
 			UserInfoSummaryResult s1 = ObjectFixtures.getMockUserInfoSummaryResult();
 			UserInfoSummaryResult s2 = ObjectFixtures.getMockUserInfoSummaryResult();
 
-            when(userInfoReader.findUserInfoWithFilter(condition, pageable, userId)).thenReturn(page);
+			when(userInfoReader.findUserInfoWithFilter(condition, pageable, userId)).thenReturn(page);
 			when(userProfileImageReader.findMapByUserIds(List.of("user-1", "user-2"))).thenReturn(Map.of());
 			when(userInfoMapper.toSummaryResult(u2, null)).thenReturn(s2);
 			when(userInfoMapper.toSummaryResult(u1, null)).thenReturn(s1);
-			
 
 			// when
 			Page<UserInfoSummaryResult> result = userInfoService.getUserInfoPage(condition, pageNum, userId);

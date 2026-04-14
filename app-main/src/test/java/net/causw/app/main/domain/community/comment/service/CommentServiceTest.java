@@ -36,6 +36,7 @@ import net.causw.app.main.domain.community.comment.service.dto.CommentListQuery;
 import net.causw.app.main.domain.community.comment.service.dto.CommentMeta;
 import net.causw.app.main.domain.community.comment.service.dto.CommentResult;
 import net.causw.app.main.domain.community.comment.service.dto.CommentUpdateCommand;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.community.comment.service.implementation.CommentMapper;
 import net.causw.app.main.domain.community.comment.service.implementation.CommentMetaReader;
 import net.causw.app.main.domain.community.comment.service.implementation.CommentReader;
@@ -80,6 +81,8 @@ public class CommentServiceTest {
 	CommentMapper commentMapper;
 	@Mock
 	UserReader userReader;
+	@Mock
+	UserProfileImageReader userProfileImageReader;
 
 	@Nested
 	@DisplayName("댓글 생성 테스트")
@@ -96,6 +99,7 @@ public class CommentServiceTest {
 
 			given(post.getBoard()).willReturn(board);
 			given(board.getId()).willReturn("board-id");
+			given(creator.getId()).willReturn("creator-id");
 		}
 
 		@DisplayName("댓글 생성 성공")
@@ -108,7 +112,7 @@ public class CommentServiceTest {
 			given(userReader.findUserByIdNotDeleted("creator-id")).willReturn(creator);
 			given(postReader.findById("post-id")).willReturn(post);
 			given(boardConfigReader.getAdminIdsByBoardId("board-id")).willReturn(List.of("admin-id"));
-			given(commentMapper.toResult(any(Comment.class), eq(creator), anyList(), any(CommentMeta.class)))
+			given(commentMapper.toResult(any(Comment.class), eq(creator), anyList(), any(CommentMeta.class), anyMap()))
 				.willReturn(expectedResult);
 
 			// when
@@ -161,7 +165,7 @@ public class CommentServiceTest {
 			given(commentReader.getComments("post-id", pageable)).willReturn(commentsPage);
 			given(commentMetaReader.fetch(eq("user-id"), any(Set.class), anyList()))
 				.willReturn(Map.of("comment-id", mock(CommentMeta.class)));
-			given(commentMapper.toResult(eq(comment), eq(viewer), anyList(), any(CommentMeta.class)))
+			given(commentMapper.toResult(eq(comment), eq(viewer), anyList(), any(CommentMeta.class), anyMap()))
 				.willReturn(commentResult);
 
 			// when
@@ -223,7 +227,7 @@ public class CommentServiceTest {
 			given(boardConfigReader.getAdminIdsByBoardId("board-id")).willReturn(List.of("admin-id"));
 			given(commentMetaReader.fetchForComment(eq(updater), eq(comment)))
 				.willReturn(mock(CommentMeta.class));
-			given(commentMapper.toResult(eq(comment), eq(updater), anyList(), any(CommentMeta.class)))
+			given(commentMapper.toResult(eq(comment), eq(updater), anyList(), any(CommentMeta.class), anyMap()))
 				.willReturn(expectedResult);
 
 			// when
@@ -260,7 +264,7 @@ public class CommentServiceTest {
 			given(boardConfigReader.getAdminIdsByBoardId("board-id")).willReturn(List.of("admin-id"));
 			given(commentMetaReader.fetchForComment(eq(deleter), eq(comment)))
 				.willReturn(mock(CommentMeta.class));
-			given(commentMapper.toResult(eq(comment), eq(deleter), anyList(), any(CommentMeta.class)))
+			given(commentMapper.toResult(eq(comment), eq(deleter), anyList(), any(CommentMeta.class), anyMap()))
 				.willReturn(expectedResult);
 
 			// when
