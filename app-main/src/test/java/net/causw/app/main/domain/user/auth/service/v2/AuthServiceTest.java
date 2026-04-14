@@ -124,12 +124,6 @@ public class AuthServiceTest {
 	class RegisterEmailUserTest {
 
 		@Test
-		@DisplayName("CI 테스트 실패 리포트 확인용")
-		void ci_test_failure() {
-			assertThat(1).isEqualTo(2);
-		}
-
-		@Test
 		@DisplayName("성공: 모든 검증을 통과하면 사용자가 저장되고 응답을 반환한다.")
 		void success() {
 			// given
