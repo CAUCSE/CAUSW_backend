@@ -23,6 +23,7 @@ import net.causw.app.main.domain.user.terms.entity.Terms;
 import net.causw.app.main.domain.user.terms.entity.UserTermsAgreement;
 import net.causw.app.main.domain.user.terms.service.implementation.TermsReader;
 import net.causw.app.main.domain.user.terms.service.implementation.TermsValidator;
+import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementReader;
 import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementWriter;
 import net.causw.app.main.shared.dto.ProfileImageDto;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
@@ -43,6 +44,7 @@ public class UserAccountService {
 	private final UserInfoRepository userInfoRepository;
 	private final TermsReader termsReader;
 	private final TermsValidator termsValidator;
+	private final UserTermsAgreementReader userTermsAgreementReader;
 	private final UserTermsAgreementWriter userTermsAgreementWriter;
 
 	/**
@@ -101,7 +103,8 @@ public class UserAccountService {
 	public UserMeResult getMyProfile(String userId) {
 		User user = userReader.findDetailById(userId);
 		UserInfo userInfo = userInfoRepository.findByUserId(userId).orElse(null);
-		return UserMeResult.from(user, userInfo);
+		boolean hasAllRequiredLatestTerms = userTermsAgreementReader.hasAgreedToAllRequiredLatestTerms(user);
+		return UserMeResult.from(user, userInfo, hasAllRequiredLatestTerms);
 	}
 
 	/**
