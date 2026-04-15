@@ -92,9 +92,12 @@ public class UserInfoService {
 	 * @return 동문 수첩 프로필 리스트
 	 */
 	@Transactional(readOnly = true)
-	public Page<UserInfoSummaryResult> getUserInfoPage(UserInfoListCondition condition, Integer pageNum) {
+	public Page<UserInfoSummaryResult> getUserInfoPage(
+		UserInfoListCondition condition,
+		Integer pageNum,
+		String excludeUserId) {
 		Pageable pageable = pageableFactory.create(pageNum, StaticValue.USER_LIST_PAGE_SIZE);
-		Page<UserInfo> userInfos = userInfoReader.findUserInfoWithFilter(condition, pageable);
+		Page<UserInfo> userInfos = userInfoReader.findUserInfoWithFilter(condition, pageable, excludeUserId);
 
 		return userInfos.map(userInfoMapper::toSummaryResult);
 	}

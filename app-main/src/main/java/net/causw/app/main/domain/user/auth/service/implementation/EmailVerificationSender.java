@@ -41,6 +41,8 @@ public class EmailVerificationSender {
 		emailVerificationWriter.deleteAllByEmailAndStatus(email, status);
 		if (status == VerificationStatus.PENDING) {
 			emailVerificationWriter.deleteAllByEmailAndStatus(email, VerificationStatus.VERIFIED);
+		} else if (status == VerificationStatus.V1_ONBOARDING_PENDING) {
+			emailVerificationWriter.deleteAllByEmailAndStatus(email, VerificationStatus.V1_ONBOARDING_VERIFIED);
 		}
 
 		String verificationCode = generateVerificationCode();

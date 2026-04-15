@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.user.account.entity.user;
 
-import static net.causw.global.constant.StaticValue.*;
+import static net.causw.global.constant.StaticValue.NO_PHONE_NUMBER_MESSAGE;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -32,7 +32,6 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -130,9 +129,6 @@ public class User extends BaseEntity {
 	@Column(name = "deleted_at", nullable = true)
 	private LocalDateTime deletedAt;
 
-	@Embedded
-	private TermAgreements agreements;
-
 	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
 	private Locker locker;
 
@@ -163,6 +159,10 @@ public class User extends BaseEntity {
 	@Builder.Default
 	private Integer reportCount = 0;
 
+	@Column(name = "is_email_verified", nullable = false)
+	@Builder.Default
+	private Boolean isEmailVerified = false;
+
 	public void delete() {
 		this.email = "deleted_" + this.getId();
 		this.name = "탈퇴한 사용자";
@@ -186,13 +186,6 @@ public class User extends BaseEntity {
 	 */
 	public boolean isGuest() {
 		return this.state == UserState.GUEST;
-	}
-
-	/**
-	 * 온보딩 플로우 분기 기준: 필수 약관 동의 완료 여부
-	 */
-	public boolean isTermsAgreed() {
-		return this.agreements != null;
 	}
 
 	/**
@@ -226,7 +219,6 @@ public class User extends BaseEntity {
 					userCreateRequestDto.getDepartment()))
 			.academicStatus(AcademicStatus.UNDETERMINED)
 			.phoneNumber(userCreateRequestDto.getPhoneNumber())
-			.agreements(TermAgreements.createRequiredAgreements())
 			.isV2(true)
 			.build();
 	}
@@ -241,8 +233,8 @@ public class User extends BaseEntity {
 			.nickname(dto.nickname())
 			.academicStatus(AcademicStatus.UNDETERMINED)
 			.phoneNumber(dto.phoneNumber())
-			.agreements(TermAgreements.createRequiredAgreements())
 			.isV2(true)
+			.isEmailVerified(true)
 			.build();
 	}
 
@@ -262,7 +254,6 @@ public class User extends BaseEntity {
 			.department(graduatedUserCommand.department())
 			.academicStatus(AcademicStatus.GRADUATED)
 			.phoneNumber(graduatedUserCommand.phoneNumber())
-			.agreements(TermAgreements.createRequiredAgreements())
 			.isV2(true)
 			.build();
 	}
@@ -303,7 +294,6 @@ public class User extends BaseEntity {
 		this.nickname = nickname;
 		this.major = major;
 		this.department = department;
-		this.agreements = TermAgreements.createRequiredAgreements();
 	}
 
 	public void submitRegistration(String name, String nickname, String phoneNumber) {
@@ -311,7 +301,6 @@ public class User extends BaseEntity {
 		this.nickname = nickname;
 		this.phoneNumber = phoneNumber;
 		this.state = UserState.AWAIT;
-		this.agreements = TermAgreements.createRequiredAgreements();
 	}
 
 	public void updateRejectionOrDropReason(String reason) {
@@ -422,6 +411,14 @@ public class User extends BaseEntity {
 	// 신고 관련 메소드
 	public void increaseReportCount() {
 		this.reportCount++;
+	}
+
+	public void markEmailAsVerified() {
+		this.isEmailVerified = true;
+	}
+
+	public boolean checkEmailVerification() {
+		return this.isEmailVerified;
 	}
 
 	@Override

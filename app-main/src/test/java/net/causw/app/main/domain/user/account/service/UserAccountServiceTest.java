@@ -3,11 +3,18 @@ package net.causw.app.main.domain.user.account.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+
+import java.util.List;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,7 +33,12 @@ import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthValidator;
+import net.causw.app.main.domain.user.terms.entity.Terms;
+import net.causw.app.main.domain.user.terms.service.implementation.TermsReader;
+import net.causw.app.main.domain.user.terms.service.implementation.TermsValidator;
+import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementWriter;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
+import net.causw.app.main.shared.exception.errorcode.TermsErrorCode;
 
 @ExtendWith(MockitoExtension.class)
 class UserAccountServiceTest {
@@ -52,11 +64,21 @@ class UserAccountServiceTest {
 	@Mock
 	private PasswordEncoder passwordEncoder;
 
+	@Mock
+	private TermsReader termsReader;
+
+	@Mock
+	private TermsValidator termsValidator;
+
+	@Mock
+	private UserTermsAgreementWriter userTermsAgreementWriter;
+
 	private final String userId = "test-uuid";
 	private final String nickname = "푸앙";
 	private final String phoneNumber = "01012345678";
 	private final String name = "홍길동";
 	private final String refreshToken = "old-refresh-token";
+	private final List<String> agreedTermsIds = List.of("term-id-1", "term-id-2");
 
 	@Test
 	@DisplayName("GUEST 유저의 추가 정보 등록 및 회원가입 완료 성공")
@@ -71,9 +93,12 @@ class UserAccountServiceTest {
 		when(authTokenManager.issueTokens(guestUser, refreshToken, false)).thenReturn(tokenPair);
 		when(tokenPair.accessToken()).thenReturn("new-access-token");
 		when(tokenPair.refreshToken()).thenReturn("new-refresh-token");
+		doNothing().when(termsValidator).validateForAgreement(anyList());
+		when(termsReader.findAllById(agreedTermsIds)).thenReturn(List.of(mock(Terms.class), mock(Terms.class)));
 
 		//when
-		AuthResult result = userAccountService.completeRegistration(userId, nickname, phoneNumber, name, refreshToken);
+		AuthResult result = userAccountService.completeRegistration(userId, nickname, phoneNumber, name, agreedTermsIds,
+			refreshToken);
 
 		//then
 		assertNotNull(result);
@@ -85,7 +110,27 @@ class UserAccountServiceTest {
 		verify(userValidator).checkPhoneNumDuplication(phoneNumber);
 		verify(guestUser).submitRegistration(name, nickname, phoneNumber);
 		verify(userWriter).save(guestUser);
+		verify(userTermsAgreementWriter).saveAll(any());
 		verify(authTokenManager).issueTokens(guestUser, refreshToken, false);
+	}
+
+	@Test
+	@DisplayName("필수 약관 미동의 시 실패")
+	void completeRegistration_Fail_TermsNotAgreed() {
+		User guestUser = mock(User.class);
+		when(userReader.findUserById(userId)).thenReturn(guestUser);
+		when(guestUser.getState()).thenReturn(UserState.GUEST);
+		doThrow(TermsErrorCode.NOT_ALL_REQUIRED_TERMS_AGREED.toBaseException())
+			.when(termsValidator)
+			.validateForAgreement(anyList());
+
+		BaseRunTimeV2Exception ex = assertThrows(BaseRunTimeV2Exception.class,
+			() -> userAccountService.completeRegistration(userId, nickname, phoneNumber, name, agreedTermsIds,
+				refreshToken));
+
+		assertEquals(TermsErrorCode.NOT_ALL_REQUIRED_TERMS_AGREED.getMessage(), ex.getMessage());
+		verifyNoInteractions(termsReader);
+		verifyNoInteractions(userTermsAgreementWriter);
 	}
 
 	@Test
@@ -100,7 +145,8 @@ class UserAccountServiceTest {
 		//when
 		//then
 		assertThrows(BaseRunTimeV2Exception.class,
-			() -> userAccountService.completeRegistration(userId, nickname, phoneNumber, name, refreshToken));
+			() -> userAccountService.completeRegistration(userId, nickname, phoneNumber, name, agreedTermsIds,
+				refreshToken));
 
 		//verify
 		verify(userReader).findUserById(userId);
