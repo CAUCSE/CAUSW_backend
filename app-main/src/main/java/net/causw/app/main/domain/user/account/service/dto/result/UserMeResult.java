@@ -8,6 +8,7 @@ import net.causw.app.main.shared.dto.ProfileImageDto;
 
 public record UserMeResult(
 	String id,
+	String email,
 	String name,
 	String nickname,
 	ProfileImageDto profileImage,
@@ -19,6 +20,7 @@ public record UserMeResult(
 	public static UserMeResult from(User user, UserInfo userInfo, boolean hasAllRequiredLatestTerms) {
 		return new UserMeResult(
 			user.getId(),
+			user.getEmail(),
 			user.getName(),
 			user.getNickname(),
 			ProfileImageDto.from(user),
