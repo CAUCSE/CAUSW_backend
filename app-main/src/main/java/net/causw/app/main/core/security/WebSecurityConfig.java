@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -71,9 +72,11 @@ public class WebSecurityConfig {
 				sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.authorizeHttpRequests(auth -> auth
 				.requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
-				.requestMatchers("/api/v2/auth/logout").authenticated()
+				.requestMatchers("/api/v2/auth/logout", "/api/v2/auth/onboarding/**").authenticated()
 				.requestMatchers("/api/v2/auth/**", "/oauth2/**", "/login/oauth2/**",
 					"/api/v2/users/check-nickname", "/api/v2/users/check-phone")
+				.permitAll()
+				.requestMatchers(HttpMethod.GET, "/api/v2/terms")
 				.permitAll()
 				.requestMatchers("/api/v2/admin/**").hasRole("ADMIN")
 				.anyRequest().authenticated())

@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.user.account.entity.user;
 
-import static net.causw.global.constant.StaticValue.*;
+import static net.causw.global.constant.StaticValue.NO_PHONE_NUMBER_MESSAGE;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -162,6 +162,10 @@ public class User extends BaseEntity {
 	@Column(name = "report_count", nullable = false)
 	@Builder.Default
 	private Integer reportCount = 0;
+  
+  @Column(name = "is_email_verified", nullable = false)
+	@Builder.Default
+	private Boolean isEmailVerified = false;
 
 	// 자진 탈퇴 처리
 	public void withdraw(LocalDateTime now) {
@@ -258,6 +262,7 @@ public class User extends BaseEntity {
 			.phoneNumber(dto.phoneNumber())
 			.agreements(TermAgreements.createRequiredAgreements())
 			.isV2(true)
+			.isEmailVerified(true)
 			.build();
 	}
 
@@ -438,6 +443,14 @@ public class User extends BaseEntity {
 	// 신고 관련 메소드
 	public void increaseReportCount() {
 		this.reportCount++;
+	}
+
+	public void markEmailAsVerified() {
+		this.isEmailVerified = true;
+	}
+
+	public boolean checkEmailVerification() {
+		return this.isEmailVerified;
 	}
 
 	@Override

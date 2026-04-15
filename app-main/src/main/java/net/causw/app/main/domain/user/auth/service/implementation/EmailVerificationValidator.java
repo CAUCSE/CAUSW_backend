@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 
 import org.springframework.stereotype.Component;
 
+import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.auth.entity.EmailVerification;
 import net.causw.app.main.domain.user.auth.entity.EmailVerification.VerificationStatus;
@@ -38,13 +40,7 @@ public class EmailVerificationValidator {
 			throw UserErrorCode.EMAIL_ALREADY_EXIST.toBaseException();
 		}
 
-		emailVerificationRepository.findLatestByEmailAndStatus(email, VerificationStatus.PENDING)
-			.ifPresent(latest -> {
-				LocalDateTime allowedAt = latest.getCreatedAt().plusSeconds(RESEND_INTERVAL_SECONDS);
-				if (LocalDateTime.now().isBefore(allowedAt)) {
-					throw AuthErrorCode.EMAIL_VERIFICATION_SEND_TOO_SOON.toBaseException();
-				}
-			});
+		validateResendInterval(email, VerificationStatus.PENDING);
 	}
 
 	/**
@@ -79,15 +75,51 @@ public class EmailVerificationValidator {
 	 * @return 해당 이름+이메일 조합의 사용자가 존재하면 true, 그렇지 않으면 false
 	 */
 	public boolean validatePasswordResetSend(String name, String email) {
-		emailVerificationRepository.findLatestByEmailAndStatus(email, VerificationStatus.PASSWORD_FIND)
+		validateResendInterval(email, VerificationStatus.PASSWORD_FIND);
+		return userReader.existsByEmailAndName(email, name);
+	}
+
+	/**
+	 * V1 유저 온보딩 인증 메일 발송 전, 대상 유저가 V1 유저이면서 ACTIVE 상태인지 검증하고
+	 * 재발송 간격(30초)을 검증합니다.
+	 *
+	 * @param email 검사할 이메일
+	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
+	 * [USER_NOT_FOUND] 해당 이메일의 유저가 존재하지 않는 경우
+	 * [INVALID_REGISTRATION_STATUS] V1 유저가 아니거나 ACTIVE 상태가 아닌 경우
+	 * [EMAIL_VERIFICATION_SEND_TOO_SOON] 재발송 가능 시간이 지나지 않은 경우
+	 */
+	public void validateOnboardingSend(String email) {
+		User user = userReader.findByEmail(email)
+			.orElseThrow(UserErrorCode.USER_NOT_FOUND::toBaseException);
+
+		if (user.checkEmailVerification()) {
+			throw AuthErrorCode.INVALID_REGISTRATION_STATUS.toBaseException();
+		}
+
+		if (user.getState() != UserState.ACTIVE) {
+			throw AuthErrorCode.INVALID_REGISTRATION_STATUS.toBaseException();
+		}
+
+		validateResendInterval(email, VerificationStatus.V1_ONBOARDING_PENDING);
+	}
+
+	/**
+	 * 특정 상태의 가장 최근 인증 정보를 기준으로 재발송 간격(30초)을 검증합니다.
+	 *
+	 * @param email  검사할 이메일
+	 * @param status 검사할 인증 상태
+	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
+	 * [EMAIL_VERIFICATION_SEND_TOO_SOON] 재발송 가능 시간이 지나지 않은 경우
+	 */
+	private void validateResendInterval(String email, VerificationStatus status) {
+		emailVerificationRepository.findLatestByEmailAndStatus(email, status)
 			.ifPresent(latest -> {
 				LocalDateTime allowedAt = latest.getCreatedAt().plusSeconds(RESEND_INTERVAL_SECONDS);
 				if (LocalDateTime.now().isBefore(allowedAt)) {
 					throw AuthErrorCode.EMAIL_VERIFICATION_SEND_TOO_SOON.toBaseException();
 				}
 			});
-
-		return userReader.existsByEmailAndName(email, name);
 	}
 
 }

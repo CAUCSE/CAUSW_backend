@@ -33,13 +33,13 @@ public class UserInfoQueryRepository {
 
 	private final JPAQueryFactory jpaQueryFactory;
 
-	public Page<UserInfo> findAllWithFilter(UserInfoListCondition filter, Pageable pageable) {
+	public Page<UserInfo> findAllWithFilter(UserInfoListCondition filter, Pageable pageable, String excludeUserId) {
 		QUserInfo userInfo = QUserInfo.userInfo;
 		QUser user = QUser.user;
 		QUserProfileImage userProfileImage = QUserProfileImage.userProfileImage;
 		QUuidFile uuidFile = QUuidFile.uuidFile;
 
-		BooleanExpression condition = baseCondition(filter, userInfo);
+		BooleanExpression condition = baseCondition(filter, userInfo, excludeUserId);
 
 		List<UserInfo> content = jpaQueryFactory
 			.selectFrom(userInfo)
@@ -61,8 +61,13 @@ public class UserInfoQueryRepository {
 		return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
 	}
 
-	private BooleanExpression baseCondition(UserInfoListCondition filter, QUserInfo userInfo) {
+	private BooleanExpression baseCondition(UserInfoListCondition filter, QUserInfo userInfo, String excludeUserId) {
 		BooleanExpression condition = Expressions.TRUE.isTrue();
+
+		// 본인 프로필 제외
+		if (excludeUserId != null) {
+			condition = condition.and(userInfo.user.id.ne(excludeUserId));
+		}
 		List<String> academicStatusList = filter.academicStatus();
 		Integer admissionYearStart = filter.admissionYearStart();
 		Integer admissionYearEnd = filter.admissionYearEnd();

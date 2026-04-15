@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.user.auth.api.v2.dto.response;
+package net.causw.app.main.domain.user.auth.enums;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -14,5 +14,18 @@ public enum OnboardingStatus {
 	ACADEMIC_CERTIFICATION_REQUIRED,
 
 	@Schema(description = "온보딩 완료")
-	ACTIVE
+	ACTIVE;
+
+	public static OnboardingStatus resolve(boolean isGuest, boolean isTermsAgreed, boolean isAcademicCertified) {
+		if (isGuest) {
+			return GUEST;
+		}
+		if (!isAcademicCertified) {
+			return ACADEMIC_CERTIFICATION_REQUIRED;
+		}
+		if (!isTermsAgreed) {
+			return TERMS_REQUIRED;
+		}
+		return ACTIVE;
+	}
 }
