@@ -8,55 +8,96 @@ import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
-@Profile("!prod")
-@Configuration
-@EnableWebSecurity
 public class SwaggerSecurityConfig {
 
-	@Value("${swagger.username}")
-	private String swaggerUsername;
+	private static final String[] SWAGGER_PATHS = {
+		"/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**"
+	};
 
-	@Value("${swagger.password}")
-	private String swaggerPassword;
+	private static final String[] SWAGGER_LOGIN_PATHS = {
+		"/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/login"
+	};
 
-	@Bean
-	@Order(0)
-	public SecurityFilterChain swaggerSecurityFilterChain(HttpSecurity http) throws Exception {
-		http
-			.securityMatcher("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/login")
-			.csrf(AbstractHttpConfigurer::disable)
-			.authorizeHttpRequests(auth -> auth
-				.requestMatchers("/login").permitAll()
-				.anyRequest().authenticated())
-			.formLogin(form -> form
-				.defaultSuccessUrl("/swagger-ui/index.html", true))
-			.authenticationProvider(swaggerAuthenticationProvider());
+	/** prod: Swagger 경로 전면 차단 (403) */
+	@Profile("prod")
+	@Configuration
+	public static class ProdConfig {
 
-		return http.build();
+		@Bean
+		@Order(0)
+		public SecurityFilterChain swaggerSecurityFilterChain(HttpSecurity http) throws Exception {
+			http
+				.securityMatcher(SWAGGER_PATHS)
+				.csrf(AbstractHttpConfigurer::disable)
+				.authorizeHttpRequests(auth -> auth.anyRequest().denyAll());
+			return http.build();
+		}
 	}
 
-	/**
-	 * @Bean 어노테이션을 빼서 스프링 글로벌 컨텍스트에 등록하지 않습니다.
-	 * 이렇게 하면 기존 REST API의 DB 연동 UserDetailsService 등과 절대 충돌하지 않습니다.
-	 */
-	private AuthenticationProvider swaggerAuthenticationProvider() {
-		UserDetails user = User.withUsername(swaggerUsername)
-			.password("{noop}" + swaggerPassword)
-			.roles("ADMIN")
-			.build();
+	/** local: Swagger 경로 인증 없이 전면 허용 */
+	@Profile("local")
+	@Configuration
+	public static class LocalConfig {
 
-		InMemoryUserDetailsManager userDetailsService = new InMemoryUserDetailsManager(user);
+		@Bean
+		@Order(0)
+		public SecurityFilterChain swaggerSecurityFilterChain(HttpSecurity http) throws Exception {
+			http
+				.securityMatcher(SWAGGER_PATHS)
+				.csrf(AbstractHttpConfigurer::disable)
+				.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+			return http.build();
+		}
+	}
 
-		DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-		provider.setUserDetailsService(userDetailsService);
+	/** prod·local 외(예: dev): 폼 로그인으로 Swagger 접근 제어 */
+	@Profile("!prod & !local")
+	@Configuration
+	public static class DefaultConfig {
 
-		return provider;
+		@Value("${swagger.username:admin}")
+		private String swaggerUsername;
+
+		@Value("${swagger.password:admin}")
+		private String swaggerPassword;
+
+		@Bean
+		@Order(0)
+		public SecurityFilterChain swaggerSecurityFilterChain(HttpSecurity http) throws Exception {
+			http
+				.securityMatcher(SWAGGER_LOGIN_PATHS)
+				.csrf(AbstractHttpConfigurer::disable)
+				.authorizeHttpRequests(auth -> auth
+					.requestMatchers("/login").permitAll()
+					.anyRequest().authenticated())
+				.formLogin(form -> form
+					.defaultSuccessUrl("/swagger-ui/index.html", true))
+				.authenticationProvider(swaggerAuthenticationProvider());
+			return http.build();
+		}
+
+		/**
+		 * @Bean 없이 직접 생성 — 글로벌 컨텍스트에 등록되지 않으므로
+		 * REST API의 DB 연동 UserDetailsService와 충돌하지 않는다.
+		 */
+		private AuthenticationProvider swaggerAuthenticationProvider() {
+			UserDetails user = User.withUsername(swaggerUsername)
+				.password("{noop}" + swaggerPassword)
+				.roles("ADMIN")
+				.build();
+
+			InMemoryUserDetailsManager userDetailsService = new InMemoryUserDetailsManager(user);
+
+			DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+			provider.setUserDetailsService(userDetailsService);
+
+			return provider;
+		}
 	}
 }
