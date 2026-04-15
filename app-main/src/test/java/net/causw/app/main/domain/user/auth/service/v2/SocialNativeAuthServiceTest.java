@@ -35,9 +35,9 @@ import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.dto.CustomOAuth2User;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
-import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementReader;
 import net.causw.app.main.domain.user.auth.service.implementation.OidcAuthorizationCodeTokenClient;
 import net.causw.app.main.domain.user.auth.service.implementation.SocialAccountOauthRefreshStore;
+import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementReader;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 
