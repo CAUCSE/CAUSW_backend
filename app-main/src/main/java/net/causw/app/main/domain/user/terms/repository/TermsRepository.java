@@ -13,4 +13,7 @@ public interface TermsRepository extends JpaRepository<Terms, String> {
 
 	@Query("SELECT t FROM Terms t WHERE t.version = (SELECT MAX(t2.version) FROM Terms t2 WHERE t2.type = t.type)")
 	List<Terms> findLatestVersionPerType();
+
+	@Query("SELECT t FROM Terms t WHERE t.isRequired = true AND t.version = (SELECT MAX(t2.version) FROM Terms t2 WHERE t2.type = t.type)")
+	List<Terms> findLatestPerTypeIfRequired();
 }

@@ -128,7 +128,7 @@ public class UserController {
 	}
 
 	@PatchMapping("/me/registration")
-	@Operation(summary = "소셜로그인 이후 사용자 정보 및 약관 동의 입력 API", description = "GUEST 상태의 유저에게 가입에 필요한 정보를 추가로 받고 AWAIT 상태로 변경한다.")
+	@Operation(summary = "소셜로그인 이후 사용자 정보 및 약관 동의 입력 API", description = "GUEST 상태의 유저에게 가입에 필요한 정보와 필수 약관 동의를 받고 AWAIT 상태로 변경한다.")
 	public ApiResponse<AuthResponse> submitRegistration(
 		@CookieValue(name = "refresh_token", required = false) String refreshToken,
 		@AuthenticationPrincipal CustomUserDetails userDetails, @Valid @RequestBody UserRegistrationRequest body) {
@@ -136,7 +136,7 @@ public class UserController {
 			throw AuthErrorCode.REFRESH_TOKEN_MISSING.toBaseException();
 		}
 		AuthResult dto = userAccountService.completeRegistration(userDetails.getUserId(), body.nickname(),
-			body.phoneNumber(), body.name(), refreshToken);
+			body.phoneNumber(), body.name(), body.agreedTermsIds(), refreshToken);
 		return ApiResponse.success(authDtoMapper.toAuthResponse(dto));
 	}
 

@@ -16,7 +16,7 @@ public record UserMeResult(
 	OnboardingStatus onboardingStatus,
 	AcademicStatus academicStatus) {
 
-	public static UserMeResult from(User user, UserInfo userInfo) {
+	public static UserMeResult from(User user, UserInfo userInfo, boolean hasAllRequiredLatestTerms) {
 		return new UserMeResult(
 			user.getId(),
 			user.getName(),
@@ -24,7 +24,7 @@ public record UserMeResult(
 			ProfileImageDto.from(user),
 			user.getAdmissionYear(),
 			userInfo != null ? userInfo.getJob() : null,
-			OnboardingStatus.resolve(user.isGuest(), user.isTermsAgreed(), user.isAcademicCertified()),
+			OnboardingStatus.resolve(user.isGuest(), hasAllRequiredLatestTerms, user.isAcademicCertified()),
 			user.getAcademicStatus());
 	}
 }

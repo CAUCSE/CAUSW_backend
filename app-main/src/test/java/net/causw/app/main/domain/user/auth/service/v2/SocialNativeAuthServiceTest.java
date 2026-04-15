@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -11,6 +12,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,6 +37,7 @@ import net.causw.app.main.domain.user.auth.service.dto.CustomOAuth2User;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
 import net.causw.app.main.domain.user.auth.service.implementation.OidcAuthorizationCodeTokenClient;
 import net.causw.app.main.domain.user.auth.service.implementation.SocialAccountOauthRefreshStore;
+import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementReader;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 
@@ -63,10 +66,18 @@ class SocialNativeAuthServiceTest {
 	private AuthTokenManager authTokenManager;
 
 	@Mock
+	private UserTermsAgreementReader userTermsAgreementReader;
+
+	@Mock
 	private OidcAuthorizationCodeTokenClient oidcAuthorizationCodeTokenClient;
 
 	@Mock
 	private SocialAccountOauthRefreshStore socialAccountOauthRefreshStore;
+
+	@BeforeEach
+	void setUp() {
+		lenient().when(userTermsAgreementReader.hasAgreedToAllRequiredLatestTerms(any(User.class))).thenReturn(true);
+	}
 
 	@Test
 	@DisplayName("성공: Kakao access token 검증 후 앱 토큰을 발급한다")

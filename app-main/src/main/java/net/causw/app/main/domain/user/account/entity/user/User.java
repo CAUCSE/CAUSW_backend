@@ -32,7 +32,6 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -130,9 +129,6 @@ public class User extends BaseEntity {
 	@Column(name = "deleted_at", nullable = true)
 	private LocalDateTime deletedAt;
 
-	@Embedded
-	private TermAgreements agreements;
-
 	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
 	private Locker locker;
 
@@ -193,13 +189,6 @@ public class User extends BaseEntity {
 	}
 
 	/**
-	 * 온보딩 플로우 분기 기준: 필수 약관 동의 완료 여부
-	 */
-	public boolean isTermsAgreed() {
-		return this.agreements != null;
-	}
-
-	/**
 	 * 온보딩 플로우 분기 기준: 재학 인증 완료 여부
 	 */
 	public boolean isAcademicCertified() {
@@ -230,7 +219,6 @@ public class User extends BaseEntity {
 					userCreateRequestDto.getDepartment()))
 			.academicStatus(AcademicStatus.UNDETERMINED)
 			.phoneNumber(userCreateRequestDto.getPhoneNumber())
-			.agreements(TermAgreements.createRequiredAgreements())
 			.isV2(true)
 			.build();
 	}
@@ -245,7 +233,6 @@ public class User extends BaseEntity {
 			.nickname(dto.nickname())
 			.academicStatus(AcademicStatus.UNDETERMINED)
 			.phoneNumber(dto.phoneNumber())
-			.agreements(TermAgreements.createRequiredAgreements())
 			.isV2(true)
 			.isEmailVerified(true)
 			.build();
@@ -267,7 +254,6 @@ public class User extends BaseEntity {
 			.department(graduatedUserCommand.department())
 			.academicStatus(AcademicStatus.GRADUATED)
 			.phoneNumber(graduatedUserCommand.phoneNumber())
-			.agreements(TermAgreements.createRequiredAgreements())
 			.isV2(true)
 			.build();
 	}
@@ -308,7 +294,6 @@ public class User extends BaseEntity {
 		this.nickname = nickname;
 		this.major = major;
 		this.department = department;
-		this.agreements = TermAgreements.createRequiredAgreements();
 	}
 
 	public void submitRegistration(String name, String nickname, String phoneNumber) {
@@ -316,7 +301,6 @@ public class User extends BaseEntity {
 		this.nickname = nickname;
 		this.phoneNumber = phoneNumber;
 		this.state = UserState.AWAIT;
-		this.agreements = TermAgreements.createRequiredAgreements();
 	}
 
 	public void updateRejectionOrDropReason(String reason) {
