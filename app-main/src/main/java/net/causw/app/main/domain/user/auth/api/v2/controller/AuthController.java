@@ -22,6 +22,7 @@ import net.causw.app.main.domain.user.auth.api.v2.dto.request.EmailLoginRequest;
 import net.causw.app.main.domain.user.auth.api.v2.dto.request.EmailSignupRequest;
 import net.causw.app.main.domain.user.auth.api.v2.dto.request.EmailVerificationSendRequest;
 import net.causw.app.main.domain.user.auth.api.v2.dto.request.EmailVerificationVerifyRequest;
+import net.causw.app.main.domain.user.auth.api.v2.dto.request.OnboardingEmailVerifyRequest;
 import net.causw.app.main.domain.user.auth.api.v2.dto.request.PasswordResetSendRequest;
 import net.causw.app.main.domain.user.auth.api.v2.dto.request.PasswordResetVerifyRequest;
 import net.causw.app.main.domain.user.auth.api.v2.dto.request.SignOutRequest;
@@ -84,6 +85,25 @@ public class AuthController {
 	@PostMapping("/email/verify")
 	public ApiResponse<Void> verifyEmail(@RequestBody @Valid EmailVerificationVerifyRequest request) {
 		emailVerificationService.verifyEmail(request.email(), request.verificationCode());
+		return ApiResponse.success();
+	}
+
+	@Operation(summary = "V1 유저 온보딩 이메일 인증 코드 발송", description = "로그인된 V1 유저의 이메일로 온보딩용 인증 코드를 발송합니다. (유효 시간: 10분)")
+	@PostMapping("/onboarding/email/send")
+	public ApiResponse<Void> sendOnboardingVerificationEmail(
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
+		String email = userDetails.getUser().getEmail();
+		emailVerificationService.sendOnboardingVerificationEmail(email);
+		return ApiResponse.success();
+	}
+
+	@Operation(summary = "V1 유저 온보딩 이메일 인증 코드 검증", description = "로그인된 V1 유저의 이메일 인증 코드를 검증하고 인증 상태를 V1_ONBOARDING_VERIFIED로 변경합니다.")
+	@PostMapping("/onboarding/email/verify")
+	public ApiResponse<Void> verifyOnboardingEmail(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestBody @Valid OnboardingEmailVerifyRequest request) {
+		String email = userDetails.getUser().getEmail();
+		emailVerificationService.verifyOnboardingEmail(email, request.verificationCode());
 		return ApiResponse.success();
 	}
 
