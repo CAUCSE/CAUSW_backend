@@ -11,6 +11,8 @@ public record UserMeResponse(
 
 	@Schema(description = "사용자 ID", example = "550e8400-e29b-41d4-a716-446655440000") String id,
 
+	@Schema(description = "이메일", example = "user@example.com") String email,
+
 	@Schema(description = "이름", example = "홍길동") String name,
 
 	@Schema(description = "닉네임", example = "푸앙") String nickname,
