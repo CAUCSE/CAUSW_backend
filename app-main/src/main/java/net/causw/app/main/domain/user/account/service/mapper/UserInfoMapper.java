@@ -30,7 +30,6 @@ public interface UserInfoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "name", source = "user.name")
 	@Mapping(target = "admissionYear", source = ".", qualifiedByName = "mapAdmissionYear")
 	@Mapping(target = "academicStatus", source = ".", qualifiedByName = "mapAcademicStatus")
-	@Mapping(target = "job", source = "job")
 	@Mapping(target = "description", source = "description")
 	@Mapping(target = "email", source = "user.email")
 	@Mapping(target = "phoneNumber", source = ".", qualifiedByName = "mapPhoneNumber")
@@ -54,7 +53,6 @@ public interface UserInfoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "name", source = "user.name")
 	@Mapping(target = "admissionYear", source = ".", qualifiedByName = "mapAdmissionYear")
 	@Mapping(target = "academicStatus", source = ".", qualifiedByName = "mapAcademicStatus")
-	@Mapping(target = "job", source = "job")
 	@Mapping(target = "description", source = "description")
 	UserInfoSummaryResult toSummaryResult(UserInfo userInfo);
 
