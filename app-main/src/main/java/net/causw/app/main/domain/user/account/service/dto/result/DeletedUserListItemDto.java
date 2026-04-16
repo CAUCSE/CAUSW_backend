@@ -1,33 +1,35 @@
-package net.causw.app.main.domain.user.account.service.dto.response;
+package net.causw.app.main.domain.user.account.service.dto.result;
 
 import java.time.LocalDateTime;
 
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
-import net.causw.app.main.domain.user.account.repository.user.query.UserListQueryResult;
+import net.causw.app.main.domain.user.account.repository.user.query.DeletedUserListQueryResult;
 
-public record UserListItem(
+public record DeletedUserListItemDto(
 	String id,
 	String name,
 	String email,
 	String studentId,
 	Integer admissionYear,
 	Department department,
-	UserState state,
+	UserState userState,
 	AcademicStatus academicStatus,
-	LocalDateTime createdAt) {
+	LocalDateTime deletedAt,
+	String dropReason) {
 
-	public static UserListItem from(UserListQueryResult queryResult) {
-		return new UserListItem(
+	public static DeletedUserListItemDto from(DeletedUserListQueryResult queryResult) {
+		return new DeletedUserListItemDto(
 			queryResult.id(),
 			queryResult.name(),
 			queryResult.email(),
 			queryResult.studentId(),
 			queryResult.admissionYear(),
 			queryResult.department(),
-			queryResult.state(),
+			queryResult.userState(),
 			queryResult.academicStatus(),
-			queryResult.createdAt());
+			queryResult.deletedAt(),
+			queryResult.dropReason());
 	}
 }
