@@ -10,8 +10,6 @@ import jakarta.validation.constraints.Size;
 
 @Schema(description = "동문 수첩 프로필 수정 요청")
 public record UserInfoUpdateRequest(
-	@Size(max = 50, message = "직업은 최대 50자까지 입력 가능합니다.") @Schema(description = "사용자 직업 수정", example = "백엔드 개발자") String job,
-
 	@Size(max = 200, message = "소개글은 최대 200자까지 입력 가능합니다.") @Schema(description = "동문 수첩 프로필 소개글 수정", example = "소개글 수정 내용입니다.") String description,
 
 	@Schema(description = "전화 번호 공개 여부 수정", example = "true") boolean isPhoneNumberVisible,

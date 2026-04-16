@@ -97,7 +97,7 @@ public class UserInfo extends BaseEntity {
 	 * v1 API용 업데이트. description, job, socialLinks, isPhoneNumberVisible을 한 번에 갱신한다.
 	 * v1은 API 레이어에서 검증하므로 엔티티 레벨 검증 없이 직접 반영한다.
 	 */
-	@Deprecated(since = "v2 API에서는 description, job, socialLinks, isPhoneNumberVisible을 각각 업데이트하는 별도의 메서드를 사용합니다.")
+	@Deprecated(since = "v2 API에서는 description, socialLinks, isPhoneNumberVisible을 각각 업데이트하는 별도의 메서드를 사용합니다.")
 	public void updateV1(String description, String job, List<String> socialLinks, boolean isPhoneNumberVisible) {
 		this.description = description;
 		this.job = job;
@@ -107,10 +107,8 @@ public class UserInfo extends BaseEntity {
 
 	public void update(
 		String description,
-		String job,
 		boolean isPhoneNumberVisible) {
 		this.description = description;
-		this.job = job;
 		this.isPhoneNumberVisible = isPhoneNumberVisible;
 	}
 

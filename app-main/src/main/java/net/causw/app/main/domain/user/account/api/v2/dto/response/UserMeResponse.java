@@ -19,8 +19,6 @@ public record UserMeResponse(
 
 	@Schema(description = "입학년도", example = "2020") Integer admissionYear,
 
-	@Schema(description = "직업", example = "개발자", nullable = true) String job,
-
 	@Schema(description = "온보딩 플로우 분기 상태", example = "ACTIVE") OnboardingStatus onboardingStatus,
 
 	@Schema(description = "현재 학적 상태", example = "ENROLLED") AcademicStatus academicStatus) {
