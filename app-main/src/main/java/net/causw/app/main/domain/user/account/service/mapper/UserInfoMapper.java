@@ -16,8 +16,8 @@ import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserProject;
 import net.causw.app.main.domain.user.account.service.dto.result.UserCareerResult;
 import net.causw.app.main.domain.user.account.service.dto.result.UserInfoDetailResult;
-import net.causw.app.main.domain.user.account.service.dto.result.UserProjectResult;
 import net.causw.app.main.domain.user.account.service.dto.result.UserInfoSummaryResult;
+import net.causw.app.main.domain.user.account.service.dto.result.UserProjectResult;
 import net.causw.app.main.shared.dto.ProfileImageDto;
 import net.causw.app.main.shared.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
 
