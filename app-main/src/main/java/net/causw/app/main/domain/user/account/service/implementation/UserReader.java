@@ -18,8 +18,11 @@ import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.repository.user.SocialAccountRepository;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.app.main.domain.user.account.repository.user.query.UserQueryRepository;
+import net.causw.app.main.domain.user.account.service.dto.request.DeletedUserQueryCondition;
 import net.causw.app.main.domain.user.account.service.dto.request.UserListCondition;
 import net.causw.app.main.domain.user.account.service.dto.request.UserQueryCondition;
+import net.causw.app.main.domain.user.account.service.dto.response.UserListItem;
+import net.causw.app.main.domain.user.account.service.dto.result.DeletedUserListItemDto;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -86,15 +89,22 @@ public class UserReader {
 		return userQueryRepository.searchByCondition(condition);
 	}
 
-	public Page<User> findUserList(
-		UserListCondition condition,
+	public Page<UserListItem> findUserList(UserListCondition condition, Pageable pageable) {
+		return userQueryRepository.findUserList(condition, pageable)
+			.map(r -> new UserListItem(
+				r.id(), r.name(), r.email(), r.studentId(),
+				r.admissionYear(), r.department(), r.state(),
+				r.academicStatus(), r.createdAt()));
+	}
+
+	public Page<DeletedUserListItemDto> findDeletedUserList(
+		DeletedUserQueryCondition condition,
 		Pageable pageable) {
-		return userQueryRepository.findUserList(
-			normalizeKeyword(condition.keyword()),
-			condition.state(),
-			condition.academicStatus(),
-			condition.department(),
-			pageable);
+		return userQueryRepository.findDeletedUserList(condition, pageable)
+			.map(r -> new DeletedUserListItemDto(
+				r.id(), r.name(), r.email(), r.studentId(),
+				r.admissionYear(), r.department(), r.userState(),
+				r.academicStatus(), r.deletedAt(), r.dropReason()));
 	}
 
 	public Page<User> findReportedUserList(

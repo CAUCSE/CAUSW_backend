@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.user.account.service.dto.response;
+package net.causw.app.main.domain.user.account.service.dto.result;
 
 import java.time.LocalDateTime;
 
@@ -6,14 +6,15 @@ import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.Academic
 import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 
-public record UserListItem(
+public record DeletedUserListItemDto(
 	String id,
 	String name,
 	String email,
 	String studentId,
 	Integer admissionYear,
 	Department department,
-	UserState state,
+	UserState userState,
 	AcademicStatus academicStatus,
-	LocalDateTime createdAt) {
+	LocalDateTime deletedAt,
+	String dropReason) {
 }

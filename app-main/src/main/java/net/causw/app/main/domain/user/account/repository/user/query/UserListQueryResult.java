@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.user.account.service.dto.response;
+package net.causw.app.main.domain.user.account.repository.user.query;
 
 import java.time.LocalDateTime;
 
@@ -6,7 +6,9 @@ import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.Academic
 import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 
-public record UserListItem(
+import com.querydsl.core.annotations.QueryProjection;
+
+public record UserListQueryResult(
 	String id,
 	String name,
 	String email,
@@ -16,4 +18,8 @@ public record UserListItem(
 	UserState state,
 	AcademicStatus academicStatus,
 	LocalDateTime createdAt) {
+
+	@QueryProjection
+	public UserListQueryResult {
+	}
 }
