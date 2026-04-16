@@ -7,6 +7,7 @@ import net.causw.app.main.shared.dto.ProfileImageDto;
 
 public record UserMeResult(
 	String id,
+	String email,
 	String name,
 	String nickname,
 	ProfileImageDto profileImage,
@@ -14,14 +15,16 @@ public record UserMeResult(
 	OnboardingStatus onboardingStatus,
 	AcademicStatus academicStatus) {
 
-	public static UserMeResult from(User user) {
+
+	public static UserMeResult from(User user, boolean hasAllRequiredLatestTerms) {
 		return new UserMeResult(
 			user.getId(),
+			user.getEmail(),
 			user.getName(),
 			user.getNickname(),
 			ProfileImageDto.from(user),
 			user.getAdmissionYear(),
-			OnboardingStatus.resolve(user.isGuest(), user.isTermsAgreed(), user.isAcademicCertified()),
+			OnboardingStatus.resolve(user.isGuest(), hasAllRequiredLatestTerms, user.isAcademicCertified()),
 			user.getAcademicStatus());
 	}
 }

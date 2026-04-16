@@ -10,11 +10,11 @@ import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 @Mapper(componentModel = "spring")
 public interface AuthDtoMapper {
 
-	@Mapping(target = "onboardingStatus", expression = "java(resolveOnboardingStatus(authResult.isGuest(), authResult.isTermsAgreed(), authResult.isAcademicCertified()))")
+	@Mapping(target = "onboardingStatus", expression = "java(resolveOnboardingStatus(authResult.isGuest(), authResult.hasAllRequiredLatestTerms(), authResult.isAcademicCertified()))")
 	AuthResponse toAuthResponse(AuthResult authResult);
 
-	default OnboardingStatus resolveOnboardingStatus(boolean isGuest, boolean isTermsAgreed,
+	default OnboardingStatus resolveOnboardingStatus(boolean isGuest, boolean hasAllRequiredLatestTerms,
 		boolean isAcademicCertified) {
-		return OnboardingStatus.resolve(isGuest, isTermsAgreed, isAcademicCertified);
+		return OnboardingStatus.resolve(isGuest, hasAllRequiredLatestTerms, isAcademicCertified);
 	}
 }
