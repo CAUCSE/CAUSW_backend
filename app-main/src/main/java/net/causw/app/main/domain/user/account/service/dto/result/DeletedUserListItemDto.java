@@ -30,7 +30,6 @@ public record DeletedUserListItemDto(
 			queryResult.userState(),
 			queryResult.academicStatus(),
 			queryResult.deletedAt(),
-			queryResult.dropReason()
-		);
+			queryResult.dropReason());
 	}
 }

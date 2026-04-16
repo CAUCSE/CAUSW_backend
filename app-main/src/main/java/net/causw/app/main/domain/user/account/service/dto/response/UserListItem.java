@@ -28,7 +28,6 @@ public record UserListItem(
 			queryResult.department(),
 			queryResult.state(),
 			queryResult.academicStatus(),
-			queryResult.createdAt()
-		);
+			queryResult.createdAt());
 	}
 }

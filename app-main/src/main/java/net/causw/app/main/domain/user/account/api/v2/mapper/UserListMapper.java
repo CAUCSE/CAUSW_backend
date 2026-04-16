@@ -1,15 +1,15 @@
 package net.causw.app.main.domain.user.account.api.v2.mapper;
 
-import net.causw.app.main.domain.user.account.api.v2.dto.response.DeletedUserListResponse;
-import net.causw.app.main.domain.user.account.service.dto.result.DeletedUserListItemDto;
 import org.mapstruct.Mapper;
 
 import net.causw.app.main.domain.user.account.api.v2.dto.request.DeletedUserSearchCondition;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserListRequest;
+import net.causw.app.main.domain.user.account.api.v2.dto.response.DeletedUserListResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserListItemResponse;
 import net.causw.app.main.domain.user.account.service.dto.request.DeletedUserQueryCondition;
 import net.causw.app.main.domain.user.account.service.dto.request.UserListCondition;
 import net.causw.app.main.domain.user.account.service.dto.response.UserListItem;
+import net.causw.app.main.domain.user.account.service.dto.result.DeletedUserListItemDto;
 
 @Mapper(componentModel = "spring")
 public interface UserListMapper {
