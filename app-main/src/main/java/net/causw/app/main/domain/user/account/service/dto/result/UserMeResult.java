@@ -15,7 +15,6 @@ public record UserMeResult(
 	OnboardingStatus onboardingStatus,
 	AcademicStatus academicStatus) {
 
-
 	public static UserMeResult from(User user, boolean hasAllRequiredLatestTerms) {
 		return new UserMeResult(
 			user.getId(),
