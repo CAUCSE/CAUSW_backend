@@ -46,6 +46,12 @@ public class UserInfo extends BaseEntity {
 	@JoinColumn(name = "user_id", nullable = false)
 	private User user;
 
+	/**
+	 * @deprecated v2 API에서는 직업(job) 정보가 소개글(description)과 역할이 겹쳐 더 이상 사용하지 않습니다.
+	 * v1 호환을 위해 컬럼은 유지합니다.
+	 * TODO: v2 배포 완료 후 제거
+	 */
+	@Deprecated(since = "v2")
 	@Column(name = "job", nullable = true)
 	private String job;
 
