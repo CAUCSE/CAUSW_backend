@@ -1,5 +1,7 @@
 package net.causw.app.main.domain.user.account.api.v2.mapper;
 
+import net.causw.app.main.domain.user.account.api.v2.dto.response.DeletedUserListResponse;
+import net.causw.app.main.domain.user.account.service.dto.result.DeletedUserListItemDto;
 import org.mapstruct.Mapper;
 
 import net.causw.app.main.domain.user.account.api.v2.dto.request.DeletedUserSearchCondition;
@@ -17,4 +19,6 @@ public interface UserListMapper {
 	UserListItemResponse toResponse(UserListItem dto);
 
 	DeletedUserQueryCondition toDeletedCondition(DeletedUserSearchCondition request);
+
+	DeletedUserListResponse toDeletedResponse(DeletedUserListItemDto dto);
 }

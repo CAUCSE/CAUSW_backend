@@ -89,24 +89,38 @@ public class UserReader {
 		return userQueryRepository.searchByCondition(condition);
 	}
 
+	/**
+	 * 유저 목록을 조회합니다. 이메일/이름/학번 키워드 검색, 상태 필터링, 학적 상태 필터링을 지원합니다.
+	 * @param condition 조회 조건 (예: 키워드, 상태, 학적 상태 등)
+	 * @param pageable 페이지네이션 정보
+	 * @return 유저 목록 페이지
+	 */
 	public Page<UserListItem> findUserList(UserListCondition condition, Pageable pageable) {
 		return userQueryRepository.findUserList(condition, pageable)
-			.map(r -> new UserListItem(
-				r.id(), r.name(), r.email(), r.studentId(),
-				r.admissionYear(), r.department(), r.state(),
-				r.academicStatus(), r.createdAt()));
+			.map(UserListItem::from);
 	}
 
+	/**
+	 * 삭제된 유저 목록을 조회합니다.
+	 * @param condition 조회 조건 (예: 삭제된 날짜 범위, 키워드 등)
+	 * @param pageable 페이지네이션 정보
+	 * @return 삭제된 유저 목록 페이지
+	 */
 	public Page<DeletedUserListItemDto> findDeletedUserList(
 		DeletedUserQueryCondition condition,
 		Pageable pageable) {
 		return userQueryRepository.findDeletedUserList(condition, pageable)
-			.map(r -> new DeletedUserListItemDto(
-				r.id(), r.name(), r.email(), r.studentId(),
-				r.admissionYear(), r.department(), r.userState(),
-				r.academicStatus(), r.deletedAt(), r.dropReason()));
+			.map(DeletedUserListItemDto::from);
 	}
 
+	/**
+	 * 신고된 유저 목록을 조회합니다. 키워드 검색, 상태 필터링, 학적 상태 필터링을 지원합니다.
+	 * @param keyword 이메일/이름/학번 키워드 검색 (null 또는 빈 문자열인 경우 검색 제외)
+	 * @param state 사용자 상태 필터 (null인 경우 모든 상태 포함)
+	 * @param academicStatus 학적 상태 필터 (null인 경우 모든 학적 상태 포함)
+	 * @param pageable 페이지네이션 정보
+	 * @return 신고된 유저 목록 페이지
+	 */
 	public Page<User> findReportedUserList(
 		String keyword,
 		UserState state,

@@ -77,17 +77,7 @@ public class UserAdminController {
 		PageResponse<DeletedUserListResponse> response = PageResponse.from(
 			userAdminService
 				.getDeletedUserList(userListMapper.toDeletedCondition(request), pageable)
-				.map(item -> new DeletedUserListResponse(
-					item.id(),
-					item.name(),
-					item.email(),
-					item.studentId(),
-					item.admissionYear(),
-					item.department(),
-					item.userState(),
-					item.academicStatus(),
-					item.deletedAt(),
-					item.dropReason())));
+				.map(userListMapper::toDeletedResponse));
 
 		return ApiResponse.success(response);
 	}
