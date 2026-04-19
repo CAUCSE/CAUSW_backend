@@ -28,6 +28,7 @@ import net.causw.app.main.domain.user.account.api.v2.dto.request.UserRegistratio
 import net.causw.app.main.domain.user.account.api.v2.dto.response.AdmissionResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.AdmissionStateResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.ProfileImageResponse;
+import net.causw.app.main.domain.user.account.api.v2.dto.response.UserMeAccountResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserMeResponse;
 import net.causw.app.main.domain.user.account.api.v2.mapper.AdmissionDtoMapper;
 import net.causw.app.main.domain.user.account.api.v2.mapper.UserMeMapper;
@@ -73,6 +74,16 @@ public class UserController {
 		return ApiResponse.success(
 			userMeMapper.toResponse(
 				userAccountService.getMyProfile(userDetails.getUserId())));
+	}
+
+	@GetMapping("/me/account")
+	@ResponseStatus(HttpStatus.OK)
+	@Operation(summary = "계정정보 관리 조회 V2", description = "계정정보 관리 페이지 진입 시 호출합니다. 기본 정보 + 전화번호/학번/전공/학과를 반환합니다.")
+	public ApiResponse<UserMeAccountResponse> getMyAccountProfile(
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
+		return ApiResponse.success(
+			userMeMapper.toAccountResponse(
+				userAccountService.getMyAccountProfile(userDetails.getUserId())));
 	}
 
 	// ── 재학정보 인증 ──
