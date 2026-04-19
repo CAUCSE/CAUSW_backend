@@ -22,6 +22,8 @@ public record UserMeAccountResponse(
 
 	@Schema(description = "입학년도", example = "2020") Integer admissionYear,
 
+	@Schema(description = "졸업년도", example = "2026") Integer graduationYear,
+
 	@Schema(description = "직업", example = "개발자", nullable = true) String job,
 
 	@Schema(description = "온보딩 플로우 분기 상태", example = "ACTIVE") OnboardingStatus onboardingStatus,
