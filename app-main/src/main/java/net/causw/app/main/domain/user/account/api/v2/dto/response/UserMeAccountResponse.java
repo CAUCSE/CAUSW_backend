@@ -36,5 +36,5 @@ public record UserMeAccountResponse(
 
 	@Schema(description = "전공 (legacy)", example = "컴퓨터공학", nullable = true) String major,
 
-	@Schema(description = "학과", example = "COMPUTER_SCIENCE", nullable = true) Department department) {
+	@Schema(description = "학과", example = "SCHOOL_OF_SW", nullable = true) Department department) {
 }

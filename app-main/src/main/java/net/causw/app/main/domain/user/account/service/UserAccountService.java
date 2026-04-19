@@ -111,11 +111,11 @@ public class UserAccountService {
 	/**
 	 * 현재 로그인한 사용자의 계정 정보를 조회합니다. 내정보 > 계정 탭 진입 시 사용합니다.
 	 * <p>
-	 * 닉네임, 전화번호, 이메일, 동의한 약관 정보 등을 포함하여 반환합니다.
+	 * 닉네임, 전화번호, 이메일, 온보딩 상태 등을 포함하여 반환합니다.
 	 * </p>
 	 *
-	 * @param userId
-	 * @return
+	 * @param userId 조회할 사용자의 고유 식별자 (PK)
+	 * @return {@link UserMeAccountResult} 내 계정 정보 결과 (닉네임, 전화번호, 이메일, 온보딩 상태 등)
 	 */
 	@Transactional(readOnly = true)
 	public UserMeAccountResult getMyAccountProfile(String userId) {
