@@ -34,7 +34,5 @@ public record UserMeAccountResponse(
 
 	@Schema(description = "학번", example = "20201234", nullable = true) String studentId,
 
-	@Schema(description = "전공 (legacy)", example = "컴퓨터공학", nullable = true) String major,
-
 	@Schema(description = "학과", example = "SCHOOL_OF_SW", nullable = true) Department department) {
 }

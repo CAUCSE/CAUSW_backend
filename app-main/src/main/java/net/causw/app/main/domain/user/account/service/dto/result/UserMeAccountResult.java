@@ -20,7 +20,6 @@ public record UserMeAccountResult(
 	AcademicStatus academicStatus,
 	String phoneNumber,
 	String studentId,
-	String major,
 	Department department) {
 
 	public static UserMeAccountResult from(User user, UserInfo userInfo, boolean hasAllRequiredLatestTerms) {
@@ -37,7 +36,6 @@ public record UserMeAccountResult(
 			user.getAcademicStatus(),
 			user.getPhoneNumber(),
 			user.getStudentId(),
-			user.getMajor(),
 			user.getDepartment());
 	}
 }
