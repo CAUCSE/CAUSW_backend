@@ -53,6 +53,7 @@ public class UserAdminService {
 
 	@Transactional(readOnly = true)
 	public UserDetailItem getUserDetail(String userId) {
+		// todo: major deprecated 제거
 		User user = userReader.findDetailById(userId);
 		return UserDetailItem.from(user);
 	}
