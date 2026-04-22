@@ -5,12 +5,12 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -43,9 +43,10 @@ import net.causw.app.main.domain.user.auth.api.v2.dto.response.AuthResponse;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
-import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
+import net.causw.app.main.shared.util.AuthorizationExtractor;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -120,14 +121,15 @@ public class UserController {
 	// ── FCM ──
 
 	@PostMapping("/fcm")
-	@Operation(summary = "fcm 토큰 등록 API", description = "유저와 fcm 토큰을 매핑한다.")
+	@Operation(summary = "fcm 토큰 등록 API", description = "유저와 fcm 토큰을 매핑한다.", security = {
+		@SecurityRequirement(name = "refreshBearerAuth")
+	})
 	public ApiResponse<UserFcmTokenResponseDto> createFcmToken(
-		@CookieValue(name = "refresh_token", required = false) String refreshToken,
+		@RequestHeader(value = AuthorizationExtractor.REFRESH_AUTHORIZATION_HEADER, required = false) String refreshAuthHeader,
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@Valid @RequestBody() UserFcmTokenRequest body) {
-		if (refreshToken == null) {
-			throw AuthErrorCode.REFRESH_TOKEN_MISSING.toBaseException();
-		}
+		AuthorizationExtractor.validateRefresh(refreshAuthHeader);
+		String refreshToken = AuthorizationExtractor.extractRefresh(refreshAuthHeader);
 		return ApiResponse
 			.success(userNotificationService.createFcmToken(userDetails.getUserId(), body.fcmToken(), refreshToken));
 	}
@@ -139,13 +141,14 @@ public class UserController {
 	}
 
 	@PatchMapping("/me/registration")
-	@Operation(summary = "소셜로그인 이후 사용자 정보 및 약관 동의 입력 API", description = "GUEST 상태의 유저에게 가입에 필요한 정보와 필수 약관 동의를 받고 AWAIT 상태로 변경한다.")
+	@Operation(summary = "소셜로그인 이후 사용자 정보 및 약관 동의 입력 API", description = "GUEST 상태의 유저에게 가입에 필요한 정보와 필수 약관 동의를 받고 AWAIT 상태로 변경한다.", security = {
+		@SecurityRequirement(name = "refreshBearerAuth")
+	})
 	public ApiResponse<AuthResponse> submitRegistration(
-		@CookieValue(name = "refresh_token", required = false) String refreshToken,
+		@RequestHeader(value = AuthorizationExtractor.REFRESH_AUTHORIZATION_HEADER, required = false) String refreshAuthHeader,
 		@AuthenticationPrincipal CustomUserDetails userDetails, @Valid @RequestBody UserRegistrationRequest body) {
-		if (refreshToken == null) {
-			throw AuthErrorCode.REFRESH_TOKEN_MISSING.toBaseException();
-		}
+		AuthorizationExtractor.validateRefresh(refreshAuthHeader);
+		String refreshToken = AuthorizationExtractor.extractRefresh(refreshAuthHeader);
 		AuthResult dto = userAccountService.completeRegistration(userDetails.getUserId(), body.nickname(),
 			body.phoneNumber(), body.name(), body.agreedTermsIds(), refreshToken);
 		return ApiResponse.success(authDtoMapper.toAuthResponse(dto));
