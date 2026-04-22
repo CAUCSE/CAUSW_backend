@@ -1,6 +1,7 @@
 HELP.md
 .gradle
 .env*
+!.env.example
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
@@ -49,9 +50,9 @@ dump.rdb
 **/resources/email-config.yaml
 **/resources/password-config.yaml
 **/resources/causw-dev-51ab1a030da2.json
-**/resources/application-dev.yml
-**/resources/application-prod.yml
-**/resources/application-local.yml
+#**/resources/application-dev.yml
+#**/resources/application-prod.yml
+#**/resources/application-local.yml
 **/resources/application-test.yml
 **/resources/application-qa.yml
 **/resources/application-seed.yml

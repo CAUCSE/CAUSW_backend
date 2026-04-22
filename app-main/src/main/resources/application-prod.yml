@@ -1,0 +1,146 @@
+spring:
+  servlet:
+    multipart:
+      max-file-size: 1000MB
+      max-request-size: 1000MB
+      enabled: true
+
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+
+  jwt:
+    secret: ${JWT_SECRET_KEY}
+
+  data:
+    redis:
+      host: ${REDIS_HOST} # 로컬에서 테스트 할 때는 localhost로 사용
+      port: ${REDIS_PORT}
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        debug: true
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  flyway:
+    enabled: false
+
+  password:
+    prefix: ${PASSWORD_PREFIX}
+
+  batch:
+    jdbc:
+      initialize-schema: always
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            redirect-uri: "https://prod.causw.com/login/oauth2/code/google"
+            scope:
+              - email
+              - profile
+          kakao:
+            client-id: ${KAKAO_CLIENT_ID}
+            client-secret: ${KAKAO_CLIENT_SECRET}
+            client-authentication-method: client_secret_post
+            authorization-grant-type: authorization_code
+            redirect-uri: "https://prod.causw.com/login/oauth2/code/kakao"
+            scope:
+              - name
+              - account_email
+              - profile_nickname
+            client-name: Kakao
+          apple:
+            client-id: ${APPLE_CLIENT_ID}
+            client-secret: ${APPLE_CLIENT_SECRET}
+            client-authentication-method: client_secret_post
+            authorization-grant-type: authorization_code
+            redirect-uri: "https://prod.causw.com/login/oauth2/code/apple"
+            scope:
+              - openid
+              - email
+              - name
+            client-name: Apple
+
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+          apple:
+            authorization-uri: https://appleid.apple.com/auth/authorize
+            token-uri: https://appleid.apple.com/auth/token
+            jwk-set-uri: https://appleid.apple.com/auth/keys
+            user-name-attribute: sub
+
+logging:
+  discord:
+    webhook-uri: ${DISCORD_WEBHOOK_URI}
+  level:
+    root: INFO
+    org.hibernate.SQL: OFF
+    org.hibernate.type.descriptor.sql.BasicBinder: OFF
+    net.causw.domain.aop.LogAspect: INFO
+    com:
+      amazonaws:
+        util:
+          EC2MetadataUtils: ERROR
+
+cloud:
+  aws:
+    s3:
+      bucket: ${AWS_S3_BUCKET_NAME}
+    credentials:
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_SECRET_KEY}
+    region:
+      static: ap-northeast-2
+      auto: false
+    stack:
+      auto: false
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus
+
+fcm:
+  firebase-sdk-path : ${FCM_FIREBASE_SDK_PATH}
+  project-id : ${FCM_PROJECT_ID}
+
+app:
+  cors:
+    allowed-origins: "https://prod.causw.com,https://causw.co.kr,https://www.causw.co.kr,https://admin.causw.co.kr,https://causw-v3-web.vercel.app"
+  auth:
+    redirect-uri: "http://causw.co.kr/auth/sign-in/oauth-callback"

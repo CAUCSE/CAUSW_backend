@@ -1,0 +1,171 @@
+spring:
+  servlet:
+    multipart:
+      max-file-size: 1000MB
+      max-request-size: 1000MB
+      enabled: true
+
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: none # 기본적으로 none 설정
+    show-sql: true
+
+  jwt:
+    secret: ${JWT_SECRET_KEY}
+
+  data:
+    redis:
+      host: ${REDIS_HOST} # 로컬에서 테스트 할 때는 localhost로 사용
+      port: ${REDIS_PORT}
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        debug: true
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  flyway:
+    enabled: true
+    out-of-order: true
+    validate-migration-naming: true
+    validate-on-migrate: true
+    baseline-on-migrate: true
+    locations:
+      - classpath:db/migration
+
+  password:
+    prefix: ${PASSWORD_PREFIX}
+
+  batch:
+    jdbc:
+      initialize-schema: always
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - openid
+              - email
+              - profile
+          kakao:
+            client-id: ${KAKAO_CLIENT_ID}
+            client-secret: ${KAKAO_CLIENT_SECRET}
+            client-authentication-method: client_secret_post
+            authorization-grant-type: authorization_code
+            redirect-uri: "http://localhost:8080/login/oauth2/code/kakao"
+            scope:
+              - name
+              - account_email
+              - profile_nickname
+            client-name: Kakao
+          apple:
+            client-id: ${APPLE_CLIENT_ID}
+            client-secret: ${APPLE_CLIENT_SECRET}
+            client-authentication-method: client_secret_post
+            authorization-grant-type: authorization_code
+            redirect-uri: "http://localhost:8080/login/oauth2/code/apple"
+            scope:
+              - openid
+              - email
+              - name
+            client-name: Apple
+
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+          apple:
+            authorization-uri: https://appleid.apple.com/auth/authorize
+            token-uri: https://appleid.apple.com/auth/token
+            jwk-set-uri: https://appleid.apple.com/auth/keys
+            user-name-attribute: sub
+
+logging:
+  discord:
+    webhook-uri: ${DISCORD_WEBHOOK_URI}
+  level:
+    org.hibernate.SQL: DEBUG
+    com:
+      amazonaws:
+        util:
+          EC2MetadataUtils: ERROR
+
+cloud:
+  aws:
+    s3:
+      bucket: ${AWS_S3_BUCKET_NAME}
+    credentials:
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_SECRET_KEY}
+    region:
+      static: ap-northeast-2
+      auto: false
+    stack:
+      auto: false
+
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui/index.html
+    groups-order: DESC
+    doc-expansion: none
+    # tags-sorter: alpha
+    operationsSorter: method
+    display-request-duration: true
+
+fcm:
+  firebase-sdk-path : ${FCM_FIREBASE_SDK_PATH}
+  project-id : ${FCM_PROJECT_ID}
+
+app:
+  cors:
+    allowed-origins: "http://localhost:8080"
+  auth:
+    redirect-uri: http://localhost:8080/swagger-ui/swagger-ui/index.html
+  holiday-api:
+    base-url: http://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService
+    service-key: ${HOLIDAY_API_SERVICE_KEY}
+  oauth:
+    refresh-token:
+      aes-key-base64: ${OAUTH_REFRESH_TOKEN_AES_KEY_BASE64}
+
+# Datasource Proxy 설정
+decorator:
+  datasource-proxy:
+    enabled: true
+    logging: slf4j
+    query:
+      enable-logging: true
+      log-level: trace
+      logger-name: datasource.query
+    slow-query:
+      enable-logging: true
+      log-level: warn
+      threshold: 300 # 개별 쿼리 임계값
+    multiline: true
+    json-format: false
