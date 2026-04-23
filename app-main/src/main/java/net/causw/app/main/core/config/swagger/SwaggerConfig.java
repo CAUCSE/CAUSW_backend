@@ -1,6 +1,12 @@
 package net.causw.app.main.core.config.swagger;
 
 import org.springdoc.core.models.GroupedOpenApi;
+import org.springdoc.core.properties.SwaggerUiConfigParameters;
+import org.springdoc.core.properties.SwaggerUiConfigProperties;
+import org.springdoc.core.properties.SwaggerUiOAuthProperties;
+import org.springdoc.core.providers.ObjectMapperProvider;
+import org.springdoc.webmvc.ui.SwaggerIndexTransformer;
+import org.springdoc.webmvc.ui.SwaggerWelcomeCommon;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -94,10 +100,24 @@ public class SwaggerConfig {
 			.components(new Components()
 				.addSecuritySchemes("bearerAuth",
 					new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("bearer").bearerFormat("JWT")
-						.in(SecurityScheme.In.HEADER).name("Authorization")))
+						.in(SecurityScheme.In.HEADER).name("Authorization"))
+				.addSecuritySchemes("refreshBearerAuth",
+					new SecurityScheme().type(SecurityScheme.Type.APIKEY)
+						.in(SecurityScheme.In.HEADER).name("Refresh-Authorization")))
 			.addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
 			.info(new Info().title(StaticValue.SWAGGER_API_NAME)
 				.version(StaticValue.SWAGGER_API_VERSION)
 				.description(StaticValue.SWAGGER_API_DESCRIPTION));
+	}
+
+	@Bean
+	public SwaggerIndexTransformer refreshBearerSwaggerIndexTransformer(
+		SwaggerUiConfigProperties swaggerUiConfig,
+		SwaggerUiOAuthProperties swaggerUiOAuthProperties,
+		SwaggerUiConfigParameters swaggerUiConfigParameters,
+		SwaggerWelcomeCommon swaggerWelcomeCommon,
+		ObjectMapperProvider objectMapperProvider) {
+		return new RefreshBearerSwaggerIndexTransformer(swaggerUiConfig, swaggerUiOAuthProperties,
+			swaggerUiConfigParameters, swaggerWelcomeCommon, objectMapperProvider);
 	}
 }
