@@ -180,7 +180,7 @@ class UserInfoServiceTest {
 			when(userInfoWriter.save(existing)).thenReturn(updated);
 			when(userInfoMapper.toDetailResult(updated)).thenReturn(resultDto);
 
-			doNothing().when(existing).update(any(), any(), anyBoolean());
+			doNothing().when(existing).update(any(), anyBoolean());
 			doNothing().when(existing).updateSocialLinks(any());
 			doNothing().when(existing).updateTechStack(any());
 			doNothing().when(existing).updateInterestTech(any());
@@ -194,7 +194,7 @@ class UserInfoServiceTest {
 
 			verify(userInfoReader).findByUserId(userId);
 			verify(userInfoCreator, never()).createAndSave(any(User.class));
-			verify(existing).update(null, null, false);
+			verify(existing).update(null, false);
 			verify(existing).updateSocialLinks(null);
 			verify(existing).updateTechStack(null);
 			verify(existing).updateInterestTech(null);
@@ -222,7 +222,7 @@ class UserInfoServiceTest {
 			when(userInfoWriter.save(created)).thenReturn(updated);
 			when(userInfoMapper.toDetailResult(updated)).thenReturn(resultDto);
 
-			doNothing().when(created).update(any(), any(), anyBoolean());
+			doNothing().when(created).update(any(), anyBoolean());
 			doNothing().when(created).updateSocialLinks(any());
 			doNothing().when(created).updateTechStack(any());
 			doNothing().when(created).updateInterestTech(any());
@@ -236,7 +236,7 @@ class UserInfoServiceTest {
 
 			verify(userInfoReader).findByUserId(userId);
 			verify(userInfoCreator).createAndSave(user);
-			verify(created).update(null, null, false);
+			verify(created).update(null, false);
 			verify(created).updateSocialLinks(null);
 			verify(created).updateTechStack(null);
 			verify(created).updateInterestTech(null);
