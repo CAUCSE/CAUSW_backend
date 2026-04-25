@@ -9,11 +9,13 @@ import org.springframework.web.bind.annotation.*;
 
 import net.causw.app.main.domain.user.account.api.v2.dto.request.AdmissionListRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.AdmissionRejectRequest;
+import net.causw.app.main.domain.user.account.api.v2.dto.request.DeletedUserSearchCondition;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserDropRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserListRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserRoleUpdateRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.AdmissionListItemResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.AdmissionResponse;
+import net.causw.app.main.domain.user.account.api.v2.dto.response.DeletedUserListResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserDetailResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserDropResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserListItemResponse;
@@ -50,7 +52,9 @@ public class UserAdminController {
 
 	// ── 회원 관리 ──
 
-	@Operation(summary = "회원 목록 조회 V2", description = "관리자가 회원 목록을 조회합니다. 이름/학번 키워드 검색, 상태/학적/학과 필터링, 페이징을 지원합니다.")
+	@Operation(summary = "회원 목록 조회 V2", description = "관리자가 회원 목록을 조회합니다. "
+		+ "이메일/이름/학번 키워드 검색, 상태 멀티 필터링, 학과/학적/입학년도 범위 필터, 정렬, 페이징을 지원합니다. "
+		+ "삭제(탈퇴) 회원은 기본 제외됩니다.")
 	@GetMapping
 	public ApiResponse<PageResponse<UserListItemResponse>> getUsers(
 		@ModelAttribute @Validated UserListRequest request,
@@ -60,6 +64,20 @@ public class UserAdminController {
 			userAdminService
 				.getUserList(userListMapper.toCondition(request), pageable)
 				.map(userListMapper::toResponse));
+
+		return ApiResponse.success(response);
+	}
+
+	@Operation(summary = "삭제(탈퇴) 회원 목록 조회 V2", description = "관리자가 탈퇴 처리된 회원 목록을 조회합니다. deletedAt이 설정된 회원만 반환됩니다.")
+	@GetMapping("/deleted")
+	public ApiResponse<PageResponse<DeletedUserListResponse>> getDeletedUsers(
+		@ModelAttribute DeletedUserSearchCondition request,
+		@PageableDefault(page = 0, size = 10) Pageable pageable) {
+
+		PageResponse<DeletedUserListResponse> response = PageResponse.from(
+			userAdminService
+				.getDeletedUserList(userListMapper.toDeletedCondition(request), pageable)
+				.map(userListMapper::toDeletedResponse));
 
 		return ApiResponse.success(response);
 	}

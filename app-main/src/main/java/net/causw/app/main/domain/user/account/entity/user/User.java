@@ -78,6 +78,7 @@ public class User extends BaseEntity {
 	private String nickname;
 
 	// TODO: 기존값들 department로 마이그레이션 후 삭제
+	@Deprecated(forRemoval = true, since = "v2")
 	@Column(name = "major", nullable = true)
 	private String major;
 
@@ -97,6 +98,7 @@ public class User extends BaseEntity {
 	 * @deprecated v1에서 관리자가 유저 학적에 대해 별도로 기록하던 메모용 필드.
 	 * 사용 빈도가 낮아 v2에서는 해당 필드를 더 이상 사용하지 않는다.
 	 */
+	@Deprecated
 	@Column(name = "academic_status_note", nullable = true)
 	private String academicStatusNote;
 

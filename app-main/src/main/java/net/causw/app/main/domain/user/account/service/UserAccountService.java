@@ -9,7 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.dto.request.UserPasswordUpdateCommand;
+import net.causw.app.main.domain.user.account.service.dto.result.UserMeAccountResult;
 import net.causw.app.main.domain.user.account.service.dto.result.UserMeResult;
+import net.causw.app.main.domain.user.account.service.implementation.UserInfoReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
@@ -99,9 +101,25 @@ public class UserAccountService {
 	@Transactional(readOnly = true)
 	public UserMeResult getMyProfile(String userId) {
 		User user = userReader.findDetailById(userId);
-
 		boolean hasAllRequiredLatestTerms = userTermsAgreementReader.hasAgreedToAllRequiredLatestTerms(user);
 		return UserMeResult.from(user, hasAllRequiredLatestTerms);
+	}
+
+	/**
+	 * 현재 로그인한 사용자의 계정 정보를 조회합니다. 내정보 > 계정 탭 진입 시 사용합니다.
+	 * <p>
+	 * 닉네임, 전화번호, 이메일, 온보딩 상태 등을 포함하여 반환합니다.
+	 * </p>
+	 *
+	 * @param userId 조회할 사용자의 고유 식별자 (PK)
+	 * @return {@link UserMeAccountResult} 내 계정 정보 결과 (닉네임, 전화번호, 이메일, 온보딩 상태 등)
+	 */
+	@Transactional(readOnly = true)
+	public UserMeAccountResult getMyAccountProfile(String userId) {
+		User user = userReader.findDetailById(userId);
+		boolean hasAllRequiredLatestTerms = userTermsAgreementReader.hasAgreedToAllRequiredLatestTerms(user);
+
+		return UserMeAccountResult.from(user, hasAllRequiredLatestTerms);
 	}
 
 	/**
