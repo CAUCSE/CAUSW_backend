@@ -62,8 +62,7 @@ public class LockerMapper {
 		List<LockerLocationResult.LockerItemResult> lockerItems,
 		boolean canApplyPolicy,
 		boolean canExtendPolicy,
-		LocalDateTime expireDate
-		) {
+		LocalDateTime expireDate) {
 
 		return LockerLocationResult.builder()
 			.floor(LockerLocationResult.FloorResult.builder()

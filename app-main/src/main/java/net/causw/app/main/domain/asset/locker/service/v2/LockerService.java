@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,7 +36,6 @@ import lombok.RequiredArgsConstructor;
  * @see LockerAdminService 관리자용 사물함 서비스
  * @see LockerPolicyAdminService 사물함 정책 관리 서비스
  */
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class LockerService {
@@ -195,8 +193,10 @@ public class LockerService {
 		LockerLocation location = lockerLocationReader.findById(locationId);
 		List<Locker> lockers = lockerReader.findByLocationIdWithUser(locationId);
 
-		boolean canApplyPolicy = lockerPeriodResolver.isRegisterActive(LocalDateTime.now());
-		boolean canExtendPolicy = lockerPeriodResolver.isExtendActive(LocalDateTime.now());
+		LocalDateTime now = LocalDateTime.now();
+
+		boolean canApplyPolicy = lockerPeriodResolver.isRegisterActive(now);
+		boolean canExtendPolicy = lockerPeriodResolver.isExtendActive(now);
 		LocalDateTime expireDate = null;
 		if (canApplyPolicy) {
 			expireDate = lockerPolicyReader.findExpireDate();
@@ -206,6 +206,7 @@ public class LockerService {
 
 		List<LockerLocationResult.LockerItemResult> lockerItems = LockerMapper.toLockerItemResults(lockers, userId);
 
-		return LockerMapper.toLocationResult(location, lockers, lockerItems, canApplyPolicy, canExtendPolicy, expireDate);
+		return LockerMapper.toLocationResult(location, lockers, lockerItems, canApplyPolicy, canExtendPolicy,
+			expireDate);
 	}
 }

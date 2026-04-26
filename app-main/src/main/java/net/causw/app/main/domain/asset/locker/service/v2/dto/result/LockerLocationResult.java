@@ -38,7 +38,7 @@ public record LockerLocationResult(
 	 *
 	 * @param canApply  현재 사물함 신청 가능 여부
 	 * @param canExtend 현재 사물함 연장 가능 여부
-	 * @param expireDate 현재 설정된 사물함 연장시 만료기간
+	 * @param expireDate 현재 설정된 사물함 연장시 만료일시
 	 */
 	@Builder
 	public record PolicyResult(boolean canApply, boolean canExtend, LocalDateTime expireDate) {
