@@ -22,7 +22,7 @@ public record LockerLocationResponse(
 	public record PolicyInfo(
 		@Schema(description = "신청 가능 기간 여부", example = "true") boolean canApply,
 		@Schema(description = "연장 가능 기간 여부", example = "false") boolean canExtend,
-		@Schema(description = "현재 사물함 신청/연장 시 만료 기간") LocalDateTime expireDate
+		@Schema(description = "현재 사물함 신청/연장 시 만료 일시") LocalDateTime expireDate
 	) {
 	}
 
