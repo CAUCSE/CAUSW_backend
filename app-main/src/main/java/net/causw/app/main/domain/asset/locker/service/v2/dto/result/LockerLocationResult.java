@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.asset.locker.service.v2.dto.result;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import net.causw.app.main.domain.asset.locker.entity.LockerStatus;
@@ -37,9 +38,10 @@ public record LockerLocationResult(
 	 *
 	 * @param canApply  현재 사물함 신청 가능 여부
 	 * @param canExtend 현재 사물함 연장 가능 여부
+	 * @param expireDate 현재 설정된 사물함 연장시 만료일시
 	 */
 	@Builder
-	public record PolicyResult(boolean canApply, boolean canExtend) {
+	public record PolicyResult(boolean canApply, boolean canExtend, LocalDateTime expireDate) {
 	}
 
 	/**

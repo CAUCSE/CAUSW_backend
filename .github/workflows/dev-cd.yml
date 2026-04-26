@@ -3,6 +3,7 @@ name: CD - Develop
 on:
   push:
     branches: [ "dev" ]
+  workflow_dispatch:
 
 permissions:
   contents: read
