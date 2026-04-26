@@ -14,7 +14,9 @@ jobs:
 
     steps:
       - name: Checkout branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+        with:
+          ref: main
 
       - name: Setup JDK and Gradle
         uses: ./.github/actions/setup-jdk-gradle
@@ -124,6 +126,8 @@ jobs:
       # 작업 엑세스 가능하게 $GITHUB_WORKSPACE에서 저장소를 체크아웃
       - name: Checkout branch
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Notify Success
         if: ${{ github.actor != 'nektos/act' && needs.app-main-deploy.result == 'success' }}
