@@ -8,9 +8,9 @@ import java.util.regex.Pattern;
 public final class PasswordPolicy {
 
 	/**
-	 * 영문·숫자·특수문자를 각각 포함하고, 영문·숫자·{@code !@#$%^&*()_?-}만 사용하며 길이는 8~20자입니다.
+	 * 영문·숫자·특수문자를 각각 포함하고, 영문·숫자·{@code ~!@#$%^&*()_?-}만 사용하며 길이는 8~20자입니다.
 	 */
-	public static final String REGEX = "^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*()_?\\-])[a-zA-Z0-9!@#$%^&*()_?\\-]{8,20}$";
+	public static final String REGEX = "^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[~!@#$%^&*()_?-])[a-zA-Z0-9~!@#$%^&*()_?-]{8,20}$";
 
 	public static final String VALIDATION_MESSAGE = "영문, 숫자, 특수문자를 포함한 8~20자의 비밀번호를 입력해주세요.";
 
