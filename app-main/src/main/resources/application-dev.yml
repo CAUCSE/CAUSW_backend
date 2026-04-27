@@ -134,7 +134,7 @@ springdoc:
     display-request-duration: true
 
 fcm:
-  firebase-sdk-path : ${FCM_FIREBASE_SDK_PATH}
+  firebase-key-base64 : ${FCM_FIREBASE_KEY_BASE64}
   project-id : ${FCM_PROJECT_ID}
 
 app:
