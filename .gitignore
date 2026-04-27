@@ -46,7 +46,7 @@ dump.rdb
 .LSOverride
 
 ### Project security ###
-**/resources/application.yml
+#**/resources/application.yml
 **/resources/email-config.yaml
 **/resources/password-config.yaml
 **/resources/causw-dev-51ab1a030da2.json
