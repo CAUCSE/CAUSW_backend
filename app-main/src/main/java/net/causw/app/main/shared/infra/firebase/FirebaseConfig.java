@@ -28,7 +28,7 @@ public class FirebaseConfig {
 		try {
 			if (FirebaseApp.getApps().isEmpty()) {
 				if (firebaseKeyBase64 == null || firebaseKeyBase64.isBlank()) {
-					throw new RuntimeException("Firebase 초기화 실패: FIREBASE_KEY_BASE64 환경변수가 없습니다.");
+					throw new RuntimeException("Firebase 초기화 실패: FCM_FIREBASE_KEY_BASE64 환경변수가 없습니다.");
 				}
 				byte[] decodedKey = Base64.getDecoder().decode(firebaseKeyBase64);
 
