@@ -115,6 +115,7 @@ public interface PostDtoV1Mapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "isOwner", source = "isOwner")
 	@Mapping(target = "updatable", source = "updatable")
 	@Mapping(target = "deletable", source = "deletable")
+	// todo: writerProfileImage null 로 가는 이슈
 	@Mapping(target = "writerProfileImage", expression = "java(null)")
 	@Mapping(target = "formResponseDto", source = "formResponseDto")
 	@Mapping(target = "voteResponseDto", source = "voteResponseDto")

@@ -52,6 +52,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "studentId", source = "user.studentId")
 	@Mapping(target = "admissionYear", source = "user.admissionYear")
 	@Mapping(target = "roles", source = "user.roles")
+	// todo: java null fix
 	@Mapping(target = "profileImageUrl", expression = "java(null)")
 	@Mapping(target = "state", source = "user.state")
 	@Mapping(target = "nickname", source = "user.nickname")
@@ -74,6 +75,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "studentId", source = "user.studentId")
 	@Mapping(target = "admissionYear", source = "user.admissionYear")
 	@Mapping(target = "roles", source = "user.roles")
+	// todo: java null fix
 	@Mapping(target = "profileImageUrl", expression = "java(null)")
 	@Mapping(target = "state", source = "user.state")
 	@Mapping(target = "nickname", source = "user.nickname")
@@ -96,6 +98,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "name", source = "user.name")
 	@Mapping(target = "studentId", source = "user.studentId")
 	@Mapping(target = "admissionYear", source = "user.admissionYear")
+	// todo: java null fix
 	@Mapping(target = "profileImageUrl", expression = "java(null)")
 	@Mapping(target = "posts", source = "post")
 	UserPostsResponseDto toUserPostsResponseDto(User user, Page<PostsResponseDto> post);
@@ -115,6 +118,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "name", source = "user.name")
 	@Mapping(target = "studentId", source = "user.studentId")
 	@Mapping(target = "admissionYear", source = "user.admissionYear")
+	// todo: java null fix
 	@Mapping(target = "profileImageUrl", expression = "java(null)")
 	UserCommentsResponseDto toUserCommentsResponseDto(User user, Page<CommentsOfUserResponseDto> comment);
 
@@ -219,6 +223,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "name", source = "userInfo.user.name")
 	@Mapping(target = "email", source = "userInfo.user.email")
 	@Mapping(target = "admissionYear", source = "userInfo.user.admissionYear")
+	// todo: java null fix
 	@Mapping(target = "profileImageUrl", expression = "java(null)")
 	@Mapping(target = "major", source = "userInfo.user.major")
 	@Mapping(target = "department", source = "userInfo.user.department")
