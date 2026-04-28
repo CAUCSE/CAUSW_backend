@@ -1,6 +1,7 @@
 package net.causw.app.main.domain.user.auth.handler;
 
 import java.io.IOException;
+import java.time.Duration;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -26,6 +27,18 @@ public class OAuth2FailureHandler extends SimpleUrlAuthenticationFailureHandler 
 	@Override
 	public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
 		AuthenticationException exception) throws IOException {
+
+		// 연동 플로우 중 실패한 경우 oauth_link_user_id 쿠키를 즉시 정리
+		if (oAuthRedirectResolver.getCookieValue(request, OAuthRedirectResolver.LINK_USER_ID_COOKIE) != null) {
+			ResponseCookie cleared = ResponseCookie.from(OAuthRedirectResolver.LINK_USER_ID_COOKIE, "")
+				.httpOnly(true)
+				.secure(request.isSecure())
+				.path("/")
+				.maxAge(Duration.ZERO)
+				.sameSite("None")
+				.build();
+			response.addHeader(HttpHeaders.SET_COOKIE, cleared.toString());
+		}
 
 		String errorMessage = "알 수 없는 오류가 발생했습니다.";
 		String errorCode = "UNKNOWN_ERROR";
@@ -62,4 +75,5 @@ public class OAuth2FailureHandler extends SimpleUrlAuthenticationFailureHandler 
 
 		getRedirectStrategy().sendRedirect(request, response, targetUrl);
 	}
+
 }

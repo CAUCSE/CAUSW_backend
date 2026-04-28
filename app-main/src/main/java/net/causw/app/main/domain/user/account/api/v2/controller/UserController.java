@@ -1,9 +1,13 @@
 package net.causw.app.main.domain.user.account.api.v2.controller;
 
+import java.time.Duration;
 import java.util.List;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,6 +29,7 @@ import net.causw.app.main.domain.user.account.api.v2.mapper.AdmissionDtoMapper;
 import net.causw.app.main.domain.user.account.api.v2.mapper.SocialAccountsMapper;
 import net.causw.app.main.domain.user.account.api.v2.mapper.UserMeMapper;
 import net.causw.app.main.domain.user.account.service.AdmissionService;
+import net.causw.app.main.domain.user.account.service.SocialLinkService;
 import net.causw.app.main.domain.user.account.service.UserAccountService;
 import net.causw.app.main.domain.user.account.service.UserNotificationService;
 import net.causw.app.main.domain.user.account.service.UserProfileImageService;
@@ -34,11 +39,13 @@ import net.causw.app.main.domain.user.auth.api.v2.dto.AuthDtoMapper;
 import net.causw.app.main.domain.user.auth.api.v2.dto.response.AuthResponse;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
+import net.causw.app.main.domain.user.auth.util.OAuthRedirectResolver;
 import net.causw.app.main.shared.dto.ApiResponse;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -50,6 +57,7 @@ public class UserController {
 
 	private final UserNotificationService userNotificationService;
 	private final UserAccountService userAccountService;
+	private final SocialLinkService socialLinkService;
 	private final AuthDtoMapper authDtoMapper;
 	private final AdmissionService admissionService;
 	private final AdmissionDtoMapper admissionDtoMapper;
@@ -201,19 +209,44 @@ public class UserController {
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return ApiResponse.success(
 			socialAccountsMapper.toResponse(
-				userAccountService.getSocialAccounts(userDetails.getUserId())));
+				socialLinkService.getSocialAccounts(userDetails.getUserId())));
 	}
 
-	@PostMapping("/me/social-accounts")
+	@PostMapping("/me/social-accounts/native")
 	@ResponseStatus(HttpStatus.OK)
-	@Operation(summary = "소셜 계정 연동", description = "provider 토큰을 검증하여 현재 로그인한 사용자에게 소셜 계정을 연동합니다. "
-		+ "카카오는 accessToken, 구글/애플은 idToken을 전달합니다.")
+	@Operation(summary = "소셜 계정 연동 (Native)", description = "provider 토큰을 검증하여 현재 로그인한 사용자에게 소셜 계정을 연동합니다. "
+		+ "카카오는 accessToken, 구글/애플은 idToken을 전달합니다. (네이티브 앱 전용)")
 	public ApiResponse<Void> linkSocialAccount(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@Valid @RequestBody SocialLinkRequest body) {
-		userAccountService.linkSocialAccount(
+		socialLinkService.linkSocialAccount(
 			userDetails.getUserId(), body.provider(), body.accessToken(), body.idToken());
 		return ApiResponse.success();
+	}
+
+	@PostMapping("/me/social-accounts/{provider}/oauth")
+	@ResponseStatus(HttpStatus.OK)
+	@Operation(summary = "소셜 계정 연동 초기화 (OAuth)", description = "웹 브라우저에서 OAuth 방식으로 소셜 계정을 연동하기 위한 초기화 API입니다. "
+		+ "연동 가능 여부를 사전 검증하고 oauth_link_user_id 쿠키를 발급합니다. "
+		+ "응답 후 프론트는 /oauth2/authorization/{provider}로 리다이렉트하여 소셜 로그인을 진행합니다. (웹 브라우저 전용)")
+	public ResponseEntity<ApiResponse<Void>> initOAuthLink(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable String provider,
+		HttpServletRequest request) {
+		socialLinkService.validateLinkable(userDetails.getUserId(), provider);
+
+		ResponseCookie linkCookie = ResponseCookie
+			.from(OAuthRedirectResolver.LINK_USER_ID_COOKIE, userDetails.getUserId())
+			.httpOnly(true)
+			.secure(request.isSecure())
+			.path("/")
+			.maxAge(Duration.ofMinutes(5))
+			.sameSite("None")
+			.build();
+
+		return ResponseEntity.ok()
+			.header(HttpHeaders.SET_COOKIE, linkCookie.toString())
+			.body(ApiResponse.success());
 	}
 
 	@DeleteMapping("/me/social-accounts/{provider}")
@@ -223,7 +256,7 @@ public class UserController {
 	public ApiResponse<Void> unlinkSocialAccount(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable String provider) {
-		userAccountService.unlinkSocialAccount(userDetails.getUserId(), provider);
+		socialLinkService.unlinkSocialAccount(userDetails.getUserId(), provider);
 		return ApiResponse.success();
 	}
 }

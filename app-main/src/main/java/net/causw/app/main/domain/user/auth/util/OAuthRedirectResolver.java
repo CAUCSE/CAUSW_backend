@@ -19,6 +19,7 @@ import jakarta.servlet.http.HttpServletRequest;
  * 콜백 시 해당 쿠키를 읽어 최종 프론트 리다이렉트 주소를 결정합니다.
  */
 public class OAuthRedirectResolver {
+	public static final String LINK_USER_ID_COOKIE = "oauth_link_user_id";
 	private static final String ENV_COOKIE_NAME = "oauth_env";
 	private static final Duration ENV_COOKIE_TTL = Duration.ofMinutes(3);
 	private static final Set<String> SUPPORTED_ENVS = Set.of("local", "dev");
@@ -118,6 +119,27 @@ public class OAuthRedirectResolver {
 			.maxAge(maxAge)
 			.sameSite(policy.sameSite())
 			.build();
+	}
+
+	/**
+	 * 요청 쿠키에서 특정 이름의 쿠키 값을 반환합니다.
+	 *
+	 * @param request 현재 HTTP 요청
+	 * @param name    찾을 쿠키 이름
+	 * @return 쿠키 값, 없거나 비어있으면 null
+	 */
+	public String getCookieValue(HttpServletRequest request, String name) {
+		Cookie[] cookies = request.getCookies();
+		if (cookies == null) {
+			return null;
+		}
+		for (Cookie cookie : cookies) {
+			if (name.equals(cookie.getName())) {
+				String value = cookie.getValue();
+				return (value != null && !value.isBlank()) ? value : null;
+			}
+		}
+		return null;
 	}
 
 	private String normalizeEnv(String env) {
