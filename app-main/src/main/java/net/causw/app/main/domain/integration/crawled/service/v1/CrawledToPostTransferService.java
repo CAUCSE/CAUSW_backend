@@ -37,21 +37,17 @@ public class CrawledToPostTransferService {
 	//크롤링 된 공지를 게시글로 반환
 	@Transactional
 	public void transferToPosts() {
-		try {
-			Board board = getBoard();
-			User adminUser = getAdminUser();
-			List<CrawledNotice> updatedNotices = getUpdatedNotices();
+		Board board = getBoard();
+		User adminUser = getAdminUser();
+		List<CrawledNotice> updatedNotices = getUpdatedNotices();
 
-			int savedCount = 0;
-			for (CrawledNotice notice : updatedNotices) {
-				if (processUpdatedNotice(notice, board, adminUser)) {
-					notice.setIsUpdated(false);
-					crawledNoticeRepository.save(notice);
-					savedCount++;
-				}
+		int savedCount = 0;
+		for (CrawledNotice notice : updatedNotices) {
+			if (processUpdatedNotice(notice, board, adminUser)) {
+				notice.setIsUpdated(false);
+				crawledNoticeRepository.save(notice);
+				savedCount++;
 			}
-		} catch (Exception e) {
-			log.error("게시글 변환 중 오류 발생", e);
 		}
 	}
 
