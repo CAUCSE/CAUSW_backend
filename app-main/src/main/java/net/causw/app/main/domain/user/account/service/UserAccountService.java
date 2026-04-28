@@ -1,6 +1,7 @@
 package net.causw.app.main.domain.user.account.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
 import net.causw.app.main.domain.user.account.service.implementation.UserInfoReader;
@@ -96,10 +97,7 @@ public class UserAccountService {
 		return AuthResult.of(tokens.accessToken(), updatedUser.getName(), updatedUser.getEmail(),
 			ProfileImageDto.from(updatedUser, null),
 			tokens.refreshToken(), updatedUser.isGuest(), true, updatedUser.isAcademicCertified(),
-			updatedUser.getAcademicStatus());
-			ProfileImageDto.from(updatedUser, null),
-			tokens.refreshToken(), updatedUser.isGuest(), true,
-			updatedUser.isAcademicCertified(), updatedUser.getAcademicStatus());
+			updatedUser.getAcademicStatus()	);
 	}
 
 	/**
@@ -131,8 +129,9 @@ public class UserAccountService {
 	public UserMeAccountResult getMyAccountProfile(String userId) {
 		User user = userReader.findDetailById(userId);
 		boolean hasAllRequiredLatestTerms = userTermsAgreementReader.hasAgreedToAllRequiredLatestTerms(user);
+		var profileImage = userProfileImageReader.findByUserIdOrNull(userId);
 
-		return UserMeAccountResult.from(user, hasAllRequiredLatestTerms);
+		return UserMeAccountResult.from(user, profileImage, hasAllRequiredLatestTerms);
 	}
 
 	/**

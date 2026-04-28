@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import jakarta.persistence.*;
 import org.hibernate.annotations.BatchSize;
 
 import net.causw.app.main.domain.campus.circle.entity.CircleMember;
@@ -25,16 +26,6 @@ import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDt
 import net.causw.app.main.domain.user.auth.service.dto.OAuthAttributes;
 import net.causw.app.main.shared.entity.BaseEntity;
 
-import jakarta.persistence.CollectionTable;
-import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -121,9 +112,6 @@ public class User extends BaseEntity {
 
 	@Column(name = "deleted_at", nullable = true)
 	private LocalDateTime deletedAt;
-
-	@Embedded
-	private TermAgreements agreements;
 
 	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
 	private List<CircleMember> circleMemberList;

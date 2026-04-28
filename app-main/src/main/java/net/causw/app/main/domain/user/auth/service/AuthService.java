@@ -250,13 +250,9 @@ public class AuthService {
 		// 토큰 생성
 		AuthTokenPair tokens = authTokenManager.issueTokens(user, refreshToken);
 		UserProfileImage profileImage = userProfileImageReader.findByUserIdOrNull(user.getId());
-		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(),
-			ProfileImageDto.from(user, profileImage),
-			tokens.refreshToken(), user.isGuest(), user.isTermsAgreed(), user.isAcademicCertified(),
-		// 최신 필수 약관 동의 여부 확인
 		boolean hasAllRequiredLatestTerms = userTermsAgreementReader.hasAgreedToAllRequiredLatestTerms(user);
 
-		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), ProfileImageDto.from(user),
+		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), ProfileImageDto.from(user, profileImage),
 			tokens.refreshToken(), user.isGuest(), hasAllRequiredLatestTerms, user.isAcademicCertified(),
 			user.getAcademicStatus());
 	}

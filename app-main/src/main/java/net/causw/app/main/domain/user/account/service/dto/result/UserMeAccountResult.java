@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.user.account.service.dto.result;
 
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Department;
@@ -20,13 +21,13 @@ public record UserMeAccountResult(
 	String studentId,
 	Department department) {
 
-	public static UserMeAccountResult from(User user, boolean hasAllRequiredLatestTerms) {
+	public static UserMeAccountResult from(User user, UserProfileImage profileImage, boolean hasAllRequiredLatestTerms) {
 		return new UserMeAccountResult(
 			user.getId(),
 			user.getEmail(),
 			user.getName(),
 			user.getNickname(),
-			ProfileImageDto.from(user),
+			ProfileImageDto.from(user, profileImage),
 			user.getAdmissionYear(),
 			user.getGraduationYear(),
 			OnboardingStatus.resolve(user.isGuest(), hasAllRequiredLatestTerms, user.isAcademicCertified()),
