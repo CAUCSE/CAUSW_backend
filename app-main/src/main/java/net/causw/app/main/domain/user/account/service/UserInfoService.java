@@ -51,7 +51,7 @@ public class UserInfoService {
 			.orElseGet(() -> userInfoCreator.createAndSave(user));
 
 		// 동문 수첩 정보 및 컬렉션 필드(소셜링크, 기술스택, 관심기술, 관심 도메인 등) 업데이트
-		userInfo.update(request.description(), request.job(), request.isPhoneNumberVisible());
+		userInfo.update(request.description(), request.isPhoneNumberVisible());
 		userInfo.updateSocialLinks(request.socialLinks());
 		userInfo.updateTechStack(request.userTechStack());
 		userInfo.updateInterestTech(request.userInterestTech());

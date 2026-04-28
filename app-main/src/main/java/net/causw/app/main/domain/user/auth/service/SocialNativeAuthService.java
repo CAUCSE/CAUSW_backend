@@ -27,6 +27,7 @@ import net.causw.app.main.domain.user.auth.service.dto.CustomOAuth2User;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
 import net.causw.app.main.domain.user.auth.service.implementation.OidcAuthorizationCodeTokenClient;
 import net.causw.app.main.domain.user.auth.service.implementation.SocialAccountOauthRefreshStore;
+import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementReader;
 import net.causw.app.main.shared.dto.ProfileImageDto;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
@@ -58,6 +59,7 @@ public class SocialNativeAuthService {
 	private final CustomOAuth2UserService customOAuth2UserService;
 	private final JwtDecoderFactory<ClientRegistration> oidcIdTokenDecoderFactory;
 	private final AuthTokenManager authTokenManager;
+	private final UserTermsAgreementReader userTermsAgreementReader;
 	private final UserProfileImageReader userProfileImageReader;
 	private final OidcAuthorizationCodeTokenClient oidcAuthorizationCodeTokenClient;
 	private final SocialAccountOauthRefreshStore socialAccountOauthRefreshStore;
@@ -94,12 +96,12 @@ public class SocialNativeAuthService {
 			}
 			AuthTokenPair tokens = authTokenManager.issueTokens(user, null);
 			UserProfileImage profileImage = userProfileImageReader.findByUserIdOrNull(user.getId());
+			boolean hasAllRequiredLatestTerms = userTermsAgreementReader.hasAgreedToAllRequiredLatestTerms(user);
 
 			log.info("Native social login succeeded. provider={}, userId={}", registrationId, user.getId());
 
-			return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(),
-				ProfileImageDto.from(user, profileImage),
-				tokens.refreshToken(), user.isGuest(), user.isTermsAgreed(), user.isAcademicCertified(),
+			return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), ProfileImageDto.from(user, profileImage),
+				tokens.refreshToken(), user.isGuest(), hasAllRequiredLatestTerms, user.isAcademicCertified(),
 				user.getAcademicStatus());
 		} catch (BaseRunTimeV2Exception e) {
 			log.warn("Native social login failed. provider={}, code={}, message={}", registrationId,

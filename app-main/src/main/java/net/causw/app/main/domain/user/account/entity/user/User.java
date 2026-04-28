@@ -28,7 +28,6 @@ import net.causw.app.main.shared.entity.BaseEntity;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -74,6 +73,7 @@ public class User extends BaseEntity {
 	private String nickname;
 
 	// TODO: 기존값들 department로 마이그레이션 후 삭제
+	@Deprecated(forRemoval = true, since = "v2")
 	@Column(name = "major", nullable = true)
 	private String major;
 
@@ -93,6 +93,7 @@ public class User extends BaseEntity {
 	 * @deprecated v1에서 관리자가 유저 학적에 대해 별도로 기록하던 메모용 필드.
 	 * 사용 빈도가 낮아 v2에서는 해당 필드를 더 이상 사용하지 않는다.
 	 */
+	@Deprecated
 	@Column(name = "academic_status_note", nullable = true)
 	private String academicStatusNote;
 
@@ -177,13 +178,6 @@ public class User extends BaseEntity {
 	}
 
 	/**
-	 * 온보딩 플로우 분기 기준: 필수 약관 동의 완료 여부
-	 */
-	public boolean isTermsAgreed() {
-		return this.agreements != null;
-	}
-
-	/**
 	 * 온보딩 플로우 분기 기준: 재학 인증 완료 여부
 	 */
 	public boolean isAcademicCertified() {
@@ -214,7 +208,6 @@ public class User extends BaseEntity {
 					userCreateRequestDto.getDepartment()))
 			.academicStatus(AcademicStatus.UNDETERMINED)
 			.phoneNumber(userCreateRequestDto.getPhoneNumber())
-			.agreements(TermAgreements.createRequiredAgreements())
 			.isV2(true)
 			.build();
 	}
@@ -229,7 +222,6 @@ public class User extends BaseEntity {
 			.nickname(dto.nickname())
 			.academicStatus(AcademicStatus.UNDETERMINED)
 			.phoneNumber(dto.phoneNumber())
-			.agreements(TermAgreements.createRequiredAgreements())
 			.isV2(true)
 			.isEmailVerified(true)
 			.build();
@@ -251,7 +243,6 @@ public class User extends BaseEntity {
 			.department(graduatedUserCommand.department())
 			.academicStatus(AcademicStatus.GRADUATED)
 			.phoneNumber(graduatedUserCommand.phoneNumber())
-			.agreements(TermAgreements.createRequiredAgreements())
 			.isV2(true)
 			.build();
 	}
@@ -291,7 +282,6 @@ public class User extends BaseEntity {
 		this.nickname = nickname;
 		this.major = major;
 		this.department = department;
-		this.agreements = TermAgreements.createRequiredAgreements();
 	}
 
 	public void submitRegistration(String name, String nickname, String phoneNumber) {
@@ -299,7 +289,6 @@ public class User extends BaseEntity {
 		this.nickname = nickname;
 		this.phoneNumber = phoneNumber;
 		this.state = UserState.AWAIT;
-		this.agreements = TermAgreements.createRequiredAgreements();
 	}
 
 	public void updateRejectionOrDropReason(String reason) {

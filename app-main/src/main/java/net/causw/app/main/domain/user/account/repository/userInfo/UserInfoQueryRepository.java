@@ -95,7 +95,7 @@ public class UserInfoQueryRepository {
 			BooleanExpression keywordCondition = Expressions.FALSE.isTrue();
 
 			keywordCondition = keywordCondition.or(userInfo.user.name.containsIgnoreCase(keyword));
-			keywordCondition = keywordCondition.or(userInfo.job.containsIgnoreCase(keyword));
+			keywordCondition = keywordCondition.or(userInfo.description.containsIgnoreCase(keyword));
 			keywordCondition = keywordCondition.or(JPAExpressions.selectFrom(userCareer)
 				.where(userCareer.userInfo.eq(userInfo)
 					.and(userCareer.description.containsIgnoreCase(keyword)))

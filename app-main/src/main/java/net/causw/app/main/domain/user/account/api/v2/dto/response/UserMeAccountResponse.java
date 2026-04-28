@@ -1,13 +1,14 @@
 package net.causw.app.main.domain.user.account.api.v2.dto.response;
 
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.auth.enums.OnboardingStatus;
 import net.causw.app.main.shared.dto.ProfileImageDto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(description = "내 정보 조회 응답")
-public record UserMeResponse(
+@Schema(description = "계정정보 관리 조회 응답")
+public record UserMeAccountResponse(
 
 	@Schema(description = "사용자 ID", example = "550e8400-e29b-41d4-a716-446655440000") String id,
 
@@ -21,7 +22,15 @@ public record UserMeResponse(
 
 	@Schema(description = "입학년도", example = "2020") Integer admissionYear,
 
+	@Schema(description = "졸업년도", example = "2026") Integer graduationYear,
+
 	@Schema(description = "온보딩 플로우 분기 상태", example = "ACTIVE") OnboardingStatus onboardingStatus,
 
-	@Schema(description = "현재 학적 상태", example = "ENROLLED") AcademicStatus academicStatus) {
+	@Schema(description = "현재 학적 상태", example = "ENROLLED") AcademicStatus academicStatus,
+
+	@Schema(description = "전화번호", example = "010-1234-5678", nullable = true) String phoneNumber,
+
+	@Schema(description = "학번", example = "20201234", nullable = true) String studentId,
+
+	@Schema(description = "학과", example = "SCHOOL_OF_SW", nullable = true) Department department) {
 }
