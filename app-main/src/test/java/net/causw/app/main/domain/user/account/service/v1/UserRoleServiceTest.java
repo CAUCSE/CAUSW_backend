@@ -48,6 +48,7 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserResponseDto;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserUpdateRoleRequestDto;
 import net.causw.app.main.domain.user.account.entity.user.User;
@@ -65,6 +66,8 @@ public class UserRoleServiceTest {
 
 	@Mock
 	UserRepository userRepository;
+	@Mock
+	UserProfileImageReader userProfileImageReader;
 
 	private static final Map<Role, Boolean> MOCK_ROLE_UNIQUE = Map.ofEntries(
 		entry(ADMIN, false),

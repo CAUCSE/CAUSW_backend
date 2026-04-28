@@ -40,6 +40,7 @@ import net.causw.app.main.domain.community.vote.entity.VoteRecord;
 import net.causw.app.main.domain.community.vote.repository.VoteOptionRepository;
 import net.causw.app.main.domain.community.vote.repository.VoteRecordRepository;
 import net.causw.app.main.domain.community.vote.repository.VoteRepository;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.util.ObjectFixtures;
 import net.causw.global.exception.BadRequestException;
@@ -59,6 +60,8 @@ public class VoteServiceTest {
 	PostRepository postRepository;
 	@Mock
 	VoteRecordRepository voteRecordRepository;
+	@Mock
+	UserProfileImageReader userProfileImageReader;
 
 	User writerUser;
 	Post post;
