@@ -38,15 +38,18 @@ public class OidcAuthorizationCodeTokenClient {
 	 * @return 응답에 포함된 refresh_token. 없으면 null (예: Google 재동의 시 미반환)
 	 */
 	public String exchangeAuthorizationCode(ClientRegistration registration, String authorizationCode,
-		String redirectUri, String codeVerifier) {
-		if (!StringUtils.hasText(authorizationCode) || !StringUtils.hasText(redirectUri)) {
+		String codeVerifier) {
+		if (!StringUtils.hasText(authorizationCode)) {
 			throw AuthErrorCode.INVALID_TOKEN.toBaseException();
 		}
 
 		MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
 		form.add("grant_type", "authorization_code");
 		form.add("code", authorizationCode.trim());
-		form.add("redirect_uri", redirectUri.trim());
+		String redirectUri = registration.getRedirectUri();
+		if (StringUtils.hasText(redirectUri)) {
+			form.add("redirect_uri", redirectUri.trim());
+		}
 		form.add("client_id", registration.getClientId());
 		if (StringUtils.hasText(registration.getClientSecret())) {
 			form.add("client_secret", registration.getClientSecret());
