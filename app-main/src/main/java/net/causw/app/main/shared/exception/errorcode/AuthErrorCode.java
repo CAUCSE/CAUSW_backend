@@ -28,7 +28,7 @@ public enum AuthErrorCode implements BaseResponseCode {
 	UNVERIFIED_SOCIAL_EMAIL(HttpStatus.FORBIDDEN, "AUTH_403_002", "소셜로그인 계정의 이메일이 인증되지 않았습니다."),
 	ALREADY_LINKED_SOCIAL_PROVIDER(HttpStatus.CONFLICT, "AUTH_409_001", "하나의 계정에 소셜로그인 별 하나의 계정만 연동 가능합니다."),
 	SOCIAL_ACCOUNT_LINKED_TO_OTHER_USER(HttpStatus.CONFLICT, "AUTH_409_002",
-		"이미 다른 계정에 연동된 소셜 계정입니d다. 계정 통합을 원하시면 관리자에게 문의해주세요."),
+		"이미 다른 계정에 연동된 소셜 계정입니다. 계정 통합을 원하시면 관리자에게 문의해주세요."),
 	CANNOT_UNLINK_LAST_LOGIN_METHOD(HttpStatus.CONFLICT, "AUTH_409_003",
 		"비밀번호가 없는 계정은 마지막 소셜 계정 연동을 해제할 수 없습니다."),
 	SOCIAL_ACCOUNT_NOT_FOUND(HttpStatus.NOT_FOUND, "AUTH_404_002", "연동된 소셜 계정을 찾을 수 없습니다."),

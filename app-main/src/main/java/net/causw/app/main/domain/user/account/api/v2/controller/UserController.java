@@ -235,13 +235,14 @@ public class UserController {
 		HttpServletRequest request) {
 		socialLinkService.validateLinkable(userDetails.getUserId(), provider);
 
+		boolean isSecure = request.isSecure();
 		ResponseCookie linkCookie = ResponseCookie
 			.from(OAuthRedirectResolver.LINK_USER_ID_COOKIE, userDetails.getUserId())
 			.httpOnly(true)
-			.secure(request.isSecure())
+			.secure(isSecure)
 			.path("/")
 			.maxAge(Duration.ofMinutes(5))
-			.sameSite("None")
+			.sameSite(isSecure ? "None" : "Lax")
 			.build();
 
 		return ResponseEntity.ok()
