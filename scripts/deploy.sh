@@ -38,13 +38,11 @@ if [ "$BRANCH" = "main" ]; then
   echo "Deploying on main branch"
 
   deploy_module "app-main" "/home/ubuntu/app/app-main" 8080
-  deploy_module "app-chat" "/home/ubuntu/app/app-chat" 8081
 
 elif [ "$BRANCH" = "develop" ]; then
   echo "Deploying on develop branch"
 
   deploy_module "app-main" "/home/ubuntu/app/app-main" 8080
-  deploy_module "app-chat" "/home/ubuntu/app/app-chat" 8081
 
 else
   echo "Deploy script does not support branch: $BRANCH"

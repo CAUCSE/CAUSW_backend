@@ -52,16 +52,13 @@ public class NotificationLogService {
 	}
 
 	/**
-	 * 유저 ID로 최근 7일간의 읽지 않은 알림 로그를 최대 20개까지 조회하여 개수를 반환합니다.
+	 * 유저 ID로 최근 7일간의 읽지 않은 알림 개수를 반환합니다. (최대 MAX_NOTIFICATION_COUNT)
 	 * @param userId 유저 ID
-	 * @return 읽지 않은 알림 로그 개수, 최대 10개까지 카운팅하여 반환 (20개 이상인 경우 20으로 반환)
+	 * @return 읽지 않은 알림 개수 (최대 MAX_NOTIFICATION_COUNT)
 	 */
 	@Transactional(readOnly = true)
 	public NotificationCountResult getNotificationLogCount(String userId) {
-		List<NotificationLog> unreadNotificationLogs = notificationLogReader.findUnreadUpToLimit(userId,
-			LocalDateTime.now());
-
-		return new NotificationCountResult(unreadNotificationLogs.size());
+		return new NotificationCountResult(notificationLogReader.countUnreadUpToLimit(userId, LocalDateTime.now()));
 	}
 
 	/**

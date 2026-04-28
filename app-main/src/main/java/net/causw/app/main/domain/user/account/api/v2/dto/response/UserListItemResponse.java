@@ -14,7 +14,11 @@ public record UserListItemResponse(
 
 	@Schema(description = "이름", example = "홍길동") String name,
 
+	@Schema(description = "이메일", example = "hong@causw.net") String email,
+
 	@Schema(description = "학번", example = "20201234") String studentId,
+
+	@Schema(description = "입학년도", example = "2020") Integer admissionYear,
 
 	@Schema(description = "소속 학과", example = "SCHOOL_OF_SW") Department department,
 

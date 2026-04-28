@@ -1,16 +1,17 @@
 package net.causw.app.main.domain.user.auth.handler;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.util.Optional;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
@@ -18,9 +19,10 @@ import net.causw.app.main.domain.user.account.enums.user.SocialType;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.auth.service.dto.CustomOAuth2User;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
+import net.causw.app.main.domain.user.auth.service.implementation.OAuth2RefreshTokenCaptureClient;
+import net.causw.app.main.domain.user.auth.service.implementation.SocialAccountOauthRefreshStore;
 import net.causw.app.main.domain.user.auth.util.OAuthRedirectResolver;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
-import net.causw.global.constant.StaticValue;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -30,7 +32,7 @@ import lombok.RequiredArgsConstructor;
  * OAuth2/OIDC 소셜 로그인 성공 후 후처리를 담당하는 핸들러입니다.
  * <p>
  * 인증 principal을 기준으로 사용자 엔티티를 조회하고,
- * 리프레시 토큰 쿠키를 발급한 뒤 프론트 redirect URI로 이동시킵니다.
+	 * 리프레시 토큰을 발급한 뒤 프론트 redirect URI의 쿼리 파라미터로 전달합니다.
  */
 @Component
 @RequiredArgsConstructor
@@ -39,11 +41,12 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 	private final AuthTokenManager authTokenManager;
 	private final UserReader userReader;
 	private final OAuthRedirectResolver oAuthRedirectResolver;
+	private final SocialAccountOauthRefreshStore socialAccountOauthRefreshStore;
 
 	/**
 	 * 소셜 로그인 성공 시 호출됩니다.
 	 * <p>
-	 * 1) principal로 사용자 조회, 2) 리프레시 토큰 쿠키 설정,
+	 * 1) principal로 사용자 조회, 2) 리프레시 토큰 발급,
 	 * 3) 사용자 상태 기반 redirect URL 생성 순서로 처리합니다.
 	 *
 	 * @param request 현재 HTTP 요청
@@ -55,24 +58,16 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
 		Authentication authentication) throws IOException {
 		User user = resolveAuthenticatedUser(authentication);
+		saveProviderOAuthRefreshTokenIfPresent(request, authentication, user);
 
-		// 리프레시토큰 생성 및 쿠키 저장
 		String refreshToken = authTokenManager.createRefreshToken(user.getId());
-		ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshToken)
-			.httpOnly(false)
-			.secure(true)
-			.path("/")
-			.maxAge(Duration.ofMillis(StaticValue.JWT_REFRESH_TOKEN_VALID_TIME))
-			.sameSite("None")
-			.build();
-		response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
 		String baseUrl = oAuthRedirectResolver.resolveRedirectBase(request);
 		ResponseCookie envCookie = oAuthRedirectResolver.clearEnvCookie(request);
 		response.addHeader(HttpHeaders.SET_COOKIE, envCookie.toString());
 
 		// 상태에 따른 리다이렉트 경로 결정
-		String targetUrl = determineTargetUrl(baseUrl);
+		String targetUrl = determineTargetUrl(baseUrl, refreshToken);
 
 		// 리다이렉트 실행
 		if (response.isCommitted()) {
@@ -89,6 +84,23 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 	 * @param authentication 인증 컨텍스트
 	 * @return 로그인 대상 사용자 엔티티
 	 */
+	private void saveProviderOAuthRefreshTokenIfPresent(HttpServletRequest request, Authentication authentication,
+		User user) {
+		if (!(authentication instanceof OAuth2AuthenticationToken oauth2Token)) {
+			return;
+		}
+		String regId = oauth2Token.getAuthorizedClientRegistrationId();
+		if (!SocialType.GOOGLE.matchesRegistrationId(regId) && !SocialType.APPLE.matchesRegistrationId(regId)) {
+			return;
+		}
+		String refresh = (String)request.getAttribute(OAuth2RefreshTokenCaptureClient.REQUEST_ATTR_REFRESH_TOKEN);
+		if (!StringUtils.hasText(refresh)) {
+			return;
+		}
+		SocialType type = SocialType.from(regId);
+		socialAccountOauthRefreshStore.saveEncryptedRefreshToken(user.getId(), type, refresh);
+	}
+
 	private User resolveAuthenticatedUser(Authentication authentication) {
 		Object principal = authentication.getPrincipal();
 
@@ -135,10 +147,12 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 	 * 사용자 상태에 따라 프론트 redirect URL을 생성합니다.
 	 *
 	 * @param baseUrl 기본 URL
+	 * @param refreshToken 리다이렉트 URL에 포함할 리프레시 토큰
 	 * @return redirect 대상 URL
 	 */
-	private String determineTargetUrl(String baseUrl) {
+	private String determineTargetUrl(String baseUrl, String refreshToken) {
 		return UriComponentsBuilder.fromUriString(baseUrl)
+			.queryParam("refreshToken", refreshToken)
 			.build().toUriString();
 	}
 }

@@ -10,7 +10,7 @@ public record AuthResult(
 	ProfileImageDto profileImage,
 	String refreshToken,
 	boolean isGuest,
-	boolean isTermsAgreed,
+	boolean hasAllRequiredLatestTerms,
 	boolean isAcademicCertified,
 	AcademicStatus academicStatus) {
 	public static AuthResult of(String accessToken,
@@ -19,10 +19,10 @@ public record AuthResult(
 		ProfileImageDto profileImage,
 		String refreshToken,
 		boolean isGuest,
-		boolean isTermsAgreed,
+		boolean hasAllRequiredLatestTerms,
 		boolean isAcademicCertified,
 		AcademicStatus academicStatus) {
-		return new AuthResult(accessToken, name, email, profileImage, refreshToken, isGuest, isTermsAgreed,
+		return new AuthResult(accessToken, name, email, profileImage, refreshToken, isGuest, hasAllRequiredLatestTerms,
 			isAcademicCertified, academicStatus);
 	}
 }

@@ -11,5 +11,6 @@ public record PostUpdateCommand(
 	String content,
 	Boolean isAnonymous,
 	User updater,
-	List<MultipartFile> images) {
+	List<MultipartFile> newImageFiles,
+	List<ImageUpdateMeta> imageMetas) {
 }

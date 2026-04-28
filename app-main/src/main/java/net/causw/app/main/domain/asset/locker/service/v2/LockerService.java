@@ -193,11 +193,20 @@ public class LockerService {
 		LockerLocation location = lockerLocationReader.findById(locationId);
 		List<Locker> lockers = lockerReader.findByLocationIdWithUser(locationId);
 
-		boolean canApplyPolicy = lockerPeriodResolver.isRegisterActive(LocalDateTime.now());
-		boolean canExtendPolicy = lockerPeriodResolver.isExtendActive(LocalDateTime.now());
+		LocalDateTime now = LocalDateTime.now();
+
+		boolean canApplyPolicy = lockerPeriodResolver.isRegisterActive(now);
+		boolean canExtendPolicy = lockerPeriodResolver.isExtendActive(now);
+		LocalDateTime expireDate = null;
+		if (canApplyPolicy) {
+			expireDate = lockerPolicyReader.findExpireDate();
+		} else if (canExtendPolicy) {
+			expireDate = lockerPolicyReader.findNextExpireDate();
+		}
 
 		List<LockerLocationResult.LockerItemResult> lockerItems = LockerMapper.toLockerItemResults(lockers, userId);
 
-		return LockerMapper.toLocationResult(location, lockers, lockerItems, canApplyPolicy, canExtendPolicy);
+		return LockerMapper.toLocationResult(location, lockers, lockerItems, canApplyPolicy, canExtendPolicy,
+			expireDate);
 	}
 }

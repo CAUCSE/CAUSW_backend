@@ -9,7 +9,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
-	private OctetStreamReadMsgConverter octetStreamReadMsgConverter;
+	private final OctetStreamReadMsgConverter octetStreamReadMsgConverter;
 
 	@Autowired
 	public WebConfig(OctetStreamReadMsgConverter octetStreamReadMsgConverter) {

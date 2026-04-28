@@ -1,6 +1,7 @@
 package net.causw.app.main.domain.community.ceremony.api.v1.dto;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import net.causw.app.main.domain.notification.notification.entity.CeremonyNotificationSetting;
 
@@ -17,9 +18,12 @@ public class CeremonyNotificationSettingResponseDto {
 	private Set<String> subscribedAdmissionYears;
 
 	public static CeremonyNotificationSettingResponseDto from(CeremonyNotificationSetting ceremonyNotificationSetting) {
+		Set<String> years2digit = ceremonyNotificationSetting.getSubscribedAdmissionYears().stream()
+			.map(year -> String.format("%02d", year % 100))
+			.collect(Collectors.toSet());
 		return CeremonyNotificationSettingResponseDto.builder()
 			.isNotificationActive(ceremonyNotificationSetting.isNotificationActive())
-			.subscribedAdmissionYears(ceremonyNotificationSetting.getSubscribedAdmissionYears())
+			.subscribedAdmissionYears(years2digit)
 			.isSetAll(ceremonyNotificationSetting.isSetAll())
 			.build();
 	}

@@ -23,4 +23,8 @@ public class UserTermsAgreementReader {
 	public List<UserTermsAgreement> findByUserAndTermsIdIn(User user, List<String> termsIds) {
 		return userTermsAgreementRepository.findByUserAndTerms_IdIn(user, termsIds);
 	}
+
+	public boolean hasAgreedToAllRequiredLatestTerms(User user) {
+		return userTermsAgreementRepository.hasAgreedToAllRequiredLatestTerms(user);
+	}
 }

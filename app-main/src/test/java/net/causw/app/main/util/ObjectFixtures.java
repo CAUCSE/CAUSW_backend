@@ -391,7 +391,6 @@ public class ObjectFixtures {
 	public static UserInfoUpdateCommand getUserInfoUpdateCommand() {
 		UserInfoUpdateCommand command = mock(UserInfoUpdateCommand.class);
 		when(command.description()).thenReturn(null);
-		when(command.job()).thenReturn(null);
 		when(command.socialLinks()).thenReturn(null);
 		when(command.isPhoneNumberVisible()).thenReturn(false);
 		when(command.userCareer()).thenReturn(null);

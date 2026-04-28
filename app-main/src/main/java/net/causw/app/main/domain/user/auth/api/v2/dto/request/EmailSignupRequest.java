@@ -1,9 +1,10 @@
 package net.causw.app.main.domain.user.auth.api.v2.dto.request;
 
 import net.causw.app.main.domain.user.account.policy.PasswordPolicy;
-
+import java.util.List;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
@@ -19,5 +20,7 @@ public record EmailSignupRequest(
 
 	@NotBlank(message = "닉네임을 입력해 주세요.") @Size(min = 2, max = 8, message = "닉네임은 2자 이상 8자 이하여야 합니다.") @Pattern(regexp = "^[가-힣a-zA-Z0-9]{2,8}$", message = "닉네임은 한글, 영문, 숫자만 사용할 수 있습니다.") @Schema(description = "닉네임", example = "푸앙") String nickname,
 
-	@NotBlank(message = "인증번호를 입력해 주세요.") @Schema(description = "인증확인한 인증번호", example = "1234AB") String emailVerificationCode) {
+	@NotBlank(message = "인증번호를 입력해 주세요.") @Schema(description = "인증확인한 인증번호", example = "1234AB") String emailVerificationCode,
+
+	@NotEmpty(message = "동의할 약관 ID를 입력해 주세요.") @Schema(description = "동의한 약관 ID 목록 (타입별 최신 필수 약관 ID 포함)") List<String> agreedTermsIds) {
 }

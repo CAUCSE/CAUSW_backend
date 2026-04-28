@@ -29,6 +29,9 @@ public class SocialAccount extends BaseEntity {
 	@Column(name = "email", nullable = false)
 	private String email;
 
+	@Column(name = "oauth_refresh_token_cipher", columnDefinition = "TEXT")
+	private String oauthRefreshTokenCipher;
+
 	public static SocialAccount of(SocialType socialType, String socialId, String email, User user) {
 		return SocialAccount.builder()
 			.socialId(socialId)
@@ -36,5 +39,9 @@ public class SocialAccount extends BaseEntity {
 			.email(email)
 			.user(user)
 			.build();
+	}
+
+	public void replaceEncryptedOauthRefreshToken(String cipherText) {
+		this.oauthRefreshTokenCipher = cipherText;
 	}
 }

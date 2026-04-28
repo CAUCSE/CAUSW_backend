@@ -12,6 +12,8 @@ import net.causw.app.main.domain.community.ceremony.enums.CeremonyType;
 import net.causw.app.main.domain.community.ceremony.enums.RelationType;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -56,5 +58,5 @@ public record CeremonyCreateRequest(
 
 	@NotNull(message = "전체 알림 전송 여부는 필수 입력 값입니다.") @Schema(description = "모든 학번에게 알림 전송 여부", example = "true") Boolean isSetAll,
 
-	@Schema(description = "알림 대상 학번", example = "[19, 21, 22]") List<@Pattern(regexp = "^[0-9]{2}$", message = "알림 대상 학번 형식이 올바르지 않습니다.") String> targetAdmissionYears) {
+	@Schema(description = "알림 대상 학번 (4자리 입학년도)", example = "[2019, 2021, 2022]") List<@Min(value = 1000, message = "입학년도는 4자리 연도여야 합니다.") @Max(value = 9999, message = "입학년도는 4자리 연도여야 합니다.") Integer> targetAdmissionYears) {
 }
