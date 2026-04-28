@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 public record SocialNativeLoginRequest(
 	@NotBlank(message = "소셜 로그인 provider를 입력해 주세요.") @Schema(description = "소셜 로그인 provider", example = "google") String provider,
 
-	@Schema(description = "클라이언트 플랫폼 힌트. Apple은 web/ios 등에 매핑된 client registration으로 검증·인가코드 교환합니다. Google은 registration은 항상 웹 `google`이며, 네이티브 id token aud는 설정 `app.security.oidc.audiences.google`로 허용합니다.", example = "ios", nullable = true) String platform,
+	@Schema(description = "클라이언트 플랫폼 힌트. Apple은 web/ios 등에 매핑된 client registration으로 검증·인가코드 교환합니다. Google은 registration은 항상 `google`이며, 네이티브 id token의 aud는 해당 client registration의 client_id 포함 여부로 검증합니다.", example = "ios", nullable = true) String platform,
 
 	@Schema(description = "네이티브 SDK에서 획득한 provider access token", nullable = true) String accessToken,
 
