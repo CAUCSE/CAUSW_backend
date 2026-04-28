@@ -75,3 +75,6 @@ monitoring/loki-data/
 monitoring/mysqld-exporter/.my.cnf
 
 /.claude
+.bkit
+
+CLAUDE.md

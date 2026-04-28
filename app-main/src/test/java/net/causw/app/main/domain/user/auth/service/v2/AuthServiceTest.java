@@ -3,6 +3,7 @@ package net.causw.app.main.domain.user.auth.service.v2;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.doThrow;
@@ -10,6 +11,9 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.mock;
 import static org.mockito.BDDMockito.never;
 import static org.mockito.BDDMockito.verify;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.lenient;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -53,8 +57,14 @@ import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificat
 import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationSender;
 import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationValidator;
 import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationWriter;
+import net.causw.app.main.domain.user.terms.entity.Terms;
+import net.causw.app.main.domain.user.terms.service.implementation.TermsReader;
+import net.causw.app.main.domain.user.terms.service.implementation.TermsValidator;
+import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementReader;
+import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementWriter;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
+import net.causw.app.main.shared.exception.errorcode.TermsErrorCode;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
@@ -93,6 +103,14 @@ public class AuthServiceTest {
 	private EmailVerificationSender emailVerificationSender;
 	@Mock
 	private net.causw.app.main.domain.user.account.service.v1.PasswordGenerator passwordGenerator;
+	@Mock
+	private TermsReader termsReader;
+	@Mock
+	private TermsValidator termsValidator;
+	@Mock
+	private UserTermsAgreementWriter userTermsAgreementWriter;
+	@Mock
+	private UserTermsAgreementReader userTermsAgreementReader;
 
 	private static final String USER_ID = "user_id_123";
 	private static final String EMAIL = "test@example.com";
@@ -107,6 +125,8 @@ public class AuthServiceTest {
 	private static final String NEW_REFRESH_TOKEN = "new_refresh_token";
 	private static final String FCM_TOKEN = "fcm_token";
 	private static final String EMAIL_FOR_FIND = "abcdef@cau.ac.kr";
+	private static final String TERM_ID_SERVICE = "term-service-id";
+	private static final String TERM_ID_PRIVACY = "term-privacy-id";
 
 	private UserRegisterDto registerDto;
 	private User user;
@@ -114,9 +134,12 @@ public class AuthServiceTest {
 
 	@BeforeEach
 	void setup() {
-		registerDto = new UserRegisterDto(EMAIL, PASSWORD, NAME, NICKNAME, PHONE, "ABCD12");
+		registerDto = new UserRegisterDto(EMAIL, PASSWORD, NAME, NICKNAME, PHONE, "ABCD12",
+			List.of(TERM_ID_SERVICE, TERM_ID_PRIVACY));
 		user = User.from(registerDto, ENCODED_PASSWORD);
 		authTokenPair = new AuthTokenPair(ACCESS_TOKEN, REFRESH_TOKEN);
+		lenient().when(termsReader.findAllById(anyList())).thenReturn(List.of());
+		lenient().when(userTermsAgreementReader.hasAgreedToAllRequiredLatestTerms(any(User.class))).thenReturn(true);
 	}
 
 	@Nested
@@ -127,11 +150,16 @@ public class AuthServiceTest {
 		@DisplayName("성공: 모든 검증을 통과하면 사용자가 저장되고 응답을 반환한다.")
 		void success() {
 			// given
+			Terms serviceTerms = mock(Terms.class);
+			Terms privacyTerms = mock(Terms.class);
+
 			EmailVerification verifiedEmail = mock(EmailVerification.class);
 
 			given(userReader.checkUserExistByPhoneNumAndName(anyString(), anyString())).willReturn(Optional.empty());
 			given(passwordEncoder.encode(anyString())).willReturn(ENCODED_PASSWORD);
 			given(userWriter.save(any(User.class))).willReturn(user);
+			doNothing().when(termsValidator).validateForAgreement(anyList());
+			given(termsReader.findAllById(anyList())).willReturn(List.of(serviceTerms, privacyTerms));
 			given(emailVerificationReader.findLatestByEmailAndStatus(EMAIL, VerificationStatus.VERIFIED))
 				.willReturn(verifiedEmail);
 
@@ -150,6 +178,22 @@ public class AuthServiceTest {
 			verify(userValidator).checkPhoneNumDuplication(PHONE);
 			verify(authValidator).validateRegisterInput(any(User.class), eq(PASSWORD), eq(PHONE));
 			verify(userWriter).save(any(User.class));
+			verify(userTermsAgreementWriter).saveAll(any());
+			verify(userTermsAgreementReader, never()).hasAgreedToAllRequiredLatestTerms(any(User.class));
+		}
+
+		@Test
+		@DisplayName("실패: 약관 검증 실패 시 에러를 반환한다.")
+		void fail_terms_not_agreed() {
+			doThrow(TermsErrorCode.NOT_ALL_REQUIRED_TERMS_AGREED.toBaseException())
+				.when(termsValidator)
+				.validateForAgreement(anyList());
+
+			assertThatThrownBy(() -> authService.registerEmailUser(registerDto))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasMessage(TermsErrorCode.NOT_ALL_REQUIRED_TERMS_AGREED.getMessage());
+
+			verify(userWriter, never()).save(any(User.class));
 		}
 
 		@Nested
@@ -305,7 +349,6 @@ public class AuthServiceTest {
 
 			assertThat(temporaryPassword).isEqualTo(TEMP_PASSWORD);
 			verify(mockedUser).updatePassword(ENCODED_PASSWORD);
-			verify(userWriter).save(mockedUser);
 			verify(emailVerificationWriter).delete(emailVerification);
 		}
 

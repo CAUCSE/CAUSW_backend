@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.asset.locker.util;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import net.causw.app.main.domain.asset.locker.entity.Locker;
@@ -60,7 +61,8 @@ public class LockerMapper {
 		List<Locker> lockers,
 		List<LockerLocationResult.LockerItemResult> lockerItems,
 		boolean canApplyPolicy,
-		boolean canExtendPolicy) {
+		boolean canExtendPolicy,
+		LocalDateTime expireDate) {
 
 		return LockerLocationResult.builder()
 			.floor(LockerLocationResult.FloorResult.builder()
@@ -71,6 +73,7 @@ public class LockerMapper {
 			.currentPolicy(LockerLocationResult.PolicyResult.builder()
 				.canApply(canApplyPolicy)
 				.canExtend(canExtendPolicy)
+				.expireDate(expireDate)
 				.build())
 			.summary(LockerLocationResult.SummaryResult.builder()
 				.totalCount(lockers.size())

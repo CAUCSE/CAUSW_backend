@@ -1,14 +1,15 @@
 package net.causw.app.main.domain.user.account.service;
 
+import java.util.List;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
-import net.causw.app.main.domain.user.account.repository.userInfo.UserInfoRepository;
 import net.causw.app.main.domain.user.account.service.dto.request.UserPasswordUpdateCommand;
+import net.causw.app.main.domain.user.account.service.dto.result.UserMeAccountResult;
 import net.causw.app.main.domain.user.account.service.dto.result.UserMeResult;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
@@ -17,6 +18,12 @@ import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthValidator;
+import net.causw.app.main.domain.user.terms.entity.Terms;
+import net.causw.app.main.domain.user.terms.entity.UserTermsAgreement;
+import net.causw.app.main.domain.user.terms.service.implementation.TermsReader;
+import net.causw.app.main.domain.user.terms.service.implementation.TermsValidator;
+import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementReader;
+import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementWriter;
 import net.causw.app.main.shared.dto.ProfileImageDto;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
@@ -33,7 +40,10 @@ public class UserAccountService {
 	private final AuthValidator authValidator;
 	private final AuthTokenManager authTokenManager;
 	private final PasswordEncoder passwordEncoder;
-	private final UserInfoRepository userInfoRepository;
+	private final TermsReader termsReader;
+	private final TermsValidator termsValidator;
+	private final UserTermsAgreementReader userTermsAgreementReader;
+	private final UserTermsAgreementWriter userTermsAgreementWriter;
 
 	/**
 	 * 소셜 로그인을 통해 생성된 임시 유저(GUEST)의 추가 정보를 등록하고 회원가입 절차를 완료합니다.
@@ -45,42 +55,70 @@ public class UserAccountService {
 	 * @param userId       정보를 등록할 유저의 고유 식별자 (PK)
 	 * @param nickname     사용할 닉네임 (중복 검사 대상)
 	 * @param phoneNumber  사용할 전화번호 (중복 검사 대상)
-	 * @param name         사용자의 실명(이름)
-	 * @param refreshToken 갱신할 기존 리프레시 토큰
+	 * @param name                  사용자의 실명(이름)
+	 * @param agreedTermsIds        동의한 약관 ID 목록 (타입별 최신 필수 약관 ID 포함)
+	 * @param refreshToken          갱신할 기존 리프레시 토큰
 	 * @return {@link AuthResult} 변경된 권한이 반영된 새로운 토큰 세트와 유저 정보
 	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
 	 * [INVALID_REGISTRATION_STATUS] 유저 상태가 GUEST가 아닌 경우,
-	 * 닉네임 또는 전화번호가 중복된 경우
+	 * 닉네임 또는 전화번호가 중복된 경우,
+	 * 필수 약관에 동의하지 않은 경우, 등록된 약관이 없는 경우
 	 */
 	@Transactional
 	public AuthResult completeRegistration(String userId, String nickname, String phoneNumber, String name,
-		String refreshToken) {
+		List<String> agreedTermsIds, String refreshToken) {
 		User guestUser = userReader.findUserById(userId);
 		if (guestUser.getState() != UserState.GUEST) {
 			throw AuthErrorCode.INVALID_REGISTRATION_STATUS.toBaseException();
 		}
+		List<String> distinctAgreedTermsIds = agreedTermsIds.stream().distinct().toList();
+		termsValidator.validateForAgreement(distinctAgreedTermsIds);
 		userValidator.checkNicknameDuplication(nickname);
 		userValidator.checkPhoneNumDuplication(phoneNumber);
 		guestUser.submitRegistration(name, nickname, phoneNumber);
 		User updatedUser = userWriter.save(guestUser);
+
+		List<Terms> termsToSave = termsReader.findAllById(distinctAgreedTermsIds);
+		List<UserTermsAgreement> newAgreements = termsToSave.stream()
+			.map(terms -> UserTermsAgreement.of(updatedUser, terms))
+			.toList();
+		userTermsAgreementWriter.saveAll(newAgreements);
+
 		AuthTokenPair tokens = authTokenManager.issueTokens(updatedUser, refreshToken);
 		return AuthResult.of(tokens.accessToken(), updatedUser.getName(), updatedUser.getEmail(),
 			ProfileImageDto.from(updatedUser),
-			tokens.refreshToken(), updatedUser.isGuest(), updatedUser.isTermsAgreed(),
-			updatedUser.isAcademicCertified(), updatedUser.getAcademicStatus());
+			tokens.refreshToken(), updatedUser.isGuest(), true, updatedUser.isAcademicCertified(),
+			updatedUser.getAcademicStatus());
 	}
 
 	/**
 	 * 현재 로그인한 사용자의 기본 정보를 조회합니다. 내정보 메인페이지 진입 시 사용합니다.
 	 *
 	 * @param userId 조회할 사용자의 고유 식별자 (PK)
-	 * @return {@link UserMeResult} 내 정보 결과 (이름, 닉네임, 프로필이미지, 입학년도, 직업)
+	 * @return {@link UserMeResult} 내 정보 결과 (이름, 닉네임, 프로필이미지, 입학년도)
 	 */
 	@Transactional(readOnly = true)
 	public UserMeResult getMyProfile(String userId) {
 		User user = userReader.findDetailById(userId);
-		UserInfo userInfo = userInfoRepository.findByUserId(userId).orElse(null);
-		return UserMeResult.from(user, userInfo);
+		boolean hasAllRequiredLatestTerms = userTermsAgreementReader.hasAgreedToAllRequiredLatestTerms(user);
+		return UserMeResult.from(user, hasAllRequiredLatestTerms);
+	}
+
+	/**
+	 * 현재 로그인한 사용자의 계정 정보를 조회합니다. 내정보 > 계정 탭 진입 시 사용합니다.
+	 * <p>
+	 * 닉네임, 전화번호, 이메일, 온보딩 상태 등을 포함하여 반환합니다.
+	 * </p>
+	 *
+	 * @param userId 조회할 사용자의 고유 식별자 (PK)
+	 * @return {@link UserMeAccountResult} 내 계정 정보 결과 (닉네임, 전화번호, 이메일, 온보딩 상태 등)
+	 */
+	@Transactional(readOnly = true)
+	public UserMeAccountResult getMyAccountProfile(String userId) {
+		User user = userReader.findDetailById(userId);
+		boolean hasAllRequiredLatestTerms = userTermsAgreementReader.hasAgreedToAllRequiredLatestTerms(user);
+
+		return UserMeAccountResult.from(user, hasAllRequiredLatestTerms);
 	}
 
 	/**

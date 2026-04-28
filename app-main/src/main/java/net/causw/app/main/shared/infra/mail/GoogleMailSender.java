@@ -12,9 +12,11 @@ import net.causw.global.exception.ServiceUnavailableException;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class GoogleMailSender {
 	private final JavaMailSender javaMailSender;
 	@Value("${spring.mail.username}")
@@ -104,6 +106,7 @@ public class GoogleMailSender {
 			// 이메일 전송
 			javaMailSender.send(message);
 		} catch (MailException | MessagingException exception) {
+			log.error("이메일 전송 실패: 송신자: {}, 수신자: {}, 제목: {}, 내용: {}", from, to, title, content, exception);
 			throw new ServiceUnavailableException(ErrorCode.SERVICE_UNAVAILABLE, "이메일을 전송할 수 없습니다.");
 		}
 	}

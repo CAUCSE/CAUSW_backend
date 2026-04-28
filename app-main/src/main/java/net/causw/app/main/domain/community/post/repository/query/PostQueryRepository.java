@@ -444,7 +444,8 @@ public class PostQueryRepository {
 			.from(postAttachImage)
 			.where(postAttachImage.post.id.in(postIds)
 				.and(postAttachImage.uuidFile.extension.in(FileExtensionType.IMAGE.getExtensionList())))
-			.orderBy(postAttachImage.post.id.asc(), postAttachImage.uuidFile.createdAt.asc())
+			.orderBy(postAttachImage.post.id.asc(), postAttachImage.imageOrder.asc(),
+				postAttachImage.uuidFile.createdAt.asc())
 			.fetch();
 
 		return results.stream()

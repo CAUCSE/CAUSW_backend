@@ -5,13 +5,27 @@ import java.util.Arrays;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 
 public enum SocialType {
-	GOOGLE,
-	APPLE,
-	KAKAO;
+	GOOGLE("google"),
+	APPLE("apple"),
+	KAKAO("kakao");
+
+	private final String registrationId;
+
+	SocialType(String registrationId) {
+		this.registrationId = registrationId;
+	}
+
+	public String registrationId() {
+		return registrationId;
+	}
+
+	public boolean matchesRegistrationId(String registrationId) {
+		return registrationId != null && this.registrationId.equalsIgnoreCase(registrationId);
+	}
 
 	public static SocialType from(String registrationId) {
 		return Arrays.stream(SocialType.values())
-			.filter(type -> type.name().equalsIgnoreCase(registrationId))
+			.filter(type -> type.matchesRegistrationId(registrationId))
 			.findFirst()
 			.orElseThrow(AuthErrorCode.UNSUPPORTED_SOCIAL_PROVIDER::toBaseException);
 	}

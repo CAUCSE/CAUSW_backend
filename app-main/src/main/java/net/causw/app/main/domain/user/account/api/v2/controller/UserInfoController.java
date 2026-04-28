@@ -95,12 +95,13 @@ public class UserInfoController {
 	 */
 	@GetMapping
 	@ResponseStatus(HttpStatus.OK)
-	@Operation(summary = "동문 수첩 프로필 리스트 조회 및 검색", description = "검색어 또는 필터를 포함해 동문 수첩 프로필 리스트를 조회합니다.")
+	@Operation(summary = "동문 수첩 프로필 리스트 조회 및 검색", description = "검색어 또는 필터를 포함해 동문 수첩 프로필 리스트를 조회합니다. (본인 프로필 제외)")
 	public ApiResponse<PageResponse<UserInfoSummaryResponse>> getUserInfoPage(
 		@ModelAttribute @Valid UserInfoListRequest request,
-		@RequestParam(name = "pageNum", required = false, defaultValue = "0") Integer pageNum) {
+		@RequestParam(name = "pageNum", required = false, defaultValue = "0") Integer pageNum,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		Page<UserInfoSummaryResult> result = userInfoService.getUserInfoPage(userInfoDtoMapper.toListCondition(request),
-			pageNum);
+			pageNum, userDetails.getUserId());
 		Page<UserInfoSummaryResponse> response = result.map(userInfoDtoMapper::toSummaryResponse);
 		return ApiResponse.success(PageResponse.from(response));
 	}

@@ -26,6 +26,9 @@ import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.dto.CustomOAuth2User;
 import net.causw.app.main.domain.user.auth.service.dto.OAuthAttributes;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
+import net.causw.app.main.domain.user.auth.service.implementation.OidcAuthorizationCodeTokenClient;
+import net.causw.app.main.domain.user.auth.service.implementation.SocialAccountOauthRefreshStore;
+import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementReader;
 import net.causw.app.main.shared.dto.ProfileImageDto;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
@@ -57,6 +60,9 @@ public class SocialNativeAuthService {
 	private final CustomOAuth2UserService customOAuth2UserService;
 	private final JwtDecoderFactory<ClientRegistration> oidcIdTokenDecoderFactory;
 	private final AuthTokenManager authTokenManager;
+	private final UserTermsAgreementReader userTermsAgreementReader;
+	private final OidcAuthorizationCodeTokenClient oidcAuthorizationCodeTokenClient;
+	private final SocialAccountOauthRefreshStore socialAccountOauthRefreshStore;
 
 	/**
 	 * provider 특성에 따라 access token 또는 id token 기반 네이티브 소셜 로그인을 수행합니다.
@@ -64,13 +70,17 @@ public class SocialNativeAuthService {
 	 * @param provider provider registration id (예: kakao, google, apple)
 	 * @param accessToken 네이티브 SDK에서 발급된 provider access token
 	 * @param idToken OIDC provider(google/apple)에서 발급된 id token
+	 * @param authorizationCode OIDC 인가 코드(선택). 전달 시 토큰 엔드포인트로 교환해 리프레시 토큰을 저장합니다.
+	 * @param redirectUri 인가 코드 교환 시 사용한 redirect URI(authorizationCode 사용 시 필수)
+	 * @param codeVerifier PKCE 사용 시 code_verifier(선택)
 	 * @return 서비스 전용 access/refresh token이 포함된 인증 결과
 	 */
 	@Transactional
-	public AuthResult login(String provider, String accessToken, String idToken) {
+	public AuthResult login(String provider, String accessToken, String idToken, String authorizationCode,
+		String redirectUri, String codeVerifier) {
 		String registrationId = provider.toLowerCase(Locale.ROOT);
-		log.info("Native social login requested. provider={}, hasIdToken={}", registrationId,
-			StringUtils.hasText(idToken));
+		log.info("Native social login requested. provider={}, hasIdToken={}, hasAuthCode={}", registrationId,
+			StringUtils.hasText(idToken), StringUtils.hasText(authorizationCode));
 
 		try {
 			SocialType.from(registrationId);
@@ -80,12 +90,18 @@ public class SocialNativeAuthService {
 				.orElseThrow(AuthErrorCode.UNSUPPORTED_SOCIAL_PROVIDER::toBaseException);
 
 			User user = loadAuthenticatedUser(clientRegistration, accessToken, idToken);
+			if (isOidcProvider(clientRegistration)) {
+				persistOidcRefreshTokenFromAuthorizationCode(clientRegistration, user, authorizationCode, redirectUri,
+					codeVerifier);
+			}
 			AuthTokenPair tokens = authTokenManager.issueTokens(user, null);
 
 			log.info("Native social login succeeded. provider={}, userId={}", registrationId, user.getId());
 
+			boolean hasAllRequiredLatestTerms = userTermsAgreementReader.hasAgreedToAllRequiredLatestTerms(user);
+
 			return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), ProfileImageDto.from(user),
-				tokens.refreshToken(), user.isGuest(), user.isTermsAgreed(), user.isAcademicCertified(),
+				tokens.refreshToken(), user.isGuest(), hasAllRequiredLatestTerms, user.isAcademicCertified(),
 				user.getAcademicStatus());
 		} catch (BaseRunTimeV2Exception e) {
 			log.warn("Native social login failed. provider={}, code={}, message={}", registrationId,
@@ -292,11 +308,11 @@ public class SocialNativeAuthService {
 		}
 
 		String registrationId = clientRegistration.getRegistrationId();
-		if ("apple".equalsIgnoreCase(registrationId)) {
+		if (SocialType.APPLE.matchesRegistrationId(registrationId)) {
 			return APPLE_ISSUER;
 		}
 
-		if ("google".equalsIgnoreCase(registrationId)) {
+		if (SocialType.GOOGLE.matchesRegistrationId(registrationId)) {
 			return GOOGLE_ISSUER;
 		}
 
@@ -324,6 +340,25 @@ public class SocialNativeAuthService {
 			return baseRunTimeV2Exception;
 		}
 		return AuthErrorCode.INVALID_TOKEN.toBaseException();
+	}
+
+	private void persistOidcRefreshTokenFromAuthorizationCode(ClientRegistration registration, User user,
+		String authorizationCode, String redirectUri, String codeVerifier) {
+		if (!StringUtils.hasText(authorizationCode)) {
+			return;
+		}
+		if (!StringUtils.hasText(redirectUri)) {
+			throw AuthErrorCode.NATIVE_SOCIAL_REDIRECT_URI_REQUIRED.toBaseException();
+		}
+		SocialType socialType = SocialType.from(registration.getRegistrationId());
+		String refreshToken = oidcAuthorizationCodeTokenClient.exchangeAuthorizationCode(registration,
+			authorizationCode, redirectUri, codeVerifier);
+		if (!StringUtils.hasText(refreshToken)) {
+			log.info("Native OIDC token exchange returned no refresh_token; cipher not updated. provider={}",
+				registration.getRegistrationId());
+			return;
+		}
+		socialAccountOauthRefreshStore.saveEncryptedRefreshToken(user.getId(), socialType, refreshToken);
 	}
 
 	private boolean isOidcProvider(ClientRegistration clientRegistration) {

@@ -27,6 +27,8 @@ public enum AuthErrorCode implements BaseResponseCode {
 	NO_PERMISSION_FOR_RESOURCE(HttpStatus.FORBIDDEN, "AUTH_403_001", "해당 자원에 대한 접근 또는 조작 권한이 없습니다."),
 	UNVERIFIED_SOCIAL_EMAIL(HttpStatus.FORBIDDEN, "AUTH_403_002", "소셜로그인 계정의 이메일이 인증되지 않았습니다."),
 	ALREADY_LINKED_SOCIAL_PROVIDER(HttpStatus.CONFLICT, "AUTH_409_001", "하나의 계정에 소셜로그인 별 하나의 계정만 연동 가능합니다."),
+	NATIVE_SOCIAL_REDIRECT_URI_REQUIRED(HttpStatus.BAD_REQUEST, "AUTH_400_006",
+		"네이티브 소셜 인가 코드로 토큰을 교환하려면 redirectUri가 필요합니다."),
 	SOCIAL_ACCOUNT_LINKED_TO_OTHER_USER(HttpStatus.CONFLICT, "AUTH_409_002",
 		"이미 다른 계정에 연동된 소셜 계정입니다. 계정 통합을 원하시면 관리자에게 문의해주세요."),
 	CANNOT_UNLINK_LAST_LOGIN_METHOD(HttpStatus.CONFLICT, "AUTH_409_003",

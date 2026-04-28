@@ -1,8 +1,11 @@
 package net.causw.app.main.domain.asset.file.entity.joinEntity;
 
+import org.hibernate.annotations.ColumnDefault;
+
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.community.post.entity.Post;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Index;
@@ -38,10 +41,31 @@ public class PostAttachImage extends JoinEntity {
 	@JoinColumn(name = "post_id", nullable = false)
 	private Post post;
 
+	@Setter
+	@Column(name = "image_order", nullable = false)
+	@ColumnDefault("0")
+	@Builder.Default
+	private Integer imageOrder = 0;
+
+	@Setter
+	@Column(name = "is_representative", nullable = false)
+	@ColumnDefault("false")
+	@Builder.Default
+	private Boolean isRepresentative = false;
+
 	public static PostAttachImage of(Post post, UuidFile uuidFile) {
 		return PostAttachImage.builder()
 			.uuidFile(uuidFile)
 			.post(post)
+			.build();
+	}
+
+	public static PostAttachImage of(Post post, UuidFile uuidFile, Integer imageOrder, Boolean isRepresentative) {
+		return PostAttachImage.builder()
+			.uuidFile(uuidFile)
+			.post(post)
+			.imageOrder(imageOrder)
+			.isRepresentative(isRepresentative)
 			.build();
 	}
 

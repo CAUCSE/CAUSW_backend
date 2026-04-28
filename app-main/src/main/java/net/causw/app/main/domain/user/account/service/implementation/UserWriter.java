@@ -69,6 +69,15 @@ public class UserWriter {
 		return this.userRepository.save(user);
 	}
 
+	/**
+	 * 이메일 인증 완료 처리
+	 * - isEmailVerified = true 로 변경
+	 */
+	public User markEmailAsVerified(User user) {
+		user.markEmailAsVerified();
+		return this.userRepository.save(user);
+	}
+
 	// 관리자 전용 권한 교체 메서드
 	public User replaceRole(User user, Role currentRole, Role newRole) {
 		Set<Role> roles = new HashSet<>(user.getRoles());

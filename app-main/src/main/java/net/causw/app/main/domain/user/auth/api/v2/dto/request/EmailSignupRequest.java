@@ -1,8 +1,11 @@
 package net.causw.app.main.domain.user.auth.api.v2.dto.request;
 
+import java.util.List;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 
 @Schema(description = "이메일 회원가입 요청 dto")
@@ -17,5 +20,7 @@ public record EmailSignupRequest(
 
 	@NotBlank(message = "닉네임을 입력해 주세요.") @Schema(description = "닉네임", example = "푸앙") String nickname,
 
-	@NotBlank(message = "인증번호를 입력해 주세요.") @Schema(description = "인증확인한 인증번호", example = "1234AB") String emailVerificationCode) {
+	@NotBlank(message = "인증번호를 입력해 주세요.") @Schema(description = "인증확인한 인증번호", example = "1234AB") String emailVerificationCode,
+
+	@NotEmpty(message = "동의할 약관 ID를 입력해 주세요.") @Schema(description = "동의한 약관 ID 목록 (타입별 최신 필수 약관 ID 포함)") List<String> agreedTermsIds) {
 }

@@ -291,11 +291,6 @@ public class UserController {
 	}
 
 	private String extractClientIp(HttpServletRequest request) {
-		String xForwardedFor = request.getHeader("X-Forwarded-For");
-		if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-			// 여러 IP가 있을 수 있어 첫 번째가 원래 IP
-			return xForwardedFor.split(",")[0].trim();
-		}
 		return request.getRemoteAddr();
 	}
 

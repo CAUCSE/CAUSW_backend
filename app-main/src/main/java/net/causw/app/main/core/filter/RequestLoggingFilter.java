@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
  * - traceId   : 요청 추적용 고유 ID (타임스탬프 + 요청 순번 조합)
  * - path      : 요청 URI
  * - httpMethod: HTTP 메서드 (GET, POST, ...)
- * - remoteIP  : 클라이언트 IP (X-Forwarded-For 우선)
+ * - remoteIP  : 클라이언트 IP (ForwardedHeaderFilter가 X-Forwarded-For 처리 후 getRemoteAddr()에 반영)
  * - userId    : 인증된 사용자 이름 (미인증 시 미설정)
  * - status    : HTTP 응답 코드
  * - duration  : 처리 시간 (ms)
@@ -108,14 +108,10 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
 
 	/**
 	 * 실제 클라이언트 IP를 반환한다.
-	 * 로드밸런서/리버스 프록시 환경에서는 X-Forwarded-For 헤더에 원본 IP가 담기므로 우선 확인한다.
-	 * 헤더에 여러 IP가 콤마로 나열된 경우 가장 앞에 있는 값이 최초 클라이언트 IP다.
+	 * ForwardedHeaderFilter(framework 전략)가 X-Forwarded-For를 처리한 뒤 헤더를 제거하고
+	 * getRemoteAddr()에 원본 클라이언트 IP를 반영하므로 직접 참조한다.
 	 */
 	private String getClientIp(HttpServletRequest request) {
-		String forwarded = request.getHeader("X-Forwarded-For");
-		if (forwarded != null && !forwarded.isBlank()) {
-			return forwarded.split(",")[0].trim();
-		}
 		return request.getRemoteAddr();
 	}
 

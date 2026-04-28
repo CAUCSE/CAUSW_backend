@@ -44,7 +44,7 @@ public class UserInfoService {
 			.orElseGet(() -> userInfoCreator.createAndSave(user));
 
 		// 동문 수첩 정보 및 컬렉션 필드(소셜링크, 기술스택, 관심기술, 관심 도메인 등) 업데이트
-		userInfo.update(request.description(), request.job(), request.isPhoneNumberVisible());
+		userInfo.update(request.description(), request.isPhoneNumberVisible());
 		userInfo.updateSocialLinks(request.socialLinks());
 		userInfo.updateTechStack(request.userTechStack());
 		userInfo.updateInterestTech(request.userInterestTech());
@@ -92,9 +92,12 @@ public class UserInfoService {
 	 * @return 동문 수첩 프로필 리스트
 	 */
 	@Transactional(readOnly = true)
-	public Page<UserInfoSummaryResult> getUserInfoPage(UserInfoListCondition condition, Integer pageNum) {
+	public Page<UserInfoSummaryResult> getUserInfoPage(
+		UserInfoListCondition condition,
+		Integer pageNum,
+		String excludeUserId) {
 		Pageable pageable = pageableFactory.create(pageNum, StaticValue.USER_LIST_PAGE_SIZE);
-		Page<UserInfo> userInfos = userInfoReader.findUserInfoWithFilter(condition, pageable);
+		Page<UserInfo> userInfos = userInfoReader.findUserInfoWithFilter(condition, pageable, excludeUserId);
 
 		return userInfos.map(userInfoMapper::toSummaryResult);
 	}
