@@ -11,6 +11,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.campus.circle.api.v1.dto.CircleBoardsResponseDto;
 import net.causw.app.main.domain.campus.circle.api.v1.dto.CircleMemberResponseDto;
 import net.causw.app.main.domain.campus.circle.api.v1.dto.CircleResponseDto;
@@ -40,8 +41,13 @@ public interface CircleDtoMapper extends UuidFileToUrlDtoMapper {
 	CircleDtoMapper INSTANCE = Mappers.getMapper(CircleDtoMapper.class);
 
 	// User
-	@Mapping(target = "profileImageUrl", expression = "java(null)")
-	UserResponseDto toUserResponseDto(User user);
+	@Mapping(target = "id", source = "user.id")
+	@Mapping(target = "createdAt", source = "user.createdAt")
+	@Mapping(target = "updatedAt", source = "user.updatedAt")
+	@Mapping(target = "circleIdIfLeader", ignore = true)
+	@Mapping(target = "circleNameIfLeader", ignore = true)
+	@Mapping(target = "profileImageUrl", expression = "java(userProfileImage != null && userProfileImage.getUuidFile() != null ? userProfileImage.getUuidFile().getFileUrl() : null)")
+	UserResponseDto toUserResponseDto(User user, UserProfileImage userProfileImage);
 
 	// Circle
 	@CircleCommonWriterMappings

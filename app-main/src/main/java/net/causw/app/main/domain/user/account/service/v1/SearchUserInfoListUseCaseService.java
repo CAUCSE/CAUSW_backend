@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserInfoSearchConditionDto;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserInfoSummaryResponseDto;
 import net.causw.app.main.domain.user.account.api.v1.mapper.UserDtoMapper;
@@ -22,12 +23,15 @@ public class SearchUserInfoListUseCaseService {
 	private final UserInfoV1Service userInfoV1Service;
 	private final PageableFactory pageableFactory;
 	private final UserDtoMapper userDtoMapper;
+	private final UserProfileImageReader userProfileImageReader;
 
 	public Page<UserInfoSummaryResponseDto> execute(UserInfoSearchConditionDto userInfoSearchCondition,
 		Integer pageNum) {
 		Pageable pageable = pageableFactory.create(pageNum, DEFAULT_PAGE_SIZE);
 
 		return userInfoV1Service.searchUserInfo(pageable, userInfoSearchCondition)
-			.map(userDtoMapper::toUserInfoSummaryResponseDto);
+			.map(userInfo -> userDtoMapper.toUserInfoSummaryResponseDto(
+				userInfo,
+				userProfileImageReader.findByUserIdOrNull(userInfo.getUser().getId())));
 	}
 }

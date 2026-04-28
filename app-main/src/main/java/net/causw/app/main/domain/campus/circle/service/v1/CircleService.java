@@ -22,6 +22,8 @@ import org.springframework.web.multipart.MultipartFile;
 import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.CircleMainImage;
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.asset.file.repository.CircleMainImageRepository;
 import net.causw.app.main.domain.asset.file.service.v1.UuidFileV1Service;
@@ -109,6 +111,7 @@ public class CircleService {
 	private final FormRepository formRepository;
 	private final ReplyRepository replyRepository;
 	private final QuestionRepository questionRepository;
+	private final UserProfileImageReader userProfileImageReader;
 
 	@Transactional(readOnly = true)
 	public CircleResponseDto findById(String circleId) {
@@ -1198,7 +1201,8 @@ public class CircleService {
 	// Dto Mapper
 
 	private UserResponseDto toUserResponseDto(User user) {
-		return CircleDtoMapper.INSTANCE.toUserResponseDto(user);
+		UserProfileImage profileImage = userProfileImageReader.findByUserIdOrNull(user.getId());
+		return CircleDtoMapper.INSTANCE.toUserResponseDto(user, profileImage);
 	}
 
 	private CircleResponseDto toCircleResponseDto(Circle circle) {

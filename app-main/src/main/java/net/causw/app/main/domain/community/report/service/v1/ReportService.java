@@ -1,5 +1,8 @@
 package net.causw.app.main.domain.community.report.service.v1;
 
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
+import net.causw.app.main.shared.entity.BaseEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -18,6 +21,7 @@ import net.causw.app.main.domain.community.report.api.v1.dto.ReportedPostRespons
 import net.causw.app.main.domain.community.report.api.v1.dto.ReportedUserResponseDto;
 import net.causw.app.main.domain.community.report.api.v1.mapper.ReportDtoMapper;
 import net.causw.app.main.domain.community.report.entity.Report;
+
 import net.causw.app.main.domain.community.report.enums.ReportType;
 import net.causw.app.main.domain.community.report.repository.ReportRepository;
 import net.causw.app.main.domain.user.account.entity.user.User;
@@ -31,6 +35,9 @@ import net.causw.global.exception.NotFoundException;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
 public class ReportService {
@@ -41,6 +48,9 @@ public class ReportService {
 	private final CommentRepository commentRepository;
 	private final ChildCommentRepository childCommentRepository;
 	private final PageableFactory pageableFactory;
+
+	private final UserProfileImageReader userProfileImageReader;
+	private final ReportDtoMapper reportDtoMapper;
 
 	// 신고하기
 	@Transactional
@@ -76,7 +86,7 @@ public class ReportService {
 		// 신고 대상 사용자의 신고 횟수 증가
 		contentWriter.increaseReportCount();
 
-		return ReportDtoMapper.INSTANCE.toReportCreateResponseDto(MessageUtil.REPORT_SUCCESS);
+		return reportDtoMapper.toReportCreateResponseDto(MessageUtil.REPORT_SUCCESS);
 	}
 
 	// 게시글 신고 목록 조회
@@ -84,7 +94,7 @@ public class ReportService {
 	public Page<ReportedPostResponseDto> getReportedPosts(Integer pageNum) {
 		Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_REPORT_PAGE_SIZE);
 		return reportRepository.findPostReportsWithDetails("POST", null, pageable)
-			.map(ReportDtoMapper.INSTANCE::toReportedPostDto);
+			.map(reportDtoMapper::toReportedPostDto);
 	}
 
 	// 댓글/대댓글 신고 목록 조회
@@ -92,7 +102,7 @@ public class ReportService {
 	public Page<ReportedCommentResponseDto> getReportedComments(Integer pageNum) {
 		Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_REPORT_PAGE_SIZE);
 		return reportRepository.findCombinedCommentReports(null, pageable)
-			.map(ReportDtoMapper.INSTANCE::toReportedCommentDto);
+			.map(reportDtoMapper::toReportedCommentDto);
 	}
 
 	// 신고된 사용자 목록 조회
@@ -100,7 +110,9 @@ public class ReportService {
 	public Page<ReportedUserResponseDto> getReportedUsers(Integer pageNum) {
 		Pageable pageable = pageableFactory.create(pageNum, StaticValue.DEFAULT_REPORT_PAGE_SIZE);
 		Page<User> users = reportRepository.findReportedUsersByReportCount(pageable);
-		return users.map(ReportDtoMapper.INSTANCE::toReportedUserDto);
+		List<String> userIds = users.getContent().stream().map(BaseEntity::getId).toList();
+		Map<String, UserProfileImage> piMap = userProfileImageReader.findMapByUserIds(userIds);
+		return users.map(user -> reportDtoMapper.toReportedUserDto(user, piMap.get(user.getId())));
 	}
 
 	// 특정 사용자의 신고된 게시글 목록 조회
@@ -116,7 +128,7 @@ public class ReportService {
 		}
 
 		return reportRepository.findPostReportsWithDetails("POST", userId, pageable)
-			.map(ReportDtoMapper.INSTANCE::toReportedPostDto);
+			.map(reportDtoMapper::toReportedPostDto);
 	}
 
 	// 특정 사용자의 신고된 댓글, 대댓글 목록 조회
@@ -132,7 +144,7 @@ public class ReportService {
 		}
 
 		return reportRepository.findCombinedCommentReports(userId, pageable)
-			.map(ReportDtoMapper.INSTANCE::toReportedCommentDto);
+			.map(reportDtoMapper::toReportedCommentDto);
 	}
 
 	// 신고 대상의 작성자 조회

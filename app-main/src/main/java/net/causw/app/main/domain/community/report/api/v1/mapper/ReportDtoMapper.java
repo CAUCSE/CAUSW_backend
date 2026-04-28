@@ -10,6 +10,7 @@ import net.causw.app.main.domain.community.report.api.v1.dto.ReportedCommentResp
 import net.causw.app.main.domain.community.report.api.v1.dto.ReportedPostResponseDto;
 import net.causw.app.main.domain.community.report.api.v1.dto.ReportedUserResponseDto;
 import net.causw.app.main.domain.community.report.enums.ReportReason;
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.community.report.repository.projection.ReportedCommentNativeProjection;
 import net.causw.app.main.domain.community.report.repository.projection.ReportedPostNativeProjection;
 import net.causw.app.main.domain.user.account.entity.user.User;
@@ -40,13 +41,13 @@ public interface ReportDtoMapper extends UuidFileToUrlDtoMapper {
 	ReportedCommentResponseDto toReportedCommentDto(ReportedCommentNativeProjection projection);
 
 	// 신고된 사용자
-	@Mapping(target = "userId", source = "id")
-	@Mapping(target = "userName", source = "name")
-	@Mapping(target = "userNickname", source = "nickname")
-	@Mapping(target = "totalReportCount", source = "reportCount")
-	@Mapping(target = "profileImage", expression = "java(null)")
-	@Mapping(target = "userState", source = "state")
-	ReportedUserResponseDto toReportedUserDto(User user);
+	@Mapping(target = "userId", source = "user.id")
+	@Mapping(target = "userName", source = "user.name")
+	@Mapping(target = "userNickname", source = "user.nickname")
+	@Mapping(target = "totalReportCount", source = "user.reportCount")
+	@Mapping(target = "profileImage", expression = "java(userProfileImage != null && userProfileImage.getUuidFile() != null ? userProfileImage.getUuidFile().getFileUrl() : null)")
+	@Mapping(target = "userState", source = "user.state")
+	ReportedUserResponseDto toReportedUserDto(User user, UserProfileImage userProfileImage);
 
 	// Native Query용 description 변환
 	@Named("mapReportReasonToDescription")

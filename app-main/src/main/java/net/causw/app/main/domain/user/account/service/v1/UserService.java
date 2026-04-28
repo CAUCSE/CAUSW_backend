@@ -231,7 +231,8 @@ public class UserService {
 			.orElseThrow(() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
 				MessageUtil.USER_NOT_FOUND));
-		return UserDtoMapper.INSTANCE.toUserResponseDto(entity, null, null);
+		UserProfileImage profileImage = userProfileImageRepository.findByUserId(entity.getId()).orElse(null);
+		return userDtoMapper.toUserResponseDto(entity, profileImage, null, null);
 	}
 
 	@Transactional(readOnly = true)
@@ -242,6 +243,7 @@ public class UserService {
 			.consistOf(UserStateValidator.of(requestUser))
 			.validate();
 
+		UserProfileImage profileImage = userProfileImageRepository.findByUserId(requestUser.getId()).orElse(null);
 		if (roles.contains(Role.LEADER_CIRCLE)) {
 			List<Circle> ownCircles = this.circleRepository.findByLeader_Id(requestUser.getId());
 			if (ownCircles.isEmpty()) {
@@ -250,12 +252,13 @@ public class UserService {
 					MessageUtil.NO_ASSIGNED_CIRCLE_FOR_LEADER);
 			}
 
-			return UserDtoMapper.INSTANCE.toUserResponseDto(
+			return userDtoMapper.toUserResponseDto(
 				requestUser,
+				profileImage,
 				ownCircles.stream().map(Circle::getId).collect(Collectors.toList()),
 				ownCircles.stream().map(Circle::getName).collect(Collectors.toList()));
 		}
-		return UserDtoMapper.INSTANCE.toUserResponseDto(requestUser, null, null);
+		return userDtoMapper.toUserResponseDto(requestUser, profileImage, null, null);
 	}
 
 	@Transactional(readOnly = true)
@@ -267,8 +270,10 @@ public class UserService {
 			.consistOf(UserStateValidator.of(requestUser))
 			.validate();
 
-		return UserDtoMapper.INSTANCE.toUserPostsResponseDto(
+		UserProfileImage profileImage = userProfileImageRepository.findByUserId(requestUser.getId()).orElse(null);
+		return userDtoMapper.toUserPostsResponseDto(
 			requestUser,
+			profileImage,
 			this.postRepository.findByUserId(requestUser.getId(),
 				this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
 				.map(post -> PostDtoV1Mapper.INSTANCE.toPostsResponseDto(
@@ -296,8 +301,10 @@ public class UserService {
 		Page<FavoritePost> favoritePostPage = this.favoritePostRepository.findByUserId(requestUser.getId(),
 			blockedUserIds, pageable);
 
-		return UserDtoMapper.INSTANCE.toUserPostsResponseDto(
+		UserProfileImage profileImage = userProfileImageRepository.findByUserId(requestUser.getId()).orElse(null);
+		return userDtoMapper.toUserPostsResponseDto(
 			requestUser,
+			profileImage,
 			favoritePostPage
 				.map(favoritePost -> {
 					Post post = favoritePost.getPost();
@@ -345,8 +352,10 @@ public class UserService {
 		Page<LikePost> likePostPage = this.likePostRepository.findByUserId(requestUser.getId(), blockedUserIds,
 			pageable);
 
+		UserProfileImage profileImage = userProfileImageRepository.findByUserId(requestUser.getId()).orElse(null);
 		return userDtoMapper.toUserPostsResponseDto(
 			requestUser,
+			profileImage,
 			likePostPage
 				.map(likePost -> {
 					Post post = likePost.getPost();
@@ -399,8 +408,10 @@ public class UserService {
 		Page<Post> combinedPostsPage = new PageImpl<>(combinedPostsList, pageable, combinedPostsList.size());
 
 		// todo: n+1 발생하는 내용 추후 해결해야함
-		return UserDtoMapper.INSTANCE.toUserPostsResponseDto(
+		UserProfileImage commentWriterProfileImage = userProfileImageRepository.findByUserId(requestUser.getId()).orElse(null);
+		return userDtoMapper.toUserPostsResponseDto(
 			requestUser,
+			commentWriterProfileImage,
 			combinedPostsPage.map(post -> {
 				PostsResponseDto dto = PostDtoV1Mapper.INSTANCE.toPostsResponseDto(
 					post,
@@ -431,8 +442,10 @@ public class UserService {
 			.consistOf(UserStateValidator.of(requestUser))
 			.validate();
 
-		return UserDtoMapper.INSTANCE.toUserCommentsResponseDto(
+		UserProfileImage profileImage = userProfileImageRepository.findByUserId(requestUser.getId()).orElse(null);
+		return userDtoMapper.toUserCommentsResponseDto(
 			requestUser,
+			profileImage,
 			this.commentRepository.findByUserId(requestUser.getId(),
 				this.pageableFactory.create(pageNum, StaticValue.DEFAULT_COMMENT_PAGE_SIZE))
 				.map(comment -> {
@@ -478,8 +491,9 @@ public class UserService {
 						circle -> this.circleMemberRepository.findByUser_IdAndCircle_Id(user.getId(), circle.getId())
 							.map(circleMemberEntity -> circleMemberEntity.getStatus() == CircleMemberStatus.MEMBER)
 							.orElse(false)))
-				.map(user -> UserDtoMapper.INSTANCE.toUserResponseDto(
+				.map(user -> userDtoMapper.toUserResponseDto(
 					user,
+					userProfileImageRepository.findByUserId(user.getId()).orElse(null),
 					ownCircles.stream().map(Circle::getId).collect(Collectors.toList()),
 					ownCircles.stream().map(Circle::getName).collect(Collectors.toList())))
 				.collect(Collectors.toList());
@@ -488,7 +502,7 @@ public class UserService {
 		return this.userRepository.findByName(name)
 			.stream()
 			.filter(user -> user.getState().equals(UserState.ACTIVE))
-			.map(user -> UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null))
+			.map(user -> userDtoMapper.toUserResponseDto(user, userProfileImageRepository.findByUserId(user.getId()).orElse(null), null, null))
 			.collect(Collectors.toList());
 	}
 
@@ -527,6 +541,7 @@ public class UserService {
 		}
 
 		return usersPage.map(srcUser -> {
+			UserProfileImage profileImage = userProfileImageRepository.findByUserId(srcUser.getId()).orElse(null);
 			if (srcUser.getRoles().contains(Role.LEADER_CIRCLE)
 				&& !"INACTIVE_N_DROP".equals(state)) {
 				List<Circle> ownCircles = circleRepository.findByLeader_Id(srcUser.getId());
@@ -535,12 +550,13 @@ public class UserService {
 					userRepository.save(srcUser);
 				}
 
-				return UserDtoMapper.INSTANCE.toUserResponseDto(
+				return userDtoMapper.toUserResponseDto(
 					srcUser,
+					profileImage,
 					ownCircles.stream().map(Circle::getId).collect(Collectors.toList()),
 					ownCircles.stream().map(Circle::getName).collect(Collectors.toList()));
 			} else {
-				return UserDtoMapper.INSTANCE.toUserResponseDto(srcUser, null, null);
+				return userDtoMapper.toUserResponseDto(srcUser, profileImage, null, null);
 			}
 		});
 	}
@@ -602,7 +618,7 @@ public class UserService {
 				user.markAsAwait();
 				validateUser(dto, user);
 				userRepository.save(user);
-				return UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null);
+				return userDtoMapper.toUserResponseDto(user, userProfileImageRepository.findByUserId(user.getId()).orElse(null), null, null);
 			}
 			// 탈퇴 계정은 복구 API를 통해 처리
 			else if (user.isDeleted()) {
@@ -646,7 +662,7 @@ public class UserService {
 				ghostuser.markAsAwait();
 				validateUser(dto, ghostuser);
 				userRepository.save(ghostuser);
-				return UserDtoMapper.INSTANCE.toUserResponseDto(ghostuser, null, null);
+				return userDtoMapper.toUserResponseDto(ghostuser, userProfileImageRepository.findByUserId(ghostuser.getId()).orElse(null), null, null);
 			}
 			// 탈퇴 계정은 복구 API를 통해 처리
 			else if (ghostuser.isDeleted()) {
@@ -664,7 +680,7 @@ public class UserService {
 		User newUser = User.from(dto, passwordEncoder.encode(dto.getPassword()));
 		validateUser(dto, newUser);
 		userRepository.save(newUser);
-		return UserDtoMapper.INSTANCE.toUserResponseDto(newUser, null, null);
+		return userDtoMapper.toUserResponseDto(newUser, null, null, null);
 	}
 
 	/**
@@ -898,7 +914,7 @@ public class UserService {
 
 		User updatedUser = userRepository.save(srcUser);
 
-		return UserDtoMapper.INSTANCE.toUserResponseDto(updatedUser, null, null);
+		return userDtoMapper.toUserResponseDto(updatedUser, userProfileImage, null, null);
 	}
 
 	// private method
@@ -921,7 +937,7 @@ public class UserService {
 		user.setPassword(this.passwordEncoder.encode(userUpdatePasswordRequestDto.getUpdatedPassword()));
 		User updatedUser = this.userRepository.save(user);
 
-		return UserDtoMapper.INSTANCE.toUserResponseDto(updatedUser, null, null);
+		return userDtoMapper.toUserResponseDto(updatedUser, userProfileImageRepository.findByUserId(updatedUser.getId()).orElse(null), null, null);
 	}
 
 	//유저정보 완전 삭제
@@ -983,7 +999,7 @@ public class UserService {
 		}
 		this.userRepository.delete(deleteUser);
 
-		return UserDtoMapper.INSTANCE.toUserResponseDto(deleteUser, null, null);
+		return userDtoMapper.toUserResponseDto(deleteUser, null, null, null);
 	}
 
 	@Transactional
@@ -1022,7 +1038,7 @@ public class UserService {
 
 		user.setDeletedAt(LocalDateTime.now());
 		User entity = userRepository.save(user);
-		return UserDtoMapper.INSTANCE.toUserResponseDto(entity, null, null);
+		return userDtoMapper.toUserResponseDto(entity, null, null, null);
 	}
 
 	@Scheduled(cron = "0 0 0 * * ?")
@@ -1100,7 +1116,7 @@ public class UserService {
 
 		userRepository.save(droppedUser);
 
-		return UserDtoMapper.INSTANCE.toUserResponseDto(droppedUser, null, null);
+		return userDtoMapper.toUserResponseDto(droppedUser, null, null, null);
 	}
 
 	/**
@@ -1405,7 +1421,7 @@ public class UserService {
 				MessageUtil.INTERNAL_SERVER_ERROR));
 		entity.setDeletedAt(null);
 		userRepository.save(entity);
-		return UserDtoMapper.INSTANCE.toUserResponseDto(entity, null, null);
+		return userDtoMapper.toUserResponseDto(entity, userProfileImageRepository.findByUserId(entity.getId()).orElse(null), null, null);
 	}
 
 	@Transactional
@@ -1470,12 +1486,13 @@ public class UserService {
 
 		return userList.stream()
 			.map(user -> {
+				UserProfileImage profileImage = userProfileImageRepository.findByUserId(user.getId()).orElse(null);
 				if (user.getRoles().contains(Role.LEADER_CIRCLE)) {
 					List<String> circleIdIfLeader = getCircleIdsIfLeader(user);
 					List<String> circleNameIfLeader = getCircleNamesIfLeader(user);
-					return UserDtoMapper.INSTANCE.toUserResponseDto(user, circleIdIfLeader, circleNameIfLeader);
+					return userDtoMapper.toUserResponseDto(user, profileImage, circleIdIfLeader, circleNameIfLeader);
 				} else {
-					return UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null);
+					return userDtoMapper.toUserResponseDto(user, profileImage, null, null);
 				}
 			})
 			.collect(Collectors.toList());
@@ -1523,6 +1540,7 @@ public class UserService {
 
 		Set<Role> roles = user.getRoles();
 
+		UserProfileImage profileImage = userProfileImageRepository.findByUserId(user.getId()).orElse(null);
 		if (roles.contains(Role.LEADER_CIRCLE)) {
 			List<Circle> ownCircles = this.circleRepository.findByLeader_Id(user.getId());
 			if (ownCircles.isEmpty()) {
@@ -1531,15 +1549,16 @@ public class UserService {
 					MessageUtil.NO_ASSIGNED_CIRCLE_FOR_LEADER);
 			}
 
-			return UserDtoMapper.INSTANCE.toUserResponseDto(
+			return userDtoMapper.toUserResponseDto(
 				user,
+				profileImage,
 				ownCircles.stream().map(Circle::getId).collect(Collectors.toList()),
 				ownCircles.stream().map(Circle::getName).collect(Collectors.toList()));
 		}
 
 		userRepository.save(user);
 
-		return UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null);
+		return userDtoMapper.toUserResponseDto(user, profileImage, null, null);
 	}
 
 	@Transactional
@@ -1641,12 +1660,13 @@ public class UserService {
 		List<User> users = getUsersByState(state);
 		return users.stream()
 			.map(user -> {
+				UserProfileImage profileImage = userProfileImageRepository.findByUserId(user.getId()).orElse(null);
 				if (user.getRoles().contains(Role.LEADER_CIRCLE)) {
 					List<String> circleIdIfLeader = getCircleIdsIfLeader(user);
 					List<String> circleNameIfLeader = getCircleNamesIfLeader(user);
-					return UserDtoMapper.INSTANCE.toUserResponseDto(user, circleIdIfLeader, circleNameIfLeader);
+					return userDtoMapper.toUserResponseDto(user, profileImage, circleIdIfLeader, circleNameIfLeader);
 				} else {
-					return UserDtoMapper.INSTANCE.toUserResponseDto(user);
+					return userDtoMapper.toUserResponseDto(user, profileImage);
 				}
 			}).toList();
 	}

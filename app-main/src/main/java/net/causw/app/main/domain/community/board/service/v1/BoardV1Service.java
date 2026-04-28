@@ -14,6 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import net.causw.app.main.core.aop.annotation.MeasureTime;
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.campus.circle.api.v1.dto.CircleResponseDto;
 import net.causw.app.main.domain.campus.circle.api.v1.mapper.CircleDtoMapper;
 import net.causw.app.main.domain.campus.circle.entity.Circle;
@@ -87,6 +89,7 @@ public class BoardV1Service {
 	private final PostV1Service postV1Service;
 	private final UserBlockEntityService userBlockEntityService;
 	private final PostEntityService postEntityService;
+	private final UserProfileImageReader userProfileImageReader;
 
 	@Transactional(readOnly = true)
 	public List<BoardResponseDto> findAllBoard(
@@ -487,7 +490,8 @@ public class BoardV1Service {
 	}
 
 	private BoardApplyResponseDto toBoardApplyResponseDto(BoardApply boardApply) {
-		UserResponseDto userResponseDto = UserDtoMapper.INSTANCE.toUserResponseDto(boardApply.getUser(), null, null);
+		UserProfileImage profileImage = userProfileImageReader.findByUserIdOrNull(boardApply.getUser().getId());
+		UserResponseDto userResponseDto = UserDtoMapper.INSTANCE.toUserResponseDto(boardApply.getUser(), profileImage, null, null);
 		CircleResponseDto circleResponseDto = Optional.ofNullable(boardApply.getCircle())
 			.map(CircleDtoMapper.INSTANCE::toCircleResponseDto)
 			.orElse(null);

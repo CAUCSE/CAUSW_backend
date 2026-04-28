@@ -34,6 +34,7 @@ import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 
 @MeasureTime
 @Service
@@ -47,6 +48,7 @@ public class HomePageService {
 	private final FavoritePostRepository favoritePostRepository;
 	private final PageableFactory pageableFactory;
 
+	@Transactional(readOnly=true)
 	public List<HomePageResponseDto> getHomePage(User user) {
 		Set<Role> roles = user.getRoles();
 
@@ -79,6 +81,7 @@ public class HomePageService {
 			.collect(Collectors.toList());
 	}
 
+	@Transactional(readOnly=true)
 	public List<HomePageResponseDto> getAlumniHomePage(User user) {
 		Set<Role> roles = user.getRoles();
 

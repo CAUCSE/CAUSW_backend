@@ -6,6 +6,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.community.comment.api.v1.dto.ChildCommentResponseDto;
 import net.causw.app.main.domain.community.comment.api.v1.dto.CommentResponseDto;
 import net.causw.app.main.domain.community.comment.api.v1.dto.CommentSubscribeResponseDto;
@@ -19,10 +20,13 @@ public interface CommentDtoMapper extends UuidFileToUrlDtoMapper {
 
 	CommentDtoMapper INSTANCE = Mappers.getMapper(CommentDtoMapper.class);
 
+	@Mapping(target = "id", source = "comment.id")
+	@Mapping(target = "createdAt", source = "comment.createdAt")
+	@Mapping(target = "updatedAt", source = "comment.updatedAt")
 	@Mapping(target = "writerName", source = "comment.writer.name")
 	@Mapping(target = "writerNickname", source = "comment.writer.nickname")
 	@Mapping(target = "writerAdmissionYear", source = "comment.writer.admissionYear")
-	@Mapping(target = "writerProfileImage", expression = "java(null)")
+	@Mapping(target = "writerProfileImage", expression = "java(writerProfileImage != null && writerProfileImage.getUuidFile() != null ? writerProfileImage.getUuidFile().getFileUrl() : null)")
 	@Mapping(target = "postId", source = "comment.post.id")
 	@Mapping(target = "isAnonymous", source = "comment.isAnonymous")
 	@Mapping(target = "numLike", source = "numCommentLike")
@@ -40,16 +44,21 @@ public interface CommentDtoMapper extends UuidFileToUrlDtoMapper {
 		Boolean updatable,
 		Boolean deletable,
 		Boolean isCommentSubscribed,
-		Boolean isBlocked);
+		Boolean isBlocked,
+		UserProfileImage writerProfileImage);
 
 	@Mapping(target = "writerName", source = "childComment.writer.name")
 	@Mapping(target = "writerNickname", source = "childComment.writer.nickname")
 	@Mapping(target = "writerAdmissionYear", source = "childComment.writer.admissionYear")
-	@Mapping(target = "writerProfileImage", expression = "java(null)")
+	@Mapping(target = "id", source = "childComment.id")
+	@Mapping(target = "createdAt", source = "childComment.createdAt")
+	@Mapping(target = "updatedAt", source = "childComment.updatedAt")
+	@Mapping(target = "writerProfileImage", expression = "java(writerProfileImage != null && writerProfileImage.getUuidFile() != null ? writerProfileImage.getUuidFile().getFileUrl() : null)")
 	@Mapping(target = "isAnonymous", source = "childComment.isAnonymous")
 	@Mapping(target = "numLike", source = "numChildCommentLike")
 	@Mapping(target = "isBlocked", source = "isBlocked")
 	@Mapping(target = "content", expression = "java(mapContentForChildComment(childComment.getContent(), isBlocked))")
+	@Mapping(target = "displayWriterNickname", ignore = true)
 	ChildCommentResponseDto toChildCommentResponseDto(
 		ChildComment childComment,
 		Long numChildCommentLike,
@@ -57,7 +66,8 @@ public interface CommentDtoMapper extends UuidFileToUrlDtoMapper {
 		Boolean isOwner,
 		Boolean updatable,
 		Boolean deletable,
-		Boolean isBlocked);
+		Boolean isBlocked,
+		UserProfileImage writerProfileImage);
 
 	@Mapping(target = "commentId", source = "comment.id")
 	@Mapping(target = "userId", source = "user.id")
