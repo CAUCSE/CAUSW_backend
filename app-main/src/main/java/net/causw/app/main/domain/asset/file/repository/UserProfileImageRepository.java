@@ -12,6 +12,7 @@ import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 @Repository
 public interface UserProfileImageRepository extends JpaRepository<UserProfileImage, Long> {
 
+	@EntityGraph(attributePaths = {"uuidFile"})
 	Optional<UserProfileImage> findByUserId(String userId);
 
 	@EntityGraph(attributePaths = {"uuidFile"})
