@@ -7,12 +7,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.dto.request.UserPasswordUpdateCommand;
 import net.causw.app.main.domain.user.account.service.dto.result.UserMeAccountResult;
 import net.causw.app.main.domain.user.account.service.dto.result.UserMeResult;
-import net.causw.app.main.domain.user.account.service.implementation.UserInfoReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
@@ -42,7 +40,6 @@ public class UserAccountService {
 	private final AuthValidator authValidator;
 	private final AuthTokenManager authTokenManager;
 	private final PasswordEncoder passwordEncoder;
-	private final UserInfoReader userInfoReader;
 	private final TermsReader termsReader;
 	private final TermsValidator termsValidator;
 	private final UserTermsAgreementReader userTermsAgreementReader;
@@ -98,14 +95,13 @@ public class UserAccountService {
 	 * 현재 로그인한 사용자의 기본 정보를 조회합니다. 내정보 메인페이지 진입 시 사용합니다.
 	 *
 	 * @param userId 조회할 사용자의 고유 식별자 (PK)
-	 * @return {@link UserMeResult} 내 정보 결과 (이름, 닉네임, 프로필이미지, 입학년도, 직업)
+	 * @return {@link UserMeResult} 내 정보 결과 (이름, 닉네임, 프로필이미지, 입학년도)
 	 */
 	@Transactional(readOnly = true)
 	public UserMeResult getMyProfile(String userId) {
 		User user = userReader.findDetailById(userId);
-		UserInfo userInfo = userInfoReader.findByUserId(userId).orElse(null);
 		boolean hasAllRequiredLatestTerms = userTermsAgreementReader.hasAgreedToAllRequiredLatestTerms(user);
-		return UserMeResult.from(user, userInfo, hasAllRequiredLatestTerms);
+		return UserMeResult.from(user, hasAllRequiredLatestTerms);
 	}
 
 	/**
@@ -120,10 +116,9 @@ public class UserAccountService {
 	@Transactional(readOnly = true)
 	public UserMeAccountResult getMyAccountProfile(String userId) {
 		User user = userReader.findDetailById(userId);
-		UserInfo userInfo = userInfoReader.findByUserId(userId).orElse(null);
 		boolean hasAllRequiredLatestTerms = userTermsAgreementReader.hasAgreedToAllRequiredLatestTerms(user);
 
-		return UserMeAccountResult.from(user, userInfo, hasAllRequiredLatestTerms);
+		return UserMeAccountResult.from(user, hasAllRequiredLatestTerms);
 	}
 
 	/**
