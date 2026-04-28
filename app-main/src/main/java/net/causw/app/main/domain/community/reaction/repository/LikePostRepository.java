@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.community.reaction.repository;
 
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -18,6 +19,10 @@ public interface LikePostRepository extends JpaRepository<LikePost, String> {
 	void deleteLikeByPostIdAndUserId(String postId, String userId);
 
 	Long countByPostId(String postId);
+
+	@Query("SELECT lp.post.id FROM LikePost lp WHERE lp.user.id = :userId AND lp.post.id IN :postIds")
+	Set<String> findLikedPostIdsByUserIdAndPostIds(@Param("userId") String userId,
+		@Param("postIds") List<String> postIds);
 
 	@Query("""
 		SELECT lp

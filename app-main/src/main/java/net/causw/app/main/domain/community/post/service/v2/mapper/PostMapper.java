@@ -61,7 +61,8 @@ public class PostMapper {
 	/**
 	 * PostCursorResult를 PostListResult.PostItem으로 변환합니다.
 	 */
-	public static PostListResult.PostItem toPostListItem(PostCursorResult result, List<String> imageUrls) {
+	public static PostListResult.PostItem toPostListItem(PostCursorResult result, List<String> imageUrls,
+		boolean isPostLike, boolean isOwner) {
 		String writerNickname = resolveWriterNickname(result);
 		ProfileImageDto writerProfileImage = resolveWriterProfileImage(result);
 
@@ -81,7 +82,9 @@ public class PostMapper {
 			result.updatedAt(),
 			imageUrls,
 			result.boardId(),
-			result.boardName());
+			result.boardName(),
+			isPostLike,
+			isOwner);
 	}
 
 	/**

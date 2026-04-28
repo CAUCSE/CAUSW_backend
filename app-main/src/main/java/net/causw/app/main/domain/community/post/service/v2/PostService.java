@@ -203,11 +203,18 @@ public class PostService {
 			? Map.of()
 			: postReader.findPostImagesByPostIds(postIds);
 
+		// 좋아요 여부 배치 조회
+		Set<String> likedPostIds = postIds.isEmpty()
+			? Set.of()
+			: likePostReader.getLikedPostIds(viewer.getId(), postIds);
+
 		// PostListResult로 변환 (PostMapper 사용)
 		List<PostListResult.PostItem> postItems = posts.stream()
 			.map(result -> {
 				List<String> imageUrls = postImagesMap.getOrDefault(result.postId(), List.of());
-				return PostMapper.toPostListItem(result, imageUrls);
+				boolean isPostLike = likedPostIds.contains(result.postId());
+				boolean isOwner = result.writerId() != null && result.writerId().equals(viewer.getId());
+				return PostMapper.toPostListItem(result, imageUrls, isPostLike, isOwner);
 			})
 			.toList();
 
@@ -288,7 +295,7 @@ public class PostService {
 			parsedCursor.postId(),
 			pageSize);
 
-		return getPostListResult(slice);
+		return getPostListResult(slice, user);
 	}
 
 	/**
@@ -309,7 +316,7 @@ public class PostService {
 			parsedCursor.postId(),
 			pageSize);
 
-		return getPostListResult(slice);
+		return getPostListResult(slice, user);
 	}
 
 	/**
@@ -331,11 +338,11 @@ public class PostService {
 			parsedCursor.postId(),
 			pageSize);
 
-		return getPostListResult(slice);
+		return getPostListResult(slice, user);
 	}
 
 	@NotNull
-	private PostListResult getPostListResult(Slice<PostCursorResult> slice) {
+	private PostListResult getPostListResult(Slice<PostCursorResult> slice, User viewer) {
 		List<PostCursorResult> posts = slice.getContent();
 		if (posts.isEmpty()) {
 			return PostListResult.of(List.of(), null);
@@ -344,10 +351,14 @@ public class PostService {
 		List<String> postIds = posts.stream().map(PostCursorResult::postId).toList();
 		Map<String, List<String>> postImagesMap = postReader.findPostImagesByPostIds(postIds);
 
+		Set<String> likedPostIds = likePostReader.getLikedPostIds(viewer.getId(), postIds);
+
 		List<PostListResult.PostItem> postItems = posts.stream()
 			.map(result -> {
 				List<String> imageUrls = postImagesMap.getOrDefault(result.postId(), List.of());
-				return PostMapper.toPostListItem(result, imageUrls);
+				boolean isPostLike = likedPostIds.contains(result.postId());
+				boolean isOwner = result.writerId() != null && result.writerId().equals(viewer.getId());
+				return PostMapper.toPostListItem(result, imageUrls, isPostLike, isOwner);
 			})
 			.toList();
 
