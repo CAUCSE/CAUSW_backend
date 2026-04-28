@@ -1,7 +1,9 @@
 package net.causw.app.main.domain.user.auth.api.v2.dto.request;
 
-import net.causw.app.main.domain.user.account.policy.PasswordPolicy;
 import java.util.List;
+
+import net.causw.app.main.domain.user.account.policy.PasswordPolicy;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
