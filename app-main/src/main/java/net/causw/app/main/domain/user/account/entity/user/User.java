@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import jakarta.persistence.*;
 import org.hibernate.annotations.BatchSize;
 
 import net.causw.app.main.domain.campus.circle.entity.CircleMember;
@@ -26,6 +25,7 @@ import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDt
 import net.causw.app.main.domain.user.auth.service.dto.OAuthAttributes;
 import net.causw.app.main.shared.entity.BaseEntity;
 
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

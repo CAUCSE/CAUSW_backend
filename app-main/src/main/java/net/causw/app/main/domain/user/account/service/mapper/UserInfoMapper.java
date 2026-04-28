@@ -18,7 +18,6 @@ import net.causw.app.main.domain.user.account.service.dto.result.UserCareerResul
 import net.causw.app.main.domain.user.account.service.dto.result.UserInfoDetailResult;
 import net.causw.app.main.domain.user.account.service.dto.result.UserInfoSummaryResult;
 import net.causw.app.main.domain.user.account.service.dto.result.UserProjectResult;
-import net.causw.app.main.shared.dto.ProfileImageDto;
 import net.causw.app.main.shared.dto.util.dtoMapper.custom.UuidFileToUrlDtoMapper;
 
 @Mapper(componentModel = "spring")
@@ -41,7 +40,6 @@ public interface UserInfoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "userInterestTech", source = "userInfo.userInterestTech", qualifiedByName = "sortStringsAsc")
 	@Mapping(target = "userInterestDomain", source = "userInfo.userInterestDomain", qualifiedByName = "sortStringsAsc")
 	UserInfoDetailResult toDetailResult(UserInfo userInfo, UserProfileImage userProfileImage);
-
 
 	// 내 동문 수첩 프로필 상세 조회 (전화번호 직접 노출)
 	@Mapping(target = "id", source = "userInfo.id")
@@ -69,7 +67,6 @@ public interface UserInfoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "academicStatus", source = "userInfo", qualifiedByName = "mapAcademicStatus")
 	@Mapping(target = "description", source = "userInfo.description")
 	UserInfoSummaryResult toSummaryResult(UserInfo userInfo, UserProfileImage userProfileImage);
-
 
 	@Named("mapAdmissionYear")
 	static String mapAdmissionYear(UserInfo userInfo) {

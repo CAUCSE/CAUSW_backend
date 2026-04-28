@@ -21,7 +21,8 @@ public record UserMeAccountResult(
 	String studentId,
 	Department department) {
 
-	public static UserMeAccountResult from(User user, UserProfileImage profileImage, boolean hasAllRequiredLatestTerms) {
+	public static UserMeAccountResult from(User user, UserProfileImage profileImage,
+		boolean hasAllRequiredLatestTerms) {
 		return new UserMeAccountResult(
 			user.getId(),
 			user.getEmail(),

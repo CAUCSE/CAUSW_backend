@@ -3,7 +3,6 @@ package net.causw.app.main.domain.user.account.service.dto.result;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
 import net.causw.app.main.domain.user.auth.enums.OnboardingStatus;
 import net.causw.app.main.shared.dto.ProfileImageDto;
 
@@ -17,7 +16,7 @@ public record UserMeResult(
 	OnboardingStatus onboardingStatus,
 	AcademicStatus academicStatus) {
 
-	public static UserMeResult from(User user, UserInfo userInfo, UserProfileImage userProfileImage, boolean hasAllRequiredLatestTerms) {
+	public static UserMeResult from(User user, UserProfileImage userProfileImage, boolean hasAllRequiredLatestTerms) {
 		return new UserMeResult(
 			user.getId(),
 			user.getEmail(),

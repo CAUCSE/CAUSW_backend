@@ -100,7 +100,8 @@ public class SocialNativeAuthService {
 
 			log.info("Native social login succeeded. provider={}, userId={}", registrationId, user.getId());
 
-			return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), ProfileImageDto.from(user, profileImage),
+			return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(),
+				ProfileImageDto.from(user, profileImage),
 				tokens.refreshToken(), user.isGuest(), hasAllRequiredLatestTerms, user.isAcademicCertified(),
 				user.getAcademicStatus());
 		} catch (BaseRunTimeV2Exception e) {

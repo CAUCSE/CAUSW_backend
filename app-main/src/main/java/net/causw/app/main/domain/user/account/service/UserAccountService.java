@@ -1,10 +1,7 @@
 package net.causw.app.main.domain.user.account.service;
 
 import java.util.List;
-import java.util.Optional;
 
-import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
-import net.causw.app.main.domain.user.account.service.implementation.UserInfoReader;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +13,7 @@ import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.dto.request.UserPasswordUpdateCommand;
 import net.causw.app.main.domain.user.account.service.dto.result.UserMeAccountResult;
 import net.causw.app.main.domain.user.account.service.dto.result.UserMeResult;
+import net.causw.app.main.domain.user.account.service.implementation.UserInfoReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
@@ -97,7 +95,7 @@ public class UserAccountService {
 		return AuthResult.of(tokens.accessToken(), updatedUser.getName(), updatedUser.getEmail(),
 			ProfileImageDto.from(updatedUser, null),
 			tokens.refreshToken(), updatedUser.isGuest(), true, updatedUser.isAcademicCertified(),
-			updatedUser.getAcademicStatus()	);
+			updatedUser.getAcademicStatus());
 	}
 
 	/**
@@ -109,11 +107,10 @@ public class UserAccountService {
 	@Transactional(readOnly = true)
 	public UserMeResult getMyProfile(String userId) {
 		User user = userReader.findDetailById(userId);
-		UserInfo userInfo = userInfoReader.findByUserId(userId).orElse(null);
 		UserProfileImage profileImage = userProfileImageReader.findByUserIdOrNull(userId);
 		boolean hasAllRequiredLatestTerms = userTermsAgreementReader.hasAgreedToAllRequiredLatestTerms(user);
 
-		return UserMeResult.from(user,userInfo, profileImage, hasAllRequiredLatestTerms);
+		return UserMeResult.from(user, profileImage, hasAllRequiredLatestTerms);
 	}
 
 	/**
