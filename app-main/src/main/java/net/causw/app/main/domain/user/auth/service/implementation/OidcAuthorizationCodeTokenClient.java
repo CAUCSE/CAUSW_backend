@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @Slf4j
 public class OidcAuthorizationCodeTokenClient {
+	private static final String APPLE_IOS_REGISTRATION_ID = "apple-ios";
 
 	private final ObjectMapper objectMapper;
 	private final RestClient restClient;
@@ -43,20 +44,7 @@ public class OidcAuthorizationCodeTokenClient {
 			throw AuthErrorCode.INVALID_TOKEN.toBaseException();
 		}
 
-		MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
-		form.add("grant_type", "authorization_code");
-		form.add("code", authorizationCode.trim());
-		String redirectUri = registration.getRedirectUri();
-		if (StringUtils.hasText(redirectUri)) {
-			form.add("redirect_uri", redirectUri.trim());
-		}
-		form.add("client_id", registration.getClientId());
-		if (StringUtils.hasText(registration.getClientSecret())) {
-			form.add("client_secret", registration.getClientSecret());
-		}
-		if (StringUtils.hasText(codeVerifier)) {
-			form.add("code_verifier", codeVerifier.trim());
-		}
+		MultiValueMap<String, String> form = buildTokenRequestForm(registration, authorizationCode, codeVerifier);
 
 		String tokenUri = registration.getProviderDetails().getTokenUri();
 		try {
@@ -96,6 +84,31 @@ public class OidcAuthorizationCodeTokenClient {
 			log.warn("Token exchange failed. registrationId={}", registration.getRegistrationId(), e);
 			throw AuthErrorCode.INVALID_TOKEN.toBaseException();
 		}
+	}
+
+	MultiValueMap<String, String> buildTokenRequestForm(ClientRegistration registration, String authorizationCode,
+		String codeVerifier) {
+		MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
+		form.add("grant_type", "authorization_code");
+		form.add("code", authorizationCode.trim());
+		String redirectUri = registration.getRedirectUri();
+		if (StringUtils.hasText(redirectUri) && shouldIncludeRedirectUri(registration)) {
+			form.add("redirect_uri", redirectUri.trim());
+		}
+		form.add("client_id", registration.getClientId());
+		if (StringUtils.hasText(registration.getClientSecret())) {
+			form.add("client_secret", registration.getClientSecret());
+		}
+		if (StringUtils.hasText(codeVerifier)) {
+			form.add("code_verifier", codeVerifier.trim());
+		}
+		return form;
+	}
+
+	private boolean shouldIncludeRedirectUri(ClientRegistration registration) {
+		String registrationId = registration.getRegistrationId();
+		return !StringUtils.hasText(registrationId)
+			|| !APPLE_IOS_REGISTRATION_ID.equalsIgnoreCase(registrationId);
 	}
 
 }
