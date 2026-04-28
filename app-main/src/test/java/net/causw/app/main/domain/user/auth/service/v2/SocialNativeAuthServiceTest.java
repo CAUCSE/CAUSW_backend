@@ -154,9 +154,9 @@ class SocialNativeAuthServiceTest {
 	}
 
 	@Test
-	@DisplayName("성공: Apple OIDC id token 검증 후 앱 토큰을 발급한다")
+	@DisplayName("성공: Apple OIDC id token 검증 후 앱 토큰을 발급한다 (platform 미지정 시 apple-ios 사용)")
 	void login_apple_oidc_success() {
-		ClientRegistration apple = clientRegistration("apple", "openid", "email", "name");
+		ClientRegistration appleIos = clientRegistration("apple-ios", "openid", "email", "name");
 		User user = mockUser();
 		JwtDecoder jwtDecoder = org.mockito.Mockito.mock(JwtDecoder.class);
 		Jwt jwt = oidcJwt(Map.of(
@@ -164,10 +164,10 @@ class SocialNativeAuthServiceTest {
 			"email", "user@cau.ac.kr",
 			"email_verified", true,
 			"iss", "https://appleid.apple.com",
-			"aud", List.of("apple-client-id")));
+			"aud", List.of("apple-ios-client-id")));
 
-		given(clientRegistrationRepository.findByRegistrationId("apple")).willReturn(apple);
-		given(oidcIdTokenDecoderFactory.createDecoder(apple)).willReturn(jwtDecoder);
+		given(clientRegistrationRepository.findByRegistrationId("apple-ios")).willReturn(appleIos);
+		given(oidcIdTokenDecoderFactory.createDecoder(appleIos)).willReturn(jwtDecoder);
 		given(jwtDecoder.decode(PROVIDER_ID_TOKEN)).willReturn(jwt);
 		given(customOAuth2UserService.loadUserFromOidcClaims("apple", jwt.getClaims())).willReturn(user);
 		given(authTokenManager.issueTokens(user, null))
@@ -240,9 +240,10 @@ class SocialNativeAuthServiceTest {
 	@Test
 	@DisplayName("실패: OIDC provider 요청에서 id token이 없으면 INVALID_TOKEN을 반환한다")
 	void login_oidc_fail_when_id_token_missing() {
-		ClientRegistration apple = clientRegistration("apple", "openid", "email", "name");
+		ClientRegistration appleIos = clientRegistration("apple-ios", "openid", "email", "name");
 
-		given(clientRegistrationRepository.findByRegistrationId("apple")).willReturn(apple);
+		// platform 미지정 시 기본 registration은 apple-ios
+		given(clientRegistrationRepository.findByRegistrationId("apple-ios")).willReturn(appleIos);
 
 		assertThatThrownBy(
 			() -> socialNativeAuthService.login("apple", null, PROVIDER_ACCESS_TOKEN, null, null, null))

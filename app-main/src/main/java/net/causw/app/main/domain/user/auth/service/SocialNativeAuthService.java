@@ -255,7 +255,7 @@ public class SocialNativeAuthService {
 		String normalizedPlatform = normalizeKey(platform);
 		if ("apple".equals(normalizedProvider)) {
 			if (!StringUtils.hasText(normalizedPlatform)) {
-				return "apple";
+				return "apple-ios";
 			}
 			ClientRegistration appleRegistration = clientRegistrationRepository.findByRegistrationId(
 				"apple-" + normalizedPlatform);
