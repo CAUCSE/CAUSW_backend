@@ -2,15 +2,11 @@ package net.causw.app.main.domain.user.account.service.v1;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
+import net.causw.app.main.shared.entity.BaseEntity;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -171,6 +167,7 @@ public class UserService {
 	private final WebInvocationPrivilegeEvaluator privilegeEvaluator;
 	private final CircleQueryRepository circleQueryRepository;
 	private final UserEntityService userEntityService;
+	private final UserProfileImageReader userProfileImageReader;
 
 	@Deprecated
 	@Transactional
@@ -1658,9 +1655,10 @@ public class UserService {
 
 	private List<UserResponseDto> getUserResponseDtosByState(UserState state) {
 		List<User> users = getUsersByState(state);
+		Map<String, UserProfileImage> mapByUserIds = userProfileImageReader.findMapByUserIds(users.stream().map(BaseEntity::getId).toList());
 		return users.stream()
 			.map(user -> {
-				UserProfileImage profileImage = userProfileImageRepository.findByUserId(user.getId()).orElse(null);
+				UserProfileImage profileImage = mapByUserIds.get(user.getId());
 				if (user.getRoles().contains(Role.LEADER_CIRCLE)) {
 					List<String> circleIdIfLeader = getCircleIdsIfLeader(user);
 					List<String> circleNameIfLeader = getCircleNamesIfLeader(user);
