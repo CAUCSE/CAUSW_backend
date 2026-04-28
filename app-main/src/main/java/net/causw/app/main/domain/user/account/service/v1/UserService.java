@@ -5,8 +5,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
-import net.causw.app.main.shared.entity.BaseEntity;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -30,6 +28,7 @@ import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.asset.file.repository.UserAcademicRecordApplicationAttachImageRepository;
 import net.causw.app.main.domain.asset.file.repository.UserProfileImageRepository;
 import net.causw.app.main.domain.asset.file.service.v1.UuidFileV1Service;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.asset.locker.entity.LockerLog;
 import net.causw.app.main.domain.asset.locker.enums.LockerLogAction;
 import net.causw.app.main.domain.asset.locker.repository.LockerLogRepository;
@@ -107,6 +106,7 @@ import net.causw.app.main.domain.user.account.util.UserStateValidator;
 import net.causw.app.main.domain.user.relation.service.v1.UserBlockEntityService;
 import net.causw.app.main.shared.StatusPolicy;
 import net.causw.app.main.shared.ValidatorBucket;
+import net.causw.app.main.shared.entity.BaseEntity;
 import net.causw.app.main.shared.infra.firebase.FcmUtils;
 import net.causw.app.main.shared.infra.mail.event.FindPasswordEvent;
 import net.causw.app.main.shared.infra.redis.RedisUtils;
@@ -405,7 +405,8 @@ public class UserService {
 		Page<Post> combinedPostsPage = new PageImpl<>(combinedPostsList, pageable, combinedPostsList.size());
 
 		// todo: n+1 발생하는 내용 추후 해결해야함
-		UserProfileImage commentWriterProfileImage = userProfileImageRepository.findByUserId(requestUser.getId()).orElse(null);
+		UserProfileImage commentWriterProfileImage = userProfileImageRepository.findByUserId(requestUser.getId())
+			.orElse(null);
 		return userDtoMapper.toUserPostsResponseDto(
 			requestUser,
 			commentWriterProfileImage,
@@ -499,7 +500,8 @@ public class UserService {
 		return this.userRepository.findByName(name)
 			.stream()
 			.filter(user -> user.getState().equals(UserState.ACTIVE))
-			.map(user -> userDtoMapper.toUserResponseDto(user, userProfileImageRepository.findByUserId(user.getId()).orElse(null), null, null))
+			.map(user -> userDtoMapper.toUserResponseDto(user,
+				userProfileImageRepository.findByUserId(user.getId()).orElse(null), null, null))
 			.collect(Collectors.toList());
 	}
 
@@ -615,7 +617,8 @@ public class UserService {
 				user.markAsAwait();
 				validateUser(dto, user);
 				userRepository.save(user);
-				return userDtoMapper.toUserResponseDto(user, userProfileImageRepository.findByUserId(user.getId()).orElse(null), null, null);
+				return userDtoMapper.toUserResponseDto(user,
+					userProfileImageRepository.findByUserId(user.getId()).orElse(null), null, null);
 			}
 			// 탈퇴 계정은 복구 API를 통해 처리
 			else if (user.isDeleted()) {
@@ -659,7 +662,8 @@ public class UserService {
 				ghostuser.markAsAwait();
 				validateUser(dto, ghostuser);
 				userRepository.save(ghostuser);
-				return userDtoMapper.toUserResponseDto(ghostuser, userProfileImageRepository.findByUserId(ghostuser.getId()).orElse(null), null, null);
+				return userDtoMapper.toUserResponseDto(ghostuser,
+					userProfileImageRepository.findByUserId(ghostuser.getId()).orElse(null), null, null);
 			}
 			// 탈퇴 계정은 복구 API를 통해 처리
 			else if (ghostuser.isDeleted()) {
@@ -934,7 +938,8 @@ public class UserService {
 		user.setPassword(this.passwordEncoder.encode(userUpdatePasswordRequestDto.getUpdatedPassword()));
 		User updatedUser = this.userRepository.save(user);
 
-		return userDtoMapper.toUserResponseDto(updatedUser, userProfileImageRepository.findByUserId(updatedUser.getId()).orElse(null), null, null);
+		return userDtoMapper.toUserResponseDto(updatedUser,
+			userProfileImageRepository.findByUserId(updatedUser.getId()).orElse(null), null, null);
 	}
 
 	//유저정보 완전 삭제
@@ -1418,7 +1423,8 @@ public class UserService {
 				MessageUtil.INTERNAL_SERVER_ERROR));
 		entity.setDeletedAt(null);
 		userRepository.save(entity);
-		return userDtoMapper.toUserResponseDto(entity, userProfileImageRepository.findByUserId(entity.getId()).orElse(null), null, null);
+		return userDtoMapper.toUserResponseDto(entity,
+			userProfileImageRepository.findByUserId(entity.getId()).orElse(null), null, null);
 	}
 
 	@Transactional
@@ -1655,7 +1661,8 @@ public class UserService {
 
 	private List<UserResponseDto> getUserResponseDtosByState(UserState state) {
 		List<User> users = getUsersByState(state);
-		Map<String, UserProfileImage> mapByUserIds = userProfileImageReader.findMapByUserIds(users.stream().map(BaseEntity::getId).toList());
+		Map<String, UserProfileImage> mapByUserIds = userProfileImageReader
+			.findMapByUserIds(users.stream().map(BaseEntity::getId).toList());
 		return users.stream()
 			.map(user -> {
 				UserProfileImage profileImage = mapByUserIds.get(user.getId());

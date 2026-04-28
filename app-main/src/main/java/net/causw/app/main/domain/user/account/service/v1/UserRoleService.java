@@ -78,7 +78,8 @@ public class UserRoleService {
 
 		// 피위임자에게 권한 설정
 		User updated = updateRole(delegatee, delegatedRole);
-		return UserDtoMapper.INSTANCE.toUserResponseDto(updated, userProfileImageReader.findByUserIdOrNull(updated.getId()), null, null);
+		return UserDtoMapper.INSTANCE.toUserResponseDto(updated,
+			userProfileImageReader.findByUserIdOrNull(updated.getId()), null, null);
 	}
 
 	/**
@@ -136,7 +137,8 @@ public class UserRoleService {
 
 		// 수혜자에게 권한 설정
 		User grantedUser = updateRole(grantee, grantedRole);
-		return UserDtoMapper.INSTANCE.toUserResponseDto(grantedUser, userProfileImageReader.findByUserIdOrNull(grantedUser.getId()), null, null);
+		return UserDtoMapper.INSTANCE.toUserResponseDto(grantedUser,
+			userProfileImageReader.findByUserIdOrNull(grantedUser.getId()), null, null);
 	}
 
 	public User updateRole(User targetUser, Role newRole) {

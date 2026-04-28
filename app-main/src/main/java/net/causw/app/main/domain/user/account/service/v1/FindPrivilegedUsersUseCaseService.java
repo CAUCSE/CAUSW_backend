@@ -90,9 +90,11 @@ public class FindPrivilegedUsersUseCaseService {
 						circleIds.add(c.getId());
 						circleNames.add(c.getName());
 					}
-					dtoList.add(UserDtoMapper.INSTANCE.toUserResponseDto(u, piMap.get(u.getId()), circleIds, circleNames));
+					dtoList
+						.add(UserDtoMapper.INSTANCE.toUserResponseDto(u, piMap.get(u.getId()), circleIds, circleNames));
 				} else {
-					dtoList.add(UserDtoMapper.INSTANCE.toUserResponseDto(u, piMap.get(u.getId()), List.of(), List.of()));
+					dtoList
+						.add(UserDtoMapper.INSTANCE.toUserResponseDto(u, piMap.get(u.getId()), List.of(), List.of()));
 				}
 			}
 

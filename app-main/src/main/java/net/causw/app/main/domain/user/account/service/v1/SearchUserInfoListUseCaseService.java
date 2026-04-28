@@ -2,23 +2,23 @@ package net.causw.app.main.domain.user.account.service.v1;
 
 import static net.causw.global.constant.StaticValue.DEFAULT_PAGE_SIZE;
 
-import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
-import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
-import net.causw.app.main.shared.entity.BaseEntity;
+import java.util.Map;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserInfoSearchConditionDto;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserInfoSummaryResponseDto;
 import net.causw.app.main.domain.user.account.api.v1.mapper.UserDtoMapper;
+import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
+import net.causw.app.main.shared.entity.BaseEntity;
 import net.causw.app.main.shared.pageable.PageableFactory;
 
 import lombok.RequiredArgsConstructor;
-
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -38,7 +38,6 @@ public class SearchUserInfoListUseCaseService {
 		Map<String, UserProfileImage> mapByUserIds = userProfileImageReader.findMapByUserIds(userIds);
 		return userInfos
 			.map(userInfo -> userDtoMapper.toUserInfoSummaryResponseDto(
-				userInfo, mapByUserIds.get(userInfo.getUser().getId()))
-			);
+				userInfo, mapByUserIds.get(userInfo.getUser().getId())));
 	}
 }

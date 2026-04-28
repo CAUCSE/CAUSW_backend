@@ -27,6 +27,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
@@ -40,7 +41,6 @@ import net.causw.app.main.domain.community.vote.entity.VoteRecord;
 import net.causw.app.main.domain.community.vote.repository.VoteOptionRepository;
 import net.causw.app.main.domain.community.vote.repository.VoteRecordRepository;
 import net.causw.app.main.domain.community.vote.repository.VoteRepository;
-import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.util.ObjectFixtures;
 import net.causw.global.exception.BadRequestException;

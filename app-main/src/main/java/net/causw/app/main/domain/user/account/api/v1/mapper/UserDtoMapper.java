@@ -66,7 +66,8 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "rejectionOrDropReason", source = "user.rejectionOrDropReason")
 	@Mapping(target = "createdAt", source = "user.createdAt")
 	@Mapping(target = "updatedAt", source = "user.updatedAt")
-	UserResponseDto toUserResponseDto(User user, UserProfileImage userProfileImage, List<String> circleIdIfLeader, List<String> circleNameIfLeader);
+	UserResponseDto toUserResponseDto(User user, UserProfileImage userProfileImage, List<String> circleIdIfLeader,
+		List<String> circleNameIfLeader);
 	// circleIdIfLeader, circleNameIfLeader는 경우에 따라 null을 할당합니다.(기존 UserResponseDto.from을 사용하는 경우)
 
 	@Mapping(target = "id", source = "user.id")
@@ -99,7 +100,8 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "admissionYear", source = "user.admissionYear")
 	@Mapping(target = "profileImageUrl", expression = "java(userProfileImage != null && userProfileImage.getUuidFile() != null ? userProfileImage.getUuidFile().getFileUrl() : null)")
 	@Mapping(target = "posts", source = "post")
-	UserPostsResponseDto toUserPostsResponseDto(User user, UserProfileImage userProfileImage, Page<PostsResponseDto> post);
+	UserPostsResponseDto toUserPostsResponseDto(User user, UserProfileImage userProfileImage,
+		Page<PostsResponseDto> post);
 
 	@Mapping(target = "id", source = "post.id")
 	@Mapping(target = "title", source = "post.title")
@@ -117,7 +119,8 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "studentId", source = "user.studentId")
 	@Mapping(target = "admissionYear", source = "user.admissionYear")
 	@Mapping(target = "profileImageUrl", expression = "java(userProfileImage != null && userProfileImage.getUuidFile() != null ? userProfileImage.getUuidFile().getFileUrl() : null)")
-	UserCommentsResponseDto toUserCommentsResponseDto(User user, UserProfileImage userProfileImage, Page<CommentsOfUserResponseDto> comment);
+	UserCommentsResponseDto toUserCommentsResponseDto(User user, UserProfileImage userProfileImage,
+		Page<CommentsOfUserResponseDto> comment);
 
 	@Mapping(target = "id", source = "comment.id")
 	@Mapping(target = "content", source = "comment.content")

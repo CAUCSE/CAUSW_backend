@@ -1,13 +1,15 @@
 package net.causw.app.main.domain.community.report.service.v1;
 
-import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
-import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
-import net.causw.app.main.shared.entity.BaseEntity;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.community.comment.entity.ChildComment;
 import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.community.comment.repository.ChildCommentRepository;
@@ -21,11 +23,11 @@ import net.causw.app.main.domain.community.report.api.v1.dto.ReportedPostRespons
 import net.causw.app.main.domain.community.report.api.v1.dto.ReportedUserResponseDto;
 import net.causw.app.main.domain.community.report.api.v1.mapper.ReportDtoMapper;
 import net.causw.app.main.domain.community.report.entity.Report;
-
 import net.causw.app.main.domain.community.report.enums.ReportType;
 import net.causw.app.main.domain.community.report.repository.ReportRepository;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
+import net.causw.app.main.shared.entity.BaseEntity;
 import net.causw.app.main.shared.pageable.PageableFactory;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.constant.StaticValue;
@@ -34,9 +36,6 @@ import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.NotFoundException;
 
 import lombok.RequiredArgsConstructor;
-
-import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor

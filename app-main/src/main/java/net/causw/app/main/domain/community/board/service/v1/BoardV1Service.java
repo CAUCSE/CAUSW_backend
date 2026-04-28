@@ -491,7 +491,8 @@ public class BoardV1Service {
 
 	private BoardApplyResponseDto toBoardApplyResponseDto(BoardApply boardApply) {
 		UserProfileImage profileImage = userProfileImageReader.findByUserIdOrNull(boardApply.getUser().getId());
-		UserResponseDto userResponseDto = UserDtoMapper.INSTANCE.toUserResponseDto(boardApply.getUser(), profileImage, null, null);
+		UserResponseDto userResponseDto = UserDtoMapper.INSTANCE.toUserResponseDto(boardApply.getUser(), profileImage,
+			null, null);
 		CircleResponseDto circleResponseDto = Optional.ofNullable(boardApply.getCircle())
 			.map(CircleDtoMapper.INSTANCE::toCircleResponseDto)
 			.orElse(null);
