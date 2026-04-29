@@ -77,10 +77,10 @@ public class AdmissionWriter {
 			.map(UuidFile::getId)
 			.toList();
 
+		userAdmissionRepository.deleteAll(admissions);
+
 		if (!fileIds.isEmpty()) {
 			uuidFileService.deleteFileList(fileIds);
 		}
-
-		userAdmissionRepository.deleteAll(admissions);
 	}
 }
