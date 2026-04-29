@@ -13,6 +13,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import net.causw.app.main.core.batch.BatchScheduler;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyWriter;
@@ -60,14 +64,19 @@ public class BatchSchedulerTest {
 		User user2 = mock(User.class);
 		List<User> withdrawnUsers = List.of(user1, user2);
 
-		when(userRepository.findAllByDeletedAtIsNotNullAndDeletedAtBefore(any(LocalDateTime.class)))
-			.thenReturn(withdrawnUsers);
+		when(pageableFactory.create(anyInt(), anyInt())).thenReturn(PageRequest.of(0, 10));
+
+		when(
+			userRepository.findAllByDeletedAtIsNotNullAndDeletedAtBefore(any(LocalDateTime.class), any(Pageable.class)))
+			.thenReturn(new PageImpl<>(withdrawnUsers), Page.empty());
 
 		// when
 		batchScheduler.scheduleCleanupWithdrawnUsers();
 
 		// then
-		verify(userRepository).findAllByDeletedAtIsNotNullAndDeletedAtBefore(any(LocalDateTime.class));
+		verify(userRepository).findAllByDeletedAtIsNotNullAndDeletedAtBefore(
+			any(LocalDateTime.class),
+			any(Pageable.class));
 		verify(userInfoWriter).deleteUserInfoByUsers(withdrawnUsers);
 		verify(ceremonyWriter).deleteCeremonyByUsers(withdrawnUsers);
 		verify(socialAccountWriter).deleteSocialAccountsByUsers(withdrawnUsers);
@@ -79,14 +88,18 @@ public class BatchSchedulerTest {
 	@DisplayName("유예기간 지난 탈퇴 유저가 없으면 후처리 writer를 호출하지 않는다")
 	void scheduleCleanupWithdrawnUsers_NoTarget() {
 		// given
-		when(userRepository.findAllByDeletedAtIsNotNullAndDeletedAtBefore(any(LocalDateTime.class)))
-			.thenReturn(List.of());
+		when(pageableFactory.create(anyInt(), anyInt())).thenReturn(PageRequest.of(0, 10));
+
+		when(
+			userRepository.findAllByDeletedAtIsNotNullAndDeletedAtBefore(any(LocalDateTime.class), any(Pageable.class)))
+			.thenReturn(Page.empty());
 
 		// when
 		batchScheduler.scheduleCleanupWithdrawnUsers();
 
 		// then
-		verify(userRepository).findAllByDeletedAtIsNotNullAndDeletedAtBefore(any(LocalDateTime.class));
+		verify(userRepository).findAllByDeletedAtIsNotNullAndDeletedAtBefore(any(LocalDateTime.class),
+			any(Pageable.class));
 		verifyNoInteractions(userInfoWriter, ceremonyWriter, socialAccountWriter, userAdmissionWriter, userWriter);
 	}
 }
