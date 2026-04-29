@@ -31,7 +31,7 @@ public class AppleOAuthRevokeClient {
 		form.add("token_type_hint", "refresh_token");
 
 		restClient.post()
-			.uri("http://appleid.apple.com/oauth/revoke")
+			.uri("https://appleid.apple.com/auth/revoke")
 			.contentType(MediaType.APPLICATION_FORM_URLENCODED)
 			.body(form)
 			.retrieve()
