@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import net.causw.app.main.domain.community.vote.repository.VoteRecordRepository;
+import net.causw.app.main.domain.community.vote.repository.VoteRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,7 +34,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class VoteService {
 
-	private final VoteV2Repository voteV2Repository;
+	private final VoteRepository voteRepository;
 	private final VoteOptionRepository voteOptionRepository;
 	private final VoteRecordRepository voteRecordRepository;
 	private final PostRepository postRepository;
@@ -59,7 +60,7 @@ public class VoteService {
 			request.getAllowMultiple(),
 			voteOptions,
 			post);
-		Vote savedVote = voteV2Repository.save(vote);
+		Vote savedVote = voteRepository.save(vote);
 		post.updateVote(savedVote);
 		voteOptions.forEach(o -> o.updateVote(savedVote));
 		voteOptionRepository.saveAll(voteOptions);
@@ -119,7 +120,7 @@ public class VoteService {
 		}
 
 		vote.endVote();
-		voteV2Repository.save(vote);
+		voteRepository.save(vote);
 		return buildVoteResponseV2(vote, user);
 	}
 
@@ -136,7 +137,7 @@ public class VoteService {
 		}
 
 		vote.restartVote();
-		voteV2Repository.save(vote);
+		voteRepository.save(vote);
 		return buildVoteResponseV2(vote, user);
 	}
 
@@ -147,7 +148,7 @@ public class VoteService {
 
 	@Transactional(readOnly = true)
 	public VoteResponse getVoteByPostId(String postId, User user) {
-		Vote vote = voteV2Repository.findByPostId(postId)
+		Vote vote = voteRepository.findByPostId(postId)
 			.orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST,
 				MessageUtil.VOTE_NOT_FOUND));
 		return buildVoteResponseV2(vote, user);
@@ -156,7 +157,7 @@ public class VoteService {
 	// ───────────────────────────── private helpers ─────────────────────────────
 
 	private Vote findVoteOrThrow(String voteId) {
-		return voteV2Repository.findById(voteId)
+		return voteRepository.findById(voteId)
 			.orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST,
 				MessageUtil.VOTE_NOT_FOUND));
 	}
