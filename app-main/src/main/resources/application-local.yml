@@ -131,10 +131,9 @@ springdoc:
   api-docs:
     enabled: true
   swagger-ui:
-    path: /swagger-ui/index.html
     groups-order: DESC
     doc-expansion: none
-    # tags-sorter: alpha
+    tags-sorter: alpha
     operationsSorter: method
     display-request-duration: true
 
@@ -146,7 +145,7 @@ app:
   cors:
     allowed-origins: "http://localhost:8080, http//localhost:3000"
   auth:
-    redirect-uri: http://localhost:8080/swagger-ui/swagger-ui/index.html
+    redirect-uri: http://localhost:8080/swagger-ui/index.html
   holiday-api:
     base-url: http://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService
     service-key: ${HOLIDAY_API_SERVICE_KEY}

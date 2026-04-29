@@ -126,10 +126,9 @@ springdoc:
   api-docs:
     enabled: true
   swagger-ui:
-    # path: /swagger-ui/index.html
     groups-order: DESC
     doc-expansion: none
-    # tags-sorter: alpha
+    tags-sorter: alpha
     operationsSorter: method
     display-request-duration: true
 
