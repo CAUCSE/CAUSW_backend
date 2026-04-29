@@ -2,15 +2,12 @@ package net.causw.app.main.domain.community.vote.service.v2;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import net.causw.app.main.domain.community.vote.repository.VoteRecordRepository;
-import net.causw.app.main.domain.community.vote.repository.VoteRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +20,8 @@ import net.causw.app.main.domain.community.vote.entity.Vote;
 import net.causw.app.main.domain.community.vote.entity.VoteOption;
 import net.causw.app.main.domain.community.vote.entity.VoteRecord;
 import net.causw.app.main.domain.community.vote.repository.VoteOptionRepository;
+import net.causw.app.main.domain.community.vote.repository.VoteRecordRepository;
+import net.causw.app.main.domain.community.vote.repository.VoteRepository;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.StatusPolicy;
 import net.causw.global.constant.MessageUtil;
@@ -150,8 +149,8 @@ public class VoteService {
 	@Transactional(readOnly = true)
 	public VoteResponse findVoteByPostId(String postId, User user) {
 		Vote vote = voteRepository.findByPostId(postId)
-				.orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST,
-						MessageUtil.VOTE_NOT_FOUND));
+			.orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST,
+				MessageUtil.VOTE_NOT_FOUND));
 		return buildVoteResponseV2(vote, user);
 	}
 
@@ -169,24 +168,24 @@ public class VoteService {
 
 		// ② 옵션별 그룹화 (메모리에서)
 		Map<String, List<VoteRecord>> recordsByOptionId = allRecords.stream()
-				.collect(Collectors.groupingBy(r -> r.getVoteOption().getId()));
+			.collect(Collectors.groupingBy(r -> r.getVoteOption().getId()));
 
 		// ③ 요청자가 선택한 옵션 ID 집합
 		Set<String> votedOptionIds = allRecords.stream()
-				.filter(r -> r.getUser().equals(user))
-				.map(r -> r.getVoteOption().getId())
-				.collect(Collectors.toSet());
+			.filter(r -> r.getUser().equals(user))
+			.map(r -> r.getVoteOption().getId())
+			.collect(Collectors.toSet());
 
 		// ④ 옵션 목록 (생성순 정렬)
 		List<VoteOption> options = voteOptionRepository.findByVoteId(vote.getId())
-				.stream()
-				.sorted(Comparator.comparing(VoteOption::getCreatedAt))
-				.toList();
+			.stream()
+			.sorted(Comparator.comparing(VoteOption::getCreatedAt))
+			.toList();
 
 		// ⑤ 고유 투표자 수
 		Set<String> uniqueVoterIds = allRecords.stream()
-				.map(r -> r.getUser().getId())
-				.collect(Collectors.toSet());
+			.map(r -> r.getUser().getId())
+			.collect(Collectors.toSet());
 
 		// ⑥ 옵션별 응답 빌드
 		List<VoteOptionResponse> optionResponses = new ArrayList<>();
@@ -195,23 +194,23 @@ public class VoteService {
 			List<VoteRecord> records = recordsByOptionId.getOrDefault(option.getId(), List.of());
 
 			List<String> voteUsers = vote.isAllowAnonymous()
-					? List.of()
-					: records.stream().map(r -> r.getUser().getId()).toList();
+				? List.of()
+				: records.stream().map(r -> r.getUser().getId()).toList();
 
 			optionResponses.add(VoteOptionResponse.of(
-					option,
-					i,
-					records.size(),
-					votedOptionIds.contains(option.getId()),
-					voteUsers));
+				option,
+				i,
+				records.size(),
+				votedOptionIds.contains(option.getId()),
+				voteUsers));
 		}
 
 		return VoteResponse.of(
-				vote,
-				StatusPolicy.isVoteOwner(vote, user),
-				!votedOptionIds.isEmpty(),
-				allRecords.size(),    // ← totalVoteCount = 전체 기록 수
-				uniqueVoterIds.size(),
-				optionResponses);
+			vote,
+			StatusPolicy.isVoteOwner(vote, user),
+			!votedOptionIds.isEmpty(),
+			allRecords.size(), // ← totalVoteCount = 전체 기록 수
+			uniqueVoterIds.size(),
+			optionResponses);
 	}
 }

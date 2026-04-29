@@ -40,8 +40,7 @@ public class VoteController {
 
 	@PostMapping("/{voteId}/options/{optionId}/toggle")
 	@ResponseStatus(HttpStatus.OK)
-	@Operation(summary = "투표 옵션 토글",
-		description = "같은 옵션 재클릭 시 취소, 새 옵션 클릭 시 추가. allowMultiple=false이면 기존 선택이 자동 해제됩니다.")
+	@Operation(summary = "투표 옵션 토글", description = "같은 옵션 재클릭 시 취소, 새 옵션 클릭 시 추가. allowMultiple=false이면 기존 선택이 자동 해제됩니다.")
 	public ApiResponse<VoteResponse> toggleVote(
 		@PathVariable String voteId,
 		@PathVariable String optionId,
