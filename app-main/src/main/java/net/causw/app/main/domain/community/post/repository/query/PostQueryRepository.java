@@ -22,6 +22,8 @@ import net.causw.app.main.domain.community.comment.entity.QComment;
 import net.causw.app.main.domain.community.post.entity.QPost;
 import net.causw.app.main.domain.community.reaction.entity.QFavoritePost;
 import net.causw.app.main.domain.community.reaction.entity.QLikePost;
+import net.causw.app.main.domain.integration.crawled.entity.CrawledPostImage;
+import net.causw.app.main.domain.integration.crawled.repository.CrawledPostImageRepository;
 import net.causw.app.main.domain.user.account.entity.user.QUser;
 
 import com.querydsl.core.Tuple;
@@ -39,6 +41,7 @@ public class PostQueryRepository {
 	private static final BooleanExpression NO_CONDITION = null;
 
 	private final JPAQueryFactory jpaQueryFactory;
+	private final CrawledPostImageRepository crawledPostImageRepository;
 
 	public Page<PostQueryResult> findPostsByBoardWithFilters(
 		String boardId,
@@ -448,12 +451,23 @@ public class PostQueryRepository {
 				postAttachImage.uuidFile.createdAt.asc())
 			.fetch();
 
-		return results.stream()
+		// S3 업로드 이미지 맵 (mutable)
+		Map<String, List<String>> imageMap = new java.util.HashMap<>(results.stream()
 			.collect(Collectors.groupingBy(
 				tuple -> tuple.get(postAttachImage.post.id),
 				Collectors.mapping(
 					tuple -> tuple.get(postAttachImage.uuidFile.fileUrl),
-					Collectors.toList())));
+					Collectors.toList()))));
+
+		// 크롤링 이미지 병합
+		List<CrawledPostImage> crawledImages =
+			crawledPostImageRepository.findAllByPostIdInOrderByPostIdAscImageOrderAsc(postIds);
+		for (CrawledPostImage crawledImage : crawledImages) {
+			imageMap.computeIfAbsent(crawledImage.getPost().getId(), k -> new java.util.ArrayList<>())
+				.add(crawledImage.getImageUrl());
+		}
+
+		return imageMap;
 	}
 
 	/**

@@ -3,6 +3,9 @@ package net.causw.app.main.domain.integration.crawled.service.v1;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,7 +15,9 @@ import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledFileLink;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
+import net.causw.app.main.domain.integration.crawled.entity.CrawledPostImage;
 import net.causw.app.main.domain.integration.crawled.repository.CrawledNoticeRepository;
+import net.causw.app.main.domain.integration.crawled.repository.CrawledPostImageRepository;
 import net.causw.app.main.domain.notification.notification.service.v1.BoardNotificationService;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
@@ -33,6 +38,7 @@ public class CrawledToPostTransferService {
 	private final UserRepository userRepository;
 	private final BoardRepository boardRepository;
 	private final BoardNotificationService boardNotificationService;
+	private final CrawledPostImageRepository crawledPostImageRepository;
 
 	//크롤링 된 공지를 게시글로 반환
 	@Transactional
@@ -78,6 +84,9 @@ public class CrawledToPostTransferService {
 		// Post 변환 시점에서 첨부파일 링크 추가
 		String contentHtml = buildContentWithAttachmentsAndLink(notice);
 
+		// 원본 HTML에서 이미지 URL 추출 (첨부파일 영역 추가 전 원본 기준)
+		List<String> imageUrls = extractImageUrls(notice.getContent());
+
 		// 제목으로 기존 게시글 조회
 		Post existingPost = findExistingPostByTitle(board, title);
 
@@ -85,6 +94,10 @@ public class CrawledToPostTransferService {
 			// 기존 Post 업데이트
 			existingPost.update(title, contentHtml, existingPost.getForm(), existingPost.getPostAttachImageList());
 			postRepository.save(existingPost);
+
+			// 기존 크롤링 이미지 교체
+			crawledPostImageRepository.deleteAllByPostId(existingPost.getId());
+			savePostImages(existingPost, imageUrls);
 		} else {
 			// 새 Post 생성
 			Post newPost = Post.of(
@@ -99,10 +112,38 @@ public class CrawledToPostTransferService {
 			newPost.setCrawled();
 			postRepository.save(newPost);
 
+			// 크롤링 이미지 저장
+			savePostImages(newPost, imageUrls);
+
 			// 새 게시글인 경우에만 알림 전송
 			boardNotificationService.sendByBoardIsSubscribed(board, newPost);
 		}
 		return true;
+	}
+
+	//크롤링 이미지 URL 목록을 CrawledPostImage 엔티티로 저장
+	private void savePostImages(Post post, List<String> imageUrls) {
+		if (imageUrls.isEmpty()) {
+			return;
+		}
+		List<CrawledPostImage> images = new ArrayList<>();
+		for (int i = 0; i < imageUrls.size(); i++) {
+			images.add(CrawledPostImage.of(post, imageUrls.get(i), i));
+		}
+		crawledPostImageRepository.saveAll(images);
+	}
+
+	//HTML 본문에서 <img src="..."> URL 추출
+	private List<String> extractImageUrls(String html) {
+		if (html == null || html.isBlank()) {
+			return List.of();
+		}
+		Document doc = Jsoup.parse(html);
+		Elements imgElements = doc.select("img[src]");
+		return imgElements.stream()
+			.map(img -> img.attr("abs:src").isBlank() ? img.attr("src") : img.attr("abs:src"))
+			.filter(src -> !src.isBlank())
+			.toList();
 	}
 
 	//본문 내용에 첨부파일 링크를 추가하여 반환
