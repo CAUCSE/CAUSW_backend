@@ -144,7 +144,7 @@ fcm:
 
 app:
   cors:
-    allowed-origins: "http://localhost:8080"
+    allowed-origins: "http://localhost:8080, http//localhost:3000"
   auth:
     redirect-uri: http://localhost:8080/swagger-ui/swagger-ui/index.html
   holiday-api:
