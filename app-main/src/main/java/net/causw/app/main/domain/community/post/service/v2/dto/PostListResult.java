@@ -31,7 +31,8 @@ public record PostListResult(
 		String boardId,
 		String boardName,
 		boolean isPostLike,
-		boolean isOwner) {
+		boolean isOwner,
+		boolean isOfficial) {
 		public static PostItem of(
 			String postId,
 			String content,
@@ -50,13 +51,14 @@ public record PostListResult(
 			String boardId,
 			String boardName,
 			boolean isPostLike,
-			boolean isOwner) {
+			boolean isOwner,
+			boolean isOfficial) {
 			return new PostItem(
 				postId, content, numComment, numLike, numFavorite,
 				isAnonymous, voteId, isDeleted, isCrawled,
 				writerNickname, writerProfileImage,
 				createdAt, updatedAt, postImageUrls,
-				boardId, boardName, isPostLike, isOwner);
+				boardId, boardName, isPostLike, isOwner, isOfficial);
 		}
 	}
 }

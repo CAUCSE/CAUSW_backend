@@ -300,15 +300,15 @@ public class UserService {
 			requestUser,
 			favoritePostPage
 				.map(favoritePost -> {
-					Post post = favoritePost.getPost();
-					PostsResponseDto dto = PostDtoV1Mapper.INSTANCE.toPostsResponseDto(
-						post,
-						getNumOfComment(post),
-						getNumOfPostLikes(post),
-						getNumOfPostFavorites(post),
-						!post.getPostAttachImageList().isEmpty() ? post.getPostAttachImageList().get(0) : null,
-						StatusPolicy.isPostVote(post),
-						StatusPolicy.isPostForm(post));
+				Post post = favoritePost.getPost();
+				PostsResponseDto dto = PostDtoV1Mapper.INSTANCE.toPostsResponseDto(
+					post,
+					getNumOfComment(post),
+					getNumOfPostLikes(post),
+					getNumOfPostFavorites(post),
+					!post.getPostAttachImageList().isEmpty() ? post.getPostAttachImageList().get(0) : null,
+					StatusPolicy.isPostVote(post),
+					StatusPolicy.isPostForm(post));
 
 					// 화면에 표시될 작성자 닉네임 설정
 					String displayNickname = postV1Service.getDisplayWriterNickname(
@@ -349,15 +349,15 @@ public class UserService {
 			requestUser,
 			likePostPage
 				.map(likePost -> {
-					Post post = likePost.getPost();
-					PostsResponseDto dto = postDtoV1Mapper.toPostsResponseDto(
-						post,
-						getNumOfComment(post),
-						getNumOfPostLikes(post),
-						getNumOfPostFavorites(post),
-						!post.getPostAttachImageList().isEmpty() ? post.getPostAttachImageList().get(0) : null,
-						StatusPolicy.isPostVote(post),
-						StatusPolicy.isPostForm(post));
+				Post post = likePost.getPost();
+				PostsResponseDto dto = postDtoV1Mapper.toPostsResponseDto(
+					post,
+					getNumOfComment(post),
+					getNumOfPostLikes(post),
+					getNumOfPostFavorites(post),
+					!post.getPostAttachImageList().isEmpty() ? post.getPostAttachImageList().get(0) : null,
+					StatusPolicy.isPostVote(post),
+					StatusPolicy.isPostForm(post));
 
 					// 화면에 표시될 작성자 닉네임 설정
 					String displayNickname = postV1Service.getDisplayWriterNickname(

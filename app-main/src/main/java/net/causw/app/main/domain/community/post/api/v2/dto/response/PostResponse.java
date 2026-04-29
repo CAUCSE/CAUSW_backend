@@ -42,6 +42,8 @@ public record PostResponse(
 
 	@Schema(description = "게시글 삭제 가능여부", example = "true") Boolean deletable,
 
+	@Schema(description = "게시글 작성자 공식계정 여부", example = "false") Boolean isOfficial,
+
 	@Schema(description = "게시글 생성 시간", example = "2024-01-26T18:40:40.643Z") LocalDateTime createdAt,
 
 	@Schema(description = "게시글 업데이트 시간", example = "2024-01-26T18:40:40.643Z") LocalDateTime updatedAt,

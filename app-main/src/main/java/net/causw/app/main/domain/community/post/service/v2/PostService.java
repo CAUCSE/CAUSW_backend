@@ -1,8 +1,11 @@
 package net.causw.app.main.domain.community.post.service.v2;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ApplicationEventPublisher;
@@ -35,7 +38,9 @@ import net.causw.app.main.domain.community.reaction.service.implementation.Favor
 import net.causw.app.main.domain.community.reaction.service.implementation.LikePostReader;
 import net.causw.app.main.domain.notification.notification.event.OfficialPostEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.relation.service.v2.implementation.BlockReader;
+import net.causw.app.main.shared.StatusPolicy;
 import net.causw.global.constant.StaticValue;
 
 import lombok.RequiredArgsConstructor;
@@ -53,6 +58,7 @@ public class PostService {
 	private final LikePostReader likePostReader;
 	private final FavoritePostReader favoritePostReader;
 	private final BlockReader userBlockReader;
+	private final UserReader userReader;
 	private final ApplicationEventPublisher eventPublisher;
 
 	/**
@@ -208,13 +214,26 @@ public class PostService {
 			? Set.of()
 			: likePostReader.getLikedPostIds(viewer.getId(), postIds);
 
+		// 공식계정 여부 배치 계산: writerId를 기준으로 User 배치 조회
+		List<String> writerIds = posts.stream()
+			.map(PostCursorResult::writerId)
+			.filter(Objects::nonNull)
+			.distinct()
+			.collect(Collectors.toList());
+		Map<String, User> writerMap = writerIds.isEmpty() ? Map.of()
+			: userReader.findUsersByIds(writerIds).stream()
+				.collect(Collectors.toMap(User::getId, u -> u));
+
 		// PostListResult로 변환 (PostMapper 사용)
 		List<PostListResult.PostItem> postItems = posts.stream()
 			.map(result -> {
 				List<String> imageUrls = postImagesMap.getOrDefault(result.postId(), List.of());
 				boolean isPostLike = likedPostIds.contains(result.postId());
 				boolean isOwner = result.writerId() != null && result.writerId().equals(viewer.getId());
-				return PostMapper.toPostListItem(result, imageUrls, isPostLike, isOwner);
+				boolean isOfficial = !result.isAnonymous()
+					&& StatusPolicy.isOfficialWriter(
+						result.writerId() != null ? writerMap.get(result.writerId()) : null);
+				return PostMapper.toPostListItem(result, imageUrls, isPostLike, isOwner, isOfficial);
 			})
 			.toList();
 
@@ -260,6 +279,9 @@ public class PostService {
 		boolean updatable = isOwner || boardAdminIds.contains(viewer.getId());
 		boolean deletable = isOwner || boardAdminIds.contains(viewer.getId());
 
+		// 공식계정 여부 (익명 게시글이면 false)
+		boolean isOfficial = !post.getIsAnonymous() && StatusPolicy.isOfficialWriter(post.getWriter());
+
 		// PostMapper를 사용하여 PostDetailResult 생성
 		return PostMapper.toPostDetailResult(
 			post,
@@ -271,7 +293,8 @@ public class PostService {
 			isPostFavorite,
 			isOwner,
 			updatable,
-			deletable);
+			deletable,
+			isOfficial);
 	}
 
 	/**
@@ -353,12 +376,25 @@ public class PostService {
 
 		Set<String> likedPostIds = likePostReader.getLikedPostIds(viewer.getId(), postIds);
 
+		// 공식계정 여부 배치 계산
+		List<String> writerIds = posts.stream()
+			.map(PostCursorResult::writerId)
+			.filter(Objects::nonNull)
+			.distinct()
+			.collect(Collectors.toList());
+		Map<String, User> writerMap = writerIds.isEmpty() ? Map.of()
+			: userReader.findUsersByIds(writerIds).stream()
+				.collect(Collectors.toMap(User::getId, u -> u));
+
 		List<PostListResult.PostItem> postItems = posts.stream()
 			.map(result -> {
 				List<String> imageUrls = postImagesMap.getOrDefault(result.postId(), List.of());
 				boolean isPostLike = likedPostIds.contains(result.postId());
 				boolean isOwner = result.writerId() != null && result.writerId().equals(viewer.getId());
-				return PostMapper.toPostListItem(result, imageUrls, isPostLike, isOwner);
+				boolean isOfficial = !result.isAnonymous()
+					&& StatusPolicy.isOfficialWriter(
+						result.writerId() != null ? writerMap.get(result.writerId()) : null);
+				return PostMapper.toPostListItem(result, imageUrls, isPostLike, isOwner, isOfficial);
 			})
 			.toList();
 
