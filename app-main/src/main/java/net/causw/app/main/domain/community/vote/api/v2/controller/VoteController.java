@@ -52,19 +52,19 @@ public class VoteController {
 	@GetMapping("/{voteId}")
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "투표 조회", description = "투표 ID로 투표 정보와 내가 선택한 옵션을 조회합니다.")
-	public ApiResponse<VoteResponse> getVoteById(
+	public ApiResponse<VoteResponse> findVoteById(
 		@PathVariable String voteId,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		return ApiResponse.success(voteV2Service.getVoteById(voteId, userDetails.getUser()));
+		return ApiResponse.success(voteV2Service.findVoteById(voteId, userDetails.getUser()));
 	}
 
 	@GetMapping("/post/{postId}")
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "게시글 ID로 투표 조회", description = "게시글 ID로 해당 게시글의 투표를 조회합니다.")
-	public ApiResponse<VoteResponse> getVoteByPostId(
+	public ApiResponse<VoteResponse> findVoteByPostId(
 		@PathVariable String postId,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		return ApiResponse.success(voteV2Service.getVoteByPostId(postId, userDetails.getUser()));
+		return ApiResponse.success(voteV2Service.findVoteByPostId(postId, userDetails.getUser()));
 	}
 
 	@PostMapping("/{voteId}/end")

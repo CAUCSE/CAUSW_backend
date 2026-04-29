@@ -27,6 +27,9 @@ public interface VoteRecordRepository extends JpaRepository<VoteRecord, String> 
 	 */
 	void deleteAllByVoteOption_VoteAndUser(Vote vote, User user);
 	/** N+1 방지: votedByMe 계산용 — 유저의 투표 기록 한 번에 조회 */
+
+	/** N+1 방지: 특정 투표의 모든 투표 기록을 한 번에 조회 (옵션별 그룹화 + 사용자 필터 둘 다 메모리에서 처리) */
+	List<VoteRecord> findAllByVoteOption_Vote(Vote vote);
 	List<VoteRecord> findAllByVoteOption_VoteAndUser(Vote vote, User user);
 
 }
