@@ -27,6 +27,7 @@ import net.causw.app.main.shared.dto.ProfileImageDto;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 import net.causw.app.main.shared.infra.firebase.FcmUtils;
+import net.causw.global.exception.BadRequestException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -163,6 +164,16 @@ public class UserAccountService {
 	@Transactional
 	public void updatePassword(String userId, UserPasswordUpdateCommand command) {
 		User user = userReader.findUserById(userId);
+
+		// 관리자 강제 탈퇴(DROP) 먼저 체크
+		if (user.getState().equals(UserState.DROP)) {
+			throw UserErrorCode.USER_DROPPED.toBaseException();
+		}
+
+		// 일반 탈퇴 유저 체크
+		if (user.isDeleted()) {
+			throw UserErrorCode.USER_DELETED.toBaseException();
+		}
 
 		if (user.isOnlySocialUser()) {
 			throw UserErrorCode.SOCIAL_ONLY_USER_CANNOT_CHANGE_PASSWORD.toBaseException();
