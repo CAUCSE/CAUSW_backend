@@ -143,4 +143,4 @@ app:
   cors:
     allowed-origins: "https://prod.causw.com,https://causw.co.kr,https://www.causw.co.kr,https://admin.causw.co.kr,https://causw-v3-web.vercel.app"
   auth:
-    redirect-uri: "http://causw.co.kr/auth/sign-in/oauth-callback"
+    redirect-uri: "https://causw.co.kr/auth/sign-in/oauth-callback"
