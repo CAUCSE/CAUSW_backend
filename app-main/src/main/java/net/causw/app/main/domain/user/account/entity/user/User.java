@@ -316,7 +316,7 @@ public class User extends BaseEntity {
 
 	// 활성 사용자이고 권한 있는 역할이 아닐 경우 추방 가능
 	public boolean isDroppable() {
-		boolean isDroppableState = this.state == UserState.ACTIVE && !this.isInactive();
+		boolean isDroppableState = this.state == UserState.ACTIVE;
 		boolean isDroppableRole = this.roles.stream()
 			.noneMatch(Role.getPrivilegedRoles()::contains);
 		return isDroppableState && isDroppableRole;
