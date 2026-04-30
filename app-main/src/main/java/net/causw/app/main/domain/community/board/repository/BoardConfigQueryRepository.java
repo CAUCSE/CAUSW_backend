@@ -93,17 +93,14 @@ public class BoardConfigQueryRepository {
 			// 관리자 테이블과 Left Join
 			.leftJoin(boardAdmin).on(
 				board.id.eq(boardAdmin.boardId)
-					.and(boardAdmin.userId.eq(userId))
-			)
+					.and(boardAdmin.userId.eq(userId)))
 			// 필터링 조건
 			.where(
 				visible(boardConfig),
 				boardConfig.writeScope.eq(BoardWriteScope.ALL_USER)
 					.or(
 						boardConfig.writeScope.eq(BoardWriteScope.ONLY_ADMIN)
-							.and(boardAdmin.userId.isNotNull())
-					)
-			)
+							.and(boardAdmin.userId.isNotNull())))
 			.fetch();
 	}
 
