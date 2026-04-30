@@ -9,6 +9,7 @@ import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.Academic
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
+import net.causw.app.main.domain.user.account.util.BlockedUserIdentifierValidator;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -19,10 +20,12 @@ public class AdmissionValidator {
 
 	private final AdmissionReader admissionReader;
 	private final UserRepository userRepository;
+	private final BlockedUserIdentifierValidator blockedUserIdentifierValidator;
 
 	/**
 	 * 재학정보 인증 신청이 가능한 상태인지 검증합니다.
 	 *
+	 * - 추방된 학번인지 검증 (Blocked User)
 	 * - 사용자 상태가 AWAIT 또는 REJECT인 경우만 신청 가능
 	 * - 기존 신청이 존재하지 않아야 함
 	 * - 첨부 이미지 1개 이상 필수
@@ -31,6 +34,7 @@ public class AdmissionValidator {
 	public void validateAdmissionCreate(User user, String requestedStudentId,
 		AcademicStatus requestedAcademicStatus, Integer graduationYear,
 		List<MultipartFile> attachImages) {
+		validateBlockedStudentId(requestedStudentId);
 		validateUserStateForAdmission(user);
 		validateNoExistingAdmission(user);
 		validateAttachImages(attachImages);
@@ -89,5 +93,9 @@ public class AdmissionValidator {
 				throw UserErrorCode.STUDENT_ID_ALREADY_EXIST.toBaseException();
 			}
 		});
+	}
+
+	private void validateBlockedStudentId(String studentId) {
+		blockedUserIdentifierValidator.validateStudentId(studentId);
 	}
 }
