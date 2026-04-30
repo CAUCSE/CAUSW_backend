@@ -1023,17 +1023,6 @@ public class UserService {
 		return UserDtoMapper.INSTANCE.toUserResponseDto(entity, null, null);
 	}
 
-	// @Scheduled(cron = "0 0 0 * * ?")
-	// public void deleteUser() {
-	// 	LocalDateTime dueDate = LocalDateTime.now().minusYears(5);
-	//
-	// 	userRepository.findAllByDeletedAtBefore(dueDate).stream()
-	// 		.forEach(user -> {
-	// 			user.delete();
-	// 			userRepository.save(user);
-	// 		});
-	// }
-
 	private Optional<CircleMember> updateStatus(String applicationId, CircleMemberStatus targetStatus) {
 		return this.circleMemberRepository.findById(applicationId).map(
 			circleMember -> {
