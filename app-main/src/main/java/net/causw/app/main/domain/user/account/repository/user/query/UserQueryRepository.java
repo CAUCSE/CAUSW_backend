@@ -130,7 +130,7 @@ public class UserQueryRepository {
 
 	/**
 	 * 관리자 유저 목록 조회 — QueryDSL Projection으로 DTO 직접 반환.
-	 * 삭제 회원 제외(notDeleted), states 미지정 시 ACTIVE만 조회.
+	 * 탈퇴 회원 제외(notInactive), states 미지정 시 ACTIVE만 조회.
 	 */
 	public Page<UserListQueryResult> findUserList(UserListCondition condition, Pageable pageable) {
 		List<UserState> states = (condition.states() == null || condition.states().isEmpty())
@@ -163,7 +163,7 @@ public class UserQueryRepository {
 	}
 
 	/**
-	 * 삭제(탈퇴) 회원 전용 목록 조회 — INACTIVE 상태 유저만 반환.
+	 * 탈퇴 회원 전용 목록 조회 — INACTIVE 상태 유저만 반환.
 	 */
 	public Page<DeletedUserListQueryResult> findDeletedUserList(
 		DeletedUserQueryCondition condition,
