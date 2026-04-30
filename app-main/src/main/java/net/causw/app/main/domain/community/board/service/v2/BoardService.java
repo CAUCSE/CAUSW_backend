@@ -48,13 +48,13 @@ public class BoardService {
 	 * 사용자의 학적 상태가 졸업 또는 재학일 경우만 해당됩니다.
 	 *
 	 * @param userId 사용자 ID
-	 * @return 읽기 가능한 게시판 목록 (id, name)
+	 * @return 쓰기 가능한 게시판 목록 (id, name)
 	 */
 	public List<BoardWritableItemResult> getWritableBoards(String userId) {
 
 		AcademicStatus academicStatus = userReader.findUserById(userId).getAcademicStatus();
 		//졸업, 재학 academicStatus만 허용
-		if (!(academicStatus == AcademicStatus.ENROLLED) && !(academicStatus == AcademicStatus.GRADUATED)) {
+		if (academicStatus != AcademicStatus.ENROLLED && academicStatus != AcademicStatus.GRADUATED) {
 			return List.of();
 		}
 
