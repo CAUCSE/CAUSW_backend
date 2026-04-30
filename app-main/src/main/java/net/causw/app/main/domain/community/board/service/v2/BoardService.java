@@ -58,12 +58,8 @@ public class BoardService {
 			return List.of();
 		}
 
-		List<String> boardIds = boardConfigReader.getWritableBoardIdsByUserId(userId);
-		if (boardIds.isEmpty()) {
-			return List.of();
-		}
+		List<Board> boards = boardConfigReader.getWritableBoardIdsByUserId(userId);
 
-		List<Board> boards = boardReader.findAllByIdsNotDeleted(boardIds);
 		return boards.stream()
 			.map(b -> new BoardWritableItemResult(b.getId(), b.getName()))
 			.toList();

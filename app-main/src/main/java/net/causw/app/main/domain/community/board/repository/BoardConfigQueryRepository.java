@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.springframework.stereotype.Repository;
 
+import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
 import net.causw.app.main.domain.community.board.entity.BoardReadScope;
 import net.causw.app.main.domain.community.board.entity.BoardVisibility;
@@ -15,6 +16,7 @@ import net.causw.app.main.domain.community.board.entity.QBoardAdmin;
 import net.causw.app.main.domain.community.board.entity.QBoardConfig;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
@@ -71,36 +73,46 @@ public class BoardConfigQueryRepository {
 	}
 
 	/**
-	 * 사용자에게 쓰기 권한이 있는 게시판 ID 목록을 조회합니다.(VISIBLE 체크 포함)
-	 * ONLY_ADMIN 쓰기 범위를 체크할 때 board 하나 당 하나의 쿼리가 나가는 N+1 방지를 위해 join으로 처리했습니다.
-	 * board와 boardConfig를 join하여 board의 visibility와 writeScope를 가져옵니다.
-	 * writeScope가 {@code ALL_USER}일 경우는 visible할 경우 포함시키고,
-	 * writeScope가 {@code ONLY_ADMIN}일 경우는 board와 boardAdmin의 left join을 통해 해당 board의 admin에 userId가 포함되는지 체크합니다.
+	 * 사용자에게 쓰기 권한이 있는 게시판 목록을 조회합니다.(VISIBLE, isDeleted 체크 포함, 표시 순서에 따라 정렬 포함)
+	 * ONLY_ADMIN 쓰기 범위를 체크할 때 board 하나 당 하나의 쿼리가 나가는 N+1 방지를 위해
+	 * WriteScope가 {@code ONLY_ADMIN}일 경우에만 exists()를 통해 쓰기 가능 여부를 체크하도록 하였습니다.
+	 * board와 boardConfig를 join하여 board의 visibility와 IsDeleted, writeScope를 가져옵니다.
+	 * IsDeleted가 false이고, visable 할 때,
+	 * writeScope가 {@code ALL_USER}일 경우 리스트에 포함시키고,
+	 * writeScope가 {@code ONLY_ADMIN}일 경우는 boardAdmin에 해당 boardId, userId가 exist하는지 체크합니다.
 	 *
 	 * @param userId 대상이 되는 user의 Id
-	 * @return 게시판 ID 목록
+	 * @return 쓰기 가능한 게시판 목록
 	 */
-	public List<String> findWritableBoardsByUserId(String userId) {
+	public List<Board> findWritableBoardsByUserId(String userId) {
 		QBoard board = QBoard.board;
 		QBoardConfig boardConfig = QBoardConfig.boardConfig;
 		QBoardAdmin boardAdmin = QBoardAdmin.boardAdmin;
 
 		return jpaQueryFactory
-			.select(board.id)
-			.from(board)
+			.selectFrom(board)
 			// 게시판 설정 정보와 Inner Join
 			.join(boardConfig).on(board.id.eq(boardConfig.boardId))
-			// 관리자 테이블과 Left Join
-			.leftJoin(boardAdmin).on(
-				board.id.eq(boardAdmin.boardId)
-					.and(boardAdmin.userId.eq(userId)))
-			// 필터링 조건
+			// 필터링 조건(isDeleted, visibility, writeScope 체크)
 			.where(
+				board.isDeleted.isFalse(),
 				visible(boardConfig),
+				// ALL_USER 이거나 ONLY_ADMIN이고 boardAdmin에 boardId와 userId 컬럼이 존재할 경우
 				boardConfig.writeScope.eq(BoardWriteScope.ALL_USER)
 					.or(
 						boardConfig.writeScope.eq(BoardWriteScope.ONLY_ADMIN)
-							.and(boardAdmin.userId.isNotNull())))
+							.and(
+								JPAExpressions.selectOne()
+									.from(boardAdmin)
+									.where(
+										boardAdmin.boardId.eq(board.id),
+										boardAdmin.userId.eq(userId)
+									)
+									.exists()
+							)
+					)
+			)
+			.orderBy(boardConfig.displayOrder.asc())
 			.fetch();
 	}
 
