@@ -221,8 +221,7 @@ public class UserAccountService {
 			.ifPresent(locker -> lockerWriter.returnLocker(locker, user));
 		fcmUtils.clearFcmTokens(user);
 
-		user.withdraw(LocalDateTime.now());
-		userWriter.save(user);
+		userWriter.withdraw(user);
 
 		return UserWithdrawResponse.of(user.getDeletedAt());
 	}
