@@ -102,4 +102,15 @@ public class BoardConfigReader {
 		Set<BoardReadScope> scopes = new HashSet<>(BoardReadScope.fromAcademicStatus(academicStatus));
 		return boardConfigQueryRepository.findBoardsByReadScopes(scopes);
 	}
+
+	/**
+	 * 사용자 ID에 따라 접근 가능한 게시판 ID 목록을 조회합니다.
+	 * VISIBLE이고 사용자의 WriteScope에 맞는 게시판만 조회합니다.
+	 *
+	 * @param userId 사용자 ID
+	 * @return 게시판 ID 목록
+	 */
+	public List<String> getWritableBoardIdsByUserId(String userId) {
+		return boardConfigQueryRepository.findWritableBoardsByUserId(userId);
+	}
 }
