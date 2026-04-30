@@ -86,9 +86,9 @@ public class BatchScheduler {
 	}
 
 	@Scheduled(cron = "0 10 3 * * ?") // 매일 새벽 3시 10분
-	public void scheduleCleanupWithdrawnUsers() {
+	public void scheduleCleanupDeactivatedUsers() {
 		try {
-			log.info("[유저 정리 배치] 탈퇴 유저 후처리 시작");
+			log.info("[유저 정리 배치] 비활성(탈퇴/추방) 유저 후처리 시작");
 
 			LocalDateTime dueDate = LocalDateTime.now().minusDays(30);
 

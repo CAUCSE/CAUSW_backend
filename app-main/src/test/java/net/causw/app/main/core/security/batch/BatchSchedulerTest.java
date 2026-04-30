@@ -58,7 +58,7 @@ public class BatchSchedulerTest {
 
 	@Test
 	@DisplayName("유예기간 지난 탈퇴 유저가 있으면 후처리 writer들을 순서대로 호출한다")
-	void scheduleCleanupWithdrawnUsers_Success() {
+	void scheduleCleanupDeactivatedUsers_Success() {
 		// given
 		User user1 = mock(User.class);
 		User user2 = mock(User.class);
@@ -71,7 +71,7 @@ public class BatchSchedulerTest {
 			.thenReturn(new PageImpl<>(withdrawnUsers), Page.empty());
 
 		// when
-		batchScheduler.scheduleCleanupWithdrawnUsers();
+		batchScheduler.scheduleCleanupDeactivatedUsers();
 
 		// then
 		verify(userRepository).findAllByDeletedAtIsNotNullAndDeletedAtBefore(
@@ -86,7 +86,7 @@ public class BatchSchedulerTest {
 
 	@Test
 	@DisplayName("유예기간 지난 탈퇴 유저가 없으면 후처리 writer를 호출하지 않는다")
-	void scheduleCleanupWithdrawnUsers_NoTarget() {
+	void scheduleCleanupDeactivatedUsers_NoTarget() {
 		// given
 		when(pageableFactory.create(anyInt(), anyInt())).thenReturn(PageRequest.of(0, 10));
 
@@ -95,7 +95,7 @@ public class BatchSchedulerTest {
 			.thenReturn(Page.empty());
 
 		// when
-		batchScheduler.scheduleCleanupWithdrawnUsers();
+		batchScheduler.scheduleCleanupDeactivatedUsers();
 
 		// then
 		verify(userRepository).findAllByDeletedAtIsNotNullAndDeletedAtBefore(any(LocalDateTime.class),
