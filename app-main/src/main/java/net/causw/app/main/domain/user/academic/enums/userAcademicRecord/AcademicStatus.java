@@ -25,7 +25,6 @@ public enum AcademicStatus {
 	@Deprecated
 	PROFESSOR("교수"); // 교수
 
-
 	private final String value;
 
 	public static AcademicStatus fromString(String academicStatus) {

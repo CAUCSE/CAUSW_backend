@@ -106,12 +106,8 @@ public class BoardConfigQueryRepository {
 									.from(boardAdmin)
 									.where(
 										boardAdmin.boardId.eq(board.id),
-										boardAdmin.userId.eq(userId)
-									)
-									.exists()
-							)
-					)
-			)
+										boardAdmin.userId.eq(userId))
+									.exists())))
 			.orderBy(boardConfig.displayOrder.asc())
 			.fetch();
 	}
