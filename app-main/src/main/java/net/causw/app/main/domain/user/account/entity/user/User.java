@@ -162,14 +162,16 @@ public class User extends BaseEntity {
 	@Column(name = "report_count", nullable = false)
 	@Builder.Default
 	private Integer reportCount = 0;
-  
-  @Column(name = "is_email_verified", nullable = false)
+
+	@Column(name = "is_email_verified", nullable = false)
 	@Builder.Default
 	private Boolean isEmailVerified = false;
 
 	// 자진 탈퇴 처리
 	public void withdraw(LocalDateTime now) {
 		this.deletedAt = now;
+		this.academicStatus = AcademicStatus.UNDETERMINED;
+		this.fcmTokens.clear();
 	}
 
 	/*
@@ -187,13 +189,11 @@ public class User extends BaseEntity {
 		this.major = null;
 		this.department = null;
 		this.currentCompletedSemester = null;
-		this.academicStatus = AcademicStatus.UNDETERMINED;
 		this.profileImageType = ProfileImageType.GHOST;
 		this.userProfileImage = null;
 		this.graduationYear = null;
 		this.graduationType = null;
 		this.agreements = null;
-		this.fcmTokens.clear();
 	}
 
 	public boolean isDeleted() {
