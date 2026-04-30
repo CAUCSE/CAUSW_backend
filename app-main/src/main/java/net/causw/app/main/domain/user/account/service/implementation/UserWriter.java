@@ -114,6 +114,8 @@ public class UserWriter {
 	}
 
 	private boolean isAlreadyAnonymized(User user) {
-		return user.getEmail() != null && user.getEmail().startsWith("deleted_");
+		return user.isDeleted() &&
+			user.getEmail() != null &&
+			user.getEmail().startsWith("deleted_");
 	}
 }
