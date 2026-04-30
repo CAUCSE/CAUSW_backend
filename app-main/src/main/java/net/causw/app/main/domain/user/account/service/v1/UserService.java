@@ -1019,7 +1019,7 @@ public class UserService {
 		this.circleMemberRepository.findByUser_Id(user.getId())
 			.forEach(circleMember -> this.updateStatus(circleMember.getId(), CircleMemberStatus.LEAVE));
 
-		user.setDeletedAt(LocalDateTime.now());
+		user.withdraw();
 		User entity = userRepository.save(user);
 		return UserDtoMapper.INSTANCE.toUserResponseDto(entity, null, null);
 	}

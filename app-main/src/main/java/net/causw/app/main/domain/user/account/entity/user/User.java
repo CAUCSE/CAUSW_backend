@@ -351,6 +351,12 @@ public class User extends BaseEntity {
 		this.rejectionOrDropReason = dropReason;
 	}
 
+	// 탈퇴 처리
+	public void withdraw() {
+		this.state = UserState.INACTIVE;
+		this.deletedAt = LocalDateTime.now();
+	}
+
 	// 탈퇴, 추방된 유저의 계정 복구에 사용
 	public void restore() {
 		this.state = UserState.ACTIVE;
