@@ -42,7 +42,7 @@ public class UserValidator {
 	 * [USER_INACTIVE_CAN_REJOIN] 탈퇴 계정인 경우 (복구 절차 필요)
 	 */
 	public void validateUserStatusForSignup(User user) {
-		if (user.isDeleted()) {
+		if (user.isInactive()) {
 			throw UserErrorCode.USER_INACTIVE_CAN_REJOIN.toBaseException();
 		}
 
@@ -75,7 +75,7 @@ public class UserValidator {
 			default -> {}
 		}
 
-		if (user.isDeleted()) {
+		if (user.isInactive()) {
 			throw UserErrorCode.USER_INACTIVE_CAN_REJOIN.toBaseException();
 		}
 	}
@@ -95,7 +95,7 @@ public class UserValidator {
 			default -> {}
 		}
 
-		if (user.isDeleted()) {
+		if (user.isInactive()) {
 			throw UserErrorCode.INVALID_LOGIN_USER_INACTIVE.toBaseException();
 		}
 	}
@@ -115,7 +115,7 @@ public class UserValidator {
 			default -> {}
 		}
 
-		if (user.isDeleted()) {
+		if (user.isInactive()) {
 			throw AuthErrorCode.INACTIVE_USER.toBaseException();
 		}
 	}

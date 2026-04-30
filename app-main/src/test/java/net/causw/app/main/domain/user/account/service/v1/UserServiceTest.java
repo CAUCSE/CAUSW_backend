@@ -416,7 +416,7 @@ class UserServiceTest {
 			// then
 			verify(userRepository).save(inactiveUser);
 			assertThat(inactiveUser.getState()).isEqualTo(UserState.ACTIVE);
-			assertThat(inactiveUser.isDeleted()).isFalse();
+			assertThat(inactiveUser.isInactive()).isFalse();
 			assertThat(inactiveUser.getRoles()).containsExactly(Role.COMMON);
 			assertThat(result.getAccessToken()).isEqualTo("access-token");
 			assertThat(result.getRefreshToken()).isEqualTo("refresh-token");

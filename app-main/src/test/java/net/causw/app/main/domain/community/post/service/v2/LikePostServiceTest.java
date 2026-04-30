@@ -51,7 +51,7 @@ public class LikePostServiceTest {
 			post = mock(Post.class);
 
 			given(post.getWriter()).willReturn(writer);
-			given(writer.isDeleted()).willReturn(false);
+			given(writer.isInactive()).willReturn(false);
 			given(postReader.findById("post-id")).willReturn(post);
 		}
 
@@ -97,7 +97,7 @@ public class LikePostServiceTest {
 			post = mock(Post.class);
 
 			given(post.getWriter()).willReturn(writer);
-			given(writer.isDeleted()).willReturn(false);
+			given(writer.isInactive()).willReturn(false);
 			given(postReader.findById("post-id")).willReturn(post);
 		}
 

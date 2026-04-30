@@ -66,7 +66,7 @@ public class CommentValidator {
 	}
 
 	public void validateForLike(User user, Comment comment) {
-		if (comment.getWriter().isDeleted()) {
+		if (comment.getWriter().isInactive()) {
 			throw AuthErrorCode.INACTIVE_USER.toBaseException();
 		}
 		if (likeCommentReader.isCommentLiked(user, comment.getId())) {
@@ -75,7 +75,7 @@ public class CommentValidator {
 	}
 
 	public void validateForCancelLike(User user, Comment comment) {
-		if (comment.getWriter().isDeleted()) {
+		if (comment.getWriter().isInactive()) {
 			throw AuthErrorCode.INACTIVE_USER.toBaseException();
 		}
 		if (!likeCommentReader.isCommentLiked(user, comment.getId())) {
@@ -90,7 +90,7 @@ public class CommentValidator {
 		UserState userState = user.getState();
 		if (userState == UserState.DROP)
 			throw AuthErrorCode.DROPPED_USER.toBaseException();
-		if (user.isDeleted())
+		if (user.isInactive())
 			throw AuthErrorCode.INACTIVE_USER.toBaseException();
 
 		if (user.getRoles().contains(Role.NONE))

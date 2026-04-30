@@ -29,7 +29,7 @@ import lombok.NoArgsConstructor;
 public class PostValidator {
 
 	public static void validateWriterNotDeleted(Post post) {
-		if (post.getWriter().isDeleted()) {
+		if (post.getWriter().isInactive()) {
 			throw PostErrorCode.DELETED_WRITER.toBaseException();
 		}
 	}
@@ -76,7 +76,7 @@ public class PostValidator {
 		if (userState == UserState.DROP) {
 			throw UserErrorCode.USER_DROPPED.toBaseException();
 		}
-		if (user.isDeleted()) {
+		if (user.isInactive()) {
 			throw UserErrorCode.USER_INACTIVE_CAN_REJOIN.toBaseException();
 		}
 

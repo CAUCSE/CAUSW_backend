@@ -56,7 +56,7 @@ public record CommentAuthorInfo(
 		boolean isOwner = writer != null && writer.getId().equals(currentUser.getId());
 		boolean canEdit = isOwner || boardAdminIds.contains(currentUser.getId());
 
-		boolean isInactiveUser = writer != null && (writer.isDeleted() || writer.getState() == UserState.DROP);
+		boolean isInactiveUser = writer != null && (writer.isInactive() || writer.getState() == UserState.DROP);
 		String displayWriterNickname;
 		if (isInactiveUser) {
 			displayWriterNickname = StaticValue.INACTIVE_USER_NICKNAME;

@@ -76,6 +76,6 @@ public record ProfileImageDto(
 
 	private static boolean isInactiveUser(User user) {
 		UserState state = user.getState();
-		return state == UserState.DROP || user.isDeleted();
+		return state == UserState.DROP || user.isInactive();
 	}
 }

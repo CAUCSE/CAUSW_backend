@@ -197,7 +197,7 @@ public class PostMapper {
 	}
 
 	private static boolean isInactiveWriter(User writer) {
-		return writer == null || writer.isDeleted() || writer.getState() == UserState.DROP;
+		return writer == null || writer.isInactive() || writer.getState() == UserState.DROP;
 	}
 
 }

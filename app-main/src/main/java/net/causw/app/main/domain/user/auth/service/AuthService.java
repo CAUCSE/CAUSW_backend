@@ -200,7 +200,7 @@ public class AuthService {
 		}
 		// 탈퇴한 회원일 경우에도 null 처리
 		User user = userOptional.get();
-		if (user.isDeleted()) {
+		if (user.isInactive()) {
 			return Optional.empty();
 		}
 		List<EmailFindResult.SocialAccountSummary> socialAccounts = socialAccountReader.findAllByUserId(user.getId())
