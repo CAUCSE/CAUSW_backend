@@ -373,11 +373,10 @@ class UserServiceTest {
 		}
 
 		@Test
-		@DisplayName("탈퇴(deletedAt)한 사용자가 재가입 시도 시 실패")
+		@DisplayName("탈퇴(INACTIVE)한 사용자가 재가입 시도 시 실패")
 		void signUp_InactiveUser_ThrowsException() {
 			// given
-			existingUser.setState(UserState.ACTIVE);
-			existingUser.setDeletedAt(LocalDateTime.now());
+			existingUser.setState(UserState.INACTIVE);
 			given(userRepository.findByEmail(signUpRequest.getEmail()))
 				.willReturn(Optional.of(existingUser));
 
@@ -394,10 +393,11 @@ class UserServiceTest {
 	class RecoverUserTest {
 
 		@Test
-		@DisplayName("탈퇴(deletedAt) 사용자 계정 복구 성공")
+		@DisplayName("탈퇴(INACTIVE) 사용자 계정 복구 성공")
 		void recoverUser_InactiveUser_Success() {
 
 			User inactiveUser = ObjectFixtures.getCertifiedUserWithId("test-user-id");
+			inactiveUser.setState(UserState.INACTIVE);
 			inactiveUser.setDeletedAt(LocalDateTime.now());
 			inactiveUser.setRoles(new HashSet<>(Set.of(Role.NONE)));
 

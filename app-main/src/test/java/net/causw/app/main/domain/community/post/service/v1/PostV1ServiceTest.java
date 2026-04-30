@@ -299,7 +299,7 @@ public class PostV1ServiceTest {
 			return Stream.of(
 				Arguments.of(Role.NONE, UserState.ACTIVE, null),
 				Arguments.of(Role.COMMON, UserState.DROP, null),
-				Arguments.of(Role.COMMON, UserState.ACTIVE, LocalDateTime.now()));
+				Arguments.of(Role.COMMON, UserState.INACTIVE, null));
 		}
 
 		private static Stream<Arguments> provideSearchByKeywordSuccessCases() {
