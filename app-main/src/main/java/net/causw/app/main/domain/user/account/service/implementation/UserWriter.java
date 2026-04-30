@@ -16,13 +16,16 @@ import net.causw.app.main.domain.user.account.repository.user.SocialAccountRepos
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class UserWriter {
 
 	private final UserRepository userRepository;
 	private final SocialAccountRepository socialAccountRepository;
+	private final SocialAccountWriter socialAccountWriter;
 
 	public User save(User user) {
 		return this.userRepository.save(user);
@@ -100,6 +103,12 @@ public class UserWriter {
 		for (User user : users) {
 			if (isAlreadyAnonymized(user)) {
 				continue;
+			}
+
+			try {
+				socialAccountWriter.unlinkAllByUser(user);
+			} catch (Exception e) {
+				log.error("[유저 정리 배치] 소셜 연동 해제 실패 - userId: {}", user.getId(), e);
 			}
 
 			user.anonymize();
