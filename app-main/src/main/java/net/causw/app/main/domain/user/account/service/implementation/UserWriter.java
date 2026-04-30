@@ -25,7 +25,8 @@ public class UserWriter {
 
 	private final UserRepository userRepository;
 	private final SocialAccountRepository socialAccountRepository;
-	private final SocialAccountWriter socialAccountWriter;
+	private final SocialAccountReader socialAccountReader;
+	private final SocialAccountUnlinkManager socialAccountUnlinkManager;
 
 	public User save(User user) {
 		return this.userRepository.save(user);
@@ -105,10 +106,15 @@ public class UserWriter {
 				continue;
 			}
 
-			try {
-				socialAccountWriter.unlinkAllByUser(user);
-			} catch (Exception e) {
-				log.error("[유저 정리 배치] 소셜 연동 해제 실패 - userId: {}", user.getId(), e);
+			List<SocialAccount> socialAccounts = socialAccountReader.findAllByUserId(user.getId());
+
+			for (SocialAccount socialAccount : socialAccounts) {
+				try {
+					socialAccountUnlinkManager.unlink(socialAccount);
+				} catch (Exception e) {
+					log.error("[유저 정리 배치] 소셜 연동 해제 실패 - userId: {}, socialType: {}",
+						user.getId(), socialAccount.getSocialType(), e);
+				}
 			}
 
 			user.anonymize();

@@ -1,0 +1,55 @@
+package net.causw.app.main.domain.user.account.service.implementation;
+
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+
+import net.causw.app.main.domain.user.account.entity.user.SocialAccount;
+import net.causw.app.main.domain.user.account.enums.user.SocialType;
+import net.causw.app.main.domain.user.auth.crypto.OauthRefreshTokenCipher;
+import net.causw.app.main.domain.user.auth.service.implementation.AppleOAuthRevokeClient;
+import net.causw.app.main.domain.user.auth.service.implementation.GoogleOAuthRevokeClient;
+import net.causw.app.main.domain.user.auth.service.implementation.KakaoOAuthUnlinkClient;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Component
+@RequiredArgsConstructor
+@Slf4j
+public class SocialAccountUnlinkManager {
+	private final OauthRefreshTokenCipher oauthRefreshTokenCipher;
+	private final GoogleOAuthRevokeClient googleOAuthRevokeClient;
+	private final AppleOAuthRevokeClient appleOAuthRevokeClient;
+	private final KakaoOAuthUnlinkClient kakaoOAuthUnlinkClient;
+
+	/**
+	 * 개별 소셜 계정에 대한 연동 해제(Revoke/Unlink)를 수행합니다.
+	 */
+	public void unlink(SocialAccount socialAccount) {
+		String encryptedRefreshToken = socialAccount.getOauthRefreshTokenCipher();
+		if (!StringUtils.hasText(encryptedRefreshToken)) {
+			return;
+		}
+
+		String refreshToken = oauthRefreshTokenCipher.decrypt(encryptedRefreshToken);
+
+		try {
+			revokeByProvider(socialAccount.getSocialType(), refreshToken);
+		} catch (Exception e) {
+			log.warn("소셜 연동 해제 실패. socialAccountId={}, socialType={}",
+				socialAccount.getId(), socialAccount.getSocialType(), e);
+		} finally {
+			// 연동 해제 시도 후에는 DB상의 토큰 정보도 제거 (엔티티 메서드 활용)
+			socialAccount.replaceEncryptedOauthRefreshToken(null);
+		}
+	}
+
+	private void revokeByProvider(SocialType socialType, String refreshToken) {
+		switch (socialType) {
+			case GOOGLE -> googleOAuthRevokeClient.revoke(refreshToken);
+			case APPLE -> appleOAuthRevokeClient.revoke(refreshToken);
+			case KAKAO -> kakaoOAuthUnlinkClient.unlink(refreshToken);
+			default -> log.info("해당 소셜 타입에 대한 핸들러가 없습니다: {}", socialType);
+		}
+	}
+}

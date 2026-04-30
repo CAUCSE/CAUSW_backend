@@ -1,6 +1,7 @@
 package net.causw.app.main.domain.user.account.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -9,13 +10,15 @@ import org.springframework.transaction.annotation.Transactional;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerWriter;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserWithdrawResponse;
+import net.causw.app.main.domain.user.account.entity.user.SocialAccount;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.repository.userInfo.UserInfoRepository;
 import net.causw.app.main.domain.user.account.service.dto.request.UserPasswordUpdateCommand;
 import net.causw.app.main.domain.user.account.service.dto.result.UserMeResult;
-import net.causw.app.main.domain.user.account.service.implementation.SocialAccountWriter;
+import net.causw.app.main.domain.user.account.service.implementation.SocialAccountReader;
+import net.causw.app.main.domain.user.account.service.implementation.SocialAccountUnlinkManager;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
@@ -27,7 +30,6 @@ import net.causw.app.main.shared.dto.ProfileImageDto;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 import net.causw.app.main.shared.infra.firebase.FcmUtils;
-import net.causw.global.exception.BadRequestException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -37,7 +39,8 @@ public class UserAccountService {
 
 	private final UserReader userReader;
 	private final UserWriter userWriter;
-	private final SocialAccountWriter socialAccountWriter;
+	private final SocialAccountReader socialAccountReader;
+	private final SocialAccountUnlinkManager socialAccountUnlinkManager;
 	private final LockerReader lockerReader;
 	private final LockerWriter lockerWriter;
 	private final UserValidator userValidator;
@@ -192,7 +195,10 @@ public class UserAccountService {
 		user.updatePassword(passwordEncoder.encode(command.newPassword()));
 	}
 
-	// 회원 탈퇴
+	/**
+	 * 회원 탈퇴
+	 * - 소셜 연동 해제, 토큰 무효화, 사물함 반납 등 후속 처리를 수행합니다.
+	 */
 	@Transactional
 	public UserWithdrawResponse withdraw(String userId, String accessToken, String refreshToken) {
 		User user = userReader.findUserById(userId);
@@ -206,7 +212,8 @@ public class UserAccountService {
 		}
 
 		// 소셜 계정 unlink + provider refresh token 제거
-		socialAccountWriter.unlinkAllByUser(user);
+		List<SocialAccount> socialAccounts = socialAccountReader.findAllByUserId(user.getId());
+		socialAccounts.forEach(socialAccountUnlinkManager::unlink);
 		// 현재 access / refresh token 무효화
 		authTokenManager.invalidateTokens(accessToken, refreshToken);
 		// 부가 처리
