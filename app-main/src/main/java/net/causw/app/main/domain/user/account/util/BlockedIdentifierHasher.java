@@ -4,10 +4,17 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
 public class BlockedIdentifierHasher {
+
+	private final String salt;
+
+	public BlockedIdentifierHasher(@Value("${custom.hash.salt}") String salt) {
+		this.salt = salt;
+	}
 
 	public String hash(String value) {
 		if (value == null || value.isBlank()) {
