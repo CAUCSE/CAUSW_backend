@@ -39,7 +39,7 @@ public class SocialAccountWriter {
 		}
 	}
 
-	public void unlink(SocialAccount socialAccount) {
+	private void unlink(SocialAccount socialAccount) {
 		String encryptedRefreshToken = socialAccount.getOauthRefreshTokenCipher();
 
 		if (!StringUtils.hasText(encryptedRefreshToken)) {
