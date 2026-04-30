@@ -233,7 +233,7 @@ public class UserController {
 	@GetMapping(value = "/state/{state}")
 	@ResponseStatus(value = HttpStatus.OK)
 	@PreAuthorize("@security.hasRoleGroup(@RoleGroup.EXECUTIVES)")
-	@Operation(summary = "유저 관리 시 사용자의 상태별 검색 API(완료)", description = "유저를 관리할 때 사용자의 상태에 따라 분류하여 검색할 수 있습니다. \n state 는 ACTIVE, INACTIVE(레거시: 탈퇴), AWAIT, REJECT, DROP 으로 검색할 수 있습니다.")
+	@Operation(summary = "유저 관리 시 사용자의 상태별 검색 API(완료)", description = "유저를 관리할 때 사용자의 상태에 따라 분류하여 검색할 수 있습니다. \n state 는 ACTIVE, INACTIVE(탈퇴), AWAIT, REJECT, DROP 으로 검색할 수 있습니다.")
 	public Page<UserResponseDto> findByState(
 		@PathVariable("state") String state,
 		@RequestParam(name = "user name", required = false) String name,

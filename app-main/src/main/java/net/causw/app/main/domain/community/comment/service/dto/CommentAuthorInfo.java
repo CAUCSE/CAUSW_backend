@@ -41,7 +41,7 @@ public record CommentAuthorInfo(
 	 * 댓글 작성자 정보와 현재 조회 유저의 권한을 조합해 {@code CommentAuthorInfo}를 생성합니다.
 	 *
 	 * <p>수정·삭제 권한({@code updatable}/{@code deletable})은 작성자 본인이거나 게시판 관리자인 경우 부여됩니다.
-	 * 탈퇴(deletedAt 설정) 또는 DROP 유저의 닉네임은 고정값으로 치환됩니다.</p>
+	 * 탈퇴(INACTIVE) 또는 DROP 유저의 닉네임은 고정값으로 치환됩니다.</p>
 	 *
 	 * @param writer       댓글 작성자 엔티티 (삭제된 경우 {@code null} 가능)
 	 * @param isAnonymous  익명 댓글 여부

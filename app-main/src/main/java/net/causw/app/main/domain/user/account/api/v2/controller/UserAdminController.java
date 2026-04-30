@@ -68,7 +68,7 @@ public class UserAdminController {
 		return ApiResponse.success(response);
 	}
 
-	@Operation(summary = "삭제(탈퇴) 회원 목록 조회 V2", description = "관리자가 탈퇴 처리된 회원 목록을 조회합니다. deletedAt이 설정된 회원만 반환됩니다.")
+	@Operation(summary = "삭제(탈퇴) 회원 목록 조회 V2", description = "관리자가 탈퇴 처리된 회원 목록을 조회합니다. INACTIVE 상태 회원만 반환됩니다.")
 	@GetMapping("/deleted")
 	public ApiResponse<PageResponse<DeletedUserListResponse>> getDeletedUsers(
 		@ModelAttribute DeletedUserSearchCondition request,

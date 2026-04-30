@@ -37,9 +37,9 @@ public class UserQueryRepository {
 
 	private final JPAQueryFactory jpaQueryFactory;
 
-	private static BooleanExpression notDeleted() {
+	private static BooleanExpression notInactive() {
 		QUser user = QUser.user;
-		return user.deletedAt.isNull();
+		return user.state.ne(UserState.INACTIVE);
 	}
 
 	public List<User> findAllActiveUsersByRoles(List<Role> roles) {
@@ -138,7 +138,7 @@ public class UserQueryRepository {
 			: condition.states();
 
 		BooleanBuilder where = new BooleanBuilder()
-			.and(notDeleted())
+			.and(notInactive())
 			.and(userListKeywordCondition(condition.keyword()))
 			.and(userStatesCondition(states))
 			.and(academicStatusCondition(condition.academicStatus()))
@@ -163,14 +163,14 @@ public class UserQueryRepository {
 	}
 
 	/**
-	 * 삭제(탈퇴) 회원 전용 목록 조회 — deletedAt이 null이 아닌 유저만 반환.
+	 * 삭제(탈퇴) 회원 전용 목록 조회 — INACTIVE 상태 유저만 반환.
 	 */
 	public Page<DeletedUserListQueryResult> findDeletedUserList(
 		DeletedUserQueryCondition condition,
 		Pageable pageable) {
 
 		BooleanBuilder where = new BooleanBuilder()
-			.and(user.deletedAt.isNotNull())
+			.and(user.state.eq(UserState.INACTIVE))
 			.and(adminKeywordCondition(condition.keyword()))
 			.and(departmentCondition(condition.department()))
 			.and(admissionYearBetween(condition.admissionYearFrom(), condition.admissionYearTo()))
@@ -201,7 +201,7 @@ public class UserQueryRepository {
 		QUser user = QUser.user;
 
 		BooleanBuilder where = new BooleanBuilder()
-			.and(notDeleted())
+			.and(notInactive())
 			.and(nameOrStudentIdKeywordCondition(keyword))
 			.and(userStateCondition(state))
 			.and(academicStatusCondition(academicStatus))
@@ -228,7 +228,7 @@ public class UserQueryRepository {
 		return Optional.ofNullable(jpaQueryFactory
 			.selectFrom(user)
 			.where(user.id.eq(userId))
-			.where(notDeleted())
+			.where(notInactive())
 			.fetchOne());
 	}
 
@@ -242,7 +242,7 @@ public class UserQueryRepository {
 		return jpaQueryFactory.selectFrom(user)
 			.where(user.admissionYear.in(admissionYears))
 			.where(user.state.eq(UserState.ACTIVE))
-			.where(notDeleted())
+			.where(notInactive())
 			.fetch();
 	}
 
@@ -254,7 +254,7 @@ public class UserQueryRepository {
 		QUser user = QUser.user;
 		return jpaQueryFactory.selectFrom(user)
 			.where(user.state.eq(UserState.ACTIVE))
-			.where(notDeleted())
+			.where(notInactive())
 			.fetch();
 	}
 
@@ -267,7 +267,7 @@ public class UserQueryRepository {
 		return jpaQueryFactory.selectFrom(user)
 			.where(user.roles.contains(Role.ADMIN))
 			.where(user.academicStatus.eq(academicStatus))
-			.where(notDeleted())
+			.where(notInactive())
 			.fetch();
 	}
 
@@ -276,7 +276,7 @@ public class UserQueryRepository {
 			.select(user.count())
 			.from(user)
 			.where(user.state.eq(UserState.ACTIVE))
-			.where(notDeleted())
+			.where(notInactive())
 			.fetchOne();
 	}
 

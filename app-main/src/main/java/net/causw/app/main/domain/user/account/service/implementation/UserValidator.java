@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
  * <p>
  * 회원가입/로그인 시의 상태(State) 체크, 리프레시 토큰의 소유권 확인,
  * 이메일/전화번호/닉네임의 중복 여부를 검사합니다.
- * 상태 검증은 state 및 deletedAt 기준으로 판정합니다.
+ * 상태 검증은 UserState 기준으로 판정합니다.
  */
 @Component
 @RequiredArgsConstructor
