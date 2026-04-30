@@ -23,7 +23,9 @@ public class BlockedIdentifierHasher {
 
 		try {
 			MessageDigest md = MessageDigest.getInstance("SHA-256");
-			byte[] digest = md.digest(value.trim().getBytes(StandardCharsets.UTF_8));
+
+			String saltedValue = this.salt + value.trim();
+			byte[] digest = md.digest(saltedValue.getBytes(StandardCharsets.UTF_8));
 
 			StringBuilder sb = new StringBuilder();
 			for (byte b : digest) {
