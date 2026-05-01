@@ -248,7 +248,15 @@ public class UserAccountService {
 
 		// 소셜 계정 unlink + provider refresh token 제거
 		List<SocialAccount> socialAccounts = socialAccountReader.findAllByUserId(user.getId());
-		socialAccounts.forEach(socialAccountUnlinkManager::unlink);
+		socialAccounts.forEach(socialAccount -> {
+			try {
+				socialAccountUnlinkManager.unlink(socialAccount);
+			} catch (Exception e) {
+				log.error("[User Withdraw] 소셜 연동 해제 실패. SocialType: {}, UserID: {}, Error: {}",
+					socialAccount.getSocialType(), user.getId(), e.getMessage());
+			}
+		});
+
 		// 현재 access / refresh token 무효화
 		authTokenManager.invalidateTokens(accessToken, refreshToken);
 		// 부가 처리
