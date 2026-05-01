@@ -168,7 +168,6 @@ public class User extends BaseEntity {
 		this.profileImageType = ProfileImageType.GHOST;
 		this.graduationYear = null;
 		this.graduationType = null;
-		this.agreements = null;
 	}
 
 	public boolean isDeleted() {

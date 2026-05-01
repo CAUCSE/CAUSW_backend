@@ -47,8 +47,6 @@ import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 import net.causw.app.main.shared.util.AuthorizationExtractor;
-import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
-import net.causw.app.main.shared.util.AuthorizationExtractor;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;

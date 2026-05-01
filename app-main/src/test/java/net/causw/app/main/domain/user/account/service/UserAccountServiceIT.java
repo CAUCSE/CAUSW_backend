@@ -7,23 +7,21 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.BDDMockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerReader;
-import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
 import net.causw.app.main.domain.user.account.service.implementation.SocialAccountReader;
-import net.causw.app.main.domain.user.account.service.implementation.SocialAccountUnlinkManager;
-import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
-import net.causw.app.main.shared.infra.firebase.FcmUtils;
-import net.causw.app.main.shared.infra.firebase.FirebaseConfig;
 
 @SpringBootTest
+@ActiveProfiles("test")
 @Transactional
 class UserAccountServiceIT {
 
@@ -37,22 +35,7 @@ class UserAccountServiceIT {
 	private SocialAccountReader socialAccountReader;
 
 	@MockBean
-	private SocialAccountUnlinkManager socialAccountUnlinkManager;
-
-	@MockBean
 	private LockerReader lockerReader;
-
-	@MockBean
-	private LockerWriter lockerWriter;
-
-	@MockBean
-	private FcmUtils fcmUtils;
-
-	@MockBean
-	private FirebaseConfig firebaseConfig;
-
-	@MockBean
-	private AuthTokenManager authTokenManager;
 
 	@Test
 	@DisplayName("탈퇴 시 deletedAt이 저장된다")
@@ -64,15 +47,16 @@ class UserAccountServiceIT {
 			"홍길동",
 			"닉네임",
 			"01012345678",
-			"ABCD12");
+			"ABCD12",
+			List.of());
 
 		User user = userRepository.save(User.from(dto, "encodedPassword"));
 
-		org.mockito.BDDMockito.given(socialAccountReader.findAllByUserId(user.getId()))
+		BDDMockito.given(socialAccountReader.findAllByUserId(user.getId()))
 			.willReturn(List.of()); // 소셜 계정이 없는 케이스로 설정
 
 		// 사물함 없음
-		org.mockito.BDDMockito.given(lockerReader.findByUserId(user.getId()))
+		BDDMockito.given(lockerReader.findByUserId(user.getId()))
 			.willReturn(Optional.empty());
 
 		// when
