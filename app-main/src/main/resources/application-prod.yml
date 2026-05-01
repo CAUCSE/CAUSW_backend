@@ -91,6 +91,19 @@ spring:
               - email
               - name
             client-name: Apple
+          apple-ios:
+            provider: apple
+            # Apple Developer -> Certificates, Identifiers & Profiles -> Keys
+            client-id: ${APPLE_IOS_CLIENT_ID}
+            client-secret: ${APPLE_IOS_CLIENT_SECRET}
+            client-authentication-method: client_secret_post
+            authorization-grant-type: authorization_code
+            redirect-uri: "http://localhost:8080/dummy/ios"
+            scope:
+              - openid
+              - email
+              - name
+            client-name: Apple
 
         provider:
           kakao:
