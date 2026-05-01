@@ -46,6 +46,7 @@ import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
+import net.causw.app.main.shared.util.AuthorizationExtractor;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -207,20 +208,11 @@ public class UserController {
 		@RequestHeader(value = "Authorization", required = false) String authorizationHeader,
 		@CookieValue(name = "refresh_token", required = false) String refreshToken,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		String accessToken = resolveAccessToken(authorizationHeader);
+		AuthorizationExtractor.validate(authorizationHeader);
+
+		String accessToken = AuthorizationExtractor.extract(authorizationHeader);
 
 		return ApiResponse.success(
 			userAccountService.withdraw(userDetails.getUserId(), accessToken, refreshToken));
-	}
-
-	private String resolveAccessToken(String authorizationHeader) {
-		if (authorizationHeader == null || authorizationHeader.isBlank()) {
-			return null;
-		}
-		String prefix = "Bearer ";
-		if (!authorizationHeader.startsWith(prefix)) {
-			return null;
-		}
-		return authorizationHeader.substring(prefix.length());
 	}
 }
