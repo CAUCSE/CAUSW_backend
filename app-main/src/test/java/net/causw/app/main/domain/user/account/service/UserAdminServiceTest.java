@@ -323,7 +323,7 @@ class UserAdminServiceTest {
 	}
 
 	@Test
-	@DisplayName("관리자 추방 시 계정은 DROP 처리되고 차단 식별자가 저장된다")
+	@DisplayName("관리자 추방 시 계정은 DROP 처리되고 추방 식별자가 저장된다")
 	void dropUser_Success() {
 		// given
 		String userId = "target-user-id";
