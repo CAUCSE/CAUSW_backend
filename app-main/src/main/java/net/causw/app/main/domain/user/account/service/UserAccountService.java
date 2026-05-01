@@ -31,9 +31,11 @@ import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 import net.causw.app.main.shared.infra.firebase.FcmUtils;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserAccountService {
 
 	private final UserReader userReader;
@@ -195,7 +197,7 @@ public class UserAccountService {
 	}
 
 	/**
-	 * 탈퇴한 사용자의 계정을 복구합니다. (자진 탈퇴 복구)
+	 * 탈퇴한 사용자의 계정을 복구합니다.
 	 * <p>
 	 * 탈퇴 후 30일 이내에만 복구가 가능합니다.
 	 * </p>
@@ -203,31 +205,13 @@ public class UserAccountService {
 	 * @param userId 복구할 사용자의 고유 식별자 (PK)
 	 */
 	@Transactional
-	public void restoreUser(String userId) {
+	public User restore(String userId) {
 		User user = userReader.findUserById(userId);
 
 		// 30일 유예 기간 검증 (공통 로직 호출)
 		userValidator.validateRestorable(user);
 
-		userWriter.restore(user);
-	}
-
-	/**
-	 * 관리자에 의해 추방(DROP)된 사용자의 계정을 복구합니다.
-	 * <p>
-	 * 추방 후 30일 이내에만 복구가 가능합니다. (yvngyeong님 피드백 반영)
-	 * </p>
-	 *
-	 * @param userId 복구할 사용자의 고유 식별자 (PK)
-	 */
-	@Transactional
-	public void restoreDroppedUser(String userId) {
-		User user = userReader.findUserById(userId);
-
-		// 추방 유저에게도 동일하게 30일 유예 기간 정책 적용
-		userValidator.validateRestorable(user);
-
-		userWriter.restore(user);
+		return userWriter.restore(user);
 	}
 
 	/**
