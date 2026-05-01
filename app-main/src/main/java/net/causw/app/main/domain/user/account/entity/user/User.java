@@ -171,7 +171,9 @@ public class User extends BaseEntity {
 	public void withdraw(LocalDateTime now) {
 		this.deletedAt = now;
 		this.academicStatus = AcademicStatus.UNDETERMINED;
-		this.fcmTokens.clear();
+		if (this.fcmTokens != null) {
+			this.fcmTokens.clear();
+		}
 	}
 
 	/*
