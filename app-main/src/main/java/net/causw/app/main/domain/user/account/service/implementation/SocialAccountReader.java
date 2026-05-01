@@ -17,4 +17,11 @@ public class SocialAccountReader {
 	public List<SocialAccount> findAllByUserId(String userId) {
 		return socialAccountRepository.findAllByUserId(userId);
 	}
+
+	public List<SocialAccount> findAllByUserIdIn(List<String> userIds) {
+		if (userIds == null || userIds.isEmpty()) {
+			return List.of();
+		}
+		return socialAccountRepository.findAllByUserIdIn(userIds);
+	}
 }

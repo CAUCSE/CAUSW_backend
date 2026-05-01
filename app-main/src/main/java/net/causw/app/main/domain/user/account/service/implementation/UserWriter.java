@@ -3,7 +3,9 @@ package net.causw.app.main.domain.user.account.service.implementation;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -99,19 +101,29 @@ public class UserWriter {
 		return this.userRepository.save(user);
 	}
 
-	// 회원 탈퇴를 위한 익명화
+	/**
+	 * 탈퇴한 사용자들의 개인정보를 익명화하고 소셜 연동을 최종 해제합니다.
+	 * <p>
+	 * 실시간 탈퇴 시 실패했을 수 있는 소셜 해제를 재시도하며,
+	 * 유예 기간이 지난 사용자의 식별 정보를 마스킹 처리하여 법적 개인정보 파기 의무를 수행합니다.
+	 * </p>
+	 *
+	 * @param users 익명화 처리를 진행할 사용자 엔티티 목록
+	 */
 	@Transactional
 	public void cleanupWithdrawnUsers(List<User> users) {
-		if (users == null || users.isEmpty()) {
-			return;
-		}
+		List<String> userIds = users.stream().map(User::getId).toList();
+
+		Map<String, List<SocialAccount>> socialAccountMap = socialAccountReader.findAllByUserIdIn(userIds)
+			.stream()
+			.collect(Collectors.groupingBy(sa -> sa.getUser().getId()));
 
 		for (User user : users) {
 			if (isAlreadyAnonymized(user)) {
 				continue;
 			}
 
-			List<SocialAccount> socialAccounts = socialAccountReader.findAllByUserId(user.getId());
+			List<SocialAccount> socialAccounts = socialAccountMap.getOrDefault(user.getId(), List.of());
 
 			for (SocialAccount socialAccount : socialAccounts) {
 				try {
