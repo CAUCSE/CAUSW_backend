@@ -10,6 +10,7 @@ import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 import org.springframework.data.domain.Page;
 
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.comment.api.v1.dto.CommentsOfUserResponseDto;
 import net.causw.app.main.domain.community.comment.entity.Comment;
@@ -52,7 +53,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "studentId", source = "user.studentId")
 	@Mapping(target = "admissionYear", source = "user.admissionYear")
 	@Mapping(target = "roles", source = "user.roles")
-	@Mapping(target = "profileImageUrl", source = "user.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
+	@Mapping(target = "profileImageUrl", expression = "java(userProfileImage != null && userProfileImage.getUuidFile() != null ? userProfileImage.getUuidFile().getFileUrl() : null)")
 	@Mapping(target = "state", source = "user.state")
 	@Mapping(target = "nickname", source = "user.nickname")
 	@Mapping(target = "major", source = "user.major")
@@ -65,7 +66,8 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "rejectionOrDropReason", source = "user.rejectionOrDropReason")
 	@Mapping(target = "createdAt", source = "user.createdAt")
 	@Mapping(target = "updatedAt", source = "user.updatedAt")
-	UserResponseDto toUserResponseDto(User user, List<String> circleIdIfLeader, List<String> circleNameIfLeader);
+	UserResponseDto toUserResponseDto(User user, UserProfileImage userProfileImage, List<String> circleIdIfLeader,
+		List<String> circleNameIfLeader);
 	// circleIdIfLeader, circleNameIfLeader는 경우에 따라 null을 할당합니다.(기존 UserResponseDto.from을 사용하는 경우)
 
 	@Mapping(target = "id", source = "user.id")
@@ -74,7 +76,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "studentId", source = "user.studentId")
 	@Mapping(target = "admissionYear", source = "user.admissionYear")
 	@Mapping(target = "roles", source = "user.roles")
-	@Mapping(target = "profileImageUrl", source = "user.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
+	@Mapping(target = "profileImageUrl", expression = "java(userProfileImage != null && userProfileImage.getUuidFile() != null ? userProfileImage.getUuidFile().getFileUrl() : null)")
 	@Mapping(target = "state", source = "user.state")
 	@Mapping(target = "nickname", source = "user.nickname")
 	@Mapping(target = "major", source = "user.major")
@@ -89,16 +91,17 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "updatedAt", source = "user.updatedAt")
 	@Mapping(target = "circleIdIfLeader", ignore = true)
 	@Mapping(target = "circleNameIfLeader", ignore = true)
-	UserResponseDto toUserResponseDto(User user);
+	UserResponseDto toUserResponseDto(User user, UserProfileImage userProfileImage);
 
 	@Mapping(target = "id", source = "user.id")
 	@Mapping(target = "email", source = "user.email")
 	@Mapping(target = "name", source = "user.name")
 	@Mapping(target = "studentId", source = "user.studentId")
 	@Mapping(target = "admissionYear", source = "user.admissionYear")
-	@Mapping(target = "profileImageUrl", source = "user.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
+	@Mapping(target = "profileImageUrl", expression = "java(userProfileImage != null && userProfileImage.getUuidFile() != null ? userProfileImage.getUuidFile().getFileUrl() : null)")
 	@Mapping(target = "posts", source = "post")
-	UserPostsResponseDto toUserPostsResponseDto(User user, Page<PostsResponseDto> post);
+	UserPostsResponseDto toUserPostsResponseDto(User user, UserProfileImage userProfileImage,
+		Page<PostsResponseDto> post);
 
 	@Mapping(target = "id", source = "post.id")
 	@Mapping(target = "title", source = "post.title")
@@ -115,8 +118,9 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "name", source = "user.name")
 	@Mapping(target = "studentId", source = "user.studentId")
 	@Mapping(target = "admissionYear", source = "user.admissionYear")
-	@Mapping(target = "profileImageUrl", source = "user.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
-	UserCommentsResponseDto toUserCommentsResponseDto(User user, Page<CommentsOfUserResponseDto> comment);
+	@Mapping(target = "profileImageUrl", expression = "java(userProfileImage != null && userProfileImage.getUuidFile() != null ? userProfileImage.getUuidFile().getFileUrl() : null)")
+	UserCommentsResponseDto toUserCommentsResponseDto(User user, UserProfileImage userProfileImage,
+		Page<CommentsOfUserResponseDto> comment);
 
 	@Mapping(target = "id", source = "comment.id")
 	@Mapping(target = "content", source = "comment.content")
@@ -219,13 +223,13 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "name", source = "userInfo.user.name")
 	@Mapping(target = "email", source = "userInfo.user.email")
 	@Mapping(target = "admissionYear", source = "userInfo.user.admissionYear")
-	@Mapping(target = "profileImageUrl", source = "userInfo.user.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
+	@Mapping(target = "profileImageUrl", expression = "java(userProfileImage != null && userProfileImage.getUuidFile() != null ? userProfileImage.getUuidFile().getFileUrl() : null)")
 	@Mapping(target = "major", source = "userInfo.user.major")
 	@Mapping(target = "department", source = "userInfo.user.department")
 	@Mapping(target = "description", source = "userInfo.description")
 	@Mapping(target = "job", source = "userInfo.job")
 	// @Mapping(target = "userCareer", source = "userInfo.userCareer", qualifiedByName = "mapUserCareerListToResponseDtoList")
-	UserInfoSummaryResponseDto toUserInfoSummaryResponseDto(UserInfo userInfo);
+	UserInfoSummaryResponseDto toUserInfoSummaryResponseDto(UserInfo userInfo, UserProfileImage userProfileImage);
 
 	@Mapping(target = "id", source = "userInfo.id")
 	@Mapping(target = "userId", source = "userInfo.user.id")
@@ -233,7 +237,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "email", source = "userInfo.user.email")
 	@Mapping(target = "phoneNumber", source = "userInfo.user.phoneNumber", qualifiedByName = "maskPhoneNumber")
 	@Mapping(target = "admissionYear", source = "userInfo.user.admissionYear")
-	@Mapping(target = "profileImageUrl", source = "userInfo.user.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
+	@Mapping(target = "profileImageUrl", expression = "java(userProfileImage != null && userProfileImage.getUuidFile() != null ? userProfileImage.getUuidFile().getFileUrl() : null)")
 	@Mapping(target = "major", source = "userInfo.user.major")
 	@Mapping(target = "department", source = "userInfo.user.department")
 	@Mapping(target = "roles", source = "userInfo.user.roles")
@@ -243,7 +247,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "userCareer", source = "userInfo.userCareer", qualifiedByName = "mapUserCareerListToResponseDtoList")
 	@Mapping(target = "socialLinks", source = "userInfo.socialLinks")
 	@Mapping(target = "isPhoneNumberVisible", source = "userInfo.phoneNumberVisible")
-	UserInfoResponseDto toUserInfoResponseDto(UserInfo userInfo);
+	UserInfoResponseDto toUserInfoResponseDto(UserInfo userInfo, UserProfileImage userProfileImage);
 
 	//TODO : 운영계 반영 성공시 삭제
 	@Named("maskPhoneNumber")

@@ -50,7 +50,7 @@ public class Post extends BaseEntity {
 	@Column(columnDefinition = "TEXT", name = "content", nullable = false)
 	private String content;
 
-	@OneToMany(cascade = {CascadeType.REMOVE, CascadeType.PERSIST}, mappedBy = "post")
+	@OneToMany(cascade = {CascadeType.REMOVE, CascadeType.PERSIST}, mappedBy = "post", fetch = FetchType.LAZY)
 	@Builder.Default
 	private List<PostAttachImage> postAttachImageList = new ArrayList<>();
 

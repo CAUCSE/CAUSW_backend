@@ -2,6 +2,7 @@ package net.causw.app.main.domain.community.comment.service.dto;
 
 import java.util.List;
 
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.shared.dto.ProfileImageDto;
@@ -51,7 +52,7 @@ public record CommentAuthorInfo(
 	 * @return 조합된 {@code CommentAuthorInfo}
 	 */
 	public static CommentAuthorInfo of(
-		User writer, Boolean isAnonymous, User currentUser,
+		User writer, UserProfileImage writerProfileImageEntity, Boolean isAnonymous, User currentUser,
 		List<String> boardAdminIds, boolean isBlocked) {
 		boolean isOwner = writer != null && writer.getId().equals(currentUser.getId());
 		boolean canEdit = isOwner || boardAdminIds.contains(currentUser.getId());
@@ -80,7 +81,7 @@ public record CommentAuthorInfo(
 				writerProfileImage = ProfileImageDto.forBlockedUser();
 			} else {
 				// 추방/탈퇴 유저는 ProfileImageDto.from()에서 GHOST 처리됨
-				writerProfileImage = ProfileImageDto.from(writer);
+				writerProfileImage = ProfileImageDto.from(writer, writerProfileImageEntity);
 			}
 		}
 

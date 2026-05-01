@@ -6,11 +6,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.dto.request.UserPasswordUpdateCommand;
 import net.causw.app.main.domain.user.account.service.dto.result.UserMeAccountResult;
 import net.causw.app.main.domain.user.account.service.dto.result.UserMeResult;
+import net.causw.app.main.domain.user.account.service.implementation.UserInfoReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
@@ -40,10 +43,12 @@ public class UserAccountService {
 	private final AuthValidator authValidator;
 	private final AuthTokenManager authTokenManager;
 	private final PasswordEncoder passwordEncoder;
+	private final UserProfileImageReader userProfileImageReader;
 	private final TermsReader termsReader;
 	private final TermsValidator termsValidator;
 	private final UserTermsAgreementReader userTermsAgreementReader;
 	private final UserTermsAgreementWriter userTermsAgreementWriter;
+	private final UserInfoReader userInfoReader;
 
 	/**
 	 * 소셜 로그인을 통해 생성된 임시 유저(GUEST)의 추가 정보를 등록하고 회원가입 절차를 완료합니다.
@@ -85,8 +90,10 @@ public class UserAccountService {
 		userTermsAgreementWriter.saveAll(newAgreements);
 
 		AuthTokenPair tokens = authTokenManager.issueTokens(updatedUser, refreshToken);
+
+		// 신규 등록 유저는 커스텀 프로필 이미지가 없으므로 null 전달
 		return AuthResult.of(tokens.accessToken(), updatedUser.getName(), updatedUser.getEmail(),
-			ProfileImageDto.from(updatedUser),
+			ProfileImageDto.from(updatedUser, null),
 			tokens.refreshToken(), updatedUser.isGuest(), true, updatedUser.isAcademicCertified(),
 			updatedUser.getAcademicStatus());
 	}
@@ -100,8 +107,10 @@ public class UserAccountService {
 	@Transactional(readOnly = true)
 	public UserMeResult getMyProfile(String userId) {
 		User user = userReader.findDetailById(userId);
+		UserProfileImage profileImage = userProfileImageReader.findByUserIdOrNull(userId);
 		boolean hasAllRequiredLatestTerms = userTermsAgreementReader.hasAgreedToAllRequiredLatestTerms(user);
-		return UserMeResult.from(user, hasAllRequiredLatestTerms);
+
+		return UserMeResult.from(user, profileImage, hasAllRequiredLatestTerms);
 	}
 
 	/**
@@ -117,8 +126,9 @@ public class UserAccountService {
 	public UserMeAccountResult getMyAccountProfile(String userId) {
 		User user = userReader.findDetailById(userId);
 		boolean hasAllRequiredLatestTerms = userTermsAgreementReader.hasAgreedToAllRequiredLatestTerms(user);
+		var profileImage = userProfileImageReader.findByUserIdOrNull(userId);
 
-		return UserMeAccountResult.from(user, hasAllRequiredLatestTerms);
+		return UserMeAccountResult.from(user, profileImage, hasAllRequiredLatestTerms);
 	}
 
 	/**

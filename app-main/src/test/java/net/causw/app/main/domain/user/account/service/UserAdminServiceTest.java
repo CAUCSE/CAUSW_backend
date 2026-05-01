@@ -24,6 +24,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.asset.locker.entity.Locker;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerWriter;
@@ -59,6 +60,9 @@ class UserAdminServiceTest {
 
 	@Mock
 	private UserAdminActionLogWriter userAdminActionLogWriter;
+
+	@Mock
+	private UserProfileImageReader userProfileImageReader;
 
 	@InjectMocks
 	private UserAdminService userAdminService;

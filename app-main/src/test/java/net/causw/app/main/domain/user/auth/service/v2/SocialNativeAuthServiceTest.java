@@ -30,6 +30,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtDecoderFactory;
 
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.auth.service.CustomOAuth2UserService;
 import net.causw.app.main.domain.user.auth.service.SocialNativeAuthService;
@@ -66,6 +67,9 @@ class SocialNativeAuthServiceTest {
 
 	@Mock
 	private AuthTokenManager authTokenManager;
+
+	@Mock
+	private UserProfileImageReader userProfileImageReader;
 
 	@Mock
 	private UserTermsAgreementReader userTermsAgreementReader;
@@ -359,7 +363,6 @@ class SocialNativeAuthServiceTest {
 		given(user.getId()).willReturn("user-id");
 		given(user.getName()).willReturn("테스트유저");
 		given(user.getEmail()).willReturn("user@cau.ac.kr");
-		given(user.getProfileUrl()).willReturn("https://cdn.causw.net/profile/default.png");
 		return user;
 	}
 }

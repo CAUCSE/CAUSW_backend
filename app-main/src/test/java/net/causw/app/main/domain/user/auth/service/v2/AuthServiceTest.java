@@ -36,6 +36,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.user.account.entity.user.SocialAccount;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.SocialType;
@@ -111,6 +112,8 @@ public class AuthServiceTest {
 	private UserTermsAgreementWriter userTermsAgreementWriter;
 	@Mock
 	private UserTermsAgreementReader userTermsAgreementReader;
+	@Mock
+	private UserProfileImageReader userProfileImageReader;
 
 	private static final String USER_ID = "user_id_123";
 	private static final String EMAIL = "test@example.com";
