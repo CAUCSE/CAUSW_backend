@@ -23,7 +23,6 @@ import net.causw.app.main.domain.user.account.service.dto.response.UserRoleUpdat
 import net.causw.app.main.domain.user.account.service.implementation.DroppedUserIdentifierWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserAdminActionLogWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
-import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 
@@ -35,11 +34,11 @@ public class UserAdminService {
 
 	private final UserReader userReader;
 	private final UserWriter userWriter;
-	private final UserValidator userValidator;
 	private final LockerReader lockerReader;
 	private final LockerWriter lockerWriter;
 	private final UserAdminActionLogWriter userAdminActionLogWriter;
 	private final DroppedUserIdentifierWriter droppedUserIdentifierWriter;
+	private final UserAccountService userAccountService;
 
 	// 필터링 조건과 페이징 정보를 기반으로 전체 사용자 목록 조회
 	@Transactional(readOnly = true)
@@ -80,13 +79,12 @@ public class UserAdminService {
 	public UserRestoreResult restoreUser(User adminUser, String userId) {
 		User targetUser = userReader.findUserById(userId);
 
-		userValidator.validateRestorable(targetUser);
 		validateRestorableUser(targetUser);
 
 		UserState beforeState = targetUser.getState();
 		Set<Role> beforeRoles = new HashSet<>(targetUser.getRoles());
 
-		User restoredUser = userWriter.restore(targetUser);
+		User restoredUser = userAccountService.restore(targetUser.getId());
 		userAdminActionLogWriter.logRestore(adminUser, restoredUser, beforeState, beforeRoles);
 		return UserRestoreResult.from(restoredUser);
 	}
@@ -95,17 +93,16 @@ public class UserAdminService {
 	public UserRestoreWithdrawalResult restoreWithdrawnUser(User adminUser, String userId) {
 		User targetUser = userReader.findUserById(userId);
 
-		userValidator.validateRestorable(targetUser);
 		validateRestorableWithdrawnUser(targetUser);
 
 		UserState beforeState = targetUser.getState();
 		Set<Role> beforeRoles = new HashSet<>(targetUser.getRoles());
 
-		User recoveredUser = userWriter.restoreWithdrawnUser(targetUser);
+		User restoredUser = userAccountService.restore(targetUser.getId());
 
-		userAdminActionLogWriter.logRestore(adminUser, recoveredUser, beforeState, beforeRoles);
+		userAdminActionLogWriter.logRestore(adminUser, restoredUser, beforeState, beforeRoles);
 
-		return UserRestoreWithdrawalResult.from(recoveredUser);
+		return UserRestoreWithdrawalResult.from(restoredUser);
 	}
 
 	@Transactional
