@@ -6,6 +6,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.policy.PasswordPolicy;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -20,9 +21,6 @@ import lombok.RequiredArgsConstructor;
 public class AuthValidator {
 	private final PasswordEncoder passwordEncoder;
 
-	private static final String PASSWORD_REGEX = "((?=.*[a-zA-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,})";
-	private static final Pattern PASSWORD_PATTERN = Pattern.compile(PASSWORD_REGEX);
-
 	private static final String PHONE_REGEX = "^01(?:0|1|[6-9])-(\\d{3}|\\d{4})-\\d{4}$";
 	private static final Pattern PHONE_PATTERN = Pattern.compile(PHONE_REGEX);
 
@@ -31,7 +29,7 @@ public class AuthValidator {
 	 * <p>
 	 * <b>검증 항목:</b>
 	 * <ul>
-	 * <li>비밀번호: 영문, 숫자, 특수문자를 모두 포함하여 8자 이상이어야 합니다.</li>
+	 * <li>비밀번호: {@link PasswordPolicy} 규칙(영문·숫자·특수문자 각 1개 이상, 8~20자, 허용 문자 집합은 정책 참고).</li>
 	 * <li>전화번호: 010-XXXX-XXXX 형식(하이픈 포함)이어야 합니다.</li>
 	 * </ul>
 	 *
@@ -66,10 +64,9 @@ public class AuthValidator {
 
 	/**
 	 * 비밀번호 포맷 검증 (Private)
-	 * Rule: 영문, 숫자, 특수문자 포함 8자 이상
 	 */
 	public void validatePasswordFormat(String password) {
-		if (!PASSWORD_PATTERN.matcher(password).matches()) {
+		if (!PasswordPolicy.matches(password)) {
 			throw UserErrorCode.INVALID_PASSWORD_REQUEST.toBaseException();
 		}
 	}

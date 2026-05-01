@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.SocialType;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.domain.user.account.policy.PasswordPolicy;
 import net.causw.app.main.domain.user.account.repository.user.SocialAccountRepository;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.app.main.domain.user.account.util.PhoneNumberFormatValidator;
@@ -192,15 +193,14 @@ public class UserValidator {
 	/**
 	 * 비밀번호 형식이 정책에 맞는지 검사합니다.
 	 * <p>
-	 * 영문, 숫자, 특수문자를 각각 1개 이상 포함하고 8자 이상이어야 합니다.
+	 * {@link PasswordPolicy}와 동일합니다.
 	 *
 	 * @param password 검사할 비밀번호
 	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
 	 * [INVALID_PASSWORD_REQUEST] 비밀번호 형식이 정책에 맞지 않는 경우
 	 */
 	public void validatePasswordFormat(String password) {
-		String passwordPolicy = "^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*()-_?]).{8,20}$";
-		if (!password.matches(passwordPolicy)) {
+		if (!PasswordPolicy.matches(password)) {
 			throw UserErrorCode.INVALID_PASSWORD_REQUEST.toBaseException();
 		}
 	}
