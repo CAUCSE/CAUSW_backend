@@ -11,6 +11,7 @@ spring:
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
+    # 본인 로컬 DB 정보
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
@@ -21,6 +22,7 @@ spring:
     show-sql: true
 
   jwt:
+    # 자체 생성
     secret: ${JWT_SECRET_KEY}
 
   data:
@@ -31,6 +33,7 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
+    # 메일 발송 전용 계정 (ccssaa.no.reply@gmail.com) 로그인 -> Google 계정 관리 -> 보안 -> 2단계 인증 -> 앱 비밀번호
     username: ${MAIL_USERNAME}
     password: ${MAIL_PASSWORD}
     properties:
@@ -51,6 +54,7 @@ spring:
       - classpath:db/migration
 
   password:
+    # 자체 생성
     prefix: ${PASSWORD_PREFIX}
 
   batch:
@@ -62,6 +66,7 @@ spring:
       client:
         registration:
           google:
+            # Google Cloud Console -> 'CAUSW 로그인' 프로젝트 -> API 및 서비스 -> 사용자 인증 정보
             client-id: ${GOOGLE_CLIENT_ID}
             client-secret: ${GOOGLE_CLIENT_SECRET}
             scope:
@@ -69,6 +74,7 @@ spring:
               - email
               - profile
           kakao:
+            # Kakao Developers -> 내 애플리케이션 -> 앱 키 및 보안 설정
             client-id: ${KAKAO_CLIENT_ID}
             client-secret: ${KAKAO_CLIENT_SECRET}
             client-authentication-method: client_secret_post
@@ -80,6 +86,7 @@ spring:
               - profile_nickname
             client-name: Kakao
           apple:
+            # Apple Developer -> Certificates, Identifiers & Profiles -> Keys
             client-id: ${APPLE_CLIENT_ID}
             client-secret: ${APPLE_CLIENT_SECRET}
             client-authentication-method: client_secret_post
@@ -105,6 +112,7 @@ spring:
 
 logging:
   discord:
+    # 'ICT 위원회' Discord 서버 -> 'be-error' 채널 설정 -> 연동 -> 웹후크
     webhook-uri: ${DISCORD_WEBHOOK_URI}
   level:
     org.hibernate.SQL: DEBUG
@@ -116,8 +124,10 @@ logging:
 cloud:
   aws:
     s3:
+      # AWS S3 콘솔 -> 버킷 -> caucse-s3-bucket
       bucket: ${AWS_S3_BUCKET_NAME}
     credentials:
+      # AWS IAM 콘솔 -> 사용자 -> iam-user -> 보안 자격 증명 -> 액세스 키
       access-key: ${AWS_ACCESS_KEY}
       secret-key: ${AWS_SECRET_KEY}
     region:
@@ -138,6 +148,7 @@ springdoc:
     display-request-duration: true
 
 fcm:
+  # Firebase Console
   firebase-key-base64: ${FCM_FIREBASE_KEY_BASE64}
   project-id: ${FCM_PROJECT_ID}
 
@@ -148,9 +159,11 @@ app:
     redirect-uri: http://localhost:8080/swagger-ui/index.html
   holiday-api:
     base-url: http://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService
+    # 공공데이터포털
     service-key: ${HOLIDAY_API_SERVICE_KEY}
   oauth:
     refresh-token:
+      # 자체 생성
       aes-key-base64: ${OAUTH_REFRESH_TOKEN_AES_KEY_BASE64}
 
 # Datasource Proxy 설정
