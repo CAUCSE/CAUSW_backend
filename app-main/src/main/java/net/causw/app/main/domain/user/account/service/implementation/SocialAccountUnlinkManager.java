@@ -28,6 +28,9 @@ public class SocialAccountUnlinkManager {
 	public void unlink(SocialAccount socialAccount) {
 		String encryptedRefreshToken = socialAccount.getOauthRefreshTokenCipher();
 		if (!StringUtils.hasText(encryptedRefreshToken)) {
+			log.warn("[Social Unlink] OAuth 리프레시 토큰이 존재하지 않습니다. SocialAccount ID: {}, User Email: {}",
+				socialAccount.getId(),
+				socialAccount.getUser().getEmail());
 			return;
 		}
 
