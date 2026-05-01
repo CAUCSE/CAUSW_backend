@@ -37,6 +37,15 @@ public class CeremonyWriter {
 		ceremony.updateNote(rejectReason);
 	}
 
+	/**
+	 * 제공된 사용자 목록에 해당하는 경조사(Ceremony) 정보와 관련 이미지 파일을 삭제합니다.
+	 * <p>
+	 * 계정 영구 삭제 시 사용자가 작성한 경조사 게시글과
+	 * 첨부된 이미지 파일을 서버 저장소에서 완전히 정리하기 위해 사용합니다.
+	 * </p>
+	 *
+	 * @param users 경조사 정보를 삭제할 사용자 엔티티 목록
+	 */
 	public void deleteCeremonyByUsers(List<User> users) {
 		List<String> userIds = users.stream()
 			.map(User::getId)

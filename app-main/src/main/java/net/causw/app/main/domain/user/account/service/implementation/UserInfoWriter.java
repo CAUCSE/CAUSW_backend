@@ -114,7 +114,15 @@ public class UserInfoWriter {
 		deleteProjectByIds(toDelete);
 	}
 
-	// 탈퇴 -> 동문수첩 삭제
+	/**
+	 * 제공된 사용자 목록에 해당하는 동문수첩(UserInfo) 정보를 삭제합니다.
+	 * <p>
+	 * 주로 회원 탈퇴 후 30일 유예 기간이 경과하여
+	 * 계정을 영구 삭제(Hard Delete)할 때 관련 자원을 정리하기 위해 사용합니다.
+	 * </p>
+	 *
+	 * @param users 동문수첩 정보를 삭제할 사용자 엔티티 목록
+	 */
 	public void deleteUserInfoByUsers(List<User> users) {
 		List<String> userIds = users.stream()
 			.map(User::getId)

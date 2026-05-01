@@ -215,8 +215,24 @@ public class UserAccountService {
 	}
 
 	/**
-	 * 회원 탈퇴
-	 * - 소셜 연동 해제, 토큰 무효화, 사물함 반납 등 후속 처리를 수행합니다.
+	 * 서비스 회원 탈퇴를 처리합니다.
+	 * <p>
+	 * 본 메서드는 사용자의 계정 상태를 검증하고, 탈퇴에 따른 후속 처리(Clean-up)를 수행합니다.
+	 * 주요 프로세스는 다음과 같습니다:
+	 * - 사용자 상태 검증 (이미 탈퇴했거나 추방된 사용자인지 확인)
+	 * - 연동된 모든 소셜 계정의 외부 연동(Unlink) 및 리프레시 토큰 제거
+	 * - 현재 요청에 사용된 Access/Refresh 토큰 즉시 무효화
+	 * - 사용 중인 사물함이 존재할 경우 자동 반납 처리
+	 * - 등록된 모든 FCM 푸시 토큰 제거
+	 * - 사용자 정보 소프트 딜리트(Soft Delete) 수행
+	 * </p>
+	 *
+	 * @param userId        탈퇴할 사용자의 식별자 (PK)
+	 * @param accessToken   무효화할 현재 세션의 액세스 토큰
+	 * @param refreshToken  무효화할 현재 세션의 리프레시 토큰
+	 * @return {@link UserWithdrawResponse} 탈퇴 처리가 완료된 일시를 포함한 응답 객체
+	 * 사용자가 이미 탈퇴했거나(USER_DELETED)
+	 * 관리자에 의해 추방된 경우(USER_DROPPED)
 	 */
 	@Transactional
 	public UserWithdrawResponse withdraw(String userId, String accessToken, String refreshToken) {

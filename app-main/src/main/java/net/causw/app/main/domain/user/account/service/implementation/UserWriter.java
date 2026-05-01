@@ -140,11 +140,6 @@ public class UserWriter {
 		userRepository.saveAll(users);
 	}
 
-	public User restoreWithdrawnUser(User user) {
-		user.restore();
-		return userRepository.save(user);
-	}
-
 	private boolean isAlreadyAnonymized(User user) {
 		return user.isDeleted() &&
 			user.getEmail() != null &&

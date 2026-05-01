@@ -23,7 +23,13 @@ public class SocialAccountUnlinkManager {
 	private final KakaoOAuthUnlinkClient kakaoOAuthUnlinkClient;
 
 	/**
-	 * 개별 소셜 계정에 대한 연동 해제(Revoke/Unlink)를 수행합니다.
+	 * 개별 소셜 계정의 연동 해제(Revoke/Unlink)를 관리합니다.
+	 * <p>
+	 * 소셜 타입별로 최적화된 해제 방식을 사용하며,
+	 * 처리 후 보안을 위해 DB 내 OAuth 리프레시 토큰 정보를 제거합니다.
+	 * </p>
+	 *
+	 * @param socialAccount 연동을 해제할 소셜 계정 엔티티
 	 */
 	public void unlink(SocialAccount socialAccount) {
 		SocialType socialType = socialAccount.getSocialType();

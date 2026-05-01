@@ -57,6 +57,15 @@ public class AdmissionWriter {
 		userAdmissionRepository.delete(admission);
 	}
 
+	/**
+	 * 제공된 사용자 목록에 해당하는 가입 승인 정보와 관련 증빙 서류 파일을 삭제합니다.
+	 * <p>
+	 * 계정 영구 삭제 시 가입 신청 기록 및 첨부된 이미지 파일을
+	 * 서버 저장소에서 완전히 제거하기 위해 사용합니다.
+	 * </p>
+	 *
+	 * @param users 가입 승인 정보를 삭제할 사용자 엔티티 목록
+	 */
 	public void deleteAdmissionByUsers(List<User> users) {
 		List<String> userIds = users.stream()
 			.map(User::getId)
