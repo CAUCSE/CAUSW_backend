@@ -138,7 +138,7 @@ fcm:
 
 app:
   cors:
-    allowed-origins: "http://localhost:3000,https://dev.causw.co.kr,https://dev.causw.com,https://admin-dev.causw.co.kr,https://appleid.apple.com,https://causw-v3-web-dev.vercel.app"
+    allowed-origins: ${CORS_ALLOWED_ORIGINS}
   auth:
     redirect-uri: http://localhost:3000/auth/sign-in/oauth-callback
     redirect-uri-local: http://localhost:3000/auth/sign-in/oauth-callback

@@ -141,6 +141,6 @@ fcm:
 
 app:
   cors:
-    allowed-origins: "https://prod.causw.com,https://causw.co.kr,https://www.causw.co.kr,https://admin.causw.co.kr,https://causw-v3-web.vercel.app"
+    allowed-origins: ${CORS_ALLOWED_ORIGINS}
   auth:
     redirect-uri: "https://causw.co.kr/auth/sign-in/oauth-callback"
