@@ -2,6 +2,7 @@ package net.causw.app.main.domain.user.account.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
@@ -16,7 +17,8 @@ import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerWr
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
-import net.causw.app.main.domain.user.account.service.implementation.SocialAccountWriter;
+import net.causw.app.main.domain.user.account.service.implementation.SocialAccountReader;
+import net.causw.app.main.domain.user.account.service.implementation.SocialAccountUnlinkManager;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
 import net.causw.app.main.shared.infra.firebase.FcmUtils;
 import net.causw.app.main.shared.infra.firebase.FirebaseConfig;
@@ -32,7 +34,10 @@ class UserAccountServiceIT {
 	private UserRepository userRepository;
 
 	@MockBean
-	private SocialAccountWriter socialAccountWriter;
+	private SocialAccountReader socialAccountReader;
+
+	@MockBean
+	private SocialAccountUnlinkManager socialAccountUnlinkManager;
 
 	@MockBean
 	private LockerReader lockerReader;
@@ -62,6 +67,9 @@ class UserAccountServiceIT {
 			"ABCD12");
 
 		User user = userRepository.save(User.from(dto, "encodedPassword"));
+
+		org.mockito.BDDMockito.given(socialAccountReader.findAllByUserId(user.getId()))
+			.willReturn(List.of()); // 소셜 계정이 없는 케이스로 설정
 
 		// 사물함 없음
 		org.mockito.BDDMockito.given(lockerReader.findByUserId(user.getId()))

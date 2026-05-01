@@ -62,6 +62,9 @@ class UserAdminServiceTest {
 	@Mock
 	private UserAdminActionLogWriter userAdminActionLogWriter;
 
+	@Mock
+	private UserAccountService userAccountService;
+
 	@InjectMocks
 	private UserAdminService userAdminService;
 
@@ -260,13 +263,13 @@ class UserAdminServiceTest {
 			user.setDeletedAt(null);
 
 			when(userReader.findUserById(userId)).thenReturn(user);
-			when(userWriter.restore(user)).thenReturn(user);
+			when(userAccountService.restore(userId)).thenReturn(user);
 
 			// when
 			userAdminService.restoreUser(adminUser, userId);
 
 			// then
-			verify(userWriter).restore(user);
+			verify(userAccountService).restore(userId);
 			verify(userAdminActionLogWriter).logRestore(any(), any(), any(), any());
 		}
 

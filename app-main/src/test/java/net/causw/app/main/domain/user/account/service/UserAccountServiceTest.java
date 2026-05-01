@@ -6,8 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,9 +21,12 @@ import net.causw.app.main.domain.asset.locker.entity.Locker;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerWriter;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserWithdrawResponse;
+import net.causw.app.main.domain.user.account.entity.user.SocialAccount;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.repository.userInfo.UserInfoRepository;
+import net.causw.app.main.domain.user.account.service.implementation.SocialAccountReader;
+import net.causw.app.main.domain.user.account.service.implementation.SocialAccountUnlinkManager;
 import net.causw.app.main.domain.user.account.service.implementation.SocialAccountWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
@@ -64,6 +67,12 @@ class UserAccountServiceTest {
 
 	@Mock
 	private SocialAccountWriter socialAccountWriter;
+
+	@Mock
+	private SocialAccountReader socialAccountReader;
+
+	@Mock
+	private SocialAccountUnlinkManager socialAccountUnlinkManager;
 
 	@Mock
 	private LockerReader lockerReader;
@@ -163,39 +172,38 @@ class UserAccountServiceTest {
 		// given
 		String accessToken = "access-token";
 		String refresh = "refresh-token";
+		LocalDateTime now = LocalDateTime.now();
 
 		User user = mock(User.class);
 		Locker locker = mock(Locker.class);
-		AtomicReference<LocalDateTime> deletedAtRef = new AtomicReference<>();
+		SocialAccount socialAccount = mock(SocialAccount.class);
 
 		when(userReader.findUserById(userId)).thenReturn(user);
+		when(user.getId()).thenReturn(userId);
 		when(user.isDeleted()).thenReturn(false);
 		when(user.getState()).thenReturn(UserState.ACTIVE);
-		when(user.getId()).thenReturn(userId);
+
+		// 소셜 계정 목록 반환
+		when(socialAccountReader.findAllByUserId(userId)).thenReturn(List.of(socialAccount));
 		when(lockerReader.findByUserId(userId)).thenReturn(Optional.of(locker));
-		when(user.getDeletedAt()).thenAnswer(invocation -> deletedAtRef.get());
+		when(user.getDeletedAt()).thenReturn(now);
 
-		doAnswer(invocation -> {
-			LocalDateTime deletedAt = invocation.getArgument(0);
-			deletedAtRef.set(deletedAt);
-			return null;
-		}).when(user).withdraw(any(LocalDateTime.class));
-
-		// when
 		UserWithdrawResponse result = userAccountService.withdraw(userId, accessToken, refresh);
 
 		// then
 		assertNotNull(result);
-		assertNotNull(deletedAtRef.get());
+		assertEquals(now, result.deletedAt());
 
+		// verify
 		verify(userReader).findUserById(userId);
-		verify(socialAccountWriter).unlinkAllByUser(user);
+		verify(socialAccountReader).findAllByUserId(userId);
+		verify(socialAccountUnlinkManager).unlink(socialAccount);
 		verify(authTokenManager).invalidateTokens(accessToken, refresh);
 		verify(lockerReader).findByUserId(userId);
 		verify(lockerWriter).returnLocker(locker, user);
 		verify(fcmUtils).clearFcmTokens(user);
-		verify(user).withdraw(any(LocalDateTime.class));
-		verify(userWriter).save(user);
+
+		verify(userWriter).withdraw(user);
 	}
 
 	@Test
@@ -206,36 +214,20 @@ class UserAccountServiceTest {
 		String refresh = "refresh-token";
 
 		User user = mock(User.class);
-		AtomicReference<LocalDateTime> deletedAtRef = new AtomicReference<>();
-
 		when(userReader.findUserById(userId)).thenReturn(user);
+		when(user.getId()).thenReturn(userId);
 		when(user.isDeleted()).thenReturn(false);
 		when(user.getState()).thenReturn(UserState.ACTIVE);
-		when(user.getId()).thenReturn(userId);
+		when(socialAccountReader.findAllByUserId(userId)).thenReturn(List.of());
 		when(lockerReader.findByUserId(userId)).thenReturn(Optional.empty());
-		when(user.getDeletedAt()).thenAnswer(invocation -> deletedAtRef.get());
 
-		doAnswer(invocation -> {
-			LocalDateTime deletedAt = invocation.getArgument(0);
-			deletedAtRef.set(deletedAt);
-			return null;
-		}).when(user).withdraw(any(LocalDateTime.class));
+		when(user.getDeletedAt()).thenReturn(LocalDateTime.now());
 
-		// when
-		UserWithdrawResponse result = userAccountService.withdraw(userId, accessToken, refresh);
+		userAccountService.withdraw(userId, accessToken, refresh);
 
 		// then
-		assertNotNull(result);
-		assertNotNull(deletedAtRef.get());
-
-		verify(userReader).findUserById(userId);
-		verify(socialAccountWriter).unlinkAllByUser(user);
-		verify(authTokenManager).invalidateTokens(accessToken, refresh);
-		verify(lockerReader).findByUserId(userId);
 		verify(lockerWriter, never()).returnLocker(any(), any());
-		verify(fcmUtils).clearFcmTokens(user);
-		verify(user).withdraw(any(LocalDateTime.class));
-		verify(userWriter).save(user);
+		verify(userWriter).withdraw(user);
 	}
 
 	@Test
@@ -243,7 +235,6 @@ class UserAccountServiceTest {
 	void withdraw_Fail_AlreadyDeleted() {
 		// given
 		User user = mock(User.class);
-
 		when(userReader.findUserById(userId)).thenReturn(user);
 		when(user.isDeleted()).thenReturn(true);
 
@@ -252,6 +243,6 @@ class UserAccountServiceTest {
 			() -> userAccountService.withdraw(userId, "access-token", "refresh-token"));
 
 		verify(userReader).findUserById(userId);
-		verifyNoInteractions(socialAccountWriter, lockerReader, lockerWriter, fcmUtils);
+		verifyNoInteractions(socialAccountReader, socialAccountUnlinkManager, lockerReader, lockerWriter, fcmUtils);
 	}
 }
