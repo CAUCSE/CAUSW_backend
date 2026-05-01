@@ -41,7 +41,7 @@ import net.causw.app.main.domain.user.account.service.implementation.UserPushTok
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
-import net.causw.app.main.domain.user.account.util.BlockedUserIdentifierValidator;
+import net.causw.app.main.domain.user.account.util.DroppedUserIdentifierValidator;
 import net.causw.app.main.domain.user.auth.entity.EmailVerification;
 import net.causw.app.main.domain.user.auth.entity.EmailVerification.VerificationStatus;
 import net.causw.app.main.domain.user.auth.service.AuthService;
@@ -93,7 +93,7 @@ public class AuthServiceTest {
 	@Mock
 	private EmailVerificationSender emailVerificationSender;
 	@Mock
-	private BlockedUserIdentifierValidator blockedUserIdentifierValidator;
+	private DroppedUserIdentifierValidator droppedUserIdentifierValidator;
 	@Mock
 	private net.causw.app.main.domain.user.account.service.v1.PasswordGenerator passwordGenerator;
 
@@ -148,8 +148,8 @@ public class AuthServiceTest {
 			assertThat(result.refreshToken()).isNull();
 
 			// verify
-			verify(blockedUserIdentifierValidator).validateEmail(EMAIL);
-			verify(blockedUserIdentifierValidator).validatePhone(PHONE);
+			verify(droppedUserIdentifierValidator).validateEmail(EMAIL);
+			verify(droppedUserIdentifierValidator).validatePhone(PHONE);
 
 			verify(userValidator).checkEmailDuplication(EMAIL);
 			verify(userValidator).checkNicknameDuplication(NICKNAME);
@@ -280,7 +280,7 @@ public class AuthServiceTest {
 			void fail_blocked_email() {
 				// given
 				doThrow(UserErrorCode.USER_DROPPED.toBaseException())
-					.when(blockedUserIdentifierValidator).validateEmail(EMAIL);
+					.when(droppedUserIdentifierValidator).validateEmail(EMAIL);
 
 				// when & then
 				assertThatThrownBy(() -> authService.registerEmailUser(registerDto))
@@ -288,8 +288,8 @@ public class AuthServiceTest {
 					.hasMessage(UserErrorCode.USER_DROPPED.getMessage());
 
 				// verify
-				verify(blockedUserIdentifierValidator).validateEmail(EMAIL);
-				verify(blockedUserIdentifierValidator, never()).validatePhone(anyString());
+				verify(droppedUserIdentifierValidator).validateEmail(EMAIL);
+				verify(droppedUserIdentifierValidator, never()).validatePhone(anyString());
 				verify(userReader, never()).checkUserExistByPhoneNumAndName(anyString(), anyString());
 				verify(userWriter, never()).save(any(User.class));
 			}
@@ -299,7 +299,7 @@ public class AuthServiceTest {
 			void fail_blocked_phone() {
 				// given
 				doThrow(UserErrorCode.USER_DROPPED.toBaseException())
-					.when(blockedUserIdentifierValidator).validatePhone(PHONE);
+					.when(droppedUserIdentifierValidator).validatePhone(PHONE);
 
 				// when & then
 				assertThatThrownBy(() -> authService.registerEmailUser(registerDto))
@@ -307,8 +307,8 @@ public class AuthServiceTest {
 					.hasMessage(UserErrorCode.USER_DROPPED.getMessage());
 
 				// verify
-				verify(blockedUserIdentifierValidator).validateEmail(EMAIL);
-				verify(blockedUserIdentifierValidator).validatePhone(PHONE);
+				verify(droppedUserIdentifierValidator).validateEmail(EMAIL);
+				verify(droppedUserIdentifierValidator).validatePhone(PHONE);
 				verify(userReader, never()).checkUserExistByPhoneNumAndName(anyString(), anyString());
 				verify(userWriter, never()).save(any(User.class));
 			}

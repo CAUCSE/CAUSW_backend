@@ -36,7 +36,7 @@ import net.causw.app.main.domain.user.account.service.dto.request.UserListCondit
 import net.causw.app.main.domain.user.account.service.dto.response.UserDetailItem;
 import net.causw.app.main.domain.user.account.service.dto.response.UserDropResult;
 import net.causw.app.main.domain.user.account.service.dto.response.UserListItem;
-import net.causw.app.main.domain.user.account.service.implementation.BlockedUserIdentifierWriter;
+import net.causw.app.main.domain.user.account.service.implementation.DroppedUserIdentifierWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserAdminActionLogWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
@@ -66,7 +66,7 @@ class UserAdminServiceTest {
 	private UserAdminService userAdminService;
 
 	@Mock
-	private BlockedUserIdentifierWriter blockedUserIdentifierWriter;
+	private DroppedUserIdentifierWriter droppedUserIdentifierWriter;
 
 	/* =========================
 	 * 유저 목록 조회
@@ -354,7 +354,7 @@ class UserAdminServiceTest {
 		verify(lockerReader).findByUserId(userId);
 		verify(lockerWriter).releaseLocker(locker, adminUser, "test@example.com", "홍길동");
 		verify(userWriter).dropByAdmin(targetUser, dropReason);
-		verify(blockedUserIdentifierWriter).saveBlockedIdentifiers(droppedUser);
+		verify(droppedUserIdentifierWriter).saveDroppedIdentifiers(droppedUser);
 		verify(userAdminActionLogWriter).logDrop(
 			eq(adminUser),
 			eq(droppedUser),

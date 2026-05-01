@@ -1,6 +1,5 @@
 package net.causw.app.main.domain.user.account.service;
 
-import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -21,9 +20,10 @@ import net.causw.app.main.domain.user.account.service.dto.response.UserListItem;
 import net.causw.app.main.domain.user.account.service.dto.response.UserRestoreResult;
 import net.causw.app.main.domain.user.account.service.dto.response.UserRestoreWithdrawalResult;
 import net.causw.app.main.domain.user.account.service.dto.response.UserRoleUpdateResult;
-import net.causw.app.main.domain.user.account.service.implementation.BlockedUserIdentifierWriter;
+import net.causw.app.main.domain.user.account.service.implementation.DroppedUserIdentifierWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserAdminActionLogWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
+import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 
@@ -35,10 +35,11 @@ public class UserAdminService {
 
 	private final UserReader userReader;
 	private final UserWriter userWriter;
+	private final UserValidator userValidator;
 	private final LockerReader lockerReader;
 	private final LockerWriter lockerWriter;
 	private final UserAdminActionLogWriter userAdminActionLogWriter;
-	private final BlockedUserIdentifierWriter blockedUserIdentifierWriter;
+	private final DroppedUserIdentifierWriter droppedUserIdentifierWriter;
 
 	// 필터링 조건과 페이징 정보를 기반으로 전체 사용자 목록 조회
 	@Transactional(readOnly = true)
@@ -69,7 +70,7 @@ public class UserAdminService {
 
 		User updatedUser = userWriter.dropByAdmin(targetUser, dropReason);
 
-		blockedUserIdentifierWriter.saveBlockedIdentifiers(updatedUser);
+		droppedUserIdentifierWriter.saveDroppedIdentifiers(updatedUser);
 
 		userAdminActionLogWriter.logDrop(adminUser, updatedUser, beforeState, beforeRoles, dropReason);
 		return UserDropResult.from(updatedUser);
@@ -78,6 +79,8 @@ public class UserAdminService {
 	@Transactional
 	public UserRestoreResult restoreUser(User adminUser, String userId) {
 		User targetUser = userReader.findUserById(userId);
+
+		userValidator.validateRestorable(targetUser);
 		validateRestorableUser(targetUser);
 
 		UserState beforeState = targetUser.getState();
@@ -91,6 +94,8 @@ public class UserAdminService {
 	@Transactional
 	public UserRestoreWithdrawalResult restoreWithdrawnUser(User adminUser, String userId) {
 		User targetUser = userReader.findUserById(userId);
+
+		userValidator.validateRestorable(targetUser);
 		validateRestorableWithdrawnUser(targetUser);
 
 		UserState beforeState = targetUser.getState();
@@ -126,8 +131,21 @@ public class UserAdminService {
 	// 사용자 복원이 가능한지 검증
 	// - DROP 상태만 복원 가능
 	private void validateRestorableUser(User targetUser) {
-		boolean restorable = targetUser.getState() == UserState.DROP;
-		if (!restorable) {
+		if (targetUser.getState() != UserState.DROP) {
+			throw UserErrorCode.USER_NOT_RESTORABLE.toBaseException();
+		}
+	}
+
+	// 자진 탈퇴 사용자 복원이 가능한지 검증
+	// - DROP 상태가 아니어야 하며, 실제로 탈퇴(isDeleted) 상태여야 함
+	private void validateRestorableWithdrawnUser(User targetUser) {
+		// 1. 추방(DROP)된 유저는 이 API를 통해 복구할 수 없음 (restoreUser API 사용 유도)
+		if (targetUser.getState() == UserState.DROP) {
+			throw UserErrorCode.USER_NOT_RESTORABLE.toBaseException();
+		}
+
+		// 2. 실제로 탈퇴(isDeleted) 상태인 유저여야 함
+		if (!targetUser.isDeleted()) {
 			throw UserErrorCode.USER_NOT_RESTORABLE.toBaseException();
 		}
 	}
@@ -145,21 +163,6 @@ public class UserAdminService {
 		boolean roleUpdatable = targetUser.getState() == UserState.ACTIVE && !targetUser.isDeleted();
 		if (!roleUpdatable) {
 			throw UserErrorCode.USER_NOT_ROLE_UPDATABLE.toBaseException();
-		}
-	}
-
-	private void validateRestorableWithdrawnUser(User targetUser) {
-		if (targetUser.getState() == UserState.DROP) {
-			throw UserErrorCode.USER_NOT_RESTORABLE.toBaseException();
-		}
-
-		if (!targetUser.isDeleted()) {
-			throw UserErrorCode.USER_NOT_RESTORABLE.toBaseException();
-		}
-
-		LocalDateTime graceDeadline = targetUser.getDeletedAt().plusDays(30);
-		if (graceDeadline.isBefore(LocalDateTime.now())) {
-			throw UserErrorCode.USER_NOT_RESTORABLE.toBaseException();
 		}
 	}
 }

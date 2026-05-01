@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.user.account.enums.user;
 
-public enum BlockedIdentifierType {
+public enum DroppedIdentifierType {
 	EMAIL,
 	PHONE,
 	STUDENT_ID

@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.user.account.entity.user;
 
-import net.causw.app.main.domain.user.account.enums.user.BlockedIdentifierType;
+import net.causw.app.main.domain.user.account.enums.user.DroppedIdentifierType;
 import net.causw.app.main.shared.entity.BaseEntity;
 
 import jakarta.persistence.Column;
@@ -20,18 +20,18 @@ import lombok.NoArgsConstructor;
 @Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "tb_blocked_user_identifier", indexes = {
-	@Index(name = "idx_blocked_identifier_type_hash", columnList = "identifier_type, identifier_hash"),
-	@Index(name = "idx_blocked_user_id", columnList = "user_id")
+@Table(name = "tb_dropped_user_identifier", indexes = {
+	@Index(name = "idx_dropped_identifier_type_hash", columnList = "identifier_type, identifier_hash"),
+	@Index(name = "idx_dropped_user_id", columnList = "user_id")
 })
-public class BlockedUserIdentifier extends BaseEntity {
+public class DroppedUserIdentifier extends BaseEntity {
 
 	@Column(name = "user_id", nullable = false)
 	private String userId;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "identifier_type", nullable = false)
-	private BlockedIdentifierType identifierType;
+	private DroppedIdentifierType identifierType;
 
 	@Column(name = "identifier_hash", nullable = false)
 	private String identifierHash;
@@ -39,12 +39,12 @@ public class BlockedUserIdentifier extends BaseEntity {
 	@Column(name = "reason", nullable = true, length = 255)
 	private String reason;
 
-	public static BlockedUserIdentifier of(
+	public static DroppedUserIdentifier of(
 		String userId,
-		BlockedIdentifierType identifierType,
+		DroppedIdentifierType identifierType,
 		String identifierHash,
 		String reason) {
-		return BlockedUserIdentifier.builder()
+		return DroppedUserIdentifier.builder()
 			.userId(userId)
 			.identifierType(identifierType)
 			.identifierHash(identifierHash)

@@ -8,11 +8,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
-public class BlockedIdentifierHasher {
+public class DroppedIdentifierHasher {
 
 	private final String salt;
 
-	public BlockedIdentifierHasher(@Value("${custom.hash.salt}") String salt) {
+	public DroppedIdentifierHasher(@Value("${custom.hash.salt}") String salt) {
 		this.salt = salt;
 	}
 
