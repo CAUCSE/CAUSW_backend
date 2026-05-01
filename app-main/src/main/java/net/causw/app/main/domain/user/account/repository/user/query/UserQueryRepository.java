@@ -37,11 +37,6 @@ public class UserQueryRepository {
 
 	private final JPAQueryFactory jpaQueryFactory;
 
-	private static BooleanExpression notInactive() {
-		QUser user = QUser.user;
-		return user.state.ne(UserState.INACTIVE);
-	}
-
 	public List<User> findAllActiveUsersByRoles(List<Role> roles) {
 		QUser user = QUser.user;
 
@@ -228,7 +223,7 @@ public class UserQueryRepository {
 		return Optional.ofNullable(jpaQueryFactory
 			.selectFrom(user)
 			.where(user.id.eq(userId))
-			.where(notInactive())
+			.where(notDeleted())
 			.fetchOne());
 	}
 
@@ -242,7 +237,6 @@ public class UserQueryRepository {
 		return jpaQueryFactory.selectFrom(user)
 			.where(user.admissionYear.in(admissionYears))
 			.where(user.state.eq(UserState.ACTIVE))
-			.where(notInactive())
 			.fetch();
 	}
 
@@ -254,7 +248,6 @@ public class UserQueryRepository {
 		QUser user = QUser.user;
 		return jpaQueryFactory.selectFrom(user)
 			.where(user.state.eq(UserState.ACTIVE))
-			.where(notInactive())
 			.fetch();
 	}
 
@@ -267,7 +260,7 @@ public class UserQueryRepository {
 		return jpaQueryFactory.selectFrom(user)
 			.where(user.roles.contains(Role.ADMIN))
 			.where(user.academicStatus.eq(academicStatus))
-			.where(notInactive())
+			.where(notDeleted())
 			.fetch();
 	}
 
@@ -276,7 +269,6 @@ public class UserQueryRepository {
 			.select(user.count())
 			.from(user)
 			.where(user.state.eq(UserState.ACTIVE))
-			.where(notInactive())
 			.fetchOne();
 	}
 
@@ -308,7 +300,19 @@ public class UserQueryRepository {
 
 	// ─── 조건 헬퍼 ──────────────────────────────────────────────────────────────
 
-	/** 이메일·이름·학번 OR like 검색 (관리자 유저 목록, 삭제 회원 검색용) */
+	// deletedAt 타임스탬프가 없는 사용자만 포함
+	private static BooleanExpression notDeleted() {
+		QUser user = QUser.user;
+		return user.deletedAt.isNull();
+	}
+
+	// 탈퇴(INACTIVE) 상태가 아닌 사용자만 포함
+	private static BooleanExpression notInactive() {
+		QUser user = QUser.user;
+		return user.state.ne(UserState.INACTIVE);
+	}
+
+	/** 이메일·이름·학번 OR like 검색 (관리자 유저 목록, 탈퇴 회원 검색용) */
 	private BooleanExpression userListKeywordCondition(String keyword) {
 		if (keyword == null || keyword.isBlank()) {
 			return null;
@@ -319,7 +323,7 @@ public class UserQueryRepository {
 			.or(user.studentId.containsIgnoreCase(k));
 	}
 
-	/** 이메일·이름·학번 OR like 검색 (삭제 회원 전용) */
+	/** 이메일·이름·학번 OR like 검색 (탈퇴 회원 전용) */
 	private BooleanExpression adminKeywordCondition(String keyword) {
 		return userListKeywordCondition(keyword);
 	}
