@@ -20,6 +20,7 @@ import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.domain.user.account.service.v1.PasswordGenerator;
+import net.causw.app.main.domain.user.account.util.DroppedUserIdentifierValidator;
 import net.causw.app.main.domain.user.account.util.masking.EmailMasker;
 import net.causw.app.main.domain.user.auth.entity.EmailVerification;
 import net.causw.app.main.domain.user.auth.entity.EmailVerification.VerificationStatus;
@@ -71,6 +72,7 @@ public class AuthService {
 	private final UserTermsAgreementWriter userTermsAgreementWriter;
 	private final UserTermsAgreementReader userTermsAgreementReader;
 	private final UserProfileImageReader userProfileImageReader;
+	private final DroppedUserIdentifierValidator droppedUserIdentifierValidator;
 
 	/**
 	 * 이름+이메일 기준으로 비밀번호 초기화용 인증코드를 발송합니다.
@@ -138,6 +140,10 @@ public class AuthService {
 	 */
 	@Transactional
 	public AuthResult registerEmailUser(UserRegisterDto dto) {
+		// 추방당한 회원인지 확인
+		droppedUserIdentifierValidator.validateEmail(dto.email());
+		droppedUserIdentifierValidator.validatePhone(dto.phoneNumber());
+
 		// 전화번호로 기존 사용자 탐색 및 사용자 상태에 따른 에러 반환
 		Optional<User> userExist = userReader.checkUserExistByPhoneNumAndName(dto.phoneNumber(), dto.name());
 		userExist.ifPresent(userValidator::validateUserStatusForSignup);

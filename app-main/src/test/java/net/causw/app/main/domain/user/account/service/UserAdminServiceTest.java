@@ -2,12 +2,12 @@ package net.causw.app.main.domain.user.account.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.hibernate.validator.internal.util.Contracts.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -35,7 +35,9 @@ import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.dto.request.UserListCondition;
 import net.causw.app.main.domain.user.account.service.dto.response.UserDetailItem;
+import net.causw.app.main.domain.user.account.service.dto.response.UserDropResult;
 import net.causw.app.main.domain.user.account.service.dto.response.UserListItem;
+import net.causw.app.main.domain.user.account.service.implementation.DroppedUserIdentifierWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserAdminActionLogWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
@@ -64,8 +66,14 @@ class UserAdminServiceTest {
 	@Mock
 	private UserProfileImageReader userProfileImageReader;
 
+	@Mock
+	private UserAccountService userAccountService;
+
 	@InjectMocks
 	private UserAdminService userAdminService;
+
+	@Mock
+	private DroppedUserIdentifierWriter droppedUserIdentifierWriter;
 
 	/* =========================
 	 * 유저 목록 조회
@@ -183,7 +191,7 @@ class UserAdminServiceTest {
 			user.setState(UserState.ACTIVE);
 			user.setDeletedAt(null);
 			user.setRoles(Set.of(Role.COMMON));
-			Locker locker = org.mockito.Mockito.mock(Locker.class);
+			Locker locker = mock(Locker.class);
 
 			when(userReader.findUserById(userId)).thenReturn(user);
 			when(lockerReader.findByUserId(userId)).thenReturn(Optional.of(locker));
@@ -268,13 +276,13 @@ class UserAdminServiceTest {
 			user.setDeletedAt(null);
 
 			when(userReader.findUserById(userId)).thenReturn(user);
-			when(userWriter.restore(user)).thenReturn(user);
+			when(userAccountService.restore(userId)).thenReturn(user);
 
 			// when
 			userAdminService.restoreUser(adminUser, userId);
 
 			// then
-			verify(userWriter).restore(user);
+			verify(userAccountService).restore(userId);
 			verify(userAdminActionLogWriter).logRestore(any(), any(), any(), any());
 		}
 
@@ -325,6 +333,50 @@ class UserAdminServiceTest {
 			verify(userWriter, never()).restore(any());
 			verify(userAdminActionLogWriter, never()).logRestore(any(), any(), any(), any());
 		}
+	}
+
+	@Test
+	@DisplayName("관리자 추방 시 계정은 DROP 처리되고 추방 식별자가 저장된다")
+	void dropUser_Success() {
+		// given
+		String userId = "target-user-id";
+		String dropReason = "운영정책 위반";
+
+		User adminUser = mock(User.class);
+		User targetUser = mock(User.class);
+		User droppedUser = mock(User.class);
+		Locker locker = mock(Locker.class);
+
+		Set<Role> beforeRoles = new HashSet<>(Set.of(Role.COMMON));
+
+		when(userReader.findUserById(userId)).thenReturn(targetUser);
+		when(targetUser.isDroppable()).thenReturn(true);
+		when(targetUser.getState()).thenReturn(UserState.ACTIVE);
+		when(targetUser.getRoles()).thenReturn(beforeRoles);
+		when(targetUser.getId()).thenReturn(userId);
+		when(targetUser.getEmail()).thenReturn("test@example.com");
+		when(targetUser.getName()).thenReturn("홍길동");
+
+		when(lockerReader.findByUserId(userId)).thenReturn(Optional.of(locker));
+		when(userWriter.dropByAdmin(targetUser, dropReason)).thenReturn(droppedUser);
+
+		// when
+		UserDropResult result = userAdminService.dropUser(adminUser, userId, dropReason);
+
+		// then
+		assertNotNull(result);
+
+		verify(userReader).findUserById(userId);
+		verify(lockerReader).findByUserId(userId);
+		verify(lockerWriter).releaseLocker(locker, adminUser, "test@example.com", "홍길동");
+		verify(userWriter).dropByAdmin(targetUser, dropReason);
+		verify(droppedUserIdentifierWriter).saveDroppedIdentifiers(droppedUser);
+		verify(userAdminActionLogWriter).logDrop(
+			eq(adminUser),
+			eq(droppedUser),
+			eq(UserState.ACTIVE),
+			anySet(),
+			eq(dropReason));
 	}
 
 	@Nested

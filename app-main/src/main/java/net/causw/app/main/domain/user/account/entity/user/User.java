@@ -141,17 +141,33 @@ public class User extends BaseEntity {
 	@Builder.Default
 	private Boolean isEmailVerified = false;
 
-	public void delete() {
+	// 자진 탈퇴 처리
+	public void withdraw(LocalDateTime now) {
+		this.deletedAt = now;
+		this.academicStatus = AcademicStatus.UNDETERMINED;
+		if (this.fcmTokens != null) {
+			this.fcmTokens.clear();
+		}
+	}
+
+	/*
+	 * 개인정보 익명화
+	 * - row는 유지하고 개인정보만 제거
+	 */
+	public void anonymize() {
 		this.email = "deleted_" + this.getId();
 		this.name = "탈퇴한 사용자";
 		this.phoneNumber = null;
+		this.password = null;
 		this.studentId = null;
+		this.admissionYear = null;
 		this.nickname = null;
 		this.major = null;
+		this.department = null;
+		this.currentCompletedSemester = null;
 		this.profileImageType = ProfileImageType.GHOST;
 		this.graduationYear = null;
 		this.graduationType = null;
-		this.deletedAt = LocalDateTime.now();
 	}
 
 	public boolean isDeleted() {
@@ -183,7 +199,7 @@ public class User extends BaseEntity {
 		return User.builder()
 			.email(userCreateRequestDto.getEmail())
 			.name(userCreateRequestDto.getName())
-			.roles(Set.of(Role.NONE))
+			.roles(new HashSet<>(Set.of(Role.NONE)))
 			.state(UserState.AWAIT)
 			.password(encodedPassword)
 			.studentId(userCreateRequestDto.getStudentId())
@@ -204,7 +220,7 @@ public class User extends BaseEntity {
 		return User.builder()
 			.email(dto.email())
 			.name(dto.name())
-			.roles(Set.of(Role.NONE))
+			.roles(new HashSet<>(Set.of(Role.NONE)))
 			.state(UserState.AWAIT)
 			.password(encodedPassword)
 			.nickname(dto.nickname())
@@ -221,7 +237,7 @@ public class User extends BaseEntity {
 		return User.builder()
 			.email(graduatedUserCommand.email())
 			.name(graduatedUserCommand.name())
-			.roles(Set.of(Role.COMMON))
+			.roles(new HashSet<>(Set.of(Role.COMMON)))
 			.state(UserState.ACTIVE)
 			.password(encodedPassword)
 			.studentId(graduatedUserCommand.studentId())
@@ -243,7 +259,7 @@ public class User extends BaseEntity {
 		return User.builder()
 			.email(attributes.email())
 			.name(attributes.name())
-			.roles(Set.of(Role.NONE))
+			.roles(new HashSet<>(Set.of(Role.NONE)))
 			.state(UserState.GUEST)
 			.academicStatus(AcademicStatus.UNDETERMINED)
 			.isV2(true)
@@ -319,10 +335,11 @@ public class User extends BaseEntity {
 		this.rejectionOrDropReason = rejectReason;
 	}
 
-	public void dropByAdmin(String dropReason) {
+	public void dropByAdmin(String dropReason, LocalDateTime now) {
 		this.state = UserState.DROP;
 		this.roles = new HashSet<>(Set.of(Role.NONE));
 		this.rejectionOrDropReason = dropReason;
+		this.deletedAt = now;
 	}
 
 	// 탈퇴, 추방된 유저의 계정 복구에 사용

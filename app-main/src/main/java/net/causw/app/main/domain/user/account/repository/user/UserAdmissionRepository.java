@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.user.account.repository.user;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.jetbrains.annotations.NotNull;
@@ -35,5 +36,7 @@ public interface UserAdmissionRepository extends JpaRepository<UserAdmission, St
 	Page<UserAdmission> findAll(@NotNull Pageable pageable);
 
 	Page<UserAdmission> findAllByUserName(String name, Pageable pageable);
+
+	List<UserAdmission> findAllByUser_IdIn(List<String> userIds);
 
 }

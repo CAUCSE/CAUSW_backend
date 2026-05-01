@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.user.account.service.implementation;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.stereotype.Component;
@@ -202,6 +203,23 @@ public class UserValidator {
 	public void validatePasswordFormat(String password) {
 		if (!PasswordPolicy.matches(password)) {
 			throw UserErrorCode.INVALID_PASSWORD_REQUEST.toBaseException();
+		}
+	}
+
+	/**
+	 * 사용자가 복구 가능한 기간 내에 있는지 검증합니다. (탈퇴/추방 후 30일 이내)
+	 *
+	 * @param user 복구 대상 사용자
+	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception 복구 가능 기간이 지난 경우
+	 */
+	public void validateRestorable(User user) {
+		if (user.getDeletedAt() == null) {
+			return;
+		}
+
+		LocalDateTime graceDeadline = user.getDeletedAt().plusDays(30);
+		if (graceDeadline.isBefore(LocalDateTime.now())) {
+			throw UserErrorCode.USER_NOT_RESTORABLE.toBaseException();
 		}
 	}
 }

@@ -10,7 +10,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.access.WebInvocationPrivilegeEvaluator;
 import org.springframework.stereotype.Service;
@@ -1041,18 +1040,6 @@ public class UserService {
 		user.setDeletedAt(LocalDateTime.now());
 		User entity = userRepository.save(user);
 		return userDtoMapper.toUserResponseDto(entity, null, null, null);
-	}
-
-	@Scheduled(cron = "0 0 0 * * ?")
-	public void deleteUser() {
-		LocalDateTime dueDate = LocalDateTime.now().minusYears(5);
-
-		userRepository.findAllByDeletedAtBefore(dueDate).stream()
-			.forEach(user -> {
-				userProfileImageRepository.deleteByUserId(user.getId());
-				user.delete();
-				userRepository.save(user);
-			});
 	}
 
 	private Optional<CircleMember> updateStatus(String applicationId, CircleMemberStatus targetStatus) {
