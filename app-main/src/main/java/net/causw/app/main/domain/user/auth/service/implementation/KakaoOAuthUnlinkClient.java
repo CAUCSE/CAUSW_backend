@@ -16,7 +16,7 @@ public class KakaoOAuthUnlinkClient {
 
 	private final RestClient restClient = RestClient.create();
 
-	@Value("${spring.security.oauth2.client.registration.kakao.admin-key}")
+	@Value("${kakao.admin-key}")
 	private String adminKey;
 
 	/**
