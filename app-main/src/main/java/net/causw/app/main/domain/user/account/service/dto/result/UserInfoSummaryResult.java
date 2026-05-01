@@ -8,6 +8,5 @@ public record UserInfoSummaryResult(
 	String name,
 	String admissionYear,
 	String academicStatus,
-	String job,
 	String description) {
 }

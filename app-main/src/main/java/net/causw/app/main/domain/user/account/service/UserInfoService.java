@@ -1,10 +1,16 @@
 package net.causw.app.main.domain.user.account.service;
 
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
 import net.causw.app.main.domain.user.account.service.dto.request.UserInfoListCondition;
@@ -30,6 +36,7 @@ public class UserInfoService {
 	private final UserInfoMapper userInfoMapper;
 	private final PageableFactory pageableFactory;
 	private final UserInfoWriter userInfoWriter;
+	private final UserProfileImageReader userProfileImageReader;
 
 	/**
 	 * 내 동문 수첩 프로필 수정
@@ -44,7 +51,7 @@ public class UserInfoService {
 			.orElseGet(() -> userInfoCreator.createAndSave(user));
 
 		// 동문 수첩 정보 및 컬렉션 필드(소셜링크, 기술스택, 관심기술, 관심 도메인 등) 업데이트
-		userInfo.update(request.description(), request.job(), request.isPhoneNumberVisible());
+		userInfo.update(request.description(), request.isPhoneNumberVisible());
 		userInfo.updateSocialLinks(request.socialLinks());
 		userInfo.updateTechStack(request.userTechStack());
 		userInfo.updateInterestTech(request.userInterestTech());
@@ -55,7 +62,8 @@ public class UserInfoService {
 		userInfoWriter.syncProjects(request.userProject(), userInfo);
 
 		UserInfo updated = userInfoWriter.save(userInfo);
-		return userInfoMapper.toDetailResult(updated);
+		UserProfileImage profileImage = userProfileImageReader.findByUserIdOrNull(user.getId());
+		return userInfoMapper.toDetailResult(updated, profileImage);
 	}
 
 	/**
@@ -68,7 +76,9 @@ public class UserInfoService {
 		UserInfo userInfo = userInfoReader.findById(userInfoId)
 			.orElseThrow(UserInfoErrorCode.USERINFO_NOT_FOUND::toBaseException);
 
-		return userInfoMapper.toDetailResult(userInfo);
+		UserProfileImage profileImage = userProfileImageReader.findByUserIdOrNull(
+			userInfo.getUser().getId());
+		return userInfoMapper.toDetailResult(userInfo, profileImage);
 	}
 
 	/**
@@ -82,7 +92,8 @@ public class UserInfoService {
 		UserInfo userInfo = userInfoReader.findByUserId(user.getId())
 			.orElseGet(() -> userInfoCreator.createAndSave(user));
 
-		return userInfoMapper.toMyDetailResult(userInfo);
+		UserProfileImage profileImage = userProfileImageReader.findByUserIdOrNull(user.getId());
+		return userInfoMapper.toMyDetailResult(userInfo, profileImage);
 	}
 
 	/**
@@ -99,7 +110,13 @@ public class UserInfoService {
 		Pageable pageable = pageableFactory.create(pageNum, StaticValue.USER_LIST_PAGE_SIZE);
 		Page<UserInfo> userInfos = userInfoReader.findUserInfoWithFilter(condition, pageable, excludeUserId);
 
-		return userInfos.map(userInfoMapper::toSummaryResult);
+		List<String> userIds = userInfos.getContent().stream()
+			.map(ui -> ui.getUser().getId())
+			.collect(Collectors.toList());
+		Map<String, UserProfileImage> profileImageMap = userProfileImageReader.findMapByUserIds(userIds);
+
+		return userInfos.map(ui -> userInfoMapper.toSummaryResult(ui,
+			profileImageMap.get(ui.getUser().getId())));
 	}
 
 }

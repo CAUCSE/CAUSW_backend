@@ -24,6 +24,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.asset.locker.entity.Locker;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerWriter;
@@ -63,6 +64,9 @@ class UserAdminServiceTest {
 	private UserAdminActionLogWriter userAdminActionLogWriter;
 
 	@Mock
+	private UserProfileImageReader userProfileImageReader;
+
+	@Mock
 	private UserAccountService userAccountService;
 
 	@InjectMocks
@@ -80,22 +84,31 @@ class UserAdminServiceTest {
 		// given
 		UserListCondition condition = new UserListCondition(
 			"홍길동",
-			UserState.ACTIVE,
+			List.of(UserState.ACTIVE),
 			AcademicStatus.ENROLLED,
-			Department.SCHOOL_OF_SW);
+			Department.SCHOOL_OF_SW,
+			null,
+			null,
+			null);
 
 		Pageable pageable = PageRequest.of(0, 10);
 
-		User user1 = ObjectFixtures.getCertifiedUserWithId("user-1");
-		User user2 = ObjectFixtures.getCertifiedUserWithId("user-2");
+		UserListItem item1 = new UserListItem(
+			"user-1", "홍길동", "hong@test.com", "20210001",
+			2021, Department.SCHOOL_OF_SW, UserState.ACTIVE,
+			AcademicStatus.ENROLLED, LocalDateTime.now());
+		UserListItem item2 = new UserListItem(
+			"user-2", "김철수", "kim@test.com", "20210002",
+			2021, Department.SCHOOL_OF_SW, UserState.ACTIVE,
+			AcademicStatus.ENROLLED, LocalDateTime.now());
 
-		Page<User> users = new PageImpl<>(
-			List.of(user1, user2),
+		Page<UserListItem> userListItems = new PageImpl<>(
+			List.of(item1, item2),
 			pageable,
 			2);
 
 		when(userReader.findUserList(any(UserListCondition.class), any(Pageable.class)))
-			.thenReturn(users);
+			.thenReturn(userListItems);
 
 		// when
 		Page<UserListItem> result = userAdminService.getUserList(condition, pageable);
@@ -104,7 +117,7 @@ class UserAdminServiceTest {
 		assertThat(result).isNotNull();
 		assertThat(result.getContent()).hasSize(2)
 			.extracting(UserListItem::name)
-			.containsExactly("name", "name");
+			.containsExactly("홍길동", "김철수");
 
 		assertThat(result.getTotalElements()).isEqualTo(2);
 		assertThat(result.getNumber()).isEqualTo(0);

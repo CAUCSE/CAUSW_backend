@@ -10,7 +10,6 @@ public record UserInfoDetailResult(
 	String name,
 	String admissionYear,
 	String academicStatus,
-	String job,
 	String description,
 	String phoneNumber,
 	Boolean isPhoneNumberVisible,

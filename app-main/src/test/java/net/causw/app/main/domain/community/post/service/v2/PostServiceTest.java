@@ -31,6 +31,7 @@ import org.springframework.web.multipart.MultipartFile;
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.PostAttachImage;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
 import net.causw.app.main.domain.community.board.entity.BoardReadScope;
@@ -92,6 +93,9 @@ public class PostServiceTest {
 
 	@Mock
 	VoteWriter voteWriter;
+
+	@Mock
+	UserProfileImageReader userProfileImageReader;
 
 	@Nested
 	@DisplayName("게시글 생성 테스트")

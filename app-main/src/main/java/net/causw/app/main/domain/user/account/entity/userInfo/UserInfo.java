@@ -46,6 +46,12 @@ public class UserInfo extends BaseEntity {
 	@JoinColumn(name = "user_id", nullable = false)
 	private User user;
 
+	/**
+	 * @deprecated v2 API에서는 직업(job) 정보가 소개글(description)과 역할이 겹쳐 더 이상 사용하지 않습니다.
+	 * v1 호환을 위해 컬럼은 유지합니다.
+	 * TODO: v2 배포 완료 후 제거
+	 */
+	@Deprecated(since = "v2")
 	@Column(name = "job", nullable = true)
 	private String job;
 
@@ -97,7 +103,7 @@ public class UserInfo extends BaseEntity {
 	 * v1 API용 업데이트. description, job, socialLinks, isPhoneNumberVisible을 한 번에 갱신한다.
 	 * v1은 API 레이어에서 검증하므로 엔티티 레벨 검증 없이 직접 반영한다.
 	 */
-	@Deprecated(since = "v2 API에서는 description, job, socialLinks, isPhoneNumberVisible을 각각 업데이트하는 별도의 메서드를 사용합니다.")
+	@Deprecated(since = "v2 API에서는 description, socialLinks, isPhoneNumberVisible을 각각 업데이트하는 별도의 메서드를 사용합니다.")
 	public void updateV1(String description, String job, List<String> socialLinks, boolean isPhoneNumberVisible) {
 		this.description = description;
 		this.job = job;
@@ -107,10 +113,8 @@ public class UserInfo extends BaseEntity {
 
 	public void update(
 		String description,
-		String job,
 		boolean isPhoneNumberVisible) {
 		this.description = description;
-		this.job = job;
 		this.isPhoneNumberVisible = isPhoneNumberVisible;
 	}
 

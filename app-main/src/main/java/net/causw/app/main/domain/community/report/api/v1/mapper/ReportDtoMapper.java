@@ -5,6 +5,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.community.report.api.v1.dto.ReportCreateResponseDto;
 import net.causw.app.main.domain.community.report.api.v1.dto.ReportedCommentResponseDto;
 import net.causw.app.main.domain.community.report.api.v1.dto.ReportedPostResponseDto;
@@ -40,13 +41,13 @@ public interface ReportDtoMapper extends UuidFileToUrlDtoMapper {
 	ReportedCommentResponseDto toReportedCommentDto(ReportedCommentNativeProjection projection);
 
 	// 신고된 사용자
-	@Mapping(target = "userId", source = "id")
-	@Mapping(target = "userName", source = "name")
-	@Mapping(target = "userNickname", source = "nickname")
-	@Mapping(target = "totalReportCount", source = "reportCount")
-	@Mapping(target = "profileImage", source = "userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
-	@Mapping(target = "userState", source = "state")
-	ReportedUserResponseDto toReportedUserDto(User user);
+	@Mapping(target = "userId", source = "user.id")
+	@Mapping(target = "userName", source = "user.name")
+	@Mapping(target = "userNickname", source = "user.nickname")
+	@Mapping(target = "totalReportCount", source = "user.reportCount")
+	@Mapping(target = "profileImage", expression = "java(userProfileImage != null && userProfileImage.getUuidFile() != null ? userProfileImage.getUuidFile().getFileUrl() : null)")
+	@Mapping(target = "userState", source = "user.state")
+	ReportedUserResponseDto toReportedUserDto(User user, UserProfileImage userProfileImage);
 
 	// Native Query용 description 변환
 	@Named("mapReportReasonToDescription")

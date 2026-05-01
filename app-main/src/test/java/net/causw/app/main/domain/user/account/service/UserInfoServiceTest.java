@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
@@ -22,6 +23,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
 import net.causw.app.main.domain.user.account.service.dto.request.UserInfoListCondition;
@@ -56,6 +59,9 @@ class UserInfoServiceTest {
 	@Mock
 	private UserInfoWriter userInfoWriter;
 
+	@Mock
+	private UserProfileImageReader userProfileImageReader;
+
 	@InjectMocks
 	private UserInfoService userInfoService;
 
@@ -68,11 +74,16 @@ class UserInfoServiceTest {
 		void givenValidUserInfoId_whenGetDetailUserInfo_thenReturnsDetailDto() {
 			// given
 			String userInfoId = "ui-1";
+			User user = ObjectFixtures.getMockUser();
 			UserInfo userInfo = ObjectFixtures.getMockUserInfo();
 			UserInfoDetailResult resultDto = ObjectFixtures.getMockUserInfoDetailResult();
+			UserProfileImage profileImage = null;
 
 			when(userInfoReader.findById(userInfoId)).thenReturn(Optional.of(userInfo));
-			when(userInfoMapper.toDetailResult(userInfo)).thenReturn(resultDto);
+			when(userInfo.getUser()).thenReturn(user);
+			when(user.getId()).thenReturn("user-1");
+			when(userProfileImageReader.findByUserIdOrNull("user-1")).thenReturn(profileImage);
+			when(userInfoMapper.toDetailResult(userInfo, profileImage)).thenReturn(resultDto);
 
 			// when
 			UserInfoDetailResult result = userInfoService.getDetailUserInfo(userInfoId);
@@ -81,7 +92,8 @@ class UserInfoServiceTest {
 			assertThat(result).isSameAs(resultDto);
 
 			verify(userInfoReader).findById(userInfoId);
-			verify(userInfoMapper).toDetailResult(userInfo);
+			verify(userProfileImageReader).findByUserIdOrNull("user-1");
+			verify(userInfoMapper).toDetailResult(userInfo, profileImage);
 		}
 
 		@Test
@@ -98,7 +110,7 @@ class UserInfoServiceTest {
 				.isEqualTo(UserInfoErrorCode.USERINFO_NOT_FOUND);
 
 			verify(userInfoReader).findById(userInfoId);
-			verify(userInfoMapper, never()).toDetailResult(any());
+			verify(userInfoMapper, never()).toDetailResult(any(), any());
 		}
 	}
 
@@ -116,9 +128,11 @@ class UserInfoServiceTest {
 
 			UserInfo userInfo = ObjectFixtures.getMockUserInfo();
 			UserInfoDetailResult resultDto = ObjectFixtures.getMockUserInfoDetailResult();
+			UserProfileImage profileImage = null;
 
 			when(userInfoReader.findByUserId(userId)).thenReturn(Optional.of(userInfo));
-			when(userInfoMapper.toMyDetailResult(userInfo)).thenReturn(resultDto);
+			when(userProfileImageReader.findByUserIdOrNull(userId)).thenReturn(profileImage);
+			when(userInfoMapper.toMyDetailResult(userInfo, profileImage)).thenReturn(resultDto);
 
 			// when
 			UserInfoDetailResult result = userInfoService.getMyDetailUserInfo(user);
@@ -128,7 +142,8 @@ class UserInfoServiceTest {
 
 			verify(userInfoReader).findByUserId(userId);
 			verify(userInfoCreator, never()).createAndSave(any(User.class));
-			verify(userInfoMapper).toMyDetailResult(userInfo);
+			verify(userProfileImageReader).findByUserIdOrNull(userId);
+			verify(userInfoMapper).toMyDetailResult(userInfo, profileImage);
 		}
 
 		@Test
@@ -141,10 +156,12 @@ class UserInfoServiceTest {
 
 			UserInfo created = ObjectFixtures.getMockUserInfo();
 			UserInfoDetailResult resultDto = ObjectFixtures.getMockUserInfoDetailResult();
+			UserProfileImage profileImage = null;
 
 			when(userInfoReader.findByUserId(userId)).thenReturn(Optional.empty());
 			when(userInfoCreator.createAndSave(user)).thenReturn(created);
-			when(userInfoMapper.toMyDetailResult(created)).thenReturn(resultDto);
+			when(userProfileImageReader.findByUserIdOrNull(userId)).thenReturn(profileImage);
+			when(userInfoMapper.toMyDetailResult(created, profileImage)).thenReturn(resultDto);
 
 			// when
 			UserInfoDetailResult result = userInfoService.getMyDetailUserInfo(user);
@@ -154,7 +171,8 @@ class UserInfoServiceTest {
 
 			verify(userInfoReader).findByUserId(userId);
 			verify(userInfoCreator).createAndSave(user);
-			verify(userInfoMapper).toMyDetailResult(created);
+			verify(userProfileImageReader).findByUserIdOrNull(userId);
+			verify(userInfoMapper).toMyDetailResult(created, profileImage);
 		}
 	}
 
@@ -175,12 +193,14 @@ class UserInfoServiceTest {
 			UserInfo existing = ObjectFixtures.getMockUserInfo();
 			UserInfo updated = ObjectFixtures.getMockUserInfo();
 			UserInfoDetailResult resultDto = ObjectFixtures.getMockUserInfoDetailResult();
+			UserProfileImage profileImage = null;
 
 			when(userInfoReader.findByUserId(userId)).thenReturn(Optional.of(existing));
 			when(userInfoWriter.save(existing)).thenReturn(updated);
-			when(userInfoMapper.toDetailResult(updated)).thenReturn(resultDto);
+			when(userProfileImageReader.findByUserIdOrNull(userId)).thenReturn(profileImage);
+			when(userInfoMapper.toDetailResult(updated, profileImage)).thenReturn(resultDto);
 
-			doNothing().when(existing).update(any(), any(), anyBoolean());
+			doNothing().when(existing).update(any(), anyBoolean());
 			doNothing().when(existing).updateSocialLinks(any());
 			doNothing().when(existing).updateTechStack(any());
 			doNothing().when(existing).updateInterestTech(any());
@@ -194,13 +214,14 @@ class UserInfoServiceTest {
 
 			verify(userInfoReader).findByUserId(userId);
 			verify(userInfoCreator, never()).createAndSave(any(User.class));
-			verify(existing).update(null, null, false);
+			verify(existing).update(null, false);
 			verify(existing).updateSocialLinks(null);
 			verify(existing).updateTechStack(null);
 			verify(existing).updateInterestTech(null);
 			verify(existing).updateInterestDomain(null);
 			verify(userInfoWriter).save(existing);
-			verify(userInfoMapper).toDetailResult(updated);
+			verify(userProfileImageReader).findByUserIdOrNull(userId);
+			verify(userInfoMapper).toDetailResult(updated, profileImage);
 		}
 
 		@Test
@@ -216,13 +237,15 @@ class UserInfoServiceTest {
 			UserInfo created = ObjectFixtures.getMockUserInfo();
 			UserInfo updated = ObjectFixtures.getMockUserInfo();
 			UserInfoDetailResult resultDto = ObjectFixtures.getMockUserInfoDetailResult();
+			UserProfileImage profileImage = null;
 
 			when(userInfoReader.findByUserId(userId)).thenReturn(Optional.empty());
 			when(userInfoCreator.createAndSave(user)).thenReturn(created);
 			when(userInfoWriter.save(created)).thenReturn(updated);
-			when(userInfoMapper.toDetailResult(updated)).thenReturn(resultDto);
+			when(userProfileImageReader.findByUserIdOrNull(userId)).thenReturn(profileImage);
+			when(userInfoMapper.toDetailResult(updated, profileImage)).thenReturn(resultDto);
 
-			doNothing().when(created).update(any(), any(), anyBoolean());
+			doNothing().when(created).update(any(), anyBoolean());
 			doNothing().when(created).updateSocialLinks(any());
 			doNothing().when(created).updateTechStack(any());
 			doNothing().when(created).updateInterestTech(any());
@@ -236,13 +259,14 @@ class UserInfoServiceTest {
 
 			verify(userInfoReader).findByUserId(userId);
 			verify(userInfoCreator).createAndSave(user);
-			verify(created).update(null, null, false);
+			verify(created).update(null, false);
 			verify(created).updateSocialLinks(null);
 			verify(created).updateTechStack(null);
 			verify(created).updateInterestTech(null);
 			verify(created).updateInterestDomain(null);
 			verify(userInfoWriter).save(created);
-			verify(userInfoMapper).toDetailResult(updated);
+			verify(userProfileImageReader).findByUserIdOrNull(userId);
+			verify(userInfoMapper).toDetailResult(updated, profileImage);
 		}
 	}
 
@@ -261,16 +285,24 @@ class UserInfoServiceTest {
 			Pageable pageable = ObjectFixtures.getMockPageable();
 			when(pageableFactory.create(pageNum, StaticValue.USER_LIST_PAGE_SIZE)).thenReturn(pageable);
 
+			User user1 = ObjectFixtures.getMockUser();
+			User user2 = ObjectFixtures.getMockUser();
+			when(user1.getId()).thenReturn("user-1");
+			when(user2.getId()).thenReturn("user-2");
+
 			UserInfo u1 = ObjectFixtures.getMockUserInfo();
 			UserInfo u2 = ObjectFixtures.getMockUserInfo();
+			when(u1.getUser()).thenReturn(user1);
+			when(u2.getUser()).thenReturn(user2);
 			Page<UserInfo> page = new PageImpl<>(List.of(u1, u2), pageable, 2);
 
 			UserInfoSummaryResult s1 = ObjectFixtures.getMockUserInfoSummaryResult();
 			UserInfoSummaryResult s2 = ObjectFixtures.getMockUserInfoSummaryResult();
 
 			when(userInfoReader.findUserInfoWithFilter(condition, pageable, userId)).thenReturn(page);
-			when(userInfoMapper.toSummaryResult(u1)).thenReturn(s1);
-			when(userInfoMapper.toSummaryResult(u2)).thenReturn(s2);
+			when(userProfileImageReader.findMapByUserIds(List.of("user-1", "user-2"))).thenReturn(Map.of());
+			when(userInfoMapper.toSummaryResult(u2, null)).thenReturn(s2);
+			when(userInfoMapper.toSummaryResult(u1, null)).thenReturn(s1);
 
 			// when
 			Page<UserInfoSummaryResult> result = userInfoService.getUserInfoPage(condition, pageNum, userId);
@@ -280,8 +312,9 @@ class UserInfoServiceTest {
 
 			verify(pageableFactory).create(pageNum, StaticValue.USER_LIST_PAGE_SIZE);
 			verify(userInfoReader).findUserInfoWithFilter(condition, pageable, userId);
-			verify(userInfoMapper).toSummaryResult(u1);
-			verify(userInfoMapper).toSummaryResult(u2);
+			verify(userProfileImageReader).findMapByUserIds(List.of("user-1", "user-2"));
+			verify(userInfoMapper).toSummaryResult(u1, null);
+			verify(userInfoMapper).toSummaryResult(u2, null);
 		}
 	}
 }

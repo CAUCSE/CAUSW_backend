@@ -8,11 +8,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.domain.user.account.service.dto.request.DeletedUserQueryCondition;
 import net.causw.app.main.domain.user.account.service.dto.request.UserListCondition;
 import net.causw.app.main.domain.user.account.service.dto.response.UserDetailItem;
 import net.causw.app.main.domain.user.account.service.dto.response.UserDropResult;
@@ -20,6 +23,7 @@ import net.causw.app.main.domain.user.account.service.dto.response.UserListItem;
 import net.causw.app.main.domain.user.account.service.dto.response.UserRestoreResult;
 import net.causw.app.main.domain.user.account.service.dto.response.UserRestoreWithdrawalResult;
 import net.causw.app.main.domain.user.account.service.dto.response.UserRoleUpdateResult;
+import net.causw.app.main.domain.user.account.service.dto.result.DeletedUserListItemDto;
 import net.causw.app.main.domain.user.account.service.implementation.DroppedUserIdentifierWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserAdminActionLogWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
@@ -37,22 +41,29 @@ public class UserAdminService {
 	private final LockerReader lockerReader;
 	private final LockerWriter lockerWriter;
 	private final UserAdminActionLogWriter userAdminActionLogWriter;
+	private final UserProfileImageReader userProfileImageReader;
 	private final DroppedUserIdentifierWriter droppedUserIdentifierWriter;
 	private final UserAccountService userAccountService;
 
 	// 필터링 조건과 페이징 정보를 기반으로 전체 사용자 목록 조회
 	@Transactional(readOnly = true)
-	public Page<UserListItem> getUserList(
-		UserListCondition condition,
+	public Page<UserListItem> getUserList(UserListCondition condition, Pageable pageable) {
+		return userReader.findUserList(condition, pageable);
+	}
+
+	@Transactional(readOnly = true)
+	public Page<DeletedUserListItemDto> getDeletedUserList(
+		DeletedUserQueryCondition condition,
 		Pageable pageable) {
-		return userReader.findUserList(condition, pageable)
-			.map(UserListItem::from);
+		return userReader.findDeletedUserList(condition, pageable);
 	}
 
 	@Transactional(readOnly = true)
 	public UserDetailItem getUserDetail(String userId) {
+		// todo: major deprecated 제거
 		User user = userReader.findDetailById(userId);
-		return UserDetailItem.from(user);
+		UserProfileImage profileImage = userProfileImageReader.findByUserIdOrNull(userId);
+		return UserDetailItem.from(user, profileImage);
 	}
 
 	@Transactional

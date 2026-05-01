@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserCareerDto;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserInfoResponseDto;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserInfoUpdateRequestDto;
@@ -36,6 +37,7 @@ public class UpdateUserInfoUseCaseService {
 	private final UserInfoV1Service userInfoV1Service;
 	private final UserService userService;
 	private final UserCareerRepository userCareerRepository;
+	private final UserProfileImageReader userProfileImageReader;
 
 	public UserInfoResponseDto execute(
 		String userId,
@@ -60,7 +62,9 @@ public class UpdateUserInfoUseCaseService {
 		// 사용자 커리어 갱신
 		updateUserCareer(request.getUserCareer(), userInfo);
 
-		return UserDtoMapper.INSTANCE.toUserInfoResponseDto(userInfo);
+		return UserDtoMapper.INSTANCE.toUserInfoResponseDto(
+			userInfo,
+			userProfileImageReader.findByUserIdOrNull(userInfo.getUser().getId()));
 	}
 
 	private void updateUserCareer(List<UserCareerDto> userCareerDtoList, UserInfo userInfo) {

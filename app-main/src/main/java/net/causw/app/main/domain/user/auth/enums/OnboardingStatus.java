@@ -16,14 +16,15 @@ public enum OnboardingStatus {
 	@Schema(description = "온보딩 완료")
 	ACTIVE;
 
-	public static OnboardingStatus resolve(boolean isGuest, boolean isTermsAgreed, boolean isAcademicCertified) {
+	public static OnboardingStatus resolve(boolean isGuest, boolean hasAllRequiredLatestTerms,
+		boolean isAcademicCertified) {
 		if (isGuest) {
 			return GUEST;
 		}
 		if (!isAcademicCertified) {
 			return ACADEMIC_CERTIFICATION_REQUIRED;
 		}
-		if (!isTermsAgreed) {
+		if (!hasAllRequiredLatestTerms) {
 			return TERMS_REQUIRED;
 		}
 		return ACTIVE;

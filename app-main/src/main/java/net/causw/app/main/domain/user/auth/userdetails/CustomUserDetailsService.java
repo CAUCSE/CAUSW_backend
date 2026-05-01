@@ -6,7 +6,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.app.main.domain.user.account.repository.user.query.UserQueryRepository;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
@@ -17,12 +16,11 @@ import lombok.AllArgsConstructor;
 @Service
 @AllArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
-	private final UserRepository userRepository;
 	private final UserQueryRepository userQueryRepository;
 
 	@Override
 	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-		User user = userRepository.findByEmail(email)
+		User user = userQueryRepository.findByEmail(email)
 			.orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
 		return CustomUserDetails.builder()
