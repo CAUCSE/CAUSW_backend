@@ -28,12 +28,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class PostValidator {
 
-	public static void validateWriterNotDeleted(Post post) {
-		if (post.getWriter().isInactive()) {
-			throw PostErrorCode.DELETED_WRITER.toBaseException();
-		}
-	}
-
 	public static void validateCreate(User creator, Board board, BoardConfig boardConfig,
 		List<String> boardAdminIds, Boolean isAnonymous) {
 		validateUserAndBoard(creator, board);

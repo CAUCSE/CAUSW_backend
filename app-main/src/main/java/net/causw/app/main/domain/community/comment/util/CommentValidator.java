@@ -66,18 +66,12 @@ public class CommentValidator {
 	}
 
 	public void validateForLike(User user, Comment comment) {
-		if (comment.getWriter().isInactive()) {
-			throw AuthErrorCode.INACTIVE_USER.toBaseException();
-		}
 		if (likeCommentReader.isCommentLiked(user, comment.getId())) {
 			throw CommentErrorCode.COMMENT_ALREADY_LIKED.toBaseException();
 		}
 	}
 
 	public void validateForCancelLike(User user, Comment comment) {
-		if (comment.getWriter().isInactive()) {
-			throw AuthErrorCode.INACTIVE_USER.toBaseException();
-		}
 		if (!likeCommentReader.isCommentLiked(user, comment.getId())) {
 			throw CommentErrorCode.COMMENT_NOT_LIKE.toBaseException();
 		}
