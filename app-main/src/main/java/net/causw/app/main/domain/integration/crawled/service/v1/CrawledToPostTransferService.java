@@ -95,7 +95,7 @@ public class CrawledToPostTransferService {
 				title,
 				contentHtml,
 				adminUser,
-				true,
+				false,
 				false,
 				board,
 				null,
