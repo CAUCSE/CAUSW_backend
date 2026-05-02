@@ -170,6 +170,10 @@ public class User extends BaseEntity {
 		this.graduationType = null;
 	}
 
+	public boolean isDeleted() {
+		return this.deletedAt != null;
+	}
+
 	public boolean isInactive() {
 		return this.state == UserState.INACTIVE;
 	}
