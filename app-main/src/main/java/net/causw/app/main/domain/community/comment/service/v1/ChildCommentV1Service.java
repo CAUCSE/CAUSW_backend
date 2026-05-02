@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.core.aop.annotation.MeasureTime;
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.campus.circle.entity.Circle;
 import net.causw.app.main.domain.campus.circle.entity.CircleMember;
 import net.causw.app.main.domain.campus.circle.enums.CircleMemberStatus;
@@ -62,6 +64,7 @@ public class ChildCommentV1Service {
 	private final Validator validator;
 	private final CommentNotificationService commentNotificationService;
 	private final PostV1Service postV1Service;
+	private final UserProfileImageReader userProfileImageReader;
 
 	@Transactional
 	public ChildCommentResponseDto createChildComment(User creator,
@@ -241,6 +244,7 @@ public class ChildCommentV1Service {
 	}
 
 	private ChildCommentResponseDto toChildCommentResponseDto(ChildComment childComment, User user, Board board) {
+		UserProfileImage writerPi = userProfileImageReader.findByUserIdOrNull(childComment.getWriter().getId());
 		ChildCommentResponseDto childCommentResponseDto = CommentDtoMapper.INSTANCE.toChildCommentResponseDto(
 			childComment,
 			getNumOfChildCommentLikes(childComment),
@@ -248,7 +252,8 @@ public class ChildCommentV1Service {
 			StatusPolicy.isChildCommentOwner(childComment, user),
 			StatusPolicy.isUpdatable(childComment, user),
 			StatusPolicy.isDeletable(childComment, user, board),
-			false);
+			false,
+			writerPi);
 
 		// 화면에 표시될 닉네임 설정
 		User writer = childComment.getWriter();

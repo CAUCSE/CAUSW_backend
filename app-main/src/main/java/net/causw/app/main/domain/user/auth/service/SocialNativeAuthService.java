@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.SocialType;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
@@ -58,6 +60,7 @@ public class SocialNativeAuthService {
 	private final JwtDecoderFactory<ClientRegistration> oidcIdTokenDecoderFactory;
 	private final AuthTokenManager authTokenManager;
 	private final UserTermsAgreementReader userTermsAgreementReader;
+	private final UserProfileImageReader userProfileImageReader;
 	private final OidcAuthorizationCodeTokenClient oidcAuthorizationCodeTokenClient;
 	private final SocialAccountOauthRefreshStore socialAccountOauthRefreshStore;
 
@@ -95,13 +98,14 @@ public class SocialNativeAuthService {
 					authorizationCode, codeVerifier);
 			}
 			AuthTokenPair tokens = authTokenManager.issueTokens(user, null);
+			UserProfileImage profileImage = userProfileImageReader.findByUserIdOrNull(user.getId());
+			boolean hasAllRequiredLatestTerms = userTermsAgreementReader.hasAgreedToAllRequiredLatestTerms(user);
 
 			log.info("Native social login succeeded. provider={}, oidcRegistrationId={}, userId={}", provider,
 				oidcRegistrationId, user.getId());
 
-			boolean hasAllRequiredLatestTerms = userTermsAgreementReader.hasAgreedToAllRequiredLatestTerms(user);
-
-			return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), ProfileImageDto.from(user),
+			return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(),
+				ProfileImageDto.from(user, profileImage),
 				tokens.refreshToken(), user.isGuest(), hasAllRequiredLatestTerms, user.isAcademicCertified(),
 				user.getAcademicStatus());
 		} catch (BaseRunTimeV2Exception e) {

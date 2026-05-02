@@ -38,6 +38,7 @@ public class AdmissionService {
 	 * v2 재학정보 인증 신청을 생성합니다.
 	 *
 	 * 검증 사항:
+	 * - 추방된 학번인지 검증
 	 * - 사용자 상태가 AWAIT 또는 REJECT인 경우만 신청 가능
 	 * - 기존 신청이 존재하지 않아야 함
 	 * - 첨부 이미지 1개 이상 필수
@@ -48,7 +49,6 @@ public class AdmissionService {
 		User user,
 		AdmissionCreateCommand dto,
 		List<MultipartFile> attachImages) {
-
 		// 인증 신청 생성 검증
 		admissionValidator.validateAdmissionCreate(user, dto.requestedStudentId(),
 			dto.requestedAcademicStatus(), dto.graduationYear(), attachImages);

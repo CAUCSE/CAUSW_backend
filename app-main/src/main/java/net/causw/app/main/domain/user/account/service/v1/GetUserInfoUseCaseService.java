@@ -3,6 +3,7 @@ package net.causw.app.main.domain.user.account.service.v1;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserInfoResponseDto;
 import net.causw.app.main.domain.user.account.api.v1.mapper.UserDtoMapper;
 import net.causw.app.main.domain.user.account.entity.user.User;
@@ -21,6 +22,7 @@ public class GetUserInfoUseCaseService {
 
 	private final UserInfoV1Service userInfoV1Service;
 	private final UserEntityService userEntityService;
+	private final UserProfileImageReader userProfileImageReader;
 
 	public UserInfoResponseDto execute(String userId) {
 		User user = userEntityService.findUserByUserId(userId);
@@ -33,6 +35,8 @@ public class GetUserInfoUseCaseService {
 
 		UserInfo userInfo = userInfoV1Service.getUserInfoByUser(user);
 
-		return UserDtoMapper.INSTANCE.toUserInfoResponseDto(userInfo);
+		return UserDtoMapper.INSTANCE.toUserInfoResponseDto(
+			userInfo,
+			userProfileImageReader.findByUserIdOrNull(userInfo.getUser().getId()));
 	}
 }

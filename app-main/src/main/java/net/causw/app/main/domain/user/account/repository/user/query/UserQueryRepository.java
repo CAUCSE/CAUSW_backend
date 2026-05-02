@@ -49,10 +49,6 @@ public class UserQueryRepository {
 
 		return jpaQueryFactory.selectFrom(user)
 			.where(predicate)
-			.leftJoin(user.ceremonyNotificationSetting).fetchJoin()
-			.leftJoin(user.locker).fetchJoin()
-			.leftJoin(user.userProfileImage).fetchJoin()
-			.leftJoin(user.userProfileImage.uuidFile).fetchJoin()
 			.distinct()
 			.fetch();
 	}
@@ -62,10 +58,6 @@ public class UserQueryRepository {
 		User result = jpaQueryFactory.selectFrom(user)
 			.where(user.id.eq(userId))
 			.leftJoin(user.roles).fetchJoin()
-			.leftJoin(user.ceremonyNotificationSetting).fetchJoin()
-			.leftJoin(user.locker).fetchJoin()
-			.leftJoin(user.userProfileImage).fetchJoin()
-			.leftJoin(user.userProfileImage.uuidFile).fetchJoin()
 			.fetchOne();
 
 		return Optional.ofNullable(result);
@@ -77,10 +69,6 @@ public class UserQueryRepository {
 		User result = jpaQueryFactory.selectFrom(user)
 			.where(user.email.eq(email))
 			.leftJoin(user.roles).fetchJoin()
-			.leftJoin(user.ceremonyNotificationSetting).fetchJoin()
-			.leftJoin(user.locker).fetchJoin()
-			.leftJoin(user.userProfileImage).fetchJoin()
-			.leftJoin(user.userProfileImage.uuidFile).fetchJoin()
 			.fetchOne();
 
 		return Optional.ofNullable(result);
@@ -92,10 +80,6 @@ public class UserQueryRepository {
 		return jpaQueryFactory.selectFrom(user)
 			.where(user.id.in(userIds))
 			.leftJoin(user.roles).fetchJoin()
-			.leftJoin(user.ceremonyNotificationSetting).fetchJoin()
-			.leftJoin(user.locker).fetchJoin()
-			.leftJoin(user.userProfileImage).fetchJoin()
-			.leftJoin(user.userProfileImage.uuidFile).fetchJoin()
 			.distinct()
 			.fetch();
 	}

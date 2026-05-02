@@ -1,5 +1,7 @@
 package net.causw.app.main.domain.community.ceremony.repository;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,4 +15,6 @@ public interface CeremonyRepository extends JpaRepository<Ceremony, String> {
 		CeremonyState ceremonyState, Pageable pageable);
 
 	long countByCeremonyState(CeremonyState ceremonyState);
+
+	List<Ceremony> findAllByUser_IdIn(List<String> userIds);
 }
