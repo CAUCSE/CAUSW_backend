@@ -159,6 +159,7 @@ public class UserQueryRepository {
 
 	/**
 	 * 탈퇴 회원 전용 목록 조회 — INACTIVE 상태 유저만 반환.
+	 * TODO: 탈퇴 및 추방 유저 (익명화 이전) 조회
 	 */
 	public Page<DeletedUserListQueryResult> findDeletedUserList(
 		DeletedUserQueryCondition condition,
