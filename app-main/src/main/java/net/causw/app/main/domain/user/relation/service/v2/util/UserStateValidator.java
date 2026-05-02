@@ -21,7 +21,7 @@ public class UserStateValidator {
 		if (state == UserState.DROP) {
 			throw UserErrorCode.USER_DROPPED.toBaseException();
 		}
-		if (user.isInactive()) {
+		if (state == UserState.INACTIVE) {
 			throw UserErrorCode.USER_INACTIVE_CAN_REJOIN.toBaseException();
 		}
 		if (user.getRoles().contains(Role.NONE)) {
