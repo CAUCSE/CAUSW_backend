@@ -1,5 +1,10 @@
 package net.causw.app.main.domain.integration.crawled.service.v1;
 
+import java.util.Arrays;
+
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +17,18 @@ import lombok.extern.slf4j.Slf4j;
 public class CrawlingScheduler {
 	private final CrawlingAndSavingService crawlingAndSavingService;
 	private final CrawledToPostTransferService crawledToPostTransferService;
+	private final Environment environment;
+
+	// local 프로필일 때 서비스 시작 시 크롤링 → 변환 순서로 즉시 수행
+	@EventListener(ApplicationReadyEvent.class)
+	public void onApplicationStart() {
+		if (Arrays.asList(environment.getActiveProfiles()).contains("local")) {
+			log.info("[Local] Starting Crawling");
+			crawlingAndSavingService.crawlAndDetectUpdates();
+			crawledToPostTransferService.transferToPosts();
+			log.info("[Local] Complete Crawling");
+		}
+	}
 
 	//정시 - 크롤링 및 저장
 	//    @Scheduled(fixedRate = 10000)
