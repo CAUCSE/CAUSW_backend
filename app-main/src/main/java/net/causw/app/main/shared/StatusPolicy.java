@@ -121,12 +121,7 @@ public class StatusPolicy {
 		if (writer == null)
 			return false;
 		return writer.getRoles().stream()
-			.anyMatch(role -> role == Role.ADMIN
-				|| role == Role.PRESIDENT
-				|| role == Role.VICE_PRESIDENT
-				|| role == Role.COUNCIL
-				|| role == Role.LEADER_ALUMNI
-				|| role == Role.ALUMNI_MANAGER);
+			.anyMatch(role -> role == Role.ADMIN);
 	}
 
 	public static boolean isPostForm(Post post) {
