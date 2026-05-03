@@ -112,6 +112,7 @@ class UserAccountServiceTest {
 	private final String phoneNumber = "01012345678";
 	private final String name = "홍길동";
 	private final String refreshToken = "old-refresh-token";
+	private final String platformHint = "ios";
 	private final List<String> agreedTermsIds = List.of("term-id-1", "term-id-2");
 
 	@Test
@@ -237,7 +238,7 @@ class UserAccountServiceTest {
 		when(lockerReader.findByUserId(userId)).thenReturn(Optional.of(locker));
 		when(user.getDeletedAt()).thenReturn(now);
 
-		UserWithdrawResponse result = userAccountService.withdraw(userId, accessToken, refresh);
+		UserWithdrawResponse result = userAccountService.withdraw(userId, accessToken, refresh, platformHint);
 
 		// then
 		assertNotNull(result);
@@ -246,7 +247,7 @@ class UserAccountServiceTest {
 		// verify
 		verify(userReader).findUserById(userId);
 		verify(socialAccountReader).findAllByUserId(userId);
-		verify(socialAccountUnlinkManager).unlink(socialAccount);
+		verify(socialAccountUnlinkManager).unlink(socialAccount, platformHint);
 		verify(authTokenManager).invalidateTokens(accessToken, refresh);
 		verify(lockerReader).findByUserId(userId);
 		verify(lockerWriter).returnLocker(locker, user);
@@ -272,7 +273,7 @@ class UserAccountServiceTest {
 
 		when(user.getDeletedAt()).thenReturn(LocalDateTime.now());
 
-		userAccountService.withdraw(userId, accessToken, refresh);
+		userAccountService.withdraw(userId, accessToken, refresh, platformHint);
 
 		// then
 		verify(lockerWriter, never()).returnLocker(any(), any());
@@ -289,7 +290,7 @@ class UserAccountServiceTest {
 
 		// when & then
 		assertThrows(BaseRunTimeV2Exception.class,
-			() -> userAccountService.withdraw(userId, "access-token", "refresh-token"));
+			() -> userAccountService.withdraw(userId, "access-token", "refresh-token", platformHint));
 
 		verify(userReader).findUserById(userId);
 		verifyNoInteractions(socialAccountReader, socialAccountUnlinkManager, lockerReader, lockerWriter, fcmUtils);
