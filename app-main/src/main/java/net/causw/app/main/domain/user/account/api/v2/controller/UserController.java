@@ -215,15 +215,23 @@ public class UserController {
 			userProfileImageService.updateToCustomProfileImage(userDetails.getUserId(), imageFile));
 	}
 
+	// ── 회원 탈퇴 ──
+
 	@DeleteMapping("/me")
-	@Operation(summary = "회원 탈퇴 API", description = "현재 로그인한 사용자를 탈퇴 처리합니다. (Soft Delete)")
+	@Operation(summary = "회원 탈퇴 API", description = "현재 로그인한 사용자를 탈퇴 처리합니다. (Soft Delete)", security = {
+		@SecurityRequirement(name = "beararAuth"),
+		@SecurityRequirement(name = "refreshBearerAuth")
+	})
 	public ApiResponse<UserWithdrawResponse> withdraw(
 		@RequestHeader(value = "Authorization", required = false) String authorizationHeader,
-		@CookieValue(name = "refresh_token", required = false) String refreshToken,
+		@RequestHeader(value = AuthorizationExtractor.REFRESH_AUTHORIZATION_HEADER, required = false) String refreshAuthHeader,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		AuthorizationExtractor.validate(authorizationHeader);
 
+		AuthorizationExtractor.validate(authorizationHeader);
 		String accessToken = AuthorizationExtractor.extract(authorizationHeader);
+
+		AuthorizationExtractor.validateRefresh(refreshAuthHeader);
+		String refreshToken = AuthorizationExtractor.extractRefresh(refreshAuthHeader);
 
 		return ApiResponse.success(
 			userAccountService.withdraw(userDetails.getUserId(), accessToken, refreshToken));
