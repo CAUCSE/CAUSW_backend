@@ -127,7 +127,7 @@ public class UserWriter {
 
 			for (SocialAccount socialAccount : socialAccounts) {
 				try {
-					socialAccountUnlinkManager.unlink(socialAccount);
+					socialAccountUnlinkManager.unlink(socialAccount, null);
 				} catch (Exception e) {
 					log.error("[유저 정리 배치] 소셜 연동 해제 실패 - userId: {}, socialType: {}",
 						user.getId(), socialAccount.getSocialType(), e);

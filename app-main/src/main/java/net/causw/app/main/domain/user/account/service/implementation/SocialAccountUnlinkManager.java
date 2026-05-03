@@ -31,7 +31,7 @@ public class SocialAccountUnlinkManager {
 	 *
 	 * @param socialAccount 연동을 해제할 소셜 계정 엔티티
 	 */
-	public void unlink(SocialAccount socialAccount) {
+	public void unlink(SocialAccount socialAccount, String platformHint) {
 		SocialType socialType = socialAccount.getSocialType();
 
 		try {
@@ -49,7 +49,7 @@ public class SocialAccountUnlinkManager {
 					return;
 				}
 				String refreshToken = oauthRefreshTokenCipher.decrypt(encryptedRefreshToken);
-				revokeByProvider(socialType, refreshToken);
+				revokeByProvider(socialType, refreshToken, platformHint);
 			}
 		} catch (Exception e) {
 			log.warn("소셜 연동 해제 실패. socialAccountId={}, socialType={}",
@@ -69,10 +69,10 @@ public class SocialAccountUnlinkManager {
 		}
 	}
 
-	private void revokeByProvider(SocialType socialType, String refreshToken) {
+	private void revokeByProvider(SocialType socialType, String refreshToken, String registrationId) {
 		switch (socialType) {
 			case GOOGLE -> googleOAuthRevokeClient.revoke(refreshToken);
-			case APPLE -> appleOAuthRevokeClient.revoke(refreshToken);
+			case APPLE -> appleOAuthRevokeClient.revoke(refreshToken, registrationId);
 			default -> log.info("해당 소셜 타입에 대한 핸들러가 없습니다: {}", socialType);
 		}
 	}

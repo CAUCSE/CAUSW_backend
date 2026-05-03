@@ -281,7 +281,7 @@ public class UserAccountService {
 	 * 관리자에 의해 추방된 경우(USER_DROPPED)
 	 */
 	@Transactional
-	public UserWithdrawResponse withdraw(String userId, String accessToken, String refreshToken) {
+	public UserWithdrawResponse withdraw(String userId, String accessToken, String refreshToken, String platformHint) {
 		User user = userReader.findUserById(userId);
 
 		if (user.isDeleted()) {
@@ -296,7 +296,7 @@ public class UserAccountService {
 		List<SocialAccount> socialAccounts = socialAccountReader.findAllByUserId(user.getId());
 		socialAccounts.forEach(socialAccount -> {
 			try {
-				socialAccountUnlinkManager.unlink(socialAccount);
+				socialAccountUnlinkManager.unlink(socialAccount, platformHint);
 			} catch (Exception e) {
 				log.error("[User Withdraw] 소셜 연동 해제 실패. SocialType: {}, UserID: {}, Error: {}",
 					socialAccount.getSocialType(), user.getId(), e.getMessage());
