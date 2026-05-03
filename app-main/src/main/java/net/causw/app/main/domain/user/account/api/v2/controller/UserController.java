@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -49,6 +48,7 @@ import net.causw.app.main.shared.dto.ApiResponse;
 import net.causw.app.main.shared.util.AuthorizationExtractor;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -216,13 +216,14 @@ public class UserController {
 	}
 
 	// ── 회원 탈퇴 ──
-
 	@DeleteMapping("/me")
 	@Operation(summary = "회원 탈퇴 API", description = "현재 로그인한 사용자를 탈퇴 처리합니다. (Soft Delete)", security = {
 		@SecurityRequirement(name = "beararAuth"),
 		@SecurityRequirement(name = "refreshBearerAuth")
 	})
 	public ApiResponse<UserWithdrawResponse> withdraw(
+		@Parameter(description = "플랫폼 타입 (애플 로그인 연동 해제 시 정확한 처리를 위해 필요)", example = "ios / web")
+		@RequestHeader(value = "X-Platform-Type", required = false) String platformHint,
 		@RequestHeader(value = "Authorization", required = false) String authorizationHeader,
 		@RequestHeader(value = AuthorizationExtractor.REFRESH_AUTHORIZATION_HEADER, required = false) String refreshAuthHeader,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -234,6 +235,6 @@ public class UserController {
 		String refreshToken = AuthorizationExtractor.extractRefresh(refreshAuthHeader);
 
 		return ApiResponse.success(
-			userAccountService.withdraw(userDetails.getUserId(), accessToken, refreshToken));
+			userAccountService.withdraw(userDetails.getUserId(), accessToken, refreshToken, platformHint));
 	}
 }
