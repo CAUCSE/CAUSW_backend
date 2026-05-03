@@ -1,7 +1,5 @@
 package net.causw.app.main.domain.integration.crawled.service.v1;
 
-import java.util.Arrays;
-
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.env.Environment;
@@ -22,7 +20,7 @@ public class CrawlingScheduler {
 	// local 프로필일 때 서비스 시작 시 크롤링 → 변환 순서로 즉시 수행
 	@EventListener(ApplicationReadyEvent.class)
 	public void onApplicationStart() {
-		if (Arrays.asList(environment.getActiveProfiles()).contains("local")) {
+		if (environment.matchesProfiles("local")) {
 			log.info("[Local] Starting Crawling");
 			crawlingAndSavingService.crawlAndDetectUpdates();
 			crawledToPostTransferService.transferToPosts();
