@@ -299,7 +299,7 @@ public class UserAccountService {
 		socialAccounts.forEach(socialAccount -> {
 			try {
 				socialAccountUnlinkManager.unlink(socialAccount);
-			} catch (Exception e) {
+			} catch (RuntimeException e) {
 				log.error("[User Withdraw] 소셜 연동 해제 실패. SocialType: {}, UserID: {}, Error: {}",
 					socialAccount.getSocialType(), user.getId(), e.getMessage());
 			}
