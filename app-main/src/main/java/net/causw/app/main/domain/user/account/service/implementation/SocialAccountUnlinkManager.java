@@ -69,10 +69,10 @@ public class SocialAccountUnlinkManager {
 		}
 	}
 
-	private void revokeByProvider(SocialType socialType, String refreshToken, String registrationId) {
+	private void revokeByProvider(SocialType socialType, String refreshToken, String platformHint) {
 		switch (socialType) {
 			case GOOGLE -> googleOAuthRevokeClient.revoke(refreshToken);
-			case APPLE -> appleOAuthRevokeClient.revoke(refreshToken, registrationId);
+			case APPLE -> appleOAuthRevokeClient.revoke(refreshToken, platformHint);
 			default -> log.info("해당 소셜 타입에 대한 핸들러가 없습니다: {}", socialType);
 		}
 	}
