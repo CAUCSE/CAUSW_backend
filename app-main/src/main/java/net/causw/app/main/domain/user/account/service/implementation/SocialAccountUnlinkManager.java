@@ -9,6 +9,7 @@ import net.causw.app.main.domain.user.auth.crypto.OauthRefreshTokenCipher;
 import net.causw.app.main.domain.user.auth.service.implementation.AppleOAuthRevokeClient;
 import net.causw.app.main.domain.user.auth.service.implementation.GoogleOAuthRevokeClient;
 import net.causw.app.main.domain.user.auth.service.implementation.KakaoOAuthUnlinkClient;
+import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,14 +50,19 @@ public class SocialAccountUnlinkManager {
 					return;
 				}
 				String refreshToken = oauthRefreshTokenCipher.decrypt(encryptedRefreshToken);
-				revokeByProvider(socialType, refreshToken, platformHint);
+
+				try {
+					revokeByProvider(socialType, refreshToken, platformHint);
+					socialAccount.replaceEncryptedOauthRefreshToken(null);
+				} catch (BaseRunTimeV2Exception e) {
+					log.warn("[Social Unlink Fail] 소셜 연동 해제 실패 (userId: {}, type: {}). 탈퇴는 계속 진행합니다. 사유: {}",
+						socialAccount.getUser().getId(),
+						socialType,
+						e.getMessage());
+				}
 			}
 		} catch (Exception e) {
-			log.warn("소셜 연동 해제 실패. socialAccountId={}, socialType={}",
-				socialAccount.getId(), socialAccount.getSocialType(), e);
-		} finally {
-			// 연동 해제 시도 후에는 DB상의 토큰 정보도 제거 (엔티티 메서드 활용)
-			socialAccount.replaceEncryptedOauthRefreshToken(null);
+			log.error("[Social Unlink Critical] 연동 해제 중 예상치 못한 오류 발생. ID: {}", socialAccount.getId(), e);
 		}
 	}
 
@@ -65,7 +71,6 @@ public class SocialAccountUnlinkManager {
 			kakaoOAuthUnlinkClient.unlinkWithAdminKey(socialAccount.getId());
 		} catch (Exception e) {
 			log.error("[Kakao Unlink] 어드민 키를 활용한 강제 해제 실패. SocialAccount ID: {}", socialAccount.getId(), e);
-			throw e;
 		}
 	}
 
