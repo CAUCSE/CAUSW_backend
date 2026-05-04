@@ -235,7 +235,7 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "userId", source = "userInfo.user.id")
 	@Mapping(target = "name", source = "userInfo.user.name")
 	@Mapping(target = "email", source = "userInfo.user.email")
-	@Mapping(target = "phoneNumber", source = "userInfo.user.phoneNumber", qualifiedByName = "maskPhoneNumber")
+	@Mapping(target = "phoneNumber", source = "userInfo", qualifiedByName = "maskPhoneNumberForUserInfo")
 	@Mapping(target = "admissionYear", source = "userInfo.user.admissionYear")
 	@Mapping(target = "profileImageUrl", expression = "java(userProfileImage != null && userProfileImage.getUuidFile() != null ? userProfileImage.getUuidFile().getFileUrl() : null)")
 	@Mapping(target = "major", source = "userInfo.user.major")
@@ -248,6 +248,24 @@ public interface UserDtoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "socialLinks", source = "userInfo.socialLinks")
 	@Mapping(target = "isPhoneNumberVisible", source = "userInfo.phoneNumberVisible")
 	UserInfoResponseDto toUserInfoResponseDto(UserInfo userInfo, UserProfileImage userProfileImage);
+
+	@Named("maskPhoneNumberForUserInfo")
+	default String maskPhoneNumberForUserInfo(UserInfo userInfo) {
+
+		if (!userInfo.isPhoneNumberVisible()) {
+			return null;
+		}
+
+		var phoneNumber = userInfo.getUser().getPhoneNumber();
+
+		if (phoneNumber == null) {
+			return null;
+		}
+		if (phoneNumber.startsWith(StaticValue.TEMP_PHONE_NUMBER_PREFIX)) {
+			return StaticValue.NO_PHONE_NUMBER_MESSAGE;
+		}
+		return phoneNumber;
+	}
 
 	//TODO : 운영계 반영 성공시 삭제
 	@Named("maskPhoneNumber")
