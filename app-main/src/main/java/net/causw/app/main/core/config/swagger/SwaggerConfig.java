@@ -7,6 +7,7 @@ import org.springdoc.core.properties.SwaggerUiOAuthProperties;
 import org.springdoc.core.providers.ObjectMapperProvider;
 import org.springdoc.webmvc.ui.SwaggerIndexTransformer;
 import org.springdoc.webmvc.ui.SwaggerWelcomeCommon;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -111,6 +112,7 @@ public class SwaggerConfig {
 	}
 
 	@Bean
+	@ConditionalOnProperty(name = "springdoc.swagger-ui.enabled", havingValue = "true", matchIfMissing = true)
 	public SwaggerIndexTransformer refreshBearerSwaggerIndexTransformer(
 		SwaggerUiConfigProperties swaggerUiConfig,
 		SwaggerUiOAuthProperties swaggerUiOAuthProperties,
