@@ -218,7 +218,7 @@ public class UserController {
 	// ── 회원 탈퇴 ──
 	@DeleteMapping("/me")
 	@Operation(summary = "회원 탈퇴 API", description = "현재 로그인한 사용자를 탈퇴 처리합니다. (Soft Delete)", security = {
-		@SecurityRequirement(name = "beararAuth"),
+		@SecurityRequirement(name = "bearerAuth"),
 		@SecurityRequirement(name = "refreshBearerAuth")
 	})
 	public ApiResponse<UserWithdrawResponse> withdraw(
