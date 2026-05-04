@@ -7,6 +7,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 
+import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -66,7 +68,7 @@ public class AppleOAuthRevokeClient {
 
 		// 두 설정 모두 실패한 경우
 		log.error("[Apple Revoke] 모든 플랫폼(Web, App) 설정으로 연동 해제에 실패했습니다.");
-		throw new RuntimeException("Apple token revoke failed for all platforms.");
+		throw AuthErrorCode.APPLE_REVOKE_FAILED.toBaseException();
 	}
 
 	/**
