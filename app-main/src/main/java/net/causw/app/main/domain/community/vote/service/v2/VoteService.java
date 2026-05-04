@@ -12,21 +12,22 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.community.post.entity.Post;
-import net.causw.app.main.domain.community.post.repository.PostRepository;
+import net.causw.app.main.domain.community.post.service.v2.implementation.PostReader;
 import net.causw.app.main.domain.community.vote.api.v2.dto.request.CreateVoteRequest;
 import net.causw.app.main.domain.community.vote.api.v2.dto.response.VoteOptionResponse;
 import net.causw.app.main.domain.community.vote.api.v2.dto.response.VoteResponse;
 import net.causw.app.main.domain.community.vote.entity.Vote;
 import net.causw.app.main.domain.community.vote.entity.VoteOption;
 import net.causw.app.main.domain.community.vote.entity.VoteRecord;
-import net.causw.app.main.domain.community.vote.repository.VoteOptionRepository;
-import net.causw.app.main.domain.community.vote.repository.VoteRecordRepository;
-import net.causw.app.main.domain.community.vote.repository.VoteRepository;
+import net.causw.app.main.domain.community.vote.service.v2.implementation.VoteOptionReader;
+import net.causw.app.main.domain.community.vote.service.v2.implementation.VoteOptionWriter;
+import net.causw.app.main.domain.community.vote.service.v2.implementation.VoteReader;
+import net.causw.app.main.domain.community.vote.service.v2.implementation.VoteRecordReader;
+import net.causw.app.main.domain.community.vote.service.v2.implementation.VoteRecordWriter;
+import net.causw.app.main.domain.community.vote.service.v2.implementation.VoteWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.StatusPolicy;
-import net.causw.global.constant.MessageUtil;
-import net.causw.global.exception.BadRequestException;
-import net.causw.global.exception.ErrorCode;
+import net.causw.app.main.shared.exception.errorcode.VoteErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -34,20 +35,20 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class VoteService {
 
-	private final VoteRepository voteRepository;
-	private final VoteOptionRepository voteOptionRepository;
-	private final VoteRecordRepository voteRecordRepository;
-	private final PostRepository postRepository;
+	private final PostReader postReader;
+	private final VoteReader voteReader;
+	private final VoteWriter voteWriter;
+	private final VoteOptionReader voteOptionReader;
+	private final VoteOptionWriter voteOptionWriter;
+	private final VoteRecordReader voteRecordReader;
+	private final VoteRecordWriter voteRecordWriter;
 
 	@Transactional
 	public VoteResponse createVote(CreateVoteRequest request, User user) {
-		Post post = postRepository.findById(request.getPostId())
-			.orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.POST_NOT_FOUND));
+		Post post = postReader.findById(request.getPostId());
 
 		if (!user.equals(post.getWriter())) {
-			throw new BadRequestException(ErrorCode.API_NOT_ALLOWED,
-				MessageUtil.VOTE_START_NOT_ACCESSIBLE);
+			throw VoteErrorCode.VOTE_CREATE_NOT_ALLOWED.toBaseException();
 		}
 
 		List<VoteOption> voteOptions = request.getOptions().stream()
@@ -60,12 +61,12 @@ public class VoteService {
 			request.getAllowMultiple(),
 			voteOptions,
 			post);
-		Vote savedVote = voteRepository.save(vote);
+		Vote savedVote = voteWriter.save(vote);
 		post.updateVote(savedVote);
 		voteOptions.forEach(o -> o.updateVote(savedVote));
-		voteOptionRepository.saveAll(voteOptions);
+		voteOptionWriter.saveAll(voteOptions);
 
-		return buildVoteResponseV2(savedVote, user);
+		return buildVoteResponse(savedVote, user);
 	}
 
 	/**
@@ -76,95 +77,82 @@ public class VoteService {
 	 */
 	@Transactional
 	public VoteResponse toggleVote(String voteId, String optionId, User user) {
-		Vote vote = findVoteOrThrow(voteId);
+		Vote vote = voteReader.findById(voteId);
 
 		if (vote.isEnd()) {
-			throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.VOTE_ALREADY_END);
+			throw VoteErrorCode.VOTE_ALREADY_END.toBaseException();
 		}
 
-		VoteOption voteOption = voteOptionRepository.findById(optionId)
-			.orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.VOTE_OPTION_NOT_FOUND));
+		VoteOption voteOption = voteOptionReader.findById(optionId);
 
 		if (!voteOption.getVote().getId().equals(voteId)) {
-			throw new BadRequestException(ErrorCode.INVALID_PARAMETER,
-				MessageUtil.VOTE_OPTION_NOT_IN_VOTE);
+			throw VoteErrorCode.VOTE_OPTION_NOT_IN_VOTE.toBaseException();
 		}
 
-		Optional<VoteRecord> existing = voteRecordRepository.findByVoteOptionAndUser(voteOption, user);
+		Optional<VoteRecord> existing = voteRecordReader.findByVoteOptionAndUser(voteOption, user);
 
 		if (existing.isPresent()) {
 			// 같은 옵션 재클릭 → 취소
-			voteRecordRepository.deleteByVoteOptionAndUser(voteOption, user);
+			voteRecordWriter.deleteByVoteOptionAndUser(voteOption, user);
 		} else {
 			if (!vote.isAllowMultiple()) {
 				// allowMultiple=false: 기존 선택 전부 제거 후 새 선택 추가.
 				// SELECT-then-DELETE 동작. 벌크 삭제 아님. 기존 선택은 항상 1건 이하.
-				voteRecordRepository.deleteAllByVoteOption_VoteAndUser(vote, user);
+				voteRecordWriter.deleteAllByVoteAndUser(vote, user);
 			}
-			voteRecordRepository.save(VoteRecord.of(user, voteOption));
+			voteRecordWriter.save(VoteRecord.of(user, voteOption));
 		}
 
-		return buildVoteResponseV2(vote, user);
+		return buildVoteResponse(vote, user);
 	}
 
 	@Transactional
 	public VoteResponse endVote(String voteId, User user) {
-		Vote vote = findVoteOrThrow(voteId);
+		Vote vote = voteReader.findById(voteId);
 
 		if (!user.equals(vote.getPost().getWriter())) {
-			throw new BadRequestException(ErrorCode.API_NOT_ALLOWED, MessageUtil.VOTE_END_NOT_ACCESSIBLE);
+			throw VoteErrorCode.VOTE_END_NOT_ALLOWED.toBaseException();
 		}
 		if (vote.isEnd()) {
-			throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.VOTE_ALREADY_END);
+			throw VoteErrorCode.VOTE_ALREADY_END.toBaseException();
 		}
 
 		vote.endVote();
-		voteRepository.save(vote);
-		return buildVoteResponseV2(vote, user);
+		voteWriter.save(vote);
+		return buildVoteResponse(vote, user);
 	}
 
 	@Transactional
 	public VoteResponse restartVote(String voteId, User user) {
-		Vote vote = findVoteOrThrow(voteId);
+		Vote vote = voteReader.findById(voteId);
 
 		if (!user.equals(vote.getPost().getWriter())) {
-			throw new BadRequestException(ErrorCode.API_NOT_ALLOWED,
-				MessageUtil.VOTE_RESTART_NOT_ACCESSIBLE);
+			throw VoteErrorCode.VOTE_RESTART_NOT_ALLOWED.toBaseException();
 		}
 		if (!vote.isEnd()) {
-			throw new BadRequestException(ErrorCode.INVALID_PARAMETER, MessageUtil.VOTE_NOT_END);
+			throw VoteErrorCode.VOTE_NOT_END.toBaseException();
 		}
 
 		vote.restartVote();
-		voteRepository.save(vote);
-		return buildVoteResponseV2(vote, user);
+		voteWriter.save(vote);
+		return buildVoteResponse(vote, user);
 	}
 
 	@Transactional(readOnly = true)
 	public VoteResponse findVoteById(String voteId, User user) {
-		return buildVoteResponseV2(findVoteOrThrow(voteId), user);
+		return buildVoteResponse(voteReader.findById(voteId), user);
 	}
 
 	@Transactional(readOnly = true)
 	public VoteResponse findVoteByPostId(String postId, User user) {
-		Vote vote = voteRepository.findByPostId(postId)
-			.orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.VOTE_NOT_FOUND));
-		return buildVoteResponseV2(vote, user);
+		return buildVoteResponse(voteReader.findByPostId(postId), user);
 	}
 
 	// ───────────────────────────── private helpers ─────────────────────────────
 
-	private Vote findVoteOrThrow(String voteId) {
-		return voteRepository.findById(voteId)
-			.orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST,
-				MessageUtil.VOTE_NOT_FOUND));
-	}
-
-	private VoteResponse buildVoteResponseV2(Vote vote, User user) {
+	private VoteResponse buildVoteResponse(Vote vote, User user) {
 		// ① 투표의 모든 기록을 한 번에 조회 (N+1 방지)
-		List<VoteRecord> allRecords = voteRecordRepository.findAllByVoteOption_Vote(vote);
+		List<VoteRecord> allRecords = voteRecordReader.findAllByVote(vote);
 
 		// ② 옵션별 그룹화 (메모리에서)
 		Map<String, List<VoteRecord>> recordsByOptionId = allRecords.stream()
@@ -177,7 +165,7 @@ public class VoteService {
 			.collect(Collectors.toSet());
 
 		// ④ 옵션 목록 (생성순 정렬)
-		List<VoteOption> options = voteOptionRepository.findByVoteId(vote.getId())
+		List<VoteOption> options = voteOptionReader.findByVoteId(vote.getId())
 			.stream()
 			.sorted(Comparator.comparing(VoteOption::getCreatedAt))
 			.toList();
@@ -209,7 +197,7 @@ public class VoteService {
 			vote,
 			StatusPolicy.isVoteOwner(vote, user),
 			!votedOptionIds.isEmpty(),
-			allRecords.size(), // ← totalVoteCount = 전체 기록 수
+			allRecords.size(),
 			uniqueVoterIds.size(),
 			optionResponses);
 	}
