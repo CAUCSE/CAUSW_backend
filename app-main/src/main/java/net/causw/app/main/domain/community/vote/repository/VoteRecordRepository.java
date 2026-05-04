@@ -9,6 +9,7 @@ import net.causw.app.main.domain.community.vote.entity.Vote;
 import net.causw.app.main.domain.community.vote.entity.VoteOption;
 import net.causw.app.main.domain.community.vote.entity.VoteRecord;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import org.springframework.data.jpa.repository.Query;
 
 public interface VoteRecordRepository extends JpaRepository<VoteRecord, String> {
 	List<VoteRecord> findAllByVoteOption(VoteOption voteOption);
@@ -33,6 +34,10 @@ public interface VoteRecordRepository extends JpaRepository<VoteRecord, String> 
 	/** N+1 방지: votedByMe 계산용 — 유저의 투표 기록 한 번에 조회 */
 
 	/** N+1 방지: 특정 투표의 모든 투표 기록을 한 번에 조회 (옵션별 그룹화 + 사용자 필터 둘 다 메모리에서 처리) */
+	@Query("SELECT vr FROM VoteRecord vr " +
+			"JOIN FETCH vr.user " +
+			"JOIN FETCH vr.voteOption " +
+			"WHERE vr.voteOption.vote = :vote") // 재검토
 	List<VoteRecord> findAllByVoteOption_Vote(Vote vote);
 
 	List<VoteRecord> findAllByVoteOption_VoteAndUser(Vote vote, User user);

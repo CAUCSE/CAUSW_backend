@@ -148,34 +148,32 @@ public class VoteService {
 		return buildVoteResponse(voteReader.findByPostId(postId), user);
 	}
 
-	// ───────────────────────────── private helpers ─────────────────────────────
-
 	private VoteResponse buildVoteResponse(Vote vote, User user) {
-		// ① 투표의 모든 기록을 한 번에 조회 (N+1 방지)
+		// 투표의 모든 기록을 한 번에 조회 (N+1 방지)
 		List<VoteRecord> allRecords = voteRecordReader.findAllByVote(vote);
 
-		// ② 옵션별 그룹화 (메모리에서)
+		// 옵션별 그룹화 (메모리에서)
 		Map<String, List<VoteRecord>> recordsByOptionId = allRecords.stream()
 			.collect(Collectors.groupingBy(r -> r.getVoteOption().getId()));
 
-		// ③ 요청자가 선택한 옵션 ID 집합
+		// 요청자가 선택한 옵션 ID 집합
 		Set<String> votedOptionIds = allRecords.stream()
 			.filter(r -> r.getUser().equals(user))
 			.map(r -> r.getVoteOption().getId())
 			.collect(Collectors.toSet());
 
-		// ④ 옵션 목록 (생성순 정렬)
-		List<VoteOption> options = voteOptionReader.findByVoteId(vote.getId())
-			.stream()
-			.sorted(Comparator.comparing(VoteOption::getCreatedAt))
-			.toList();
+		// 옵션 목록 (생성순 정렬)
+		List<VoteOption> options = vote.getVoteOptions()
+				.stream()
+				.sorted(Comparator.comparing(VoteOption::getCreatedAt))
+				.toList();
 
-		// ⑤ 고유 투표자 수
+		// 고유 투표자 수
 		Set<String> uniqueVoterIds = allRecords.stream()
 			.map(r -> r.getUser().getId())
 			.collect(Collectors.toSet());
 
-		// ⑥ 옵션별 응답 빌드
+		// 옵션별 응답 빌드
 		List<VoteOptionResponse> optionResponses = new ArrayList<>();
 		for (int i = 0; i < options.size(); i++) {
 			VoteOption option = options.get(i);
