@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.notification.notification.entity.UserCommentSubscribe;
@@ -15,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserCommentSubscribeReader {
 
 	private final UserCommentSubscribeRepository userCommentSubscribeRepository;
@@ -35,6 +37,11 @@ public class UserCommentSubscribeReader {
 			return Collections.emptySet();
 		}
 		return userCommentSubscribeRepository.findSubscribedCommentIdsByUserIdAndCommentIds(userId, commentIds);
+	}
+
+	public List<UserCommentSubscribe> findForNotification(Comment comment, Set<String> blockerUserIds) {
+		return userCommentSubscribeRepository.findByCommentAndIsSubscribedTrueExcludingBlockerUsers(comment,
+			blockerUserIds);
 	}
 
 }

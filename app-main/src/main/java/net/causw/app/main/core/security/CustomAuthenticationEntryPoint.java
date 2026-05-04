@@ -8,6 +8,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
 import net.causw.app.main.shared.dto.ApiResponse;
+import net.causw.app.main.shared.exception.BaseResponseCode;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.ErrorCode;
@@ -42,13 +43,38 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
 			message = exception.getMessage();
 		}
 
-		// v2 API인지 확인
 		String requestPath = request.getRequestURI();
-		if (requestPath != null && requestPath.startsWith("/api/v2/")) {
-			setV2Response(response);
+		boolean isV2 = isV2Path(requestPath);
+
+		if (isV2) {
+			AuthErrorCode authErrorCode = mapToAuthErrorCode(errorCode);
+			setV2Response(response, authErrorCode);
 		} else {
 			setV1Response(response, errorCode, message);
 		}
+	}
+
+	/**
+	 * 시큐리티 필터의 v2 체인과 동일한 경로: /api/v2/**, /oauth2/**, /login/oauth2/**
+	 */
+	private boolean isV2Path(String requestPath) {
+		if (requestPath == null) {
+			return false;
+		}
+		return requestPath.startsWith("/api/v2/")
+			|| requestPath.startsWith("/oauth2/")
+			|| requestPath.startsWith("/login/oauth2/");
+	}
+
+	/**
+	 * v2 API용: JWT 검증 단계에서 사용하는 v1 ErrorCode를 AuthErrorCode(BaseResponseCode)로 매핑합니다.
+	 */
+	private AuthErrorCode mapToAuthErrorCode(ErrorCode errorCode) {
+		return switch (errorCode) {
+			case EXPIRED_JWT -> AuthErrorCode.EXPIRED_TOKEN;
+			case INVALID_JWT -> AuthErrorCode.INVALID_TOKEN;
+			default -> AuthErrorCode.INVALID_TOKEN;
+		};
 	}
 
 	private void setV1Response(
@@ -70,11 +96,12 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
 	}
 
 	private void setV2Response(
-		HttpServletResponse response) throws IOException {
-		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+		HttpServletResponse response,
+		BaseResponseCode authErrorCode) throws IOException {
+		response.setStatus(authErrorCode.getStatus().value());
 		response.setContentType("application/json;charset=UTF-8");
 
-		ApiResponse<String> apiResponse = ApiResponse.error(AuthErrorCode.INVALID_TOKEN);
+		ApiResponse<String> apiResponse = ApiResponse.error(authErrorCode);
 		String body = objectMapper.writeValueAsString(apiResponse);
 
 		response.getWriter().println(body);

@@ -1,12 +1,11 @@
 package net.causw.app.main.domain.user.auth.api.v2.controller;
 
-import java.time.Duration;
+import java.util.Optional;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -15,34 +14,46 @@ import org.springframework.web.bind.annotation.RestController;
 
 import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
 import net.causw.app.main.domain.user.auth.api.v2.dto.AuthDtoMapper;
+import net.causw.app.main.domain.user.auth.api.v2.dto.EmailFindDtoMapper;
+import net.causw.app.main.domain.user.auth.api.v2.dto.request.EmailFindRequest;
 import net.causw.app.main.domain.user.auth.api.v2.dto.request.EmailLoginRequest;
 import net.causw.app.main.domain.user.auth.api.v2.dto.request.EmailSignupRequest;
 import net.causw.app.main.domain.user.auth.api.v2.dto.request.EmailVerificationSendRequest;
 import net.causw.app.main.domain.user.auth.api.v2.dto.request.EmailVerificationVerifyRequest;
+import net.causw.app.main.domain.user.auth.api.v2.dto.request.OnboardingEmailVerifyRequest;
+import net.causw.app.main.domain.user.auth.api.v2.dto.request.PasswordResetSendRequest;
+import net.causw.app.main.domain.user.auth.api.v2.dto.request.PasswordResetVerifyRequest;
 import net.causw.app.main.domain.user.auth.api.v2.dto.request.SignOutRequest;
+import net.causw.app.main.domain.user.auth.api.v2.dto.request.SocialNativeLoginRequest;
 import net.causw.app.main.domain.user.auth.api.v2.dto.response.AuthResponse;
+import net.causw.app.main.domain.user.auth.api.v2.dto.response.EmailFindResponse;
+import net.causw.app.main.domain.user.auth.api.v2.dto.response.PasswordResetResponse;
 import net.causw.app.main.domain.user.auth.service.AuthService;
 import net.causw.app.main.domain.user.auth.service.EmailVerificationService;
+import net.causw.app.main.domain.user.auth.service.SocialNativeAuthService;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
+import net.causw.app.main.domain.user.auth.service.dto.EmailFindResult;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 import net.causw.app.main.shared.util.AuthorizationExtractor;
-import net.causw.global.constant.StaticValue;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-@Tag(name = "Auth V2", description = "회원가입/로그인 API V2")
+@Tag(name = "Auth Public v2", description = "회원가입/로그인 API v2")
 @RestController
 @RequestMapping("api/v2/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
 	private final AuthDtoMapper authDtoMapper;
+	private final EmailFindDtoMapper emailFindDtoMapper;
 	private final AuthService authService;
+	private final SocialNativeAuthService socialNativeAuthService;
 	private final EmailVerificationService emailVerificationService;
 
 	@Operation(summary = "이메일 인증 코드 발송 V2", description = "이메일로 인증 코드를 발송하고 DB에 인증 정보를 저장합니다. (유효 시간: 10분)")
@@ -52,10 +63,45 @@ public class AuthController {
 		return ApiResponse.success();
 	}
 
+	@Operation(summary = "비밀번호 초기화 인증 코드 발송 V2", description = "이름과 이메일을 확인한 뒤 비밀번호 초기화용 인증 코드를 이메일로 발송합니다.")
+	@PostMapping("/password-reset/send")
+	public ApiResponse<Void> sendPasswordResetCode(@RequestBody @Valid PasswordResetSendRequest request) {
+		authService.sendPasswordResetVerificationEmail(request.name(), request.email());
+		return ApiResponse.success();
+	}
+
+	@Operation(summary = "비밀번호 초기화 인증 코드 검증 V2", description = "인증 코드를 검증한 뒤 비밀번호를 초기화하고, 초기화된 임시 비밀번호를 반환합니다.")
+	@PostMapping("/password-reset/verify")
+	public ApiResponse<PasswordResetResponse> verifyPasswordResetCode(
+		@RequestBody @Valid PasswordResetVerifyRequest request) {
+		String temporaryPassword = authService.resetPasswordByVerificationCode(request.name(),
+			request.email(), request.verificationCode());
+		return ApiResponse.success(PasswordResetResponse.of(temporaryPassword));
+	}
+
 	@Operation(summary = "이메일 인증 번호 검증 V2", description = "인증 코드를 검증하고 인증 상태를 VERIFIED로 변경합니다.")
 	@PostMapping("/email/verify")
 	public ApiResponse<Void> verifyEmail(@RequestBody @Valid EmailVerificationVerifyRequest request) {
 		emailVerificationService.verifyEmail(request.email(), request.verificationCode());
+		return ApiResponse.success();
+	}
+
+	@Operation(summary = "V1 유저 온보딩 이메일 인증 코드 발송", description = "로그인된 V1 유저의 이메일로 온보딩용 인증 코드를 발송합니다. (유효 시간: 10분)")
+	@PostMapping("/onboarding/email/send")
+	public ApiResponse<Void> sendOnboardingVerificationEmail(
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
+		String email = userDetails.getUser().getEmail();
+		emailVerificationService.sendOnboardingVerificationEmail(email);
+		return ApiResponse.success();
+	}
+
+	@Operation(summary = "V1 유저 온보딩 이메일 인증 코드 검증", description = "로그인된 V1 유저의 이메일 인증 코드를 검증하고 인증 상태를 V1_ONBOARDING_VERIFIED로 변경합니다.")
+	@PostMapping("/onboarding/email/verify")
+	public ApiResponse<Void> verifyOnboardingEmail(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestBody @Valid OnboardingEmailVerifyRequest request) {
+		String email = userDetails.getUser().getEmail();
+		emailVerificationService.verifyOnboardingEmail(email, request.verificationCode());
 		return ApiResponse.success();
 	}
 
@@ -71,56 +117,59 @@ public class AuthController {
 	@PostMapping("/login")
 	public ResponseEntity<ApiResponse<AuthResponse>> emailSignIn(@RequestBody @Valid EmailLoginRequest request) {
 		AuthResult dto = authService.loginEmailUser(request.email(), request.password());
-
-		// 쿠키로 리프레시토큰 반환
-		ResponseCookie cookie = ResponseCookie.from("refresh_token", dto.refreshToken())
-			.httpOnly(true)
-			.secure(true)
-			.path("/")
-			.maxAge(Duration.ofMillis(StaticValue.JWT_REFRESH_TOKEN_VALID_TIME))
-			.sameSite("None")
-			.build();
-
-		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
-			.body(ApiResponse.success(authDtoMapper.toAuthResponse(dto)));
+		return ResponseEntity.ok(ApiResponse.success(authDtoMapper.toAuthResponse(dto)));
 	}
 
-	@Operation(summary = "토큰 재발급 V2", description = "리프레시토큰을 통해 액세스토큰을 재발급 받습니다.")
+	@Operation(summary = "이메일 찾기 V2", description = "이름과 연락처로 가입된 이메일(마스킹) 및 연동된 소셜 계정 정보를 조회합니다.")
+	@PostMapping("/find-email")
+	public ApiResponse<EmailFindResponse> findEmail(@RequestBody @Valid EmailFindRequest request) {
+		Optional<EmailFindResult> result = authService.findEmail(request.name(), request.phoneNumber());
+		return ApiResponse.success(result.map(emailFindDtoMapper::toEmailFindResponse).orElse(null));
+	}
+
+	@Operation(summary = "토큰 재발급 V2", description = "리프레시토큰을 통해 액세스토큰을 재발급 받습니다.", security = {
+		@SecurityRequirement(name = "bearerAuth"),
+		@SecurityRequirement(name = "refreshBearerAuth")
+	})
 	@PostMapping("/refresh")
 	public ResponseEntity<ApiResponse<AuthResponse>> reissue(
-		@CookieValue(name = "refresh_token", required = false) String refreshToken,
-		@RequestHeader(value = "Authorization", required = false) String authHeader) {
+		@RequestHeader(value = "Authorization", required = false) String authHeader,
+		@RequestHeader(value = AuthorizationExtractor.REFRESH_AUTHORIZATION_HEADER, required = false) String refreshAuthHeader) {
 		// CSRF 방어 로직
 		AuthorizationExtractor.validate(authHeader);
-		AuthResult dto = authService.updateToken(refreshToken);
-
-		// 쿠키로 리프레시토큰 반환
-		ResponseCookie cookie = ResponseCookie.from("refresh_token", dto.refreshToken())
-			.httpOnly(true)
-			.secure(true)
-			.path("/")
-			.maxAge(Duration.ofMillis(StaticValue.JWT_REFRESH_TOKEN_VALID_TIME))
-			.sameSite("None")
-			.build();
-
-		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
-			.body(ApiResponse.success(authDtoMapper.toAuthResponse(dto)));
+		AuthorizationExtractor.validateRefresh(refreshAuthHeader);
+		AuthResult dto = authService.updateToken(AuthorizationExtractor.extractRefresh(refreshAuthHeader));
+		return ResponseEntity.ok(ApiResponse.success(authDtoMapper.toAuthResponse(dto)));
 	}
 
-	@Operation(summary = "로그아웃 V2", description = "토큰을 만료시킵니다.")
+	@Operation(summary = "네이티브 소셜 로그인 V2", description = "provider에 따라 access token 또는 OIDC id token으로 검증합니다. Google/Apple은 authorizationCode(및 PKCE 사용 시에만 codeVerifier)로 리프레시 토큰을 발급받아 암호화 저장할 수 있습니다. codeVerifier는 선택값입니다.")
+	@PostMapping("/login/native")
+	public ResponseEntity<ApiResponse<AuthResponse>> loginNativeSocial(
+		@RequestBody @Valid SocialNativeLoginRequest request) {
+		AuthResult dto = socialNativeAuthService.login(request.provider(), request.platform(), request.accessToken(),
+			request.idToken(), request.authorizationCode(), request.codeVerifier());
+		return ResponseEntity.ok(ApiResponse.success(authDtoMapper.toAuthResponse(dto)));
+	}
+
+	@Operation(summary = "로그아웃 V2", description = "토큰을 만료시킵니다.", security = {
+		@SecurityRequirement(name = "bearerAuth"),
+		@SecurityRequirement(name = "refreshBearerAuth")
+	})
 	@PostMapping("/logout")
 	public ResponseEntity<ApiResponse<String>> logout(
 		@RequestHeader("Authorization") String bearerToken,
-		@CookieValue(name = "refresh_token", required = false) String refreshToken,
+		@RequestHeader(value = AuthorizationExtractor.REFRESH_AUTHORIZATION_HEADER, required = false) String refreshAuthHeader,
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestBody(required = false) SignOutRequest body) {
 		String accessToken = AuthorizationExtractor.extract(bearerToken);
+		AuthorizationExtractor.validateRefresh(refreshAuthHeader);
+		String refreshToken = AuthorizationExtractor.extractRefresh(refreshAuthHeader);
 		AuthTokenPair tokens = AuthTokenPair.of(accessToken, refreshToken);
 		String fcmToken = (body != null) ? body.fcmToken() : null;
 		authService.signOut(userDetails.getUserId(), tokens, fcmToken);
 		// 쿠키에서 refresh_token 제거
 		ResponseCookie cookie = ResponseCookie.from("refresh_token", "")
-			.httpOnly(true)
+			.httpOnly(false)
 			.secure(true)
 			.path("/")
 			.maxAge(0)
@@ -129,4 +178,5 @@ public class AuthController {
 		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
 			.body(ApiResponse.success("로그아웃 성공"));
 	}
+
 }

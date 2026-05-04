@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.core.aop.annotation.MeasureTime;
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.campus.circle.entity.Circle;
 import net.causw.app.main.domain.campus.circle.entity.CircleMember;
 import net.causw.app.main.domain.campus.circle.enums.CircleMemberStatus;
@@ -75,6 +77,7 @@ public class CommentV1Service {
 	private final PostNotificationService postNotificationService;
 	private final PostV1Service postV1Service;
 	private final UserBlockEntityService userBlockEntityService;
+	private final UserProfileImageReader userProfileImageReader;
 
 	@Transactional
 	public CommentResponseDto createComment(User creator, CommentCreateRequestDto commentCreateDto) {
@@ -264,6 +267,7 @@ public class CommentV1Service {
 	private CommentResponseDto toCommentResponseDto(Comment comment, User user, Board board,
 		Set<String> blockedUserIds) {
 		boolean isBlockedContent = blockedUserIds.contains(comment.getWriter().getId());
+		UserProfileImage writerPi = userProfileImageReader.findByUserIdOrNull(comment.getWriter().getId());
 
 		CommentResponseDto commentResponseDto = CommentDtoMapper.INSTANCE.toCommentResponseDto(
 			comment,
@@ -277,7 +281,8 @@ public class CommentV1Service {
 			StatusPolicy.isUpdatable(comment, user),
 			StatusPolicy.isDeletable(comment, user, board),
 			isCommentSubscribed(user, comment),
-			isBlockedContent);
+			isBlockedContent,
+			writerPi);
 
 		// 화면에 표시될 닉네임 설정
 		User writer = comment.getWriter();
@@ -295,6 +300,7 @@ public class CommentV1Service {
 	private ChildCommentResponseDto toChildCommentResponseDto(ChildComment childComment, User user, Board board,
 		Set<String> blockedUserIds) {
 		boolean isBlockedContent = blockedUserIds.contains(childComment.getWriter().getId());
+		UserProfileImage writerPi = userProfileImageReader.findByUserIdOrNull(childComment.getWriter().getId());
 
 		ChildCommentResponseDto childCommentResponseDto = CommentDtoMapper.INSTANCE.toChildCommentResponseDto(
 			childComment,
@@ -303,7 +309,8 @@ public class CommentV1Service {
 			StatusPolicy.isChildCommentOwner(childComment, user),
 			StatusPolicy.isUpdatable(childComment, user),
 			StatusPolicy.isDeletable(childComment, user, board),
-			isBlockedContent);
+			isBlockedContent,
+			writerPi);
 
 		// 화면에 표시될 닉네임 설정
 		User writer = childComment.getWriter();

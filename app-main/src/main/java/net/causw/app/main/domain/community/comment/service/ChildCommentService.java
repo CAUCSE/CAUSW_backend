@@ -1,10 +1,14 @@
 package net.causw.app.main.domain.community.comment.service;
 
 import java.util.List;
+import java.util.Map;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
 import net.causw.app.main.domain.community.comment.entity.ChildComment;
 import net.causw.app.main.domain.community.comment.entity.Comment;
@@ -22,7 +26,7 @@ import net.causw.app.main.domain.community.comment.service.implementation.LikeCh
 import net.causw.app.main.domain.community.comment.util.ChildCommentValidator;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.v2.implementation.PostReader;
-import net.causw.app.main.domain.notification.notification.service.v1.CommentNotificationService;
+import net.causw.app.main.domain.notification.notification.event.CommentChildCommentCreatedEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 
@@ -44,11 +48,12 @@ public class ChildCommentService {
 	private final ChildCommentWriter childCommentWriter;
 	private final LikeChildCommentWriter likeChildCommentWriter;
 	private final ChildCommentValidator childCommentValidator;
-	private final CommentNotificationService commentNotificationService;
+	private final ApplicationEventPublisher eventPublisher;
 	private final BoardConfigReader boardConfigReader;
 	private final LikeChildCommentReader likeChildCommentReader;
 	private final ChildCommentMapper childCommentMapper;
 	private final UserReader userReader;
+	private final UserProfileImageReader userProfileImageReader;
 
 	/**
 	 * 대댓글을 생성하고 응답 객체를 반환합니다.
@@ -76,10 +81,12 @@ public class ChildCommentService {
 
 		// 신규 대댓글: 좋아요 0
 		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
+		Map<String, UserProfileImage> profileImageMap = userProfileImageReader.findMapByUserIds(
+			List.of(creator.getId()));
 		ChildCommentResult result = childCommentMapper.toResult(
-			childComment, creator, new ChildCommentMeta(boardAdminIds, 0L, false, false));
+			childComment, creator, new ChildCommentMeta(boardAdminIds, 0L, false, false), profileImageMap);
 
-		commentNotificationService.sendByCommentIsSubscribed(parentComment, childComment);
+		eventPublisher.publishEvent(new CommentChildCommentCreatedEvent(parentComment.getId(), childComment.getId()));
 
 		return result;
 	}
@@ -104,9 +111,11 @@ public class ChildCommentService {
 		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
 		long numLike = likeChildCommentReader.getNumOfChildCommentLikes(childComment);
 		boolean isLiked = likeChildCommentReader.isChildCommentLiked(updater, childComment.getId());
+		Map<String, UserProfileImage> profileImageMap = userProfileImageReader.findMapByUserIds(
+			childComment.getWriter() != null ? List.of(childComment.getWriter().getId()) : List.of());
 
 		return childCommentMapper.toResult(
-			childComment, updater, new ChildCommentMeta(boardAdminIds, numLike, isLiked, false));
+			childComment, updater, new ChildCommentMeta(boardAdminIds, numLike, isLiked, false), profileImageMap);
 	}
 
 	/**
@@ -130,9 +139,11 @@ public class ChildCommentService {
 		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
 		long numLike = likeChildCommentReader.getNumOfChildCommentLikes(childComment);
 		boolean isLiked = likeChildCommentReader.isChildCommentLiked(deleter, childComment.getId());
+		Map<String, UserProfileImage> profileImageMap = userProfileImageReader.findMapByUserIds(
+			childComment.getWriter() != null ? List.of(childComment.getWriter().getId()) : List.of());
 
 		return childCommentMapper.toResult(
-			childComment, deleter, new ChildCommentMeta(boardAdminIds, numLike, isLiked, false));
+			childComment, deleter, new ChildCommentMeta(boardAdminIds, numLike, isLiked, false), profileImageMap);
 	}
 
 	/**

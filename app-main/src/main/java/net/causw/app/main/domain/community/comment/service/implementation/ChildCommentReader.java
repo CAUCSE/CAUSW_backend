@@ -31,6 +31,11 @@ public class ChildCommentReader {
 			ChildCommentErrorCode.CHILD_COMMENT_NOT_FOUND::toBaseException);
 	}
 
+	public ChildComment findByIdAndNotDeleted(String childCommentId) {
+		return childCommentRepository.findByIdAndIsDeletedFalse(childCommentId)
+			.orElseThrow(ChildCommentErrorCode.CHILD_COMMENT_NOT_FOUND::toBaseException);
+	}
+
 	/**
 	 * 부모 댓글 ID 목록에 속한 대댓글을 일괄 조회합니다.
 	 *

@@ -2,6 +2,7 @@ package net.causw.app.main.domain.user.account.service;
 
 import java.util.List;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -9,12 +10,12 @@ import org.springframework.web.multipart.MultipartFile;
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.asset.file.service.v2.implementation.FileWriter;
-import net.causw.app.main.domain.notification.notification.service.AdmissionNotificationService;
+import net.causw.app.main.domain.notification.notification.event.AdmissionRequestedEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
 import net.causw.app.main.domain.user.account.service.dto.request.AdmissionCreateCommand;
-import net.causw.app.main.domain.user.account.service.dto.request.AdmissionResult;
-import net.causw.app.main.domain.user.account.service.dto.request.AdmissionStateResult;
+import net.causw.app.main.domain.user.account.service.dto.response.AdmissionResult;
+import net.causw.app.main.domain.user.account.service.dto.response.AdmissionStateResult;
 import net.causw.app.main.domain.user.account.service.implementation.AdmissionReader;
 import net.causw.app.main.domain.user.account.service.implementation.AdmissionValidator;
 import net.causw.app.main.domain.user.account.service.implementation.AdmissionWriter;
@@ -31,12 +32,13 @@ public class AdmissionService {
 	private final AdmissionWriter admissionWriter;
 	private final UserWriter userWriter;
 	private final FileWriter fileWriter;
-	private final AdmissionNotificationService admissionNotificationService;
+	private final ApplicationEventPublisher eventPublisher;
 
 	/**
 	 * v2 재학정보 인증 신청을 생성합니다.
 	 *
 	 * 검증 사항:
+	 * - 추방된 학번인지 검증
 	 * - 사용자 상태가 AWAIT 또는 REJECT인 경우만 신청 가능
 	 * - 기존 신청이 존재하지 않아야 함
 	 * - 첨부 이미지 1개 이상 필수
@@ -47,7 +49,6 @@ public class AdmissionService {
 		User user,
 		AdmissionCreateCommand dto,
 		List<MultipartFile> attachImages) {
-
 		// 인증 신청 생성 검증
 		admissionValidator.validateAdmissionCreate(user, dto.requestedStudentId(),
 			dto.requestedAcademicStatus(), dto.graduationYear(), attachImages);
@@ -69,7 +70,7 @@ public class AdmissionService {
 			dto.requestedDepartment(),
 			dto.graduationYear());
 
-		admissionNotificationService.sendCreatedAdmissionToAdmins(user.getId());
+		eventPublisher.publishEvent(new AdmissionRequestedEvent(user.getId(), admission.getRequestedAcademicStatus()));
 
 		return AdmissionResult.from(admission);
 	}

@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserResponseDto;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserUpdateRoleRequestDto;
 import net.causw.app.main.domain.user.account.api.v1.mapper.UserDtoMapper;
@@ -28,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserRoleService {
 	private final UserRepository userRepository;
+	private final UserProfileImageReader userProfileImageReader;
 
 	/**
 	 * 자신의 권한을 넘겨주는 권한 위임
@@ -75,8 +77,9 @@ public class UserRoleService {
 		}
 
 		// 피위임자에게 권한 설정
-		return UserDtoMapper.INSTANCE.toUserResponseDto(
-			updateRole(delegatee, delegatedRole), null, null);
+		User updated = updateRole(delegatee, delegatedRole);
+		return UserDtoMapper.INSTANCE.toUserResponseDto(updated,
+			userProfileImageReader.findByUserIdOrNull(updated.getId()), null, null);
 	}
 
 	/**
@@ -133,8 +136,9 @@ public class UserRoleService {
 		}
 
 		// 수혜자에게 권한 설정
-		return UserDtoMapper.INSTANCE.toUserResponseDto(
-			updateRole(grantee, grantedRole), null, null);
+		User grantedUser = updateRole(grantee, grantedRole);
+		return UserDtoMapper.INSTANCE.toUserResponseDto(grantedUser,
+			userProfileImageReader.findByUserIdOrNull(grantedUser.getId()), null, null);
 	}
 
 	public User updateRole(User targetUser, Role newRole) {

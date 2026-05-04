@@ -33,6 +33,7 @@ import net.causw.app.main.core.security.AppleOAuth2AuthorizationRequestResolver;
 import net.causw.app.main.core.security.CustomAuthenticationEntryPoint;
 import net.causw.app.main.core.security.CustomAuthorizationManager;
 import net.causw.app.main.core.security.JwtTokenProvider;
+import net.causw.app.main.core.security.OAuth2AuthorizationRequestCookieRepository;
 import net.causw.app.main.core.security.SecurityEndpoints;
 import net.causw.app.main.core.security.WebSecurityConfig;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
@@ -41,6 +42,7 @@ import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.auth.handler.OAuth2FailureHandler;
 import net.causw.app.main.domain.user.auth.handler.OAuth2SuccessHandler;
 import net.causw.app.main.domain.user.auth.service.CustomOAuth2UserService;
+import net.causw.app.main.domain.user.auth.service.implementation.OAuth2RefreshTokenCaptureClient;
 import net.causw.app.main.domain.user.auth.service.v1.SecurityService;
 import net.causw.app.main.util.DummyController;
 import net.causw.app.main.util.WithMockCustomUser;
@@ -58,11 +60,15 @@ public class WebSecurityConfigTest {
 	@MockBean
 	private AppleOAuth2AuthorizationRequestResolver appleOAuth2AuthorizationRequestResolver;
 	@MockBean
+	private OAuth2AuthorizationRequestCookieRepository oAuth2AuthorizationRequestCookieRepository;
+	@MockBean
 	private CustomOAuth2UserService customOAuth2UserService;
 	@MockBean
 	private OAuth2SuccessHandler oAuth2SuccessHandler;
 	@MockBean
 	private OAuth2FailureHandler oAuth2FailureHandler;
+	@MockBean
+	private OAuth2RefreshTokenCaptureClient oAuth2RefreshTokenCaptureClient;
 	@MockBean
 	private ClientRegistrationRepository clientRegistrationRepository;
 
@@ -232,6 +238,14 @@ public class WebSecurityConfigTest {
 		@DisplayName("/api/v2/admin/** 경로는 ADMIN 권한 보유 시 접근 허용")
 		void shouldAllowV2AdminAccess_WhenAdmin() throws Exception {
 			mockMvc.perform(MockMvcRequestBuilders.get("/api/v2/admin/test"))
+				.andExpect(status().isNotFound());
+		}
+
+		@Test
+		@WithAnonymousUser
+		@DisplayName("/api/v2/terms 경로는 인증 없이 접근 허용")
+		void shouldAllowV2TermsAccess_WhenAnonymous() throws Exception {
+			mockMvc.perform(MockMvcRequestBuilders.get("/api/v2/terms"))
 				.andExpect(status().isNotFound());
 		}
 	}

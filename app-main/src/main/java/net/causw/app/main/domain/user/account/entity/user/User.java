@@ -10,35 +10,22 @@ import java.util.Set;
 
 import org.hibernate.annotations.BatchSize;
 
-import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
-import net.causw.app.main.domain.asset.locker.entity.Locker;
 import net.causw.app.main.domain.campus.circle.entity.CircleMember;
 import net.causw.app.main.domain.community.vote.entity.VoteRecord;
-import net.causw.app.main.domain.notification.notification.entity.CeremonyNotificationSetting;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.api.v1.dto.GraduatedUserCommand;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserCreateRequestDto;
 import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.account.enums.user.GraduationType;
+import net.causw.app.main.domain.user.account.enums.user.ProfileImageType;
 import net.causw.app.main.domain.user.account.enums.user.Role;
+import net.causw.app.main.domain.user.account.enums.user.RoleGroup;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
 import net.causw.app.main.domain.user.auth.service.dto.OAuthAttributes;
 import net.causw.app.main.shared.entity.BaseEntity;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.CollectionTable;
-import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Embedded;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -77,6 +64,7 @@ public class User extends BaseEntity {
 	private String nickname;
 
 	// TODO: 기존값들 department로 마이그레이션 후 삭제
+	@Deprecated(forRemoval = true, since = "v2")
 	@Column(name = "major", nullable = true)
 	private String major;
 
@@ -96,6 +84,7 @@ public class User extends BaseEntity {
 	 * @deprecated v1에서 관리자가 유저 학적에 대해 별도로 기록하던 메모용 필드.
 	 * 사용 빈도가 낮아 v2에서는 해당 필드를 더 이상 사용하지 않는다.
 	 */
+	@Deprecated
 	@Column(name = "academic_status_note", nullable = true)
 	private String academicStatusNote;
 
@@ -112,8 +101,10 @@ public class User extends BaseEntity {
 	@BatchSize(size = 100)
 	private Set<Role> roles;
 
-	@OneToOne(cascade = {CascadeType.REMOVE, CascadeType.PERSIST}, mappedBy = "user", fetch = FetchType.LAZY)
-	private UserProfileImage userProfileImage;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "profile_image_type", nullable = false)
+	@Builder.Default
+	private ProfileImageType profileImageType = ProfileImageType.MALE_1;
 
 	@Column(name = "state", nullable = false)
 	@Enumerated(EnumType.STRING)
@@ -121,15 +112,6 @@ public class User extends BaseEntity {
 
 	@Column(name = "deleted_at", nullable = true)
 	private LocalDateTime deletedAt;
-
-	@Embedded
-	private TermAgreements agreements;
-
-	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
-	private Locker locker;
-
-	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
-	private CeremonyNotificationSetting ceremonyNotificationSetting;
 
 	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
 	private List<CircleMember> circleMemberList;
@@ -145,7 +127,7 @@ public class User extends BaseEntity {
 	@Builder.Default
 	private Boolean isV2 = true;
 
-	@ElementCollection(fetch = FetchType.EAGER)
+	@ElementCollection(fetch = FetchType.LAZY)
 	@CollectionTable(name = "tb_user_fcm_token", joinColumns = @JoinColumn(name = "user_id"))
 	@Column(name = "fcm_token_value")
 	private Set<String> fcmTokens = new HashSet<>();
@@ -155,21 +137,60 @@ public class User extends BaseEntity {
 	@Builder.Default
 	private Integer reportCount = 0;
 
-	public void delete() {
+	@Column(name = "is_email_verified", nullable = false)
+	@Builder.Default
+	private Boolean isEmailVerified = false;
+
+	// 자진 탈퇴 처리
+	public void withdraw(LocalDateTime now) {
+		this.deletedAt = now;
+		this.academicStatus = AcademicStatus.UNDETERMINED;
+		if (this.fcmTokens != null) {
+			this.fcmTokens.clear();
+		}
+	}
+
+	/*
+	 * 개인정보 익명화
+	 * - row는 유지하고 개인정보만 제거
+	 */
+	public void anonymize() {
 		this.email = "deleted_" + this.getId();
 		this.name = "탈퇴한 사용자";
 		this.phoneNumber = null;
+		this.password = null;
 		this.studentId = null;
+		this.admissionYear = null;
 		this.nickname = null;
 		this.major = null;
-		this.userProfileImage = null;
+		this.department = null;
+		this.currentCompletedSemester = null;
+		this.profileImageType = ProfileImageType.GHOST;
 		this.graduationYear = null;
 		this.graduationType = null;
-		this.deletedAt = LocalDateTime.now();
 	}
 
 	public boolean isDeleted() {
 		return this.deletedAt != null;
+	}
+
+	/**
+	 * 온보딩 플로우 분기 기준: 소셜 로그인 완료 여부
+	 */
+	public boolean isGuest() {
+		return this.state == UserState.GUEST;
+	}
+
+	/**
+	 * 온보딩 플로우 분기 기준: 재학 인증 완료 여부
+	 */
+	public boolean isAcademicCertified() {
+		if (this.roles != null && this.roles.stream()
+			.anyMatch(RoleGroup.EXECUTIVES_AND_PROFESSOR.getRoles()::contains)) {
+			return true;
+		}
+
+		return this.academicStatus != null && this.academicStatus != AcademicStatus.UNDETERMINED;
 	}
 
 	public static User from(
@@ -178,7 +199,7 @@ public class User extends BaseEntity {
 		return User.builder()
 			.email(userCreateRequestDto.getEmail())
 			.name(userCreateRequestDto.getName())
-			.roles(Set.of(Role.NONE))
+			.roles(new HashSet<>(Set.of(Role.NONE)))
 			.state(UserState.AWAIT)
 			.password(encodedPassword)
 			.studentId(userCreateRequestDto.getStudentId())
@@ -191,7 +212,6 @@ public class User extends BaseEntity {
 					userCreateRequestDto.getDepartment()))
 			.academicStatus(AcademicStatus.UNDETERMINED)
 			.phoneNumber(userCreateRequestDto.getPhoneNumber())
-			.agreements(TermAgreements.createRequiredAgreements())
 			.isV2(true)
 			.build();
 	}
@@ -200,14 +220,14 @@ public class User extends BaseEntity {
 		return User.builder()
 			.email(dto.email())
 			.name(dto.name())
-			.roles(Set.of(Role.NONE))
+			.roles(new HashSet<>(Set.of(Role.NONE)))
 			.state(UserState.AWAIT)
 			.password(encodedPassword)
 			.nickname(dto.nickname())
 			.academicStatus(AcademicStatus.UNDETERMINED)
 			.phoneNumber(dto.phoneNumber())
-			.agreements(TermAgreements.createRequiredAgreements())
 			.isV2(true)
+			.isEmailVerified(true)
 			.build();
 	}
 
@@ -217,7 +237,7 @@ public class User extends BaseEntity {
 		return User.builder()
 			.email(graduatedUserCommand.email())
 			.name(graduatedUserCommand.name())
-			.roles(Set.of(Role.COMMON))
+			.roles(new HashSet<>(Set.of(Role.COMMON)))
 			.state(UserState.ACTIVE)
 			.password(encodedPassword)
 			.studentId(graduatedUserCommand.studentId())
@@ -227,7 +247,6 @@ public class User extends BaseEntity {
 			.department(graduatedUserCommand.department())
 			.academicStatus(AcademicStatus.GRADUATED)
 			.phoneNumber(graduatedUserCommand.phoneNumber())
-			.agreements(TermAgreements.createRequiredAgreements())
 			.isV2(true)
 			.build();
 	}
@@ -240,16 +259,15 @@ public class User extends BaseEntity {
 		return User.builder()
 			.email(attributes.email())
 			.name(attributes.name())
-			.roles(Set.of(Role.NONE))
+			.roles(new HashSet<>(Set.of(Role.NONE)))
 			.state(UserState.GUEST)
 			.academicStatus(AcademicStatus.UNDETERMINED)
 			.isV2(true)
 			.build();
 	}
 
-	public void updateProfile(String nickname, UserProfileImage userProfileImage, String phoneNumber) {
+	public void updateProfile(String nickname, String phoneNumber) {
 		this.nickname = nickname;
-		this.userProfileImage = userProfileImage;
 		if (phoneNumber != null && !NO_PHONE_NUMBER_MESSAGE.equals(phoneNumber)) {
 			this.phoneNumber = phoneNumber;
 		}
@@ -268,7 +286,6 @@ public class User extends BaseEntity {
 		this.nickname = nickname;
 		this.major = major;
 		this.department = department;
-		this.agreements = TermAgreements.createRequiredAgreements();
 	}
 
 	public void submitRegistration(String name, String nickname, String phoneNumber) {
@@ -276,7 +293,6 @@ public class User extends BaseEntity {
 		this.nickname = nickname;
 		this.phoneNumber = phoneNumber;
 		this.state = UserState.AWAIT;
-		this.agreements = TermAgreements.createRequiredAgreements();
 	}
 
 	public void updateRejectionOrDropReason(String reason) {
@@ -286,6 +302,14 @@ public class User extends BaseEntity {
 	// 재학 인증 신청시(UserAdmission 생성 시) 해당 유저가 신청 가능한 상태인지 확인
 	public boolean canApplyAdmission() {
 		return this.state == UserState.AWAIT || this.state == UserState.REJECT;
+	}
+
+	// 활성 사용자이고 권한 있는 역할이 아닐 경우 추방 가능
+	public boolean isDroppable() {
+		boolean isDroppableState = this.state == UserState.ACTIVE && !this.isDeleted();
+		boolean isDroppableRole = this.roles.stream()
+			.noneMatch(Role.getPrivilegedRoles()::contains);
+		return isDroppableState && isDroppableRole;
 	}
 
 	public void markAsAwait() {
@@ -302,7 +326,7 @@ public class User extends BaseEntity {
 		this.graduationYear = admission.getRequestedGraduationYear();
 		this.state = UserState.ACTIVE;
 		this.rejectionOrDropReason = null;
-		this.roles = Set.of(Role.COMMON);
+		this.roles = new HashSet<>(Set.of(Role.COMMON));
 	}
 
 	// v2 재학인증 거절 시 사용자 상태를 REJECT로 전이하고 거절 사유를 기록한다.
@@ -311,10 +335,25 @@ public class User extends BaseEntity {
 		this.rejectionOrDropReason = rejectReason;
 	}
 
+	public void dropByAdmin(String dropReason, LocalDateTime now) {
+		this.state = UserState.DROP;
+		this.roles = new HashSet<>(Set.of(Role.NONE));
+		this.rejectionOrDropReason = dropReason;
+		this.deletedAt = now;
+	}
+
+	// 탈퇴, 추방된 유저의 계정 복구에 사용
+	public void restore() {
+		this.state = UserState.ACTIVE;
+		this.roles = new HashSet<>(Set.of(Role.COMMON));
+		this.deletedAt = null;
+		this.rejectionOrDropReason = null;
+	}
+
 	public void markAsCertifiedGraduate(Integer graduationYear) {
 		this.graduationYear = graduationYear;
 		this.state = UserState.ACTIVE;
-		this.roles = Set.of(Role.COMMON);
+		this.roles = new HashSet<>(Set.of(Role.COMMON));
 		this.academicStatus = AcademicStatus.GRADUATED;
 		this.rejectionOrDropReason = null; // 거절 사유 초기화
 	}
@@ -327,20 +366,36 @@ public class User extends BaseEntity {
 		return this.password == null;
 	}
 
-	public String getProfileUrl() {
-		if (this.userProfileImage == null || this.userProfileImage.getUuidFile() == null) {
-			return null;
-		}
-		return this.userProfileImage.getUuidFile().getFileUrl();
-	}
-
 	public void updateNickname(String nickname) {
 		this.nickname = nickname;
+	}
+
+	/**
+	 * 프로필 이미지를 기본 이미지(MALE_1, MALE_2, FEMALE_1, FEMALE_2)로 변경합니다.
+	 * 기존 커스텀 이미지(UserProfileImage)는 null로 초기화됩니다.
+	 */
+	public void updateProfileImageToDefault(ProfileImageType defaultType) {
+		if (defaultType == ProfileImageType.CUSTOM) {
+			throw new IllegalArgumentException("기본 이미지 타입만 허용됩니다.");
+		}
+		this.profileImageType = defaultType;
+	}
+
+	public void updateProfileImageToCustom() {
+		this.profileImageType = ProfileImageType.CUSTOM;
 	}
 
 	// 신고 관련 메소드
 	public void increaseReportCount() {
 		this.reportCount++;
+	}
+
+	public void markEmailAsVerified() {
+		this.isEmailVerified = true;
+	}
+
+	public boolean checkEmailVerification() {
+		return this.isEmailVerified;
 	}
 
 	@Override

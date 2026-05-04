@@ -12,6 +12,7 @@ import java.util.List;
  * @param content            댓글 내용 (작성자가 차단된 경우 {@code null})
  * @param createdAt          댓글 작성 시각
  * @param updatedAt          댓글 최종 수정 시각
+ * @param isDeleted          댓글의 삭제 여부
  * @param postId             이 댓글이 속한 게시글 ID
  * @param authorInfo         작성자 정보 및 접근 권한 정보
  * @param isCommentLike      현재 조회 유저가 이 댓글에 좋아요를 눌렀는지 여부
@@ -25,6 +26,7 @@ public record CommentResult(
 	String content,
 	LocalDateTime createdAt,
 	LocalDateTime updatedAt,
+	Boolean isDeleted,
 	String postId,
 	CommentAuthorInfo authorInfo,
 	Boolean isCommentLike,

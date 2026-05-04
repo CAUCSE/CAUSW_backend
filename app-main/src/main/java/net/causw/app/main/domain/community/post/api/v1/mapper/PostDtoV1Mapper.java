@@ -14,6 +14,7 @@ import org.mapstruct.factory.Mappers;
 import org.springframework.data.domain.Page;
 
 import net.causw.app.main.domain.asset.file.entity.joinEntity.PostAttachImage;
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.form.api.v1.dto.response.FormResponseDto;
 import net.causw.app.main.domain.community.post.api.v1.dto.BoardPostsResponseDto;
@@ -115,7 +116,10 @@ public interface PostDtoV1Mapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "isOwner", source = "isOwner")
 	@Mapping(target = "updatable", source = "updatable")
 	@Mapping(target = "deletable", source = "deletable")
-	@Mapping(target = "writerProfileImage", source = "post.writer.userProfileImage", qualifiedByName = "mapUuidFileToFileUrl")
+	@Mapping(target = "id", source = "post.id")
+	@Mapping(target = "createdAt", source = "post.createdAt")
+	@Mapping(target = "updatedAt", source = "post.updatedAt")
+	@Mapping(target = "writerProfileImage", expression = "java(writerProfileImage != null && writerProfileImage.getUuidFile() != null ? writerProfileImage.getUuidFile().getFileUrl() : null)")
 	@Mapping(target = "formResponseDto", source = "formResponseDto")
 	@Mapping(target = "voteResponseDto", source = "voteResponseDto")
 	@Mapping(target = "isPostVote", source = "isPostVote")
@@ -135,7 +139,8 @@ public interface PostDtoV1Mapper extends UuidFileToUrlDtoMapper {
 		VoteResponseDto voteResponseDto,
 		Boolean isPostVote,
 		Boolean isPostForm,
-		Boolean isPostSubscribed);
+		Boolean isPostSubscribed,
+		UserProfileImage writerProfileImage);
 
 	@Mapping(target = "title", source = "post.title")
 	@Mapping(target = "contentId", source = "post.id")

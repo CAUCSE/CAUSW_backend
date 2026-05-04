@@ -9,14 +9,23 @@ import org.springframework.web.bind.annotation.*;
 
 import net.causw.app.main.domain.user.account.api.v2.dto.request.AdmissionListRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.AdmissionRejectRequest;
+import net.causw.app.main.domain.user.account.api.v2.dto.request.DeletedUserSearchCondition;
+import net.causw.app.main.domain.user.account.api.v2.dto.request.UserDropRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserListRequest;
+import net.causw.app.main.domain.user.account.api.v2.dto.request.UserRoleUpdateRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.AdmissionListItemResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.AdmissionResponse;
+import net.causw.app.main.domain.user.account.api.v2.dto.response.DeletedUserListResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserDetailResponse;
+import net.causw.app.main.domain.user.account.api.v2.dto.response.UserDropResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserListItemResponse;
+import net.causw.app.main.domain.user.account.api.v2.dto.response.UserRestoreResponse;
+import net.causw.app.main.domain.user.account.api.v2.dto.response.UserRestoreWithdrawalResponse;
+import net.causw.app.main.domain.user.account.api.v2.dto.response.UserRoleUpdateResponse;
 import net.causw.app.main.domain.user.account.api.v2.mapper.AdmissionDtoMapper;
 import net.causw.app.main.domain.user.account.api.v2.mapper.UserDetailMapper;
 import net.causw.app.main.domain.user.account.api.v2.mapper.UserListMapper;
+import net.causw.app.main.domain.user.account.api.v2.mapper.UserManagementMapper;
 import net.causw.app.main.domain.user.account.service.AdmissionAdminService;
 import net.causw.app.main.domain.user.account.service.UserAdminService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
@@ -39,11 +48,14 @@ public class UserAdminController {
 	private final AdmissionAdminService admissionAdminService;
 	private final UserListMapper userListMapper;
 	private final UserDetailMapper userDetailMapper;
+	private final UserManagementMapper userManagementMapper;
 	private final AdmissionDtoMapper admissionDtoMapper;
 
 	// ── 회원 관리 ──
 
-	@Operation(summary = "회원 목록 조회 V2", description = "관리자가 회원 목록을 조회합니다. 이름/학번 키워드 검색, 상태/학적/학과 필터링, 페이징을 지원합니다.")
+	@Operation(summary = "회원 목록 조회 V2", description = "관리자가 회원 목록을 조회합니다. "
+		+ "이메일/이름/학번 키워드 검색, 상태 멀티 필터링, 학과/학적/입학년도 범위 필터, 정렬, 페이징을 지원합니다. "
+		+ "삭제(탈퇴) 회원은 기본 제외됩니다.")
 	@GetMapping
 	public ApiResponse<PageResponse<UserListItemResponse>> getUsers(
 		@ModelAttribute @Validated UserListRequest request,
@@ -57,6 +69,20 @@ public class UserAdminController {
 		return ApiResponse.success(response);
 	}
 
+	@Operation(summary = "삭제(탈퇴) 회원 목록 조회 V2", description = "관리자가 탈퇴 처리된 회원 목록을 조회합니다. deletedAt이 설정된 회원만 반환됩니다.")
+	@GetMapping("/deleted")
+	public ApiResponse<PageResponse<DeletedUserListResponse>> getDeletedUsers(
+		@ModelAttribute DeletedUserSearchCondition request,
+		@PageableDefault(page = 0, size = 10) Pageable pageable) {
+
+		PageResponse<DeletedUserListResponse> response = PageResponse.from(
+			userAdminService
+				.getDeletedUserList(userListMapper.toDeletedCondition(request), pageable)
+				.map(userListMapper::toDeletedResponse));
+
+		return ApiResponse.success(response);
+	}
+
 	@Operation(summary = "회원 상세 조회 V2", description = "관리자가 특정 회원의 상세 정보를 조회합니다.")
 	@GetMapping("/{userId}")
 	public ApiResponse<UserDetailResponse> getUserDetail(
@@ -64,6 +90,55 @@ public class UserAdminController {
 
 		var userDetail = userAdminService.getUserDetail(userId);
 		return ApiResponse.success(userDetailMapper.toResponse(userDetail));
+	}
+
+	@Operation(summary = "회원 추방 V2", description = "관리자가 사용자를 추방합니다. 추방 시 사용자 상태가 DROP으로 변경됩니다.")
+	@PatchMapping("/{userId}/drop")
+	public ApiResponse<UserDropResponse> dropUser(
+		@PathVariable String userId,
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestBody @Valid UserDropRequest request) {
+
+		return ApiResponse.success(
+			userManagementMapper.toDropResponse(
+				userAdminService.dropUser(userDetails.getUser(), userId, request.dropReason())));
+	}
+
+	@Operation(summary = "회원 복구 V2", description = "관리자가 추방된 사용자를 복구합니다. 복구 시 사용자 상태가 ACTIVE로 변경됩니다.")
+	@PatchMapping("/{userId}/restore")
+	public ApiResponse<UserRestoreResponse> restoreUser(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable String userId) {
+
+		return ApiResponse.success(
+			userManagementMapper.toRestoreResponse(
+				userAdminService.restoreUser(userDetails.getUser(), userId)));
+	}
+
+	@Operation(summary = "자진 탈퇴 회원 복구 V2", description = "관리자가 자진 탈퇴한 사용자를 복구합니다. 복구 시 사용자 상태가 ACTIVE로 변경됩니다.")
+	@PatchMapping("/{userId}/withdrawal/restore")
+	public ApiResponse<UserRestoreWithdrawalResponse> restoreWithdrawnUser(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable String userId) {
+		return ApiResponse.success(
+			userManagementMapper.toRestoreWithdrawalResponse(
+				userAdminService.restoreWithdrawnUser(userDetails.getUser(), userId)));
+	}
+
+	@Operation(summary = "회원 권한 변경 V2", description = "관리자가 회원의 현재 권한을 확인한 뒤 지정한 권한으로 변경합니다.")
+	@PatchMapping("/{userId}/role")
+	public ApiResponse<UserRoleUpdateResponse> replaceUserRole(
+		@PathVariable String userId,
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestBody @Valid UserRoleUpdateRequest request) {
+
+		return ApiResponse.success(
+			userManagementMapper.toRoleUpdateResponse(
+				userAdminService.replaceUserRole(
+					userDetails.getUser(),
+					userId,
+					request.currentRole(),
+					request.newRole())));
 	}
 
 	// ── 재학정보 인증 ──

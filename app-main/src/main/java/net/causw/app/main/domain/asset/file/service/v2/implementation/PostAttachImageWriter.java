@@ -38,6 +38,17 @@ public class PostAttachImageWriter {
 	}
 
 	/**
+	 * PostAttachImage 리스트를 저장합니다.
+	 * 새 이미지 엔티티를 명시적으로 저장하여 post_id가 올바르게 설정되도록 합니다.
+	 *
+	 * @param postAttachImages 저장할 PostAttachImage 리스트
+	 * @return 저장된 PostAttachImage 리스트
+	 */
+	public List<PostAttachImage> saveAll(List<PostAttachImage> postAttachImages) {
+		return postAttachImageRepository.saveAll(postAttachImages);
+	}
+
+	/**
 	 * PostAttachImage 리스트를 삭제합니다.
 	 *
 	 * @param postAttachImages 삭제할 PostAttachImage 리스트

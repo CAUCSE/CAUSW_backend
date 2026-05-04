@@ -1,4 +1,4 @@
-name: 동문네트워크 백엔드 CI 테스트 자동화(main branch PR 시 작동)
+name: CI - Production
 
 on:
   pull_request:
@@ -10,6 +10,52 @@ permissions:
   checks: write
 
 jobs:
+  flyway-version-check:
+    name: Flyway Version Order Check
+    runs-on: ubuntu-22.04
+    steps:
+      # fetch-depth: 0 — 베이스 브랜치와의 git diff를 위해 전체 히스토리 필요
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check Flyway version order
+        uses: ./.github/actions/flyway-version-check
+
+
+  migration-test:
+    name: Flyway Migration Test in Github Actions
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'db-change') }}
+    runs-on: ubuntu-22.04
+
+    services:
+      mysql:
+        image: mysql:8.0
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_DATABASE: test
+          MYSQL_ROOT_PASSWORD: password
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -ppassword"
+          --health-interval=5s
+          --health-timeout=3s
+          --health-retries=5
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      - name: Run Flyway migration test
+        uses: ./.github/actions/flyway-migration-test
+        with:
+          env-content: ${{ secrets.ENV_TEST }}
+          env-name: test
+          pr-head-sha: ${{ github.event.pull_request.head.sha }}
+          repository: ${{ github.repository }}
+
+
   junit-test-app-main:
     name: JUnit Test app-main Module
     runs-on: ubuntu-22.04
@@ -60,61 +106,11 @@ jobs:
           path: ./app-main/build/test-results/test
 
 
-  junit-test-app-chat:
-    name: JUnit Test app-chat Module
-    runs-on: ubuntu-22.04
-
-    steps:
-      # 작업 엑세스 가능하게 $GITHUB_WORKSPACE에서 저장소를 체크아웃
-      - name: Checkout branch
-        uses: actions/checkout@v4
-
-      # JDK & Gradle 설정
-      - name: Setup JDK and Gradle
-        uses: ./.github/actions/setup-jdk-gradle
-
-      # git ignore한 yml 파일들 github secret에서 복사해 오기
-      - name: Copy secret
-        env:
-          APPLICATION_FILE: ${{ secrets.APPLICATION_PROFILE_PROD }}
-          APPLICATION_PROD_FILE: ${{secrets.APPLICATION_PROD_APP_CHAT}}
-          DIR: ./app-chat/src/main/resources
-
-          APPLICATION_FILE_NAME: application.yml
-          APPLICATION_PROD_FILE_NAME: application-prod.yml
-        run: |
-          mkdir -p $DIR
-          touch $DIR/$APPLICATION_FILE_NAME
-          touch $DIR/$APPLICATION_PROD_FILE_NAME
-          echo "$APPLICATION_FILE" > $DIR/$APPLICATION_FILE_NAME
-          echo "$APPLICATION_PROD_FILE" > $DIR/$APPLICATION_PROD_FILE_NAME
-
-      # 테스트 실행
-      - name: Test with Gradle (app-chat)
-        run: ./gradlew :app-chat:test
-        shell: bash
-
-      # 테스트 실패 시 fail된 부분 마크
-      - name: Publish check comment on test failure
-        uses: mikepenz/action-junit-report@v3
-        if: ${{ failure() }}
-        with:
-          report_paths: ./app-chat/build/test-results/test/TEST-*.xml
-          check_name: "JUnit Failure Report (app-chat)"
-
-      # 테스트 결과 아티팩트 업로드
-      - name: Upload test results
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-chat-test-results
-          path: ./app-chat/build/test-results/test
-
-
   junit-test-result-summary:
     name: Report JUnit Test Result Summary
     if: ${{ always() }}
     runs-on: ubuntu-22.04
-    needs: [junit-test-app-main, junit-test-app-chat]
+    needs: [junit-test-app-main]
 
     steps:
       # 테스트 결과 아티팩트 다운로드
@@ -130,5 +126,4 @@ jobs:
         with:
           files: |
             combined/app-main-test-results/TEST-*.xml
-            combined/app-chat-test-results/TEST-*.xml
           check_name: "Test Results Summary"

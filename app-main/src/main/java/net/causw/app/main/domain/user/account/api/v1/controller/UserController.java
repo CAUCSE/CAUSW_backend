@@ -52,6 +52,7 @@ import net.causw.app.main.domain.user.account.service.v1.RegisterGraduatedUsersU
 import net.causw.app.main.domain.user.account.service.v1.UserRoleService;
 import net.causw.app.main.domain.user.account.service.v1.UserService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
+import net.causw.app.main.shared.exception.errorcode.GlobalErrorCode;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.UnauthorizedException;
 
@@ -290,11 +291,6 @@ public class UserController {
 	}
 
 	private String extractClientIp(HttpServletRequest request) {
-		String xForwardedFor = request.getHeader("X-Forwarded-For");
-		if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-			// 여러 IP가 있을 수 있어 첫 번째가 원래 IP
-			return xForwardedFor.split(",")[0].trim();
-		}
 		return request.getRemoteAddr();
 	}
 
@@ -462,11 +458,12 @@ public class UserController {
 		return this.userRoleService.grantRole(userDetails.getUser(), delegatorId, granteeId, userUpdateRoleRequestDto);
 	}
 
+	@Deprecated
 	@PutMapping(value = "/password/find")
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "비밀번호 찾기 API (완료)", description = "비밀번호 재설정 이메일 전송 API입니다.")
 	public void findPassword(@Valid @RequestBody UserFindPasswordRequestDto userFindPasswordRequestDto) {
-		this.userService.findPassword(userFindPasswordRequestDto);
+		throw GlobalErrorCode.BLOCKED_API.toBaseException();
 	}
 
 	@PutMapping(value = "/password")

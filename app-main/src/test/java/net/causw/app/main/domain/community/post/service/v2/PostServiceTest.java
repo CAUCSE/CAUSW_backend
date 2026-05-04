@@ -1,16 +1,12 @@
 package net.causw.app.main.domain.community.post.service.v2;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.BDDMockito.given;
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
 import static org.mockito.BDDMockito.times;
 import static org.mockito.BDDMockito.verify;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -35,9 +31,7 @@ import org.springframework.web.multipart.MultipartFile;
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.PostAttachImage;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
-import net.causw.app.main.domain.asset.file.service.v2.implementation.FileReader;
-import net.causw.app.main.domain.asset.file.service.v2.implementation.FileWriter;
-import net.causw.app.main.domain.asset.file.service.v2.implementation.PostAttachImageWriter;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
 import net.causw.app.main.domain.community.board.entity.BoardReadScope;
@@ -47,6 +41,8 @@ import net.causw.app.main.domain.community.board.service.implementation.BoardCon
 import net.causw.app.main.domain.community.board.service.implementation.BoardReader;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.query.PostCursorResult;
+import net.causw.app.main.domain.community.post.service.v2.dto.ImageCreateMeta;
+import net.causw.app.main.domain.community.post.service.v2.dto.ImageUpdateMeta;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostCreateCommand;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostCreateResult;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostDetailQuery;
@@ -55,6 +51,7 @@ import net.causw.app.main.domain.community.post.service.v2.dto.PostListQuery;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostListResult;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostUpdateCommand;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostUpdateResult;
+import net.causw.app.main.domain.community.post.service.v2.implementation.PostImageManager;
 import net.causw.app.main.domain.community.post.service.v2.implementation.PostReader;
 import net.causw.app.main.domain.community.post.service.v2.implementation.PostWriter;
 import net.causw.app.main.domain.community.reaction.service.implementation.FavoritePostReader;
@@ -62,6 +59,7 @@ import net.causw.app.main.domain.community.reaction.service.implementation.LikeP
 import net.causw.app.main.domain.community.vote.service.implementation.VoteWriter;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.enums.user.ProfileImageType;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.util.ObjectFixtures;
@@ -79,13 +77,10 @@ public class PostServiceTest {
 	PostWriter postWriter;
 
 	@Mock
+	PostImageManager postImageManager;
+
+	@Mock
 	BoardReader boardReader;
-
-	@Mock
-	FileWriter fileWriter;
-
-	@Mock
-	FileReader fileReader;
 
 	@Mock
 	BoardConfigReader boardConfigReader;
@@ -97,10 +92,10 @@ public class PostServiceTest {
 	FavoritePostReader favoritePostReader;
 
 	@Mock
-	PostAttachImageWriter postAttachImageWriter;
+	VoteWriter voteWriter;
 
 	@Mock
-	VoteWriter voteWriter;
+	UserProfileImageReader userProfileImageReader;
 
 	@Nested
 	@DisplayName("게시글 생성 테스트")
@@ -137,6 +132,7 @@ public class PostServiceTest {
 				boardId,
 				false,
 				writer,
+				null,
 				null);
 
 			Post mockPost = Post.of(null, "테스트 게시글 내용", writer, false, board, List.of());
@@ -148,6 +144,8 @@ public class PostServiceTest {
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
 			given(postWriter.save(any(Post.class))).willReturn(mockPost);
+			given(postImageManager.uploadAndBuildForCreate(any(Post.class), isNull(), isNull()))
+				.willReturn(List.of());
 
 			// when
 			PostCreateResult result = postService.create(command);
@@ -164,7 +162,7 @@ public class PostServiceTest {
 
 			verify(boardReader, times(1)).getById(boardId);
 			verify(postWriter, times(1)).save(any(Post.class));
-			verify(fileWriter, never()).uploadAndSaveList(anyList(), any(FilePath.class));
+			verify(postImageManager, times(1)).uploadAndBuildForCreate(any(Post.class), isNull(), isNull());
 		}
 
 		@DisplayName("이미지와 함께 게시글 생성 성공")
@@ -174,12 +172,16 @@ public class PostServiceTest {
 			MultipartFile mockFile = mock(MultipartFile.class);
 			List<MultipartFile> images = List.of(mockFile);
 
+			List<ImageCreateMeta> imageMetas = List.of(
+				new ImageCreateMeta(0, 0, true));
+
 			PostCreateCommand command = new PostCreateCommand(
 				"테스트 게시글 내용",
 				boardId,
 				false,
 				writer,
-				images);
+				images,
+				imageMetas);
 
 			UuidFile mockUuidFile = UuidFile.of(
 				"uuid",
@@ -189,7 +191,9 @@ public class PostServiceTest {
 				"jpg",
 				FilePath.POST);
 
-			Post mockPost = Post.of(null, "테스트 게시글 내용", writer, false, board, List.of(mockUuidFile));
+			PostAttachImage mockAttachImage = PostAttachImage.of(null, mockUuidFile, 0, true);
+
+			Post mockPost = Post.of(null, "테스트 게시글 내용", writer, false, board, List.of());
 			ReflectionTestUtils.setField(mockPost, "id", "post-id");
 			ReflectionTestUtils.setField(mockPost, "createdAt", LocalDateTime.now());
 			ReflectionTestUtils.setField(mockPost, "updatedAt", LocalDateTime.now());
@@ -197,7 +201,8 @@ public class PostServiceTest {
 			given(boardReader.getById(boardId)).willReturn(board);
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
-			given(fileWriter.uploadAndSaveList(images, FilePath.POST)).willReturn(List.of(mockUuidFile));
+			given(postImageManager.uploadAndBuildForCreate(any(Post.class), eq(images), eq(imageMetas)))
+				.willReturn(List.of(mockAttachImage));
 			given(postWriter.save(any(Post.class))).willReturn(mockPost);
 
 			// when
@@ -211,7 +216,7 @@ public class PostServiceTest {
 				() -> assertThat(result.fileUrlList()).hasSize(1),
 				() -> assertThat(result.fileUrlList().get(0)).isEqualTo("https://example.com/image.jpg"));
 
-			verify(fileWriter, times(1)).uploadAndSaveList(images, FilePath.POST);
+			verify(postImageManager, times(1)).uploadAndBuildForCreate(any(Post.class), eq(images), eq(imageMetas));
 			verify(postWriter, times(1)).save(any(Post.class));
 		}
 
@@ -224,6 +229,7 @@ public class PostServiceTest {
 				boardId,
 				true,
 				writer,
+				null,
 				null);
 
 			Post mockPost = Post.of(null, "익명 게시글", writer, true, board, List.of());
@@ -235,6 +241,8 @@ public class PostServiceTest {
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
 			given(postWriter.save(any(Post.class))).willReturn(mockPost);
+			given(postImageManager.uploadAndBuildForCreate(any(Post.class), isNull(), isNull()))
+				.willReturn(List.of());
 
 			// when
 			PostCreateResult result = postService.create(command);
@@ -262,6 +270,7 @@ public class PostServiceTest {
 				boardId,
 				false, // 비익명으로 작성 시도
 				writer,
+				null,
 				null);
 
 			given(boardReader.getById(boardId)).willReturn(board);
@@ -362,6 +371,7 @@ public class PostServiceTest {
 				"수정된 내용",
 				false,
 				updater,
+				null,
 				null);
 
 			List<String> boardAdminIds = List.of("admin-id");
@@ -377,6 +387,8 @@ public class PostServiceTest {
 			given(postReader.findById(postId)).willReturn(post);
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(postImageManager.mergeAndBuildForUpdate(eq(post), isNull(), isNull()))
+				.willReturn(new PostImageManager.ImageUpdateResult(List.of(), List.of()));
 			given(postWriter.updateContentAndImages(eq(post), eq("수정된 내용"), anyList())).willReturn(post);
 
 			// when
@@ -404,15 +416,22 @@ public class PostServiceTest {
 			MultipartFile mockFile = mock(MultipartFile.class);
 			List<MultipartFile> newImageFiles = List.of(mockFile);
 
+			// 기존 이미지 삭제, 새 이미지 추가 (type=NEW)
+			List<ImageUpdateMeta> imageMetas = List.of(
+				new ImageUpdateMeta(0, ImageUpdateMeta.Type.NEW, null, 0, true));
+
 			PostUpdateCommand command = new PostUpdateCommand(
 				postId,
 				"수정된 내용",
 				false,
 				updater,
-				newImageFiles);
+				newImageFiles,
+				imageMetas);
 
 			UuidFile newFile = UuidFile.of("new-uuid", "new-key", "new-url", "new.jpg", "jpg", FilePath.POST);
 			ReflectionTestUtils.setField(newFile, "id", "new-file-id");
+
+			PostAttachImage newAttachImage = PostAttachImage.of(post, newFile, 0, true);
 
 			List<String> boardAdminIds = List.of("admin-id");
 			BoardConfig boardConfig = BoardConfig.of(
@@ -427,8 +446,9 @@ public class PostServiceTest {
 			given(postReader.findById(postId)).willReturn(post);
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
-			given(fileReader.findByIds(anyList())).willReturn(List.of(oldFile));
-			given(fileWriter.uploadAndSaveList(newImageFiles, FilePath.POST)).willReturn(List.of(newFile));
+			given(postImageManager.mergeAndBuildForUpdate(eq(post), eq(newImageFiles), eq(imageMetas)))
+				.willReturn(new PostImageManager.ImageUpdateResult(
+					List.of(newAttachImage), List.of("old-file-id")));
 			given(postWriter.updateContentAndImages(eq(post), eq("수정된 내용"), anyList())).willReturn(post);
 
 			// when
@@ -436,9 +456,8 @@ public class PostServiceTest {
 
 			// then
 			assertThat(result).isNotNull();
-			verify(postAttachImageWriter, times(1)).deleteAllInBatch(anyList());
-			verify(fileWriter, times(1)).deleteList(anyList());
-			verify(fileWriter, times(1)).uploadAndSaveList(newImageFiles, FilePath.POST);
+			verify(postImageManager, times(1)).mergeAndBuildForUpdate(eq(post), eq(newImageFiles), eq(imageMetas));
+			verify(postImageManager, times(1)).deleteOrphanedFiles(List.of("old-file-id"));
 		}
 
 		@DisplayName("익명 게시판에서 비익명으로 수정 시 실패")
@@ -455,6 +474,7 @@ public class PostServiceTest {
 				"수정된 내용",
 				false, // 비익명으로 변경 시도
 				updater,
+				null,
 				null);
 
 			List<String> boardAdminIds = List.of("admin-id");
@@ -519,11 +539,13 @@ public class PostServiceTest {
 				false,
 				null,
 				false,
+				false,
 				true,
 				"작성자",
 				"닉네임",
 				2020,
 				UserState.ACTIVE,
+				ProfileImageType.CUSTOM,
 				"profile-url",
 				LocalDateTime.now(),
 				LocalDateTime.now(),
@@ -582,11 +604,13 @@ public class PostServiceTest {
 				false,
 				null,
 				false,
+				false,
 				true,
 				"작성자1",
 				"닉네임1",
 				2020,
 				UserState.ACTIVE,
+				ProfileImageType.CUSTOM,
 				"profile-url-1",
 				LocalDateTime.now(),
 				LocalDateTime.now(),
@@ -602,11 +626,13 @@ public class PostServiceTest {
 				false,
 				null,
 				false,
+				false,
 				true,
 				"작성자2",
 				"닉네임2",
 				2021,
 				UserState.ACTIVE,
+				ProfileImageType.CUSTOM,
 				"profile-url-2",
 				LocalDateTime.now(),
 				LocalDateTime.now(),
@@ -664,11 +690,13 @@ public class PostServiceTest {
 				false,
 				null,
 				false,
+				false,
 				true,
 				"작성자",
 				"닉네임",
 				2020,
 				UserState.ACTIVE,
+				ProfileImageType.CUSTOM,
 				"profile-url",
 				LocalDateTime.of(2024, 1, 1, 11, 0),
 				LocalDateTime.of(2024, 1, 1, 11, 0),
@@ -727,11 +755,13 @@ public class PostServiceTest {
 				false,
 				null,
 				false,
+				false,
 				true,
 				"작성자",
 				"닉네임",
 				2020,
 				UserState.ACTIVE,
+				ProfileImageType.CUSTOM,
 				"profile-url",
 				LocalDateTime.now(),
 				LocalDateTime.now(),
@@ -778,11 +808,13 @@ public class PostServiceTest {
 				false,
 				null,
 				false,
+				false,
 				true,
 				"작성자",
 				"닉네임",
 				2020,
 				UserState.ACTIVE,
+				ProfileImageType.CUSTOM,
 				"profile-url",
 				LocalDateTime.now(),
 				LocalDateTime.now(),
@@ -879,11 +911,13 @@ public class PostServiceTest {
 				true, // 익명 게시글
 				null,
 				false,
+				false,
 				true,
 				"작성자",
 				"닉네임",
 				2020,
 				UserState.ACTIVE,
+				ProfileImageType.CUSTOM,
 				"profile-url",
 				LocalDateTime.now(),
 				LocalDateTime.now(),
@@ -910,7 +944,9 @@ public class PostServiceTest {
 				() -> assertThat(result.posts()).hasSize(1),
 				() -> assertThat(result.posts().get(0).isAnonymous()).isTrue(),
 				() -> assertThat(result.posts().get(0).writerNickname()).isEqualTo("익명"),
-				() -> assertThat(result.posts().get(0).writerProfileImageUrl()).isNull());
+				() -> assertThat(result.posts().get(0).writerProfileImage().profileImageType())
+					.isEqualTo(ProfileImageType.GHOST),
+				() -> assertThat(result.posts().get(0).writerProfileImage().profileImageUrl()).isNull());
 
 			verify(postReader, times(1)).findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(null));
 		}
@@ -931,11 +967,13 @@ public class PostServiceTest {
 				false, // 일반 게시글
 				null,
 				false,
+				false,
 				true,
 				"작성자1",
 				"닉네임1",
 				2020,
 				UserState.ACTIVE,
+				ProfileImageType.CUSTOM,
 				"profile-url-1",
 				LocalDateTime.now(),
 				LocalDateTime.now(),
@@ -951,11 +989,13 @@ public class PostServiceTest {
 				true, // 익명 게시글
 				null,
 				false,
+				false,
 				true,
 				"작성자2",
 				"닉네임2",
 				2021,
 				UserState.ACTIVE,
+				ProfileImageType.CUSTOM,
 				"profile-url-2",
 				LocalDateTime.now(),
 				LocalDateTime.now(),
@@ -983,12 +1023,14 @@ public class PostServiceTest {
 				// 일반 게시글 확인
 				() -> assertThat(result.posts().get(0).isAnonymous()).isFalse(),
 				() -> assertThat(result.posts().get(0).writerNickname()).isEqualTo("닉네임1"),
-				() -> assertThat(result.posts().get(0).writerProfileImageUrl()).isEqualTo("profile-url-1"),
+				() -> assertThat(result.posts().get(0).writerProfileImage().profileImageUrl())
+					.isEqualTo("profile-url-1"),
 				// 익명 게시글 확인
 				() -> assertThat(result.posts().get(1).isAnonymous()).isTrue(),
 				() -> assertThat(result.posts().get(1).writerNickname()).isEqualTo("익명"),
-				() -> assertThat(result.posts().get(1).writerProfileImageUrl()).isNull());
-
+				() -> assertThat(result.posts().get(1).writerProfileImage().profileImageType())
+					.isEqualTo(ProfileImageType.GHOST),
+				() -> assertThat(result.posts().get(1).writerProfileImage().profileImageUrl()).isNull());
 			verify(postReader, times(1)).findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(null));
 		}
 	}
@@ -1165,7 +1207,8 @@ public class PostServiceTest {
 			assertAll(
 				() -> assertThat(result.isAnonymous()).isTrue(),
 				() -> assertThat(result.displayWriterNickname()).isEqualTo("익명"),
-				() -> assertThat(result.writerProfileImage()).isNull());
+				() -> assertThat(result.writerProfileImage().profileImageType()).isEqualTo(ProfileImageType.GHOST),
+				() -> assertThat(result.writerProfileImage().profileImageUrl()).isNull());
 		}
 
 		@DisplayName("숨겨진 게시판의 게시글은 관리자만 조회 가능")

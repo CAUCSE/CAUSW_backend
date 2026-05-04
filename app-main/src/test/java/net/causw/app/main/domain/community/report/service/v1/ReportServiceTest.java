@@ -2,7 +2,9 @@ package net.causw.app.main.domain.community.report.service.v1;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.lenient;
 import static org.mockito.BDDMockito.verify;
 
 import java.util.Optional;
@@ -21,6 +23,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.community.comment.entity.ChildComment;
 import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.community.comment.repository.ChildCommentRepository;
@@ -29,9 +32,7 @@ import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.community.report.api.v1.dto.ReportCreateRequestDto;
 import net.causw.app.main.domain.community.report.api.v1.dto.ReportCreateResponseDto;
-import net.causw.app.main.domain.community.report.api.v1.dto.ReportedCommentNativeProjection;
 import net.causw.app.main.domain.community.report.api.v1.dto.ReportedCommentResponseDto;
-import net.causw.app.main.domain.community.report.api.v1.dto.ReportedPostNativeProjection;
 import net.causw.app.main.domain.community.report.api.v1.dto.ReportedPostResponseDto;
 import net.causw.app.main.domain.community.report.api.v1.dto.ReportedUserResponseDto;
 import net.causw.app.main.domain.community.report.api.v1.mapper.ReportDtoMapper;
@@ -39,6 +40,8 @@ import net.causw.app.main.domain.community.report.entity.Report;
 import net.causw.app.main.domain.community.report.enums.ReportReason;
 import net.causw.app.main.domain.community.report.enums.ReportType;
 import net.causw.app.main.domain.community.report.repository.ReportRepository;
+import net.causw.app.main.domain.community.report.repository.projection.ReportedCommentNativeProjection;
+import net.causw.app.main.domain.community.report.repository.projection.ReportedPostNativeProjection;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
@@ -66,6 +69,10 @@ class ReportServiceTest {
 	private ChildCommentRepository childCommentRepository;
 	@Mock
 	private PageableFactory pageableFactory;
+	@Mock
+	private UserProfileImageReader userProfileImageReader;
+	@Mock
+	private ReportDtoMapper reportDtoMapper;
 
 	private static final int pageNum = 0;
 	private final User reporter = ObjectFixtures.getUser();
@@ -89,6 +96,9 @@ class ReportServiceTest {
 		reportRequest.setReportType(ReportType.POST);
 		reportRequest.setTargetId("target-id");
 		reportRequest.setReportReason(ReportReason.SPAM_AD);
+
+		lenient().when(reportDtoMapper.toReportCreateResponseDto(anyString()))
+			.thenAnswer(inv -> new ReportCreateResponseDto(inv.getArgument(0)));
 	}
 
 	@Nested

@@ -2,8 +2,10 @@ package net.causw.app.main.domain.user.account.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -27,7 +29,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import net.causw.app.main.domain.notification.notification.service.AdmissionNotificationService;
+import net.causw.app.main.domain.notification.notification.event.AdmissionAcceptedEvent;
+import net.causw.app.main.domain.notification.notification.event.AdmissionRejectedEvent;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.academic.event.CertifiedUserCreatedEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
@@ -35,7 +38,7 @@ import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
 import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.dto.request.AdmissionListCondition;
-import net.causw.app.main.domain.user.account.service.dto.request.AdmissionResult;
+import net.causw.app.main.domain.user.account.service.dto.response.AdmissionResult;
 import net.causw.app.main.domain.user.account.service.implementation.AdmissionLogWriter;
 import net.causw.app.main.domain.user.account.service.implementation.AdmissionReader;
 import net.causw.app.main.domain.user.account.service.implementation.AdmissionValidator;
@@ -65,9 +68,6 @@ class AdmissionAdminServiceTest {
 
 	@Mock
 	private ApplicationEventPublisher eventPublisher;
-
-	@Mock
-	private AdmissionNotificationService admissionNotificationService;
 
 	@InjectMocks
 	private AdmissionAdminService admissionAdminService;
@@ -283,7 +283,7 @@ class AdmissionAdminServiceTest {
 	class ApproveAdmission {
 
 		@Test
-		@DisplayName("정상적으로 승인하면 중복 검증 → 유저 정보 업데이트 → 이벤트 발행 → 로그 생성 → 신청 삭제 순서로 실행된다")
+		@DisplayName("정상적으로 승인하면 중복 검증 → 유저 업데이트 → CertifiedUserCreatedEvent → 로그 → 삭제 → AdmissionAcceptedEvent 순으로 실행된다")
 		void givenValidAdmission_whenApprove_thenAllStepsExecutedInOrder() {
 			// given
 			String admissionId = "admission-1";
@@ -301,9 +301,10 @@ class AdmissionAdminServiceTest {
 			verify(admissionReader).findAdmissionDetail(admissionId);
 			verify(admissionValidator).validateStudentIdNotDuplicated(admission.getRequestedStudentId());
 			verify(userWriter).approveAdmission(targetUser, admission);
+			verify(eventPublisher).publishEvent(any(CertifiedUserCreatedEvent.class));
 			verify(admissionLogWriter).createAcceptLog(admission, adminUser);
 			verify(admissionWriter).delete(admission);
-			verify(admissionNotificationService).sendApprovedAdmissionToUser(targetUser.getId(), adminUser.getId());
+			verify(eventPublisher).publishEvent(any(AdmissionAcceptedEvent.class));
 		}
 
 		@Test
@@ -322,12 +323,14 @@ class AdmissionAdminServiceTest {
 			admissionAdminService.approveAdmission(admissionId, adminUser);
 
 			// then
-			ArgumentCaptor<CertifiedUserCreatedEvent> eventCaptor = ArgumentCaptor
-				.forClass(CertifiedUserCreatedEvent.class);
-			verify(eventPublisher).publishEvent(eventCaptor.capture());
-
-			CertifiedUserCreatedEvent capturedEvent = eventCaptor.getValue();
-			assertThat(capturedEvent.userId()).isEqualTo("user-1");
+			ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
+			verify(eventPublisher, times(2)).publishEvent(eventCaptor.capture());
+			CertifiedUserCreatedEvent certifiedEvent = eventCaptor.getAllValues().stream()
+				.filter(CertifiedUserCreatedEvent.class::isInstance)
+				.map(CertifiedUserCreatedEvent.class::cast)
+				.findFirst()
+				.orElseThrow();
+			assertThat(certifiedEvent.userId()).isEqualTo("user-1");
 		}
 
 		@Test
@@ -353,7 +356,6 @@ class AdmissionAdminServiceTest {
 			verifyNoInteractions(eventPublisher);
 			verify(admissionLogWriter, never()).createAcceptLog(admission, adminUser);
 			verify(admissionWriter, never()).delete(admission);
-			verifyNoInteractions(admissionNotificationService);
 		}
 
 		@Test
@@ -377,7 +379,6 @@ class AdmissionAdminServiceTest {
 			verifyNoInteractions(eventPublisher);
 			verifyNoInteractions(admissionLogWriter);
 			verifyNoInteractions(admissionWriter);
-			verifyNoInteractions(admissionNotificationService);
 		}
 	}
 
@@ -409,27 +410,7 @@ class AdmissionAdminServiceTest {
 			verify(userWriter).rejectAdmission(targetUser, rejectReason);
 			verify(admissionLogWriter).createRejectLog(admission, adminUser, rejectReason);
 			verify(admissionWriter).delete(admission);
-			verify(admissionNotificationService).sendRejectedAdmissionToUser(targetUser.getId(), adminUser.getId());
-		}
-
-		@Test
-		@DisplayName("거절 시 이벤트가 발행되지 않는다")
-		void givenRejectAdmission_whenReject_thenNoEventPublished() {
-			// given
-			String admissionId = "admission-1";
-			String rejectReason = "서류가 불명확합니다";
-			User targetUser = ObjectFixtures.getUserWithId("user-1");
-			User adminUser = ObjectFixtures.getCertifiedUserWithId("admin-1");
-			UserAdmission admission = ObjectFixtures.getUserAdmissionWithId(admissionId, targetUser);
-
-			when(admissionReader.findAdmissionDetail(admissionId)).thenReturn(admission);
-			when(userWriter.rejectAdmission(targetUser, rejectReason)).thenReturn(targetUser);
-
-			// when
-			admissionAdminService.rejectAdmission(admissionId, adminUser, rejectReason);
-
-			// then
-			verifyNoInteractions(eventPublisher);
+			verify(eventPublisher).publishEvent(any(AdmissionRejectedEvent.class));
 		}
 
 		@ParameterizedTest
@@ -451,7 +432,7 @@ class AdmissionAdminServiceTest {
 			verifyNoInteractions(userWriter);
 			verifyNoInteractions(admissionLogWriter);
 			verifyNoInteractions(admissionWriter);
-			verifyNoInteractions(admissionNotificationService);
+			verifyNoInteractions(eventPublisher);
 		}
 
 		@ParameterizedTest
@@ -470,6 +451,7 @@ class AdmissionAdminServiceTest {
 				.isEqualTo(UserErrorCode.ADMISSION_REJECT_REASON_REQUIRED);
 
 			verifyNoInteractions(admissionReader);
+			verifyNoInteractions(eventPublisher);
 		}
 
 		@Test
@@ -493,7 +475,7 @@ class AdmissionAdminServiceTest {
 			verifyNoInteractions(userWriter);
 			verifyNoInteractions(admissionLogWriter);
 			verifyNoInteractions(admissionWriter);
-			verifyNoInteractions(admissionNotificationService);
+			verifyNoInteractions(eventPublisher);
 		}
 	}
 }

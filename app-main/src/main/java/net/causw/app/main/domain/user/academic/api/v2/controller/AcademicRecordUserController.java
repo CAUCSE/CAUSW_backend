@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/users/me/academic-record")
-@Tag(name = "유저 학적상태 변경 v2", description = "학적상태를 졸업 또는 재학으로 변경 신청합니다.")
+@Tag(name = "AcademicRecord Public v2", description = "학적상태를 졸업 또는 재학으로 변경 신청합니다.")
 public class AcademicRecordUserController {
 
 	private final AcademicRecordUserService academicRecordUserService;

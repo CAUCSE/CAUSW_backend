@@ -7,8 +7,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
-import net.causw.app.main.domain.asset.file.entity.QUuidFile;
-import net.causw.app.main.domain.asset.file.entity.joinEntity.QUserProfileImage;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.QUser;
 import net.causw.app.main.domain.user.account.entity.userInfo.QUserCareer;
@@ -33,19 +31,15 @@ public class UserInfoQueryRepository {
 
 	private final JPAQueryFactory jpaQueryFactory;
 
-	public Page<UserInfo> findAllWithFilter(UserInfoListCondition filter, Pageable pageable) {
+	public Page<UserInfo> findAllWithFilter(UserInfoListCondition filter, Pageable pageable, String excludeUserId) {
 		QUserInfo userInfo = QUserInfo.userInfo;
 		QUser user = QUser.user;
-		QUserProfileImage userProfileImage = QUserProfileImage.userProfileImage;
-		QUuidFile uuidFile = QUuidFile.uuidFile;
 
-		BooleanExpression condition = baseCondition(filter, userInfo);
+		BooleanExpression condition = baseCondition(filter, userInfo, excludeUserId);
 
 		List<UserInfo> content = jpaQueryFactory
 			.selectFrom(userInfo)
 			.join(userInfo.user, user).fetchJoin()
-			.leftJoin(user.userProfileImage, userProfileImage).fetchJoin()
-			.leftJoin(userProfileImage.uuidFile, uuidFile).fetchJoin()
 			.where(condition)
 			.orderBy(getSortType(filter, userInfo))
 			.offset(pageable.getOffset())
@@ -61,8 +55,13 @@ public class UserInfoQueryRepository {
 		return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
 	}
 
-	private BooleanExpression baseCondition(UserInfoListCondition filter, QUserInfo userInfo) {
+	private BooleanExpression baseCondition(UserInfoListCondition filter, QUserInfo userInfo, String excludeUserId) {
 		BooleanExpression condition = Expressions.TRUE.isTrue();
+
+		// 본인 프로필 제외
+		if (excludeUserId != null) {
+			condition = condition.and(userInfo.user.id.ne(excludeUserId));
+		}
 		List<String> academicStatusList = filter.academicStatus();
 		Integer admissionYearStart = filter.admissionYearStart();
 		Integer admissionYearEnd = filter.admissionYearEnd();
@@ -96,7 +95,7 @@ public class UserInfoQueryRepository {
 			BooleanExpression keywordCondition = Expressions.FALSE.isTrue();
 
 			keywordCondition = keywordCondition.or(userInfo.user.name.containsIgnoreCase(keyword));
-			keywordCondition = keywordCondition.or(userInfo.job.containsIgnoreCase(keyword));
+			keywordCondition = keywordCondition.or(userInfo.description.containsIgnoreCase(keyword));
 			keywordCondition = keywordCondition.or(JPAExpressions.selectFrom(userCareer)
 				.where(userCareer.userInfo.eq(userInfo)
 					.and(userCareer.description.containsIgnoreCase(keyword)))
@@ -119,12 +118,12 @@ public class UserInfoQueryRepository {
 		switch (sortType) {
 			case ADMISSION_YEAR_DESC -> {
 				return new OrderSpecifier[] {
-					userInfo.user.admissionYear.desc(), userInfo.updatedAt.desc()
+					userInfo.user.admissionYear.desc(), userInfo.user.name.asc(), userInfo.updatedAt.desc()
 				};
 			}
 			case ADMISSION_YEAR_ASC -> {
 				return new OrderSpecifier[] {
-					userInfo.user.admissionYear.asc(), userInfo.updatedAt.desc()
+					userInfo.user.admissionYear.asc(), userInfo.user.name.asc(), userInfo.updatedAt.desc()
 				};
 			}
 			case UPDATED_AT_ASC -> {

@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.domain.campus.circle.entity.Circle;
@@ -47,6 +48,7 @@ public class HomePageService {
 	private final FavoritePostRepository favoritePostRepository;
 	private final PageableFactory pageableFactory;
 
+	@Transactional(readOnly = true)
 	public List<HomePageResponseDto> getHomePage(User user) {
 		Set<Role> roles = user.getRoles();
 
@@ -79,6 +81,7 @@ public class HomePageService {
 			.collect(Collectors.toList());
 	}
 
+	@Transactional(readOnly = true)
 	public List<HomePageResponseDto> getAlumniHomePage(User user) {
 		Set<Role> roles = user.getRoles();
 

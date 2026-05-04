@@ -1,24 +1,48 @@
 package net.causw.app.main.domain.user.auth.service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
+import net.causw.app.main.domain.user.account.service.implementation.SocialAccountReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserPushTokenWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
+import net.causw.app.main.domain.user.account.service.v1.PasswordGenerator;
+import net.causw.app.main.domain.user.account.util.DroppedUserIdentifierValidator;
+import net.causw.app.main.domain.user.account.util.masking.EmailMasker;
+import net.causw.app.main.domain.user.auth.entity.EmailVerification;
+import net.causw.app.main.domain.user.auth.entity.EmailVerification.VerificationStatus;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
+import net.causw.app.main.domain.user.auth.service.dto.EmailFindResult;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthValidator;
+import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationReader;
+import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationSender;
 import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationValidator;
+import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationWriter;
+import net.causw.app.main.domain.user.terms.entity.Terms;
+import net.causw.app.main.domain.user.terms.entity.UserTermsAgreement;
+import net.causw.app.main.domain.user.terms.service.implementation.TermsReader;
+import net.causw.app.main.domain.user.terms.service.implementation.TermsValidator;
+import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementReader;
+import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementWriter;
+import net.causw.app.main.shared.dto.ProfileImageDto;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
+import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -38,35 +62,119 @@ public class AuthService {
 	private final AuthTokenManager authTokenManager;
 	private final UserPushTokenWriter userPushTokenWriter;
 	private final EmailVerificationValidator emailVerificationValidator;
+	private final SocialAccountReader socialAccountReader;
+	private final EmailVerificationWriter emailVerificationWriter;
+	private final EmailVerificationReader emailVerificationReader;
+	private final EmailVerificationSender emailVerificationSender;
+	private final PasswordGenerator passwordGenerator;
+	private final TermsReader termsReader;
+	private final TermsValidator termsValidator;
+	private final UserTermsAgreementWriter userTermsAgreementWriter;
+	private final UserTermsAgreementReader userTermsAgreementReader;
+	private final UserProfileImageReader userProfileImageReader;
+	private final DroppedUserIdentifierValidator droppedUserIdentifierValidator;
+
+	/**
+	 * 이름+이메일 기준으로 비밀번호 초기화용 인증코드를 발송합니다.
+	 *
+	 * @param name  사용자 이름
+	 * @param email 인증 코드를 받을 이메일 주소
+	 */
+	@Transactional
+	public void sendPasswordResetVerificationEmail(String name, String email) {
+		emailVerificationValidator.validatePasswordResetSend(name, email);
+		emailVerificationSender.send(email, VerificationStatus.PASSWORD_FIND);
+	}
+
+	/**
+	 * 비밀번호 초기화 인증번호를 검증하고 임시 비밀번호로 재설정합니다.
+	 * 검증 성공 시 해당 인증 레코드는 삭제됩니다.
+	 *
+	 * @param name             사용자 이름
+	 * @param email            인증할 이메일 주소
+	 * @param verificationCode 사용자가 입력한 인증 코드
+	 * @return 화면에 표시할 임시 비밀번호
+	 */
+	@Transactional
+	public String resetPasswordByVerificationCode(String name, String email, String verificationCode) {
+		User user = userReader.findByEmailAndName(email, name);
+
+		if (user.isOnlySocialUser()) {
+			throw UserErrorCode.SOCIAL_ONLY_USER_CANNOT_CHANGE_PASSWORD.toBaseException();
+		}
+
+		EmailVerification emailVerification = emailVerificationReader.findLatestByEmailAndStatus(email,
+			VerificationStatus.PASSWORD_FIND);
+
+		if (emailVerification.isExpired()) {
+			throw UserErrorCode.PASSWORD_RESET_EXPIRED.toBaseException();
+		}
+
+		if (!emailVerification.getVerificationCode().equals(verificationCode)) {
+			throw UserErrorCode.PASSWORD_RESET_CODE_MISMATCH.toBaseException();
+		}
+
+		emailVerificationWriter.delete(emailVerification);
+
+		String temporaryPassword = passwordGenerator.generate();
+		user.updatePassword(passwordEncoder.encode(temporaryPassword));
+		return temporaryPassword;
+	}
 
 	/**
 	 * 이메일 기반의 신규 회원을 등록합니다.
 	 * <p>
 	 * 1. 기존 가입 정보(전화번호, 이름) 확인 및 상태 검증<br>
 	 * 2. 이메일, 닉네임, 전화번호 중복 검사<br>
-	 * 3. 비밀번호 암호화 및 신규 유저 생성 후 저장
+	 * 3. 이메일 인증 코드 검증<br>
+	 * 4. 동의 약관 ID 존재 여부 및 타입별 최신 필수 약관 포함 여부 검증<br>
+	 * 5. 비밀번호 암호화 및 신규 유저 생성 후 저장<br>
+	 * 6. 회원가입 완료 후 이메일 인증 정보 삭제<br>
+	 * 7. 요청에 포함된 약관 ID에 대한 {@code UserTermsAgreement} 저장
 	 *
-	 * @param dto 회원가입에 필요한 정보가 담긴 DTO (이메일, 비밀번호, 이름 등)
+	 * @param dto 회원가입에 필요한 정보가 담긴 DTO (이메일, 비밀번호, 이름, 약관 동의 여부 등)
 	 * @return 가입된 사용자 정보 (토큰은 포함되지 않음)
 	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
-	 * 이미 존재하는 정보(이메일, 닉네임 등)가 있거나, 입력값(비밀번호 등) 형식이 유효하지 않은 경우
+	 * 이미 존재하는 정보(이메일, 닉네임 등)가 있거나, 입력값(비밀번호 등) 형식이 유효하지 않은 경우,
+	 * 필수 약관에 동의하지 않은 경우, 등록된 약관이 없는 경우
 	 */
 	@Transactional
 	public AuthResult registerEmailUser(UserRegisterDto dto) {
+		// 추방당한 회원인지 확인
+		droppedUserIdentifierValidator.validateEmail(dto.email());
+		droppedUserIdentifierValidator.validatePhone(dto.phoneNumber());
+
 		// 전화번호로 기존 사용자 탐색 및 사용자 상태에 따른 에러 반환
 		Optional<User> userExist = userReader.checkUserExistByPhoneNumAndName(dto.phoneNumber(), dto.name());
-		userExist.ifPresent(user -> userValidator.validateUserStatusForSignup(user));
+		userExist.ifPresent(userValidator::validateUserStatusForSignup);
 
 		// 이메일, 닉네임, 전화번호에 대한 중복 검증 수행
 		userValidator.checkEmailDuplication(dto.email());
 		userValidator.checkNicknameDuplication(dto.nickname());
 		userValidator.checkPhoneNumDuplication(dto.phoneNumber());
 		emailVerificationValidator.validateVerified(dto.email(), dto.emailVerificationCode());
+		List<String> agreedTermsIds = dto.agreedTermsIds().stream().distinct().toList();
+		termsValidator.validateForAgreement(agreedTermsIds);
+
 		// 신규 사용자 생성 및 검증
 		User newUser = User.from(dto, passwordEncoder.encode(dto.password()));
 		authValidator.validateRegisterInput(newUser, dto.password(), dto.phoneNumber());
 		User savedUser = userWriter.save(newUser);
-		return AuthResult.of(null, savedUser.getName(), savedUser.getEmail(), savedUser.getProfileUrl(), null);
+		// 회원가입 완료 후 이메일 인증 정보 삭제
+		emailVerificationWriter.delete(
+			emailVerificationReader.findLatestByEmailAndStatus(dto.email(), VerificationStatus.VERIFIED));
+
+		List<Terms> termsToSave = termsReader.findAllById(agreedTermsIds);
+		List<UserTermsAgreement> newAgreements = termsToSave.stream()
+			.map(terms -> UserTermsAgreement.of(savedUser, terms))
+			.toList();
+		userTermsAgreementWriter.saveAll(newAgreements);
+
+		// 신규 가입 유저는 커스텀 프로필 이미지가 없으므로 null 전달
+		return AuthResult.of(null, savedUser.getName(), savedUser.getEmail(),
+			ProfileImageDto.from(savedUser, null), null,
+			savedUser.isGuest(), true, savedUser.isAcademicCertified(),
+			savedUser.getAcademicStatus());
 	}
 
 	/**
@@ -88,8 +196,41 @@ public class AuthService {
 		userValidator.validateUserStatusForLogin(user);
 		// 토큰 생성
 		AuthTokenPair tokens = authTokenManager.issueTokens(user, null);
-		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), user.getProfileUrl(),
-			tokens.refreshToken());
+		// 최신 필수 약관 동의 여부 확인
+		boolean hasAllRequiredLatestTerms = userTermsAgreementReader.hasAgreedToAllRequiredLatestTerms(user);
+		UserProfileImage profileImage = userProfileImageReader.findByUserIdOrNull(user.getId());
+
+		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(),
+			ProfileImageDto.from(user, profileImage),
+			tokens.refreshToken(), user.isGuest(), hasAllRequiredLatestTerms, user.isAcademicCertified(),
+			user.getAcademicStatus());
+	}
+
+	@Transactional(readOnly = true)
+	public Optional<EmailFindResult> findEmail(String name, String phoneNumber) {
+		Optional<User> userOptional = userReader.checkUserExistByPhoneNumAndName(phoneNumber.trim(), name.trim());
+		if (userOptional.isEmpty()) {
+			return Optional.empty();
+		}
+		// 탈퇴한 회원일 경우에도 null 처리
+		User user = userOptional.get();
+		if (user.isDeleted()) {
+			return Optional.empty();
+		}
+		List<EmailFindResult.SocialAccountSummary> socialAccounts = socialAccountReader.findAllByUserId(user.getId())
+			.stream()
+			.sorted(Comparator.comparing(account -> account.getCreatedAt()))
+			.map(account -> EmailFindResult.SocialAccountSummary.of(
+				account.getSocialType().name(),
+				toLocalDate(account.getCreatedAt())))
+			.toList();
+
+		if (user.isOnlySocialUser()) {
+			return Optional.of(EmailFindResult.of(null, null, socialAccounts));
+		}
+		return Optional
+			.of(EmailFindResult.of(EmailMasker.mask(user.getEmail()), toLocalDate(user.getCreatedAt()),
+				socialAccounts));
 	}
 
 	/**
@@ -114,8 +255,13 @@ public class AuthService {
 		userValidator.validateUser(user);
 		// 토큰 생성
 		AuthTokenPair tokens = authTokenManager.issueTokens(user, refreshToken);
-		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), user.getProfileUrl(),
-			tokens.refreshToken());
+		UserProfileImage profileImage = userProfileImageReader.findByUserIdOrNull(user.getId());
+		boolean hasAllRequiredLatestTerms = userTermsAgreementReader.hasAgreedToAllRequiredLatestTerms(user);
+
+		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(),
+			ProfileImageDto.from(user, profileImage),
+			tokens.refreshToken(), user.isGuest(), hasAllRequiredLatestTerms, user.isAcademicCertified(),
+			user.getAcademicStatus());
 	}
 
 	/**
@@ -137,5 +283,12 @@ public class AuthService {
 		}
 		// jwt 토큰 무효화
 		authTokenManager.invalidateTokens(tokens.accessToken(), tokens.refreshToken());
+	}
+
+	private LocalDate toLocalDate(LocalDateTime dateTime) {
+		if (dateTime == null) {
+			return null;
+		}
+		return dateTime.toLocalDate();
 	}
 }

@@ -12,9 +12,9 @@ import net.causw.app.main.domain.asset.locker.entity.LockerLog;
 import net.causw.app.main.domain.asset.locker.service.v2.dto.LockerListCondition;
 import net.causw.app.main.domain.asset.locker.service.v2.dto.LockerLogListCondition;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerLogReader;
-import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerLogWriter;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerValidator;
+import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
@@ -37,8 +37,8 @@ public class LockerAdminService {
 
 	private final LockerReader lockerReader;
 	private final LockerLogReader lockerLogReader;
-	private final LockerLogWriter lockerLogWriter;
 	private final LockerValidator lockerValidator;
+	private final LockerWriter lockerWriter;
 	private final UserReader userReader;
 
 	/**
@@ -92,9 +92,7 @@ public class LockerAdminService {
 		lockerValidator.validateUserNotHavingLocker(userId);
 
 		User user = userReader.findUserByIdNotDeleted(userId);
-		locker.register(user, expiredAt);
-
-		lockerLogWriter.logAdminAssign(locker, admin, user);
+		lockerWriter.assignLocker(locker, admin, user, expiredAt);
 	}
 
 	/**
@@ -112,8 +110,7 @@ public class LockerAdminService {
 
 		User user = locker.getUser().orElseThrow(UserErrorCode.USER_NOT_FOUND::toBaseException);
 
-		locker.extendExpireDate(expiredAt);
-		lockerLogWriter.logAdminExtend(locker, admin, user);
+		lockerWriter.extendLockerByAdmin(locker, admin, user, expiredAt);
 	}
 
 	/**
@@ -130,8 +127,7 @@ public class LockerAdminService {
 
 		User user = locker.getUser().orElseThrow(UserErrorCode.USER_NOT_FOUND::toBaseException);
 
-		locker.returnLocker();
-		lockerLogWriter.logAdminRelease(locker, admin, user.getEmail(), user.getName());
+		lockerWriter.releaseLocker(locker, admin, user.getEmail(), user.getName());
 	}
 
 	/**
@@ -146,8 +142,7 @@ public class LockerAdminService {
 
 		lockerValidator.validateEnableable(locker);
 
-		locker.enable();
-		lockerLogWriter.logEnable(locker, admin);
+		lockerWriter.enableLocker(locker, admin);
 	}
 
 	/**
@@ -165,12 +160,10 @@ public class LockerAdminService {
 		// locker user 존재할 시에 반환
 		var user = locker.getUser();
 		if (user.isPresent()) {
-			locker.returnLocker();
-			lockerLogWriter.logAdminRelease(locker, admin, user.get().getEmail(), user.get().getName());
+			lockerWriter.releaseLocker(locker, admin, user.get().getEmail(), user.get().getName());
 		}
 
-		locker.disable();
-		lockerLogWriter.logDisable(locker, admin);
+		lockerWriter.disableLocker(locker, admin);
 	}
 
 	@Transactional
@@ -181,8 +174,7 @@ public class LockerAdminService {
 		expiredLockers.forEach(locker -> {
 			var userEmail = locker.getUser().map(User::getEmail).orElse("알 수 없음");
 			var userName = locker.getUser().map(User::getName).orElse("알 수 없음");
-			lockerLogWriter.logAdminRelease(locker, admin, userEmail, userName);
-			locker.returnLocker();
+			lockerWriter.releaseLocker(locker, admin, userEmail, userName);
 		});
 	}
 }

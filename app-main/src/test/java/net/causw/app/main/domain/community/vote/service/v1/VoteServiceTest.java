@@ -27,6 +27,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
@@ -59,6 +60,8 @@ public class VoteServiceTest {
 	PostRepository postRepository;
 	@Mock
 	VoteRecordRepository voteRecordRepository;
+	@Mock
+	UserProfileImageReader userProfileImageReader;
 
 	User writerUser;
 	Post post;

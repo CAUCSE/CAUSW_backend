@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.community.post.service.v2;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -8,6 +9,7 @@ import net.causw.app.main.domain.community.post.service.v2.implementation.PostRe
 import net.causw.app.main.domain.community.post.service.v2.util.LikePostValidator;
 import net.causw.app.main.domain.community.post.service.v2.util.PostValidator;
 import net.causw.app.main.domain.community.reaction.service.implementation.LikePostWriter;
+import net.causw.app.main.domain.notification.notification.event.PostLikedEvent;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,6 +20,7 @@ public class LikePostService {
 	private final PostReader postReader;
 	private final LikePostWriter likePostWriter;
 	private final LikePostValidator likePostValidator;
+	private final ApplicationEventPublisher eventPublisher;
 
 	/**
 	 * 게시글 좋아요 메서드
@@ -32,6 +35,9 @@ public class LikePostService {
 		likePostValidator.validateForLike(userId, postId);
 
 		likePostWriter.saveLikePost(userId, post);
+
+		// 좋아요 알림 이벤트
+		eventPublisher.publishEvent(new PostLikedEvent(postId, userId));
 	}
 
 	/**

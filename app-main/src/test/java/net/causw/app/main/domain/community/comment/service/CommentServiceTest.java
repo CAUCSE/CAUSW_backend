@@ -22,10 +22,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
 import net.causw.app.main.domain.community.comment.entity.Comment;
@@ -44,7 +46,7 @@ import net.causw.app.main.domain.community.comment.service.implementation.LikeCo
 import net.causw.app.main.domain.community.comment.util.CommentValidator;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.v2.implementation.PostReader;
-import net.causw.app.main.domain.notification.notification.service.v1.PostNotificationService;
+import net.causw.app.main.domain.notification.notification.event.PostCommentCreatedEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.relation.service.v1.UserBlockEntityService;
@@ -70,7 +72,7 @@ public class CommentServiceTest {
 	@Mock
 	CommentValidator commentValidator;
 	@Mock
-	PostNotificationService postNotificationService;
+	ApplicationEventPublisher eventPublisher;
 	@Mock
 	UserBlockEntityService userBlockEntityService;
 	@Mock
@@ -79,6 +81,8 @@ public class CommentServiceTest {
 	CommentMapper commentMapper;
 	@Mock
 	UserReader userReader;
+	@Mock
+	UserProfileImageReader userProfileImageReader;
 
 	@Nested
 	@DisplayName("댓글 생성 테스트")
@@ -95,6 +99,7 @@ public class CommentServiceTest {
 
 			given(post.getBoard()).willReturn(board);
 			given(board.getId()).willReturn("board-id");
+			given(creator.getId()).willReturn("creator-id");
 		}
 
 		@DisplayName("댓글 생성 성공")
@@ -107,7 +112,7 @@ public class CommentServiceTest {
 			given(userReader.findUserByIdNotDeleted("creator-id")).willReturn(creator);
 			given(postReader.findById("post-id")).willReturn(post);
 			given(boardConfigReader.getAdminIdsByBoardId("board-id")).willReturn(List.of("admin-id"));
-			given(commentMapper.toResult(any(Comment.class), eq(creator), anyList(), any(CommentMeta.class)))
+			given(commentMapper.toResult(any(Comment.class), eq(creator), anyList(), any(CommentMeta.class), anyMap()))
 				.willReturn(expectedResult);
 
 			// when
@@ -118,7 +123,7 @@ public class CommentServiceTest {
 			verify(commentValidator, times(1)).validateForCreate(eq(creator), eq(post));
 			verify(commentWriter, times(1)).save(any(Comment.class));
 			verify(commentSubscribeWriter, times(1)).createCommentSubscribe(eq(creator), any());
-			verify(postNotificationService, times(1)).sendByPostIsSubscribed(eq(post), any(Comment.class));
+			verify(eventPublisher, times(1)).publishEvent(any(PostCommentCreatedEvent.class));
 		}
 	}
 
@@ -160,7 +165,7 @@ public class CommentServiceTest {
 			given(commentReader.getComments("post-id", pageable)).willReturn(commentsPage);
 			given(commentMetaReader.fetch(eq("user-id"), any(Set.class), anyList()))
 				.willReturn(Map.of("comment-id", mock(CommentMeta.class)));
-			given(commentMapper.toResult(eq(comment), eq(viewer), anyList(), any(CommentMeta.class)))
+			given(commentMapper.toResult(eq(comment), eq(viewer), anyList(), any(CommentMeta.class), anyMap()))
 				.willReturn(commentResult);
 
 			// when
@@ -222,7 +227,7 @@ public class CommentServiceTest {
 			given(boardConfigReader.getAdminIdsByBoardId("board-id")).willReturn(List.of("admin-id"));
 			given(commentMetaReader.fetchForComment(eq(updater), eq(comment)))
 				.willReturn(mock(CommentMeta.class));
-			given(commentMapper.toResult(eq(comment), eq(updater), anyList(), any(CommentMeta.class)))
+			given(commentMapper.toResult(eq(comment), eq(updater), anyList(), any(CommentMeta.class), anyMap()))
 				.willReturn(expectedResult);
 
 			// when
@@ -259,7 +264,7 @@ public class CommentServiceTest {
 			given(boardConfigReader.getAdminIdsByBoardId("board-id")).willReturn(List.of("admin-id"));
 			given(commentMetaReader.fetchForComment(eq(deleter), eq(comment)))
 				.willReturn(mock(CommentMeta.class));
-			given(commentMapper.toResult(eq(comment), eq(deleter), anyList(), any(CommentMeta.class)))
+			given(commentMapper.toResult(eq(comment), eq(deleter), anyList(), any(CommentMeta.class), anyMap()))
 				.willReturn(expectedResult);
 
 			// when

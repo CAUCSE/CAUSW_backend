@@ -1,18 +1,18 @@
 package net.causw.app.main.domain.notification.notification.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.domain.notification.notification.api.v2.dto.response.NotificationCountResponseDto;
-import net.causw.app.main.domain.notification.notification.api.v2.dto.response.NotificationResponseDto;
-import net.causw.app.main.domain.notification.notification.api.v2.mapper.NotificationDtoMapper;
 import net.causw.app.main.domain.notification.notification.entity.NotificationLog;
+import net.causw.app.main.domain.notification.notification.service.dto.NotificationCountResult;
+import net.causw.app.main.domain.notification.notification.service.dto.NotificationLogResult;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationLogReader;
+import net.causw.app.main.domain.notification.notification.service.mapper.NotificationLogMapper;
+import net.causw.app.main.shared.exception.errorcode.NotificationLogErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,36 +21,56 @@ import lombok.RequiredArgsConstructor;
 public class NotificationLogService {
 
 	private final NotificationLogReader notificationLogReader;
-	private final NotificationDtoMapper notificationDtoMapper;
 
+	/**
+	 * 유저 ID와 읽음 여부로 최근 7일간의 알림 로그를 조회하여 DTO 리스트로 반환합니다.
+	 * @param userId 유저 ID
+	 * @param isRead 읽음 여부
+	 * @return 알림 로그 DTO 리스트
+	 */
 	@Transactional(readOnly = true)
-	public Page<NotificationResponseDto> getNotificationList(String userId, Pageable pageable) {
-		Page<NotificationLog> notificationLog = notificationLogReader.getNotificationList(userId, pageable);
+	public List<NotificationLogResult> getNotificationList(String userId, boolean isRead) {
+		List<NotificationLog> notificationLog = notificationLogReader.getNotificationList(userId, isRead,
+			LocalDateTime.now());
 
-		return notificationLog.map(log -> notificationDtoMapper.toNotificationResponseDto(
-			log.getId(),
-			log.getNotification(),
-			log.getIsRead(),
-			log.getCreatedAt()));
+		return notificationLog.stream()
+			.map(NotificationLogMapper::toResult)
+			.toList();
 	}
 
+	/**
+	 * 유저 ID로 가장 최근의 읽지 않은 알림 로그를 조회하여 DTO로 반환합니다.
+	 * @param userId 유저 ID
+	 * @return 알림 로그 DTO, 읽지 않은 알림이 없는 경우 null
+	 */
 	@Transactional(readOnly = true)
-	public NotificationResponseDto getLatestUnread(String userId) {
+	public NotificationLogResult getLatestUnread(String userId) {
 		Optional<NotificationLog> notificationLog = notificationLogReader.getLatestUnread(userId);
 
-		return notificationLog.map(log -> notificationDtoMapper.toNotificationResponseDto(
-			log.getId(),
-			log.getNotification(),
-			log.getIsRead(),
-			log.getCreatedAt()))
+		return notificationLog.map(NotificationLogMapper::toResult)
 			.orElse(null);
 	}
 
+	/**
+	 * 유저 ID로 최근 7일간의 읽지 않은 알림 개수를 반환합니다. (최대 MAX_NOTIFICATION_COUNT)
+	 * @param userId 유저 ID
+	 * @return 읽지 않은 알림 개수 (최대 MAX_NOTIFICATION_COUNT)
+	 */
 	@Transactional(readOnly = true)
-	public NotificationCountResponseDto getNotificationLogCount(String userId) {
-		List<NotificationLog> unreadNotificationLogs = notificationLogReader.findUnreadUpToLimit(userId);
+	public NotificationCountResult getNotificationLogCount(String userId) {
+		return new NotificationCountResult(notificationLogReader.countUnreadUpToLimit(userId, LocalDateTime.now()));
+	}
 
-		return new NotificationCountResponseDto(unreadNotificationLogs.size());
+	/**
+	 * 유저 ID와 알림 로그 ID로 알림 로그를 조회하여 읽음으로 변경합니다.
+	 * @param userId 유저 ID
+	 * @param id 알림 로그 ID
+	 */
+	@Transactional
+	public void updateNotificationLogAsRead(String userId, String id) {
+		NotificationLog notificationLog = notificationLogReader.findByIdAndUserId(id, userId)
+			.orElseThrow(NotificationLogErrorCode.NOTIFICATION_LOG_NOT_FOUND::toBaseException);
+		notificationLog.markAsRead();
 	}
 
 }

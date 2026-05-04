@@ -86,7 +86,7 @@ public class Ceremony extends BaseEntity {
 	@Column(name = "alumni_admission_year")
 	private String alumniAdmissionYear;
 
-	@Column(name = "description")
+	@Column(name = "description", columnDefinition = "TEXT")
 	private String description;
 
 	@Column(name = "address")
@@ -112,7 +112,7 @@ public class Ceremony extends BaseEntity {
 	@CollectionTable(name = "tb_ceremony_target_admission_years", joinColumns = @JoinColumn(name = "ceremony_id"))
 	@Column(name = "admission_year")
 	@Builder.Default
-	private Set<String> targetAdmissionYears = new HashSet<>();
+	private Set<Integer> targetAdmissionYears = new HashSet<>();
 
 	@Setter(value = AccessLevel.PRIVATE)
 	@OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "ceremony")
@@ -142,14 +142,30 @@ public class Ceremony extends BaseEntity {
 		LocalDate startDate,
 		LocalDate endDate,
 		boolean isSetAll,
-		List<String> targetAdmissionYears) {
-		Set<String> targetYearsSet = targetAdmissionYears != null
+		List<Integer> targetAdmissionYears) {
+		Set<Integer> targetYearsSet = targetAdmissionYears != null
 			? new HashSet<>(targetAdmissionYears)
 			: new HashSet<>();
 
+		// v2 db 호환
+		String customCategory = null;
+		if (ceremonyCategory == CeremonyCategory.ETC) {
+			customCategory = "기타";
+		}
+		CeremonyType ceremonyType = CeremonyType.CELEBRATION;
+		if (ceremonyCategory == CeremonyCategory.FUNERAL
+			|| ceremonyCategory == CeremonyCategory.ACCIDENT
+			|| ceremonyCategory == CeremonyCategory.ILLNESS) {
+			ceremonyType = CeremonyType.CONDOLENCE;
+		}
+		RelationType relationType = RelationType.ME;
+
 		return Ceremony.builder()
 			.user(user)
+			.ceremonyType(ceremonyType)
 			.ceremonyCategory(ceremonyCategory)
+			.ceremonyCustomCategory(customCategory)
+			.relationType(relationType)
 			.startDate(startDate)
 			.endDate(endDate)
 			.description(description)
@@ -165,7 +181,7 @@ public class Ceremony extends BaseEntity {
 		LocalDate startDate,
 		LocalDate endDate,
 		boolean isSetAll,
-		List<String> targetAdmissionYears,
+		List<Integer> targetAdmissionYears,
 		List<UuidFile> ceremonyAttachImageUuidFileList) {
 		Ceremony ceremony = Ceremony.ofV1(
 			user,
@@ -203,8 +219,8 @@ public class Ceremony extends BaseEntity {
 		String contact,
 		String link,
 		boolean isSetAll,
-		List<String> targetAdmissionYears) {
-		Set<String> targetYearsSet = targetAdmissionYears != null
+		List<Integer> targetAdmissionYears) {
+		Set<Integer> targetYearsSet = targetAdmissionYears != null
 			? new HashSet<>(targetAdmissionYears)
 			: new HashSet<>();
 
@@ -254,7 +270,7 @@ public class Ceremony extends BaseEntity {
 		String contact,
 		String link,
 		boolean isSetAll,
-		List<String> targetAdmissionYears,
+		List<Integer> targetAdmissionYears,
 		List<UuidFile> ceremonyAttachImageUuidFileList) {
 		Ceremony ceremony = Ceremony.of(
 			user,

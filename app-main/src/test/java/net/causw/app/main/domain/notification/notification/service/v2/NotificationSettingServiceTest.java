@@ -129,11 +129,11 @@ class NotificationSettingServiceTest {
 			NotificationSettingResult result = notificationSettingService.getAllSettings(userId);
 
 			// then
-			assertThat(result.community().likeOnMyPost()).isFalse();
-			assertThat(result.community().commentOnMyPost()).isFalse();
+			assertThat(result.community().likeOnMyPost()).isTrue();
+			assertThat(result.community().commentOnMyPost()).isTrue();
 			assertThat(result.community().replyOnMyComment()).isTrue();
 			assertThat(result.ceremony().enabled()).isTrue();
-			assertThat(result.service().noticeEnabled()).isFalse();
+			assertThat(result.service().noticeEnabled()).isTrue();
 		}
 
 		@Test

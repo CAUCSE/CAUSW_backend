@@ -16,6 +16,7 @@ import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 
 import net.causw.app.main.domain.asset.file.entity.joinEntity.QPostAttachImage;
+import net.causw.app.main.domain.asset.file.entity.joinEntity.QUserProfileImage;
 import net.causw.app.main.domain.asset.file.enums.FileExtensionType;
 import net.causw.app.main.domain.community.comment.entity.QChildComment;
 import net.causw.app.main.domain.community.comment.entity.QComment;
@@ -411,18 +412,20 @@ public class PostQueryRepository {
 			.from(favoritePost)
 			.where(favoritePost.post.eq(post));
 
-		// 작성자 프로필 이미지 URL 서브쿼리
-		SubQueryExpression<String> writerProfileImageUrl = JPAExpressions.select(
-			writer.userProfileImage.uuidFile.fileUrl)
-			.from(writer)
-			.where(writer.eq(post.writer)
-				.and(writer.userProfileImage.isNotNull()));
+		// 작성자 프로필 이미지 URL 서브쿼리 (UserProfileImage owning side 기준)
+		QUserProfileImage upi = QUserProfileImage.userProfileImage;
+		SubQueryExpression<String> writerProfileImageUrl = JPAExpressions
+			.select(upi.uuidFile.fileUrl)
+			.from(upi)
+			.where(upi.user.id.eq(post.writer.id));
 
 		return new QPostCursorResult(
 			post.id, post.content,
 			totalCommentCount, likeCount, favoriteCount,
 			post.isAnonymous, post.vote.id, post.isDeleted,
+			post.isCrawled,
 			writer.isNotNull(), writer.name, writer.nickname, writer.admissionYear, writer.state,
+			writer.profileImageType,
 			writerProfileImageUrl,
 			post.createdAt, post.updatedAt,
 			post.board.id, post.board.name);
@@ -442,7 +445,8 @@ public class PostQueryRepository {
 			.from(postAttachImage)
 			.where(postAttachImage.post.id.in(postIds)
 				.and(postAttachImage.uuidFile.extension.in(FileExtensionType.IMAGE.getExtensionList())))
-			.orderBy(postAttachImage.post.id.asc(), postAttachImage.uuidFile.createdAt.asc())
+			.orderBy(postAttachImage.post.id.asc(), postAttachImage.imageOrder.asc(),
+				postAttachImage.uuidFile.createdAt.asc())
 			.fetch();
 
 		return results.stream()

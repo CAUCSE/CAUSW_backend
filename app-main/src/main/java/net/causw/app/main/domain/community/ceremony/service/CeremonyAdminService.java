@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.community.ceremony.service;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -7,9 +8,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
 import net.causw.app.main.domain.community.ceremony.service.dto.request.CeremonyAdminListCondition;
+import net.causw.app.main.domain.community.ceremony.service.dto.response.CeremonyAdminListResult;
+import net.causw.app.main.domain.community.ceremony.service.dto.response.CeremonyDetailResult;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyReader;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyWriter;
+import net.causw.app.main.domain.community.ceremony.service.mapper.CeremonyMapper;
 import net.causw.app.main.domain.community.ceremony.util.CeremonyValidator;
+import net.causw.app.main.domain.notification.notification.event.CeremonyNotificationEvent;
 import net.causw.app.main.shared.exception.errorcode.CeremonyErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -22,15 +27,23 @@ public class CeremonyAdminService {
 	private final CeremonyReader ceremonyReader;
 	private final CeremonyWriter ceremonyWriter;
 	private final CeremonyValidator ceremonyValidator;
+	private final CeremonyMapper ceremonyMapper;
+	private final ApplicationEventPublisher eventPublisher;
 
-	public Page<Ceremony> getCeremonyList(CeremonyAdminListCondition condition, Pageable pageable) {
-		return ceremonyReader.findAllForAdmin(
+	public Page<CeremonyAdminListResult> getCeremonyList(CeremonyAdminListCondition condition, Pageable pageable) {
+		Page<Ceremony> ceremonies = ceremonyReader.findAllForAdmin(
 			condition.fromDate(), condition.toDate(), condition.state(), pageable);
+		return ceremonies.map(ceremonyMapper::toAdminListResult);
 	}
 
-	public Ceremony getCeremonyDetail(String ceremonyId) {
-		return ceremonyReader.findById(ceremonyId)
+	public long getPendingCount() {
+		return ceremonyReader.countAwaitCeremony();
+	}
+
+	public CeremonyDetailResult getCeremonyDetail(String ceremonyId) {
+		Ceremony ceremony = ceremonyReader.findById(ceremonyId)
 			.orElseThrow(CeremonyErrorCode.CEREMONY_NOT_FOUND::toBaseException);
+		return ceremonyMapper.toAdminDetailResult(ceremony);
 	}
 
 	@Transactional
@@ -41,7 +54,9 @@ public class CeremonyAdminService {
 		ceremonyValidator.validateAwaiting(ceremony);
 		ceremonyWriter.approve(ceremony);
 
-		// TODO: 푸시알림 전송 (v2 알림 서비스 완성 후 구현)
+		// 승인 시 알림 발송
+		eventPublisher.publishEvent(new CeremonyNotificationEvent(ceremonyId));
+
 	}
 
 	@Transactional
