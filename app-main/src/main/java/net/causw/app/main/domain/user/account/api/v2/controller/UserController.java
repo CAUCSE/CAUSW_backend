@@ -222,8 +222,7 @@ public class UserController {
 		@SecurityRequirement(name = "refreshBearerAuth")
 	})
 	public ApiResponse<UserWithdrawResponse> withdraw(
-		@Parameter(description = "플랫폼 타입 (애플 로그인 연동 해제 시 정확한 처리를 위해 필요)", example = "ios / web")
-		@RequestHeader(value = "X-Platform-Type", required = false) String platformHint,
+		@Parameter(description = "플랫폼 타입 (애플 로그인 연동 해제 시 정확한 처리를 위해 필요)", example = "ios / web") @RequestHeader(value = "X-Platform-Type", required = false) String platformHint,
 		@RequestHeader(value = "Authorization", required = false) String authorizationHeader,
 		@RequestHeader(value = AuthorizationExtractor.REFRESH_AUTHORIZATION_HEADER, required = false) String refreshAuthHeader,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
