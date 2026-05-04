@@ -116,7 +116,7 @@ public class UserProfileImageService {
 		userProfileImageReader.findByUserId(userId).ifPresent(profileImage -> {
 			UuidFile uuidFile = profileImage.getUuidFile();
 
-			userProfileImageWriter.deleteByUserId(userId);
+			userProfileImageWriter.deleteById(profileImage.getId());
 
 			if (uuidFile != null) {
 				uuidFileService.deleteFile(uuidFile.getId());

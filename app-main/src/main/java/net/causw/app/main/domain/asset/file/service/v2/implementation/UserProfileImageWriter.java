@@ -58,4 +58,13 @@ public class UserProfileImageWriter {
 	public void deleteByUserId(String userId) {
 		userProfileImageRepository.deleteByUserId(userId);
 	}
+
+	/**
+	 * 프로필 이미지 엔티티의 ID(PK)를 기반으로 레코드를 삭제합니다.
+	 *
+	 * @param id 프로필 이미지의 식별자 (PK)
+	 */
+	public void deleteById(String id) {
+		userProfileImageRepository.deleteById(id);
+	}
 }

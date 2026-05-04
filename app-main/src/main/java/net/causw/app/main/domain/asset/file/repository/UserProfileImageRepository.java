@@ -19,4 +19,6 @@ public interface UserProfileImageRepository extends JpaRepository<UserProfileIma
 	List<UserProfileImage> findByUserIdIn(List<String> userIds);
 
 	void deleteByUserId(String userId);
+
+	void deleteById(String id);
 }
