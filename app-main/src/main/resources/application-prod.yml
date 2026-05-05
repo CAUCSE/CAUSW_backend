@@ -118,9 +118,6 @@ spring:
             user-name-attribute: sub
 
 logging:
-  discord:
-    # 'ICT 위원회' Discord 서버 -> 'be-error' 채널 설정 -> 연동 -> 웹후크
-    webhook-uri: ${DISCORD_WEBHOOK_URI}
   level:
     root: INFO
     org.hibernate.SQL: OFF

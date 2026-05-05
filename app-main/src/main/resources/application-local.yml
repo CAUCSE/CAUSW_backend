@@ -20,6 +20,8 @@ spring:
     hibernate:
       ddl-auto: none # 기본적으로 none 설정
     show-sql: true
+    # 로컬에서 osiv false 테스트 해본 후, 나중에 실서버에도 적용
+    open-in-view: false
 
   jwt:
     # 자체 생성
@@ -124,9 +126,6 @@ spring:
             user-name-attribute: sub
 
 logging:
-  discord:
-    # 'ICT 위원회' Discord 서버 -> 'be-error' 채널 설정 -> 연동 -> 웹후크
-    webhook-uri: ${DISCORD_WEBHOOK_URI}
   level:
     org.hibernate.SQL: DEBUG
     com:
