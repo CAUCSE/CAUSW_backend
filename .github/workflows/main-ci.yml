@@ -60,7 +60,7 @@ jobs:
       - name: Run Flyway migration test
         uses: ./.github/actions/flyway-migration-test
         with:
-          env-content: ${{ secrets.ENV_TEST }} ?
+          env-content: ${{ secrets.ENV_TEST }}
           env-name: test
           pr-head-sha: ${{ github.event.pull_request.head.sha }}
           repository: ${{ github.repository }}
@@ -83,7 +83,7 @@ jobs:
       # env 파일 추가
       - name: Copy .env from secret
         env:
-          ENV_CONTENT: ${{ secrets.ENV_TEST }} ?
+          ENV_CONTENT: ${{ secrets.ENV_TEST }}
         run: |
             cat <<EOF > .env
             $ENV_CONTENT
