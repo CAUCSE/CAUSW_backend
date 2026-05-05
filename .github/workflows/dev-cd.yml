@@ -71,8 +71,9 @@ jobs:
           key: ${{ secrets.EC2_KEY_DEV }}
           host: ${{ secrets.EC2_HOST_DEV }}
           username: ${{ secrets.EC2_USER_DEV }}
-          source: "*.jar,.env"
+          source: "app-main/build/libs/*.jar,.env"
           target: "/home/ubuntu/app/app-main"
+          strip_components: 3
 
       # Redis Server 구동
       - name: Start redis-server

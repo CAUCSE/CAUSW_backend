@@ -40,7 +40,7 @@ jobs:
           ./gradlew :app-main:flywayMigrate
 
       # Build -> jar 파일 생성
-      - name: Build app-main
+      - name: Build app-main module
         run: ./gradlew clean :app-main:bootJar -x test
 
       - name: Upload Build artifacts
@@ -58,7 +58,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      - name: Download artifacts
+      - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
           name: app-main-artifact
@@ -71,8 +71,9 @@ jobs:
           key: ${{ secrets.EC2_KEY_PROD }}
           host: ${{ secrets.EC2_HOST_PROD }}
           username: ${{ secrets.EC2_USER_PROD }}
-          source: "*.jar,.env"
+          source: "app-main/build/libs/*.jar,.env"
           target: "/home/ubuntu/app/app-main"
+          strip_components: 3
 
       # Redis Server 구동
       - name: Start redis-server
