@@ -25,7 +25,7 @@ public record PostListResponse(
 		@Schema(description = "크롤링 게시글 여부") boolean isCrawled,
 		@Schema(description = "작성자 닉네임 (익명인 경우 '익명')") String writerNickname,
 
-		@Schema(description = "작성자 프로필 이미지 정보 (익명인 경우 null)") ProfileImageDto writerProfileImage,
+		@Schema(description = "작성자 프로필 이미지 정보 (익명/차단/추방/탈퇴 시 GHOST)") ProfileImageDto writerProfileImage,
 
 		@Schema(description = "생성일시") LocalDateTime createdAt,
 		@Schema(description = "수정일시") LocalDateTime updatedAt,

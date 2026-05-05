@@ -19,7 +19,7 @@ import net.causw.global.constant.StaticValue;
  * @param writerNickname        작성자 닉네임 (익명 댓글이면 {@code null})
  * @param displayWriterNickname 화면에 표시되는 닉네임 (익명·탈퇴 시 고정 문자열로 치환)
  * @param writerAdmissionYear   작성자 입학연도 (익명 댓글이면 {@code null})
- * @param writerProfileImage    작성자 프로필 이미지 정보 (익명 댓글이면 {@code null}, 차단/추방/탈퇴 시 GHOST)
+	 * @param writerProfileImage    작성자 프로필 이미지 정보 (익명/차단/추방/탈퇴 시 GHOST)
  * @param updatable             현재 조회 유저가 이 댓글을 수정할 수 있는지 여부
  * @param deletable             현재 조회 유저가 이 댓글을 삭제할 수 있는지 여부
  * @param isBlocked             작성자가 현재 조회 유저에 의해 차단됐는지 여부
@@ -70,8 +70,11 @@ public record CommentAuthorInfo(
 		String writerName = null;
 		String writerNickname = null;
 		Integer writerAdmissionYear = null;
-		ProfileImageDto writerProfileImage = null;
-		if (!Boolean.TRUE.equals(isAnonymous) && writer != null) {
+		ProfileImageDto writerProfileImage;
+		if (Boolean.TRUE.equals(isAnonymous) || writer == null) {
+			// 익명 댓글이거나 작성자가 없는 경우 → GHOST 타입, url null
+			writerProfileImage = ProfileImageDto.anonymous();
+		} else {
 			writerName = writer.getName();
 			writerNickname = writer.getNickname();
 			writerAdmissionYear = writer.getAdmissionYear();

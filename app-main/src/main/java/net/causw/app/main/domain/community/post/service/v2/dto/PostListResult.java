@@ -24,7 +24,7 @@ public record PostListResult(
 		boolean isDeleted,
 		boolean isCrawled,
 		String writerNickname, // 익명인 경우 "익명", 아니면 실제 닉네임
-		ProfileImageDto writerProfileImage, // 익명인 경우 null
+		ProfileImageDto writerProfileImage, // 익명/차단/추방/탈퇴 시 GHOST
 		LocalDateTime createdAt,
 		LocalDateTime updatedAt,
 		List<String> postImageUrls,
