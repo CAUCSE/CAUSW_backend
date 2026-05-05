@@ -461,8 +461,8 @@ public class PostQueryRepository {
 					Collectors.toList()))));
 
 		// 크롤링 이미지 병합
-		List<CrawledPostImage> crawledImages =
-			crawledPostImageRepository.findAllByPostIdInOrderByPostIdAscImageOrderAsc(postIds);
+		List<CrawledPostImage> crawledImages = crawledPostImageRepository
+			.findAllByPostIdInOrderByPostIdAscImageOrderAsc(postIds);
 		for (CrawledPostImage crawledImage : crawledImages) {
 			imageMap.computeIfAbsent(crawledImage.getPost().getId(), k -> new java.util.ArrayList<>())
 				.add(crawledImage.getImageUrl());
