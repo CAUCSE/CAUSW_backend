@@ -30,7 +30,7 @@ public class FirebaseConfig {
 				if (firebaseKeyBase64 == null || firebaseKeyBase64.isBlank()) {
 					throw new RuntimeException("Firebase 초기화 실패: FCM_FIREBASE_KEY_BASE64 환경변수가 없습니다.");
 				}
-				byte[] decodedKey = Base64.getDecoder().decode(firebaseKeyBase64);
+				byte[] decodedKey = Base64.getMimeDecoder().decode(firebaseKeyBase64.trim());
 
 				// 디코딩된 키를 InputStream으로 변환하여 Firebase에 주입
 				try (InputStream credentialStream = new ByteArrayInputStream(decodedKey)) {
@@ -42,8 +42,8 @@ public class FirebaseConfig {
 					log.info("Firebase가 성공적으로 초기화되었습니다.");
 				}
 			}
-		} catch (IOException e) {
-			log.error("Firebase 초기화 중 I/O 에러 발생", e);
+		} catch (IOException | IllegalArgumentException e) {
+			log.error("Firebase 초기화 중 에러 발생", e);
 			throw new RuntimeException("Firebase 초기화 실패", e);
 		}
 	}
