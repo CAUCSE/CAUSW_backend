@@ -12,7 +12,7 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     # AWS RDS 콘솔 -> 데이터베이스 -> db-caucse
-    url: ${DB_URL}
+    url: ${DB_URL}?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
 
@@ -83,6 +83,7 @@ spring:
               - profile_nickname
             client-name: Kakao
           apple:
+            provider: apple
             # Apple Developer -> Certificates, Identifiers & Profiles -> Keys
             client-id: ${APPLE_CLIENT_ID}
             client-secret: ${APPLE_CLIENT_SECRET}
@@ -188,3 +189,10 @@ swagger:
   # 개발계 Swagger 접속 계정
   username: ${SWAGGER_USERNAME}
   password: ${SWAGGER_PASSWORD}
+
+custom:
+  hash:
+    salt: ${CUSTOM_HASH_SALT}
+
+kakao:
+  admin-key: ${KAKAO_ADMIN_KEY}
