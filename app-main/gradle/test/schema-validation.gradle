@@ -17,13 +17,12 @@ tasks.register('schemaValidationTest', Test) {
     }
 
     // 시스템 환경변수 설정
-    def env = "test"
-    def envFile = project.rootProject.file(".env.${env}")
+    def envFile = project.rootProject.file(".env")
     if (!envFile.exists()) {
-        throw new GradleException("Required .env.${env} file not found")
+        throw new GradleException("Required .env file not found")
     }
 
-    project.logger.lifecycle("🔧 Loading to systemProperties from .env.${env} for SchemaValidationTest")
+    project.logger.lifecycle("🔧 Loading to systemProperties from .env for SchemaValidationTest")
 
     envFile.eachLine { line ->
         def trimmedLine = line.trim()
