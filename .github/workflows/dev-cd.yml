@@ -43,19 +43,19 @@ jobs:
       - name: Build app-main module
         run: ./gradlew clean :app-main:bootJar -x test
 
-      # JAR 파일을 아티팩트로 업로드
-      - name: Upload JAR artifcat
+      # 배포 아티팩트 한 폴더로 모으기
+      - name: Prepare Deployment Artifacts
+        run: |
+          mkdir deploy-artifacts
+          cp app-main/build/libs/*.jar deploy-artifacts/
+          cp .env deploy-artifacts/
+
+      # 폴더를 아티팩트로 업로드
+      - name: Upload Deployment Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: app-main-artifact
-          path: "app-main/build/libs/*.jar"
-
-      # env 파일을 아티팩트로 업로드
-      - name: Upload ENV artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: env-artifact
-          path: .env
+          path: deploy-artifacts
 
 
   app-main-deploy:
@@ -64,17 +64,10 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      # JAR 파일 아티팩트 다운로드
-      - name: Download JAR artifact
+      - name: Download Deployment Artifacts
         uses: actions/download-artifact@v4
         with:
           name: app-main-artifact
-
-      # env 파일 아티팩트 다운로드
-      - name: Download ENV artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: env-artifact
 
       # app-main JAR, env 파일 EC2에 전송
       - name: SCP app-main JAR and .env to EC2
@@ -84,7 +77,7 @@ jobs:
           key: ${{ secrets.EC2_KEY_DEV }}
           host: ${{ secrets.EC2_HOST_DEV }}
           username: ${{ secrets.EC2_USER_DEV }}
-          source: "app-main/build/libs/*.jar,.env"
+          source: "*.jar,.env"
           target: "/home/ubuntu/app/app-main"
 
       # Redis Server 구동
