@@ -39,6 +39,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import net.causw.app.main.core.security.JwtTokenProvider;
+import net.causw.app.main.domain.asset.file.repository.UserProfileImageRepository;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.community.post.api.v1.dto.PostsResponseDto;
 import net.causw.app.main.domain.community.post.api.v1.mapper.PostDtoV1Mapper;
 import net.causw.app.main.domain.community.post.entity.Post;
@@ -115,9 +117,21 @@ class UserServiceTest {
 
 	@Mock
 	RedisUtils redisUtils;
+	@Mock
+	UserProfileImageRepository userProfileImageRepository;
+	@Mock
+	UserProfileImageReader userProfileImageReader;
 
 	@Nested
 	class ExportUserListToExcelTest {
+
+		@BeforeEach
+		void setUpMapper() {
+			lenient().when(userDtoMapper.toUserResponseDto(any(User.class), any()))
+				.thenAnswer(inv -> UserResponseDto.builder().state(((User)inv.getArgument(0)).getState()).build());
+			lenient().when(userDtoMapper.toUserResponseDto(any(User.class), any(), any(), any()))
+				.thenAnswer(inv -> UserResponseDto.builder().state(((User)inv.getArgument(0)).getState()).build());
+		}
 
 		@DisplayName("Excel로 데이터 내보내기 성공 - 가입 대기 유저 목록")
 		@Test
@@ -236,7 +250,7 @@ class UserServiceTest {
 				anyBoolean(),
 				anyBoolean())).willReturn(mockPostDto);
 
-			given(userDtoMapper.toUserPostsResponseDto(eq(user), any()))
+			given(userDtoMapper.toUserPostsResponseDto(eq(user), any(), any()))
 				.willReturn(expectedResponseDto);
 
 			given(postRepository.countAllCommentByPost_Id(mockPost.getId())).willReturn(1L);
@@ -276,7 +290,7 @@ class UserServiceTest {
 
 			// 공통 Mock
 			lenient().when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
-			lenient().when(userDtoMapper.toUserResponseDto(any(User.class), any(), any()))
+			lenient().when(userDtoMapper.toUserResponseDto(any(User.class), any(), any(), any()))
 				.thenReturn(mock(UserResponseDto.class));
 		}
 

@@ -59,4 +59,16 @@ public class FcmUtils {
 		userRepository.save(user);
 	}
 
+	public void clearFcmTokens(User user) {
+		if (user.getFcmTokens() == null || user.getFcmTokens().isEmpty()) {
+			return;
+		}
+
+		for (String token : user.getFcmTokens()) {
+			redisUtils.deleteFcmTokenData(token);
+		}
+
+		user.getFcmTokens().clear();
+		userRepository.save(user);
+	}
 }

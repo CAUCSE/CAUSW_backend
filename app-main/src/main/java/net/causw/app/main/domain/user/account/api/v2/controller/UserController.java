@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,6 +32,7 @@ import net.causw.app.main.domain.user.account.api.v2.dto.response.AdmissionState
 import net.causw.app.main.domain.user.account.api.v2.dto.response.ProfileImageResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserMeAccountResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserMeResponse;
+import net.causw.app.main.domain.user.account.api.v2.dto.response.UserWithdrawResponse;
 import net.causw.app.main.domain.user.account.api.v2.mapper.AdmissionDtoMapper;
 import net.causw.app.main.domain.user.account.api.v2.mapper.UserMeMapper;
 import net.causw.app.main.domain.user.account.service.AdmissionService;
@@ -212,4 +215,17 @@ public class UserController {
 			userProfileImageService.updateToCustomProfileImage(userDetails.getUserId(), imageFile));
 	}
 
+	@DeleteMapping("/me")
+	@Operation(summary = "회원 탈퇴 API", description = "현재 로그인한 사용자를 탈퇴 처리합니다. (Soft Delete)")
+	public ApiResponse<UserWithdrawResponse> withdraw(
+		@RequestHeader(value = "Authorization", required = false) String authorizationHeader,
+		@CookieValue(name = "refresh_token", required = false) String refreshToken,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
+		AuthorizationExtractor.validate(authorizationHeader);
+
+		String accessToken = AuthorizationExtractor.extract(authorizationHeader);
+
+		return ApiResponse.success(
+			userAccountService.withdraw(userDetails.getUserId(), accessToken, refreshToken));
+	}
 }

@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
+import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
 import net.causw.app.main.domain.community.board.entity.BoardReadScope;
 import net.causw.app.main.domain.community.board.repository.BoardAdminQueryRepository;
@@ -101,5 +102,16 @@ public class BoardConfigReader {
 	public List<String> getAccessibleBoardIdsByAcademicStatus(AcademicStatus academicStatus) {
 		Set<BoardReadScope> scopes = new HashSet<>(BoardReadScope.fromAcademicStatus(academicStatus));
 		return boardConfigQueryRepository.findBoardsByReadScopes(scopes);
+	}
+
+	/**
+	 * 사용자 ID에 따라 쓰기 가능한 게시판 목록을 조회합니다.
+	 * VISIBLE이고 사용자의 WriteScope에 맞는 게시판만 조회합니다.
+	 *
+	 * @param userId 사용자 ID
+	 * @return 쓰기 가능한 게시판 목록
+	 */
+	public List<Board> getWritableBoardIdsByUserId(String userId) {
+		return boardConfigQueryRepository.findWritableBoardsByUserId(userId);
 	}
 }

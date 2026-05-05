@@ -24,7 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @Slf4j
 public class OidcAuthorizationCodeTokenClient {
-
 	private final ObjectMapper objectMapper;
 	private final RestClient restClient;
 
@@ -38,22 +37,12 @@ public class OidcAuthorizationCodeTokenClient {
 	 * @return 응답에 포함된 refresh_token. 없으면 null (예: Google 재동의 시 미반환)
 	 */
 	public String exchangeAuthorizationCode(ClientRegistration registration, String authorizationCode,
-		String redirectUri, String codeVerifier) {
-		if (!StringUtils.hasText(authorizationCode) || !StringUtils.hasText(redirectUri)) {
+		String codeVerifier) {
+		if (!StringUtils.hasText(authorizationCode)) {
 			throw AuthErrorCode.INVALID_TOKEN.toBaseException();
 		}
 
-		MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
-		form.add("grant_type", "authorization_code");
-		form.add("code", authorizationCode.trim());
-		form.add("redirect_uri", redirectUri.trim());
-		form.add("client_id", registration.getClientId());
-		if (StringUtils.hasText(registration.getClientSecret())) {
-			form.add("client_secret", registration.getClientSecret());
-		}
-		if (StringUtils.hasText(codeVerifier)) {
-			form.add("code_verifier", codeVerifier.trim());
-		}
+		MultiValueMap<String, String> form = buildTokenRequestForm(registration, authorizationCode, codeVerifier);
 
 		String tokenUri = registration.getProviderDetails().getTokenUri();
 		try {
@@ -93,6 +82,21 @@ public class OidcAuthorizationCodeTokenClient {
 			log.warn("Token exchange failed. registrationId={}", registration.getRegistrationId(), e);
 			throw AuthErrorCode.INVALID_TOKEN.toBaseException();
 		}
+	}
+
+	MultiValueMap<String, String> buildTokenRequestForm(ClientRegistration registration, String authorizationCode,
+		String codeVerifier) {
+		MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
+		form.add("grant_type", "authorization_code");
+		form.add("code", authorizationCode.trim());
+		form.add("client_id", registration.getClientId());
+		if (StringUtils.hasText(registration.getClientSecret())) {
+			form.add("client_secret", registration.getClientSecret());
+		}
+		if (StringUtils.hasText(codeVerifier)) {
+			form.add("code_verifier", codeVerifier.trim());
+		}
+		return form;
 	}
 
 }

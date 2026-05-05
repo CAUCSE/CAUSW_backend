@@ -6,10 +6,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.campus.circle.entity.Circle;
 import net.causw.app.main.domain.campus.circle.service.v1.CircleEntityService;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserPrivilegedResponseDto;
@@ -34,6 +37,7 @@ public class FindPrivilegedUsersUseCaseService {
 
 	private final CircleEntityService circleEntityService;
 	private final UserEntityService userEntityService;
+	private final UserProfileImageReader userProfileImageReader;
 
 	@Transactional(readOnly = true)
 	public UserPrivilegedResponseDto execute(User requestUser) {
@@ -41,6 +45,8 @@ public class FindPrivilegedUsersUseCaseService {
 
 		List<Role> targetRoles = Role.getPrivilegedRoles();
 		List<User> privilegedUsers = userEntityService.findAllActiveUsersByRoles(targetRoles);
+		List<String> allUserIds = privilegedUsers.stream().map(User::getId).collect(Collectors.toList());
+		Map<String, UserProfileImage> piMap = userProfileImageReader.findMapByUserIds(allUserIds);
 
 		List<String> leaderUserIds = new ArrayList<>();
 		for (User u : privilegedUsers) {
@@ -84,9 +90,11 @@ public class FindPrivilegedUsersUseCaseService {
 						circleIds.add(c.getId());
 						circleNames.add(c.getName());
 					}
-					dtoList.add(UserDtoMapper.INSTANCE.toUserResponseDto(u, circleIds, circleNames));
+					dtoList
+						.add(UserDtoMapper.INSTANCE.toUserResponseDto(u, piMap.get(u.getId()), circleIds, circleNames));
 				} else {
-					dtoList.add(UserDtoMapper.INSTANCE.toUserResponseDto(u, List.of(), List.of()));
+					dtoList
+						.add(UserDtoMapper.INSTANCE.toUserResponseDto(u, piMap.get(u.getId()), List.of(), List.of()));
 				}
 			}
 

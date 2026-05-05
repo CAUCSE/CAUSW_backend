@@ -2,6 +2,7 @@ package net.causw.app.main.domain.community.vote.service.v1;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -9,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.core.aop.annotation.MeasureTime;
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.community.vote.api.v1.dto.CastVoteRequestDto;
@@ -41,6 +44,7 @@ public class VoteService {
 	private final VoteRepository voteRepository;
 	private final PostRepository postRepository;
 	private final VoteRecordRepository voteRecordRepository;
+	private final UserProfileImageReader userProfileImageReader;
 
 	@Transactional
 	public VoteResponseDto createVote(CreateVoteRequestDto createVoteRequestDTO, User user) {
@@ -163,9 +167,10 @@ public class VoteService {
 
 	private VoteOptionResponseDto tovoteOptionResponseDto(VoteOption voteOption) {
 		List<VoteRecord> voteRecords = voteRecordRepository.findAllByVoteOption(voteOption);
+		List<String> userIds = voteRecords.stream().map(r -> r.getUser().getId()).collect(Collectors.toList());
+		Map<String, UserProfileImage> piMap = userProfileImageReader.findMapByUserIds(userIds);
 		List<UserResponseDto> userResponseDtos = voteRecords.stream()
-			.map(voteRecord -> UserDtoMapper.INSTANCE.toUserResponseDto(voteRecord.getUser(), null,
-				null))
+			.map(r -> UserDtoMapper.INSTANCE.toUserResponseDto(r.getUser(), piMap.get(r.getUser().getId()), null, null))
 			.collect(Collectors.toList());
 		return VoteDtoMapper.INSTANCE.toVoteOptionResponseDto(voteOption, voteRecords.size(),
 			userResponseDtos);

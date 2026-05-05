@@ -20,6 +20,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
 import net.causw.app.main.domain.community.comment.entity.ChildComment;
@@ -70,6 +71,8 @@ public class ChildCommentServiceTest {
 	ChildCommentMapper childCommentMapper;
 	@Mock
 	UserReader userReader;
+	@Mock
+	UserProfileImageReader userProfileImageReader;
 
 	@Nested
 	@DisplayName("대댓글 생성 테스트")
@@ -89,6 +92,7 @@ public class ChildCommentServiceTest {
 			given(parentComment.getPost()).willReturn(post);
 			given(post.getBoard()).willReturn(board);
 			given(board.getId()).willReturn("board-id");
+			given(creator.getId()).willReturn("creator-id");
 		}
 
 		@DisplayName("대댓글 생성 성공")
@@ -104,7 +108,8 @@ public class ChildCommentServiceTest {
 			given(commentReader.getComment("parent-comment-id")).willReturn(parentComment);
 			given(postReader.findById("post-id")).willReturn(post);
 			given(boardConfigReader.getAdminIdsByBoardId("board-id")).willReturn(java.util.List.of("admin-id"));
-			given(childCommentMapper.toResult(any(ChildComment.class), eq(creator), any(ChildCommentMeta.class)))
+			given(childCommentMapper.toResult(any(ChildComment.class), eq(creator), any(ChildCommentMeta.class),
+				anyMap()))
 				.willReturn(expectedResult);
 
 			// when
@@ -145,7 +150,7 @@ public class ChildCommentServiceTest {
 			given(boardConfigReader.getAdminIdsByBoardId("board-id")).willReturn(java.util.List.of("admin-id"));
 			given(likeChildCommentReader.getNumOfChildCommentLikes(childComment)).willReturn(2L);
 			given(likeChildCommentReader.isChildCommentLiked(updater, childComment.getId())).willReturn(false);
-			given(childCommentMapper.toResult(eq(childComment), eq(updater), any(ChildCommentMeta.class)))
+			given(childCommentMapper.toResult(eq(childComment), eq(updater), any(ChildCommentMeta.class), anyMap()))
 				.willReturn(expectedResult);
 
 			// when
@@ -184,7 +189,7 @@ public class ChildCommentServiceTest {
 			given(boardConfigReader.getAdminIdsByBoardId("board-id")).willReturn(java.util.List.of("admin-id"));
 			given(likeChildCommentReader.getNumOfChildCommentLikes(childComment)).willReturn(0L);
 			given(likeChildCommentReader.isChildCommentLiked(deleter, childComment.getId())).willReturn(false);
-			given(childCommentMapper.toResult(eq(childComment), eq(deleter), any(ChildCommentMeta.class)))
+			given(childCommentMapper.toResult(eq(childComment), eq(deleter), any(ChildCommentMeta.class), anyMap()))
 				.willReturn(expectedResult);
 
 			// when

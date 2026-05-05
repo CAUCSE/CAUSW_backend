@@ -1,8 +1,16 @@
 name: CI - Production
 
+# main 브랜치로 PR이 열리거나 업데이트될 때, 또는 'db-change' 라벨이 붙을 때 실행
 on:
   pull_request:
     branches: [ "main" ]
+    types: [ opened, synchronize, reopened, ready_for_review, labeled ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'img/**'
+      - '.gitignore'
+      - 'LICENSE'
 
 permissions:
   contents: read
@@ -12,6 +20,7 @@ permissions:
 jobs:
   flyway-version-check:
     name: Flyway Version Order Check
+    if: ${{ !github.event.pull_request.draft }}
     runs-on: ubuntu-22.04
     steps:
       # fetch-depth: 0 — 베이스 브랜치와의 git diff를 위해 전체 히스토리 필요
@@ -23,10 +32,10 @@ jobs:
       - name: Check Flyway version order
         uses: ./.github/actions/flyway-version-check
 
-
+  # PR에 'db-change' 라벨이 붙은 경우 Flyway 마이그레이션 테스트 실행
   migration-test:
     name: Flyway Migration Test in Github Actions
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'db-change') }}
+    if: ${{ !github.event.pull_request.draft && contains(github.event.pull_request.labels.*.name, 'db-change') }}
     runs-on: ubuntu-22.04
 
     services:
@@ -44,6 +53,7 @@ jobs:
           --health-retries=5
 
     steps:
+      # 작업 엑세스 가능하게 $GITHUB_WORKSPACE에서 저장소를 체크아웃
       - name: Checkout branch
         uses: actions/checkout@v4
 
@@ -58,6 +68,7 @@ jobs:
 
   junit-test-app-main:
     name: JUnit Test app-main Module
+    if: ${{ !github.event.pull_request.draft }}
     runs-on: ubuntu-22.04
 
     steps:
@@ -69,21 +80,14 @@ jobs:
       - name: Setup JDK and Gradle
         uses: ./.github/actions/setup-jdk-gradle
 
-      # git ignore한 yml 파일들 github secret에서 복사해 오기
-      - name: Copy secret
+      # env 파일 추가
+      - name: Copy .env from secret
         env:
-          APPLICATION_FILE: ${{ secrets.APPLICATION_PROFILE_PROD }}
-          APPLICATION_PROD_FILE: ${{secrets.APPLICATION_PROD}}
-          DIR: ./app-main/src/main/resources
-
-          APPLICATION_FILE_NAME: application.yml
-          APPLICATION_PROD_FILE_NAME: application-prod.yml
+          ENV_CONTENT: ${{ secrets.ENV_TEST }}
         run: |
-          mkdir -p $DIR
-          touch $DIR/$APPLICATION_FILE_NAME
-          touch $DIR/$APPLICATION_PROD_FILE_NAME
-          echo "$APPLICATION_FILE" > $DIR/$APPLICATION_FILE_NAME
-          echo "$APPLICATION_PROD_FILE" > $DIR/$APPLICATION_PROD_FILE_NAME
+            cat <<EOF > .env
+            $ENV_CONTENT
+            EOF
 
       # 테스트 실행
       - name: Test with Gradle (app-main)
@@ -101,6 +105,7 @@ jobs:
       # 테스트 결과 아티팩트 업로드
       - name: Upload test results
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: app-main-test-results
           path: ./app-main/build/test-results/test
@@ -108,7 +113,7 @@ jobs:
 
   junit-test-result-summary:
     name: Report JUnit Test Result Summary
-    if: ${{ always() }}
+    if: ${{ always() && !github.event.pull_request.draft && github.event.action != 'labeled' && (needs.junit-test-app-main.result == 'success' || needs.junit-test-app-main.result == 'failure') }}
     runs-on: ubuntu-22.04
     needs: [junit-test-app-main]
 
@@ -121,8 +126,8 @@ jobs:
 
       # 테스트 결과 출력
       - name: Comment Test Results Summary
-        uses: EnricoMi/publish-unit-test-result-action@v2
         if: github.actor != 'nektos/act'
+        uses: EnricoMi/publish-unit-test-result-action@v2
         with:
           files: |
             combined/app-main-test-results/TEST-*.xml

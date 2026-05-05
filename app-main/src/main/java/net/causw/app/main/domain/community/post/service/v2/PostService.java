@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.asset.file.entity.joinEntity.PostAttachImage;
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
 import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
@@ -60,6 +62,7 @@ public class PostService {
 	private final BlockReader userBlockReader;
 	private final UserReader userReader;
 	private final ApplicationEventPublisher eventPublisher;
+	private final UserProfileImageReader userProfileImageReader;
 
 	/**
 	 * 게시글을 생성합니다. 게시글 내용과 첨부 이미지를 저장합니다.
@@ -282,9 +285,15 @@ public class PostService {
 		// 공식계정 여부 (익명 게시글이면 false)
 		boolean isOfficial = !post.getIsAnonymous() && StatusPolicy.isOfficialWriter(post.getWriter());
 
+		// 작성자 프로필 이미지 조회
+		UserProfileImage writerProfileImage = (post.getWriter() != null)
+			? userProfileImageReader.findByUserIdOrNull(post.getWriter().getId())
+			: null;
+
 		// PostMapper를 사용하여 PostDetailResult 생성
 		return PostMapper.toPostDetailResult(
 			post,
+			writerProfileImage,
 			imageUrls,
 			numComment,
 			numLike,

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doNothing;
@@ -14,7 +15,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,8 +27,17 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import net.causw.app.main.domain.asset.locker.entity.Locker;
+import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerReader;
+import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerWriter;
+import net.causw.app.main.domain.user.account.api.v2.dto.response.UserWithdrawResponse;
+import net.causw.app.main.domain.user.account.entity.user.SocialAccount;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.domain.user.account.repository.userInfo.UserInfoRepository;
+import net.causw.app.main.domain.user.account.service.implementation.SocialAccountReader;
+import net.causw.app.main.domain.user.account.service.implementation.SocialAccountUnlinkManager;
+import net.causw.app.main.domain.user.account.service.implementation.SocialAccountWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
@@ -39,6 +51,7 @@ import net.causw.app.main.domain.user.terms.service.implementation.TermsValidato
 import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementWriter;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.TermsErrorCode;
+import net.causw.app.main.shared.infra.firebase.FcmUtils;
 
 @ExtendWith(MockitoExtension.class)
 class UserAccountServiceTest {
@@ -72,6 +85,27 @@ class UserAccountServiceTest {
 
 	@Mock
 	private UserTermsAgreementWriter userTermsAgreementWriter;
+
+	@Mock
+	private UserInfoRepository userInfoRepository;
+
+	@Mock
+	private SocialAccountWriter socialAccountWriter;
+
+	@Mock
+	private SocialAccountReader socialAccountReader;
+
+	@Mock
+	private SocialAccountUnlinkManager socialAccountUnlinkManager;
+
+	@Mock
+	private LockerReader lockerReader;
+
+	@Mock
+	private LockerWriter lockerWriter;
+
+	@Mock
+	private FcmUtils fcmUtils;
 
 	private final String userId = "test-uuid";
 	private final String nickname = "푸앙";
@@ -179,5 +213,85 @@ class UserAccountServiceTest {
 
 		//verify
 		verify(userValidator).checkPhoneNumDuplication(phoneNumber);
+	}
+
+	@Test
+	@DisplayName("일반 회원 탈퇴 성공 - soft delete 및 부가 처리 수행")
+	void withdraw_Success() {
+		// given
+		String accessToken = "access-token";
+		String refresh = "refresh-token";
+		LocalDateTime now = LocalDateTime.now();
+
+		User user = mock(User.class);
+		Locker locker = mock(Locker.class);
+		SocialAccount socialAccount = mock(SocialAccount.class);
+
+		when(userReader.findUserById(userId)).thenReturn(user);
+		when(user.getId()).thenReturn(userId);
+		when(user.isDeleted()).thenReturn(false);
+		when(user.getState()).thenReturn(UserState.ACTIVE);
+
+		// 소셜 계정 목록 반환
+		when(socialAccountReader.findAllByUserId(userId)).thenReturn(List.of(socialAccount));
+		when(lockerReader.findByUserId(userId)).thenReturn(Optional.of(locker));
+		when(user.getDeletedAt()).thenReturn(now);
+
+		UserWithdrawResponse result = userAccountService.withdraw(userId, accessToken, refresh);
+
+		// then
+		assertNotNull(result);
+		assertEquals(now, result.deletedAt());
+
+		// verify
+		verify(userReader).findUserById(userId);
+		verify(socialAccountReader).findAllByUserId(userId);
+		verify(socialAccountUnlinkManager).unlink(socialAccount);
+		verify(authTokenManager).invalidateTokens(accessToken, refresh);
+		verify(lockerReader).findByUserId(userId);
+		verify(lockerWriter).returnLocker(locker, user);
+		verify(fcmUtils).clearFcmTokens(user);
+
+		verify(userWriter).withdraw(user);
+	}
+
+	@Test
+	@DisplayName("사물함이 없는 회원도 탈퇴할 수 있다")
+	void withdraw_Success_WithoutLocker() {
+		// given
+		String accessToken = "access-token";
+		String refresh = "refresh-token";
+
+		User user = mock(User.class);
+		when(userReader.findUserById(userId)).thenReturn(user);
+		when(user.getId()).thenReturn(userId);
+		when(user.isDeleted()).thenReturn(false);
+		when(user.getState()).thenReturn(UserState.ACTIVE);
+		when(socialAccountReader.findAllByUserId(userId)).thenReturn(List.of());
+		when(lockerReader.findByUserId(userId)).thenReturn(Optional.empty());
+
+		when(user.getDeletedAt()).thenReturn(LocalDateTime.now());
+
+		userAccountService.withdraw(userId, accessToken, refresh);
+
+		// then
+		verify(lockerWriter, never()).returnLocker(any(), any());
+		verify(userWriter).withdraw(user);
+	}
+
+	@Test
+	@DisplayName("이미 탈퇴한 회원은 다시 탈퇴할 수 없다")
+	void withdraw_Fail_AlreadyDeleted() {
+		// given
+		User user = mock(User.class);
+		when(userReader.findUserById(userId)).thenReturn(user);
+		when(user.isDeleted()).thenReturn(true);
+
+		// when & then
+		assertThrows(BaseRunTimeV2Exception.class,
+			() -> userAccountService.withdraw(userId, "access-token", "refresh-token"));
+
+		verify(userReader).findUserById(userId);
+		verifyNoInteractions(socialAccountReader, socialAccountUnlinkManager, lockerReader, lockerWriter, fcmUtils);
 	}
 }

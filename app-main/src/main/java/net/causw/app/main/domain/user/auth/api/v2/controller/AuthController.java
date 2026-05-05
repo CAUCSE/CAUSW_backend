@@ -142,12 +142,12 @@ public class AuthController {
 		return ResponseEntity.ok(ApiResponse.success(authDtoMapper.toAuthResponse(dto)));
 	}
 
-	@Operation(summary = "네이티브 소셜 로그인 V2", description = "provider에 따라 access token 또는 OIDC id token으로 검증합니다. Google/Apple은 authorizationCode·redirectUri(및 PKCE 사용 시에만 codeVerifier)로 리프레시 토큰을 발급받아 암호화 저장할 수 있습니다. codeVerifier는 선택값입니다.")
+	@Operation(summary = "네이티브 소셜 로그인 V2", description = "provider에 따라 access token 또는 OIDC id token으로 검증합니다. Google/Apple은 authorizationCode(및 PKCE 사용 시에만 codeVerifier)로 리프레시 토큰을 발급받아 암호화 저장할 수 있습니다. codeVerifier는 선택값입니다.")
 	@PostMapping("/login/native")
 	public ResponseEntity<ApiResponse<AuthResponse>> loginNativeSocial(
 		@RequestBody @Valid SocialNativeLoginRequest request) {
-		AuthResult dto = socialNativeAuthService.login(request.provider(), request.accessToken(), request.idToken(),
-			request.authorizationCode(), request.redirectUri(), request.codeVerifier());
+		AuthResult dto = socialNativeAuthService.login(request.provider(), request.platform(), request.accessToken(),
+			request.idToken(), request.authorizationCode(), request.codeVerifier());
 		return ResponseEntity.ok(ApiResponse.success(authDtoMapper.toAuthResponse(dto)));
 	}
 

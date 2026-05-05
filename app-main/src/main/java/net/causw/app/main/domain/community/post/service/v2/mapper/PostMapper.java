@@ -3,6 +3,7 @@ package net.causw.app.main.domain.community.post.service.v2.mapper;
 import java.util.List;
 
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.query.PostCursorResult;
@@ -105,6 +106,7 @@ public class PostMapper {
 	 */
 	public static PostDetailResult toPostDetailResult(
 		Post post,
+		UserProfileImage writerProfileImage,
 		List<String> imageUrls,
 		Long numComment,
 		Long numLike,
@@ -117,7 +119,7 @@ public class PostMapper {
 		boolean isOfficial) {
 
 		String displayWriterNickname = resolveWriterNickname(post);
-		ProfileImageDto writerProfileImage = resolveWriterProfileImage(post);
+		ProfileImageDto writerProfileImageDto = resolveWriterProfileImage(post, writerProfileImage);
 		String voteId = resolveVoteId(post);
 
 		return PostDetailResult.builder()
@@ -125,7 +127,7 @@ public class PostMapper {
 			.content(post.getContent())
 			.isDeleted(post.getIsDeleted())
 			.displayWriterNickname(displayWriterNickname)
-			.writerProfileImage(writerProfileImage)
+			.writerProfileImage(writerProfileImageDto)
 			.fileUrlList(imageUrls)
 			.numComment(numComment)
 			.numLike(numLike)
@@ -176,11 +178,11 @@ public class PostMapper {
 		return writer.getNickname();
 	}
 
-	private static ProfileImageDto resolveWriterProfileImage(Post post) {
+	private static ProfileImageDto resolveWriterProfileImage(Post post, UserProfileImage writerProfileImage) {
 		if (isInactiveWriter(post.getWriter()) || post.getIsAnonymous()) {
 			return ProfileImageDto.GHOST;
 		}
-		return ProfileImageDto.from(post.getWriter());
+		return ProfileImageDto.from(post.getWriter(), writerProfileImage);
 	}
 
 	private static String resolveVoteId(Post post) {

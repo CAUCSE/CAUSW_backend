@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -21,9 +22,11 @@ import org.springframework.web.multipart.MultipartFile;
 import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.PostAttachImage;
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.asset.file.repository.PostAttachImageRepository;
 import net.causw.app.main.domain.asset.file.service.v1.UuidFileV1Service;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.campus.circle.entity.Circle;
 import net.causw.app.main.domain.campus.circle.entity.CircleMember;
 import net.causw.app.main.domain.campus.circle.enums.CircleMemberStatus;
@@ -128,6 +131,7 @@ public class PostV1Service {
 	private final UserPostSubscribeRepository userPostSubscribeRepository;
 	private final UserBlockEntityService userBlockEntityService;
 	private final PostEntityService postEntityService;
+	private final UserProfileImageReader userProfileImageReader;
 
 	public PostResponseDto findPostById(User user, String postId) {
 		Post post = getPost(postId);
@@ -958,7 +962,8 @@ public class PostV1Service {
 			StatusPolicy.isPostVote(post) ? toVoteResponseDto(post.getVote(), user) : null,
 			StatusPolicy.isPostVote(post),
 			StatusPolicy.isPostForm(post),
-			isPostSubscribed(user, post));
+			isPostSubscribed(user, post),
+			userProfileImageReader.findByUserIdOrNull(post.getWriter().getId()));
 
 		// 화면에 표시할 작성자 닉네임 설정
 		User writer = post.getWriter();
@@ -1076,8 +1081,10 @@ public class PostV1Service {
 
 	private VoteOptionResponseDto tovoteOptionResponseDto(VoteOption voteOption) {
 		List<VoteRecord> voteRecords = voteRecordRepository.findAllByVoteOption(voteOption);
+		List<String> userIds = voteRecords.stream().map(r -> r.getUser().getId()).collect(Collectors.toList());
+		Map<String, UserProfileImage> piMap = userProfileImageReader.findMapByUserIds(userIds);
 		List<UserResponseDto> userResponseDtos = voteRecords.stream()
-			.map(voteRecord -> UserDtoMapper.INSTANCE.toUserResponseDto(voteRecord.getUser(), null, null))
+			.map(r -> UserDtoMapper.INSTANCE.toUserResponseDto(r.getUser(), piMap.get(r.getUser().getId()), null, null))
 			.collect(Collectors.toList());
 		return VoteDtoMapper.INSTANCE.toVoteOptionResponseDto(voteOption, voteRecords.size(), userResponseDtos);
 	}
