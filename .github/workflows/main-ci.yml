@@ -60,7 +60,7 @@ jobs:
       - name: Run Flyway migration test
         uses: ./.github/actions/flyway-migration-test
         with:
-          env-content: ${{ secrets.ENV_TEST }}
+          env-content: ${{ secrets.ENV_TEST }} ?
           env-name: test
           pr-head-sha: ${{ github.event.pull_request.head.sha }}
           repository: ${{ github.repository }}
@@ -80,21 +80,14 @@ jobs:
       - name: Setup JDK and Gradle
         uses: ./.github/actions/setup-jdk-gradle
 
-      # git ignore한 yml 파일들 github secret에서 복사해 오기
-      - name: Copy secret
+      # env 파일 추가
+      - name: Copy .env from secret
         env:
-          APPLICATION_FILE: ${{ secrets.APPLICATION_PROFILE_PROD }}
-          APPLICATION_PROD_FILE: ${{secrets.APPLICATION_PROD}}
-          DIR: ./app-main/src/main/resources
-
-          APPLICATION_FILE_NAME: application.yml
-          APPLICATION_PROD_FILE_NAME: application-prod.yml
+          ENV_CONTENT: ${{ secrets.ENV_TEST }} ?
         run: |
-          mkdir -p $DIR
-          touch $DIR/$APPLICATION_FILE_NAME
-          touch $DIR/$APPLICATION_PROD_FILE_NAME
-          echo "$APPLICATION_FILE" > $DIR/$APPLICATION_FILE_NAME
-          echo "$APPLICATION_PROD_FILE" > $DIR/$APPLICATION_PROD_FILE_NAME
+            cat <<EOF > .env
+            $ENV_CONTENT
+            EOF
 
       # 테스트 실행
       - name: Test with Gradle (app-main)
