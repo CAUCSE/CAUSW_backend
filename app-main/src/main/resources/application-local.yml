@@ -199,3 +199,10 @@ decorator:
       threshold: 300 # 개별 쿼리 임계값
     multiline: true
     json-format: false
+
+custom:
+  hash:
+    salt: ${CUSTOM_HASH_SALT}
+
+kakao:
+  admin-key: ${KAKAO_ADMIN_KEY}
