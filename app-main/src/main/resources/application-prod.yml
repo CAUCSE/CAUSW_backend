@@ -12,7 +12,7 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     # AWS RDS 콘솔 -> 데이터베이스 -> db-caucse-prod
-    url: ${DB_URL}
+    url: ${DB_URL}?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
 
@@ -38,7 +38,7 @@ spring:
     password: ${MAIL_PASSWORD}
     properties:
       mail:
-        debug: true
+        debug: false
         smtp:
           auth: true
           starttls:
@@ -53,7 +53,7 @@ spring:
 
   batch:
     jdbc:
-      initialize-schema: always
+      initialize-schema: never
 
   security:
     oauth2:
@@ -165,3 +165,31 @@ app:
     allowed-origins: ${CORS_ALLOWED_ORIGINS}
   auth:
     redirect-uri: "https://causw.co.kr/auth/sign-in/oauth-callback"
+    redirect-uri-local: http://localhost:3000/auth/sign-in/oauth-callback
+    redirect-uri-dev: https://causw-v3-web-dev.vercel.app/auth/sign-in/oauth-callback
+  holiday-api:
+    base-url: http://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService
+    # 공공데이터포털
+    service-key: ${HOLIDAY_API_SERVICE_KEY}
+  oauth:
+    refresh-token:
+      # 자체 생성
+      aes-key-base64: ${OAUTH_REFRESH_TOKEN_AES_KEY_BASE64}
+  security:
+    oidc:
+      registrations:
+        apple:
+          web: apple
+          ios: apple-ios
+
+server:
+  forward-headers-strategy: framework
+
+custom:
+  hash:
+    # 추방당한 유저 블랙리스트 식별용 해시 키값
+    salt: ${CUSTOM_HASH_SALT}
+
+kakao:
+  # 카카오 소셜계정 언링크용 admin key
+  admin-key: ${KAKAO_ADMIN_KEY}
