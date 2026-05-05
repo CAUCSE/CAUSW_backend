@@ -1,6 +1,5 @@
 package net.causw.app.main.domain.community.post.service.v2;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -217,28 +216,8 @@ public class PostService {
 			? Set.of()
 			: likePostReader.getLikedPostIds(viewer.getId(), postIds);
 
-		// 공식계정 여부 배치 계산: writerId를 기준으로 User 배치 조회
-		List<String> writerIds = posts.stream()
-			.map(PostCursorResult::writerId)
-			.filter(Objects::nonNull)
-			.distinct()
-			.collect(Collectors.toList());
-		Map<String, User> writerMap = writerIds.isEmpty() ? Map.of()
-			: userReader.findUsersByIds(writerIds).stream()
-				.collect(Collectors.toMap(User::getId, u -> u));
-
 		// PostListResult로 변환 (PostMapper 사용)
-		List<PostListResult.PostItem> postItems = posts.stream()
-			.map(result -> {
-				List<String> imageUrls = postImagesMap.getOrDefault(result.postId(), List.of());
-				boolean isPostLike = likedPostIds.contains(result.postId());
-				boolean isOwner = result.writerId() != null && result.writerId().equals(viewer.getId());
-				boolean isOfficial = !result.isAnonymous()
-					&& StatusPolicy.isOfficialWriter(
-						result.writerId() != null ? writerMap.get(result.writerId()) : null);
-				return PostMapper.toPostListItem(result, imageUrls, isPostLike, isOwner, isOfficial);
-			})
-			.toList();
+		List<PostListResult.PostItem> postItems = buildPostItems(posts, postImagesMap, likedPostIds, viewer);
 
 		return PostListResult.of(postItems, nextCursor);
 	}
@@ -385,7 +364,33 @@ public class PostService {
 
 		Set<String> likedPostIds = likePostReader.getLikedPostIds(viewer.getId(), postIds);
 
-		// 공식계정 여부 배치 계산
+		List<PostListResult.PostItem> postItems = buildPostItems(posts, postImagesMap, likedPostIds, viewer);
+
+		String nextCursor = null;
+		if (slice.hasNext()) {
+			PostCursorResult lastPost = posts.get(posts.size() - 1);
+			nextCursor = PostCursorManager.createNextCursor(lastPost.createdAt(), lastPost.postId());
+		}
+
+		return PostListResult.of(postItems, nextCursor);
+	}
+
+	/**
+	 * 게시글 목록(PostCursorResult)을 PostItem 리스트로 변환합니다.
+	 * 작성자 정보를 배치 조회하여 공식계정 여부를 판단하고, 좋아요/소유 여부를 포함한 PostItem을 생성합니다.
+	 *
+	 * @param posts         변환할 게시글 커서 결과 목록
+	 * @param postImagesMap 게시글 ID → 이미지 URL 목록 맵
+	 * @param likedPostIds  viewer가 좋아요한 게시글 ID 집합
+	 * @param viewer        조회 요청 사용자
+	 * @return PostItem 리스트
+	 */
+	private List<PostListResult.PostItem> buildPostItems(
+		List<PostCursorResult> posts,
+		Map<String, List<String>> postImagesMap,
+		Set<String> likedPostIds,
+		User viewer) {
+
 		List<String> writerIds = posts.stream()
 			.map(PostCursorResult::writerId)
 			.filter(Objects::nonNull)
@@ -395,7 +400,7 @@ public class PostService {
 			: userReader.findUsersByIds(writerIds).stream()
 				.collect(Collectors.toMap(User::getId, u -> u));
 
-		List<PostListResult.PostItem> postItems = posts.stream()
+		return posts.stream()
 			.map(result -> {
 				List<String> imageUrls = postImagesMap.getOrDefault(result.postId(), List.of());
 				boolean isPostLike = likedPostIds.contains(result.postId());
@@ -406,13 +411,5 @@ public class PostService {
 				return PostMapper.toPostListItem(result, imageUrls, isPostLike, isOwner, isOfficial);
 			})
 			.toList();
-
-		String nextCursor = null;
-		if (slice.hasNext()) {
-			PostCursorResult lastPost = posts.get(posts.size() - 1);
-			nextCursor = PostCursorManager.createNextCursor(lastPost.createdAt(), lastPost.postId());
-		}
-
-		return PostListResult.of(postItems, nextCursor);
 	}
 }
