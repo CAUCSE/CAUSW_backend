@@ -116,8 +116,11 @@ dependencies {
     annotationProcessor "jakarta.annotation:jakarta.annotation-api"
     annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 
-    //Datasource-Proxy
+    // Datasource-Proxy
     implementation 'com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:1.12.1'
+
+    // Spring Dotenv
+    implementation 'me.paulschwarz:spring-dotenv:4.0.0'
 }
 
 bootJar {
