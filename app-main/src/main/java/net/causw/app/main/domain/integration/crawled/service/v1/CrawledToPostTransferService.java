@@ -85,7 +85,7 @@ public class CrawledToPostTransferService {
 		String contentHtml = buildContentWithAttachmentsAndLink(notice);
 
 		// 원본 HTML에서 이미지 URL 추출 (첨부파일 영역 추가 전 원본 기준)
-		List<String> imageUrls = extractImageUrls(notice.getContent());
+		List<String> imageUrls = extractImageUrls(notice.getContent(), notice.getLink());
 
 		// 제목으로 기존 게시글 조회
 		Post existingPost = findExistingPostByTitle(board, title);
@@ -134,11 +134,11 @@ public class CrawledToPostTransferService {
 	}
 
 	//HTML 본문에서 <img src="..."> URL 추출
-	private List<String> extractImageUrls(String html) {
+	private List<String> extractImageUrls(String html, String baseUri) {
 		if (html == null || html.isBlank()) {
 			return List.of();
 		}
-		Document doc = Jsoup.parse(html);
+		Document doc = Jsoup.parse(html, baseUri != null ? baseUri : "");
 		Elements imgElements = doc.select("img[src]");
 		return imgElements.stream()
 			.map(img -> img.attr("abs:src").isBlank() ? img.attr("src") : img.attr("abs:src"))
@@ -147,11 +147,11 @@ public class CrawledToPostTransferService {
 	}
 
 	//HTML 본문에서 <img> 태그를 제거하여 반환
-	private String removeImageTags(String html) {
+	private String removeImageTags(String html, String baseUri) {
 		if (html == null || html.isBlank()) {
 			return html;
 		}
-		Document doc = Jsoup.parse(html);
+		Document doc = Jsoup.parse(html, baseUri != null ? baseUri : "");
 		doc.select("img").remove();
 		return doc.body().html();
 	}
@@ -162,7 +162,7 @@ public class CrawledToPostTransferService {
 
 		// 원본 HTML 내용 (이미지 태그 제거)
 		String originalContent = (notice.getContent() == null || notice.getContent().isBlank())
-			? "<p>내용 없음</p>" : removeImageTags(notice.getContent());
+			? "<p>내용 없음</p>" : removeImageTags(notice.getContent(), notice.getLink());
 		contentBuilder.append(originalContent);
 
 		// 첨부파일이 있으면 링크 추가
