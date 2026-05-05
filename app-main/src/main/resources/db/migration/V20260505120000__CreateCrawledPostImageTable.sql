@@ -15,3 +15,4 @@ CREATE TABLE tb_crawled_post_image (
                                        INDEX idx_crawled_post_image_post_id (post_id)
 );
 
+
