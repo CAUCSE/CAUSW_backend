@@ -146,13 +146,23 @@ public class CrawledToPostTransferService {
 			.toList();
 	}
 
+	//HTML 본문에서 <img> 태그를 제거하여 반환
+	private String removeImageTags(String html) {
+		if (html == null || html.isBlank()) {
+			return html;
+		}
+		Document doc = Jsoup.parse(html);
+		doc.select("img").remove();
+		return doc.body().html();
+	}
+
 	//본문 내용에 첨부파일 링크를 추가하여 반환
 	private String buildContentWithAttachmentsAndLink(CrawledNotice notice) {
 		StringBuilder contentBuilder = new StringBuilder();
 
-		// 원본 HTML 내용
+		// 원본 HTML 내용 (이미지 태그 제거)
 		String originalContent = (notice.getContent() == null || notice.getContent().isBlank())
-			? "<p>내용 없음</p>" : notice.getContent();
+			? "<p>내용 없음</p>" : removeImageTags(notice.getContent());
 		contentBuilder.append(originalContent);
 
 		// 첨부파일이 있으면 링크 추가
