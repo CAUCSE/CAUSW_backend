@@ -247,7 +247,6 @@ class UserServiceTest {
 				anyLong(),
 				any(),
 				anyBoolean(),
-				anyBoolean(),
 				anyBoolean())).willReturn(mockPostDto);
 
 			given(userDtoMapper.toUserPostsResponseDto(eq(user), any(), any()))
@@ -267,8 +266,8 @@ class UserServiceTest {
 
 			verify(likePostRepository, times(1)).findByUserId(userId, blockedUserIds, pageable);
 			verify(postDtoMapper, times(1)).toPostsResponseDto(any(), anyLong(), anyLong(), anyLong(), any(),
-				anyBoolean(), anyBoolean(), anyBoolean());
-			verify(userDtoMapper, times(1)).toUserPostsResponseDto(eq(user), any());
+				anyBoolean(), anyBoolean());
+			verify(userDtoMapper, times(1)).toUserPostsResponseDto(eq(user), any(), any());
 
 		}
 

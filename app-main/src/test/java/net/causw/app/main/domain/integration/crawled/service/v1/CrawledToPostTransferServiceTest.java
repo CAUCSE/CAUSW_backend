@@ -27,6 +27,7 @@ import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
 import net.causw.app.main.domain.integration.crawled.repository.CrawledNoticeRepository;
+import net.causw.app.main.domain.integration.crawled.repository.CrawledPostImageRepository;
 import net.causw.app.main.domain.notification.notification.service.v1.BoardNotificationService;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
@@ -54,6 +55,9 @@ public class CrawledToPostTransferServiceTest {
 
 	@Mock
 	private BoardNotificationService boardNotificationService;
+
+	@Mock
+	private CrawledPostImageRepository crawledPostImageRepository;
 
 	@Test
 	@DisplayName("새 공지사항이 Post로 변환되어 저장됨")

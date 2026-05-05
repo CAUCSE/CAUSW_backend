@@ -61,8 +61,11 @@ import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.Academic
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.ProfileImageType;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.domain.user.account.service.implementation.UserReader;
+import net.causw.app.main.domain.user.relation.service.v2.implementation.BlockReader;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.util.ObjectFixtures;
+import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 public class PostServiceTest {
@@ -93,6 +96,15 @@ public class PostServiceTest {
 
 	@Mock
 	VoteWriter voteWriter;
+
+	@Mock
+	BlockReader blockReader;
+
+	@Mock
+	UserReader userReader;
+
+	@Mock
+	ApplicationEventPublisher eventPublisher;
 
 	@Mock
 	UserProfileImageReader userProfileImageReader;
@@ -541,6 +553,7 @@ public class PostServiceTest {
 				false,
 				false,
 				true,
+				"writer-id",
 				"작성자",
 				"닉네임",
 				2020,
@@ -562,6 +575,7 @@ public class PostServiceTest {
 			given(postReader.findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(null)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
+			given(userReader.findUsersByIds(anyList())).willReturn(List.of());
 
 			// when
 			PostListResult result = postService.getPosts(query);
@@ -606,6 +620,7 @@ public class PostServiceTest {
 				false,
 				false,
 				true,
+				"writer-id-1",
 				"작성자1",
 				"닉네임1",
 				2020,
@@ -628,6 +643,7 @@ public class PostServiceTest {
 				false,
 				false,
 				true,
+				"writer-id-2",
 				"작성자2",
 				"닉네임2",
 				2021,
@@ -651,6 +667,7 @@ public class PostServiceTest {
 			given(postReader.findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(null)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
+			given(userReader.findUsersByIds(anyList())).willReturn(List.of());
 
 			// when
 			PostListResult result = postService.getPosts(query);
@@ -692,6 +709,7 @@ public class PostServiceTest {
 				false,
 				false,
 				true,
+				"writer-id",
 				"작성자",
 				"닉네임",
 				2020,
@@ -718,6 +736,7 @@ public class PostServiceTest {
 				eq(null)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
+			given(userReader.findUsersByIds(anyList())).willReturn(List.of());
 
 			// when
 			PostListResult result = postService.getPosts(query);
@@ -757,6 +776,7 @@ public class PostServiceTest {
 				false,
 				false,
 				true,
+				"writer-id",
 				"작성자",
 				"닉네임",
 				2020,
@@ -778,6 +798,7 @@ public class PostServiceTest {
 			given(postReader.findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(keyword)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
+			given(userReader.findUsersByIds(anyList())).willReturn(List.of());
 
 			// when
 			PostListResult result = postService.getPosts(query);
@@ -810,6 +831,7 @@ public class PostServiceTest {
 				false,
 				false,
 				true,
+				"writer-id",
 				"작성자",
 				"닉네임",
 				2020,
@@ -831,6 +853,7 @@ public class PostServiceTest {
 			given(postReader.findPostsWithCursor(eq(accessibleBoardIds), eq(null), eq(null), eq(20), eq(null)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
+			given(userReader.findUsersByIds(anyList())).willReturn(List.of());
 
 			// when
 			PostListResult result = postService.getPosts(query);
@@ -913,6 +936,7 @@ public class PostServiceTest {
 				false,
 				false,
 				true,
+				"writer-id",
 				"작성자",
 				"닉네임",
 				2020,
@@ -934,6 +958,7 @@ public class PostServiceTest {
 			given(postReader.findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(null)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
+			given(userReader.findUsersByIds(anyList())).willReturn(List.of());
 
 			// when
 			PostListResult result = postService.getPosts(query);
@@ -969,6 +994,7 @@ public class PostServiceTest {
 				false,
 				false,
 				true,
+				"writer-id-1",
 				"작성자1",
 				"닉네임1",
 				2020,
@@ -991,6 +1017,7 @@ public class PostServiceTest {
 				false,
 				false,
 				true,
+				"writer-id-2",
 				"작성자2",
 				"닉네임2",
 				2021,
@@ -1012,6 +1039,7 @@ public class PostServiceTest {
 			given(postReader.findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(null)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
+			given(userReader.findUsersByIds(anyList())).willReturn(List.of());
 
 			// when
 			PostListResult result = postService.getPosts(query);
