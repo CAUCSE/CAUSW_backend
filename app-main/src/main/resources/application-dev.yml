@@ -192,7 +192,9 @@ swagger:
 
 custom:
   hash:
+    # 추방당한 유저 블랙리스트 식별용 해시 키값
     salt: ${CUSTOM_HASH_SALT}
 
 kakao:
+  # 카카오 소셜계정 언링크용 admin key
   admin-key: ${KAKAO_ADMIN_KEY}
