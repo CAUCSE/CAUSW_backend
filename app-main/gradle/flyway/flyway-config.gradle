@@ -1,12 +1,9 @@
 // flyway-config.gradle
 
-// 1. 환경(env) 설정
-def env = project.hasProperty("env") ? project.property("env") : "local"
-
-// 2. .env.${env} 파싱
-def envFile = project.rootProject.file(".env.${env}")
+// 1. 단일 .env 파일 파싱
+def envFile = project.rootProject.file(".env")
 if (envFile.exists()) {
-    project.logger.lifecycle("🔧 Loading to project.ext from .env.${env}")
+    project.logger.lifecycle("🔧 Loading to project.ext from .env")
     envFile.eachLine { line ->
         def trimmedLine = line.trim()
         if (!trimmedLine || trimmedLine.startsWith('#')) return
@@ -16,18 +13,34 @@ if (envFile.exists()) {
             project.ext.set(key.trim(), value.trim())
         }
     }
+} else {
+    project.logger.lifecycle("⚠️ .env file not found!")
 }
+
+// 2. 환경(env) 설정
+/* 우선순위:
+ * (1) Gradle -Penv 옵션 (e.g. -Penv=dev)
+ * (2) .env 내부의 SPRING_PROFILES_ACTIVE 값
+ * (3) 기본값 'local'
+ */
+def env = project.hasProperty("env") ? project.property("env") :
+        (project.ext.has("SPRING_PROFILES_ACTIVE") ? project.ext.get("SPRING_PROFILES_ACTIVE") : "local")
 
 /* 3. 환경변수 설정
  *
  * 우선순위
- * (1) Gradle -P 옵션 (e.g. ./gradlew flywayInfo -PDB_URL=... -PDB_USERNAME=... -PDB_PASSWORD=...)
- * (2) .env.{env}
- * (3) 환경변수 설정 생략
+ * (1) Gradle -P 옵션 (명령어로 직접 주입)
+ * (2) .env 파일 (project.ext에 저장된 값)
+ * (3) null 처리 (이후 에러 발생)
  */
-def dbUrl = project.hasProperty("DB_URL") ? project.property("DB_URL") : null
-def dbUsername = project.hasProperty("DB_USERNAME") ? project.property("DB_USERNAME") : null
-def dbPassword = project.hasProperty("DB_PASSWORD") ? project.property("DB_PASSWORD") : null
+def dbUrl = project.hasProperty("DB_URL") ? project.property("DB_URL") :
+        (project.ext.has("DB_URL") ? project.ext.get("DB_URL") : null)
+
+def dbUsername = project.hasProperty("DB_USERNAME") ? project.property("DB_USERNAME") :
+        (project.ext.has("DB_USERNAME") ? project.ext.get("DB_USERNAME") : null)
+
+def dbPassword = project.hasProperty("DB_PASSWORD") ? project.property("DB_PASSWORD") :
+        (project.ext.has("DB_PASSWORD") ? project.ext.get("DB_PASSWORD") : null)
 
 if (!dbUrl || !dbUsername || !dbPassword) {
     logger.lifecycle("Skip Flyway configuration in Gradle: required DB properties not found.")
