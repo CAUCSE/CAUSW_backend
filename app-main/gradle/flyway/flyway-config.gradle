@@ -23,8 +23,7 @@ if (envFile.exists()) {
  * (2) .env 내부의 SPRING_PROFILES_ACTIVE 값
  * (3) 기본값 'local'
  */
-def env = project.hasProperty("env") ? project.property("env") :
-        (project.ext.has("SPRING_PROFILES_ACTIVE") ? project.ext.get("SPRING_PROFILES_ACTIVE") : "local")
+def env = project.findProperty("env") ?: project.findProperty("SPRING_PROFILES_ACTIVE") ?: "local"
 
 /* 3. 환경변수 설정
  *
@@ -33,14 +32,9 @@ def env = project.hasProperty("env") ? project.property("env") :
  * (2) .env 파일 (project.ext에 저장된 값)
  * (3) null 처리 (이후 에러 발생)
  */
-def dbUrl = project.hasProperty("DB_URL") ? project.property("DB_URL") :
-        (project.ext.has("DB_URL") ? project.ext.get("DB_URL") : null)
-
-def dbUsername = project.hasProperty("DB_USERNAME") ? project.property("DB_USERNAME") :
-        (project.ext.has("DB_USERNAME") ? project.ext.get("DB_USERNAME") : null)
-
-def dbPassword = project.hasProperty("DB_PASSWORD") ? project.property("DB_PASSWORD") :
-        (project.ext.has("DB_PASSWORD") ? project.ext.get("DB_PASSWORD") : null)
+def dbUrl = project.findProperty("DB_URL")
+def dbUsername = project.findProperty("DB_USERNAME")
+def dbPassword = project.findProperty("DB_PASSWORD")
 
 if (!dbUrl || !dbUsername || !dbPassword) {
     logger.lifecycle("Skip Flyway configuration in Gradle: required DB properties not found.")
