@@ -311,7 +311,7 @@ public class UserAccountService {
 		try {
 			userProfileImageService.deleteByUserId(userId);
 			log.info("[User Withdraw] 프로필 이미지 삭제 완료. userId: {}", userId);
-		} catch (Exception e) {
+		} catch (RuntimeException e) {
 			log.error("[User Withdraw] 프로필 이미지 삭제 실패. userId: {}, Error: {}", userId, e.getMessage());
 		}
 
