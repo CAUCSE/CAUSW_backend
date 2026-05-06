@@ -15,6 +15,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
+import net.causw.app.main.domain.user.account.service.UserProfileImageService;
 import net.causw.app.main.domain.user.account.service.implementation.AdmissionWriter;
 import net.causw.app.main.domain.user.account.service.implementation.SocialAccountWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserInfoWriter;
@@ -44,6 +45,7 @@ public class BatchScheduler {
 	private final SocialAccountWriter socialAccountWriter;
 	private final UserWriter userWriter;
 	private final AdmissionWriter admissionWriter;
+	private final UserProfileImageService userProfileImageService;
 
 	@Resource(name = "cleanUpUnusedFilesJob")
 	private Job cleanUpUnusedFilesJob;
@@ -104,6 +106,7 @@ public class BatchScheduler {
 					break;
 				}
 
+				userProfileImageService.cleanupProfileImagesForBatch(withdrawnUsers);
 				userInfoWriter.deleteUserInfoByUsers(withdrawnUsers);
 				ceremonyWriter.deleteCeremonyByUsers(withdrawnUsers);
 				socialAccountWriter.deleteSocialAccountsByUsers(withdrawnUsers);
