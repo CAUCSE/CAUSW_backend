@@ -48,6 +48,7 @@ jobs:
         with:
           name: app-main-artifact
           path: "app-main/build/libs/*.jar"
+          retention-days: 7
 
 
   app-main-deploy:
