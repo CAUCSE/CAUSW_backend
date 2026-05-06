@@ -20,6 +20,7 @@ import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.auth.service.dto.CustomOAuth2User;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
 import net.causw.app.main.domain.user.auth.service.implementation.OAuth2RefreshTokenCaptureClient;
+import net.causw.app.main.domain.user.auth.service.implementation.OAuthLinkTokenStore;
 import net.causw.app.main.domain.user.auth.service.implementation.SocialAccountOauthRefreshStore;
 import net.causw.app.main.domain.user.auth.util.OAuthRedirectResolver;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
@@ -31,10 +32,11 @@ import lombok.RequiredArgsConstructor;
 /**
  * OAuth2/OIDC 소셜 로그인 성공 후 후처리를 담당하는 핸들러입니다.
  * <p>
- * {@code oauth_link_user_id} 쿠키 유무를 기준으로 소셜 계정 연동 플로우와 로그인 플로우를 분기합니다.
+ * request attribute {@link OAuthLinkTokenStore#LINK_USER_ID_ATTR} 유무를 기준으로
+ * 소셜 계정 연동 플로우와 로그인 플로우를 분기합니다.
  * <ul>
  *   <li>연동 플로우: 계정 연동은 {@link net.causw.app.main.domain.user.auth.service.CustomOAuth2UserService}에서
- *       완료됐으므로, 핸들러는 쿠키 정리 후 프론트로 redirect만 수행합니다.</li>
+ *       이미 완료됐으므로, 핸들러는 프론트로 redirect만 수행합니다.</li>
  *   <li>로그인 플로우: 인증 principal을 기준으로 사용자 엔티티를 조회하고,
  * 	     리프레시 토큰을 발급한 뒤 프론트 redirect URI의 쿼리 파라미터로 전달합니다.</li>
  * </ul>
@@ -51,7 +53,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 	/**
 	 * 소셜 로그인 성공 시 호출됩니다.
 	 * <p>
-	 * {@code oauth_link_user_id} 쿠키가 존재하면 연동 플로우, 없으면 로그인 플로우로 분기합니다.
+	 * request attribute {@link OAuthLinkTokenStore#LINK_USER_ID_ATTR}가 존재하면 연동 플로우,
+	 * 없으면 로그인 플로우로 분기합니다.
 	 *
 	 * @param request        현재 HTTP 요청
 	 * @param response       현재 HTTP 응답
@@ -61,7 +64,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
 		Authentication authentication) throws IOException {
-		String linkUserId = oAuthRedirectResolver.getCookieValue(request, OAuthRedirectResolver.LINK_USER_ID_COOKIE);
+		String linkUserId = (String)request.getAttribute(OAuthLinkTokenStore.LINK_USER_ID_ATTR);
 
 		if (linkUserId != null) {
 			handleLinkSuccess(request, response, authentication);
@@ -104,16 +107,13 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 	 * 소셜 계정 연동 성공 처리입니다.
 	 * <p>
 	 * 계정 연동은 {@link net.causw.app.main.domain.user.auth.service.CustomOAuth2UserService}에서
-	 * 이미 완료됐으므로, 쿠키 정리 후 {@code linked={provider}} 쿼리 파라미터와 함께 프론트로 redirect합니다.
+	 * 이미 완료됐으므로, {@code linked={provider}} 쿼리 파라미터와 함께 프론트로 redirect합니다.
 	 * 연동 실패 시에는 Spring Security가 {@link OAuth2FailureHandler}로 자동 위임합니다.
 	 */
 	private void handleLinkSuccess(HttpServletRequest request, HttpServletResponse response,
 		Authentication authentication) throws IOException {
 
 		String baseUrl = oAuthRedirectResolver.resolveRedirectBase(request);
-
-		// 사용한 쿠키 즉시 정리
-		clearLinkCookie(response);
 		response.addHeader(HttpHeaders.SET_COOKIE, oAuthRedirectResolver.clearEnvCookie(request).toString());
 
 		String registrationId = ((OAuth2AuthenticationToken)authentication).getAuthorizedClientRegistrationId();
@@ -174,20 +174,6 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 		}
 
 		throw AuthErrorCode.INVALID_TOKEN.toBaseException();
-	}
-
-	/**
-	 * 소셜 계정 연동에 사용된 {@code oauth_link_user_id} 쿠키를 즉시 만료시킵니다.
-	 */
-	private void clearLinkCookie(HttpServletResponse response) {
-		ResponseCookie cleared = ResponseCookie.from(OAuthRedirectResolver.LINK_USER_ID_COOKIE, "")
-			.httpOnly(true)
-			.secure(true)
-			.path("/")
-			.maxAge(0)
-			.sameSite("None")
-			.build();
-		response.addHeader(HttpHeaders.SET_COOKIE, cleared.toString());
 	}
 
 	private Optional<User> findByEmail(String email) {

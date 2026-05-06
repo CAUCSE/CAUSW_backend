@@ -25,11 +25,10 @@ import net.causw.app.main.domain.user.account.service.implementation.UserValidat
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.domain.user.auth.service.dto.CustomOAuth2User;
 import net.causw.app.main.domain.user.auth.service.dto.OAuthAttributes;
-import net.causw.app.main.domain.user.auth.util.OAuthRedirectResolver;
+import net.causw.app.main.domain.user.auth.service.implementation.OAuthLinkTokenStore;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
@@ -45,11 +44,12 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 	private final UserWriter userWriter;
 	private final UserValidator userValidator;
 	private final SocialAccountLinker socialAccountLinker;
+	private final OAuthLinkTokenStore oAuthLinkTokenStore;
 
 	/**
 	 * OAuth2 UserInfo 기반 로그인/연동 요청을 처리합니다.
 	 * <p>
-	 * {@code oauth_link_user_id} 쿠키가 존재하면 연동 플로우로, 없으면 로그인 플로우로 분기합니다.
+	 * request attribute {@link OAuthLinkTokenStore#LINK_TOKEN_ATTR}가 존재하면 연동 플로우로, 없으면 로그인 플로우로 분기합니다.
 	 *
 	 * @param userRequest OAuth2 공급자에서 전달된 사용자 요청 정보
 	 * @return 인증 컨텍스트에 저장할 커스텀 OAuth2 사용자 객체
@@ -67,7 +67,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 				userRequest.getClientRegistration().getProviderDetails().getUserInfoEndpoint()
 					.getUserNameAttributeName());
 
-			// 소셜 계정 연동 플로우: linkCookie 존재 시 연동 정책 적용 후 반환
+			// 소셜 계정 연동 플로우: linkToken (userId) 존재 시 연동 정책 적용 후 반환
 			String linkUserId = getLinkUserId();
 			if (linkUserId != null) {
 				OAuthAttributes attributes = OAuthAttributes.of(registrationId, userNameAttributeName,
@@ -91,7 +91,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 	/**
 	 * OIDC(UserInfo/ID Token claim) 기반 로그인/연동 요청을 처리합니다.
 	 * <p>
-	 * {@code oauth_link_user_id} 쿠키가 존재하면 연동 플로우로, 없으면 로그인 플로우로 분기합니다.
+	 * request attribute {@link OAuthLinkTokenStore#LINK_TOKEN_ATTR}가 존재하면 연동 플로우로, 없으면 로그인 플로우로 분기합니다.
 	 *
 	 * @param userRequest OIDC 공급자에서 전달된 사용자 요청 정보
 	 * @return 인증 컨텍스트에 저장할 OIDC 사용자 객체
@@ -105,7 +105,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 		try {
 			String registrationId = userRequest.getClientRegistration().getRegistrationId();
 
-			// 소셜 계정 연동 플로우: linkCookie 존재 시 연동 정책 적용 후 반환
+			// 소셜 계정 연동 플로우: linkToken (userId) 존재 시 연동 정책 적용 후 반환
 			String linkUserId = getLinkUserId();
 			if (linkUserId != null) {
 				OAuthAttributes attributes = OAuthAttributes.of(registrationId, "sub", oidcUser.getClaims());
@@ -196,9 +196,16 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 	}
 
 	/**
-	 * 현재 요청의 {@code oauth_link_user_id} 쿠키 값을 반환합니다.
+	 * 연동 플로우인 경우 1회용 링크 토큰을 소비하여 userId를 반환합니다.
+	 * <p>
+	 * {@link net.causw.app.main.core.security.OAuth2AuthorizationRequestCookieRepository}가
+	 * loadAuthorizationRequest 시점에 request attribute로 설정한 linkToken을 읽어
+	 * Redis에서 userId를 조회하고 즉시 삭제합니다.
+	 * 성공 시 {@link OAuthLinkTokenStore#LINK_USER_ID_ATTR}에 userId를 설정하여
+	 * 하위 핸들러({@link net.causw.app.main.domain.user.auth.handler.OAuth2SuccessHandler})가
+	 * 연동 플로우를 인식할 수 있도록 합니다.
 	 *
-	 * @return 쿠키에 담긴 userId, 쿠키가 없거나 값이 비어있으면 null
+	 * @return userId, 연동 플로우가 아니거나 토큰이 만료된 경우 null
 	 */
 	private String getLinkUserId() {
 		ServletRequestAttributes attrs = (ServletRequestAttributes)RequestContextHolder.getRequestAttributes();
@@ -206,16 +213,14 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 			return null;
 		}
 		HttpServletRequest request = attrs.getRequest();
-		Cookie[] cookies = request.getCookies();
-		if (cookies == null) {
+		String linkToken = (String)request.getAttribute(OAuthLinkTokenStore.LINK_TOKEN_ATTR);
+		if (linkToken == null) {
 			return null;
 		}
-		for (Cookie cookie : cookies) {
-			if (OAuthRedirectResolver.LINK_USER_ID_COOKIE.equals(cookie.getName())) {
-				String value = cookie.getValue();
-				return (value != null && !value.isBlank()) ? value : null;
-			}
+		String userId = oAuthLinkTokenStore.consumeToken(linkToken);
+		if (userId != null) {
+			request.setAttribute(OAuthLinkTokenStore.LINK_USER_ID_ATTR, userId);
 		}
-		return null;
+		return userId;
 	}
 }

@@ -1,13 +1,9 @@
 package net.causw.app.main.domain.user.account.api.v2.controller;
 
-import java.time.Duration;
 import java.util.List;
 
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -38,16 +34,16 @@ import net.causw.app.main.domain.user.account.service.dto.request.UserPasswordUp
 import net.causw.app.main.domain.user.account.service.dto.response.AdmissionResult;
 import net.causw.app.main.domain.user.auth.api.v2.dto.AuthDtoMapper;
 import net.causw.app.main.domain.user.auth.api.v2.dto.response.AuthResponse;
+import net.causw.app.main.domain.user.auth.api.v2.dto.response.OAuthLinkTokenResponse;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
+import net.causw.app.main.domain.user.auth.service.implementation.OAuthLinkTokenStore;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
-import net.causw.app.main.domain.user.auth.util.OAuthRedirectResolver;
 import net.causw.app.main.shared.dto.ApiResponse;
 import net.causw.app.main.shared.util.AuthorizationExtractor;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -60,6 +56,7 @@ public class UserController {
 	private final UserNotificationService userNotificationService;
 	private final UserAccountService userAccountService;
 	private final SocialLinkService socialLinkService;
+	private final OAuthLinkTokenStore oAuthLinkTokenStore;
 	private final AuthDtoMapper authDtoMapper;
 	private final AdmissionService admissionService;
 	private final AdmissionDtoMapper admissionDtoMapper;
@@ -241,27 +238,14 @@ public class UserController {
 	@PostMapping("/me/social-accounts/{provider}/oauth")
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "소셜 계정 연동 초기화 (OAuth)", description = "웹 브라우저에서 OAuth 방식으로 소셜 계정을 연동하기 위한 초기화 API입니다. "
-		+ "연동 가능 여부를 사전 검증하고 oauth_link_user_id 쿠키를 발급합니다. "
-		+ "응답 후 프론트는 /oauth2/authorization/{provider}로 리다이렉트하여 소셜 로그인을 진행합니다. (웹 브라우저 전용)")
-	public ResponseEntity<ApiResponse<Void>> initOAuthLink(
+		+ "연동 가능 여부를 사전 검증하고 1회용 링크 토큰을 발급합니다. "
+		+ "응답의 linkToken을 /oauth2/authorization/{provider}?linkToken={value} 쿼리 파라미터로 전달하여 소셜 로그인을 진행합니다. (웹 브라우저 전용)")
+	public ApiResponse<OAuthLinkTokenResponse> initOAuthLink(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
-		@PathVariable String provider,
-		HttpServletRequest request) {
+		@PathVariable String provider) {
 		socialLinkService.validateLinkable(userDetails.getUserId(), provider);
-
-		boolean isSecure = request.isSecure();
-		ResponseCookie linkCookie = ResponseCookie
-			.from(OAuthRedirectResolver.LINK_USER_ID_COOKIE, userDetails.getUserId())
-			.httpOnly(true)
-			.secure(isSecure)
-			.path("/")
-			.maxAge(Duration.ofMinutes(5))
-			.sameSite(isSecure ? "None" : "Lax")
-			.build();
-
-		return ResponseEntity.ok()
-			.header(HttpHeaders.SET_COOKIE, linkCookie.toString())
-			.body(ApiResponse.success());
+		String linkToken = oAuthLinkTokenStore.issueToken(userDetails.getUserId());
+		return ApiResponse.success(new OAuthLinkTokenResponse(linkToken));
 	}
 
 	@DeleteMapping("/me/social-accounts/{provider}")

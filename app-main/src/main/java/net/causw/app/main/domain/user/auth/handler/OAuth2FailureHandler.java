@@ -1,7 +1,6 @@
 package net.causw.app.main.domain.user.auth.handler;
 
 import java.io.IOException;
-import java.time.Duration;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -9,8 +8,10 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import net.causw.app.main.domain.user.auth.service.implementation.OAuthLinkTokenStore;
 import net.causw.app.main.domain.user.auth.util.OAuthRedirectResolver;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 
@@ -23,21 +24,16 @@ import lombok.RequiredArgsConstructor;
 public class OAuth2FailureHandler extends SimpleUrlAuthenticationFailureHandler {
 
 	private final OAuthRedirectResolver oAuthRedirectResolver;
+	private final OAuthLinkTokenStore oAuthLinkTokenStore;
 
 	@Override
 	public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
 		AuthenticationException exception) throws IOException {
 
-		// 연동 플로우 중 실패한 경우 oauth_link_user_id 쿠키를 즉시 정리
-		if (oAuthRedirectResolver.getCookieValue(request, OAuthRedirectResolver.LINK_USER_ID_COOKIE) != null) {
-			ResponseCookie cleared = ResponseCookie.from(OAuthRedirectResolver.LINK_USER_ID_COOKIE, "")
-				.httpOnly(true)
-				.secure(request.isSecure())
-				.path("/")
-				.maxAge(Duration.ZERO)
-				.sameSite("None")
-				.build();
-			response.addHeader(HttpHeaders.SET_COOKIE, cleared.toString());
+		// 연동 플로우 중 실패한 경우: 아직 소비되지 않은 linkToken을 Redis에서 즉시 정리
+		String linkToken = (String)request.getAttribute(OAuthLinkTokenStore.LINK_TOKEN_ATTR);
+		if (StringUtils.hasText(linkToken)) {
+			oAuthLinkTokenStore.deleteToken(linkToken);
 		}
 
 		String errorMessage = "알 수 없는 오류가 발생했습니다.";
