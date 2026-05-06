@@ -52,7 +52,7 @@ public class UserController {
 ## 3. Service/Implementation 분리 규칙
 - `Service`는 오케스트레이션(검증, 흐름 제어, 조합)에 집중한다.
 - `Implementation`은 세분화된 단일 책임 로직만 가진다.
-- `Service`는 Repository를 직접 의존하지 않고, 반드시 Reader/Writer/Validator를 통해서만 접근한다.
+- `Service`는 Repository를 직접 의존하지 않고, 반드시 Implementation 계층을 통해서만 접근한다.
 - Implementation 클래스는 의도가 드러나는 접미사를 사용한다.
     - 예시 1(조회): `{Domain}Reader` — `@Component + @Transactional(readOnly = true)`, `orElseThrow(ErrorCode::toBaseException)`
     - 예시 2(쓰기/수정/삭제): `{Domain}Writer` — `@Component + @Transactional`
