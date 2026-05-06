@@ -43,18 +43,11 @@ jobs:
       - name: Build app-main module
         run: ./gradlew clean :app-main:bootJar -x test
 
-      # 배포 아티팩트 한 폴더로 모으기
-      - name: Prepare Deployment Artifacts
-        run: |
-          mkdir deploy-artifacts
-          cp app-main/build/libs/*.jar deploy-artifacts/
-
-      # 폴더를 아티팩트로 업로드
-      - name: Upload Deployment Artifacts
+      - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: app-main-artifact
-          path: deploy-artifacts
+          path: "app-main/build/libs/*.jar"
 
 
   app-main-deploy:
