@@ -57,7 +57,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      - name: Download Deployment Artifacts
+      - name: Download Build Artifacts
         uses: actions/download-artifact@v4
         with:
           name: app-main-artifact
