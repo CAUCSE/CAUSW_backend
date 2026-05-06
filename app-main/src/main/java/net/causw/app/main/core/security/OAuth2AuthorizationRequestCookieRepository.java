@@ -30,9 +30,6 @@ public class OAuth2AuthorizationRequestCookieRepository
 
 	/**
 	 * 세션에 저장된 OAuth2 AuthorizationRequest를 조회합니다.
-	 * <p>
-	 * 참고: OAuth2 콜백 처리 시 Spring Security는 이 메서드 대신 {@code removeAuthorizationRequest}를 호출합니다.
-	 * linkToken 전파는 {@code removeAuthorizationRequest}에서 수행됩니다.
 	 *
 	 * @param request 현재 HTTP 요청
 	 * @return 저장된 AuthorizationRequest, 없으면 null
