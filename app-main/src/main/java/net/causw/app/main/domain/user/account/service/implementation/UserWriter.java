@@ -29,6 +29,10 @@ public class UserWriter {
 		return socialAccountRepository.save(socialAccount);
 	}
 
+	public void deleteSocialAccount(SocialAccount socialAccount) {
+		socialAccountRepository.delete(socialAccount);
+	}
+
 	/**
 	 * 사용자 상태를 AWAIT으로 변경하고 저장합니다.
 	 * (REJECT에서 재학인증 재신청 시 사용)

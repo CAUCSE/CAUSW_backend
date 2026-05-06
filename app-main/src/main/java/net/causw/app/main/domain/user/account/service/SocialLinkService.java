@@ -10,11 +10,12 @@ import net.causw.app.main.domain.user.account.entity.user.SocialAccount;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.SocialType;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
-import net.causw.app.main.domain.user.account.repository.user.SocialAccountRepository;
 import net.causw.app.main.domain.user.account.service.dto.result.SocialAccountsResult;
 import net.causw.app.main.domain.user.account.service.implementation.SocialAccountLinker;
+import net.causw.app.main.domain.user.account.service.implementation.SocialAccountReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
+import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.domain.user.auth.service.SocialNativeAuthService;
 import net.causw.app.main.domain.user.auth.service.dto.OAuthAttributes;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
@@ -26,8 +27,9 @@ import lombok.RequiredArgsConstructor;
 public class SocialLinkService {
 
 	private final UserReader userReader;
+	private final UserWriter userWriter;
 	private final UserValidator userValidator;
-	private final SocialAccountRepository socialAccountRepository;
+	private final SocialAccountReader socialAccountReader;
 	private final SocialNativeAuthService socialNativeAuthService;
 	private final SocialAccountLinker socialAccountLinker;
 
@@ -43,7 +45,7 @@ public class SocialLinkService {
 	 */
 	@Transactional(readOnly = true)
 	public SocialAccountsResult getSocialAccounts(String userId) {
-		List<SocialAccount> accounts = socialAccountRepository.findAllByUserId(userId);
+		List<SocialAccount> accounts = socialAccountReader.findAllByUserId(userId);
 		return new SocialAccountsResult(
 			accounts.stream().anyMatch(a -> a.getSocialType() == SocialType.GOOGLE),
 			accounts.stream().anyMatch(a -> a.getSocialType() == SocialType.KAKAO),
@@ -111,16 +113,15 @@ public class SocialLinkService {
 
 		SocialType socialType = SocialType.from(provider.toLowerCase(Locale.ROOT));
 
-		SocialAccount socialAccount = socialAccountRepository.findByUserAndSocialType(currentUser, socialType)
-			.orElseThrow(AuthErrorCode.SOCIAL_ACCOUNT_NOT_FOUND::toBaseException);
+		SocialAccount socialAccount = socialAccountReader.findByUserIdAndSocialTypeOrElseThrow(userId, socialType);
 
 		if (currentUser.isOnlySocialUser()) {
-			long linkedCount = socialAccountRepository.findAllByUserId(userId).size();
+			long linkedCount = socialAccountReader.countByUserId(userId);
 			if (linkedCount <= 1) {
 				throw AuthErrorCode.CANNOT_UNLINK_LAST_LOGIN_METHOD.toBaseException();
 			}
 		}
 
-		socialAccountRepository.delete(socialAccount);
+		userWriter.deleteSocialAccount(socialAccount);
 	}
 }
