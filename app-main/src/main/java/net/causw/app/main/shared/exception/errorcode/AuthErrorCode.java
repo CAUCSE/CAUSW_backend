@@ -35,9 +35,9 @@ public enum AuthErrorCode implements BaseResponseCode {
 	EMAIL_VERIFICATION_SEND_TOO_SOON(HttpStatus.TOO_MANY_REQUESTS, "AUTH_429_001", "인증 메일 재발송은 30초 후에 가능합니다."),
 
 	// 소셜 연동 해제 관련 에러 코드
-	APPLE_REVOKE_FAILED(HttpStatus.BAD_REQUEST, "AUTH_400_005", "애플 연동 해제에 실패했습니다. 관리자에게 문의하거나 잠시 후 다시 시도해주세요."),
-	KAKAO_UNLINK_FAILED(HttpStatus.BAD_REQUEST, "AUTH_400_006", "카카오 연동 해제에 실패했습니다."),
-	GOOGLE_REVOKE_FAILED(HttpStatus.BAD_REQUEST, "AUTH_400_007", "구글 연동 해제에 실패했습니다.");
+	APPLE_REVOKE_FAILED(HttpStatus.BAD_GATEWAY, "AUTH_502_001", "애플 연동 해제에 실패했습니다. 관리자에게 문의하거나 잠시 후 다시 시도해주세요."),
+	KAKAO_UNLINK_FAILED(HttpStatus.BAD_GATEWAY, "AUTH_502_002", "카카오 연동 해제에 실패했습니다."),
+	GOOGLE_REVOKE_FAILED(HttpStatus.BAD_GATEWAY, "AUTH_502_003", "구글 연동 해제에 실패했습니다.");
 
 	private final HttpStatus status;
 	private final String code;
