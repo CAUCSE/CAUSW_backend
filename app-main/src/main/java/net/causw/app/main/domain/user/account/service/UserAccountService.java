@@ -307,14 +307,11 @@ public class UserAccountService {
 
 		// 현재 access / refresh token 무효화
 		authTokenManager.invalidateTokens(accessToken, refreshToken);
-		// 부가 처리
-		try {
-			userProfileImageService.deleteByUserId(userId);
-			log.info("[User Withdraw] 프로필 이미지 삭제 완료. userId: {}", userId);
-		} catch (RuntimeException e) {
-			log.error("[User Withdraw] 프로필 이미지 삭제 실패. userId: {}, Error: {}", userId, e.getMessage());
-		}
 
+		// 프로필 이미지 삭제
+		userProfileImageService.prepareDeletionForWithdrawal(userId);
+
+		// 부가 처리
 		lockerReader.findByUserId(user.getId())
 			.ifPresent(locker -> lockerWriter.returnLocker(locker, user));
 		fcmUtils.clearFcmTokens(user);
