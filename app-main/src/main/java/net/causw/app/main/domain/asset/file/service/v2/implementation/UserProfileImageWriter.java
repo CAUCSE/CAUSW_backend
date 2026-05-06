@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.asset.file.repository.UserProfileImageRepository;
+import net.causw.app.main.domain.asset.file.service.v2.UuidFileService;
 import net.causw.app.main.domain.user.account.entity.user.User;
 
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,8 @@ import lombok.RequiredArgsConstructor;
 public class UserProfileImageWriter {
 
 	private final UserProfileImageRepository userProfileImageRepository;
+	private final UserProfileImageReader userProfileImageReader;
+	private final UuidFileService uuidFileService;
 
 	/**
 	 * 프로필 이미지를 저장합니다.

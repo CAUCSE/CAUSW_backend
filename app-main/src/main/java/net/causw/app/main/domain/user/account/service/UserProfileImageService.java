@@ -1,5 +1,8 @@
 package net.causw.app.main.domain.user.account.service;
 
+import java.util.List;
+
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,6 +16,7 @@ import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfil
 import net.causw.app.main.domain.user.account.api.v2.dto.response.ProfileImageResponse;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.ProfileImageType;
+import net.causw.app.main.domain.user.account.event.UserWithdrawalEvent;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
@@ -30,6 +34,7 @@ public class UserProfileImageService {
 	private final UuidFileService uuidFileService;
 	private final UserProfileImageReader userProfileImageReader;
 	private final UserProfileImageWriter userProfileImageWriter;
+	private final ApplicationEventPublisher applicationEventPublisher;
 
 	/**
 	 * 프로필 이미지를 기본 이미지로 변경합니다.
@@ -125,5 +130,33 @@ public class UserProfileImageService {
 			log.info("[Cleanup] 프로필 이미지 자산 삭제 완료. userId: {}, fileId: {}",
 				userId, (uuidFile != null ? uuidFile.getId() : "null"));
 		});
+	}
+
+	/**
+	 * [D-Day] 탈퇴 시 실시간 처리
+	 */
+	public void prepareDeletionForWithdrawal(String userId) {
+		userProfileImageReader.findByUserId(userId).ifPresent(profileImage -> {
+			UuidFile uuidFile = uuidFileService.findUuidFileById(profileImage.getUuidFile().getId());
+
+			// S3 Key만 추출해서 이벤트 발행 (실시간 S3 삭제 시도용)
+			applicationEventPublisher.publishEvent(new UserWithdrawalEvent(uuidFile.getFileKey()));
+		});
+	}
+
+	/**
+	 * [D+30] 배치 스케줄러가 호출하는 최종 정리 로직
+	 */
+	public void cleanupProfileImagesForBatch(List<User> users) {
+		for (User user : users) {
+			userProfileImageReader.findByUserId(user.getId()).ifPresent(profileImage -> {
+				try {
+					uuidFileService.deleteFile(profileImage.getUuidFile().getId());
+					userProfileImageWriter.delete(profileImage);
+				} catch (Exception e) {
+					log.error("[유저 정리 배치] 실패. UserID: {}", user.getId(), e);
+				}
+			});
+		}
 	}
 }
