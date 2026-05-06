@@ -38,7 +38,12 @@ public class SocialAccountUnlinkManager {
 		try {
 			// 카카오: 어드민 키로 바로 해제
 			if (socialType == SocialType.KAKAO) {
-				revokeKakao(socialAccount);
+				try {
+					kakaoOAuthUnlinkClient.unlinkWithAdminKey(socialAccount.getId());
+					socialAccount.replaceEncryptedOauthRefreshToken(null);
+				} catch (Exception e) {
+					log.warn("[Kakao Unlink] 어드민 키를 활용한 강제 해제 실패. SocialAccount ID: {}", socialAccount.getId(), e);
+				}
 			}
 			// 구글/애플: 리프레시 토큰 기반 해제
 			else {
@@ -63,14 +68,6 @@ public class SocialAccountUnlinkManager {
 			}
 		} catch (Exception e) {
 			log.error("[Social Unlink Critical] 연동 해제 중 예상치 못한 오류 발생. ID: {}", socialAccount.getId(), e);
-		}
-	}
-
-	private void revokeKakao(SocialAccount socialAccount) {
-		try {
-			kakaoOAuthUnlinkClient.unlinkWithAdminKey(socialAccount.getId());
-		} catch (Exception e) {
-			log.error("[Kakao Unlink] 어드민 키를 활용한 강제 해제 실패. SocialAccount ID: {}", socialAccount.getId(), e);
 		}
 	}
 
