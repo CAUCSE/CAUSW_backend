@@ -100,7 +100,7 @@ return queryFactory.selectFrom(user).where(predicate).fetch();
 
 ## 6. Entity 컨벤션
 - 테이블명은 반드시 `tb_` 접두사를 사용한다. 예: `tb_user`, `tb_post`
-- 소프트 삭제는 `deletedAt` 필드를 사용한다. 물리 삭제는 금지한다.
+- 소프트 삭제는 `deletedAt` 필드를 사용한다.
 - 정적 팩토리 메서드 `of(...)`를 사용하고, `@Builder`는 `@Builder(access = AccessLevel.PROTECTED)`로 제한한다.
 - Entity를 API 응답으로 직접 노출하지 않는다.
 
@@ -199,5 +199,4 @@ assertThat(users).hasSize(3);
 - `System.out.println`이 제거되었는가?
 - SLF4J 로그가 적절한 레벨과 컨텍스트를 포함하는가?
 - 테스트 명명/구조/GWT 패턴을 따르는가?
-- Spotless/포맷 규칙을 통과하는가?
 - DB 스키마 영향 변경에 `db-change` 라벨이 추가되었는가?
