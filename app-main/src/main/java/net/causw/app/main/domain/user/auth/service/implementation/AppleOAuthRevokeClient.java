@@ -17,6 +17,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AppleOAuthRevokeClient {
 
+	private static final String PLATFORM_IOS = "ios";
+	private static final String PLATFORM_WEB = "web";
+	private static final String PLATFORM_APPLE_IOS = "apple-ios";
+	private static final String PLATFORM_APPLE = "apple";
+
 	private final RestClient restClient = RestClient.create();
 
 	// 웹(apple) 설정
@@ -40,8 +45,10 @@ public class AppleOAuthRevokeClient {
 	 * @param platformHint API를 통해 전달받은 플랫폼 힌트 (예: "ios", "web") 또는 null (관리자 추방 시)
 	 */
 	public void revoke(String refreshToken, String platformHint) {
-		boolean isIosHint = "ios".equalsIgnoreCase(platformHint) || "apple-ios".equalsIgnoreCase(platformHint);
-		boolean isWebHint = "web".equalsIgnoreCase(platformHint) || "apple".equalsIgnoreCase(platformHint);
+		boolean isIosHint = PLATFORM_IOS.equalsIgnoreCase(platformHint)
+			|| PLATFORM_APPLE_IOS.equalsIgnoreCase(platformHint);
+		boolean isWebHint = PLATFORM_WEB.equalsIgnoreCase(platformHint)
+			|| PLATFORM_APPLE.equalsIgnoreCase(platformHint);
 
 		if (isIosHint) {
 			if (tryRevoke(iosClientId, iosClientSecret, refreshToken, "iOS 앱"))
