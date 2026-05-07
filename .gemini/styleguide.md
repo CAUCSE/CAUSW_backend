@@ -187,7 +187,25 @@ assertThat(users).hasSize(3);
 ### 리뷰 시 안내 예시
 > 이 PR에는 DB 스키마 변경이 포함되어 있습니다. Flyway 마이그레이션 CI가 실행되려면 `db-change` 라벨을 추가해주세요.
 
-## 12. PR 리뷰 체크리스트 (AI 필수)
+
+## 12. 환경변수(.env) 변경 감지 및 안내
+- PR 변경 사항에 `.env.example` 파일의 수정(추가/변경/삭제)이 포함되어 있다면, 누락 방지를 위해 리뷰 코멘트로 반드시 안내를 남긴다.
+- 팀원들이 PR 머지 전/후로 수행해야 할 필수 Action Item을 명확히 전달한다.
+
+### 리뷰 시 안내 예시
+> ⚠️ **환경변수(.env) 변경이 감지되었습니다!**
+> 
+> 서버 배포 장애를 막기 위해 머지(Merge) 전/후로 다음 사항을 반드시 확인해주세요.
+> 
+> **[필수 확인 사항]**
+> 1. Notion 'Github Secret 정보' 버전 기록 업데이트
+> 2. 머지 직전 GitHub Repository Secrets (`ENV_DEV` 또는 `ENV_PROD`) 업데이트
+> 3. 팀원들에게 로컬 `.env` 업데이트 공지 (Discord)
+>
+> 자세한 프로세스는 [`docs/env_guide.md`]를 참고해 주세요.
+
+
+## 13. PR 리뷰 체크리스트 (AI 필수)
 - Controller에 비즈니스 로직이 없는가?
 - Layer 의존성 위반(`controller -> repository`, 역의존, 순환의존)이 없는가?
 - `Implementation -> Implementation` 호출이 필요한 범위로만 사용되고 순환 의존이 없는가?
@@ -200,3 +218,4 @@ assertThat(users).hasSize(3);
 - SLF4J 로그가 적절한 레벨과 컨텍스트를 포함하는가?
 - 테스트 명명/구조/GWT 패턴을 따르는가?
 - DB 스키마 영향 변경에 `db-change` 라벨이 추가되었는가?
+- `.env.example` 변경 시 환경변수 업데이트 필수 안내 코멘트를 남겼는가?
