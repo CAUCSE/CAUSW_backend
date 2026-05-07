@@ -261,10 +261,11 @@ public class PostService {
 		boolean updatable = isOwner || boardAdminIds.contains(viewer.getId());
 		boolean deletable = isOwner || boardAdminIds.contains(viewer.getId());
 
-		// 공식계정 여부 (익명 게시글이면 false, 게시판 boardAdmin이면 공식계정)
-		boolean isOfficial = !post.getIsAnonymous()
-			&& post.getWriter() != null
-			&& boardAdminIds.contains(post.getWriter().getId());
+		// 공식계정 여부 (크롤링 게시글은 무조건 true, 익명 게시글이면 false, 게시판 boardAdmin이면 공식계정)
+		boolean isOfficial = post.getIsCrawled()
+			|| (!post.getIsAnonymous()
+				&& post.getWriter() != null
+				&& boardAdminIds.contains(post.getWriter().getId()));
 
 		// 작성자 프로필 이미지 조회
 		UserProfileImage writerProfileImage = (post.getWriter() != null)
@@ -405,9 +406,10 @@ public class PostService {
 				boolean isPostLike = likedPostIds.contains(result.postId());
 				boolean isOwner = result.writerId() != null && result.writerId().equals(viewer.getId());
 				Set<String> boardAdminIds = boardAdminMap.getOrDefault(result.boardId(), Set.of());
-				boolean isOfficial = !result.isAnonymous()
-					&& result.writerId() != null
-					&& boardAdminIds.contains(result.writerId());
+				boolean isOfficial = result.isCrawled()
+					|| (!result.isAnonymous()
+						&& result.writerId() != null
+						&& boardAdminIds.contains(result.writerId()));
 				return PostMapper.toPostListItem(result, imageUrls, isPostLike, isOwner, isOfficial);
 			})
 			.toList();
