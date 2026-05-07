@@ -24,14 +24,14 @@ public record CommentResponseDto(
 
 	@Schema(description = "작성자의 입학연도", example = "2022") Integer writerAdmissionYear,
 
-	@Schema(description = "작성자 프로필 이미지 정보 (익명인 경우 null)") ProfileImageDto writerProfileImage,
+	@Schema(description = "작성자 프로필 이미지 정보 (익명/차단/추방/탈퇴 시 GHOST)") ProfileImageDto writerProfileImage,
 
 	Boolean updatable,
 	Boolean deletable,
 
 	@Schema(description = "차단된 컨텐츠 여부", example = "False") Boolean isBlocked,
 
-	@Schema(description = "익명글 여부", example = "False") Boolean isAnonymous,
+	@Schema(description = "익명 댓글 여부", example = "False") Boolean isAnonymous,
 
 	@Schema(description = "댓글 작성자 여부", example = "False") Boolean isOwner,
 
