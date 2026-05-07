@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -572,10 +573,11 @@ public class PostServiceTest {
 
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(boardConfigReader.getAdminIdSetMapByBoardIds(anySet())).willReturn(Map.of());
 			given(postReader.findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(null)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
-			given(userReader.findUsersByIds(anyList())).willReturn(List.of());
+			given(likePostReader.getLikedPostIds(anyString(), anyList())).willReturn(Set.of());
 
 			// when
 			PostListResult result = postService.getPosts(query);
@@ -664,10 +666,11 @@ public class PostServiceTest {
 			given(boardConfigReader.getByBoardId(boardId2)).willReturn(boardConfig2);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId2)).willReturn(boardAdminIds);
+			given(boardConfigReader.getAdminIdSetMapByBoardIds(anySet())).willReturn(Map.of());
 			given(postReader.findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(null)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
-			given(userReader.findUsersByIds(anyList())).willReturn(List.of());
+			given(likePostReader.getLikedPostIds(anyString(), anyList())).willReturn(Set.of());
 
 			// when
 			PostListResult result = postService.getPosts(query);
@@ -728,6 +731,7 @@ public class PostServiceTest {
 
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(boardConfigReader.getAdminIdSetMapByBoardIds(anySet())).willReturn(Map.of());
 			given(postReader.findPostsWithCursor(
 				anyList(),
 				eq("2024-01-01T12:00:00"),
@@ -736,7 +740,7 @@ public class PostServiceTest {
 				eq(null)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
-			given(userReader.findUsersByIds(anyList())).willReturn(List.of());
+			given(likePostReader.getLikedPostIds(anyString(), anyList())).willReturn(Set.of());
 
 			// when
 			PostListResult result = postService.getPosts(query);
@@ -795,10 +799,11 @@ public class PostServiceTest {
 
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(boardConfigReader.getAdminIdSetMapByBoardIds(anySet())).willReturn(Map.of());
 			given(postReader.findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(keyword)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
-			given(userReader.findUsersByIds(anyList())).willReturn(List.of());
+			given(likePostReader.getLikedPostIds(anyString(), anyList())).willReturn(Set.of());
 
 			// when
 			PostListResult result = postService.getPosts(query);
@@ -850,10 +855,11 @@ public class PostServiceTest {
 
 			given(boardConfigReader.getAccessibleBoardIdsByAcademicStatus(AcademicStatus.ENROLLED))
 				.willReturn(accessibleBoardIds);
+			given(boardConfigReader.getAdminIdSetMapByBoardIds(anySet())).willReturn(Map.of());
 			given(postReader.findPostsWithCursor(eq(accessibleBoardIds), eq(null), eq(null), eq(20), eq(null)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
-			given(userReader.findUsersByIds(anyList())).willReturn(List.of());
+			given(likePostReader.getLikedPostIds(anyString(), anyList())).willReturn(Set.of());
 
 			// when
 			PostListResult result = postService.getPosts(query);
@@ -955,10 +961,11 @@ public class PostServiceTest {
 
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(boardConfigReader.getAdminIdSetMapByBoardIds(anySet())).willReturn(Map.of());
 			given(postReader.findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(null)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
-			given(userReader.findUsersByIds(anyList())).willReturn(List.of());
+			given(likePostReader.getLikedPostIds(anyString(), anyList())).willReturn(Set.of());
 
 			// when
 			PostListResult result = postService.getPosts(query);
@@ -1036,10 +1043,11 @@ public class PostServiceTest {
 
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(boardConfigReader.getAdminIdSetMapByBoardIds(anySet())).willReturn(Map.of());
 			given(postReader.findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(null)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
-			given(userReader.findUsersByIds(anyList())).willReturn(List.of());
+			given(likePostReader.getLikedPostIds(anyString(), anyList())).willReturn(Set.of());
 
 			// when
 			PostListResult result = postService.getPosts(query);
