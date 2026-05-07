@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Slice;
@@ -213,11 +214,13 @@ public class PostService {
 			: likePostReader.getLikedPostIds(viewer.getId(), postIds);
 
 		// 게시판별 관리자 ID 배치 조회
-		Set<String> uniqueBoardIds = posts.stream().map(PostCursorResult::boardId).filter(Objects::nonNull).collect(Collectors.toSet());
+		Set<String> uniqueBoardIds = posts.stream().map(PostCursorResult::boardId).filter(Objects::nonNull)
+			.collect(Collectors.toSet());
 		Map<String, Set<String>> boardAdminMap = boardConfigReader.getAdminIdSetMapByBoardIds(uniqueBoardIds);
 
 		// PostListResult로 변환 (PostMapper 사용)
-		List<PostListResult.PostItem> postItems = buildPostItems(posts, postImagesMap, likedPostIds, viewer, boardAdminMap);
+		List<PostListResult.PostItem> postItems = buildPostItems(posts, postImagesMap, likedPostIds, viewer,
+			boardAdminMap);
 
 		return PostListResult.of(postItems, nextCursor);
 	}
@@ -368,10 +371,12 @@ public class PostService {
 		Set<String> likedPostIds = likePostReader.getLikedPostIds(viewer.getId(), postIds);
 
 		// 게시판별 관리자 ID 배치 조회
-		Set<String> uniqueBoardIds = posts.stream().map(PostCursorResult::boardId).filter(Objects::nonNull).collect(Collectors.toSet());
+		Set<String> uniqueBoardIds = posts.stream().map(PostCursorResult::boardId).filter(Objects::nonNull)
+			.collect(Collectors.toSet());
 		Map<String, Set<String>> boardAdminMap = boardConfigReader.getAdminIdSetMapByBoardIds(uniqueBoardIds);
 
-		List<PostListResult.PostItem> postItems = buildPostItems(posts, postImagesMap, likedPostIds, viewer, boardAdminMap);
+		List<PostListResult.PostItem> postItems = buildPostItems(posts, postImagesMap, likedPostIds, viewer,
+			boardAdminMap);
 
 		String nextCursor = null;
 		if (slice.hasNext()) {
