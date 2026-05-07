@@ -117,13 +117,6 @@ public class StatusPolicy {
 		return post.getVote() != null;
 	}
 
-	public static boolean isOfficialWriter(User writer) {
-		if (writer == null)
-			return false;
-		return writer.getRoles().stream()
-			.anyMatch(role -> role == Role.ADMIN);
-	}
-
 	public static boolean isPostForm(Post post) {
 		return post.getForm() != null;
 	}
