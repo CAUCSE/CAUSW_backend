@@ -2,9 +2,10 @@
 
 이 문서는 프로젝트의 데이터베이스 형상 관리를 위한 Flyway 사용법 및 환경별 워크플로를 설명합니다.
 
-## 👋🏻 Flyway 소개
-* 🔗 [Flyway 도입 배경 및 기초 개념 (Presentation)](https://docs.google.com/presentation/d/1934h87wWPVou8HSmpKOBbLzmetSWzxTBOoZpDSisOJo/edit?usp=sharing)
 
+## 👋🏻 Flyway 소개
+* [Flyway 도입 세미나](https://docs.google.com/presentation/d/1934h87wWPVou8HSmpKOBbLzmetSWzxTBOoZpDSisOJo/edit?usp=sharing)
+* [자체 노션 Flyway 문서](https://www.notion.so/Flyway-9f8739df55f88326aedf81b272efed05?source=copy_link)
 ---
 
 ## ⚙️ 초기 설정 (필독)
