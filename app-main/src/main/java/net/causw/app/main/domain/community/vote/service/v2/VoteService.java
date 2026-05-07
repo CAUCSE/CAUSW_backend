@@ -164,9 +164,9 @@ public class VoteService {
 
 		// 옵션 목록 (생성순 정렬)
 		List<VoteOption> options = vote.getVoteOptions()
-				.stream()
-				.sorted(Comparator.comparing(VoteOption::getCreatedAt))
-				.toList();
+			.stream()
+			.sorted(Comparator.comparing(VoteOption::getCreatedAt))
+			.toList();
 
 		// 고유 투표자 수
 		Set<String> uniqueVoterIds = allRecords.stream()
