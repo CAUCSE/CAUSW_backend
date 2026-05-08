@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -26,6 +27,7 @@ import net.causw.app.main.domain.community.ceremony.service.implementation.Cerem
 import net.causw.app.main.domain.community.ceremony.service.mapper.CeremonyCreateMapper;
 import net.causw.app.main.domain.community.ceremony.service.mapper.CeremonyMapper;
 import net.causw.app.main.domain.community.ceremony.util.CeremonyValidator;
+import net.causw.app.main.domain.notification.notification.event.CeremonyAdminNotificationEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.exception.errorcode.CeremonyErrorCode;
 import net.causw.app.main.shared.pageable.PageableFactory;
@@ -45,6 +47,7 @@ public class CeremonyService {
 	private final CeremonyMapper ceremonyMapper;
 	private final CeremonyValidator ceremonyValidator;
 	private final PageableFactory pageableFactory;
+	private final ApplicationEventPublisher applicationEventPublisher;
 
 	@Transactional
 	public CeremonyDetailResult createCeremony(
@@ -64,6 +67,10 @@ public class CeremonyService {
 		Ceremony ceremony = ceremonyCreateMapper.toCeremony(user, command, targetAdmissionYears,
 			uuidFileList);
 		ceremonyCreator.save(ceremony);
+
+		// 신청 후 관리자에게 알림 전송
+		applicationEventPublisher.publishEvent(new CeremonyAdminNotificationEvent(ceremony.getId()));
+
 		return ceremonyMapper.toDetailResult(ceremony);
 	}
 
