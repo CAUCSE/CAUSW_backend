@@ -19,9 +19,10 @@
 개발 중 새로운 외부 API 키나 민감한 설정이 `application.yml`에 추가되어야 한다면, 절대 값을 하드코딩하지 말고 아래 프로세스에 따라 `.env`로 분리해야 합니다.
 
 ### Step 1. 로컬 개발 및 테스트
-1. `application.yml`에 필요한 구조를 추가합니다. (예: `secret-key: ${NEW_SECRET_KEY}`)
-2. 본인 로컬의 `.env`에 `NEW_SECRET_KEY=실제_값`을 추가하고 정상 동작을 확인합니다.
-3. **`.env.example` 파일에도 해당 키값 템플릿(값은 비운 채로)을 반드시 추가하고 커밋합니다.**
+1. `application-local.yml`(환경별 applicaion 설정 파일)에 필요한 구조를 추가합니다. (예: `secret-key: ${NEW_SECRET_KEY}`)
+2. 민감 정보는 절대 직접 기록하지 말고 `${ENV_VAR}` 형태로 참조하도록 합니다.
+3. 본인 로컬의 `.env`에 `NEW_SECRET_KEY=실제_값`을 추가하고 실행하여 정상 동작을 확인합니다.
+4. **`.env.example` 파일에도 해당 키값 템플릿(값은 비운 채로)을 반드시 추가하고 커밋합니다.**
 
 ### Step 2. Notion 히스토리 등록 (Local용)
 1. 노션 `.env (local용)`의 **'버전 기록'** DB에 새로운 버전을 추가합니다.
