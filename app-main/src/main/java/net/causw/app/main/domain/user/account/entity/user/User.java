@@ -170,6 +170,11 @@ public class User extends BaseEntity {
 		this.graduationType = null;
 	}
 
+	/**
+	 * deletedAt 존재 여부로 탈퇴 상태를 판정하던 메서드입니다.
+	 * @deprecated 탈퇴 상태 판정은 {@link #isInactive()} 사용을 권장합니다.
+	 */
+	@Deprecated
 	public boolean isDeleted() {
 		return this.deletedAt != null;
 	}
