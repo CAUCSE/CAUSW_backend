@@ -21,6 +21,7 @@ public record PostCursorResult(
 	boolean isDeleted,
 	boolean isCrawled,
 	boolean hasWriter,
+	String writerId,
 	String writerName,
 	String writerNickname,
 	Integer writerAdmissionYear,

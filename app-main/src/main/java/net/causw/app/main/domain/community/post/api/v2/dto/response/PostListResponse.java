@@ -31,6 +31,9 @@ public record PostListResponse(
 		@Schema(description = "수정일시") LocalDateTime updatedAt,
 		@Schema(description = "게시물 이미지 URL 목록") List<String> postImageUrls,
 		@Schema(description = "게시판 ID") String boardId,
-		@Schema(description = "게시판 이름") String boardName) {
+		@Schema(description = "게시판 이름") String boardName,
+		@Schema(description = "좋아요 여부") boolean isPostLike,
+		@Schema(description = "작성자 여부") boolean isOwner,
+		@Schema(description = "작성자 공식계정 여부") boolean isOfficial) {
 	}
 }

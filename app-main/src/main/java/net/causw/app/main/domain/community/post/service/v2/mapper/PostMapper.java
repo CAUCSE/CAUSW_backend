@@ -62,7 +62,8 @@ public class PostMapper {
 	/**
 	 * PostCursorResult를 PostListResult.PostItem으로 변환합니다.
 	 */
-	public static PostListResult.PostItem toPostListItem(PostCursorResult result, List<String> imageUrls) {
+	public static PostListResult.PostItem toPostListItem(PostCursorResult result, List<String> imageUrls,
+		boolean isPostLike, boolean isOwner, boolean isOfficial) {
 		String writerNickname = resolveWriterNickname(result);
 		ProfileImageDto writerProfileImage = resolveWriterProfileImage(result);
 
@@ -82,7 +83,10 @@ public class PostMapper {
 			result.updatedAt(),
 			imageUrls,
 			result.boardId(),
-			result.boardName());
+			result.boardName(),
+			isPostLike,
+			isOwner,
+			isOfficial);
 	}
 
 	/**
@@ -111,7 +115,8 @@ public class PostMapper {
 		Boolean isPostFavorite,
 		boolean isOwner,
 		boolean updatable,
-		boolean deletable) {
+		boolean deletable,
+		boolean isOfficial) {
 
 		String displayWriterNickname = resolveWriterNickname(post);
 		ProfileImageDto writerProfileImageDto = resolveWriterProfileImage(post, writerProfileImage);
@@ -135,6 +140,7 @@ public class PostMapper {
 			.isPostFavorite(isPostFavorite)
 			.updatable(updatable)
 			.deletable(deletable)
+			.isOfficial(isOfficial)
 			.createdAt(post.getCreatedAt())
 			.updatedAt(post.getUpdatedAt())
 			.boardId(post.getBoard().getId())
