@@ -96,6 +96,12 @@ public class PostQueryRepository {
 		String cursorId,
 		int size,
 		String keyword) {
+		// 빈 리스트가 전달된 경우 "조회 가능한 게시판이 한 개도 없음"을 의미하므로 즉시 빈 결과 반환.
+		// (null은 docstring 계약상 "전체 게시판"이므로 별도 처리하지 않음)
+		if (boardIds != null && boardIds.isEmpty()) {
+			return new SliceImpl<>(List.of(), Pageable.ofSize(size), false);
+		}
+
 		QPost post = QPost.post;
 		QUser writer = new QUser("writer");
 

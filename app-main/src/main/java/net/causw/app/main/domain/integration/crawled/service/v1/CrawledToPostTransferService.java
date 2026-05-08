@@ -90,12 +90,12 @@ public class CrawledToPostTransferService {
 			existingPost.update(title, contentHtml, existingPost.getForm(), existingPost.getPostAttachImageList());
 			postRepository.save(existingPost);
 		} else {
-			// 새 Post 생성
+			// 새 Post 생성 (크롤링 게시판은 익명 게시판이 아니므로 isAnonymous=false)
 			Post newPost = Post.of(
 				title,
 				contentHtml,
 				adminUser,
-				true,
+				false,
 				false,
 				board,
 				null,

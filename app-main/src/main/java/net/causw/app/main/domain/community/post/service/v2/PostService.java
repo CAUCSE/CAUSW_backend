@@ -181,6 +181,11 @@ public class PostService {
 			boardIds = boardConfigReader.getAccessibleBoardIdsByAcademicStatus(viewer.getAcademicStatus());
 		}
 
+		// 접근 가능한 게시판이 없으면 게시글 조회를 건너뛰고 빈 결과를 반환
+		if (boardIds.isEmpty()) {
+			return PostListResult.of(List.of(), null);
+		}
+
 		// 게시글 조회 (Slice 사용)
 		Slice<PostCursorResult> slice = postReader.findPostsWithCursor(
 			boardIds,

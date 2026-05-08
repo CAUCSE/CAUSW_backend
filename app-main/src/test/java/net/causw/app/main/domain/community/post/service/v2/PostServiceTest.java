@@ -843,6 +843,28 @@ public class PostServiceTest {
 			verify(boardConfigReader, times(1)).getAccessibleBoardIdsByAcademicStatus(AcademicStatus.ENROLLED);
 		}
 
+		@DisplayName("접근 가능한 게시판이 없으면 게시글 조회 없이 빈 결과 반환")
+		@Test
+		void getPosts_shouldReturnEmpty_whenNoAccessibleBoards() {
+			// given
+			PostListQuery query = PostListQuery.of(viewer, null, null, 20, null);
+
+			given(boardConfigReader.getAccessibleBoardIdsByAcademicStatus(AcademicStatus.ENROLLED))
+				.willReturn(List.of());
+
+			// when
+			PostListResult result = postService.getPosts(query);
+
+			// then
+			assertAll(
+				() -> assertThat(result).isNotNull(),
+				() -> assertThat(result.posts()).isEmpty(),
+				() -> assertThat(result.nextCursor()).isNull());
+
+			verify(boardConfigReader, times(1)).getAccessibleBoardIdsByAcademicStatus(AcademicStatus.ENROLLED);
+			verify(postReader, never()).findPostsWithCursor(anyList(), any(), any(), anyInt(), any());
+		}
+
 		@DisplayName("숨겨진 게시판은 관리자만 조회 가능")
 		@Test
 		void getPosts_shouldFail_whenBoardIsHidden() {
