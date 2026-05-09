@@ -66,7 +66,8 @@ public class CeremonyAdminNotificationHandler {
 
 		// 관리자별 알림 설정 일괄 조회
 		List<String> adminIds = adminTargets.stream().map(User::getId).toList();
-		Map<String, UserNotificationSettingMap> settingMaps = notificationSettingReader.findSettingMapByUserIds(adminIds);
+		Map<String, UserNotificationSettingMap> settingMaps = notificationSettingReader
+			.findSettingMapByUserIds(adminIds);
 
 		String title = "경조사 신청";
 		String body = String.format("%s님이 경조사를 신청했습니다.", ceremony.getUser().getName());
