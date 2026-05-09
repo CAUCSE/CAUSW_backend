@@ -40,10 +40,10 @@ public class CeremonyAdminNotificationHandler {
 	/**
 	 * 경조사 신청 관리자 알림 이벤트 핸들러.
 	 * <p>
-	 * 일반 유저가 경조사를 신청하면, 졸업 상태(GRADUATED)의 관리자에게
+	 * 일반 유저가 경조사를 신청하면, 신청자와 동일한 {@link AcademicStatus}의 관리자에게
 	 * 푸시 알림과 서비스 알림을 발송합니다.
 	 * <ul>
-	 *   <li>대상: {@link AcademicStatus#GRADUATED} 상태의 관리자</li>
+	 *   <li>대상: 신청자 학적 상태와 일치하는 관리자</li>
 	 *   <li>필터: 서비스 알림 설정 ON ({@link UserNotificationSettingKey#SERVICE_NOTICE_ENABLED})</li>
 	 *   <li>처리: 푸시 전송 + 서비스 알림 로그 저장 ({@link NoticeType#SYSTEM})</li>
 	 * </ul>
@@ -57,8 +57,9 @@ public class CeremonyAdminNotificationHandler {
 		Ceremony ceremony = ceremonyReader.findById(event.ceremonyId())
 			.orElseThrow(CeremonyErrorCode.CEREMONY_NOT_FOUND::toBaseException);
 
-		// 졸업 상태(GRADUATED) 관리자를 알림 대상으로 선정
-		List<User> adminTargets = userReader.findAdminsByAcademicStatus(AcademicStatus.GRADUATED);
+		// 신청자와 동일 학적 상태인 관리자를 알림 대상으로 선정
+		List<User> adminTargets = userReader.findAdminsByAcademicStatus(
+			ceremony.getUser().getAcademicStatus());
 		if (adminTargets.isEmpty()) {
 			return;
 		}
