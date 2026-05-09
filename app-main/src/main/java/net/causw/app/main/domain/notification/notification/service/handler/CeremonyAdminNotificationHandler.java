@@ -57,17 +57,23 @@ public class CeremonyAdminNotificationHandler {
 		Ceremony ceremony = ceremonyReader.findById(event.ceremonyId())
 			.orElseThrow(CeremonyErrorCode.CEREMONY_NOT_FOUND::toBaseException);
 
-		// 신청자와 동일 학적 상태인 관리자를 알림 대상으로 선정
-		List<User> adminTargets = userReader.findAdminsByAcademicStatus(
+		// 신청자와 동일 학적 상태의 관리자 조회
+		List<User> admins = userReader.findAdminsByAcademicStatus(
 			ceremony.getUser().getAcademicStatus());
-		if (adminTargets.isEmpty()) {
+		if (admins.isEmpty()) {
 			return;
 		}
 
-		// 관리자별 알림 설정 일괄 조회
-		List<String> adminIds = adminTargets.stream().map(User::getId).toList();
+		// 관리자별 알림 설정을 읽고, 알림 설정이 활성화된 대상만 필터링
+		List<String> adminIds = admins.stream().map(User::getId).toList();
 		Map<String, UserNotificationSettingMap> settingMaps = notificationSettingReader
 			.findSettingMapByUserIds(adminIds);
+		List<User> adminTargets = admins.stream()
+			.filter(admin -> settingMaps.get(admin.getId()).get(UserNotificationSettingKey.SERVICE_NOTICE_ENABLED))
+			.toList();
+		if (adminTargets.isEmpty()) {
+			return;
+		}
 
 		String title = "경조사 신청";
 		String body = String.format("%s님이 경조사를 신청했습니다.", ceremony.getUser().getName());
@@ -77,12 +83,8 @@ public class CeremonyAdminNotificationHandler {
 		Notification notification = notificationWriter.save(
 			Notification.of(ceremony.getUser(), body, body, NoticeType.SYSTEM, ceremony.getId(), null));
 
-		// 서비스 알림 설정이 활성화된 관리자에게만 발송
-		adminTargets.stream()
-			.filter(admin -> settingMaps.get(admin.getId()).get(UserNotificationSettingKey.SERVICE_NOTICE_ENABLED))
-			.forEach(admin -> {
-				notificationPushSender.sendToUser(admin, title, body);
-				notificationWriter.saveLog(admin, notification);
-			});
+		// 필터링된 관리자 대상에게 발송
+		notificationPushSender.sendToUsers(adminTargets, title, body);
+		notificationWriter.saveLogs(adminTargets, notification);
 	}
 }

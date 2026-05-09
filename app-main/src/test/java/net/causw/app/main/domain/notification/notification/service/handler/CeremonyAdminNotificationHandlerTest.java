@@ -96,10 +96,11 @@ class CeremonyAdminNotificationHandlerTest {
 			assertThat(captured.getNoticeType()).isEqualTo(NoticeType.SYSTEM);
 			assertThat(captured.getTargetId()).isEqualTo("ceremonyId");
 
-			verify(notificationPushSender).sendToUser(eq(admin1), eq("경조사 신청"), eq("김신청님이 경조사를 신청했습니다."));
-			verify(notificationPushSender).sendToUser(eq(admin2), eq("경조사 신청"), eq("김신청님이 경조사를 신청했습니다."));
-			verify(notificationWriter).saveLog(admin1, savedNotification);
-			verify(notificationWriter).saveLog(admin2, savedNotification);
+			verify(notificationPushSender).sendToUsers(
+				eq(List.of(admin1, admin2)),
+				eq("경조사 신청"),
+				eq("김신청님이 경조사를 신청했습니다."));
+			verify(notificationWriter).saveLogs(eq(List.of(admin1, admin2)), eq(savedNotification));
 		}
 
 		@Test
@@ -120,7 +121,7 @@ class CeremonyAdminNotificationHandlerTest {
 
 			// then
 			verify(notificationWriter, never()).save(any());
-			verify(notificationPushSender, never()).sendToUser(any(), any(), any());
+			verify(notificationPushSender, never()).sendToUsers(any(), any(), any());
 		}
 
 		@Test
@@ -153,10 +154,8 @@ class CeremonyAdminNotificationHandlerTest {
 			handler.handle(new CeremonyAdminNotificationEvent("ceremonyId"));
 
 			// then
-			verify(notificationPushSender).sendToUser(eq(adminOn), any(), any());
-			verify(notificationPushSender, never()).sendToUser(eq(adminOff), any(), any());
-			verify(notificationWriter).saveLog(adminOn, savedNotification);
-			verify(notificationWriter, never()).saveLog(eq(adminOff), any());
+			verify(notificationPushSender).sendToUsers(eq(List.of(adminOn)), any(), any());
+			verify(notificationWriter).saveLogs(eq(List.of(adminOn)), eq(savedNotification));
 		}
 
 		@Test
