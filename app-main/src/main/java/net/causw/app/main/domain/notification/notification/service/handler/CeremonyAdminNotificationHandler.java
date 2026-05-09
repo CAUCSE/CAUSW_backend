@@ -40,11 +40,12 @@ public class CeremonyAdminNotificationHandler {
 	/**
 	 * 경조사 신청 관리자 알림 이벤트 핸들러.
 	 * <p>
-	 * 일반 유저가 경조사를 신청하면, 졸업 상태(GRADUATED)의 관리자(동문회장)에게
+	 * 일반 유저가 경조사를 신청하면, 졸업 상태(GRADUATED)의 관리자에게
 	 * 푸시 알림과 서비스 알림을 발송합니다.
 	 * <ul>
 	 *   <li>대상: {@link AcademicStatus#GRADUATED} 상태의 관리자</li>
-	 *   <li>처리: 푸시 전송 + 서비스 알림 로그 저장</li>
+	 *   <li>필터: 서비스 알림 설정 ON ({@link UserNotificationSettingKey#SERVICE_NOTICE_ENABLED})</li>
+	 *   <li>처리: 푸시 전송 + 서비스 알림 로그 저장 ({@link NoticeType#SYSTEM})</li>
 	 * </ul>
 	 *
 	 * @param event 경조사 관리자 알림 이벤트
@@ -56,7 +57,7 @@ public class CeremonyAdminNotificationHandler {
 		Ceremony ceremony = ceremonyReader.findById(event.ceremonyId())
 			.orElseThrow(CeremonyErrorCode.CEREMONY_NOT_FOUND::toBaseException);
 
-		// 졸업 상태의 관리자(동문회장)를 알림 대상으로 선정
+		// 졸업 상태(GRADUATED) 관리자를 알림 대상으로 선정
 		List<User> adminTargets = userReader.findAdminsByAcademicStatus(AcademicStatus.GRADUATED);
 		if (adminTargets.isEmpty()) {
 			return;
@@ -72,7 +73,7 @@ public class CeremonyAdminNotificationHandler {
 		// 서비스 알림함 저장용 Notification 엔티티 생성
 		// UI에서 정보를 표시할 때 body 대신 title을 사용하므로, 바디와 같은 내용을 title에 저장
 		Notification notification = notificationWriter.save(
-			Notification.of(ceremony.getUser(), body, body, NoticeType.CEREMONY_V2, ceremony.getId(), null));
+			Notification.of(ceremony.getUser(), body, body, NoticeType.SYSTEM, ceremony.getId(), null));
 
 		// 서비스 알림 설정이 활성화된 관리자에게만 발송
 		adminTargets.stream()
