@@ -1,5 +1,6 @@
 package net.causw.app.main.shared.dto;
 
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.ProfileImageType;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
@@ -33,17 +34,20 @@ public record ProfileImageDto(
 	public static final ProfileImageDto GHOST = new ProfileImageDto(ProfileImageType.GHOST, null);
 
 	/**
-	 * User 엔티티로부터 ProfileImageDto를 생성합니다.
+	 * User 엔티티와 UserProfileImage로부터 ProfileImageDto를 생성합니다.
 	 * 추방/탈퇴 유저는 GHOST 처리됩니다.
 	 */
-	public static ProfileImageDto from(User user) {
+	public static ProfileImageDto from(User user, UserProfileImage userProfileImage) {
 		if (user == null) {
 			return GHOST;
 		}
 		if (isInactiveUser(user)) {
 			return GHOST;
 		}
-		return of(user.getProfileImageType(), user.getProfileUrl());
+		String profileUrl = (userProfileImage != null && userProfileImage.getUuidFile() != null)
+			? userProfileImage.getUuidFile().getFileUrl()
+			: null;
+		return of(user.getProfileImageType(), profileUrl);
 	}
 
 	/**
@@ -76,6 +80,6 @@ public record ProfileImageDto(
 
 	private static boolean isInactiveUser(User user) {
 		UserState state = user.getState();
-		return state == UserState.DROP || user.isDeleted();
+		return state == UserState.DROP || user.isInactive();
 	}
 }

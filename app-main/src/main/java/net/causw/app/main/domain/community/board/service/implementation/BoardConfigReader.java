@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.community.board.service.implementation;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +9,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
+import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
 import net.causw.app.main.domain.community.board.entity.BoardReadScope;
 import net.causw.app.main.domain.community.board.repository.BoardAdminQueryRepository;
@@ -83,6 +85,18 @@ public class BoardConfigReader {
 	}
 
 	/**
+	 * 여러 게시판 ID에 대해 boardId → 관리자 userId Set Map을 반환합니다.
+	 *
+	 * @param boardIds 게시판 ID 컬렉션
+	 * @return boardId를 키로 하는 관리자 userId Set Map
+	 */
+	public Map<String, Set<String>> getAdminIdSetMapByBoardIds(Collection<String> boardIds) {
+		Map<String, List<String>> listMap = boardAdminQueryRepository.findAdminIdsByBoardIds(boardIds);
+		return listMap.entrySet().stream()
+			.collect(Collectors.toMap(Map.Entry::getKey, e -> new HashSet<>(e.getValue())));
+	}
+
+	/**
 	 * 다음 게시판 표시 순서 값 조회
 	 * @return 다음 게시판 표시 순서 값
 	 */
@@ -101,5 +115,16 @@ public class BoardConfigReader {
 	public List<String> getAccessibleBoardIdsByAcademicStatus(AcademicStatus academicStatus) {
 		Set<BoardReadScope> scopes = new HashSet<>(BoardReadScope.fromAcademicStatus(academicStatus));
 		return boardConfigQueryRepository.findBoardsByReadScopes(scopes);
+	}
+
+	/**
+	 * 사용자 ID에 따라 쓰기 가능한 게시판 목록을 조회합니다.
+	 * VISIBLE이고 사용자의 WriteScope에 맞는 게시판만 조회합니다.
+	 *
+	 * @param userId 사용자 ID
+	 * @return 쓰기 가능한 게시판 목록
+	 */
+	public List<Board> getWritableBoardIdsByUserId(String userId) {
+		return boardConfigQueryRepository.findWritableBoardsByUserId(userId);
 	}
 }

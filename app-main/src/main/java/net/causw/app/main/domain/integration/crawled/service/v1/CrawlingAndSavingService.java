@@ -24,18 +24,14 @@ public class CrawlingAndSavingService {
 	// 크롤링 및 공지사항 수정, 추가 감지
 	@Transactional
 	public void crawlAndDetectUpdates() {
-		try {
-			List<CrawledNotice> notices = crawler.crawl();
-			if (notices.isEmpty()) {
-				return;
-			}
+		List<CrawledNotice> notices = crawler.crawl();
+		if (notices.isEmpty()) {
+			return;
+		}
 
-			List<CrawledNotice> noticesToSave = processLatestNotices(notices);
-			if (!noticesToSave.isEmpty()) {
-				crawledNoticeRepository.saveAll(noticesToSave);
-			}
-		} catch (Exception e) {
-			log.error("크롤링 중 오류 발생", e);
+		List<CrawledNotice> noticesToSave = processLatestNotices(notices);
+		if (!noticesToSave.isEmpty()) {
+			crawledNoticeRepository.saveAll(noticesToSave);
 		}
 	}
 

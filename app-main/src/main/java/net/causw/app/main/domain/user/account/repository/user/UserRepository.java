@@ -57,7 +57,6 @@ public interface UserRepository extends JpaRepository<User, String> {
 	@Query(value = "SELECT * " +
 		"FROM tb_user AS u " +
 		"WHERE u.state = :state " +
-		"AND u.deleted_at IS NULL " +
 		"AND (:name IS NULL OR u.name LIKE %:name%) " +
 		"ORDER BY u.created_at DESC", nativeQuery = true)
 	Page<User> findByStateAndName(@Param("state") String state, @Param("name") String name, Pageable pageable);
@@ -65,21 +64,10 @@ public interface UserRepository extends JpaRepository<User, String> {
 	@Query(value = "SELECT * " +
 		"FROM tb_user AS u " +
 		"WHERE u.state IN :state " +
-		"AND u.deleted_at IS NULL " +
 		"AND (COALESCE(:name, '') = '' OR u.name LIKE CONCAT('%', :name, '%')) " +
 		"ORDER BY u.created_at DESC", nativeQuery = true)
 	Page<User> findByStateInAndNameContaining(@Param("state") List<String> states, @Param("name") String name,
 		Pageable pageable);
-
-	@Query(value = "SELECT * " +
-		"FROM tb_user AS u " +
-		"WHERE u.deleted_at IS NOT NULL AND (:name IS NULL OR u.name LIKE %:name%) ORDER BY u.created_at DESC", nativeQuery = true)
-	Page<User> findDeletedByName(@Param("name") String name, Pageable pageable);
-
-	@Query(value = "SELECT * " +
-		"FROM tb_user AS u " +
-		"WHERE (u.state = 'DROP' OR u.deleted_at IS NOT NULL) AND (:name IS NULL OR u.name LIKE %:name%) ORDER BY u.created_at DESC", nativeQuery = true)
-	Page<User> findDroppedOrDeletedByName(@Param("name") String name, Pageable pageable);
 
 	@Query(value = "SELECT * FROM" +
 		" tb_user AS u " +
@@ -112,4 +100,6 @@ public interface UserRepository extends JpaRepository<User, String> {
 		@Param("state") UserState state);
 
 	Long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
+
+	Page<User> findAllByDeletedAtIsNotNullAndDeletedAtBefore(LocalDateTime deletedAt, Pageable pageable);
 }

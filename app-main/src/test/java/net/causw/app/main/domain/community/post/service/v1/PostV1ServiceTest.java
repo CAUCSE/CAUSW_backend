@@ -118,7 +118,7 @@ public class PostV1ServiceTest {
 			String postId = "dummy123";
 
 			given(post.getWriter()).willReturn(writer);
-			given(writer.isDeleted()).willReturn(false);
+			given(writer.isInactive()).willReturn(false);
 
 			when(postRepository.findById(postId)).thenReturn(Optional.of(post));
 			when(likePostRepository.existsByPostIdAndUserId(postId, user.getId())).thenReturn(false);
@@ -137,7 +137,7 @@ public class PostV1ServiceTest {
 			String postId = "dummy123";
 
 			given(post.getWriter()).willReturn(writer);
-			given(writer.isDeleted()).willReturn(true);
+			given(writer.isInactive()).willReturn(true);
 
 			when(postRepository.findById(postId)).thenReturn(Optional.of(post));
 
@@ -157,7 +157,7 @@ public class PostV1ServiceTest {
 			String postId = "dummy123";
 
 			given(post.getWriter()).willReturn(writer);
-			given(writer.isDeleted()).willReturn(false);
+			given(writer.isInactive()).willReturn(false);
 
 			when(postRepository.findById(postId)).thenReturn(Optional.of(post));
 			when(likePostRepository.existsByPostIdAndUserId(postId, user.getId())).thenReturn(true);
@@ -196,7 +196,7 @@ public class PostV1ServiceTest {
 			String userId = "dummy1234";
 
 			given(post.getWriter()).willReturn(writer);
-			given(writer.isDeleted()).willReturn(false);
+			given(writer.isInactive()).willReturn(false);
 			given(user.getId()).willReturn(userId);
 
 			when(postRepository.findById(postId)).thenReturn(Optional.of(post));
@@ -216,7 +216,7 @@ public class PostV1ServiceTest {
 			String postId = "dummy123";
 
 			given(post.getWriter()).willReturn(writer);
-			given(writer.isDeleted()).willReturn(true);
+			given(writer.isInactive()).willReturn(true);
 
 			when(postRepository.findById(postId)).thenReturn(Optional.of(post));
 
@@ -236,7 +236,7 @@ public class PostV1ServiceTest {
 			String postId = "dummy123";
 
 			given(post.getWriter()).willReturn(writer);
-			given(writer.isDeleted()).willReturn(false);
+			given(writer.isInactive()).willReturn(false);
 
 			when(postRepository.findById(postId)).thenReturn(Optional.of(post));
 			when(likePostRepository.existsByPostIdAndUserId(postId, user.getId())).thenReturn(false);
@@ -299,7 +299,7 @@ public class PostV1ServiceTest {
 			return Stream.of(
 				Arguments.of(Role.NONE, UserState.ACTIVE, null),
 				Arguments.of(Role.COMMON, UserState.DROP, null),
-				Arguments.of(Role.COMMON, UserState.ACTIVE, LocalDateTime.now()));
+				Arguments.of(Role.COMMON, UserState.INACTIVE, null));
 		}
 
 		private static Stream<Arguments> provideSearchByKeywordSuccessCases() {

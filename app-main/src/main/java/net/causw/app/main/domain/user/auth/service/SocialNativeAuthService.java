@@ -19,6 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.SocialType;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
@@ -61,6 +63,7 @@ public class SocialNativeAuthService {
 	private final JwtDecoderFactory<ClientRegistration> oidcIdTokenDecoderFactory;
 	private final AuthTokenManager authTokenManager;
 	private final UserTermsAgreementReader userTermsAgreementReader;
+	private final UserProfileImageReader userProfileImageReader;
 	private final OidcAuthorizationCodeTokenClient oidcAuthorizationCodeTokenClient;
 	private final SocialAccountOauthRefreshStore socialAccountOauthRefreshStore;
 
@@ -71,44 +74,49 @@ public class SocialNativeAuthService {
 	 * @param accessToken 네이티브 SDK에서 발급된 provider access token
 	 * @param idToken OIDC provider(google/apple)에서 발급된 id token
 	 * @param authorizationCode OIDC 인가 코드(선택). 전달 시 토큰 엔드포인트로 교환해 리프레시 토큰을 저장합니다.
-	 * @param redirectUri 인가 코드 교환 시 사용한 redirect URI(authorizationCode 사용 시 필수)
 	 * @param codeVerifier PKCE 사용 시 code_verifier(선택)
 	 * @return 서비스 전용 access/refresh token이 포함된 인증 결과
 	 */
 	@Transactional
-	public AuthResult login(String provider, String accessToken, String idToken, String authorizationCode,
-		String redirectUri, String codeVerifier) {
-		String registrationId = provider.toLowerCase(Locale.ROOT);
-		log.info("Native social login requested. provider={}, hasIdToken={}, hasAuthCode={}", registrationId,
-			StringUtils.hasText(idToken), StringUtils.hasText(authorizationCode));
+	public AuthResult login(String provider, String platform, String accessToken, String idToken,
+		String authorizationCode, String codeVerifier) {
+		String providerKey = provider.toLowerCase(Locale.ROOT);
+		SocialType socialType = SocialType.from(providerKey);
+		String oidcRegistrationId = resolveRegistrationId(provider, platform);
+		log.info(
+			"Native social login requested. provider={}, platform={}, oidcRegistrationId={}, hasIdToken={}, hasAuthCode={}",
+			provider, platform, oidcRegistrationId, StringUtils.hasText(idToken),
+			StringUtils.hasText(authorizationCode));
 
 		try {
-			SocialType.from(registrationId);
-
 			ClientRegistration clientRegistration = Optional.ofNullable(
-				clientRegistrationRepository.findByRegistrationId(registrationId))
+				clientRegistrationRepository.findByRegistrationId(oidcRegistrationId))
 				.orElseThrow(AuthErrorCode.UNSUPPORTED_SOCIAL_PROVIDER::toBaseException);
 
-			User user = loadAuthenticatedUser(clientRegistration, accessToken, idToken);
+			User user = loadAuthenticatedUser(socialType, clientRegistration, accessToken, idToken);
 			if (isOidcProvider(clientRegistration)) {
-				persistOidcRefreshTokenFromAuthorizationCode(clientRegistration, user, authorizationCode, redirectUri,
-					codeVerifier);
+				ClientRegistration tokenExchangeRegistration = resolveOidcTokenExchangeRegistration(socialType,
+					clientRegistration);
+				persistOidcRefreshTokenFromAuthorizationCode(tokenExchangeRegistration, socialType, user,
+					authorizationCode, codeVerifier);
 			}
 			AuthTokenPair tokens = authTokenManager.issueTokens(user, null);
-
-			log.info("Native social login succeeded. provider={}, userId={}", registrationId, user.getId());
-
+			UserProfileImage profileImage = userProfileImageReader.findByUserIdOrNull(user.getId());
 			boolean hasAllRequiredLatestTerms = userTermsAgreementReader.hasAgreedToAllRequiredLatestTerms(user);
 
-			return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), ProfileImageDto.from(user),
+			log.info("Native social login succeeded. provider={}, oidcRegistrationId={}, userId={}", provider,
+				oidcRegistrationId, user.getId());
+
+			return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(),
+				ProfileImageDto.from(user, profileImage),
 				tokens.refreshToken(), user.isGuest(), hasAllRequiredLatestTerms, user.isAcademicCertified(),
 				user.getAcademicStatus());
 		} catch (BaseRunTimeV2Exception e) {
-			log.warn("Native social login failed. provider={}, code={}, message={}", registrationId,
+			log.warn("Native social login failed. provider={}, code={}, message={}", providerKey,
 				e.getErrorCode().getCode(), e.getMessage());
 			throw e;
 		} catch (RuntimeException e) {
-			log.error("Unexpected native social login error. provider={}", registrationId, e);
+			log.error("Unexpected native social login error. provider={}", providerKey, e);
 			throw e;
 		}
 	}
@@ -151,10 +159,10 @@ public class SocialNativeAuthService {
 	/**
 	 * provider 설정(openid scope 여부)에 따라 OAuth2(access token) 또는 OIDC(id token) 검증 경로를 선택합니다.
 	 */
-	private User loadAuthenticatedUser(ClientRegistration clientRegistration, String providerAccessToken,
-		String providerIdToken) {
+	private User loadAuthenticatedUser(SocialType socialType, ClientRegistration clientRegistration,
+		String providerAccessToken, String providerIdToken) {
 		if (isOidcProvider(clientRegistration)) {
-			return loadOidcAuthenticatedUser(clientRegistration, providerIdToken);
+			return loadOidcAuthenticatedUser(socialType, clientRegistration, providerIdToken);
 		}
 
 		return loadOAuth2AuthenticatedUser(clientRegistration, providerAccessToken);
@@ -194,12 +202,15 @@ public class SocialNativeAuthService {
 	/**
 	 * OIDC provider(Google/Apple)에서 id token을 디코딩/검증하고 claim 기반 사용자 동기화를 수행합니다.
 	 */
-	private User loadOidcAuthenticatedUser(ClientRegistration clientRegistration, String providerIdToken) {
-		log.debug("Verifying OIDC id token and loading user. provider={}", clientRegistration.getRegistrationId());
+	private User loadOidcAuthenticatedUser(SocialType socialType, ClientRegistration clientRegistration,
+		String providerIdToken) {
+		log.debug("Verifying OIDC id token and loading user. registrationId={}",
+			clientRegistration.getRegistrationId());
 
 		String normalizedIdToken = normalizeAccessToken(providerIdToken);
 		if (!StringUtils.hasText(normalizedIdToken)) {
-			log.warn("OIDC provider requested without id token. provider={}", clientRegistration.getRegistrationId());
+			log.warn("OIDC provider requested without id token. registrationId={}",
+				clientRegistration.getRegistrationId());
 			throw AuthErrorCode.INVALID_TOKEN.toBaseException();
 		}
 
@@ -207,14 +218,13 @@ public class SocialNativeAuthService {
 		validateOidcClaims(clientRegistration, jwt);
 
 		try {
-			return customOAuth2UserService.loadUserFromOidcClaims(clientRegistration.getRegistrationId(),
-				jwt.getClaims());
+			return customOAuth2UserService.loadUserFromOidcClaims(socialType.registrationId(), jwt.getClaims());
 		} catch (BaseRunTimeV2Exception e) {
-			log.warn("OIDC user mapping failed. provider={}, code={}, message={}",
+			log.warn("OIDC user mapping failed. registrationId={}, code={}, message={}",
 				clientRegistration.getRegistrationId(), e.getErrorCode().getCode(), e.getMessage());
 			throw e;
 		} catch (RuntimeException e) {
-			log.warn("OIDC user mapping failed unexpectedly. provider={}, exceptionType={}",
+			log.warn("OIDC user mapping failed unexpectedly. registrationId={}, exceptionType={}",
 				clientRegistration.getRegistrationId(), e.getClass().getSimpleName());
 			throw AuthErrorCode.INVALID_TOKEN.toBaseException();
 		}
@@ -286,7 +296,7 @@ public class SocialNativeAuthService {
 		}
 
 		List<String> audience = jwt.getAudience();
-		if (audience == null || audience.isEmpty() || !audience.contains(clientRegistration.getClientId())) {
+		if (!isAudienceAllowed(clientRegistration, audience)) {
 			throw AuthErrorCode.INVALID_TOKEN.toBaseException();
 		}
 
@@ -295,6 +305,49 @@ public class SocialNativeAuthService {
 			&& (jwt.getIssuer() == null || !expectedIssuer.equals(jwt.getIssuer().toString()))) {
 			throw AuthErrorCode.INVALID_TOKEN.toBaseException();
 		}
+	}
+
+	private boolean isAudienceAllowed(ClientRegistration clientRegistration, List<String> tokenAudience) {
+		if (tokenAudience == null || tokenAudience.isEmpty()) {
+			return false;
+		}
+
+		String clientId = clientRegistration.getClientId();
+		for (String aud : tokenAudience) {
+			if (StringUtils.hasText(aud) && aud.equals(clientId)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private String resolveRegistrationId(String provider, String platform) {
+		String normalizedProvider = normalizeKey(provider);
+		if (!StringUtils.hasText(normalizedProvider)) {
+			return provider;
+		}
+		if ("google".equals(normalizedProvider)) {
+			return "google";
+		}
+
+		String normalizedPlatform = normalizeKey(platform);
+		if ("apple".equals(normalizedProvider)) {
+			if (!StringUtils.hasText(normalizedPlatform)) {
+				return "apple-ios";
+			}
+			ClientRegistration appleRegistration = clientRegistrationRepository.findByRegistrationId(
+				"apple-" + normalizedPlatform);
+			return appleRegistration != null ? appleRegistration.getRegistrationId() : "apple";
+		}
+
+		return normalizedProvider;
+	}
+
+	private String normalizeKey(String raw) {
+		if (!StringUtils.hasText(raw)) {
+			return null;
+		}
+		return raw.trim().toLowerCase(Locale.ROOT);
 	}
 
 	/**
@@ -308,7 +361,7 @@ public class SocialNativeAuthService {
 		}
 
 		String registrationId = clientRegistration.getRegistrationId();
-		if (SocialType.APPLE.matchesRegistrationId(registrationId)) {
+		if (registrationId != null && registrationId.toLowerCase(Locale.ROOT).startsWith("apple")) {
 			return APPLE_ISSUER;
 		}
 
@@ -342,17 +395,23 @@ public class SocialNativeAuthService {
 		return AuthErrorCode.INVALID_TOKEN.toBaseException();
 	}
 
-	private void persistOidcRefreshTokenFromAuthorizationCode(ClientRegistration registration, User user,
-		String authorizationCode, String redirectUri, String codeVerifier) {
+	private ClientRegistration resolveOidcTokenExchangeRegistration(SocialType socialType,
+		ClientRegistration oidcClientRegistration) {
+		if (socialType == SocialType.GOOGLE) {
+			return Optional
+				.ofNullable(clientRegistrationRepository.findByRegistrationId(SocialType.GOOGLE.registrationId()))
+				.orElseThrow(AuthErrorCode.UNSUPPORTED_SOCIAL_PROVIDER::toBaseException);
+		}
+		return oidcClientRegistration;
+	}
+
+	private void persistOidcRefreshTokenFromAuthorizationCode(ClientRegistration registration, SocialType socialType,
+		User user, String authorizationCode, String codeVerifier) {
 		if (!StringUtils.hasText(authorizationCode)) {
 			return;
 		}
-		if (!StringUtils.hasText(redirectUri)) {
-			throw AuthErrorCode.NATIVE_SOCIAL_REDIRECT_URI_REQUIRED.toBaseException();
-		}
-		SocialType socialType = SocialType.from(registration.getRegistrationId());
 		String refreshToken = oidcAuthorizationCodeTokenClient.exchangeAuthorizationCode(registration,
-			authorizationCode, redirectUri, codeVerifier);
+			authorizationCode, codeVerifier);
 		if (!StringUtils.hasText(refreshToken)) {
 			log.info("Native OIDC token exchange returned no refresh_token; cipher not updated. provider={}",
 				registration.getRegistrationId());

@@ -23,6 +23,7 @@ import net.causw.app.main.domain.user.account.service.implementation.SocialAccou
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
+import net.causw.app.main.domain.user.account.util.DroppedUserIdentifierValidator;
 import net.causw.app.main.domain.user.auth.service.dto.CustomOAuth2User;
 import net.causw.app.main.domain.user.auth.service.dto.OAuthAttributes;
 import net.causw.app.main.domain.user.auth.service.implementation.OAuthLinkTokenStore;
@@ -45,6 +46,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 	private final UserValidator userValidator;
 	private final SocialAccountLinker socialAccountLinker;
 	private final OAuthLinkTokenStore oAuthLinkTokenStore;
+	private final DroppedUserIdentifierValidator droppedUserIdentifierValidator;
 
 	/**
 	 * OAuth2 UserInfo 기반 로그인/연동 요청을 처리합니다.
@@ -62,7 +64,9 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 		OAuth2User oAuth2User = delegate.loadUser(userRequest);
 
 		try {
+			// 1. 소셜 서비스 구분
 			String registrationId = userRequest.getClientRegistration().getRegistrationId();
+			// 2. 소셜 고유 식별자 키
 			String userNameAttributeName = resolveUserNameAttributeName(
 				userRequest.getClientRegistration().getProviderDetails().getUserInfoEndpoint()
 					.getUserNameAttributeName());
@@ -151,7 +155,9 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 		Optional<User> existingSocialUser = userReader.findBySocialTypeAndSocialId(attributes.socialType(),
 			attributes.socialId());
 		if (existingSocialUser.isPresent()) {
-			return existingSocialUser.get();
+			User user = existingSocialUser.get();
+			droppedUserIdentifierValidator.validateEmail(user.getEmail());
+			return user;
 		}
 
 		if (!hasText(attributes.email())) {
@@ -163,6 +169,8 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 		if (existingEmailUser.isPresent()) {
 			User existingUser = existingEmailUser.get();
 
+			droppedUserIdentifierValidator.validateEmail(attributes.email());
+
 			// 2-1. 기존 유저가 있다면 소셜 계정만 새로 연결 (계정 통합)
 			if (!attributes.isEmailVerified()) {
 				throw AuthErrorCode.UNVERIFIED_SOCIAL_EMAIL.toBaseException();
@@ -173,6 +181,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
 			return existingUser;
 		}
+		droppedUserIdentifierValidator.validateEmail(attributes.email());
 
 		// 2-2. 소셜 계정도 없고 이메일 중복도 없는 경우 (GUEST)
 		User newUser = User.createSocialUser(attributes);

@@ -12,6 +12,8 @@ import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.community.post.repository.query.PostCursorResult;
 import net.causw.app.main.domain.community.post.repository.query.PostQueryRepository;
+import net.causw.app.main.domain.integration.crawled.entity.CrawledPostImage;
+import net.causw.app.main.domain.integration.crawled.repository.CrawledPostImageRepository;
 import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -26,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 public class PostReader {
 	private final PostRepository postRepository;
 	private final PostQueryRepository postQueryRepository;
+	private final CrawledPostImageRepository crawledPostImageRepository;
 
 	/**
 	 * Post ID로 Post를 조회합니다. (Board와 함께 Fetch Join)
@@ -112,13 +115,25 @@ public class PostReader {
 	}
 
 	/**
-	 * 여러 게시글의 이미지 URL 목록을 조회합니다.
+	 * 여러 게시글의 이미지 URL 목록을 조회합니다. (S3 업로드 이미지 + 크롤링 이미지 병합)
 	 *
 	 * @param postIds 게시글 ID 목록
 	 * @return 게시글 ID를 키로, 이미지 URL 목록을 값으로 하는 맵
 	 */
 	public Map<String, List<String>> findPostImagesByPostIds(List<String> postIds) {
-		return postQueryRepository.findPostImagesByPostIds(postIds);
+		// S3 업로드 이미지 조회
+		Map<String, List<String>> imageMap = new java.util.HashMap<>(
+			postQueryRepository.findPostImagesByPostIds(postIds));
+
+		// 크롤링 이미지 병합
+		List<CrawledPostImage> crawledImages = crawledPostImageRepository
+			.findAllByPostIdInOrderByPostIdAscImageOrderAsc(postIds);
+		for (CrawledPostImage crawledImage : crawledImages) {
+			imageMap.computeIfAbsent(crawledImage.getPost().getId(), k -> new java.util.ArrayList<>())
+				.add(crawledImage.getImageUrl());
+		}
+
+		return imageMap;
 	}
 
 	/**

@@ -3,6 +3,7 @@ package net.causw.app.main.domain.community.post.service.v2.mapper;
 import java.util.List;
 
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.query.PostCursorResult;
@@ -61,7 +62,8 @@ public class PostMapper {
 	/**
 	 * PostCursorResult를 PostListResult.PostItem으로 변환합니다.
 	 */
-	public static PostListResult.PostItem toPostListItem(PostCursorResult result, List<String> imageUrls) {
+	public static PostListResult.PostItem toPostListItem(PostCursorResult result, List<String> imageUrls,
+		boolean isPostLike, boolean isOwner, boolean isOfficial) {
 		String writerNickname = resolveWriterNickname(result);
 		ProfileImageDto writerProfileImage = resolveWriterProfileImage(result);
 
@@ -81,7 +83,10 @@ public class PostMapper {
 			result.updatedAt(),
 			imageUrls,
 			result.boardId(),
-			result.boardName());
+			result.boardName(),
+			isPostLike,
+			isOwner,
+			isOfficial);
 	}
 
 	/**
@@ -101,6 +106,7 @@ public class PostMapper {
 	 */
 	public static PostDetailResult toPostDetailResult(
 		Post post,
+		UserProfileImage writerProfileImage,
 		List<String> imageUrls,
 		Long numComment,
 		Long numLike,
@@ -109,10 +115,11 @@ public class PostMapper {
 		Boolean isPostFavorite,
 		boolean isOwner,
 		boolean updatable,
-		boolean deletable) {
+		boolean deletable,
+		boolean isOfficial) {
 
 		String displayWriterNickname = resolveWriterNickname(post);
-		ProfileImageDto writerProfileImage = resolveWriterProfileImage(post);
+		ProfileImageDto writerProfileImageDto = resolveWriterProfileImage(post, writerProfileImage);
 		String voteId = resolveVoteId(post);
 
 		return PostDetailResult.builder()
@@ -120,7 +127,7 @@ public class PostMapper {
 			.content(post.getContent())
 			.isDeleted(post.getIsDeleted())
 			.displayWriterNickname(displayWriterNickname)
-			.writerProfileImage(writerProfileImage)
+			.writerProfileImage(writerProfileImageDto)
 			.fileUrlList(imageUrls)
 			.numComment(numComment)
 			.numLike(numLike)
@@ -133,6 +140,7 @@ public class PostMapper {
 			.isPostFavorite(isPostFavorite)
 			.updatable(updatable)
 			.deletable(deletable)
+			.isOfficial(isOfficial)
 			.createdAt(post.getCreatedAt())
 			.updatedAt(post.getUpdatedAt())
 			.boardId(post.getBoard().getId())
@@ -170,11 +178,11 @@ public class PostMapper {
 		return writer.getNickname();
 	}
 
-	private static ProfileImageDto resolveWriterProfileImage(Post post) {
+	private static ProfileImageDto resolveWriterProfileImage(Post post, UserProfileImage writerProfileImage) {
 		if (isInactiveWriter(post.getWriter()) || post.getIsAnonymous()) {
 			return ProfileImageDto.GHOST;
 		}
-		return ProfileImageDto.from(post.getWriter());
+		return ProfileImageDto.from(post.getWriter(), writerProfileImage);
 	}
 
 	private static String resolveVoteId(Post post) {
@@ -197,7 +205,7 @@ public class PostMapper {
 	}
 
 	private static boolean isInactiveWriter(User writer) {
-		return writer == null || writer.isDeleted() || writer.getState() == UserState.DROP;
+		return writer == null || writer.isInactive() || writer.getState() == UserState.DROP;
 	}
 
 }

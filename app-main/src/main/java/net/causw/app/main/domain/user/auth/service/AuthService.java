@@ -10,6 +10,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
 import net.causw.app.main.domain.user.account.service.implementation.SocialAccountReader;
@@ -18,6 +20,7 @@ import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.domain.user.account.service.v1.PasswordGenerator;
+import net.causw.app.main.domain.user.account.util.DroppedUserIdentifierValidator;
 import net.causw.app.main.domain.user.account.util.masking.EmailMasker;
 import net.causw.app.main.domain.user.auth.entity.EmailVerification;
 import net.causw.app.main.domain.user.auth.entity.EmailVerification.VerificationStatus;
@@ -68,6 +71,8 @@ public class AuthService {
 	private final TermsValidator termsValidator;
 	private final UserTermsAgreementWriter userTermsAgreementWriter;
 	private final UserTermsAgreementReader userTermsAgreementReader;
+	private final UserProfileImageReader userProfileImageReader;
+	private final DroppedUserIdentifierValidator droppedUserIdentifierValidator;
 
 	/**
 	 * 이름+이메일 기준으로 비밀번호 초기화용 인증코드를 발송합니다.
@@ -135,9 +140,13 @@ public class AuthService {
 	 */
 	@Transactional
 	public AuthResult registerEmailUser(UserRegisterDto dto) {
+		// 추방당한 회원인지 확인
+		droppedUserIdentifierValidator.validateEmail(dto.email());
+		droppedUserIdentifierValidator.validatePhone(dto.phoneNumber());
+
 		// 전화번호로 기존 사용자 탐색 및 사용자 상태에 따른 에러 반환
 		Optional<User> userExist = userReader.checkUserExistByPhoneNumAndName(dto.phoneNumber(), dto.name());
-		userExist.ifPresent(user -> userValidator.validateUserStatusForSignup(user));
+		userExist.ifPresent(userValidator::validateUserStatusForSignup);
 
 		// 이메일, 닉네임, 전화번호에 대한 중복 검증 수행
 		userValidator.checkEmailDuplication(dto.email());
@@ -161,8 +170,11 @@ public class AuthService {
 			.toList();
 		userTermsAgreementWriter.saveAll(newAgreements);
 
-		return AuthResult.of(null, savedUser.getName(), savedUser.getEmail(), ProfileImageDto.from(savedUser), null,
-			savedUser.isGuest(), true, savedUser.isAcademicCertified(), savedUser.getAcademicStatus());
+		// 신규 가입 유저는 커스텀 프로필 이미지가 없으므로 null 전달
+		return AuthResult.of(null, savedUser.getName(), savedUser.getEmail(),
+			ProfileImageDto.from(savedUser, null), null,
+			savedUser.isGuest(), true, savedUser.isAcademicCertified(),
+			savedUser.getAcademicStatus());
 	}
 
 	/**
@@ -186,8 +198,10 @@ public class AuthService {
 		AuthTokenPair tokens = authTokenManager.issueTokens(user, null);
 		// 최신 필수 약관 동의 여부 확인
 		boolean hasAllRequiredLatestTerms = userTermsAgreementReader.hasAgreedToAllRequiredLatestTerms(user);
+		UserProfileImage profileImage = userProfileImageReader.findByUserIdOrNull(user.getId());
 
-		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), ProfileImageDto.from(user),
+		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(),
+			ProfileImageDto.from(user, profileImage),
 			tokens.refreshToken(), user.isGuest(), hasAllRequiredLatestTerms, user.isAcademicCertified(),
 			user.getAcademicStatus());
 	}
@@ -200,7 +214,7 @@ public class AuthService {
 		}
 		// 탈퇴한 회원일 경우에도 null 처리
 		User user = userOptional.get();
-		if (user.isDeleted()) {
+		if (user.isInactive()) {
 			return Optional.empty();
 		}
 		List<EmailFindResult.SocialAccountSummary> socialAccounts = socialAccountReader.findAllByUserId(user.getId())
@@ -241,10 +255,11 @@ public class AuthService {
 		userValidator.validateUser(user);
 		// 토큰 생성
 		AuthTokenPair tokens = authTokenManager.issueTokens(user, refreshToken);
-		// 최신 필수 약관 동의 여부 확인
+		UserProfileImage profileImage = userProfileImageReader.findByUserIdOrNull(user.getId());
 		boolean hasAllRequiredLatestTerms = userTermsAgreementReader.hasAgreedToAllRequiredLatestTerms(user);
 
-		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(), ProfileImageDto.from(user),
+		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(),
+			ProfileImageDto.from(user, profileImage),
 			tokens.refreshToken(), user.isGuest(), hasAllRequiredLatestTerms, user.isAcademicCertified(),
 			user.getAcademicStatus());
 	}

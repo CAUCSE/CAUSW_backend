@@ -8,7 +8,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.causw.app.main.domain.community.board.api.v2.dto.response.BoardReadableListResponse;
+import net.causw.app.main.domain.community.board.api.v2.dto.response.BoardWritableListResponse;
 import net.causw.app.main.domain.community.board.api.v2.mapper.BoardReadableMapper;
+import net.causw.app.main.domain.community.board.api.v2.mapper.BoardWritableMapper;
 import net.causw.app.main.domain.community.board.service.v2.BoardService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
@@ -25,6 +27,7 @@ public class BoardController {
 
 	private final BoardService boardService;
 	private final BoardReadableMapper boardReadableMapper;
+	private final BoardWritableMapper boardWritableMapper;
 
 	@GetMapping("/available")
 	@ResponseStatus(HttpStatus.OK)
@@ -33,5 +36,14 @@ public class BoardController {
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return ApiResponse.success(
 			boardReadableMapper.toReadableListResponse(boardService.getReadableBoards(userDetails.getUser().getId())));
+	}
+
+	@GetMapping("/writable")
+	@ResponseStatus(HttpStatus.OK)
+	@Operation(summary = "쓰기 가능한 게시판 목록", description = "현재 사용자가 쓰기 가능한 게시판의 id, name 목록을 표시 순서대로 반환합니다.")
+	public ApiResponse<BoardWritableListResponse> getWritableBoards(
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
+		return ApiResponse.success(
+			boardWritableMapper.toWritableListResponse(boardService.getWritableBoards(userDetails.getUser().getId())));
 	}
 }

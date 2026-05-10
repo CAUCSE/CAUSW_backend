@@ -2,13 +2,7 @@ package net.causw.app.main.domain.user.account.service.v1;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.context.ApplicationEventPublisher;
@@ -16,7 +10,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.access.WebInvocationPrivilegeEvaluator;
 import org.springframework.stereotype.Service;
@@ -34,6 +27,7 @@ import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.asset.file.repository.UserAcademicRecordApplicationAttachImageRepository;
 import net.causw.app.main.domain.asset.file.repository.UserProfileImageRepository;
 import net.causw.app.main.domain.asset.file.service.v1.UuidFileV1Service;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.asset.locker.entity.LockerLog;
 import net.causw.app.main.domain.asset.locker.enums.LockerLogAction;
 import net.causw.app.main.domain.asset.locker.repository.LockerLogRepository;
@@ -111,6 +105,7 @@ import net.causw.app.main.domain.user.account.util.UserStateValidator;
 import net.causw.app.main.domain.user.relation.service.v1.UserBlockEntityService;
 import net.causw.app.main.shared.StatusPolicy;
 import net.causw.app.main.shared.ValidatorBucket;
+import net.causw.app.main.shared.entity.BaseEntity;
 import net.causw.app.main.shared.infra.firebase.FcmUtils;
 import net.causw.app.main.shared.infra.mail.event.FindPasswordEvent;
 import net.causw.app.main.shared.infra.redis.RedisUtils;
@@ -171,6 +166,7 @@ public class UserService {
 	private final WebInvocationPrivilegeEvaluator privilegeEvaluator;
 	private final CircleQueryRepository circleQueryRepository;
 	private final UserEntityService userEntityService;
+	private final UserProfileImageReader userProfileImageReader;
 
 	@Deprecated
 	@Transactional
@@ -231,7 +227,8 @@ public class UserService {
 			.orElseThrow(() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST,
 				MessageUtil.USER_NOT_FOUND));
-		return UserDtoMapper.INSTANCE.toUserResponseDto(entity, null, null);
+		UserProfileImage profileImage = userProfileImageRepository.findByUserId(entity.getId()).orElse(null);
+		return userDtoMapper.toUserResponseDto(entity, profileImage, null, null);
 	}
 
 	@Transactional(readOnly = true)
@@ -242,6 +239,7 @@ public class UserService {
 			.consistOf(UserStateValidator.of(requestUser))
 			.validate();
 
+		UserProfileImage profileImage = userProfileImageRepository.findByUserId(requestUser.getId()).orElse(null);
 		if (roles.contains(Role.LEADER_CIRCLE)) {
 			List<Circle> ownCircles = this.circleRepository.findByLeader_Id(requestUser.getId());
 			if (ownCircles.isEmpty()) {
@@ -250,12 +248,13 @@ public class UserService {
 					MessageUtil.NO_ASSIGNED_CIRCLE_FOR_LEADER);
 			}
 
-			return UserDtoMapper.INSTANCE.toUserResponseDto(
+			return userDtoMapper.toUserResponseDto(
 				requestUser,
+				profileImage,
 				ownCircles.stream().map(Circle::getId).collect(Collectors.toList()),
 				ownCircles.stream().map(Circle::getName).collect(Collectors.toList()));
 		}
-		return UserDtoMapper.INSTANCE.toUserResponseDto(requestUser, null, null);
+		return userDtoMapper.toUserResponseDto(requestUser, profileImage, null, null);
 	}
 
 	@Transactional(readOnly = true)
@@ -267,8 +266,10 @@ public class UserService {
 			.consistOf(UserStateValidator.of(requestUser))
 			.validate();
 
-		return UserDtoMapper.INSTANCE.toUserPostsResponseDto(
+		UserProfileImage profileImage = userProfileImageRepository.findByUserId(requestUser.getId()).orElse(null);
+		return userDtoMapper.toUserPostsResponseDto(
 			requestUser,
+			profileImage,
 			this.postRepository.findByUserId(requestUser.getId(),
 				this.pageableFactory.create(pageNum, StaticValue.DEFAULT_POST_PAGE_SIZE))
 				.map(post -> PostDtoV1Mapper.INSTANCE.toPostsResponseDto(
@@ -296,8 +297,10 @@ public class UserService {
 		Page<FavoritePost> favoritePostPage = this.favoritePostRepository.findByUserId(requestUser.getId(),
 			blockedUserIds, pageable);
 
-		return UserDtoMapper.INSTANCE.toUserPostsResponseDto(
+		UserProfileImage profileImage = userProfileImageRepository.findByUserId(requestUser.getId()).orElse(null);
+		return userDtoMapper.toUserPostsResponseDto(
 			requestUser,
+			profileImage,
 			favoritePostPage
 				.map(favoritePost -> {
 					Post post = favoritePost.getPost();
@@ -345,8 +348,10 @@ public class UserService {
 		Page<LikePost> likePostPage = this.likePostRepository.findByUserId(requestUser.getId(), blockedUserIds,
 			pageable);
 
+		UserProfileImage profileImage = userProfileImageRepository.findByUserId(requestUser.getId()).orElse(null);
 		return userDtoMapper.toUserPostsResponseDto(
 			requestUser,
+			profileImage,
 			likePostPage
 				.map(likePost -> {
 					Post post = likePost.getPost();
@@ -399,8 +404,11 @@ public class UserService {
 		Page<Post> combinedPostsPage = new PageImpl<>(combinedPostsList, pageable, combinedPostsList.size());
 
 		// todo: n+1 발생하는 내용 추후 해결해야함
-		return UserDtoMapper.INSTANCE.toUserPostsResponseDto(
+		UserProfileImage commentWriterProfileImage = userProfileImageRepository.findByUserId(requestUser.getId())
+			.orElse(null);
+		return userDtoMapper.toUserPostsResponseDto(
 			requestUser,
+			commentWriterProfileImage,
 			combinedPostsPage.map(post -> {
 				PostsResponseDto dto = PostDtoV1Mapper.INSTANCE.toPostsResponseDto(
 					post,
@@ -431,8 +439,10 @@ public class UserService {
 			.consistOf(UserStateValidator.of(requestUser))
 			.validate();
 
-		return UserDtoMapper.INSTANCE.toUserCommentsResponseDto(
+		UserProfileImage profileImage = userProfileImageRepository.findByUserId(requestUser.getId()).orElse(null);
+		return userDtoMapper.toUserCommentsResponseDto(
 			requestUser,
+			profileImage,
 			this.commentRepository.findByUserId(requestUser.getId(),
 				this.pageableFactory.create(pageNum, StaticValue.DEFAULT_COMMENT_PAGE_SIZE))
 				.map(comment -> {
@@ -478,8 +488,9 @@ public class UserService {
 						circle -> this.circleMemberRepository.findByUser_IdAndCircle_Id(user.getId(), circle.getId())
 							.map(circleMemberEntity -> circleMemberEntity.getStatus() == CircleMemberStatus.MEMBER)
 							.orElse(false)))
-				.map(user -> UserDtoMapper.INSTANCE.toUserResponseDto(
+				.map(user -> userDtoMapper.toUserResponseDto(
 					user,
+					userProfileImageRepository.findByUserId(user.getId()).orElse(null),
 					ownCircles.stream().map(Circle::getId).collect(Collectors.toList()),
 					ownCircles.stream().map(Circle::getName).collect(Collectors.toList())))
 				.collect(Collectors.toList());
@@ -488,7 +499,8 @@ public class UserService {
 		return this.userRepository.findByName(name)
 			.stream()
 			.filter(user -> user.getState().equals(UserState.ACTIVE))
-			.map(user -> UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null))
+			.map(user -> userDtoMapper.toUserResponseDto(user,
+				userProfileImageRepository.findByUserId(user.getId()).orElse(null), null, null))
 			.collect(Collectors.toList());
 	}
 
@@ -508,15 +520,10 @@ public class UserService {
 
 		//portimpl 내부 로직 서비스단으로 이동
 		Page<User> usersPage;
-		// [중요] v1 클라이언트는 여전히 레거시 state 문자열(INACTIVE)을 전달한다.
-		// 정책상 탈퇴 판정이 state가 아닌 deletedAt 기준으로 변경되면서,
-		// INACTIVE / INACTIVE_N_DROP 입력도 deletedAt 기반 조회 쿼리로 매핑한다.
 		if ("INACTIVE_N_DROP".equals(state)) {
-			usersPage = userRepository.findDroppedOrDeletedByName(
-				name,
-				PageRequest.of(pageNum, StaticValue.USER_LIST_PAGE_SIZE));
-		} else if ("INACTIVE".equals(state)) {
-			usersPage = userRepository.findDeletedByName(
+			List<String> statesToSearch = Arrays.asList("INACTIVE", "DROP");
+			usersPage = userRepository.findByStateInAndNameContaining(
+				statesToSearch,
 				name,
 				PageRequest.of(pageNum, StaticValue.USER_LIST_PAGE_SIZE));
 		} else {
@@ -527,6 +534,7 @@ public class UserService {
 		}
 
 		return usersPage.map(srcUser -> {
+			UserProfileImage profileImage = userProfileImageRepository.findByUserId(srcUser.getId()).orElse(null);
 			if (srcUser.getRoles().contains(Role.LEADER_CIRCLE)
 				&& !"INACTIVE_N_DROP".equals(state)) {
 				List<Circle> ownCircles = circleRepository.findByLeader_Id(srcUser.getId());
@@ -535,12 +543,13 @@ public class UserService {
 					userRepository.save(srcUser);
 				}
 
-				return UserDtoMapper.INSTANCE.toUserResponseDto(
+				return userDtoMapper.toUserResponseDto(
 					srcUser,
+					profileImage,
 					ownCircles.stream().map(Circle::getId).collect(Collectors.toList()),
 					ownCircles.stream().map(Circle::getName).collect(Collectors.toList()));
 			} else {
-				return UserDtoMapper.INSTANCE.toUserResponseDto(srcUser, null, null);
+				return userDtoMapper.toUserResponseDto(srcUser, profileImage, null, null);
 			}
 		});
 	}
@@ -602,10 +611,11 @@ public class UserService {
 				user.markAsAwait();
 				validateUser(dto, user);
 				userRepository.save(user);
-				return UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null);
+				return userDtoMapper.toUserResponseDto(user,
+					userProfileImageRepository.findByUserId(user.getId()).orElse(null), null, null);
 			}
 			// 탈퇴 계정은 복구 API를 통해 처리
-			else if (user.isDeleted()) {
+			else if (user.isInactive()) {
 				throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.USER_INACTIVE_CAN_REJOIN);
 			}
 			// ACTIVE, DROP은 가입 허용 X
@@ -646,10 +656,11 @@ public class UserService {
 				ghostuser.markAsAwait();
 				validateUser(dto, ghostuser);
 				userRepository.save(ghostuser);
-				return UserDtoMapper.INSTANCE.toUserResponseDto(ghostuser, null, null);
+				return userDtoMapper.toUserResponseDto(ghostuser,
+					userProfileImageRepository.findByUserId(ghostuser.getId()).orElse(null), null, null);
 			}
 			// 탈퇴 계정은 복구 API를 통해 처리
-			else if (ghostuser.isDeleted()) {
+			else if (ghostuser.isInactive()) {
 				throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.USER_INACTIVE_CAN_REJOIN);
 			} else if (state == UserState.ACTIVE) {
 				throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.PHONE_NUMBER_ALREADY_EXIST);
@@ -664,7 +675,7 @@ public class UserService {
 		User newUser = User.from(dto, passwordEncoder.encode(dto.getPassword()));
 		validateUser(dto, newUser);
 		userRepository.save(newUser);
-		return UserDtoMapper.INSTANCE.toUserResponseDto(newUser, null, null);
+		return userDtoMapper.toUserResponseDto(newUser, null, null, null);
 	}
 
 	/**
@@ -739,7 +750,7 @@ public class UserService {
 				MessageUtil.EMAIL_INVALID));
 
 		/* Validate the input password and user state
-		 * The sign-in process is rejected if the user is in BLOCKED, WAIT, or withdrawn(deletedAt set) state.
+		 * The sign-in process is rejected if the user is in BLOCKED, WAIT, or INACTIVE state.
 		 */
 		ValidatorBucket.of()
 			.consistOf(PasswordCorrectValidator.of(
@@ -773,7 +784,7 @@ public class UserService {
 		if (userFoundByEmail.isPresent()) {
 			UserState state = userFoundByEmail.get().getState();
 			// ACTIVE 또는 탈퇴 상태일 경우 중복
-			if (state == UserState.ACTIVE || userFoundByEmail.get().isDeleted()) {
+			if (state == UserState.ACTIVE || userFoundByEmail.get().isInactive()) {
 				return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(true);
 			}
 			// DROP 상태일 경우, 문의 메시지
@@ -800,7 +811,7 @@ public class UserService {
 			UserState state = userFoundByNickname.get().getState();
 
 			// ACTIVE 또는 탈퇴 상태일 경우 중복
-			if (state == UserState.ACTIVE || userFoundByNickname.get().isDeleted()) {
+			if (state == UserState.ACTIVE || userFoundByNickname.get().isInactive()) {
 				return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(true);
 			}
 			// DROP 상태일 경우, 문의 메시지
@@ -819,7 +830,7 @@ public class UserService {
 		if (userFoundByStudentId.isPresent()) {
 			UserState state = userFoundByStudentId.get().getState();
 			// ACTIVE 또는 탈퇴 상태일 경우 중복
-			if (state == UserState.ACTIVE || userFoundByStudentId.get().isDeleted()) {
+			if (state == UserState.ACTIVE || userFoundByStudentId.get().isInactive()) {
 				return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(true);
 			}
 			// DROP 상태일 경우, 문의 메시지
@@ -844,7 +855,7 @@ public class UserService {
 		if (userFoundByPhoneNumber.isPresent()) {
 			UserState state = userFoundByPhoneNumber.get().getState();
 			// ACTIVE 또는 탈퇴 상태일 경우 중복
-			if (state == UserState.ACTIVE || userFoundByPhoneNumber.get().isDeleted()) {
+			if (state == UserState.ACTIVE || userFoundByPhoneNumber.get().isInactive()) {
 				return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(true);
 			}
 			// DROP 상태일 경우, 문의 메시지
@@ -876,28 +887,29 @@ public class UserService {
 			validatePhoneNumberUniqueness(userUpdateRequestDto.getPhoneNumber(), srcUser);
 		}
 
-		UserProfileImage userProfileImage = srcUser.getUserProfileImage();
+		UserProfileImage userProfileImage = userProfileImageRepository.findByUserId(srcUser.getId()).orElse(null);
 
 		if (profileImage != null && !profileImage.isEmpty()) {
-			if (srcUser.getUserProfileImage() == null) {
+			if (userProfileImage == null) {
 				userProfileImage = UserProfileImage.of(
 					user,
 					uuidFileService.saveFile(profileImage, FilePath.USER_PROFILE));
+				userProfileImageRepository.save(userProfileImage);
 			} else {
 				userProfileImage.setUuidFile(
 					uuidFileService.updateFile(
-						srcUser.getUserProfileImage().getUuidFile(),
+						userProfileImage.getUuidFile(),
 						profileImage,
 						FilePath.USER_PROFILE));
 			}
 		}
 
-		srcUser.updateProfile(userUpdateRequestDto.getNickname(), userProfileImage,
+		srcUser.updateProfile(userUpdateRequestDto.getNickname(),
 			userUpdateRequestDto.getPhoneNumber());
 
 		User updatedUser = userRepository.save(srcUser);
 
-		return UserDtoMapper.INSTANCE.toUserResponseDto(updatedUser, null, null);
+		return userDtoMapper.toUserResponseDto(updatedUser, userProfileImage, null, null);
 	}
 
 	// private method
@@ -920,7 +932,8 @@ public class UserService {
 		user.setPassword(this.passwordEncoder.encode(userUpdatePasswordRequestDto.getUpdatedPassword()));
 		User updatedUser = this.userRepository.save(user);
 
-		return UserDtoMapper.INSTANCE.toUserResponseDto(updatedUser, null, null);
+		return userDtoMapper.toUserResponseDto(updatedUser,
+			userProfileImageRepository.findByUserId(updatedUser.getId()).orElse(null), null, null);
 	}
 
 	//유저정보 완전 삭제
@@ -982,7 +995,7 @@ public class UserService {
 		}
 		this.userRepository.delete(deleteUser);
 
-		return UserDtoMapper.INSTANCE.toUserResponseDto(deleteUser, null, null);
+		return userDtoMapper.toUserResponseDto(deleteUser, null, null, null);
 	}
 
 	@Transactional
@@ -1019,20 +1032,9 @@ public class UserService {
 		this.circleMemberRepository.findByUser_Id(user.getId())
 			.forEach(circleMember -> this.updateStatus(circleMember.getId(), CircleMemberStatus.LEAVE));
 
-		user.setDeletedAt(LocalDateTime.now());
+		user.withdraw();
 		User entity = userRepository.save(user);
-		return UserDtoMapper.INSTANCE.toUserResponseDto(entity, null, null);
-	}
-
-	@Scheduled(cron = "0 0 0 * * ?")
-	public void deleteUser() {
-		LocalDateTime dueDate = LocalDateTime.now().minusYears(5);
-
-		userRepository.findAllByDeletedAtBefore(dueDate).stream()
-			.forEach(user -> {
-				user.delete();
-				userRepository.save(user);
-			});
+		return userDtoMapper.toUserResponseDto(entity, null, null, null);
 	}
 
 	private Optional<CircleMember> updateStatus(String applicationId, CircleMemberStatus targetStatus) {
@@ -1098,7 +1100,7 @@ public class UserService {
 
 		userRepository.save(droppedUser);
 
-		return UserDtoMapper.INSTANCE.toUserResponseDto(droppedUser, null, null);
+		return userDtoMapper.toUserResponseDto(droppedUser, null, null, null);
 	}
 
 	/**
@@ -1122,7 +1124,7 @@ public class UserService {
 	private void validateNicknameUniqueness(String nickname, User currentUser) {
 		userRepository.findByNickname(nickname).ifPresent(foundUser -> {
 			if (currentUser == null || !foundUser.getId().equals(currentUser.getId())) {
-				if (foundUser.getState() == UserState.ACTIVE || foundUser.isDeleted()) {
+				if (foundUser.getState() == UserState.ACTIVE || foundUser.isInactive()) {
 					throw new BadRequestException(
 						ErrorCode.ROW_ALREADY_EXIST,
 						MessageUtil.NICKNAME_ALREADY_EXIST);
@@ -1139,7 +1141,7 @@ public class UserService {
 	private void validatePhoneNumberUniqueness(String phoneNumber, User currentUser) {
 		userRepository.findByPhoneNumber(phoneNumber).ifPresent(foundUser -> {
 			if (currentUser == null || !foundUser.getId().equals(currentUser.getId())) {
-				if (foundUser.getState() == UserState.ACTIVE || foundUser.isDeleted()) {
+				if (foundUser.getState() == UserState.ACTIVE || foundUser.isInactive()) {
 					throw new BadRequestException(
 						ErrorCode.ROW_ALREADY_EXIST,
 						MessageUtil.PHONE_NUMBER_ALREADY_EXIST);
@@ -1156,7 +1158,7 @@ public class UserService {
 	private void validateStudentIdUniqueness(String studentId, User currentUser) {
 		userRepository.findByStudentId(studentId).ifPresent(foundUser -> {
 			if (currentUser == null || !foundUser.getId().equals(currentUser.getId())) {
-				if (foundUser.getState() == UserState.ACTIVE || foundUser.isDeleted()) {
+				if (foundUser.getState() == UserState.ACTIVE || foundUser.isInactive()) {
 					throw new BadRequestException(
 						ErrorCode.ROW_ALREADY_EXIST,
 						MessageUtil.STUDENT_ID_ALREADY_EXIST);
@@ -1173,7 +1175,7 @@ public class UserService {
 	private void validateEmailUniqueness(String email, User currentUser) {
 		userRepository.findByEmail(email).ifPresent(foundUser -> {
 			if (currentUser == null || !foundUser.getId().equals(currentUser.getId())) {
-				if (foundUser.getState() == UserState.ACTIVE || foundUser.isDeleted()) {
+				if (foundUser.getState() == UserState.ACTIVE || foundUser.isInactive()) {
 					throw new BadRequestException(
 						ErrorCode.ROW_ALREADY_EXIST,
 						MessageUtil.EMAIL_ALREADY_EXIST);
@@ -1403,7 +1405,8 @@ public class UserService {
 				MessageUtil.INTERNAL_SERVER_ERROR));
 		entity.setDeletedAt(null);
 		userRepository.save(entity);
-		return UserDtoMapper.INSTANCE.toUserResponseDto(entity, null, null);
+		return userDtoMapper.toUserResponseDto(entity,
+			userProfileImageRepository.findByUserId(entity.getId()).orElse(null), null, null);
 	}
 
 	@Transactional
@@ -1468,12 +1471,13 @@ public class UserService {
 
 		return userList.stream()
 			.map(user -> {
+				UserProfileImage profileImage = userProfileImageRepository.findByUserId(user.getId()).orElse(null);
 				if (user.getRoles().contains(Role.LEADER_CIRCLE)) {
 					List<String> circleIdIfLeader = getCircleIdsIfLeader(user);
 					List<String> circleNameIfLeader = getCircleNamesIfLeader(user);
-					return UserDtoMapper.INSTANCE.toUserResponseDto(user, circleIdIfLeader, circleNameIfLeader);
+					return userDtoMapper.toUserResponseDto(user, profileImage, circleIdIfLeader, circleNameIfLeader);
 				} else {
-					return UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null);
+					return userDtoMapper.toUserResponseDto(user, profileImage, null, null);
 				}
 			})
 			.collect(Collectors.toList());
@@ -1521,6 +1525,7 @@ public class UserService {
 
 		Set<Role> roles = user.getRoles();
 
+		UserProfileImage profileImage = userProfileImageRepository.findByUserId(user.getId()).orElse(null);
 		if (roles.contains(Role.LEADER_CIRCLE)) {
 			List<Circle> ownCircles = this.circleRepository.findByLeader_Id(user.getId());
 			if (ownCircles.isEmpty()) {
@@ -1529,15 +1534,16 @@ public class UserService {
 					MessageUtil.NO_ASSIGNED_CIRCLE_FOR_LEADER);
 			}
 
-			return UserDtoMapper.INSTANCE.toUserResponseDto(
+			return userDtoMapper.toUserResponseDto(
 				user,
+				profileImage,
 				ownCircles.stream().map(Circle::getId).collect(Collectors.toList()),
 				ownCircles.stream().map(Circle::getName).collect(Collectors.toList()));
 		}
 
 		userRepository.save(user);
 
-		return UserDtoMapper.INSTANCE.toUserResponseDto(user, null, null);
+		return userDtoMapper.toUserResponseDto(user, profileImage, null, null);
 	}
 
 	@Transactional
@@ -1637,14 +1643,17 @@ public class UserService {
 
 	private List<UserResponseDto> getUserResponseDtosByState(UserState state) {
 		List<User> users = getUsersByState(state);
+		Map<String, UserProfileImage> mapByUserIds = userProfileImageReader
+			.findMapByUserIds(users.stream().map(BaseEntity::getId).toList());
 		return users.stream()
 			.map(user -> {
+				UserProfileImage profileImage = mapByUserIds.get(user.getId());
 				if (user.getRoles().contains(Role.LEADER_CIRCLE)) {
 					List<String> circleIdIfLeader = getCircleIdsIfLeader(user);
 					List<String> circleNameIfLeader = getCircleNamesIfLeader(user);
-					return UserDtoMapper.INSTANCE.toUserResponseDto(user, circleIdIfLeader, circleNameIfLeader);
+					return userDtoMapper.toUserResponseDto(user, profileImage, circleIdIfLeader, circleNameIfLeader);
 				} else {
-					return UserDtoMapper.INSTANCE.toUserResponseDto(user);
+					return userDtoMapper.toUserResponseDto(user, profileImage);
 				}
 			}).toList();
 	}
@@ -1700,7 +1709,7 @@ public class UserService {
 				MessageUtil.USER_NOT_FOUND));
 
 		// 탈퇴 계정인지 확인
-		if (!user.isDeleted()) {
+		if (!user.isInactive()) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_PARAMETER,
 				MessageUtil.USER_RECOVER_INVALID_STATE);

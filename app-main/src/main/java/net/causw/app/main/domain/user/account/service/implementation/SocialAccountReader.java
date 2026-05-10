@@ -33,4 +33,11 @@ public class SocialAccountReader {
 	public long countByUserId(String userId) {
 		return socialAccountRepository.countByUserId(userId);
 	}
+
+	public List<SocialAccount> findAllByUserIdIn(List<String> userIds) {
+		if (userIds == null || userIds.isEmpty()) {
+			return List.of();
+		}
+		return socialAccountRepository.findAllByUserIdIn(userIds);
+	}
 }

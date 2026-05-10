@@ -1,6 +1,7 @@
 package net.causw.app.main.domain.community.post.repository.query;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 
 import net.causw.app.main.domain.asset.file.entity.joinEntity.QPostAttachImage;
+import net.causw.app.main.domain.asset.file.entity.joinEntity.QUserProfileImage;
 import net.causw.app.main.domain.asset.file.enums.FileExtensionType;
 import net.causw.app.main.domain.community.comment.entity.QChildComment;
 import net.causw.app.main.domain.community.comment.entity.QComment;
@@ -95,6 +97,12 @@ public class PostQueryRepository {
 		String cursorId,
 		int size,
 		String keyword) {
+		// 빈 리스트가 전달된 경우 "조회 가능한 게시판이 한 개도 없음"을 의미하므로 즉시 빈 결과 반환.
+		// (null은 docstring 계약상 "전체 게시판"이므로 별도 처리하지 않음)
+		if (boardIds != null && boardIds.isEmpty()) {
+			return new SliceImpl<>(List.of(), Pageable.ofSize(size), false);
+		}
+
 		QPost post = QPost.post;
 		QUser writer = new QUser("writer");
 
@@ -411,19 +419,19 @@ public class PostQueryRepository {
 			.from(favoritePost)
 			.where(favoritePost.post.eq(post));
 
-		// 작성자 프로필 이미지 URL 서브쿼리
-		SubQueryExpression<String> writerProfileImageUrl = JPAExpressions.select(
-			writer.userProfileImage.uuidFile.fileUrl)
-			.from(writer)
-			.where(writer.eq(post.writer)
-				.and(writer.userProfileImage.isNotNull()));
+		// 작성자 프로필 이미지 URL 서브쿼리 (UserProfileImage owning side 기준)
+		QUserProfileImage upi = QUserProfileImage.userProfileImage;
+		SubQueryExpression<String> writerProfileImageUrl = JPAExpressions
+			.select(upi.uuidFile.fileUrl)
+			.from(upi)
+			.where(upi.user.id.eq(post.writer.id));
 
 		return new QPostCursorResult(
 			post.id, post.content,
 			totalCommentCount, likeCount, favoriteCount,
 			post.isAnonymous, post.vote.id, post.isDeleted,
 			post.isCrawled,
-			writer.isNotNull(), writer.name, writer.nickname, writer.admissionYear, writer.state,
+			writer.isNotNull(), writer.id, writer.name, writer.nickname, writer.admissionYear, writer.state,
 			writer.profileImageType,
 			writerProfileImageUrl,
 			post.createdAt, post.updatedAt,
@@ -431,7 +439,7 @@ public class PostQueryRepository {
 	}
 
 	/**
-	 * 특정 게시글들의 이미지 URL 목록을 조회합니다.
+	 * 특정 게시글들의 S3 업로드 이미지 URL 목록을 조회합니다.
 	 *
 	 * @param postIds 게시글 ID 목록
 	 * @return 게시글 ID를 키로, 이미지 URL 목록을 값으로 하는 맵
@@ -448,12 +456,12 @@ public class PostQueryRepository {
 				postAttachImage.uuidFile.createdAt.asc())
 			.fetch();
 
-		return results.stream()
+		return new HashMap<>(results.stream()
 			.collect(Collectors.groupingBy(
 				tuple -> tuple.get(postAttachImage.post.id),
 				Collectors.mapping(
 					tuple -> tuple.get(postAttachImage.uuidFile.fileUrl),
-					Collectors.toList())));
+					Collectors.toList()))));
 	}
 
 	/**

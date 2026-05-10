@@ -8,6 +8,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
@@ -19,8 +21,10 @@ import net.causw.app.main.domain.user.account.service.dto.response.UserDetailIte
 import net.causw.app.main.domain.user.account.service.dto.response.UserDropResult;
 import net.causw.app.main.domain.user.account.service.dto.response.UserListItem;
 import net.causw.app.main.domain.user.account.service.dto.response.UserRestoreResult;
+import net.causw.app.main.domain.user.account.service.dto.response.UserRestoreWithdrawalResult;
 import net.causw.app.main.domain.user.account.service.dto.response.UserRoleUpdateResult;
 import net.causw.app.main.domain.user.account.service.dto.result.DeletedUserListItemDto;
+import net.causw.app.main.domain.user.account.service.implementation.DroppedUserIdentifierWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserAdminActionLogWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
@@ -37,6 +41,9 @@ public class UserAdminService {
 	private final LockerReader lockerReader;
 	private final LockerWriter lockerWriter;
 	private final UserAdminActionLogWriter userAdminActionLogWriter;
+	private final UserProfileImageReader userProfileImageReader;
+	private final DroppedUserIdentifierWriter droppedUserIdentifierWriter;
+	private final UserAccountService userAccountService;
 
 	// 필터링 조건과 페이징 정보를 기반으로 전체 사용자 목록 조회
 	@Transactional(readOnly = true)
@@ -55,7 +62,8 @@ public class UserAdminService {
 	public UserDetailItem getUserDetail(String userId) {
 		// todo: major deprecated 제거
 		User user = userReader.findDetailById(userId);
-		return UserDetailItem.from(user);
+		UserProfileImage profileImage = userProfileImageReader.findByUserIdOrNull(userId);
+		return UserDetailItem.from(user, profileImage);
 	}
 
 	@Transactional
@@ -71,6 +79,9 @@ public class UserAdminService {
 		});
 
 		User updatedUser = userWriter.dropByAdmin(targetUser, dropReason);
+
+		droppedUserIdentifierWriter.saveDroppedIdentifiers(updatedUser);
+
 		userAdminActionLogWriter.logDrop(adminUser, updatedUser, beforeState, beforeRoles, dropReason);
 		return UserDropResult.from(updatedUser);
 	}
@@ -78,14 +89,31 @@ public class UserAdminService {
 	@Transactional
 	public UserRestoreResult restoreUser(User adminUser, String userId) {
 		User targetUser = userReader.findUserById(userId);
+
 		validateRestorableUser(targetUser);
 
 		UserState beforeState = targetUser.getState();
 		Set<Role> beforeRoles = new HashSet<>(targetUser.getRoles());
 
-		User restoredUser = userWriter.restore(targetUser);
+		User restoredUser = userAccountService.restore(targetUser.getId());
 		userAdminActionLogWriter.logRestore(adminUser, restoredUser, beforeState, beforeRoles);
 		return UserRestoreResult.from(restoredUser);
+	}
+
+	@Transactional
+	public UserRestoreWithdrawalResult restoreWithdrawnUser(User adminUser, String userId) {
+		User targetUser = userReader.findUserById(userId);
+
+		validateRestorableWithdrawnUser(targetUser);
+
+		UserState beforeState = targetUser.getState();
+		Set<Role> beforeRoles = new HashSet<>(targetUser.getRoles());
+
+		User restoredUser = userAccountService.restore(targetUser.getId());
+
+		userAdminActionLogWriter.logRestore(adminUser, restoredUser, beforeState, beforeRoles);
+
+		return UserRestoreWithdrawalResult.from(restoredUser);
 	}
 
 	@Transactional
@@ -111,8 +139,21 @@ public class UserAdminService {
 	// 사용자 복원이 가능한지 검증
 	// - DROP 상태만 복원 가능
 	private void validateRestorableUser(User targetUser) {
-		boolean restorable = targetUser.getState() == UserState.DROP;
-		if (!restorable) {
+		if (targetUser.getState() != UserState.DROP) {
+			throw UserErrorCode.USER_NOT_RESTORABLE.toBaseException();
+		}
+	}
+
+	// 자진 탈퇴 사용자 복원이 가능한지 검증
+	// - DROP 상태가 아니어야 하며, 실제로 탈퇴(isDeleted) 상태여야 함
+	private void validateRestorableWithdrawnUser(User targetUser) {
+		// 1. 추방(DROP)된 유저는 이 API를 통해 복구할 수 없음 (restoreUser API 사용 유도)
+		if (targetUser.getState() == UserState.DROP) {
+			throw UserErrorCode.USER_NOT_RESTORABLE.toBaseException();
+		}
+
+		// 2. 실제로 탈퇴(isDeleted) 상태인 유저여야 함
+		if (!targetUser.isDeleted()) {
 			throw UserErrorCode.USER_NOT_RESTORABLE.toBaseException();
 		}
 	}
@@ -125,9 +166,9 @@ public class UserAdminService {
 	}
 
 	// 역할 변경 가능한 대상인지 검증
-	// - ACTIVE 상태여야 하고 탈퇴(isDeleted) 상태가 아니어야 함
+	// - ACTIVE 상태여야 함
 	private void validateRoleUpdatableUser(User targetUser) {
-		boolean roleUpdatable = targetUser.getState() == UserState.ACTIVE && !targetUser.isDeleted();
+		boolean roleUpdatable = targetUser.getState() == UserState.ACTIVE;
 		if (!roleUpdatable) {
 			throw UserErrorCode.USER_NOT_ROLE_UPDATABLE.toBaseException();
 		}

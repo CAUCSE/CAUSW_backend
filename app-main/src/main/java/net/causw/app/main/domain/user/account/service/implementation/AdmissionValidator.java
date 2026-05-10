@@ -9,6 +9,7 @@ import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.Academic
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
+import net.causw.app.main.domain.user.account.util.DroppedUserIdentifierValidator;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -19,18 +20,21 @@ public class AdmissionValidator {
 
 	private final AdmissionReader admissionReader;
 	private final UserRepository userRepository;
+	private final DroppedUserIdentifierValidator droppedUserIdentifierValidator;
 
 	/**
 	 * 재학정보 인증 신청이 가능한 상태인지 검증합니다.
 	 *
+	 * - 추방된 학번인지 검증 (Blocked User)
 	 * - 사용자 상태가 AWAIT 또는 REJECT인 경우만 신청 가능
 	 * - 기존 신청이 존재하지 않아야 함
 	 * - 첨부 이미지 1개 이상 필수
-	 * - 요청 학번이 다른 ACTIVE/탈퇴(deletedAt)/DROP 사용자와 중복되지 않아야 함
+	 * - 요청 학번이 다른 ACTIVE/INACTIVE/DROP 사용자와 중복되지 않아야 함
 	 */
 	public void validateAdmissionCreate(User user, String requestedStudentId,
 		AcademicStatus requestedAcademicStatus, Integer graduationYear,
 		List<MultipartFile> attachImages) {
+		validateBlockedStudentId(requestedStudentId);
 		validateUserStateForAdmission(user);
 		validateNoExistingAdmission(user);
 		validateAttachImages(attachImages);
@@ -75,7 +79,7 @@ public class AdmissionValidator {
 	}
 
 	/**
-	 * 요청 학번이 이미 ACTIVE/탈퇴(deletedAt) 사용자에게 할당되어 있거나,
+	 * 요청 학번이 이미 ACTIVE/INACTIVE 사용자에게 할당되어 있거나,
 	 * DROP 상태의 사용자가 사용 중이면 예외를 발생시킵니다.
 	 */
 	public void validateStudentIdNotDuplicated(String requestedStudentId) {
@@ -85,9 +89,13 @@ public class AdmissionValidator {
 
 		userRepository.findByStudentId(requestedStudentId).ifPresent(existingUser -> {
 			UserState state = existingUser.getState();
-			if (state == UserState.ACTIVE || existingUser.isDeleted() || state == UserState.DROP) {
+			if (state == UserState.ACTIVE || state == UserState.INACTIVE || state == UserState.DROP) {
 				throw UserErrorCode.STUDENT_ID_ALREADY_EXIST.toBaseException();
 			}
 		});
+	}
+
+	private void validateBlockedStudentId(String studentId) {
+		droppedUserIdentifierValidator.validateStudentId(studentId);
 	}
 }

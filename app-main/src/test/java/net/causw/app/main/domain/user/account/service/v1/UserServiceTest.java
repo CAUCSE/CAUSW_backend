@@ -39,6 +39,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import net.causw.app.main.core.security.JwtTokenProvider;
+import net.causw.app.main.domain.asset.file.repository.UserProfileImageRepository;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.community.post.api.v1.dto.PostsResponseDto;
 import net.causw.app.main.domain.community.post.api.v1.mapper.PostDtoV1Mapper;
 import net.causw.app.main.domain.community.post.entity.Post;
@@ -115,9 +117,21 @@ class UserServiceTest {
 
 	@Mock
 	RedisUtils redisUtils;
+	@Mock
+	UserProfileImageRepository userProfileImageRepository;
+	@Mock
+	UserProfileImageReader userProfileImageReader;
 
 	@Nested
 	class ExportUserListToExcelTest {
+
+		@BeforeEach
+		void setUpMapper() {
+			lenient().when(userDtoMapper.toUserResponseDto(any(User.class), any()))
+				.thenAnswer(inv -> UserResponseDto.builder().state(((User)inv.getArgument(0)).getState()).build());
+			lenient().when(userDtoMapper.toUserResponseDto(any(User.class), any(), any(), any()))
+				.thenAnswer(inv -> UserResponseDto.builder().state(((User)inv.getArgument(0)).getState()).build());
+		}
 
 		@DisplayName("Excel로 데이터 내보내기 성공 - 가입 대기 유저 목록")
 		@Test
@@ -235,7 +249,7 @@ class UserServiceTest {
 				anyBoolean(),
 				anyBoolean())).willReturn(mockPostDto);
 
-			given(userDtoMapper.toUserPostsResponseDto(eq(user), any()))
+			given(userDtoMapper.toUserPostsResponseDto(eq(user), any(), any()))
 				.willReturn(expectedResponseDto);
 
 			given(postRepository.countAllCommentByPost_Id(mockPost.getId())).willReturn(1L);
@@ -253,7 +267,7 @@ class UserServiceTest {
 			verify(likePostRepository, times(1)).findByUserId(userId, blockedUserIds, pageable);
 			verify(postDtoMapper, times(1)).toPostsResponseDto(any(), anyLong(), anyLong(), anyLong(), any(),
 				anyBoolean(), anyBoolean());
-			verify(userDtoMapper, times(1)).toUserPostsResponseDto(eq(user), any());
+			verify(userDtoMapper, times(1)).toUserPostsResponseDto(eq(user), any(), any());
 
 		}
 
@@ -275,7 +289,7 @@ class UserServiceTest {
 
 			// 공통 Mock
 			lenient().when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
-			lenient().when(userDtoMapper.toUserResponseDto(any(User.class), any(), any()))
+			lenient().when(userDtoMapper.toUserResponseDto(any(User.class), any(), any(), any()))
 				.thenReturn(mock(UserResponseDto.class));
 		}
 
@@ -373,11 +387,10 @@ class UserServiceTest {
 		}
 
 		@Test
-		@DisplayName("탈퇴(deletedAt)한 사용자가 재가입 시도 시 실패")
+		@DisplayName("탈퇴(INACTIVE)한 사용자가 재가입 시도 시 실패")
 		void signUp_InactiveUser_ThrowsException() {
 			// given
-			existingUser.setState(UserState.ACTIVE);
-			existingUser.setDeletedAt(LocalDateTime.now());
+			existingUser.setState(UserState.INACTIVE);
 			given(userRepository.findByEmail(signUpRequest.getEmail()))
 				.willReturn(Optional.of(existingUser));
 
@@ -394,10 +407,11 @@ class UserServiceTest {
 	class RecoverUserTest {
 
 		@Test
-		@DisplayName("탈퇴(deletedAt) 사용자 계정 복구 성공")
+		@DisplayName("탈퇴(INACTIVE) 사용자 계정 복구 성공")
 		void recoverUser_InactiveUser_Success() {
 
 			User inactiveUser = ObjectFixtures.getCertifiedUserWithId("test-user-id");
+			inactiveUser.setState(UserState.INACTIVE);
 			inactiveUser.setDeletedAt(LocalDateTime.now());
 			inactiveUser.setRoles(new HashSet<>(Set.of(Role.NONE)));
 
@@ -416,7 +430,7 @@ class UserServiceTest {
 			// then
 			verify(userRepository).save(inactiveUser);
 			assertThat(inactiveUser.getState()).isEqualTo(UserState.ACTIVE);
-			assertThat(inactiveUser.isDeleted()).isFalse();
+			assertThat(inactiveUser.isInactive()).isFalse();
 			assertThat(inactiveUser.getRoles()).containsExactly(Role.COMMON);
 			assertThat(result.getAccessToken()).isEqualTo("access-token");
 			assertThat(result.getRefreshToken()).isEqualTo("refresh-token");

@@ -36,6 +36,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.user.account.entity.user.SocialAccount;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.SocialType;
@@ -45,6 +46,7 @@ import net.causw.app.main.domain.user.account.service.implementation.UserPushTok
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
+import net.causw.app.main.domain.user.account.util.DroppedUserIdentifierValidator;
 import net.causw.app.main.domain.user.auth.entity.EmailVerification;
 import net.causw.app.main.domain.user.auth.entity.EmailVerification.VerificationStatus;
 import net.causw.app.main.domain.user.auth.service.AuthService;
@@ -102,6 +104,8 @@ public class AuthServiceTest {
 	@Mock
 	private EmailVerificationSender emailVerificationSender;
 	@Mock
+	private DroppedUserIdentifierValidator droppedUserIdentifierValidator;
+	@Mock
 	private net.causw.app.main.domain.user.account.service.v1.PasswordGenerator passwordGenerator;
 	@Mock
 	private TermsReader termsReader;
@@ -111,6 +115,8 @@ public class AuthServiceTest {
 	private UserTermsAgreementWriter userTermsAgreementWriter;
 	@Mock
 	private UserTermsAgreementReader userTermsAgreementReader;
+	@Mock
+	private UserProfileImageReader userProfileImageReader;
 
 	private static final String USER_ID = "user_id_123";
 	private static final String EMAIL = "test@example.com";
@@ -173,6 +179,9 @@ public class AuthServiceTest {
 			assertThat(result.refreshToken()).isNull();
 
 			// verify
+			verify(droppedUserIdentifierValidator).validateEmail(EMAIL);
+			verify(droppedUserIdentifierValidator).validatePhone(PHONE);
+
 			verify(userValidator).checkEmailDuplication(EMAIL);
 			verify(userValidator).checkNicknameDuplication(NICKNAME);
 			verify(userValidator).checkPhoneNumDuplication(PHONE);
@@ -311,6 +320,44 @@ public class AuthServiceTest {
 					// verify
 					verify(userWriter, never()).save(any(User.class));
 				}
+			}
+
+			@Test
+			@DisplayName("실패: 추방 이력이 있는 이메일이면 회원가입을 차단한다.")
+			void fail_blocked_email() {
+				// given
+				doThrow(UserErrorCode.USER_DROPPED.toBaseException())
+					.when(droppedUserIdentifierValidator).validateEmail(EMAIL);
+
+				// when & then
+				assertThatThrownBy(() -> authService.registerEmailUser(registerDto))
+					.isInstanceOf(BaseRunTimeV2Exception.class)
+					.hasMessage(UserErrorCode.USER_DROPPED.getMessage());
+
+				// verify
+				verify(droppedUserIdentifierValidator).validateEmail(EMAIL);
+				verify(droppedUserIdentifierValidator, never()).validatePhone(anyString());
+				verify(userReader, never()).checkUserExistByPhoneNumAndName(anyString(), anyString());
+				verify(userWriter, never()).save(any(User.class));
+			}
+
+			@Test
+			@DisplayName("실패: 추방 이력이 있는 전화번호면 회원가입을 차단한다.")
+			void fail_blocked_phone() {
+				// given
+				doThrow(UserErrorCode.USER_DROPPED.toBaseException())
+					.when(droppedUserIdentifierValidator).validatePhone(PHONE);
+
+				// when & then
+				assertThatThrownBy(() -> authService.registerEmailUser(registerDto))
+					.isInstanceOf(BaseRunTimeV2Exception.class)
+					.hasMessage(UserErrorCode.USER_DROPPED.getMessage());
+
+				// verify
+				verify(droppedUserIdentifierValidator).validateEmail(EMAIL);
+				verify(droppedUserIdentifierValidator).validatePhone(PHONE);
+				verify(userReader, never()).checkUserExistByPhoneNumAndName(anyString(), anyString());
+				verify(userWriter, never()).save(any(User.class));
 			}
 		}
 	}
@@ -590,7 +637,7 @@ public class AuthServiceTest {
 			// given
 			User deletedUser = mock(User.class);
 			given(userReader.checkUserExistByPhoneNumAndName(PHONE, NAME)).willReturn(Optional.of(deletedUser));
-			given(deletedUser.isDeleted()).willReturn(true);
+			given(deletedUser.isInactive()).willReturn(true);
 
 			// when
 			Optional<EmailFindResult> result = authService.findEmail(NAME, PHONE);
@@ -609,7 +656,7 @@ public class AuthServiceTest {
 			SocialAccount apple = mock(SocialAccount.class);
 
 			given(userReader.checkUserExistByPhoneNumAndName(PHONE, NAME)).willReturn(Optional.of(socialOnlyUser));
-			given(socialOnlyUser.isDeleted()).willReturn(false);
+			given(socialOnlyUser.isInactive()).willReturn(false);
 			given(socialOnlyUser.getId()).willReturn(USER_ID);
 			given(socialOnlyUser.isOnlySocialUser()).willReturn(true);
 			given(socialAccountReader.findAllByUserId(USER_ID)).willReturn(List.of(kakao, apple));
@@ -640,7 +687,7 @@ public class AuthServiceTest {
 			// given
 			User emailUser = mock(User.class);
 			given(userReader.checkUserExistByPhoneNumAndName(PHONE, NAME)).willReturn(Optional.of(emailUser));
-			given(emailUser.isDeleted()).willReturn(false);
+			given(emailUser.isInactive()).willReturn(false);
 			given(emailUser.getId()).willReturn(USER_ID);
 			given(emailUser.isOnlySocialUser()).willReturn(false);
 			given(emailUser.getEmail()).willReturn(EMAIL_FOR_FIND);
@@ -658,4 +705,5 @@ public class AuthServiceTest {
 			assertThat(emailFindResult.socialAccounts()).isEmpty();
 		}
 	}
+
 }

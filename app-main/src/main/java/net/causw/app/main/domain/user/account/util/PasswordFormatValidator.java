@@ -1,8 +1,6 @@
 package net.causw.app.main.domain.user.account.util;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import net.causw.app.main.domain.user.account.policy.PasswordPolicy;
 import net.causw.app.main.shared.AbstractValidator;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
@@ -29,11 +27,6 @@ public class PasswordFormatValidator extends AbstractValidator {
 	}
 
 	public boolean validatePassword() {
-		String passwordPolicy = "((?=.*[a-zA-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,})";
-
-		Pattern pattern_password = Pattern.compile(passwordPolicy);
-		Matcher matcher_password = pattern_password.matcher(this.password);
-
-		return matcher_password.matches();
+		return PasswordPolicy.matches(this.password);
 	}
 }

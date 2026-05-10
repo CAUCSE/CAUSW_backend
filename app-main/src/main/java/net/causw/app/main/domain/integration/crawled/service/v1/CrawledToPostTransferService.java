@@ -3,6 +3,9 @@ package net.causw.app.main.domain.integration.crawled.service.v1;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,7 +15,9 @@ import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledFileLink;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
+import net.causw.app.main.domain.integration.crawled.entity.CrawledPostImage;
 import net.causw.app.main.domain.integration.crawled.repository.CrawledNoticeRepository;
+import net.causw.app.main.domain.integration.crawled.repository.CrawledPostImageRepository;
 import net.causw.app.main.domain.notification.notification.service.v1.BoardNotificationService;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
@@ -33,25 +38,22 @@ public class CrawledToPostTransferService {
 	private final UserRepository userRepository;
 	private final BoardRepository boardRepository;
 	private final BoardNotificationService boardNotificationService;
+	private final CrawledPostImageRepository crawledPostImageRepository;
 
 	//크롤링 된 공지를 게시글로 반환
 	@Transactional
 	public void transferToPosts() {
-		try {
-			Board board = getBoard();
-			User adminUser = getAdminUser();
-			List<CrawledNotice> updatedNotices = getUpdatedNotices();
+		Board board = getBoard();
+		User adminUser = getAdminUser();
+		List<CrawledNotice> updatedNotices = getUpdatedNotices();
 
-			int savedCount = 0;
-			for (CrawledNotice notice : updatedNotices) {
-				if (processUpdatedNotice(notice, board, adminUser)) {
-					notice.setIsUpdated(false);
-					crawledNoticeRepository.save(notice);
-					savedCount++;
-				}
+		int savedCount = 0;
+		for (CrawledNotice notice : updatedNotices) {
+			if (processUpdatedNotice(notice, board, adminUser)) {
+				notice.setIsUpdated(false);
+				crawledNoticeRepository.save(notice);
+				savedCount++;
 			}
-		} catch (Exception e) {
-			log.error("게시글 변환 중 오류 발생", e);
 		}
 	}
 
@@ -82,6 +84,9 @@ public class CrawledToPostTransferService {
 		// Post 변환 시점에서 첨부파일 링크 추가
 		String contentHtml = buildContentWithAttachmentsAndLink(notice);
 
+		// 원본 HTML에서 이미지 URL 추출 (첨부파일 영역 추가 전 원본 기준)
+		List<String> imageUrls = extractImageUrls(notice.getContent(), notice.getLink());
+
 		// 제목으로 기존 게시글 조회
 		Post existingPost = findExistingPostByTitle(board, title);
 
@@ -89,13 +94,17 @@ public class CrawledToPostTransferService {
 			// 기존 Post 업데이트
 			existingPost.update(title, contentHtml, existingPost.getForm(), existingPost.getPostAttachImageList());
 			postRepository.save(existingPost);
+
+			// 기존 크롤링 이미지 교체
+			crawledPostImageRepository.deleteAllByPostId(existingPost.getId());
+			savePostImages(existingPost, imageUrls);
 		} else {
-			// 새 Post 생성
+			// 새 Post 생성 (크롤링 게시판은 익명 게시판이 아니므로 isAnonymous=false)
 			Post newPost = Post.of(
 				title,
 				contentHtml,
 				adminUser,
-				true,
+				false,
 				false,
 				board,
 				null,
@@ -103,19 +112,57 @@ public class CrawledToPostTransferService {
 			newPost.setCrawled();
 			postRepository.save(newPost);
 
+			// 크롤링 이미지 저장
+			savePostImages(newPost, imageUrls);
+
 			// 새 게시글인 경우에만 알림 전송
 			boardNotificationService.sendByBoardIsSubscribed(board, newPost);
 		}
 		return true;
 	}
 
+	//크롤링 이미지 URL 목록을 CrawledPostImage 엔티티로 저장
+	private void savePostImages(Post post, List<String> imageUrls) {
+		if (imageUrls.isEmpty()) {
+			return;
+		}
+		List<CrawledPostImage> images = new ArrayList<>();
+		for (int i = 0; i < imageUrls.size(); i++) {
+			images.add(CrawledPostImage.of(post, imageUrls.get(i), i));
+		}
+		crawledPostImageRepository.saveAll(images);
+	}
+
+	//HTML 본문에서 <img src="..."> URL 추출
+	private List<String> extractImageUrls(String html, String baseUri) {
+		if (html == null || html.isBlank()) {
+			return List.of();
+		}
+		Document doc = Jsoup.parse(html, baseUri != null ? baseUri : "");
+		Elements imgElements = doc.select("img[src]");
+		return imgElements.stream()
+			.map(img -> img.attr("abs:src").isBlank() ? img.attr("src") : img.attr("abs:src"))
+			.filter(src -> !src.isBlank())
+			.toList();
+	}
+
+	//HTML 본문에서 <img> 태그를 제거하여 반환
+	private String removeImageTags(String html, String baseUri) {
+		if (html == null || html.isBlank()) {
+			return html;
+		}
+		Document doc = Jsoup.parse(html, baseUri != null ? baseUri : "");
+		doc.select("img").remove();
+		return doc.body().html();
+	}
+
 	//본문 내용에 첨부파일 링크를 추가하여 반환
 	private String buildContentWithAttachmentsAndLink(CrawledNotice notice) {
 		StringBuilder contentBuilder = new StringBuilder();
 
-		// 원본 HTML 내용
+		// 원본 HTML 내용 (이미지 태그 제거)
 		String originalContent = (notice.getContent() == null || notice.getContent().isBlank())
-			? "<p>내용 없음</p>" : notice.getContent();
+			? "<p>내용 없음</p>" : removeImageTags(notice.getContent(), notice.getLink());
 		contentBuilder.append(originalContent);
 
 		// 첨부파일이 있으면 링크 추가

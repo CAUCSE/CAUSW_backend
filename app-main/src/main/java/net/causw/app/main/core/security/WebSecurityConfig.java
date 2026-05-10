@@ -19,7 +19,14 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.oidc.authentication.OidcIdTokenDecoderFactory;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2Error;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoderFactory;
+import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
+import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -166,6 +173,29 @@ public class WebSecurityConfig {
 
 	@Bean
 	public JwtDecoderFactory<ClientRegistration> oidcIdTokenDecoderFactory() {
-		return new OidcIdTokenDecoderFactory();
+		OidcIdTokenDecoderFactory factory = new OidcIdTokenDecoderFactory();
+
+		// Spring 기본 OIDC 검증기(OidcIdTokenValidator)가 azp 등을 추가로 강제할 수 있어,
+		// native login에서 사용하는 id_token 검증에는 timestamp/issuer/audience만 검증하도록 커스텀한다.
+		factory.setJwtValidatorFactory(clientRegistration -> {
+			OAuth2TokenValidator<Jwt> timestampValidator = new JwtTimestampValidator();
+
+			String issuerUri = clientRegistration.getProviderDetails().getIssuerUri();
+			OAuth2TokenValidator<Jwt> issuerValidator = org.springframework.util.StringUtils.hasText(issuerUri)
+				? new JwtIssuerValidator(issuerUri)
+				: token -> OAuth2TokenValidatorResult.success();
+
+			String clientId = clientRegistration.getClientId();
+			OAuth2TokenValidator<Jwt> audienceValidator = token -> {
+				if (token.getAudience() != null && token.getAudience().contains(clientId)) {
+					return OAuth2TokenValidatorResult.success();
+				}
+				return OAuth2TokenValidatorResult.failure(new OAuth2Error("invalid_token", "Invalid audience", null));
+			};
+
+			return new DelegatingOAuth2TokenValidator<>(timestampValidator, issuerValidator, audienceValidator);
+		});
+
+		return factory;
 	}
 }
