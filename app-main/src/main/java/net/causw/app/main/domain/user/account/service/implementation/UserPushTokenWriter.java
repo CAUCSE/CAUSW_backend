@@ -92,4 +92,21 @@ public class UserPushTokenWriter {
 			}
 		}
 	}
+
+	/**
+	 * 사용자의 모든 FCM 토큰을 삭제합니다.
+	 * <p>
+	 * 회원 탈퇴 등 사용자의 모든 디바이스 세션을 종료할 때 호출합니다.
+	 *
+	 * @param user 사용자 엔티티
+	 */
+	public void clearFcmTokens(User user) {
+		if (user.getFcmTokens() == null || user.getFcmTokens().isEmpty()) {
+			return;
+		}
+		for (String token : user.getFcmTokens()) {
+			redisUtils.deleteFcmTokenData(token);
+		}
+		user.getFcmTokens().clear();
+	}
 }

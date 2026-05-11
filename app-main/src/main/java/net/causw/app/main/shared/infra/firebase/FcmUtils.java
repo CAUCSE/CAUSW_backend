@@ -13,7 +13,7 @@ import net.causw.global.constant.StaticValue;
 import lombok.RequiredArgsConstructor;
 
 /**
- * @deprecated V2 이후 신규 코드는 {@link FcmTokenManager}를 사용하세요. V1 및 배치 호환을 위해 유지됩니다.
+ * @deprecated V2 이후 신규 코드는 {@link net.causw.app.main.domain.user.account.service.implementation.UserPushTokenWriter}를 사용하세요. V1 및 배치 호환을 위해 유지됩니다.
  */
 @Deprecated
 @RequiredArgsConstructor
