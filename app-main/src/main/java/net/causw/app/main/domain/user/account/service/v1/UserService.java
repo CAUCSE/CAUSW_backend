@@ -135,7 +135,6 @@ public class UserService {
 	private final ApplicationEventPublisher eventPublisher;
 
 	private final UserRepository userRepository;
-	private final UserInfoRepository userInfoRepository;
 	private final CircleRepository circleRepository;
 	private final CircleMemberRepository circleMemberRepository;
 	private final PostRepository postRepository;

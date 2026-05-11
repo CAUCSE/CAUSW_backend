@@ -19,7 +19,7 @@ import net.causw.app.main.domain.user.account.service.implementation.AdmissionWr
 import net.causw.app.main.domain.user.account.service.implementation.SocialAccountWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserInfoWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
-import net.causw.app.main.shared.infra.firebase.FcmUtils;
+import net.causw.app.main.domain.user.account.service.implementation.UserPushTokenWriter;
 import net.causw.app.main.shared.pageable.PageableFactory;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.constant.StaticValue;
@@ -36,7 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 public class BatchScheduler {
 
 	private final JobLauncher jobLauncher;
-	private final FcmUtils fcmUtils;
+	private final UserPushTokenWriter userPushTokenWriter;
 	private final UserRepository userRepository;
 	private final PageableFactory pageableFactory;
 	private final UserInfoWriter userInfoWriter;
@@ -75,7 +75,10 @@ public class BatchScheduler {
 			Page<User> userPage;
 			do {
 				userPage = userRepository.findAll(pageableFactory.create(pageNum++, StaticValue.BATCH_USER_LIST_SIZE));
-				userPage.forEach(fcmUtils::cleanInvalidFcmTokens);
+				userPage.forEach(user -> {
+					userPushTokenWriter.cleanInvalidFcmTokens(user);
+					userRepository.save(user);
+				});
 			} while (!userPage.isLast());
 
 			log.info("[FCM 배치] 유효하지 않은 FCM 토큰 정리 완료");
