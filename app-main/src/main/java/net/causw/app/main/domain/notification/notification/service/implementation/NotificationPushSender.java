@@ -7,7 +7,6 @@ import java.util.Set;
 import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.service.implementation.UserPushTokenWriter;
 import net.causw.app.main.shared.infra.push.PushNotificationSender;
 
 import com.google.firebase.messaging.FirebaseMessagingException;

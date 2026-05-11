@@ -19,7 +19,7 @@ import net.causw.app.main.domain.user.account.service.implementation.AdmissionWr
 import net.causw.app.main.domain.user.account.service.implementation.SocialAccountWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserInfoWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
-import net.causw.app.main.domain.user.account.service.implementation.UserPushTokenWriter;
+import net.causw.app.main.domain.notification.notification.service.implementation.UserPushTokenWriter;
 import net.causw.app.main.shared.pageable.PageableFactory;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.constant.StaticValue;
