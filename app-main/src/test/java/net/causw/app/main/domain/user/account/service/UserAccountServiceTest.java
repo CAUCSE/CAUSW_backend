@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doNothing;
@@ -30,6 +29,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import net.causw.app.main.domain.asset.locker.entity.Locker;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerWriter;
+import net.causw.app.main.domain.notification.notification.service.implementation.UserPushTokenWriter;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserWithdrawResponse;
 import net.causw.app.main.domain.user.account.entity.user.SocialAccount;
 import net.causw.app.main.domain.user.account.entity.user.User;
@@ -51,7 +51,6 @@ import net.causw.app.main.domain.user.terms.service.implementation.TermsValidato
 import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementWriter;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.TermsErrorCode;
-import net.causw.app.main.shared.infra.firebase.FcmUtils;
 
 @ExtendWith(MockitoExtension.class)
 class UserAccountServiceTest {
@@ -105,7 +104,7 @@ class UserAccountServiceTest {
 	private LockerWriter lockerWriter;
 
 	@Mock
-	private FcmUtils fcmUtils;
+	private UserPushTokenWriter userPushTokenWriter;
 
 	private final String userId = "test-uuid";
 	private final String nickname = "푸앙";
@@ -250,7 +249,7 @@ class UserAccountServiceTest {
 		verify(authTokenManager).invalidateTokens(accessToken, refresh);
 		verify(lockerReader).findByUserId(userId);
 		verify(lockerWriter).returnLocker(locker, user);
-		verify(fcmUtils).clearFcmTokens(user);
+		verify(userPushTokenWriter).clearFcmTokens(user);
 
 		verify(userWriter).withdraw(user);
 	}
@@ -292,6 +291,7 @@ class UserAccountServiceTest {
 			() -> userAccountService.withdraw(userId, "access-token", "refresh-token"));
 
 		verify(userReader).findUserById(userId);
-		verifyNoInteractions(socialAccountReader, socialAccountUnlinkManager, lockerReader, lockerWriter, fcmUtils);
+		verifyNoInteractions(socialAccountReader, socialAccountUnlinkManager, lockerReader, lockerWriter,
+			userPushTokenWriter);
 	}
 }

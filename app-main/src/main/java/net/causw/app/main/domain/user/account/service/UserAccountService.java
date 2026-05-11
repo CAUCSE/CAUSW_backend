@@ -2,7 +2,6 @@ package net.causw.app.main.domain.user.account.service;
 
 import java.util.List;
 
-import net.causw.app.main.domain.notification.notification.service.implementation.UserPushTokenWriter;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,6 +10,7 @@ import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerWriter;
+import net.causw.app.main.domain.notification.notification.service.implementation.UserPushTokenWriter;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserWithdrawResponse;
 import net.causw.app.main.domain.user.account.entity.user.SocialAccount;
 import net.causw.app.main.domain.user.account.entity.user.User;
@@ -20,7 +20,6 @@ import net.causw.app.main.domain.user.account.service.dto.result.UserMeAccountRe
 import net.causw.app.main.domain.user.account.service.dto.result.UserMeResult;
 import net.causw.app.main.domain.user.account.service.implementation.SocialAccountReader;
 import net.causw.app.main.domain.user.account.service.implementation.SocialAccountUnlinkManager;
-import net.causw.app.main.domain.user.account.service.implementation.UserInfoReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
@@ -37,7 +36,6 @@ import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgre
 import net.causw.app.main.shared.dto.ProfileImageDto;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
-import net.causw.app.main.shared.infra.firebase.FcmUtils;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -56,7 +54,6 @@ public class UserAccountService {
 	private final UserValidator userValidator;
 	private final AuthValidator authValidator;
 	private final AuthTokenManager authTokenManager;
-	private final FcmUtils fcmUtils;
 	private final PasswordEncoder passwordEncoder;
 	private final UserProfileImageReader userProfileImageReader;
 	private final TermsReader termsReader;
@@ -309,7 +306,6 @@ public class UserAccountService {
 		// 부가 처리
 		lockerReader.findByUserId(user.getId())
 			.ifPresent(locker -> lockerWriter.returnLocker(locker, user));
-		fcmUtils.clearFcmTokens(user);
 
 		userPushTokenWriter.clearFcmTokens(user);
 		userWriter.withdraw(user);
