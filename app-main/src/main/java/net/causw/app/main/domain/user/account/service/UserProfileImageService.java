@@ -112,27 +112,6 @@ public class UserProfileImageService {
 	}
 
 	/**
-	 * 유저 ID를 기반으로 프로필 이미지와 관련된 모든 자산을 즉시 삭제합니다.
-	 *
-	 * @param userId 삭제할 유저의 ID
-	 */
-	@Transactional
-	public void deleteByUserId(String userId) {
-		userProfileImageReader.findByUserId(userId).ifPresent(profileImage -> {
-			UuidFile uuidFile = profileImage.getUuidFile();
-
-			userProfileImageWriter.delete(profileImage);
-
-			if (uuidFile != null) {
-				uuidFileService.deleteFile(uuidFile.getId());
-			}
-
-			log.info("[Cleanup] 프로필 이미지 자산 삭제 완료. userId: {}, fileId: {}",
-				userId, (uuidFile != null ? uuidFile.getId() : "null"));
-		});
-	}
-
-	/**
 	 * [D-Day] 탈퇴 시 실시간 처리
 	 */
 	public void prepareDeletionForWithdrawal(String userId) {
