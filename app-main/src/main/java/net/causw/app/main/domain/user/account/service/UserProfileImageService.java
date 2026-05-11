@@ -16,7 +16,7 @@ import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfil
 import net.causw.app.main.domain.user.account.api.v2.dto.response.ProfileImageResponse;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.ProfileImageType;
-import net.causw.app.main.domain.user.account.event.UserWithdrawalEvent;
+import net.causw.app.main.domain.user.account.event.UserProfileImageDeletionRequestedEvent;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
@@ -121,10 +121,15 @@ public class UserProfileImageService {
 	 */
 	public void requestProfileImageDeletionForWithdrawal(String userId) {
 		userProfileImageReader.findByUserId(userId).ifPresent(profileImage -> {
-			UuidFile uuidFile = uuidFileService.findUuidFileById(profileImage.getUuidFile().getId());
+			UuidFile uuidFile = profileImage.getUuidFile();
+
+			if (uuidFile == null) {
+				log.warn("[User Withdraw] 프로필 이미지 파일 정보가 없어 삭제 요청을 건너뜁니다. userId: {}", userId);
+				return;
+			}
 
 			// S3 Key만 추출해서 이벤트 발행 (실시간 S3 삭제 시도용)
-			applicationEventPublisher.publishEvent(new UserWithdrawalEvent(uuidFile.getFileKey()));
+			applicationEventPublisher.publishEvent(new UserProfileImageDeletionRequestedEvent(uuidFile.getFileKey()));
 		});
 	}
 
@@ -141,8 +146,13 @@ public class UserProfileImageService {
 		for (User user : users) {
 			userProfileImageReader.findByUserId(user.getId()).ifPresent(profileImage -> {
 				try {
-					uuidFileService.deleteFile(profileImage.getUuidFile().getId());
+					UuidFile uuidFile = profileImage.getUuidFile();
+
 					userProfileImageWriter.delete(profileImage);
+
+					if (uuidFile != null) {
+						uuidFileService.deleteFile(uuidFile.getId());
+					}
 				} catch (Exception e) {
 					log.error("[유저 정리 배치] 실패. UserID: {}", user.getId(), e);
 				}
