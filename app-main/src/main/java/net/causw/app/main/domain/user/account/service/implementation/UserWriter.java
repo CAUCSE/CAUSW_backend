@@ -68,9 +68,9 @@ public class UserWriter {
 		return this.userRepository.save(user);
 	}
 
-	public User withdraw(User user) {
+	public void withdraw(User user) {
 		user.withdraw(LocalDateTime.now());
-		return this.userRepository.save(user);
+		this.userRepository.save(user);
 	}
 
 	public User dropByAdmin(User user, String dropReason) {

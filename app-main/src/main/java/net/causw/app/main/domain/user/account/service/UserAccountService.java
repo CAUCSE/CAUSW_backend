@@ -2,6 +2,7 @@ package net.causw.app.main.domain.user.account.service;
 
 import java.util.List;
 
+import net.causw.app.main.domain.notification.notification.service.implementation.UserPushTokenWriter;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,7 +63,7 @@ public class UserAccountService {
 	private final TermsValidator termsValidator;
 	private final UserTermsAgreementReader userTermsAgreementReader;
 	private final UserTermsAgreementWriter userTermsAgreementWriter;
-	private final UserInfoReader userInfoReader;
+	private final UserPushTokenWriter userPushTokenWriter;
 
 	/**
 	 * 소셜 로그인을 통해 생성된 임시 유저(GUEST)의 추가 정보를 등록하고 회원가입 절차를 완료합니다.
@@ -310,6 +311,7 @@ public class UserAccountService {
 			.ifPresent(locker -> lockerWriter.returnLocker(locker, user));
 		fcmUtils.clearFcmTokens(user);
 
+		userPushTokenWriter.clearFcmTokens(user);
 		userWriter.withdraw(user);
 
 		return UserWithdrawResponse.of(user.getDeletedAt());
