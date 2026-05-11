@@ -308,8 +308,8 @@ public class UserAccountService {
 		// 현재 access / refresh token 무효화
 		authTokenManager.invalidateTokens(accessToken, refreshToken);
 
-		// 프로필 이미지 삭제
-		userProfileImageService.prepareDeletionForWithdrawal(userId);
+		// 커스텀 프로필 이미지 파일 삭제 요청
+		userProfileImageService.requestProfileImageDeletionForWithdrawal(userId);
 
 		// 부가 처리
 		lockerReader.findByUserId(user.getId())

@@ -112,9 +112,14 @@ public class UserProfileImageService {
 	}
 
 	/**
-	 * [D-Day] 탈퇴 시 실시간 처리
+	 * 탈퇴 처리 시 커스텀 프로필 이미지 파일 삭제를 요청합니다.
+	 * <p>
+	 * 프로필 이미지 연결 정보와 파일 메타데이터는 D+30 배치에서 최종 삭제합니다.
+	 * </p>
+	 *
+	 * @param userId 탈퇴 처리할 유저 ID
 	 */
-	public void prepareDeletionForWithdrawal(String userId) {
+	public void requestProfileImageDeletionForWithdrawal(String userId) {
 		userProfileImageReader.findByUserId(userId).ifPresent(profileImage -> {
 			UuidFile uuidFile = uuidFileService.findUuidFileById(profileImage.getUuidFile().getId());
 
@@ -124,7 +129,13 @@ public class UserProfileImageService {
 	}
 
 	/**
-	 * [D+30] 배치 스케줄러가 호출하는 최종 정리 로직
+	 * 탈퇴 후 30일이 지난 유저들의 프로필 이미지 정보를 최종 삭제합니다.
+	 * <p>
+	 * 커스텀 프로필 이미지 파일, 파일 메타데이터, 프로필 이미지 연결 정보를 삭제합니다.
+	 * 각 유저별 삭제 실패는 로그로 기록하고 다음 유저 처리를 계속 진행합니다.
+	 * </p>
+	 *
+	 * @param users 프로필 이미지 정보를 정리할 탈퇴 후 30일 경과 유저 목록
 	 */
 	public void cleanupProfileImagesForBatch(List<User> users) {
 		for (User user : users) {

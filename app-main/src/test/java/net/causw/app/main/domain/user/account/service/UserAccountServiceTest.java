@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doNothing;
@@ -247,7 +246,7 @@ class UserAccountServiceTest {
 		assertEquals(now, result.deletedAt());
 
 		// verify
-		verify(userProfileImageService).prepareDeletionForWithdrawal(userId);
+		verify(userProfileImageService).requestProfileImageDeletionForWithdrawal(userId);
 		verify(userReader).findUserById(userId);
 		verify(socialAccountReader).findAllByUserId(userId);
 		verify(socialAccountUnlinkManager).unlink(socialAccount);
@@ -282,7 +281,7 @@ class UserAccountServiceTest {
 		// then
 		assertNotNull(result);
 		assertEquals(now, result.deletedAt());
-		verify(userProfileImageService).prepareDeletionForWithdrawal(userId);
+		verify(userProfileImageService).requestProfileImageDeletionForWithdrawal(userId);
 		verify(lockerWriter, never()).returnLocker(any(), any());
 		verify(userWriter).withdraw(user);
 	}
