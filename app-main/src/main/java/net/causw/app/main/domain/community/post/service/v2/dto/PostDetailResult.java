@@ -26,6 +26,7 @@ public record PostDetailResult(
 	Boolean isPostFavorite,
 	Boolean updatable,
 	Boolean deletable,
+	Boolean isOfficial,
 	LocalDateTime createdAt,
 	LocalDateTime updatedAt,
 	String boardId,

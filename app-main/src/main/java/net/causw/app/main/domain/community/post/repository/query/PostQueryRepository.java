@@ -1,6 +1,7 @@
 package net.causw.app.main.domain.community.post.repository.query;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -96,6 +97,12 @@ public class PostQueryRepository {
 		String cursorId,
 		int size,
 		String keyword) {
+		// 빈 리스트가 전달된 경우 "조회 가능한 게시판이 한 개도 없음"을 의미하므로 즉시 빈 결과 반환.
+		// (null은 docstring 계약상 "전체 게시판"이므로 별도 처리하지 않음)
+		if (boardIds != null && boardIds.isEmpty()) {
+			return new SliceImpl<>(List.of(), Pageable.ofSize(size), false);
+		}
+
 		QPost post = QPost.post;
 		QUser writer = new QUser("writer");
 
@@ -424,7 +431,7 @@ public class PostQueryRepository {
 			totalCommentCount, likeCount, favoriteCount,
 			post.isAnonymous, post.vote.id, post.isDeleted,
 			post.isCrawled,
-			writer.isNotNull(), writer.name, writer.nickname, writer.admissionYear, writer.state,
+			writer.isNotNull(), writer.id, writer.name, writer.nickname, writer.admissionYear, writer.state,
 			writer.profileImageType,
 			writerProfileImageUrl,
 			post.createdAt, post.updatedAt,
@@ -432,7 +439,7 @@ public class PostQueryRepository {
 	}
 
 	/**
-	 * 특정 게시글들의 이미지 URL 목록을 조회합니다.
+	 * 특정 게시글들의 S3 업로드 이미지 URL 목록을 조회합니다.
 	 *
 	 * @param postIds 게시글 ID 목록
 	 * @return 게시글 ID를 키로, 이미지 URL 목록을 값으로 하는 맵
@@ -449,12 +456,12 @@ public class PostQueryRepository {
 				postAttachImage.uuidFile.createdAt.asc())
 			.fetch();
 
-		return results.stream()
+		return new HashMap<>(results.stream()
 			.collect(Collectors.groupingBy(
 				tuple -> tuple.get(postAttachImage.post.id),
 				Collectors.mapping(
 					tuple -> tuple.get(postAttachImage.uuidFile.fileUrl),
-					Collectors.toList())));
+					Collectors.toList()))));
 	}
 
 	/**

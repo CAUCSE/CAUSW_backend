@@ -637,7 +637,7 @@ public class AuthServiceTest {
 			// given
 			User deletedUser = mock(User.class);
 			given(userReader.checkUserExistByPhoneNumAndName(PHONE, NAME)).willReturn(Optional.of(deletedUser));
-			given(deletedUser.isDeleted()).willReturn(true);
+			given(deletedUser.isInactive()).willReturn(true);
 
 			// when
 			Optional<EmailFindResult> result = authService.findEmail(NAME, PHONE);
@@ -656,7 +656,7 @@ public class AuthServiceTest {
 			SocialAccount apple = mock(SocialAccount.class);
 
 			given(userReader.checkUserExistByPhoneNumAndName(PHONE, NAME)).willReturn(Optional.of(socialOnlyUser));
-			given(socialOnlyUser.isDeleted()).willReturn(false);
+			given(socialOnlyUser.isInactive()).willReturn(false);
 			given(socialOnlyUser.getId()).willReturn(USER_ID);
 			given(socialOnlyUser.isOnlySocialUser()).willReturn(true);
 			given(socialAccountReader.findAllByUserId(USER_ID)).willReturn(List.of(kakao, apple));
@@ -687,7 +687,7 @@ public class AuthServiceTest {
 			// given
 			User emailUser = mock(User.class);
 			given(userReader.checkUserExistByPhoneNumAndName(PHONE, NAME)).willReturn(Optional.of(emailUser));
-			given(emailUser.isDeleted()).willReturn(false);
+			given(emailUser.isInactive()).willReturn(false);
 			given(emailUser.getId()).willReturn(USER_ID);
 			given(emailUser.isOnlySocialUser()).willReturn(false);
 			given(emailUser.getEmail()).willReturn(EMAIL_FOR_FIND);

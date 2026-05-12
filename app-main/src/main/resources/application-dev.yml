@@ -1,0 +1,200 @@
+spring:
+  servlet:
+    multipart:
+      max-file-size: 1000MB
+      max-request-size: 1000MB
+      enabled: true
+
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # AWS RDS 콘솔 -> 데이터베이스 -> db-caucse
+    url: ${DB_URL}?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    # 개발서버에서 osiv false 테스트 해본 후, 나중에 실서버에도 적용
+    open-in-view: false
+
+  jwt:
+    # 자체 생성
+    secret: ${JWT_SECRET_KEY}
+
+  data:
+    redis:
+      host: ${REDIS_HOST} # 로컬에서 테스트 할 때는 localhost로 사용
+      port: ${REDIS_PORT}
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    # 메일 발송 전용 계정 (ccssaa.no.reply@gmail.com) 로그인 -> Google 계정 관리 -> 보안 -> 2단계 인증 -> 앱 비밀번호
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        debug: true
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  flyway:
+    enabled: false
+
+  password:
+    # 자체 생성
+    prefix: ${PASSWORD_PREFIX}
+
+  batch:
+    jdbc:
+      initialize-schema: always
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            # Google Cloud Console -> 'CAUSW 로그인' 프로젝트 -> API 및 서비스 -> 사용자 인증 정보
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            redirect-uri: "https://dev.causw.com/login/oauth2/code/google"
+            scope:
+              - openid
+              - email
+              - profile
+          kakao:
+            # Kakao Developers -> 내 애플리케이션 -> 앱 키 및 보안 설정
+            client-id: ${KAKAO_CLIENT_ID}
+            client-secret: ${KAKAO_CLIENT_SECRET}
+            client-authentication-method: client_secret_post
+            authorization-grant-type: authorization_code
+            redirect-uri: "https://dev.causw.com/login/oauth2/code/kakao"
+            scope:
+              - name
+              - account_email
+              - profile_nickname
+            client-name: Kakao
+          apple:
+            provider: apple
+            # Apple Developer -> Certificates, Identifiers & Profiles -> Keys
+            client-id: ${APPLE_CLIENT_ID}
+            client-secret: ${APPLE_CLIENT_SECRET}
+            client-authentication-method: client_secret_post
+            authorization-grant-type: authorization_code
+            redirect-uri: "https://dev.causw.com/login/oauth2/code/apple"
+            scope:
+              - openid
+              - email
+              - name
+            client-name: Apple
+          apple-ios:
+            provider: apple
+            # Apple Developer -> Certificates, Identifiers & Profiles -> Keys
+            client-id: ${APPLE_IOS_CLIENT_ID}
+            client-secret: ${APPLE_IOS_CLIENT_SECRET}
+            client-authentication-method: client_secret_post
+            authorization-grant-type: authorization_code
+            redirect-uri: "http://localhost:8080/dummy/ios"
+            scope:
+              - openid
+              - email
+              - name
+            client-name: Apple
+
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+          apple:
+            authorization-uri: https://appleid.apple.com/auth/authorize
+            token-uri: https://appleid.apple.com/auth/token
+            jwk-set-uri: https://appleid.apple.com/auth/keys
+            user-name-attribute: sub
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    com:
+      amazonaws:
+        util:
+          EC2MetadataUtils: ERROR
+
+cloud:
+  aws:
+    s3:
+      # AWS S3 콘솔 -> 버킷 -> caucse-s3-bucket
+      bucket: ${AWS_S3_BUCKET_NAME}
+    credentials:
+      # AWS IAM 콘솔 -> 사용자 -> iam-user -> 보안 자격 증명 -> 액세스 키
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_SECRET_KEY}
+    region:
+      static: ap-northeast-2
+      auto: false
+    stack:
+      auto: false
+
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    groups-order: DESC
+    doc-expansion: none
+    tags-sorter: alpha
+    operationsSorter: method
+    display-request-duration: true
+
+fcm:
+  # Firebase Console
+  firebase-key-base64: ${FCM_FIREBASE_KEY_BASE64}
+  project-id: ${FCM_PROJECT_ID}
+
+app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS}
+  auth:
+    redirect-uri: http://localhost:3000/auth/sign-in/oauth-callback
+    redirect-uri-local: http://localhost:3000/auth/sign-in/oauth-callback
+    redirect-uri-dev: https://causw-v3-web-dev.vercel.app/auth/sign-in/oauth-callback
+  holiday-api:
+    base-url: http://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService
+    # 공공데이터포털
+    service-key: ${HOLIDAY_API_SERVICE_KEY}
+  oauth:
+    refresh-token:
+      # 자체 생성
+      aes-key-base64: ${OAUTH_REFRESH_TOKEN_AES_KEY_BASE64}
+  security:
+    oidc:
+      registrations:
+        apple:
+          web: apple
+          ios: apple-ios
+
+server:
+  forward-headers-strategy: framework
+
+swagger:
+  # 개발계 Swagger 접속 계정
+  username: ${SWAGGER_USERNAME}
+  password: ${SWAGGER_PASSWORD}
+
+custom:
+  hash:
+    # 추방당한 유저 블랙리스트 식별용 해시 키값
+    salt: ${CUSTOM_HASH_SALT}
+
+kakao:
+  # 카카오 소셜계정 언링크용 admin key
+  admin-key: ${KAKAO_ADMIN_KEY}

@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.community.board.service.implementation;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -81,6 +82,18 @@ public class BoardConfigReader {
 	public List<String> getAdminIdsByBoardId(String boardId) {
 
 		return boardAdminQueryRepository.findAdminIdsByBoardId(boardId);
+	}
+
+	/**
+	 * 여러 게시판 ID에 대해 boardId → 관리자 userId Set Map을 반환합니다.
+	 *
+	 * @param boardIds 게시판 ID 컬렉션
+	 * @return boardId를 키로 하는 관리자 userId Set Map
+	 */
+	public Map<String, Set<String>> getAdminIdSetMapByBoardIds(Collection<String> boardIds) {
+		Map<String, List<String>> listMap = boardAdminQueryRepository.findAdminIdsByBoardIds(boardIds);
+		return listMap.entrySet().stream()
+			.collect(Collectors.toMap(Map.Entry::getKey, e -> new HashSet<>(e.getValue())));
 	}
 
 	/**

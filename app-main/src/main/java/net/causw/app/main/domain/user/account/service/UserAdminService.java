@@ -166,9 +166,9 @@ public class UserAdminService {
 	}
 
 	// 역할 변경 가능한 대상인지 검증
-	// - ACTIVE 상태여야 하고 탈퇴(isDeleted) 상태가 아니어야 함
+	// - ACTIVE 상태여야 함
 	private void validateRoleUpdatableUser(User targetUser) {
-		boolean roleUpdatable = targetUser.getState() == UserState.ACTIVE && !targetUser.isDeleted();
+		boolean roleUpdatable = targetUser.getState() == UserState.ACTIVE;
 		if (!roleUpdatable) {
 			throw UserErrorCode.USER_NOT_ROLE_UPDATABLE.toBaseException();
 		}

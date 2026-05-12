@@ -170,8 +170,17 @@ public class User extends BaseEntity {
 		this.graduationType = null;
 	}
 
+	/**
+	 * deletedAt 존재 여부로 탈퇴 상태를 판정하던 메서드입니다.
+	 * @deprecated 탈퇴 상태 판정은 {@link #isInactive()} 사용을 권장합니다.
+	 */
+	@Deprecated
 	public boolean isDeleted() {
 		return this.deletedAt != null;
+	}
+
+	public boolean isInactive() {
+		return this.state == UserState.INACTIVE;
 	}
 
 	/**
@@ -306,7 +315,7 @@ public class User extends BaseEntity {
 
 	// 활성 사용자이고 권한 있는 역할이 아닐 경우 추방 가능
 	public boolean isDroppable() {
-		boolean isDroppableState = this.state == UserState.ACTIVE && !this.isDeleted();
+		boolean isDroppableState = this.state == UserState.ACTIVE;
 		boolean isDroppableRole = this.roles.stream()
 			.noneMatch(Role.getPrivilegedRoles()::contains);
 		return isDroppableState && isDroppableRole;
@@ -340,6 +349,12 @@ public class User extends BaseEntity {
 		this.roles = new HashSet<>(Set.of(Role.NONE));
 		this.rejectionOrDropReason = dropReason;
 		this.deletedAt = now;
+	}
+
+	// 탈퇴 처리
+	public void withdraw() {
+		this.state = UserState.INACTIVE;
+		this.deletedAt = LocalDateTime.now();
 	}
 
 	// 탈퇴, 추방된 유저의 계정 복구에 사용

@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -22,6 +23,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
@@ -61,6 +63,8 @@ import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.Academic
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.ProfileImageType;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.domain.user.account.service.implementation.UserReader;
+import net.causw.app.main.domain.user.relation.service.v2.implementation.BlockReader;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.util.ObjectFixtures;
 
@@ -93,6 +97,15 @@ public class PostServiceTest {
 
 	@Mock
 	VoteWriter voteWriter;
+
+	@Mock
+	BlockReader blockReader;
+
+	@Mock
+	UserReader userReader;
+
+	@Mock
+	ApplicationEventPublisher eventPublisher;
 
 	@Mock
 	UserProfileImageReader userProfileImageReader;
@@ -541,6 +554,7 @@ public class PostServiceTest {
 				false,
 				false,
 				true,
+				"writer-id",
 				"작성자",
 				"닉네임",
 				2020,
@@ -559,9 +573,11 @@ public class PostServiceTest {
 
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(boardConfigReader.getAdminIdSetMapByBoardIds(anySet())).willReturn(Map.of());
 			given(postReader.findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(null)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
+			given(likePostReader.getLikedPostIds(anyString(), anyList())).willReturn(Set.of());
 
 			// when
 			PostListResult result = postService.getPosts(query);
@@ -606,6 +622,7 @@ public class PostServiceTest {
 				false,
 				false,
 				true,
+				"writer-id-1",
 				"작성자1",
 				"닉네임1",
 				2020,
@@ -628,6 +645,7 @@ public class PostServiceTest {
 				false,
 				false,
 				true,
+				"writer-id-2",
 				"작성자2",
 				"닉네임2",
 				2021,
@@ -648,9 +666,11 @@ public class PostServiceTest {
 			given(boardConfigReader.getByBoardId(boardId2)).willReturn(boardConfig2);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId2)).willReturn(boardAdminIds);
+			given(boardConfigReader.getAdminIdSetMapByBoardIds(anySet())).willReturn(Map.of());
 			given(postReader.findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(null)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
+			given(likePostReader.getLikedPostIds(anyString(), anyList())).willReturn(Set.of());
 
 			// when
 			PostListResult result = postService.getPosts(query);
@@ -692,6 +712,7 @@ public class PostServiceTest {
 				false,
 				false,
 				true,
+				"writer-id",
 				"작성자",
 				"닉네임",
 				2020,
@@ -710,6 +731,7 @@ public class PostServiceTest {
 
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(boardConfigReader.getAdminIdSetMapByBoardIds(anySet())).willReturn(Map.of());
 			given(postReader.findPostsWithCursor(
 				anyList(),
 				eq("2024-01-01T12:00:00"),
@@ -718,6 +740,7 @@ public class PostServiceTest {
 				eq(null)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
+			given(likePostReader.getLikedPostIds(anyString(), anyList())).willReturn(Set.of());
 
 			// when
 			PostListResult result = postService.getPosts(query);
@@ -757,6 +780,7 @@ public class PostServiceTest {
 				false,
 				false,
 				true,
+				"writer-id",
 				"작성자",
 				"닉네임",
 				2020,
@@ -775,9 +799,11 @@ public class PostServiceTest {
 
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(boardConfigReader.getAdminIdSetMapByBoardIds(anySet())).willReturn(Map.of());
 			given(postReader.findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(keyword)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
+			given(likePostReader.getLikedPostIds(anyString(), anyList())).willReturn(Set.of());
 
 			// when
 			PostListResult result = postService.getPosts(query);
@@ -810,6 +836,7 @@ public class PostServiceTest {
 				false,
 				false,
 				true,
+				"writer-id",
 				"작성자",
 				"닉네임",
 				2020,
@@ -828,9 +855,11 @@ public class PostServiceTest {
 
 			given(boardConfigReader.getAccessibleBoardIdsByAcademicStatus(AcademicStatus.ENROLLED))
 				.willReturn(accessibleBoardIds);
+			given(boardConfigReader.getAdminIdSetMapByBoardIds(anySet())).willReturn(Map.of());
 			given(postReader.findPostsWithCursor(eq(accessibleBoardIds), eq(null), eq(null), eq(20), eq(null)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
+			given(likePostReader.getLikedPostIds(anyString(), anyList())).willReturn(Set.of());
 
 			// when
 			PostListResult result = postService.getPosts(query);
@@ -841,6 +870,28 @@ public class PostServiceTest {
 				() -> assertThat(result.posts()).hasSize(1));
 
 			verify(boardConfigReader, times(1)).getAccessibleBoardIdsByAcademicStatus(AcademicStatus.ENROLLED);
+		}
+
+		@DisplayName("접근 가능한 게시판이 없으면 게시글 조회 없이 빈 결과 반환")
+		@Test
+		void getPosts_shouldReturnEmpty_whenNoAccessibleBoards() {
+			// given
+			PostListQuery query = PostListQuery.of(viewer, null, null, 20, null);
+
+			given(boardConfigReader.getAccessibleBoardIdsByAcademicStatus(AcademicStatus.ENROLLED))
+				.willReturn(List.of());
+
+			// when
+			PostListResult result = postService.getPosts(query);
+
+			// then
+			assertAll(
+				() -> assertThat(result).isNotNull(),
+				() -> assertThat(result.posts()).isEmpty(),
+				() -> assertThat(result.nextCursor()).isNull());
+
+			verify(boardConfigReader, times(1)).getAccessibleBoardIdsByAcademicStatus(AcademicStatus.ENROLLED);
+			verify(postReader, never()).findPostsWithCursor(anyList(), any(), any(), anyInt(), any());
 		}
 
 		@DisplayName("숨겨진 게시판은 관리자만 조회 가능")
@@ -913,6 +964,7 @@ public class PostServiceTest {
 				false,
 				false,
 				true,
+				"writer-id",
 				"작성자",
 				"닉네임",
 				2020,
@@ -931,9 +983,11 @@ public class PostServiceTest {
 
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(boardConfigReader.getAdminIdSetMapByBoardIds(anySet())).willReturn(Map.of());
 			given(postReader.findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(null)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
+			given(likePostReader.getLikedPostIds(anyString(), anyList())).willReturn(Set.of());
 
 			// when
 			PostListResult result = postService.getPosts(query);
@@ -969,6 +1023,7 @@ public class PostServiceTest {
 				false,
 				false,
 				true,
+				"writer-id-1",
 				"작성자1",
 				"닉네임1",
 				2020,
@@ -991,6 +1046,7 @@ public class PostServiceTest {
 				false,
 				false,
 				true,
+				"writer-id-2",
 				"작성자2",
 				"닉네임2",
 				2021,
@@ -1009,9 +1065,11 @@ public class PostServiceTest {
 
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(boardConfigReader.getAdminIdSetMapByBoardIds(anySet())).willReturn(Map.of());
 			given(postReader.findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(null)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
+			given(likePostReader.getLikedPostIds(anyString(), anyList())).willReturn(Set.of());
 
 			// when
 			PostListResult result = postService.getPosts(query);

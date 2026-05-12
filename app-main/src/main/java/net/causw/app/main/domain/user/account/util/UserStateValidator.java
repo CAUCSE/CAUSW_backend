@@ -23,7 +23,7 @@ public class UserStateValidator extends AbstractValidator {
 
 	@Override
 	public void validate() {
-		if (this.user.isDeleted()) {
+		if (this.user.isInactive()) {
 			throw new UnauthorizedException(
 				ErrorCode.INACTIVE_USER,
 				MessageUtil.USER_INACTIVE_CAN_REJOIN);

@@ -29,10 +29,6 @@ public class ChildCommentValidator {
 	 */
 	public void validateForCreate(User creator, Post post, Comment parentComment) {
 		this.validateCreatorAndPostStatus(creator, post);
-
-		if (parentComment.getWriter().isDeleted()) {
-			throw AuthErrorCode.INACTIVE_USER.toBaseException();
-		}
 	}
 
 	/**
@@ -70,7 +66,7 @@ public class ChildCommentValidator {
 		UserState userState = user.getState();
 		if (userState == UserState.DROP)
 			throw AuthErrorCode.DROPPED_USER.toBaseException();
-		if (user.isDeleted())
+		if (user.isInactive())
 			throw AuthErrorCode.INACTIVE_USER.toBaseException();
 
 		if (user.getRoles().contains(Role.NONE))
@@ -86,9 +82,6 @@ public class ChildCommentValidator {
 	 * 대댓글 좋아요 시 필요한 검증 로직을 수행합니다.
 	 */
 	public void validateForLike(User user, ChildComment childComment) {
-		if (childComment.getWriter().isDeleted()) {
-			throw AuthErrorCode.INACTIVE_USER.toBaseException();
-		}
 		if (likeChildCommentReader.isChildCommentLiked(user, childComment.getId())) {
 			throw ChildCommentErrorCode.CHILD_COMMENT_ALREADY_LIKED.toBaseException();
 		}
@@ -98,9 +91,6 @@ public class ChildCommentValidator {
 	 * 대댓글 좋아요 취소 시 필요한 검증 로직을 수행합니다.
 	 */
 	public void validateForCancelLike(User user, ChildComment childComment) {
-		if (childComment.getWriter().isDeleted()) {
-			throw AuthErrorCode.INACTIVE_USER.toBaseException();
-		}
 		if (!likeChildCommentReader.isChildCommentLiked(user, childComment.getId())) {
 			throw ChildCommentErrorCode.CHILD_COMMENT_NOT_LIKE.toBaseException();
 		}

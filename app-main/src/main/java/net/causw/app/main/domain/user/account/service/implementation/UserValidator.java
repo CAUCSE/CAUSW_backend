@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.SocialType;
-import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.policy.PasswordPolicy;
 import net.causw.app.main.domain.user.account.repository.user.SocialAccountRepository;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
@@ -23,7 +22,7 @@ import lombok.RequiredArgsConstructor;
  * <p>
  * 회원가입/로그인 시의 상태(State) 체크, 리프레시 토큰의 소유권 확인,
  * 이메일/전화번호/닉네임의 중복 여부를 검사합니다.
- * 상태 검증은 state 및 deletedAt 기준으로 판정합니다.
+ * 상태 검증은 UserState 기준으로 판정합니다.
  */
 @Component
 @RequiredArgsConstructor
@@ -44,12 +43,9 @@ public class UserValidator {
 	 * [USER_INACTIVE_CAN_REJOIN] 탈퇴 계정인 경우 (복구 절차 필요)
 	 */
 	public void validateUserStatusForSignup(User user) {
-		if (user.isDeleted()) {
-			throw UserErrorCode.USER_INACTIVE_CAN_REJOIN.toBaseException();
-		}
-
-		UserState state = user.getState();
-		switch (state) {
+		switch (user.getState()) {
+			case INACTIVE ->
+				throw UserErrorCode.USER_INACTIVE_CAN_REJOIN.toBaseException();
 			case DROP ->
 				throw UserErrorCode.USER_DROPPED.toBaseException();
 			case ACTIVE, AWAIT, REJECT ->
@@ -74,11 +70,9 @@ public class UserValidator {
 		switch (user.getState()) {
 			case DROP ->
 				throw UserErrorCode.USER_DROPPED.toBaseException();
+			case INACTIVE ->
+				throw UserErrorCode.USER_INACTIVE_CAN_REJOIN.toBaseException();
 			default -> {}
-		}
-
-		if (user.isDeleted()) {
-			throw UserErrorCode.USER_INACTIVE_CAN_REJOIN.toBaseException();
 		}
 	}
 
@@ -94,11 +88,9 @@ public class UserValidator {
 		switch (user.getState()) {
 			case DROP ->
 				throw UserErrorCode.INVALID_LOGIN_USER_DROPPED.toBaseException();
+			case INACTIVE ->
+				throw UserErrorCode.INVALID_LOGIN_USER_INACTIVE.toBaseException();
 			default -> {}
-		}
-
-		if (user.isDeleted()) {
-			throw UserErrorCode.INVALID_LOGIN_USER_INACTIVE.toBaseException();
 		}
 	}
 
@@ -114,11 +106,9 @@ public class UserValidator {
 		switch (user.getState()) {
 			case DROP ->
 				throw AuthErrorCode.DROPPED_USER.toBaseException();
+			case INACTIVE ->
+				throw AuthErrorCode.INACTIVE_USER.toBaseException();
 			default -> {}
-		}
-
-		if (user.isDeleted()) {
-			throw AuthErrorCode.INACTIVE_USER.toBaseException();
 		}
 	}
 

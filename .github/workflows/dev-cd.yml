@@ -24,54 +24,37 @@ jobs:
       - name: Setup JDK and Gradle
         uses: ./.github/actions/setup-jdk-gradle
 
-      # .gitignore된 yml 파일들 github secret에서 복사
-      - name: Copy secret for app-main
+      # env 파일 추가
+      - name: Copy .env from secret
         env:
-          APPLICATION_FILE: ${{ secrets.APPLICATION_PROFILE_DEV }}
-          APPLICATION_DEV_FILE: ${{ secrets.APPLICATION_DEV }}
-          DIR: ./app-main/src/main/resources
-          APPLICATION_FILE_NAME: application.yml
-          APPLICATION_DEV_FILE_NAME: application-dev.yml
+          ENV_CONTENT: ${{ secrets.ENV_DEV }}
         run: |
-          touch $DIR/$APPLICATION_FILE_NAME
-          touch $DIR/$APPLICATION_DEV_FILE_NAME
-          echo "$APPLICATION_FILE" > $DIR/$APPLICATION_FILE_NAME
-          echo "$APPLICATION_DEV_FILE" > $DIR/$APPLICATION_DEV_FILE_NAME
-
-      # 파이어베이스 key 파일 추가
-      - name: Add firebase key
-        env:
-          FIREBASE_KEY: ${{ secrets.FIREBASE_KEY }}
-          FIREBASE_KEY_FILENAME: dongnae_firebase_key.json
-          DIR: ./app-main/src/main/resources
-        run: |
-          touch $DIR/$FIREBASE_KEY_FILENAME
-          echo "$FIREBASE_KEY" > $DIR/$FIREBASE_KEY_FILENAME
-
-      # .env.dev 파일 추가
-      - name: Copy .env.dev from secret
-        env:
-          ENV_DEV: ${{ secrets.ENV_DEV }}
-        run: |
-          cat <<EOF > .env.dev
-          $ENV_DEV
-          EOF
+            cat <<EOF > .env
+            $ENV_CONTENT
+            EOF
 
       # Flyway 마이그레이션
       - name: Run Flyway repair and migration
         run: |
-          ./gradlew :app-main:flywayRepair -Penv=dev || true
-          ./gradlew :app-main:flywayMigrate -Penv=dev
+          ./gradlew :app-main:flywayRepair || true
+          ./gradlew :app-main:flywayMigrate
 
       # Build -> jar 파일 생성
       - name: Build app-main module
         run: ./gradlew clean :app-main:bootJar -x test
 
-      - name: Upload Build artifacts
+      # 배포 아티팩트 한 폴더로 모으기
+      - name: Prepare Deployment Artifacts
+        run: |
+          mkdir deploy-artifacts
+          cp app-main/build/libs/*.jar deploy-artifacts/
+
+      # 폴더를 아티팩트로 업로드
+      - name: Upload Deployment Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: app-main-artifact
-          path: "app-main/build/libs/*.jar"
+          path: deploy-artifacts
 
 
   app-main-deploy:
@@ -80,12 +63,12 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      - name: Download build artifacts
+      - name: Download Deployment Artifacts
         uses: actions/download-artifact@v4
         with:
           name: app-main-artifact
 
-      # app-main JAR 파일 EC2에 전송
+      # app-main JAR EC2에 전송
       - name: SCP app-main JAR to EC2
         if: github.actor != 'nektos/act'
         uses: appleboy/scp-action@master
@@ -95,6 +78,20 @@ jobs:
           username: ${{ secrets.EC2_USER_DEV }}
           source: "*.jar"
           target: "/home/ubuntu/app/app-main"
+
+      # .env를 Secret에서 직접 EC2에 생성
+      - name: Write .env to EC2
+        if: github.actor != 'nektos/act'
+        uses: appleboy/ssh-action@master
+        env:
+          ENV_CONTENT: ${{ secrets.ENV_DEV }}
+        with:
+          key: ${{ secrets.EC2_KEY_DEV }}
+          host: ${{ secrets.EC2_HOST_DEV }}
+          username: ${{ secrets.EC2_USER_DEV }}
+          envs: ENV_CONTENT
+          script: |
+            printf '%s' "$ENV_CONTENT" > /home/ubuntu/app/app-main/.env
 
       # Redis Server 구동
       - name: Start redis-server
@@ -120,6 +117,7 @@ jobs:
             sleep 15
             APP_MAIN_JAR=$(ls -t /home/ubuntu/app/app-main/*.jar | head -n 1)
             sudo mkdir -p /var/log/spring-boot/app-main
+            cd /home/ubuntu/app/app-main
             sudo nohup java -DLOG_DIR=/var/log/spring-boot/app-main -jar "$APP_MAIN_JAR" 1>/dev/null 2>&1 &
 
 

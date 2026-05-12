@@ -105,21 +105,13 @@ jobs:
       - name: Setup JDK and Gradle
         uses: ./.github/actions/setup-jdk-gradle
 
-      # git ignore한 yml 파일들 github secret에서 복사해 오기
-      - name: Copy secrets for app-main
+      - name: Copy .env from secret
         env:
-          APPLICATION_FILE: ${{ secrets.APPLICATION_PROFILE_DEV }}
-          APPLICATION_DEV_FILE: ${{ secrets.APPLICATION_DEV }}
-          DIR: ./app-main/src/main/resources
-
-          APPLICATION_FILE_NAME: application.yml
-          APPLICATION_DEV_FILE_NAME: application-dev.yml
+          ENV_CONTENT: ${{ secrets.ENV_TEST }}
         run: |
-          mkdir -p $DIR
-          touch $DIR/$APPLICATION_FILE_NAME
-          touch $DIR/$APPLICATION_DEV_FILE_NAME
-          echo "$APPLICATION_FILE" > $DIR/$APPLICATION_FILE_NAME
-          echo "$APPLICATION_DEV_FILE" > $DIR/$APPLICATION_DEV_FILE_NAME
+            cat <<EOF > .env
+            $ENV_CONTENT
+            EOF
 
       # 테스트 실행
       - name: Test with Gradle (app-main)

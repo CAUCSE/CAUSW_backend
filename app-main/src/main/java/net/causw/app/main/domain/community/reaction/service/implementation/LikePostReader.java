@@ -1,5 +1,9 @@
 package net.causw.app.main.domain.community.reaction.service.implementation;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,5 +40,19 @@ public class LikePostReader {
 	 */
 	public Boolean existsByPostIdAndUserId(String postId, String userId) {
 		return likePostRepository.existsByPostIdAndUserId(postId, userId);
+	}
+
+	/**
+	 * 특정 사용자가 좋아요를 누른 게시글 ID 집합을 배치 조회합니다.
+	 *
+	 * @param userId  사용자 ID
+	 * @param postIds 조회할 게시글 ID 목록
+	 * @return 사용자가 좋아요를 누른 게시글 ID 집합
+	 */
+	public Set<String> getLikedPostIds(String userId, List<String> postIds) {
+		if (postIds == null || postIds.isEmpty()) {
+			return Collections.emptySet();
+		}
+		return likePostRepository.findLikedPostIdsByUserIdAndPostIds(userId, postIds);
 	}
 }
