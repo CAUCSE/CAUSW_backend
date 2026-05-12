@@ -106,6 +106,9 @@ class UserAccountServiceTest {
 	@Mock
 	private UserPushTokenWriter userPushTokenWriter;
 
+	@Mock
+	private UserProfileImageService userProfileImageService;
+
 	private final String userId = "test-uuid";
 	private final String nickname = "푸앙";
 	private final String phoneNumber = "01012345678";
@@ -243,6 +246,7 @@ class UserAccountServiceTest {
 		assertEquals(now, result.deletedAt());
 
 		// verify
+		verify(userProfileImageService).requestProfileImageDeletionForWithdrawal(userId);
 		verify(userReader).findUserById(userId);
 		verify(socialAccountReader).findAllByUserId(userId);
 		verify(socialAccountUnlinkManager).unlink(socialAccount);
@@ -260,20 +264,24 @@ class UserAccountServiceTest {
 		// given
 		String accessToken = "access-token";
 		String refresh = "refresh-token";
+		LocalDateTime now = LocalDateTime.now();
 
 		User user = mock(User.class);
 		when(userReader.findUserById(userId)).thenReturn(user);
 		when(user.getId()).thenReturn(userId);
 		when(user.isDeleted()).thenReturn(false);
 		when(user.getState()).thenReturn(UserState.ACTIVE);
+
 		when(socialAccountReader.findAllByUserId(userId)).thenReturn(List.of());
 		when(lockerReader.findByUserId(userId)).thenReturn(Optional.empty());
+		when(user.getDeletedAt()).thenReturn(now);
 
-		when(user.getDeletedAt()).thenReturn(LocalDateTime.now());
-
-		userAccountService.withdraw(userId, accessToken, refresh);
+		UserWithdrawResponse result = userAccountService.withdraw(userId, accessToken, refresh);
 
 		// then
+		assertNotNull(result);
+		assertEquals(now, result.deletedAt());
+		verify(userProfileImageService).requestProfileImageDeletionForWithdrawal(userId);
 		verify(lockerWriter, never()).returnLocker(any(), any());
 		verify(userWriter).withdraw(user);
 	}

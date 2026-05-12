@@ -30,7 +30,6 @@ public class UserBoardSubscribeQueryRepository {
 	 * <p>발송 대상 조건:
 	 * <ol>
 	 *   <li>사용자 상태가 {@code ACTIVE}</li>
-	 *   <li>삭제되지 않은 사용자 ({@code deletedAt IS NULL})</li>
 	 *   <li>{@code targetAcademicStatuses}에 포함된 학적 상태 (빈 리스트이면 모든 학적 허용)</li>
 	 *   <li>해당 게시판에 {@code isSubscribed = false}인 row가 존재하지 않는 사용자</li>
 	 * </ol>
@@ -52,12 +51,11 @@ public class UserBoardSubscribeQueryRepository {
 				ubs.isSubscribed.isFalse())
 			.fetch();
 
-		// ACTIVE + 미삭제 + 학적 조건을 만족하며 구독 거부하지 않은 유저 조회
+		// ACTIVE + 학적 조건을 만족하며 구독 거부하지 않은 유저 조회
 		return jpaQueryFactory
 			.selectFrom(user)
 			.where(
 				user.state.eq(UserState.ACTIVE),
-				user.deletedAt.isNull(),
 				academicStatusCondition(user, targetAcademicStatuses),
 				unsubscribedIds.isEmpty() ? null : user.id.notIn(unsubscribedIds))
 			.fetch();

@@ -518,15 +518,10 @@ public class UserService {
 
 		//portimpl 내부 로직 서비스단으로 이동
 		Page<User> usersPage;
-		// [중요] v1 클라이언트는 여전히 레거시 state 문자열(INACTIVE)을 전달한다.
-		// 정책상 탈퇴 판정이 state가 아닌 deletedAt 기준으로 변경되면서,
-		// INACTIVE / INACTIVE_N_DROP 입력도 deletedAt 기반 조회 쿼리로 매핑한다.
 		if ("INACTIVE_N_DROP".equals(state)) {
-			usersPage = userRepository.findDroppedOrDeletedByName(
-				name,
-				PageRequest.of(pageNum, StaticValue.USER_LIST_PAGE_SIZE));
-		} else if ("INACTIVE".equals(state)) {
-			usersPage = userRepository.findDeletedByName(
+			List<String> statesToSearch = Arrays.asList("INACTIVE", "DROP");
+			usersPage = userRepository.findByStateInAndNameContaining(
+				statesToSearch,
 				name,
 				PageRequest.of(pageNum, StaticValue.USER_LIST_PAGE_SIZE));
 		} else {
@@ -618,7 +613,7 @@ public class UserService {
 					userProfileImageRepository.findByUserId(user.getId()).orElse(null), null, null);
 			}
 			// 탈퇴 계정은 복구 API를 통해 처리
-			else if (user.isDeleted()) {
+			else if (user.isInactive()) {
 				throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.USER_INACTIVE_CAN_REJOIN);
 			}
 			// ACTIVE, DROP은 가입 허용 X
@@ -663,7 +658,7 @@ public class UserService {
 					userProfileImageRepository.findByUserId(ghostuser.getId()).orElse(null), null, null);
 			}
 			// 탈퇴 계정은 복구 API를 통해 처리
-			else if (ghostuser.isDeleted()) {
+			else if (ghostuser.isInactive()) {
 				throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.USER_INACTIVE_CAN_REJOIN);
 			} else if (state == UserState.ACTIVE) {
 				throw new BadRequestException(ErrorCode.ROW_ALREADY_EXIST, MessageUtil.PHONE_NUMBER_ALREADY_EXIST);
@@ -753,7 +748,7 @@ public class UserService {
 				MessageUtil.EMAIL_INVALID));
 
 		/* Validate the input password and user state
-		 * The sign-in process is rejected if the user is in BLOCKED, WAIT, or withdrawn(deletedAt set) state.
+		 * The sign-in process is rejected if the user is in BLOCKED, WAIT, or INACTIVE state.
 		 */
 		ValidatorBucket.of()
 			.consistOf(PasswordCorrectValidator.of(
@@ -787,7 +782,7 @@ public class UserService {
 		if (userFoundByEmail.isPresent()) {
 			UserState state = userFoundByEmail.get().getState();
 			// ACTIVE 또는 탈퇴 상태일 경우 중복
-			if (state == UserState.ACTIVE || userFoundByEmail.get().isDeleted()) {
+			if (state == UserState.ACTIVE || userFoundByEmail.get().isInactive()) {
 				return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(true);
 			}
 			// DROP 상태일 경우, 문의 메시지
@@ -814,7 +809,7 @@ public class UserService {
 			UserState state = userFoundByNickname.get().getState();
 
 			// ACTIVE 또는 탈퇴 상태일 경우 중복
-			if (state == UserState.ACTIVE || userFoundByNickname.get().isDeleted()) {
+			if (state == UserState.ACTIVE || userFoundByNickname.get().isInactive()) {
 				return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(true);
 			}
 			// DROP 상태일 경우, 문의 메시지
@@ -833,7 +828,7 @@ public class UserService {
 		if (userFoundByStudentId.isPresent()) {
 			UserState state = userFoundByStudentId.get().getState();
 			// ACTIVE 또는 탈퇴 상태일 경우 중복
-			if (state == UserState.ACTIVE || userFoundByStudentId.get().isDeleted()) {
+			if (state == UserState.ACTIVE || userFoundByStudentId.get().isInactive()) {
 				return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(true);
 			}
 			// DROP 상태일 경우, 문의 메시지
@@ -858,7 +853,7 @@ public class UserService {
 		if (userFoundByPhoneNumber.isPresent()) {
 			UserState state = userFoundByPhoneNumber.get().getState();
 			// ACTIVE 또는 탈퇴 상태일 경우 중복
-			if (state == UserState.ACTIVE || userFoundByPhoneNumber.get().isDeleted()) {
+			if (state == UserState.ACTIVE || userFoundByPhoneNumber.get().isInactive()) {
 				return UserDtoMapper.INSTANCE.toDuplicatedCheckResponseDto(true);
 			}
 			// DROP 상태일 경우, 문의 메시지
@@ -1035,7 +1030,7 @@ public class UserService {
 		this.circleMemberRepository.findByUser_Id(user.getId())
 			.forEach(circleMember -> this.updateStatus(circleMember.getId(), CircleMemberStatus.LEAVE));
 
-		user.setDeletedAt(LocalDateTime.now());
+		user.withdraw();
 		User entity = userRepository.save(user);
 		return userDtoMapper.toUserResponseDto(entity, null, null, null);
 	}
@@ -1127,7 +1122,7 @@ public class UserService {
 	private void validateNicknameUniqueness(String nickname, User currentUser) {
 		userRepository.findByNickname(nickname).ifPresent(foundUser -> {
 			if (currentUser == null || !foundUser.getId().equals(currentUser.getId())) {
-				if (foundUser.getState() == UserState.ACTIVE || foundUser.isDeleted()) {
+				if (foundUser.getState() == UserState.ACTIVE || foundUser.isInactive()) {
 					throw new BadRequestException(
 						ErrorCode.ROW_ALREADY_EXIST,
 						MessageUtil.NICKNAME_ALREADY_EXIST);
@@ -1144,7 +1139,7 @@ public class UserService {
 	private void validatePhoneNumberUniqueness(String phoneNumber, User currentUser) {
 		userRepository.findByPhoneNumber(phoneNumber).ifPresent(foundUser -> {
 			if (currentUser == null || !foundUser.getId().equals(currentUser.getId())) {
-				if (foundUser.getState() == UserState.ACTIVE || foundUser.isDeleted()) {
+				if (foundUser.getState() == UserState.ACTIVE || foundUser.isInactive()) {
 					throw new BadRequestException(
 						ErrorCode.ROW_ALREADY_EXIST,
 						MessageUtil.PHONE_NUMBER_ALREADY_EXIST);
@@ -1161,7 +1156,7 @@ public class UserService {
 	private void validateStudentIdUniqueness(String studentId, User currentUser) {
 		userRepository.findByStudentId(studentId).ifPresent(foundUser -> {
 			if (currentUser == null || !foundUser.getId().equals(currentUser.getId())) {
-				if (foundUser.getState() == UserState.ACTIVE || foundUser.isDeleted()) {
+				if (foundUser.getState() == UserState.ACTIVE || foundUser.isInactive()) {
 					throw new BadRequestException(
 						ErrorCode.ROW_ALREADY_EXIST,
 						MessageUtil.STUDENT_ID_ALREADY_EXIST);
@@ -1178,7 +1173,7 @@ public class UserService {
 	private void validateEmailUniqueness(String email, User currentUser) {
 		userRepository.findByEmail(email).ifPresent(foundUser -> {
 			if (currentUser == null || !foundUser.getId().equals(currentUser.getId())) {
-				if (foundUser.getState() == UserState.ACTIVE || foundUser.isDeleted()) {
+				if (foundUser.getState() == UserState.ACTIVE || foundUser.isInactive()) {
 					throw new BadRequestException(
 						ErrorCode.ROW_ALREADY_EXIST,
 						MessageUtil.EMAIL_ALREADY_EXIST);
@@ -1712,7 +1707,7 @@ public class UserService {
 				MessageUtil.USER_NOT_FOUND));
 
 		// 탈퇴 계정인지 확인
-		if (!user.isDeleted()) {
+		if (!user.isInactive()) {
 			throw new BadRequestException(
 				ErrorCode.INVALID_PARAMETER,
 				MessageUtil.USER_RECOVER_INVALID_STATE);
