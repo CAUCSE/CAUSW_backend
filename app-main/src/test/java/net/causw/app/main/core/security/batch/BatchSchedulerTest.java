@@ -27,7 +27,6 @@ import net.causw.app.main.domain.user.account.service.implementation.AdmissionWr
 import net.causw.app.main.domain.user.account.service.implementation.SocialAccountWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserInfoWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
-import net.causw.app.main.shared.infra.firebase.FcmUtils;
 import net.causw.app.main.shared.pageable.PageableFactory;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,8 +37,6 @@ public class BatchSchedulerTest {
 
 	@Mock
 	private JobLauncher jobLauncher;
-	@Mock
-	private FcmUtils fcmUtils;
 	@Mock
 	private UserRepository userRepository;
 	@Mock

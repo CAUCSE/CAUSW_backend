@@ -61,7 +61,6 @@ public class UserAccountService {
 	private final UserTermsAgreementReader userTermsAgreementReader;
 	private final UserTermsAgreementWriter userTermsAgreementWriter;
 	private final UserPushTokenWriter userPushTokenWriter;
-	private final UserInfoReader userInfoReader;
 	private final UserProfileImageService userProfileImageService;
 
 	/**
