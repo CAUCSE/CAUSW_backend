@@ -265,6 +265,7 @@ class UserAccountServiceTest {
 		// given
 		String accessToken = "access-token";
 		String refresh = "refresh-token";
+		String platformHint = null;
 		LocalDateTime now = LocalDateTime.now();
 
 		User user = mock(User.class);
@@ -277,9 +278,7 @@ class UserAccountServiceTest {
 		when(lockerReader.findByUserId(userId)).thenReturn(Optional.empty());
 		when(user.getDeletedAt()).thenReturn(now);
 
-		when(user.getDeletedAt()).thenReturn(LocalDateTime.now());
-    
-		UserWithdrawResponse result = userAccountService.withdraw(userId, accessToken, refresh);
+		UserWithdrawResponse result = userAccountService.withdraw(userId, accessToken, refresh, platformHint);
 
 		// then
 		assertNotNull(result);
