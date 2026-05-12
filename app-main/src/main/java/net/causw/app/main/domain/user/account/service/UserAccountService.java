@@ -63,6 +63,7 @@ public class UserAccountService {
 	private final UserTermsAgreementReader userTermsAgreementReader;
 	private final UserTermsAgreementWriter userTermsAgreementWriter;
 	private final UserInfoReader userInfoReader;
+	private final UserProfileImageService userProfileImageService;
 
 	/**
 	 * 소셜 로그인을 통해 생성된 임시 유저(GUEST)의 추가 정보를 등록하고 회원가입 절차를 완료합니다.
@@ -268,6 +269,7 @@ public class UserAccountService {
 	 * - 사용자 상태 검증 (이미 탈퇴했거나 추방된 사용자인지 확인)
 	 * - 연동된 모든 소셜 계정의 외부 연동(Unlink) 및 리프레시 토큰 제거
 	 * - 현재 요청에 사용된 Access/Refresh 토큰 즉시 무효화
+	 * - 프로필 이미지 삭제 처리
 	 * - 사용 중인 사물함이 존재할 경우 자동 반납 처리
 	 * - 등록된 모든 FCM 푸시 토큰 제거
 	 * - 사용자 정보 소프트 딜리트(Soft Delete) 수행
@@ -297,7 +299,7 @@ public class UserAccountService {
 		socialAccounts.forEach(socialAccount -> {
 			try {
 				socialAccountUnlinkManager.unlink(socialAccount);
-			} catch (Exception e) {
+			} catch (RuntimeException e) {
 				log.error("[User Withdraw] 소셜 연동 해제 실패. SocialType: {}, UserID: {}, Error: {}",
 					socialAccount.getSocialType(), user.getId(), e.getMessage());
 			}
@@ -305,6 +307,10 @@ public class UserAccountService {
 
 		// 현재 access / refresh token 무효화
 		authTokenManager.invalidateTokens(accessToken, refreshToken);
+
+		// 커스텀 프로필 이미지 파일 삭제 요청
+		userProfileImageService.requestProfileImageDeletionForWithdrawal(userId);
+
 		// 부가 처리
 		lockerReader.findByUserId(user.getId())
 			.ifPresent(locker -> lockerWriter.returnLocker(locker, user));

@@ -49,13 +49,4 @@ public class UserProfileImageWriter {
 	public void delete(UserProfileImage userProfileImage) {
 		userProfileImageRepository.delete(userProfileImage);
 	}
-
-	/**
-	 * 유저 ID에 해당하는 프로필 이미지를 삭제합니다.
-	 *
-	 * @param userId 유저 ID
-	 */
-	public void deleteByUserId(String userId) {
-		userProfileImageRepository.deleteByUserId(userId);
-	}
 }
