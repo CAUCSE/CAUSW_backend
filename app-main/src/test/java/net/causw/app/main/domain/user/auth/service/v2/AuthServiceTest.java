@@ -37,12 +37,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
+import net.causw.app.main.domain.notification.notification.service.implementation.UserPushTokenWriter;
 import net.causw.app.main.domain.user.account.entity.user.SocialAccount;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.SocialType;
 import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
 import net.causw.app.main.domain.user.account.service.implementation.SocialAccountReader;
-import net.causw.app.main.domain.user.account.service.implementation.UserPushTokenWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;

@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.springframework.stereotype.Component;
 
+import net.causw.app.main.domain.notification.notification.service.implementation.UserPushTokenWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.app.main.shared.infra.redis.RedisUtils;
@@ -12,6 +13,10 @@ import net.causw.global.constant.StaticValue;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * @deprecated V2 이후 신규 코드는 {@link UserPushTokenWriter}를 사용하세요. V1 및 배치 호환을 위해 유지됩니다.
+ */
+@Deprecated
 @RequiredArgsConstructor
 @Component
 public class FcmUtils {
