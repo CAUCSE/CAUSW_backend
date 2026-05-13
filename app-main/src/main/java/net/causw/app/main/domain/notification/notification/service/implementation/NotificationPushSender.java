@@ -32,7 +32,6 @@ public class NotificationPushSender {
 	 * @throws Exception 기타 예외 발생 시 예외 발생
 	 */
 	public void sendToUser(User user, String title, String body) {
-		userPushTokenWriter.cleanInvalidFcmTokens(user);
 		Set<String> tokens = new HashSet<>(user.getFcmTokens());
 		tokens.forEach(token -> trySend(user, token, title, body));
 	}
@@ -55,8 +54,12 @@ public class NotificationPushSender {
 			pushNotificationSender.send(token, title, body);
 		} catch (FirebaseMessagingException e) {
 			log.error("FCM 전송 실패: {}, 이유: {}", token, e.getMessage());
-			userPushTokenWriter.removeFcmToken(user, token);
-			log.info("오류 발생으로 FCM 토큰 제거됨: {}", token);
+			try {
+				userPushTokenWriter.removeFcmToken(user, token);
+				log.info("오류 발생으로 FCM 토큰 제거됨: {}", token);
+			} catch (Exception removeEx) {
+				log.warn("FCM 토큰 제거 중 예외 발생 (이미 제거된 토큰): {}", token);
+			}
 		} catch (Exception e) {
 			log.error("FCM 전송 중 알 수 없는 예외 발생: {}", e.getMessage(), e);
 		}

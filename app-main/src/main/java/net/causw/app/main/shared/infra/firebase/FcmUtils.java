@@ -1,15 +1,10 @@
 package net.causw.app.main.shared.infra.firebase;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.notification.notification.service.implementation.UserPushTokenWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
-import net.causw.app.main.shared.infra.redis.RedisUtils;
-import net.causw.global.constant.StaticValue;
 
 import lombok.RequiredArgsConstructor;
 
@@ -20,59 +15,30 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Component
 public class FcmUtils {
-	private final RedisUtils redisUtils;
 	private final UserRepository userRepository;
 
-	/**
-	 * 유효하지 않은 fcmToken 정리 및 최신화
-	 * redis 구조
-	 * Key : FcmToken:{FcmToken 값}
-	 * Value: {RefreshToken 값}
-	 *
-	 * 1.   redis에 없는 토큰 -> DB에서 삭제
-	 * 2.   redis에 있는 토큰인 경우
-	 * 2.1. refreshToken이 redis에 저장되어있는지 확인
-	 * 2.2. refreshToken이 redis에 없음 -> fcmToken을 DB, redis에서 모두 삭제
-	 * */
-	public void cleanInvalidFcmTokens(User user) {
-		Set<String> copy = new HashSet<>(user.getFcmTokens());
-		for (String fcmToken : copy) {
-			if (!redisUtils.existsFcmToken(fcmToken)) {
-				user.removeFcmToken(fcmToken);
-			} else {
-				String refreshToken = redisUtils.getFcmTokenData(fcmToken);
-				if (refreshToken == null || !redisUtils.existsRefreshToken(refreshToken)) {
-					user.removeFcmToken(fcmToken);
-					redisUtils.deleteFcmTokenData(fcmToken);
-				}
-			}
-		}
-		userRepository.save(user);
-	}
-
+	/** @deprecated refreshToken 파라미터는 무시됩니다. 기기 단위 관리로 전환되어 세션 종속성이 제거되었습니다. */
+	@Deprecated
 	public void addFcmToken(User user, String refreshToken, String fcmToken) {
-		if (!redisUtils.existsFcmToken(fcmToken)) {
-			user.getFcmTokens().add(fcmToken);
-			redisUtils.setFcmTokenData(fcmToken, refreshToken, StaticValue.JWT_REFRESH_TOKEN_VALID_TIME);
-			userRepository.save(user);
-		}
+		user.getFcmTokens().add(fcmToken);
+		userRepository.save(user);
 	}
 
 	public void removeFcmToken(User user, String fcmToken) {
 		user.removeFcmToken(fcmToken);
-		redisUtils.deleteFcmTokenData(fcmToken);
 		userRepository.save(user);
+	}
+
+	/** @deprecated 기기 단위 관리로 전환되어 no-op입니다. Firebase 발송 실패 시 자동 정리됩니다. */
+	@Deprecated
+	public void cleanInvalidFcmTokens(User user) {
+		// no-op: 토큰 무효화는 Firebase 발송 실패 응답 기반으로 처리됩니다.
 	}
 
 	public void clearFcmTokens(User user) {
 		if (user.getFcmTokens() == null || user.getFcmTokens().isEmpty()) {
 			return;
 		}
-
-		for (String token : user.getFcmTokens()) {
-			redisUtils.deleteFcmTokenData(token);
-		}
-
 		user.getFcmTokens().clear();
 		userRepository.save(user);
 	}

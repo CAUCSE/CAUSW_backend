@@ -124,17 +124,12 @@ public class UserController {
 	// ── FCM ──
 
 	@PostMapping("/fcm")
-	@Operation(summary = "fcm 토큰 등록 API", description = "유저와 fcm 토큰을 매핑한다.", security = {
-		@SecurityRequirement(name = "refreshBearerAuth")
-	})
+	@Operation(summary = "fcm 토큰 등록 API", description = "유저와 fcm 토큰을 기기 단위로 매핑한다.")
 	public ApiResponse<UserFcmTokenResponseDto> createFcmToken(
-		@RequestHeader(value = AuthorizationExtractor.REFRESH_AUTHORIZATION_HEADER, required = false) String refreshAuthHeader,
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@Valid @RequestBody() UserFcmTokenRequest body) {
-		AuthorizationExtractor.validateRefresh(refreshAuthHeader);
-		String refreshToken = AuthorizationExtractor.extractRefresh(refreshAuthHeader);
 		return ApiResponse
-			.success(userNotificationService.createFcmToken(userDetails.getUserId(), body.fcmToken(), refreshToken));
+			.success(userNotificationService.createFcmToken(userDetails.getUserId(), body.fcmToken()));
 	}
 
 	@GetMapping("/fcm")
