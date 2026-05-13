@@ -168,6 +168,7 @@ public class AuthServiceTest {
 			given(termsReader.findAllById(anyList())).willReturn(List.of(serviceTerms, privacyTerms));
 			given(emailVerificationReader.findLatestByEmailAndStatus(EMAIL, VerificationStatus.VERIFIED))
 				.willReturn(verifiedEmail);
+			given(authTokenManager.issueTokens(any(User.class), eq(null))).willReturn(authTokenPair);
 
 			// when
 			AuthResult result = authService.registerEmailUser(registerDto);
@@ -175,8 +176,8 @@ public class AuthServiceTest {
 			// then
 			assertThat(result).isNotNull();
 			assertThat(result.email()).isEqualTo(EMAIL);
-			assertThat(result.accessToken()).isNull();
-			assertThat(result.refreshToken()).isNull();
+			assertThat(result.accessToken()).isEqualTo(ACCESS_TOKEN);
+			assertThat(result.refreshToken()).isEqualTo(REFRESH_TOKEN);
 
 			// verify
 			verify(droppedUserIdentifierValidator).validateEmail(EMAIL);
