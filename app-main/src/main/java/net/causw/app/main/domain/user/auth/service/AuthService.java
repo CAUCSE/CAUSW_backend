@@ -170,9 +170,11 @@ public class AuthService {
 			.toList();
 		userTermsAgreementWriter.saveAll(newAgreements);
 
+		AuthTokenPair tokens = authTokenManager.issueTokens(savedUser, null);
+
 		// 신규 가입 유저는 커스텀 프로필 이미지가 없으므로 null 전달
-		return AuthResult.of(null, savedUser.getName(), savedUser.getEmail(),
-			ProfileImageDto.from(savedUser, null), null,
+		return AuthResult.of(tokens.accessToken(), savedUser.getName(), savedUser.getEmail(),
+			ProfileImageDto.from(savedUser, null), tokens.refreshToken(),
 			savedUser.isGuest(), true, savedUser.isAcademicCertified(),
 			savedUser.getAcademicStatus());
 	}
