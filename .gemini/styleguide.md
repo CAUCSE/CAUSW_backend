@@ -46,7 +46,7 @@ public class UserController {
 - `core`는 어떤 내부 패키지도 의존하지 않는다.
 - `shared`는 `core`만 의존하고 `domain` 의존을 금지한다.
 - `domain`은 `core`, `shared`를 의존할 수 있다.
-- 도메인 간 직접 의존은 최소화하고 필요한 경우 `service -> implementation` 경유만 허용한다.
+- 도메인 간 직접 의존은 최소화하고 필요한 경우 `service -> implementation`, `implementation -> implementation` 경유만 허용한다.
 - 패키지/모듈 간 순환 의존을 절대 금지한다.
 
 ## 3. Service/Implementation 분리 규칙
