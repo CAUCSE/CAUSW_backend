@@ -145,15 +145,9 @@ public class UserAdminService {
 	}
 
 	// 자진 탈퇴 사용자 복원이 가능한지 검증
-	// - DROP 상태가 아니어야 하며, 실제로 탈퇴(isDeleted) 상태여야 함
+	// - INACTIVE 상태이며 실제로 탈퇴(isDeleted) 상태여야 함
 	private void validateRestorableWithdrawnUser(User targetUser) {
-		// 1. 추방(DROP)된 유저는 이 API를 통해 복구할 수 없음 (restoreUser API 사용 유도)
-		if (targetUser.getState() == UserState.DROP) {
-			throw UserErrorCode.USER_NOT_RESTORABLE.toBaseException();
-		}
-
-		// 2. 실제로 탈퇴(isDeleted) 상태인 유저여야 함
-		if (!targetUser.isDeleted()) {
+		if (!targetUser.isInactive() || !targetUser.isDeleted()) {
 			throw UserErrorCode.USER_NOT_RESTORABLE.toBaseException();
 		}
 	}
