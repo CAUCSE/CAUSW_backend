@@ -12,10 +12,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
+import net.causw.app.main.domain.notification.notification.service.implementation.UserPushTokenWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
 import net.causw.app.main.domain.user.account.service.implementation.SocialAccountReader;
-import net.causw.app.main.domain.user.account.service.implementation.UserPushTokenWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
@@ -170,9 +170,11 @@ public class AuthService {
 			.toList();
 		userTermsAgreementWriter.saveAll(newAgreements);
 
+		AuthTokenPair tokens = authTokenManager.issueTokens(savedUser, null);
+
 		// 신규 가입 유저는 커스텀 프로필 이미지가 없으므로 null 전달
-		return AuthResult.of(null, savedUser.getName(), savedUser.getEmail(),
-			ProfileImageDto.from(savedUser, null), null,
+		return AuthResult.of(tokens.accessToken(), savedUser.getName(), savedUser.getEmail(),
+			ProfileImageDto.from(savedUser, null), tokens.refreshToken(),
 			savedUser.isGuest(), true, savedUser.isAcademicCertified(),
 			savedUser.getAcademicStatus());
 	}

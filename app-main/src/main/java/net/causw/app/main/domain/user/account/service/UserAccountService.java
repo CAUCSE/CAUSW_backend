@@ -10,6 +10,7 @@ import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerWriter;
+import net.causw.app.main.domain.notification.notification.service.implementation.UserPushTokenWriter;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserWithdrawResponse;
 import net.causw.app.main.domain.user.account.entity.user.SocialAccount;
 import net.causw.app.main.domain.user.account.entity.user.User;
@@ -19,7 +20,6 @@ import net.causw.app.main.domain.user.account.service.dto.result.UserMeAccountRe
 import net.causw.app.main.domain.user.account.service.dto.result.UserMeResult;
 import net.causw.app.main.domain.user.account.service.implementation.SocialAccountReader;
 import net.causw.app.main.domain.user.account.service.implementation.SocialAccountUnlinkManager;
-import net.causw.app.main.domain.user.account.service.implementation.UserInfoReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
@@ -36,7 +36,6 @@ import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgre
 import net.causw.app.main.shared.dto.ProfileImageDto;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
-import net.causw.app.main.shared.infra.firebase.FcmUtils;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -55,14 +54,14 @@ public class UserAccountService {
 	private final UserValidator userValidator;
 	private final AuthValidator authValidator;
 	private final AuthTokenManager authTokenManager;
-	private final FcmUtils fcmUtils;
 	private final PasswordEncoder passwordEncoder;
 	private final UserProfileImageReader userProfileImageReader;
 	private final TermsReader termsReader;
 	private final TermsValidator termsValidator;
 	private final UserTermsAgreementReader userTermsAgreementReader;
 	private final UserTermsAgreementWriter userTermsAgreementWriter;
-	private final UserInfoReader userInfoReader;
+	private final UserPushTokenWriter userPushTokenWriter;
+	private final UserProfileImageService userProfileImageService;
 
 	/**
 	 * 소셜 로그인을 통해 생성된 임시 유저(GUEST)의 추가 정보를 등록하고 회원가입 절차를 완료합니다.
@@ -268,6 +267,7 @@ public class UserAccountService {
 	 * - 사용자 상태 검증 (이미 탈퇴했거나 추방된 사용자인지 확인)
 	 * - 연동된 모든 소셜 계정의 외부 연동(Unlink) 및 리프레시 토큰 제거
 	 * - 현재 요청에 사용된 Access/Refresh 토큰 즉시 무효화
+	 * - 프로필 이미지 삭제 처리
 	 * - 사용 중인 사물함이 존재할 경우 자동 반납 처리
 	 * - 등록된 모든 FCM 푸시 토큰 제거
 	 * - 사용자 정보 소프트 딜리트(Soft Delete) 수행
@@ -281,7 +281,7 @@ public class UserAccountService {
 	 * 관리자에 의해 추방된 경우(USER_DROPPED)
 	 */
 	@Transactional
-	public UserWithdrawResponse withdraw(String userId, String accessToken, String refreshToken) {
+	public UserWithdrawResponse withdraw(String userId, String accessToken, String refreshToken, String platformHint) {
 		User user = userReader.findUserById(userId);
 
 		if (user.isDeleted()) {
@@ -296,8 +296,8 @@ public class UserAccountService {
 		List<SocialAccount> socialAccounts = socialAccountReader.findAllByUserId(user.getId());
 		socialAccounts.forEach(socialAccount -> {
 			try {
-				socialAccountUnlinkManager.unlink(socialAccount);
-			} catch (Exception e) {
+				socialAccountUnlinkManager.unlink(socialAccount, platformHint);
+			} catch (RuntimeException e) {
 				log.error("[User Withdraw] 소셜 연동 해제 실패. SocialType: {}, UserID: {}, Error: {}",
 					socialAccount.getSocialType(), user.getId(), e.getMessage());
 			}
@@ -305,11 +305,15 @@ public class UserAccountService {
 
 		// 현재 access / refresh token 무효화
 		authTokenManager.invalidateTokens(accessToken, refreshToken);
+
+		// 커스텀 프로필 이미지 파일 삭제 요청
+		userProfileImageService.requestProfileImageDeletionForWithdrawal(userId);
+
 		// 부가 처리
 		lockerReader.findByUserId(user.getId())
 			.ifPresent(locker -> lockerWriter.returnLocker(locker, user));
-		fcmUtils.clearFcmTokens(user);
 
+		userPushTokenWriter.clearFcmTokens(user);
 		userWriter.withdraw(user);
 
 		return UserWithdrawResponse.of(user.getDeletedAt());

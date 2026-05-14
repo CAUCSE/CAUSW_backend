@@ -56,6 +56,7 @@ import net.causw.app.main.shared.dto.ApiResponse;
 import net.causw.app.main.shared.util.AuthorizationExtractor;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -225,18 +226,26 @@ public class UserController {
 			userProfileImageService.updateToCustomProfileImage(userDetails.getUserId(), imageFile));
 	}
 
+	// ── 회원 탈퇴 ──
 	@DeleteMapping("/me")
-	@Operation(summary = "회원 탈퇴 API", description = "현재 로그인한 사용자를 탈퇴 처리합니다. (Soft Delete)")
+	@Operation(summary = "회원 탈퇴 API", description = "현재 로그인한 사용자를 탈퇴 처리합니다. (Soft Delete)", security = {
+		@SecurityRequirement(name = "bearerAuth"),
+		@SecurityRequirement(name = "refreshBearerAuth")
+	})
 	public ApiResponse<UserWithdrawResponse> withdraw(
+		@Parameter(description = "플랫폼 타입 (애플 로그인 연동 해제 시 정확한 처리를 위해 필요)", example = "ios / web") @RequestHeader(value = "X-Platform-Type", required = false) String platformHint,
 		@RequestHeader(value = "Authorization", required = false) String authorizationHeader,
-		@CookieValue(name = "refresh_token", required = false) String refreshToken,
+		@RequestHeader(value = AuthorizationExtractor.REFRESH_AUTHORIZATION_HEADER, required = false) String refreshAuthHeader,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		AuthorizationExtractor.validate(authorizationHeader);
 
+		AuthorizationExtractor.validate(authorizationHeader);
 		String accessToken = AuthorizationExtractor.extract(authorizationHeader);
 
+		AuthorizationExtractor.validateRefresh(refreshAuthHeader);
+		String refreshToken = AuthorizationExtractor.extractRefresh(refreshAuthHeader);
+
 		return ApiResponse.success(
-			userAccountService.withdraw(userDetails.getUserId(), accessToken, refreshToken));
+			userAccountService.withdraw(userDetails.getUserId(), accessToken, refreshToken, platformHint));
 	}
 	// ── 소셜 계정 연동 ──
 

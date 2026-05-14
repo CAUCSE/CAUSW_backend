@@ -91,7 +91,6 @@ import net.causw.app.main.domain.user.account.repository.user.UserAdmissionLogRe
 import net.causw.app.main.domain.user.account.repository.user.UserAdmissionRepository;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.app.main.domain.user.account.repository.user.query.UserQueryRepository;
-import net.causw.app.main.domain.user.account.repository.userInfo.UserInfoRepository;
 import net.causw.app.main.domain.user.account.util.AdmissionYearValidator;
 import net.causw.app.main.domain.user.account.util.PasswordCorrectValidator;
 import net.causw.app.main.domain.user.account.util.PasswordFormatValidator;
@@ -135,7 +134,6 @@ public class UserService {
 	private final ApplicationEventPublisher eventPublisher;
 
 	private final UserRepository userRepository;
-	private final UserInfoRepository userInfoRepository;
 	private final CircleRepository circleRepository;
 	private final CircleMemberRepository circleMemberRepository;
 	private final PostRepository postRepository;

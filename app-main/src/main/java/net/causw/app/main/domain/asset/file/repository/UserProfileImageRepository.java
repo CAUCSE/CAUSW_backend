@@ -18,5 +18,5 @@ public interface UserProfileImageRepository extends JpaRepository<UserProfileIma
 	@EntityGraph(attributePaths = {"uuidFile"})
 	List<UserProfileImage> findByUserIdIn(List<String> userIds);
 
-	void deleteByUserId(String userId);
+	void deleteById(String id);
 }

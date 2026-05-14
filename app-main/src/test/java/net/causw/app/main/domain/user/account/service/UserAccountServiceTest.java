@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doNothing;
@@ -30,6 +29,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import net.causw.app.main.domain.asset.locker.entity.Locker;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerWriter;
+import net.causw.app.main.domain.notification.notification.service.implementation.UserPushTokenWriter;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserWithdrawResponse;
 import net.causw.app.main.domain.user.account.entity.user.SocialAccount;
 import net.causw.app.main.domain.user.account.entity.user.User;
@@ -51,7 +51,6 @@ import net.causw.app.main.domain.user.terms.service.implementation.TermsValidato
 import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementWriter;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.TermsErrorCode;
-import net.causw.app.main.shared.infra.firebase.FcmUtils;
 
 @ExtendWith(MockitoExtension.class)
 class UserAccountServiceTest {
@@ -105,13 +104,17 @@ class UserAccountServiceTest {
 	private LockerWriter lockerWriter;
 
 	@Mock
-	private FcmUtils fcmUtils;
+	private UserPushTokenWriter userPushTokenWriter;
+
+	@Mock
+	private UserProfileImageService userProfileImageService;
 
 	private final String userId = "test-uuid";
 	private final String nickname = "푸앙";
 	private final String phoneNumber = "01012345678";
 	private final String name = "홍길동";
 	private final String refreshToken = "old-refresh-token";
+	private final String platformHint = "ios";
 	private final List<String> agreedTermsIds = List.of("term-id-1", "term-id-2");
 
 	@Test
@@ -237,20 +240,21 @@ class UserAccountServiceTest {
 		when(lockerReader.findByUserId(userId)).thenReturn(Optional.of(locker));
 		when(user.getDeletedAt()).thenReturn(now);
 
-		UserWithdrawResponse result = userAccountService.withdraw(userId, accessToken, refresh);
+		UserWithdrawResponse result = userAccountService.withdraw(userId, accessToken, refresh, platformHint);
 
 		// then
 		assertNotNull(result);
 		assertEquals(now, result.deletedAt());
 
 		// verify
+		verify(userProfileImageService).requestProfileImageDeletionForWithdrawal(userId);
 		verify(userReader).findUserById(userId);
 		verify(socialAccountReader).findAllByUserId(userId);
-		verify(socialAccountUnlinkManager).unlink(socialAccount);
+		verify(socialAccountUnlinkManager).unlink(socialAccount, platformHint);
 		verify(authTokenManager).invalidateTokens(accessToken, refresh);
 		verify(lockerReader).findByUserId(userId);
 		verify(lockerWriter).returnLocker(locker, user);
-		verify(fcmUtils).clearFcmTokens(user);
+		verify(userPushTokenWriter).clearFcmTokens(user);
 
 		verify(userWriter).withdraw(user);
 	}
@@ -261,20 +265,25 @@ class UserAccountServiceTest {
 		// given
 		String accessToken = "access-token";
 		String refresh = "refresh-token";
+		String platformHint = null;
+		LocalDateTime now = LocalDateTime.now();
 
 		User user = mock(User.class);
 		when(userReader.findUserById(userId)).thenReturn(user);
 		when(user.getId()).thenReturn(userId);
 		when(user.isDeleted()).thenReturn(false);
 		when(user.getState()).thenReturn(UserState.ACTIVE);
+
 		when(socialAccountReader.findAllByUserId(userId)).thenReturn(List.of());
 		when(lockerReader.findByUserId(userId)).thenReturn(Optional.empty());
+		when(user.getDeletedAt()).thenReturn(now);
 
-		when(user.getDeletedAt()).thenReturn(LocalDateTime.now());
-
-		userAccountService.withdraw(userId, accessToken, refresh);
+		UserWithdrawResponse result = userAccountService.withdraw(userId, accessToken, refresh, platformHint);
 
 		// then
+		assertNotNull(result);
+		assertEquals(now, result.deletedAt());
+		verify(userProfileImageService).requestProfileImageDeletionForWithdrawal(userId);
 		verify(lockerWriter, never()).returnLocker(any(), any());
 		verify(userWriter).withdraw(user);
 	}
@@ -289,9 +298,10 @@ class UserAccountServiceTest {
 
 		// when & then
 		assertThrows(BaseRunTimeV2Exception.class,
-			() -> userAccountService.withdraw(userId, "access-token", "refresh-token"));
+			() -> userAccountService.withdraw(userId, "access-token", "refresh-token", platformHint));
 
 		verify(userReader).findUserById(userId);
-		verifyNoInteractions(socialAccountReader, socialAccountUnlinkManager, lockerReader, lockerWriter, fcmUtils);
+		verifyNoInteractions(socialAccountReader, socialAccountUnlinkManager, lockerReader, lockerWriter,
+			userPushTokenWriter);
 	}
 }
