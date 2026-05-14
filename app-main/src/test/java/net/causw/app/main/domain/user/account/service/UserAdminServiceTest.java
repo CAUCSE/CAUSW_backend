@@ -335,6 +335,85 @@ class UserAdminServiceTest {
 		}
 	}
 
+	@Nested
+	@DisplayName("자진 탈퇴 유저 복구")
+	class RestoreWithdrawnUser {
+
+		@Test
+		@DisplayName("INACTIVE 상태이며 deletedAt이 있으면 자진 탈퇴 유저를 복구한다")
+		void givenInactiveDeletedUser_whenRestoreWithdrawnUser_thenRestore() {
+			// given
+			User adminUser = ObjectFixtures.getCertifiedUserWithId("admin-1");
+			String userId = "user-1";
+			User user = ObjectFixtures.getCertifiedUserWithId(userId);
+			user.setState(UserState.INACTIVE);
+			user.setDeletedAt(LocalDateTime.now());
+			user.setRoles(Set.of(Role.NONE));
+
+			when(userReader.findUserById(userId)).thenReturn(user);
+			when(userAccountService.restore(userId)).thenReturn(user);
+
+			// when
+			userAdminService.restoreWithdrawnUser(adminUser, userId);
+
+			// then
+			verify(userAccountService).restore(userId);
+			verify(userAdminActionLogWriter).logRestore(
+				eq(adminUser),
+				eq(user),
+				eq(UserState.INACTIVE),
+				eq(Set.of(Role.NONE)));
+		}
+
+		@Test
+		@DisplayName("DROP 상태이며 deletedAt이 있으면 자진 탈퇴 복구 대상이 아니다")
+		void givenDroppedDeletedUser_whenRestoreWithdrawnUser_thenThrowUserNotRestorable() {
+			// given
+			User adminUser = ObjectFixtures.getCertifiedUserWithId("admin-1");
+			String userId = "user-1";
+			User user = ObjectFixtures.getCertifiedUserWithId(userId);
+			user.setState(UserState.DROP);
+			user.setDeletedAt(LocalDateTime.now());
+
+			when(userReader.findUserById(userId)).thenReturn(user);
+
+			// when
+			Throwable throwable = catchThrowable(() -> userAdminService.restoreWithdrawnUser(adminUser, userId));
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
+				.isEqualTo(UserErrorCode.USER_NOT_RESTORABLE);
+			verify(userAccountService, never()).restore(any());
+			verify(userAdminActionLogWriter, never()).logRestore(any(), any(), any(), any());
+		}
+
+		@Test
+		@DisplayName("deletedAt이 있어도 INACTIVE 상태가 아니면 자진 탈퇴 복구 대상이 아니다")
+		void givenDeletedButNotInactiveUser_whenRestoreWithdrawnUser_thenThrowUserNotRestorable() {
+			// given
+			User adminUser = ObjectFixtures.getCertifiedUserWithId("admin-1");
+			String userId = "user-1";
+			User user = ObjectFixtures.getCertifiedUserWithId(userId);
+			user.setState(UserState.ACTIVE);
+			user.setDeletedAt(LocalDateTime.now());
+
+			when(userReader.findUserById(userId)).thenReturn(user);
+
+			// when
+			Throwable throwable = catchThrowable(() -> userAdminService.restoreWithdrawnUser(adminUser, userId));
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
+				.isEqualTo(UserErrorCode.USER_NOT_RESTORABLE);
+			verify(userAccountService, never()).restore(any());
+			verify(userAdminActionLogWriter, never()).logRestore(any(), any(), any(), any());
+		}
+	}
+
 	@Test
 	@DisplayName("관리자 추방 시 계정은 DROP 처리되고 추방 식별자가 저장된다")
 	void dropUser_Success() {
