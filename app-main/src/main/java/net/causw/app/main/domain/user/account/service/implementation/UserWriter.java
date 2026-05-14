@@ -14,7 +14,6 @@ import net.causw.app.main.domain.user.account.entity.user.SocialAccount;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
 import net.causw.app.main.domain.user.account.enums.user.Role;
-import net.causw.app.main.domain.user.account.repository.user.SocialAccountRepository;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -26,20 +25,11 @@ import lombok.extern.slf4j.Slf4j;
 public class UserWriter {
 
 	private final UserRepository userRepository;
-	private final SocialAccountRepository socialAccountRepository;
 	private final SocialAccountReader socialAccountReader;
 	private final SocialAccountUnlinkManager socialAccountUnlinkManager;
 
 	public User save(User user) {
 		return this.userRepository.save(user);
-	}
-
-	public SocialAccount save(SocialAccount socialAccount) {
-		return socialAccountRepository.save(socialAccount);
-	}
-
-	public void deleteSocialAccount(SocialAccount socialAccount) {
-		socialAccountRepository.delete(socialAccount);
 	}
 
 	/**

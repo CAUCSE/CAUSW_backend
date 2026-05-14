@@ -6,9 +6,9 @@ import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.user.account.entity.user.SocialAccount;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.enums.user.SocialType;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.repository.user.SocialAccountRepository;
+import net.causw.app.main.domain.user.auth.service.dto.OAuthAttributes;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -25,12 +25,12 @@ import lombok.RequiredArgsConstructor;
 public class SocialAccountLinker {
 
 	private final UserReader userReader;
-	private final UserWriter userWriter;
 	private final UserValidator userValidator;
+	private final SocialAccountWriter socialAccountWriter;
 	private final SocialAccountRepository socialAccountRepository;
 
 	/**
-	 * 소셜 계정 연동 공통 정책을 적용합니다.
+	 * 소셜 계정을 현재 사용자에게 연결합니다.
 	 * <ul>
 	 *   <li>SocialAccount 없음 + 현재 유저에 동일 provider 없음 → 신규 생성 후 연결</li>
 	 *   <li>SocialAccount 있음 + 다른 GUEST 유저에 연결됨 → 현재 유저로 재연결</li>
@@ -38,15 +38,13 @@ public class SocialAccountLinker {
 	 * </ul>
 	 *
 	 * @param userId     연동할 사용자의 고유 식별자 (PK)
-	 * @param socialType 소셜 provider 타입
-	 * @param socialId   소셜 provider의 사용자 고유 ID
-	 * @param email      소셜 provider에서 제공한 이메일
+	 * @param attributes 소셜 provider에서 추출한 표준 속성 (socialType/socialId/email 포함)
 	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
 	 * [INVALID_REGISTRATION_STATUS] ACTIVE 상태가 아닌 유저가 요청한 경우,
 	 * [ALREADY_LINKED_SOCIAL_PROVIDER] 현재 유저에 동일 provider가 이미 연동된 경우,
 	 * [SOCIAL_ACCOUNT_LINKED_TO_OTHER_USER] 해당 소셜 계정이 다른 활성 유저에 연결된 경우
 	 */
-	public void applyLinkingPolicy(String userId, SocialType socialType, String socialId, String email) {
+	public void linkSocialAccount(String userId, OAuthAttributes attributes) {
 		User currentUser = userReader.findUserById(userId);
 
 		if (currentUser.getState() != UserState.ACTIVE) {
@@ -54,14 +52,15 @@ public class SocialAccountLinker {
 		}
 
 		// 현재 유저에 동일 provider 이미 연동됐는지 먼저 확인 (신규 SocialAccount 존재 여부 무관)
-		userValidator.checkAccountExistByUserAndSocialType(currentUser, socialType);
+		userValidator.checkAccountExistByUserAndSocialType(currentUser, attributes.socialType());
 
 		Optional<SocialAccount> existingSocialAccount = socialAccountRepository
-			.findBySocialIdAndSocialType(socialId, socialType);
+			.findBySocialIdAndSocialType(attributes.socialId(), attributes.socialType());
 
 		if (existingSocialAccount.isEmpty()) {
 			// 1. SocialAccount 없음 → 신규 생성 + 현재 유저에 연결
-			userWriter.save(SocialAccount.of(socialType, socialId, email, currentUser));
+			socialAccountWriter.save(
+				SocialAccount.of(attributes.socialType(), attributes.socialId(), attributes.email(), currentUser));
 			return;
 		}
 

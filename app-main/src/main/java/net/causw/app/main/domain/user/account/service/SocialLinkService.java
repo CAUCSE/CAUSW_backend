@@ -13,9 +13,9 @@ import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.dto.result.SocialAccountsResult;
 import net.causw.app.main.domain.user.account.service.implementation.SocialAccountLinker;
 import net.causw.app.main.domain.user.account.service.implementation.SocialAccountReader;
+import net.causw.app.main.domain.user.account.service.implementation.SocialAccountWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
-import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.domain.user.auth.service.dto.OAuthAttributes;
 import net.causw.app.main.domain.user.auth.service.implementation.OAuthAttributesResolver;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
@@ -27,9 +27,9 @@ import lombok.RequiredArgsConstructor;
 public class SocialLinkService {
 
 	private final UserReader userReader;
-	private final UserWriter userWriter;
 	private final UserValidator userValidator;
 	private final SocialAccountReader socialAccountReader;
+	private final SocialAccountWriter socialAccountWriter;
 	private final OAuthAttributesResolver oAuthAttributesResolver;
 	private final SocialAccountLinker socialAccountLinker;
 
@@ -66,8 +66,7 @@ public class SocialLinkService {
 	@Transactional
 	public void linkSocialAccount(String userId, String provider, String accessToken, String idToken) {
 		OAuthAttributes attributes = oAuthAttributesResolver.resolveAttributes(provider, accessToken, idToken);
-		socialAccountLinker.applyLinkingPolicy(userId, attributes.socialType(), attributes.socialId(),
-			attributes.email());
+		socialAccountLinker.linkSocialAccount(userId, attributes);
 	}
 
 	/**
@@ -122,6 +121,6 @@ public class SocialLinkService {
 			}
 		}
 
-		userWriter.deleteSocialAccount(socialAccount);
+		socialAccountWriter.deleteSocialAccount(socialAccount);
 	}
 }

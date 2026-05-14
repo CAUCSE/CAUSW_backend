@@ -20,6 +20,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import net.causw.app.main.domain.user.account.entity.user.SocialAccount;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.SocialAccountLinker;
+import net.causw.app.main.domain.user.account.service.implementation.SocialAccountWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
@@ -45,6 +46,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 	private final UserWriter userWriter;
 	private final UserValidator userValidator;
 	private final SocialAccountLinker socialAccountLinker;
+	private final SocialAccountWriter socialAccountWriter;
 	private final OAuthLinkTokenStore oAuthLinkTokenStore;
 	private final DroppedUserIdentifierValidator droppedUserIdentifierValidator;
 
@@ -76,8 +78,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 			if (linkUserId != null) {
 				OAuthAttributes attributes = OAuthAttributes.of(registrationId, userNameAttributeName,
 					oAuth2User.getAttributes());
-				socialAccountLinker.applyLinkingPolicy(linkUserId, attributes.socialType(), attributes.socialId(),
-					attributes.email());
+				socialAccountLinker.linkSocialAccount(linkUserId, attributes);
 				return new CustomOAuth2User(null, oAuth2User.getAttributes(), userNameAttributeName);
 			}
 
@@ -113,8 +114,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 			String linkUserId = getLinkUserId();
 			if (linkUserId != null) {
 				OAuthAttributes attributes = OAuthAttributes.of(registrationId, "sub", oidcUser.getClaims());
-				socialAccountLinker.applyLinkingPolicy(linkUserId, attributes.socialType(), attributes.socialId(),
-					attributes.email());
+				socialAccountLinker.linkSocialAccount(linkUserId, attributes);
 				return oidcUser;
 			}
 
@@ -197,7 +197,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 			attributes.socialId(),
 			attributes.email(),
 			user);
-		userWriter.save(socialAccount);
+		socialAccountWriter.save(socialAccount);
 	}
 
 	private boolean hasText(String value) {
