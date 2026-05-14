@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserAdmissionAttachImage;
-import net.causw.app.main.domain.asset.file.service.v2.UuidFileService;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.FileWriter;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class AdmissionWriter {
 
 	private final UserAdmissionRepository userAdmissionRepository;
-	private final UuidFileService uuidFileService;
+	private final FileWriter fileWriter;
 
 	/**
 	 * v2 방식으로 UserAdmission을 생성합니다.
@@ -80,16 +80,15 @@ public class AdmissionWriter {
 			return;
 		}
 
-		List<String> fileIds = admissions.stream()
+		List<UuidFile> uuidFiles = admissions.stream()
 			.flatMap(admission -> admission.getUserAdmissionAttachImageList().stream())
 			.map(UserAdmissionAttachImage::getUuidFile)
-			.map(UuidFile::getId)
 			.toList();
 
 		userAdmissionRepository.deleteAll(admissions);
 
-		if (!fileIds.isEmpty()) {
-			uuidFileService.deleteFileList(fileIds);
+		if (!uuidFiles.isEmpty()) {
+			fileWriter.deleteList(uuidFiles);
 		}
 	}
 }

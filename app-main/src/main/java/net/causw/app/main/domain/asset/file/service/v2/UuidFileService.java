@@ -1,7 +1,6 @@
 package net.causw.app.main.domain.asset.file.service.v2;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -67,11 +66,7 @@ public class UuidFileService {
 		@NotNull FilePath filePath) {
 		log.debug("Starting file save process. FilePath: {}", filePath);
 
-		FileValidator.validateFile(file, filePath);
-
-		FileMetadata metadata = FileMetadataManager.createMetadata(file, filePath);
-
-		return fileWriter.uploadAndSave(file, metadata);
+		return fileWriter.uploadAndSave(file, filePath);
 	}
 
 	/**
@@ -87,13 +82,7 @@ public class UuidFileService {
 		@NotNull FilePath filePath) {
 		log.debug("Starting file list save process. Count: {}, FilePath: {}", fileList.size(), filePath);
 
-		FileValidator.validateFileList(fileList, filePath);
-
-		List<FileMetadata> metadataList = fileList.stream()
-			.map(file -> FileMetadataManager.createMetadata(file, filePath))
-			.collect(Collectors.toList());
-
-		return fileWriter.uploadAndSaveList(fileList, metadataList);
+		return fileWriter.uploadAndSaveList(fileList, filePath);
 	}
 
 	/**
@@ -112,7 +101,6 @@ public class UuidFileService {
 			priorUuidFile != null ? priorUuidFile.getId() : "null", filePath);
 
 		FileValidator.validateFile(file, filePath);
-
 		FileMetadata metadata = FileMetadataManager.createMetadata(file, filePath);
 
 		return fileWriter.updateFile(priorUuidFile, file, metadata);
