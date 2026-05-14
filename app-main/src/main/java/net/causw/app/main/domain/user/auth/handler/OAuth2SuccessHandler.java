@@ -20,6 +20,7 @@ import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.auth.service.dto.CustomOAuth2User;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
 import net.causw.app.main.domain.user.auth.service.implementation.OAuth2RefreshTokenCaptureClient;
+import net.causw.app.main.domain.user.auth.service.implementation.OAuthLinkTokenStore;
 import net.causw.app.main.domain.user.auth.service.implementation.SocialAccountOauthRefreshStore;
 import net.causw.app.main.domain.user.auth.util.OAuthRedirectResolver;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
@@ -31,8 +32,14 @@ import lombok.RequiredArgsConstructor;
 /**
  * OAuth2/OIDC 소셜 로그인 성공 후 후처리를 담당하는 핸들러입니다.
  * <p>
- * 인증 principal을 기준으로 사용자 엔티티를 조회하고,
-	 * 리프레시 토큰을 발급한 뒤 프론트 redirect URI의 쿼리 파라미터로 전달합니다.
+ * request attribute {@link OAuthLinkTokenStore#LINK_USER_ID_ATTR} 유무를 기준으로
+ * 소셜 계정 연동 플로우와 로그인 플로우를 분기합니다.
+ * <ul>
+ *   <li>연동 플로우: 계정 연동은 {@link net.causw.app.main.domain.user.auth.service.CustomOAuth2UserService}에서
+ *       이미 완료됐으므로, 핸들러는 프론트로 redirect만 수행합니다.</li>
+ *   <li>로그인 플로우: 인증 principal을 기준으로 사용자 엔티티를 조회하고,
+ * 	     리프레시 토큰을 발급한 뒤 프론트 redirect URI의 쿼리 파라미터로 전달합니다.</li>
+ * </ul>
  */
 @Component
 @RequiredArgsConstructor
@@ -46,16 +53,35 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 	/**
 	 * 소셜 로그인 성공 시 호출됩니다.
 	 * <p>
-	 * 1) principal로 사용자 조회, 2) 리프레시 토큰 발급,
-	 * 3) 사용자 상태 기반 redirect URL 생성 순서로 처리합니다.
+	 * request attribute {@link OAuthLinkTokenStore#LINK_USER_ID_ATTR}가 존재하면 연동 플로우,
+	 * 없으면 로그인 플로우로 분기합니다.
 	 *
-	 * @param request 현재 HTTP 요청
-	 * @param response 현재 HTTP 응답
+	 * @param request        현재 HTTP 요청
+	 * @param response       현재 HTTP 응답
 	 * @param authentication 인증 컨텍스트
 	 * @throws IOException redirect 처리 중 I/O 예외가 발생한 경우
 	 */
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
+		Authentication authentication) throws IOException {
+		String linkUserId = (String)request.getAttribute(OAuthLinkTokenStore.LINK_USER_ID_ATTR);
+
+		if (linkUserId != null) {
+			handleLinkSuccess(request, response, authentication);
+			return;
+		}
+
+		handleLoginSuccess(request, response, authentication);
+	}
+
+	// ── 로그인 플로우 ──────────────────────────────────────────────────────────
+
+	/**
+	 * 소셜 로그인 성공 처리입니다.
+	 * <p>
+	 * 리프레시 토큰을 쿼리 파라미터로 포함하여 프론트 redirect URI로 이동합니다.
+	 */
+	private void handleLoginSuccess(HttpServletRequest request, HttpServletResponse response,
 		Authentication authentication) throws IOException {
 		User user = resolveAuthenticatedUser(authentication);
 		saveProviderOAuthRefreshTokenIfPresent(request, authentication, user);
@@ -69,21 +95,40 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 		// 상태에 따른 리다이렉트 경로 결정
 		String targetUrl = determineTargetUrl(baseUrl, refreshToken);
 
-		// 리다이렉트 실행
 		if (response.isCommitted()) {
 			return;
 		}
 		getRedirectStrategy().sendRedirect(request, response, targetUrl);
 	}
 
+	// ── 연동 플로우 ──────────────────────────────────────────────────────────
+
 	/**
-	 * 인증 principal 타입에 맞춰 도메인 사용자 엔티티를 조회합니다.
+	 * 소셜 계정 연동 성공 처리입니다.
 	 * <p>
-	 * Apple OIDC의 경우 email 우선 조회 후, email 누락 시 socialId(sub)로 fallback 조회합니다.
-	 *
-	 * @param authentication 인증 컨텍스트
-	 * @return 로그인 대상 사용자 엔티티
+	 * 계정 연동은 {@link net.causw.app.main.domain.user.auth.service.CustomOAuth2UserService}에서
+	 * 이미 완료됐으므로, {@code linked={provider}} 쿼리 파라미터와 함께 프론트로 redirect합니다.
+	 * 연동 실패 시에는 Spring Security가 {@link OAuth2FailureHandler}로 자동 위임합니다.
 	 */
+	private void handleLinkSuccess(HttpServletRequest request, HttpServletResponse response,
+		Authentication authentication) throws IOException {
+
+		String baseUrl = oAuthRedirectResolver.resolveRedirectBase(request);
+		response.addHeader(HttpHeaders.SET_COOKIE, oAuthRedirectResolver.clearEnvCookie(request).toString());
+
+		String registrationId = ((OAuth2AuthenticationToken)authentication).getAuthorizedClientRegistrationId();
+		String targetUrl = UriComponentsBuilder.fromUriString(baseUrl)
+			.queryParam("linked", registrationId)
+			.build().toUriString();
+
+		if (response.isCommitted()) {
+			return;
+		}
+		getRedirectStrategy().sendRedirect(request, response, targetUrl);
+	}
+
+	// ── 헬퍼 메서드 ──────────────────────────────────────────────────────────
+
 	private void saveProviderOAuthRefreshTokenIfPresent(HttpServletRequest request, Authentication authentication,
 		User user) {
 		if (!(authentication instanceof OAuth2AuthenticationToken oauth2Token)) {
@@ -101,6 +146,14 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 		socialAccountOauthRefreshStore.saveEncryptedRefreshToken(user.getId(), type, refresh);
 	}
 
+	/**
+	 * 인증 principal 타입에 맞춰 도메인 사용자 엔티티를 조회합니다.
+	 * <p>
+	 * Apple OIDC의 경우 email 우선 조회 후, email 누락 시 socialId(sub)로 fallback 조회합니다.
+	 *
+	 * @param authentication 인증 컨텍스트
+	 * @return 로그인 대상 사용자 엔티티
+	 */
 	private User resolveAuthenticatedUser(Authentication authentication) {
 		Object principal = authentication.getPrincipal();
 

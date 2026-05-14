@@ -21,6 +21,8 @@ public interface SocialAccountRepository extends JpaRepository<SocialAccount, St
 
 	Boolean existsByUserAndSocialType(User user, SocialType socialType);
 
+	long countByUserId(String userId);
+
 	List<SocialAccount> findAllByUserId(String userId);
 
 	List<SocialAccount> findAllByUserIdIn(List<String> userIds);

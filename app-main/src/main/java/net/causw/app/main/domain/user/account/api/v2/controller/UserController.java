@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -21,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.domain.user.account.api.v1.dto.UserFcmTokenResponseDto;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.AdmissionCreateRequest;
+import net.causw.app.main.domain.user.account.api.v2.dto.request.SocialLinkRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UpdateProfileImageRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserFcmTokenRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserNicknameUpdateRequest;
@@ -29,12 +31,15 @@ import net.causw.app.main.domain.user.account.api.v2.dto.request.UserRegistratio
 import net.causw.app.main.domain.user.account.api.v2.dto.response.AdmissionResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.AdmissionStateResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.ProfileImageResponse;
+import net.causw.app.main.domain.user.account.api.v2.dto.response.SocialAccountsResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserMeAccountResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserMeResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserWithdrawResponse;
 import net.causw.app.main.domain.user.account.api.v2.mapper.AdmissionDtoMapper;
+import net.causw.app.main.domain.user.account.api.v2.mapper.SocialAccountsMapper;
 import net.causw.app.main.domain.user.account.api.v2.mapper.UserMeMapper;
 import net.causw.app.main.domain.user.account.service.AdmissionService;
+import net.causw.app.main.domain.user.account.service.SocialLinkService;
 import net.causw.app.main.domain.user.account.service.UserAccountService;
 import net.causw.app.main.domain.user.account.service.UserNotificationService;
 import net.causw.app.main.domain.user.account.service.UserProfileImageService;
@@ -42,7 +47,9 @@ import net.causw.app.main.domain.user.account.service.dto.request.UserPasswordUp
 import net.causw.app.main.domain.user.account.service.dto.response.AdmissionResult;
 import net.causw.app.main.domain.user.auth.api.v2.dto.AuthDtoMapper;
 import net.causw.app.main.domain.user.auth.api.v2.dto.response.AuthResponse;
+import net.causw.app.main.domain.user.auth.api.v2.dto.response.OAuthLinkTokenResponse;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
+import net.causw.app.main.domain.user.auth.service.implementation.OAuthLinkTokenStore;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 import net.causw.app.main.shared.util.AuthorizationExtractor;
@@ -62,11 +69,14 @@ public class UserController {
 
 	private final UserNotificationService userNotificationService;
 	private final UserAccountService userAccountService;
+	private final SocialLinkService socialLinkService;
+	private final OAuthLinkTokenStore oAuthLinkTokenStore;
 	private final AuthDtoMapper authDtoMapper;
 	private final AdmissionService admissionService;
 	private final AdmissionDtoMapper admissionDtoMapper;
 	private final UserProfileImageService userProfileImageService;
 	private final UserMeMapper userMeMapper;
+	private final SocialAccountsMapper socialAccountsMapper;
 
 	// ── 내 정보 ──
 
@@ -235,5 +245,52 @@ public class UserController {
 
 		return ApiResponse.success(
 			userAccountService.withdraw(userDetails.getUserId(), accessToken, refreshToken, platformHint));
+	}
+	// ── 소셜 계정 연동 ──
+
+	@GetMapping("/me/social-accounts")
+	@ResponseStatus(HttpStatus.OK)
+	@Operation(summary = "소셜 계정 연동 현황 조회 V2", description = "현재 로그인한 사용자의 소셜 계정(Google, Kakao, Apple) 연동 여부를 조회합니다.")
+	public ApiResponse<SocialAccountsResponse> getSocialAccounts(
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
+		return ApiResponse.success(
+			socialAccountsMapper.toResponse(
+				socialLinkService.getSocialAccounts(userDetails.getUserId())));
+	}
+
+	@PostMapping("/me/social-accounts/native")
+	@ResponseStatus(HttpStatus.OK)
+	@Operation(summary = "소셜 계정 연동 (Native)", description = "provider 토큰을 검증하여 현재 로그인한 사용자에게 소셜 계정을 연동합니다. "
+		+ "카카오는 accessToken, 구글/애플은 idToken을 전달합니다. (네이티브 앱 전용)")
+	public ApiResponse<Void> linkSocialAccount(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@Valid @RequestBody SocialLinkRequest body) {
+		socialLinkService.linkSocialAccount(
+			userDetails.getUserId(), body.provider(), body.accessToken(), body.idToken());
+		return ApiResponse.success();
+	}
+
+	@PostMapping("/me/social-accounts/{provider}/oauth")
+	@ResponseStatus(HttpStatus.OK)
+	@Operation(summary = "소셜 계정 연동 초기화 (OAuth)", description = "웹 브라우저에서 OAuth 방식으로 소셜 계정을 연동하기 위한 초기화 API입니다. "
+		+ "연동 가능 여부를 사전 검증하고 1회용 링크 토큰을 발급합니다. "
+		+ "응답의 linkToken을 /oauth2/authorization/{provider}?linkToken={value} 쿼리 파라미터로 전달하여 소셜 로그인을 진행합니다. (웹 브라우저 전용)")
+	public ApiResponse<OAuthLinkTokenResponse> initOAuthLink(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable String provider) {
+		socialLinkService.validateLinkable(userDetails.getUserId(), provider);
+		String linkToken = oAuthLinkTokenStore.issueToken(userDetails.getUserId());
+		return ApiResponse.success(new OAuthLinkTokenResponse(linkToken));
+	}
+
+	@DeleteMapping("/me/social-accounts/{provider}")
+	@ResponseStatus(HttpStatus.OK)
+	@Operation(summary = "소셜 계정 연동 해제", description = "현재 로그인한 사용자의 소셜 계정 연동을 해제합니다. "
+		+ "비밀번호 없는 계정의 마지막 소셜 계정은 해제할 수 없습니다.")
+	public ApiResponse<Void> unlinkSocialAccount(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable String provider) {
+		socialLinkService.unlinkSocialAccount(userDetails.getUserId(), provider);
+		return ApiResponse.success();
 	}
 }

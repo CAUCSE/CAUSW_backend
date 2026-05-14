@@ -41,6 +41,12 @@ public class SocialAccount extends BaseEntity {
 			.build();
 	}
 
+	// 소셜 계정을 다른 유저에게 연결
+	// GUEST 상태인 유저의 소셜 계정을 본 계정에 연동할 때 사용
+	public void relink(User newUser) {
+		this.user = newUser;
+	}
+
 	public void replaceEncryptedOauthRefreshToken(String cipherText) {
 		this.oauthRefreshTokenCipher = cipherText;
 	}

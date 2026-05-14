@@ -3,6 +3,7 @@ package net.causw.app.main.domain.user.auth.service.v2;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.BDDMockito.given;
@@ -26,9 +27,8 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtDecoderFactory;
 
 import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.user.account.entity.user.User;
@@ -38,6 +38,7 @@ import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.dto.CustomOAuth2User;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
+import net.causw.app.main.domain.user.auth.service.implementation.OAuthAttributesResolver;
 import net.causw.app.main.domain.user.auth.service.implementation.OidcAuthorizationCodeTokenClient;
 import net.causw.app.main.domain.user.auth.service.implementation.SocialAccountOauthRefreshStore;
 import net.causw.app.main.domain.user.terms.service.implementation.UserTermsAgreementReader;
@@ -63,9 +64,6 @@ class SocialNativeAuthServiceTest {
 	private CustomOAuth2UserService customOAuth2UserService;
 
 	@Mock
-	private JwtDecoderFactory<ClientRegistration> oidcIdTokenDecoderFactory;
-
-	@Mock
 	private AuthTokenManager authTokenManager;
 
 	@Mock
@@ -80,9 +78,13 @@ class SocialNativeAuthServiceTest {
 	@Mock
 	private SocialAccountOauthRefreshStore socialAccountOauthRefreshStore;
 
+	@Mock
+	private OAuthAttributesResolver oAuthAttributesResolver;
+
 	@BeforeEach
 	void setUp() {
 		lenient().when(userTermsAgreementReader.hasAgreedToAllRequiredLatestTerms(any(User.class))).thenReturn(true);
+		lenient().when(oAuthAttributesResolver.toProviderAccessToken(anyString())).thenReturn(providerAccessToken());
 	}
 
 	@Test
@@ -92,6 +94,7 @@ class SocialNativeAuthServiceTest {
 		User user = mockUser();
 
 		given(clientRegistrationRepository.findByRegistrationId("kakao")).willReturn(kakao);
+		given(oAuthAttributesResolver.isOidcProvider(kakao)).willReturn(false);
 		given(customOAuth2UserService.loadUser(any(OAuth2UserRequest.class)))
 			.willReturn(new CustomOAuth2User(user, Map.of("id", "kakao-id"), "id"));
 		given(authTokenManager.issueTokens(user, null))
@@ -103,6 +106,7 @@ class SocialNativeAuthServiceTest {
 		assertThat(result.refreshToken()).isEqualTo(APP_REFRESH_TOKEN);
 		assertThat(result.email()).isEqualTo("user@cau.ac.kr");
 
+		verify(oAuthAttributesResolver).toProviderAccessToken(PROVIDER_ACCESS_TOKEN);
 		verify(customOAuth2UserService).loadUser(any(OAuth2UserRequest.class));
 		verify(authTokenManager).issueTokens(user, null);
 		verify(oidcAuthorizationCodeTokenClient, never()).exchangeAuthorizationCode(any(), any(), any());
@@ -115,6 +119,7 @@ class SocialNativeAuthServiceTest {
 		User user = mockUser();
 
 		given(clientRegistrationRepository.findByRegistrationId("kakao")).willReturn(kakao);
+		given(oAuthAttributesResolver.isOidcProvider(kakao)).willReturn(false);
 		given(customOAuth2UserService.loadUser(any(OAuth2UserRequest.class)))
 			.willReturn(new CustomOAuth2User(user, Map.of("id", "kakao-id"), "id"));
 		given(authTokenManager.issueTokens(user, null))
@@ -125,6 +130,7 @@ class SocialNativeAuthServiceTest {
 
 		assertThat(result.accessToken()).isEqualTo(APP_ACCESS_TOKEN);
 		assertThat(result.refreshToken()).isEqualTo(APP_REFRESH_TOKEN);
+		verify(oAuthAttributesResolver).toProviderAccessToken(BEARER_PROVIDER_ACCESS_TOKEN);
 	}
 
 	@Test
@@ -132,7 +138,6 @@ class SocialNativeAuthServiceTest {
 	void login_google_oidc_success() {
 		ClientRegistration google = clientRegistration("google", "openid", "email", "profile");
 		User user = mockUser();
-		JwtDecoder jwtDecoder = org.mockito.Mockito.mock(JwtDecoder.class);
 		Jwt jwt = oidcJwt(Map.of(
 			"sub", "google-sub",
 			"email", "user@cau.ac.kr",
@@ -141,8 +146,8 @@ class SocialNativeAuthServiceTest {
 			"aud", List.of("google-client-id")));
 
 		given(clientRegistrationRepository.findByRegistrationId("google")).willReturn(google);
-		given(oidcIdTokenDecoderFactory.createDecoder(google)).willReturn(jwtDecoder);
-		given(jwtDecoder.decode(PROVIDER_ID_TOKEN)).willReturn(jwt);
+		given(oAuthAttributesResolver.isOidcProvider(google)).willReturn(true);
+		given(oAuthAttributesResolver.decodeAndValidateOidcIdToken(google, PROVIDER_ID_TOKEN)).willReturn(jwt);
 		given(customOAuth2UserService.loadUserFromOidcClaims("google", jwt.getClaims())).willReturn(user);
 		given(authTokenManager.issueTokens(user, null))
 			.willReturn(AuthTokenPair.of(APP_ACCESS_TOKEN, APP_REFRESH_TOKEN));
@@ -162,7 +167,6 @@ class SocialNativeAuthServiceTest {
 	void login_apple_oidc_success() {
 		ClientRegistration appleIos = clientRegistration("apple-ios", "openid", "email", "name");
 		User user = mockUser();
-		JwtDecoder jwtDecoder = org.mockito.Mockito.mock(JwtDecoder.class);
 		Jwt jwt = oidcJwt(Map.of(
 			"sub", "apple-sub",
 			"email", "user@cau.ac.kr",
@@ -171,8 +175,8 @@ class SocialNativeAuthServiceTest {
 			"aud", List.of("apple-ios-client-id")));
 
 		given(clientRegistrationRepository.findByRegistrationId("apple-ios")).willReturn(appleIos);
-		given(oidcIdTokenDecoderFactory.createDecoder(appleIos)).willReturn(jwtDecoder);
-		given(jwtDecoder.decode(PROVIDER_ID_TOKEN)).willReturn(jwt);
+		given(oAuthAttributesResolver.isOidcProvider(appleIos)).willReturn(true);
+		given(oAuthAttributesResolver.decodeAndValidateOidcIdToken(appleIos, PROVIDER_ID_TOKEN)).willReturn(jwt);
 		given(customOAuth2UserService.loadUserFromOidcClaims("apple", jwt.getClaims())).willReturn(user);
 		given(authTokenManager.issueTokens(user, null))
 			.willReturn(AuthTokenPair.of(APP_ACCESS_TOKEN, APP_REFRESH_TOKEN));
@@ -191,7 +195,6 @@ class SocialNativeAuthServiceTest {
 	void login_apple_oidc_success_with_ios_registration() {
 		ClientRegistration appleIos = clientRegistration("apple-ios", "openid", "email", "name");
 		User user = mockUser();
-		JwtDecoder jwtDecoder = org.mockito.Mockito.mock(JwtDecoder.class);
 		Jwt jwt = oidcJwt(Map.of(
 			"sub", "apple-sub",
 			"email", "user@cau.ac.kr",
@@ -200,8 +203,8 @@ class SocialNativeAuthServiceTest {
 			"aud", List.of("apple-ios-client-id")));
 
 		given(clientRegistrationRepository.findByRegistrationId("apple-ios")).willReturn(appleIos);
-		given(oidcIdTokenDecoderFactory.createDecoder(appleIos)).willReturn(jwtDecoder);
-		given(jwtDecoder.decode(PROVIDER_ID_TOKEN)).willReturn(jwt);
+		given(oAuthAttributesResolver.isOidcProvider(appleIos)).willReturn(true);
+		given(oAuthAttributesResolver.decodeAndValidateOidcIdToken(appleIos, PROVIDER_ID_TOKEN)).willReturn(jwt);
 		given(customOAuth2UserService.loadUserFromOidcClaims("apple", jwt.getClaims())).willReturn(user);
 		given(authTokenManager.issueTokens(user, null))
 			.willReturn(AuthTokenPair.of(APP_ACCESS_TOKEN, APP_REFRESH_TOKEN));
@@ -218,7 +221,6 @@ class SocialNativeAuthServiceTest {
 	void login_google_oidc_exchanges_auth_code_with_google_registration() {
 		ClientRegistration google = clientRegistration("google", "openid", "email", "profile");
 		User user = mockUser();
-		JwtDecoder jwtDecoder = org.mockito.Mockito.mock(JwtDecoder.class);
 		Jwt jwt = oidcJwt(Map.of(
 			"sub", "google-sub",
 			"email", "user@cau.ac.kr",
@@ -227,8 +229,8 @@ class SocialNativeAuthServiceTest {
 			"aud", List.of("google-client-id")));
 
 		given(clientRegistrationRepository.findByRegistrationId("google")).willReturn(google);
-		given(oidcIdTokenDecoderFactory.createDecoder(google)).willReturn(jwtDecoder);
-		given(jwtDecoder.decode(PROVIDER_ID_TOKEN)).willReturn(jwt);
+		given(oAuthAttributesResolver.isOidcProvider(google)).willReturn(true);
+		given(oAuthAttributesResolver.decodeAndValidateOidcIdToken(google, PROVIDER_ID_TOKEN)).willReturn(jwt);
 		given(customOAuth2UserService.loadUserFromOidcClaims("google", jwt.getClaims())).willReturn(user);
 		given(authTokenManager.issueTokens(user, null))
 			.willReturn(AuthTokenPair.of(APP_ACCESS_TOKEN, APP_REFRESH_TOKEN));
@@ -248,6 +250,9 @@ class SocialNativeAuthServiceTest {
 
 		// platform 미지정 시 기본 registration은 apple-ios
 		given(clientRegistrationRepository.findByRegistrationId("apple-ios")).willReturn(appleIos);
+		given(oAuthAttributesResolver.isOidcProvider(appleIos)).willReturn(true);
+		given(oAuthAttributesResolver.decodeAndValidateOidcIdToken(appleIos, null))
+			.willThrow(AuthErrorCode.INVALID_TOKEN.toBaseException());
 
 		assertThatThrownBy(
 			() -> socialNativeAuthService.login("apple", null, PROVIDER_ACCESS_TOKEN, null, null, null))
@@ -261,11 +266,11 @@ class SocialNativeAuthServiceTest {
 	@DisplayName("실패: OIDC id token 디코딩 실패 시 INVALID_TOKEN을 반환한다")
 	void login_oidc_fail_when_decode_fails() {
 		ClientRegistration google = clientRegistration("google", "openid", "email", "profile");
-		JwtDecoder jwtDecoder = org.mockito.Mockito.mock(JwtDecoder.class);
 
 		given(clientRegistrationRepository.findByRegistrationId("google")).willReturn(google);
-		given(oidcIdTokenDecoderFactory.createDecoder(google)).willReturn(jwtDecoder);
-		given(jwtDecoder.decode(PROVIDER_ID_TOKEN)).willThrow(new RuntimeException("bad id token"));
+		given(oAuthAttributesResolver.isOidcProvider(google)).willReturn(true);
+		given(oAuthAttributesResolver.decodeAndValidateOidcIdToken(google, PROVIDER_ID_TOKEN))
+			.willThrow(AuthErrorCode.INVALID_TOKEN.toBaseException());
 
 		assertThatThrownBy(() -> socialNativeAuthService.login("google", null, null, PROVIDER_ID_TOKEN, null, null))
 			.isInstanceOf(BaseRunTimeV2Exception.class)
@@ -276,7 +281,6 @@ class SocialNativeAuthServiceTest {
 	@DisplayName("실패: OIDC 사용자 동기화 중 domain 예외가 발생하면 원인 예외를 그대로 전달한다")
 	void login_oidc_rethrow_domain_exception() {
 		ClientRegistration google = clientRegistration("google", "openid", "email", "profile");
-		JwtDecoder jwtDecoder = org.mockito.Mockito.mock(JwtDecoder.class);
 		Jwt jwt = oidcJwt(Map.of(
 			"sub", "google-sub",
 			"email", "user@cau.ac.kr",
@@ -286,8 +290,8 @@ class SocialNativeAuthServiceTest {
 		BaseRunTimeV2Exception domainException = AuthErrorCode.SOCIAL_EMAIL_REQUIRED.toBaseException();
 
 		given(clientRegistrationRepository.findByRegistrationId("google")).willReturn(google);
-		given(oidcIdTokenDecoderFactory.createDecoder(google)).willReturn(jwtDecoder);
-		given(jwtDecoder.decode(PROVIDER_ID_TOKEN)).willReturn(jwt);
+		given(oAuthAttributesResolver.isOidcProvider(google)).willReturn(true);
+		given(oAuthAttributesResolver.decodeAndValidateOidcIdToken(google, PROVIDER_ID_TOKEN)).willReturn(jwt);
 		given(customOAuth2UserService.loadUserFromOidcClaims("google", jwt.getClaims())).willThrow(domainException);
 
 		assertThatThrownBy(() -> socialNativeAuthService.login("google", null, null, PROVIDER_ID_TOKEN, null, null))
@@ -303,6 +307,7 @@ class SocialNativeAuthServiceTest {
 		ClientRegistration kakao = clientRegistration("kakao", "profile_nickname", "account_email");
 
 		given(clientRegistrationRepository.findByRegistrationId("kakao")).willReturn(kakao);
+		given(oAuthAttributesResolver.isOidcProvider(kakao)).willReturn(false);
 		given(customOAuth2UserService.loadUser(any(OAuth2UserRequest.class)))
 			.willThrow(new RuntimeException("provider rejected token"));
 
@@ -328,6 +333,7 @@ class SocialNativeAuthServiceTest {
 		BaseRunTimeV2Exception domainException = AuthErrorCode.SOCIAL_EMAIL_REQUIRED.toBaseException();
 
 		given(clientRegistrationRepository.findByRegistrationId("kakao")).willReturn(kakao);
+		given(oAuthAttributesResolver.isOidcProvider(kakao)).willReturn(false);
 		given(customOAuth2UserService.loadUser(any(OAuth2UserRequest.class)))
 			.willThrow(new InternalAuthenticationServiceException("social login failed", domainException));
 
@@ -356,6 +362,12 @@ class SocialNativeAuthServiceTest {
 	private Jwt oidcJwt(Map<String, Object> claims) {
 		Instant now = Instant.now();
 		return new Jwt(PROVIDER_ID_TOKEN, now, now.plusSeconds(300), Map.of("alg", "none"), claims);
+	}
+
+	private OAuth2AccessToken providerAccessToken() {
+		Instant now = Instant.now();
+		return new OAuth2AccessToken(OAuth2AccessToken.TokenType.BEARER, PROVIDER_ACCESS_TOKEN, now,
+			now.plusSeconds(300));
 	}
 
 	private User mockUser() {
