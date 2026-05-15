@@ -145,9 +145,9 @@ public class UserAdminService {
 	}
 
 	// 자진 탈퇴 사용자 복원이 가능한지 검증
-	// - INACTIVE 상태이며 실제로 탈퇴(isDeleted) 상태여야 함
+	// - INACTIVE 상태 (INACTIVE가 deletedAt 설정을 보장)
 	private void validateRestorableWithdrawnUser(User targetUser) {
-		if (!targetUser.isInactive() || !targetUser.isDeleted()) {
+		if (!targetUser.isInactive()) {
 			throw UserErrorCode.USER_NOT_RESTORABLE.toBaseException();
 		}
 	}
