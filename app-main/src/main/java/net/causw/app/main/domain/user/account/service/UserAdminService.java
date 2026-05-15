@@ -148,7 +148,7 @@ public class UserAdminService {
 	// - INACTIVE 상태 (INACTIVE가 deletedAt 설정을 보장)
 	private void validateRestorableWithdrawnUser(User targetUser) {
 		if (!targetUser.isInactive()) {
-			throw UserErrorCode.USER_NOT_RESTORABLE.toBaseException();
+			throw UserErrorCode.USER_WITHDRAWN_NOT_RESTORABLE.toBaseException();
 		}
 	}
 
