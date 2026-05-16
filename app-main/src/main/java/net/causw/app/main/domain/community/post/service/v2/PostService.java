@@ -341,6 +341,7 @@ public class PostService {
 		return getPostListResult(slice, user);
 	}
 
+
 	/**
 	 * 로그인한 사용자가 좋아요를 누른 게시글 목록을 커서 기반으로 조회합니다.
 	 * @param user 조회 요청 사용자
