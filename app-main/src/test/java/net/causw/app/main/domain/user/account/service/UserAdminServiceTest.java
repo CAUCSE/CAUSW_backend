@@ -384,7 +384,7 @@ class UserAdminServiceTest {
 			assertThat(throwable)
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
-				.isEqualTo(UserErrorCode.USER_NOT_RESTORABLE);
+				.isEqualTo(UserErrorCode.USER_WITHDRAWN_NOT_RESTORABLE);
 			verify(userAccountService, never()).restore(any());
 			verify(userAdminActionLogWriter, never()).logRestore(any(), any(), any(), any());
 		}
@@ -408,7 +408,7 @@ class UserAdminServiceTest {
 			assertThat(throwable)
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
-				.isEqualTo(UserErrorCode.USER_NOT_RESTORABLE);
+				.isEqualTo(UserErrorCode.USER_WITHDRAWN_NOT_RESTORABLE);
 			verify(userAccountService, never()).restore(any());
 			verify(userAdminActionLogWriter, never()).logRestore(any(), any(), any(), any());
 		}
