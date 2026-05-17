@@ -66,13 +66,8 @@ public class AdmissionNotificationHandler {
 			.findSettingMapByUserIds(adminIds);
 
 		String pushTitle = "재학정보 인증 요청";
-		String message;
-		if (AcademicStatus.GRADUATED.equals(event.targetStatus())) {
-			message = String.format("%s(졸업생)님이 재학정보 인증을 요청했습니다.", requester.getName());
-		} else {
-			String studentId = event.requestStudentId();
-			message = String.format("%s(%s)님이 재학정보 인증을 요청했습니다.", requester.getName(), studentId);
-		}
+		String studentId = AcademicStatus.GRADUATED.equals(event.targetStatus()) ? "졸업생" : event.requestStudentId();
+		String message = String.format("%s(%s)님이 재학정보 인증을 요청했습니다.", requester.getName(), studentId);
 
 		String pushBody = message;
 		String serviceTitle = message;
