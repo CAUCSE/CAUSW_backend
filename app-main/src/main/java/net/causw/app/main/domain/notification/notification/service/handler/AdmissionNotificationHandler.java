@@ -2,7 +2,12 @@ package net.causw.app.main.domain.notification.notification.service.handler;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
+import net.causw.app.main.domain.user.account.service.implementation.AdmissionReader;
+import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
@@ -33,6 +38,7 @@ public class AdmissionNotificationHandler {
 	private final NotificationWriter notificationWriter;
 	private final NotificationPushSender notificationPushSender;
 	private final NotificationSettingReader notificationSettingReader;
+	private final AdmissionReader admissionReader;
 
 	/**
 	 * 재학정보 인증 요청 알림 이벤트 핸들러.
@@ -51,7 +57,8 @@ public class AdmissionNotificationHandler {
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void handleRequest(AdmissionRequestedEvent event) {
 		// ID로 요청자 조회
-		User requester = userReader.findUserById(event.requesterId());
+		String userId = event.requesterId();
+		User requester = userReader.findUserById(userId);
 
 		// 해당 학적 상태를 담당하는 관리자 목록 조회
 		List<User> admins = userReader.findAdminsByAcademicStatus(event.targetStatus());
@@ -65,8 +72,16 @@ public class AdmissionNotificationHandler {
 			.findSettingMapByUserIds(adminIds);
 
 		String pushTitle = "재학정보 인증 요청";
-		String pushBody = String.format("%s(%s)님이 재학정보 인증을 요청했습니다.", requester.getName(), requester.getStudentId());
-		String serviceTitle = String.format("%s(%s)님이 재학정보 인증을 요청했습니다.", requester.getName(), requester.getStudentId());
+		String message;
+		if (AcademicStatus.GRADUATED.equals(event.targetStatus())) {
+			message = String.format("%s(졸업생)님이 재학정보 인증을 요청했습니다.", requester.getName());
+		}else{
+			String studentId = event.requestStudentId();
+			message = String.format("%s(%s)님이 재학정보 인증을 요청했습니다.", requester.getName(), studentId);
+		}
+
+		String pushBody = message;
+		String serviceTitle = message;
 
 		// 알림 엔티티 저장 (발송자: 요청자)
 		Notification notification = notificationWriter.save(
