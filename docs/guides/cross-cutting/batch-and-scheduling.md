@@ -1,0 +1,133 @@
+# 배치와 스케줄링
+
+주기적 / 비동기 백그라운드 작업 처리에 대한 가이드입니다.
+
+## 1. 구성 요소
+
+| 구성 | 위치 |
+|------|------|
+| Spring Batch | `core/batch/`, `core/config/batch/` |
+| 스케줄링 | `core/config/scheduling/SchedulingConfig` (`@EnableScheduling`) |
+| 비동기 | `core/config/async/AsyncConfig` (`@EnableAsync`) |
+| 재시도 | `spring-retry` 의존성만 추가됨 — 현재 미활성화 (§5) |
+
+## 2. Spring Batch
+
+라이브러리: `spring-boot-starter-batch`, `spring-batch-core`
+
+위치 (배치 설정): `core/config/batch/`, `core/batch/`
+
+용도 (대표 예):
+- 미사용 파일 정리 — `CleanUnusedUuidFilesBatchConfig`
+- 통계 집계 / 데이터 백필 / 일괄 변경 등
+
+기본 구조:
+```java
+@Configuration
+@RequiredArgsConstructor
+public class CleanUnusedUuidFilesBatchConfig {
+
+    private final JobRepository jobRepository;
+    private final PlatformTransactionManager txManager;
+
+    @Bean
+    public Job cleanUnusedUuidFilesJob(Step step) {
+        return new JobBuilder("cleanUnusedUuidFilesJob", jobRepository)
+            .start(step)
+            .build();
+    }
+
+    @Bean
+    public Step cleanUnusedUuidFilesStep(/* reader/processor/writer 등 */) {
+        return new StepBuilder("cleanUnusedUuidFilesStep", jobRepository)
+            .<UuidFile, UuidFile>chunk(100, txManager)
+            .reader(...)
+            .processor(...)
+            .writer(...)
+            .build();
+    }
+}
+```
+
+규칙:
+- 잡 메타 테이블은 자동 생성 (Spring Batch 기본)
+- chunk 크기는 메모리/DB 부하 균형에서 결정 (보통 100~1000)
+- 트랜잭션 매니저: 동일 DB 사용 시 JPA `PlatformTransactionManager`
+
+## 3. 스케줄링 (`@Scheduled`)
+
+활성화: `core/config/scheduling/SchedulingConfig` 의 `@EnableScheduling`
+
+```java
+@Component
+@RequiredArgsConstructor
+public class NoticeCrawlScheduler {
+
+    private final NoticeCrawlJobLauncher launcher;
+
+    @Scheduled(cron = "0 0 * * * *", zone = "Asia/Seoul")
+    public void crawlNotices() {
+        launcher.run();
+    }
+}
+```
+
+규칙:
+- 모든 cron 은 `zone = "Asia/Seoul"` 명시 (앱은 이미 `Asia/Seoul` 타임존이지만 명시적으로 작성)
+- 스케줄러 메서드는 가능한 한 짧게 — 실제 작업은 별도 서비스 / 배치 잡에 위임
+- 동일 잡 중복 실행 방지가 필요하면 `@SchedulerLock` (ShedLock) 또는 분산 락 검토
+
+## 4. 비동기 (`@Async`)
+
+활성화: `core/config/async/AsyncConfig` 의 `@EnableAsync` + Executor Bean
+
+```java
+@Service
+@RequiredArgsConstructor
+public class MailEventListener {
+
+    private final JavaMailSender mailSender;
+
+    @Async("mailExecutor")
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleUserSignedUp(UserSignedUpEvent event) {
+        // 비동기 + 트랜잭션 커밋 이후
+        mailSender.send(...);
+    }
+}
+```
+
+규칙:
+- 비동기 메서드는 별도 트랜잭션 컨텍스트에서 실행됨 — `@Transactional` 필요 시 명시
+- 메일/푸시 같은 외부 호출은 `@Async` 권장
+- 예외 발생 시 호출자에게 전파되지 않음 — Future 반환 또는 별도 로깅/알림 필수
+
+## 5. 재시도 (`spring-retry`)
+
+**현재 상태**: 의존성은 추가되어 있지만 `@EnableRetry` / `@Retryable` 사용처가 없습니다.
+
+활성화 절차 / 도입 시 고려 사항: [infrastructure.md](./infrastructure.md) §6.
+
+## 6. 배치 잡 추가 가이드
+
+1. `core/batch/{잡명}/` 또는 `core/config/batch/` 에 설정 클래스 생성
+2. `@Configuration` 클래스에 `Job`, `Step`, `Reader/Processor/Writer` Bean 정의
+3. 트리거 방식 결정:
+   - 시간 기반 → `@Scheduled` + `JobLauncher` 호출
+   - API 트리거 → 관리자 Controller 추가
+4. 실패 시 알림 — `JobExecutionListener` 또는 로깅으로 Discord 연동
+5. 멱등성 보장 — 같은 데이터에 두 번 실행해도 안전하게 동작하도록 설계
+6. 운영 환경에서만 활성화할 거라면 `@Profile("prod")` 또는 `@ConditionalOnProperty`
+
+## 7. 운영 / 모니터링
+
+- 잡 실행 결과는 Spring Batch 메타 테이블 (`BATCH_JOB_EXECUTION`, `BATCH_STEP_EXECUTION` 등) 에 저장됨
+- 실패 시 ERROR 레벨 로그 + Discord 알림 (logback-discord-appender)
+- 장시간 잡은 분할 / chunk 처리 / heartbeat 로그로 진행률 노출
+- 동일 잡 동시 실행 방지: Spring Batch 기본은 동일 파라미터 동시 실행 불가, 다른 파라미터로는 허용됨 → 정책에 맞춰 설계
+
+## 8. 시간대 주의
+
+- 모든 cron / 일정 / 로그 시각은 **`Asia/Seoul`** (`CauswApplication` 의 `init()` 이 강제)
+- DB 의 `created_at`, `updated_at` 도 Asia/Seoul 기준
+- 외부 시스템 (FCM 등) 과 연동할 때 UTC 변환 / 타임존 정합성 확인
