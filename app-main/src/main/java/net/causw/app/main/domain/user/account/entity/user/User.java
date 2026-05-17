@@ -145,7 +145,6 @@ public class User extends BaseEntity {
 	public void withdraw(LocalDateTime now) {
 		this.state = UserState.INACTIVE;
 		this.deletedAt = now;
-		this.academicStatus = AcademicStatus.UNDETERMINED;
 	}
 
 	/*
