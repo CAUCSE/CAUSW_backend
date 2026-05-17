@@ -1,8 +1,11 @@
 package net.causw.app.main.domain.notification.notification.service.implementation;
 
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.domain.user.account.entity.user.FcmToken;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.repository.user.FcmTokenRepository;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -10,7 +13,10 @@ import lombok.RequiredArgsConstructor;
 /**
  * 사용자 FCM(Firebase Cloud Messaging) 토큰의 쓰기 작업을 담당하는 컴포넌트입니다.
  * <p>
- * 토큰은 기기 단위로 DB(User 엔티티)에만 저장되며, 무효화는 다음 시점에만 처리됩니다.
+ * 토큰은 기기 단위로 {@code tb_fcm_token} 테이블에 저장됩니다.
+ * 토큰 값에 UNIQUE 제약이 있으므로, 동일 기기 토큰이 다른 사용자에게 등록된 경우 먼저 제거합니다.
+ * <p>
+ * 토큰 무효화 처리 시점:
  * <ul>
  * <li>로그아웃 시 해당 기기 토큰 명시적 삭제</li>
  * <li>Firebase 푸시 발송 실패(UNREGISTERED 등) 시 자동 제거</li>
@@ -18,36 +24,48 @@ import lombok.RequiredArgsConstructor;
  * </ul>
  */
 @Component
+@Transactional
 @RequiredArgsConstructor
 public class UserPushTokenWriter {
 
+	private final FcmTokenRepository fcmTokenRepository;
+
 	/**
-	 * 새로운 FCM 토큰을 기기 단위로 등록합니다.
+	 * 새로운 FCM 토큰을 등록하고 Redis에 메타데이터를 저장합니다.
 	 * <p>
-	 * 이미 등록된 토큰이라면 중복 저장하지 않습니다.
+	 * 동일 토큰이 다른 사용자에게 등록되어 있으면 먼저 제거한 뒤 현재 사용자에게 등록합니다.
+	 * 이미 현재 사용자에게 등록된 토큰이라면 중복 저장하지 않습니다.
 	 *
-	 * @param user     토큰을 소유할 사용자 엔티티
-	 * @param fcmToken 등록할 디바이스의 FCM 토큰
+	 * @param user         토큰을 소유할 사용자 엔티티
+	 * @param fcmToken     등록할 디바이스의 FCM 토큰
 	 */
 	public void addFcmToken(User user, String fcmToken) {
-		user.getFcmTokens().add(fcmToken);
+		fcmTokenRepository.findByTokenValue(fcmToken).ifPresent(existing -> {
+			if (existing.getUser().getId().equals(user.getId())) {
+				return; // 이미 현재 사용자에게 등록된 토큰
+			}
+			fcmTokenRepository.delete(existing);
+			fcmTokenRepository.flush();
+		});
+
+		if (fcmTokenRepository.findByTokenValue(fcmToken).isEmpty()) {
+			fcmTokenRepository.save(FcmToken.of(user, fcmToken));
+		}
 	}
 
 	/**
 	 * 특정 기기의 FCM 토큰을 삭제합니다.
 	 * <p>
-	 * 로그아웃 또는 Firebase 발송 실패 시 호출됩니다.
+	 * 로그아웃 시 호출되며, DB와 Redis 양쪽에서 해당 토큰 데이터를 제거합니다.
 	 *
 	 * @param user     사용자 엔티티
 	 * @param fcmToken 삭제할 FCM 토큰
-	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
-	 * [NO_PERMISSION_FOR_RESOURCE] 토큰이 해당 사용자에게 등록되지 않은 경우
 	 */
 	public void removeFcmToken(User user, String fcmToken) {
-		boolean isRemoved = user.removeFcmToken(fcmToken);
-		if (!isRemoved) {
-			throw AuthErrorCode.NO_PERMISSION_FOR_RESOURCE.toBaseException();
-		}
+		FcmToken token = fcmTokenRepository.findByTokenValue(fcmToken)
+			.filter(t -> t.getUser().getId().equals(user.getId()))
+			.orElseThrow(AuthErrorCode.NO_PERMISSION_FOR_RESOURCE::toBaseException);
+		fcmTokenRepository.delete(token);
 	}
 
 	/**
@@ -58,9 +76,6 @@ public class UserPushTokenWriter {
 	 * @param user 사용자 엔티티
 	 */
 	public void clearFcmTokens(User user) {
-		if (user.getFcmTokens() == null || user.getFcmTokens().isEmpty()) {
-			return;
-		}
-		user.getFcmTokens().clear();
+		fcmTokenRepository.deleteAllByUser(user);
 	}
 }
