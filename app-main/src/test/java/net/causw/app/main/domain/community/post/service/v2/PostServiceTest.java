@@ -67,6 +67,7 @@ import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.relation.service.v2.implementation.BlockReader;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
+import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
 import net.causw.app.main.util.ObjectFixtures;
 
 @ExtendWith(MockitoExtension.class)
@@ -1152,6 +1153,28 @@ public class PostServiceTest {
 				false,
 				BoardVisibility.VISIBLE,
 				10);
+			Mockito.lenient().when(blockReader.existsByBlockerAndBlocked(any(), any())).thenReturn(false);
+		}
+
+		@DisplayName("차단한 사용자의 게시글은 상세 조회 불가")
+		@Test
+		void getPostDetail_shouldFail_whenWriterIsBlocked() {
+			// given
+			PostDetailQuery query = new PostDetailQuery(postId, viewer);
+			List<String> boardAdminIds = List.of("admin-id");
+
+			given(postReader.findById(postId)).willReturn(post);
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
+			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(blockReader.existsByBlockerAndBlocked(viewer, writer)).willReturn(true);
+
+			// when & then
+			assertThatThrownBy(() -> postService.getPostDetail(query))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.satisfies(ex -> assertThat(((BaseRunTimeV2Exception) ex).getErrorCode())
+					.isEqualTo(PostErrorCode.BLOCKED_USER_CONTENT));
+
+			verify(likePostReader, never()).countByPostId(anyString());
 		}
 
 		@DisplayName("게시글 상세 조회 성공")
