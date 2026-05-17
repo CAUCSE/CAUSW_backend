@@ -220,7 +220,7 @@ public class UserAccountService {
 		}
 
 		// 일반 탈퇴 유저 체크
-		if (user.isDeleted()) {
+		if (user.isInactive()) {
 			throw UserErrorCode.USER_DELETED.toBaseException();
 		}
 
@@ -284,7 +284,7 @@ public class UserAccountService {
 	public UserWithdrawResponse withdraw(String userId, String accessToken, String refreshToken, String platformHint) {
 		User user = userReader.findUserById(userId);
 
-		if (user.isDeleted()) {
+		if (user.isInactive()) {
 			throw UserErrorCode.USER_DELETED.toBaseException();
 		}
 
