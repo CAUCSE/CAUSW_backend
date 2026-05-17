@@ -202,7 +202,6 @@ public class UserAccountService {
 	 * 현재 비밀번호 일치 여부, 새 비밀번호 형식, 새 비밀번호 확인 일치 여부를 검사합니다.
 	 * </p>
 	 *
-	 * @param userId             비밀번호를 변경할 유저의 고유 식별자 (PK)
 	 * @param command			비밀번호 재설정 command
 	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
 	 * [SOCIAL_USER_CANNOT_CHANGE_PASSWORD] 소셜 로그인 전용 계정인 경우,
@@ -211,8 +210,8 @@ public class UserAccountService {
 	 * [PASSWORD_CONFIRM_MISMATCH] 새 비밀번호와 확인 값이 일치하지 않는 경우
 	 */
 	@Transactional
-	public void updatePassword(String userId, UserPasswordUpdateCommand command) {
-		User user = userReader.findUserById(userId);
+	public void updatePassword(UserPasswordUpdateCommand command) {
+		User user = userReader.findByEmailOrElseThrow(command.email());
 
 		// 관리자 강제 탈퇴(DROP) 먼저 체크
 		if (user.getState().equals(UserState.DROP)) {

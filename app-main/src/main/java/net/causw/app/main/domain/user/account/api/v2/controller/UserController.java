@@ -192,14 +192,12 @@ public class UserController {
 		return ApiResponse.success();
 	}
 
-	@PostMapping("/me/password-change")
-	@Operation(summary = "비밀번호 재설정 API", description = "현재 비밀번호를 확인하고 새 비밀번호로 변경합니다.")
+	@PostMapping("/password-change")
+	@Operation(summary = "비밀번호 재설정 API", description = "이메일과 현재 비밀번호를 확인하고 새 비밀번호로 변경합니다. "
+		+ "비밀번호 찾기 후 임시 비밀번호로 로그인하기 전에도 호출할 수 있습니다.")
 	public ApiResponse<Void> updatePassword(
-		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@Valid @RequestBody UserPasswordUpdateRequest body) {
-		userAccountService.updatePassword(
-			userDetails.getUserId(),
-			UserPasswordUpdateCommand.from(body));
+		userAccountService.updatePassword(UserPasswordUpdateCommand.from(body));
 		return ApiResponse.success();
 	}
 

@@ -81,7 +81,8 @@ public class WebSecurityConfig {
 				.requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
 				.requestMatchers("/api/v2/auth/logout", "/api/v2/auth/onboarding/**").authenticated()
 				.requestMatchers("/api/v2/auth/**", "/oauth2/**", "/login/oauth2/**",
-					"/api/v2/users/check-nickname", "/api/v2/users/check-phone")
+					"/api/v2/users/check-nickname", "/api/v2/users/check-phone",
+					"/api/v2/users/password-change")
 				.permitAll()
 				.requestMatchers(HttpMethod.GET, "/api/v2/terms")
 				.permitAll()
