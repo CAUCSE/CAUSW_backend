@@ -43,12 +43,14 @@ public class UserProfileImageService {
 	 * </p>
 	 *
 	 * @param userId          변경할 유저 ID
-	 * @param profileImageType 기본 이미지 타입 (MALE_1, MALE_2, FEMALE_1, FEMALE_2)
+	 * @param profileImageType 기본 이미지 타입 (MALE_1, MALE_2, FEMALE_1, FEMALE_2). UNSET, CUSTOM, GHOST는 허용되지 않습니다.
 	 * @return 변경된 프로필 이미지 정보
 	 */
 	@Transactional
 	public ProfileImageResponse updateToDefaultProfileImage(String userId, ProfileImageType profileImageType) {
-		if (profileImageType == ProfileImageType.CUSTOM || profileImageType == ProfileImageType.GHOST) {
+		if (profileImageType == ProfileImageType.CUSTOM
+			|| profileImageType == ProfileImageType.GHOST
+			|| profileImageType == ProfileImageType.UNSET) {
 			throw UserErrorCode.INVALID_PROFILE_IMAGE_TYPE.toBaseException();
 		}
 
