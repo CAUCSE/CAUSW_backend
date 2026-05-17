@@ -24,6 +24,7 @@ import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
 import net.causw.app.main.domain.user.auth.service.dto.OAuthAttributes;
 import net.causw.app.main.shared.entity.BaseEntity;
+import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -388,7 +389,7 @@ public class User extends BaseEntity {
 	 */
 	public void updateProfileImageToDefault(ProfileImageType defaultType) {
 		if (defaultType == ProfileImageType.CUSTOM || defaultType == ProfileImageType.UNSET) {
-			throw new IllegalArgumentException("기본 이미지 타입만 허용됩니다.");
+			throw UserErrorCode.INVALID_PROFILE_IMAGE_TYPE.toBaseException();
 		}
 		this.profileImageType = defaultType;
 	}
