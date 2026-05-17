@@ -842,7 +842,8 @@ public class PostServiceTest {
 				() -> assertThat(result.posts()).hasSize(1),
 				() -> assertThat(result.posts().get(0).content()).contains("검색어"));
 
-			verify(postReader, times(1)).findPostsWithCursor(anyList(), anySet(), eq(null), eq(null), eq(20), eq(keyword));
+			verify(postReader, times(1)).findPostsWithCursor(anyList(), anySet(), eq(null), eq(null), eq(20),
+				eq(keyword));
 		}
 
 		@DisplayName("게시판 ID 없이 전체 게시글 목록 조회 성공")
@@ -884,7 +885,8 @@ public class PostServiceTest {
 			given(boardConfigReader.getAccessibleBoardIdsByAcademicStatus(AcademicStatus.ENROLLED))
 				.willReturn(accessibleBoardIds);
 			given(boardConfigReader.getAdminIdSetMapByBoardIds(anySet())).willReturn(Map.of());
-			given(postReader.findPostsWithCursor(eq(accessibleBoardIds), anySet(), eq(null), eq(null), eq(20), eq(null)))
+			given(
+				postReader.findPostsWithCursor(eq(accessibleBoardIds), anySet(), eq(null), eq(null), eq(20), eq(null)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
 			given(likePostReader.getLikedPostIds(anyString(), anyList())).willReturn(Set.of());
@@ -1171,7 +1173,7 @@ public class PostServiceTest {
 			// when & then
 			assertThatThrownBy(() -> postService.getPostDetail(query))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
-				.satisfies(ex -> assertThat(((BaseRunTimeV2Exception) ex).getErrorCode())
+				.satisfies(ex -> assertThat(((BaseRunTimeV2Exception)ex).getErrorCode())
 					.isEqualTo(PostErrorCode.BLOCKED_USER_CONTENT));
 
 			verify(likePostReader, never()).countByPostId(anyString());
