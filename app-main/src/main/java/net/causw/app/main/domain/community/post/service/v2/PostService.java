@@ -188,9 +188,13 @@ public class PostService {
 			return PostListResult.of(List.of(), null);
 		}
 
+		// 뷰어가 차단한 사용자 조회 
+		Set<String> blockedUserIds = userBlockReader.findBlockeeUserIdsByBlocker(viewer);
+
 		// 게시글 조회 (Slice 사용)
 		Slice<PostCursorResult> slice = postReader.findPostsWithCursor(
 			boardIds,
+			blockedUserIds,
 			parsedCursor.createdAt(),
 			parsedCursor.postId(),
 			size,
