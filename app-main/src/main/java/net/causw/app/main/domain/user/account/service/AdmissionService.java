@@ -70,7 +70,8 @@ public class AdmissionService {
 			dto.requestedDepartment(),
 			dto.graduationYear());
 
-		eventPublisher.publishEvent(new AdmissionRequestedEvent(user.getId(), admission.getRequestedAcademicStatus(), dto.requestedStudentId()));
+		eventPublisher.publishEvent(new AdmissionRequestedEvent(user.getId(), admission.getRequestedAcademicStatus(),
+			dto.requestedStudentId()));
 
 		return AdmissionResult.from(admission);
 	}

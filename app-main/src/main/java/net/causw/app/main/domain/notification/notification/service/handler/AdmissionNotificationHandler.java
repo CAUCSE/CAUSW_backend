@@ -2,12 +2,7 @@ package net.causw.app.main.domain.notification.notification.service.handler;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
-import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
-import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
-import net.causw.app.main.domain.user.account.service.implementation.AdmissionReader;
-import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
@@ -25,7 +20,9 @@ import net.causw.app.main.domain.notification.notification.service.dto.UserNotif
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationPushSender;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationSettingReader;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationWriter;
+import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.service.implementation.AdmissionReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 
 import lombok.RequiredArgsConstructor;
@@ -75,7 +72,7 @@ public class AdmissionNotificationHandler {
 		String message;
 		if (AcademicStatus.GRADUATED.equals(event.targetStatus())) {
 			message = String.format("%s(졸업생)님이 재학정보 인증을 요청했습니다.", requester.getName());
-		}else{
+		} else {
 			String studentId = event.requestStudentId();
 			message = String.format("%s(%s)님이 재학정보 인증을 요청했습니다.", requester.getName(), studentId);
 		}
