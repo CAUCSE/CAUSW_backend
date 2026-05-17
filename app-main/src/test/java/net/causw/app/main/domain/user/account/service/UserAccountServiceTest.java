@@ -24,7 +24,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import net.causw.app.main.domain.asset.locker.entity.Locker;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerReader;
@@ -34,17 +33,14 @@ import net.causw.app.main.domain.user.account.api.v2.dto.response.UserWithdrawRe
 import net.causw.app.main.domain.user.account.entity.user.SocialAccount;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
-import net.causw.app.main.domain.user.account.repository.userInfo.UserInfoRepository;
 import net.causw.app.main.domain.user.account.service.implementation.SocialAccountReader;
 import net.causw.app.main.domain.user.account.service.implementation.SocialAccountUnlinkManager;
-import net.causw.app.main.domain.user.account.service.implementation.SocialAccountWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
-import net.causw.app.main.domain.user.auth.service.implementation.AuthValidator;
 import net.causw.app.main.domain.user.terms.entity.Terms;
 import net.causw.app.main.domain.user.terms.service.implementation.TermsReader;
 import net.causw.app.main.domain.user.terms.service.implementation.TermsValidator;
@@ -68,13 +64,7 @@ class UserAccountServiceTest {
 	private UserValidator userValidator;
 
 	@Mock
-	private AuthValidator authValidator;
-
-	@Mock
 	private AuthTokenManager authTokenManager;
-
-	@Mock
-	private PasswordEncoder passwordEncoder;
 
 	@Mock
 	private TermsReader termsReader;
@@ -84,12 +74,6 @@ class UserAccountServiceTest {
 
 	@Mock
 	private UserTermsAgreementWriter userTermsAgreementWriter;
-
-	@Mock
-	private UserInfoRepository userInfoRepository;
-
-	@Mock
-	private SocialAccountWriter socialAccountWriter;
 
 	@Mock
 	private SocialAccountReader socialAccountReader;
@@ -108,6 +92,9 @@ class UserAccountServiceTest {
 
 	@Mock
 	private UserProfileImageService userProfileImageService;
+
+	@Mock
+	private UserAccountCleanupService userAccountCleanupService;
 
 	private final String userId = "test-uuid";
 	private final String nickname = "푸앙";
@@ -249,12 +236,9 @@ class UserAccountServiceTest {
 		// verify
 		verify(userProfileImageService).requestProfileImageDeletionForWithdrawal(userId);
 		verify(userReader).findUserById(userId);
-		verify(socialAccountReader).findAllByUserId(userId);
-		verify(socialAccountUnlinkManager).unlink(socialAccount, platformHint);
-		verify(authTokenManager).invalidateTokens(accessToken, refresh);
+		verify(userAccountCleanupService).cleanupForWithdrawal(user, accessToken, refresh, platformHint);
 		verify(lockerReader).findByUserId(userId);
 		verify(lockerWriter).returnLocker(locker, user);
-		verify(userPushTokenWriter).clearFcmTokens(user);
 
 		verify(userWriter).withdraw(user);
 	}

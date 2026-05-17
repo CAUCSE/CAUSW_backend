@@ -24,7 +24,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.asset.locker.entity.Locker;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerWriter;
@@ -64,9 +63,6 @@ class UserAdminServiceTest {
 	private UserAdminActionLogWriter userAdminActionLogWriter;
 
 	@Mock
-	private UserProfileImageReader userProfileImageReader;
-
-	@Mock
 	private UserAccountService userAccountService;
 
 	@InjectMocks
@@ -74,6 +70,9 @@ class UserAdminServiceTest {
 
 	@Mock
 	private DroppedUserIdentifierWriter droppedUserIdentifierWriter;
+
+	@Mock
+	private UserAccountCleanupService userAccountCleanupService;
 
 	/* =========================
 	 * 유저 목록 조회
@@ -202,6 +201,7 @@ class UserAdminServiceTest {
 
 			// then
 			verify(lockerWriter).releaseLocker(locker, adminUser, user.getEmail(), user.getName());
+			verify(userAccountCleanupService).cleanupForDrop(user);
 			verify(userWriter).dropByAdmin(user, dropReason);
 			verify(userAdminActionLogWriter).logDrop(any(), any(), any(), any(), any());
 		}
