@@ -22,7 +22,6 @@ import net.causw.app.main.domain.notification.notification.service.implementatio
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationWriter;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.service.implementation.AdmissionReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 
 import lombok.RequiredArgsConstructor;
@@ -35,7 +34,6 @@ public class AdmissionNotificationHandler {
 	private final NotificationWriter notificationWriter;
 	private final NotificationPushSender notificationPushSender;
 	private final NotificationSettingReader notificationSettingReader;
-	private final AdmissionReader admissionReader;
 
 	/**
 	 * 재학정보 인증 요청 알림 이벤트 핸들러.
@@ -54,8 +52,7 @@ public class AdmissionNotificationHandler {
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void handleRequest(AdmissionRequestedEvent event) {
 		// ID로 요청자 조회
-		String userId = event.requesterId();
-		User requester = userReader.findUserById(userId);
+		User requester = userReader.findUserById(event.requesterId());
 
 		// 해당 학적 상태를 담당하는 관리자 목록 조회
 		List<User> admins = userReader.findAdminsByAcademicStatus(event.targetStatus());
