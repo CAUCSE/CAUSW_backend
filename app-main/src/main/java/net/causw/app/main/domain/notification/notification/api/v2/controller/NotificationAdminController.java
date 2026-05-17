@@ -27,10 +27,8 @@ public class NotificationAdminController {
 	private final AdminNotificationService adminNotificationService;
 
 	@PostMapping("/push")
-	@Operation(
-		summary = "특정 유저에게 FCM 푸시 알림 전송",
-		description = "관리자가 특정 유저에게 FCM 푸시 알림을 전송합니다. "
-			+ "saveNotification이 true이면 해당 유저의 알림함에도 저장됩니다.")
+	@Operation(summary = "특정 유저에게 FCM 푸시 알림 전송", description = "관리자가 특정 유저에게 FCM 푸시 알림을 전송합니다. "
+		+ "saveNotification이 true이면 해당 유저의 알림함에도 저장됩니다.")
 	public ApiResponse<Void> sendPushToUser(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@Valid @RequestBody AdminPushNotificationRequest request) {

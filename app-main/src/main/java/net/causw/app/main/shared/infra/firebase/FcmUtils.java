@@ -4,7 +4,6 @@ import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.user.account.entity.user.FcmToken;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.global.constant.StaticValue;
 import net.causw.app.main.domain.user.account.repository.user.FcmTokenRepository;
 
 import lombok.RequiredArgsConstructor;

@@ -7,20 +7,11 @@ import jakarta.validation.constraints.NotNull;
 @Schema(description = "관리자 FCM 푸시 알림 전송 요청")
 public record AdminPushNotificationRequest(
 
-	@NotBlank
-	@Schema(description = "알림을 받을 유저 ID")
-	String userId,
+	@NotBlank @Schema(description = "알림을 받을 유저 ID") String userId,
 
-	@NotBlank
-	@Schema(description = "알림 제목")
-	String title,
+	@NotBlank @Schema(description = "알림 제목") String title,
 
-	@NotBlank
-	@Schema(description = "알림 내용")
-	String body,
+	@NotBlank @Schema(description = "알림 내용") String body,
 
-	@NotNull
-	@Schema(description = "서비스 알림 저장 여부 (true: 알림함에 저장, false: 푸시만 전송)")
-	Boolean saveNotification
-) {
+	@NotNull @Schema(description = "서비스 알림 저장 여부 (true: 알림함에 저장, false: 푸시만 전송)") Boolean saveNotification) {
 }
