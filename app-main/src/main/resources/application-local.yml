@@ -183,6 +183,8 @@ app:
         apple:
           web: apple
           ios: apple-ios
+  crawler:
+    admin-email: ${CRAWLER_ADMIN_EMAIL}
 
 # Datasource Proxy 설정
 decorator:
