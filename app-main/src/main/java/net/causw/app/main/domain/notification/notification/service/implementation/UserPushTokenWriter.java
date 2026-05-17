@@ -1,5 +1,7 @@
 package net.causw.app.main.domain.notification.notification.service.implementation;
 
+import java.util.Optional;
+
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,17 +42,15 @@ public class UserPushTokenWriter {
 	 * @param fcmToken     등록할 디바이스의 FCM 토큰
 	 */
 	public void addFcmToken(User user, String fcmToken) {
-		fcmTokenRepository.findByTokenValue(fcmToken).ifPresent(existing -> {
-			if (existing.getUser().getId().equals(user.getId())) {
-				return; // 이미 현재 사용자에게 등록된 토큰
+		Optional<FcmToken> existing = fcmTokenRepository.findByTokenValue(fcmToken);
+		if (existing.isPresent()) {
+			if (existing.get().getUser().getId().equals(user.getId())) {
+				return;
 			}
-			fcmTokenRepository.delete(existing);
+			fcmTokenRepository.delete(existing.get());
 			fcmTokenRepository.flush();
-		});
-
-		if (fcmTokenRepository.findByTokenValue(fcmToken).isEmpty()) {
-			fcmTokenRepository.save(FcmToken.of(user, fcmToken));
 		}
+		fcmTokenRepository.save(FcmToken.of(user, fcmToken));
 	}
 
 	/**
@@ -62,10 +62,9 @@ public class UserPushTokenWriter {
 	 * @param fcmToken 삭제할 FCM 토큰
 	 */
 	public void removeFcmToken(User user, String fcmToken) {
-		FcmToken token = fcmTokenRepository.findByTokenValue(fcmToken)
-			.filter(t -> t.getUser().getId().equals(user.getId()))
-			.orElseThrow(AuthErrorCode.NO_PERMISSION_FOR_RESOURCE::toBaseException);
-		fcmTokenRepository.delete(token);
+		if (!user.removeFcmToken(fcmToken)) {
+			throw AuthErrorCode.NO_PERMISSION_FOR_RESOURCE.toBaseException();
+		}
 	}
 
 	/**

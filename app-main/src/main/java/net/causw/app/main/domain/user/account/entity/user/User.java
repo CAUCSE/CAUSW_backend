@@ -129,6 +129,7 @@ public class User extends BaseEntity {
 	@Builder.Default
 	private Boolean isV2 = true;
 
+	@BatchSize(size = 100)
 	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 	@Builder.Default
 	private Set<FcmToken> fcmTokenEntities = new HashSet<>();
