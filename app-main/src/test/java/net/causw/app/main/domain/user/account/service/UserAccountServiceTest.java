@@ -28,13 +28,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import net.causw.app.main.domain.asset.locker.entity.Locker;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerWriter;
-import net.causw.app.main.domain.notification.notification.service.implementation.UserPushTokenWriter;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserWithdrawResponse;
-import net.causw.app.main.domain.user.account.entity.user.SocialAccount;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
-import net.causw.app.main.domain.user.account.service.implementation.SocialAccountReader;
-import net.causw.app.main.domain.user.account.service.implementation.SocialAccountUnlinkManager;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
@@ -76,19 +72,10 @@ class UserAccountServiceTest {
 	private UserTermsAgreementWriter userTermsAgreementWriter;
 
 	@Mock
-	private SocialAccountReader socialAccountReader;
-
-	@Mock
-	private SocialAccountUnlinkManager socialAccountUnlinkManager;
-
-	@Mock
 	private LockerReader lockerReader;
 
 	@Mock
 	private LockerWriter lockerWriter;
-
-	@Mock
-	private UserPushTokenWriter userPushTokenWriter;
 
 	@Mock
 	private UserProfileImageService userProfileImageService;
@@ -215,15 +202,12 @@ class UserAccountServiceTest {
 
 		User user = mock(User.class);
 		Locker locker = mock(Locker.class);
-		SocialAccount socialAccount = mock(SocialAccount.class);
 
 		when(userReader.findUserById(userId)).thenReturn(user);
 		when(user.getId()).thenReturn(userId);
 		when(user.isDeleted()).thenReturn(false);
 		when(user.getState()).thenReturn(UserState.ACTIVE);
 
-		// 소셜 계정 목록 반환
-		when(socialAccountReader.findAllByUserId(userId)).thenReturn(List.of(socialAccount));
 		when(lockerReader.findByUserId(userId)).thenReturn(Optional.of(locker));
 		when(user.getDeletedAt()).thenReturn(now);
 
@@ -234,12 +218,11 @@ class UserAccountServiceTest {
 		assertEquals(now, result.deletedAt());
 
 		// verify
-		verify(userProfileImageService).requestProfileImageDeletionForWithdrawal(userId);
 		verify(userReader).findUserById(userId);
 		verify(userAccountCleanupService).cleanupForWithdrawal(user, accessToken, refresh, platformHint);
+		verify(userProfileImageService).requestProfileImageDeletionForWithdrawal(userId);
 		verify(lockerReader).findByUserId(userId);
 		verify(lockerWriter).returnLocker(locker, user);
-
 		verify(userWriter).withdraw(user);
 	}
 
@@ -258,7 +241,6 @@ class UserAccountServiceTest {
 		when(user.isDeleted()).thenReturn(false);
 		when(user.getState()).thenReturn(UserState.ACTIVE);
 
-		when(socialAccountReader.findAllByUserId(userId)).thenReturn(List.of());
 		when(lockerReader.findByUserId(userId)).thenReturn(Optional.empty());
 		when(user.getDeletedAt()).thenReturn(now);
 
@@ -267,6 +249,7 @@ class UserAccountServiceTest {
 		// then
 		assertNotNull(result);
 		assertEquals(now, result.deletedAt());
+		verify(userAccountCleanupService).cleanupForWithdrawal(user, accessToken, refresh, platformHint);
 		verify(userProfileImageService).requestProfileImageDeletionForWithdrawal(userId);
 		verify(lockerWriter, never()).returnLocker(any(), any());
 		verify(userWriter).withdraw(user);
@@ -285,7 +268,6 @@ class UserAccountServiceTest {
 			() -> userAccountService.withdraw(userId, "access-token", "refresh-token", platformHint));
 
 		verify(userReader).findUserById(userId);
-		verifyNoInteractions(socialAccountReader, socialAccountUnlinkManager, lockerReader, lockerWriter,
-			userPushTokenWriter);
+		verifyNoInteractions(userAccountCleanupService, lockerReader, lockerWriter);
 	}
 }

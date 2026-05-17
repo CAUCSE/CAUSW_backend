@@ -24,6 +24,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.asset.locker.entity.Locker;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerWriter;
@@ -73,6 +74,9 @@ class UserAdminServiceTest {
 
 	@Mock
 	private UserAccountCleanupService userAccountCleanupService;
+
+	@Mock
+	private UserProfileImageReader userProfileImageReader;
 
 	/* =========================
 	 * 유저 목록 조회
@@ -139,6 +143,7 @@ class UserAdminServiceTest {
 			User user = ObjectFixtures.getCertifiedUserWithId(userId);
 
 			when(userReader.findDetailById(userId)).thenReturn(user);
+			when(userProfileImageReader.findByUserIdOrNull(userId)).thenReturn(null);
 
 			// when
 			UserDetailItem result = userAdminService.getUserDetail(userId);
@@ -150,6 +155,7 @@ class UserAdminServiceTest {
 			assertThat(result.name()).isEqualTo(user.getName());
 
 			verify(userReader).findDetailById(userId);
+			verify(userProfileImageReader).findByUserIdOrNull(userId);
 		}
 
 		@Test
@@ -367,6 +373,7 @@ class UserAdminServiceTest {
 		assertNotNull(result);
 
 		verify(userReader).findUserById(userId);
+		verify(userAccountCleanupService).cleanupForDrop(targetUser);
 		verify(lockerReader).findByUserId(userId);
 		verify(lockerWriter).releaseLocker(locker, adminUser, "test@example.com", "홍길동");
 		verify(userWriter).dropByAdmin(targetUser, dropReason);
