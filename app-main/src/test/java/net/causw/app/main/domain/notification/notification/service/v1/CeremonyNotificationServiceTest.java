@@ -35,8 +35,11 @@ import net.causw.app.main.domain.notification.notification.repository.CeremonyNo
 import net.causw.app.main.domain.notification.notification.repository.NotificationLogRepository;
 import net.causw.app.main.domain.notification.notification.repository.NotificationRepository;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserCreateRequestDto;
+import net.causw.app.main.domain.user.account.entity.user.FcmToken;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Department;
+
+import org.springframework.test.util.ReflectionTestUtils;
 import net.causw.app.main.domain.user.relation.service.v1.UserBlockEntityService;
 import net.causw.app.main.shared.infra.firebase.FcmUtils;
 
@@ -86,8 +89,7 @@ class CeremonyNotificationServiceTest {
 			.build();
 
 		mockUser = User.from(userCreateRequestDto, "encodedPassword");
-		mockUser.setFcmTokens(new HashSet<>());
-		mockUser.getFcmTokens().add("valid-token");
+		setFcmTokens(mockUser, "valid-token");
 
 		mockCeremony = mock(Ceremony.class);
 		given(mockCeremony.getId()).willReturn("ceremony-id");
@@ -130,9 +132,6 @@ class CeremonyNotificationServiceTest {
 	@DisplayName("정상 토큰일 경우 푸시 알림 전송 성공")
 	void sendByAdmissionYear_푸시성공() throws Exception {
 		String validToken = "valid-token";
-		Set<String> fcmTokens = new HashSet<>();
-		fcmTokens.add(validToken);
-		mockUser.setFcmTokens(fcmTokens);
 
 		Set<String> blockerUserIds = Set.of();
 
@@ -151,8 +150,7 @@ class CeremonyNotificationServiceTest {
 	void sendByAdmissionYear_푸시실패_토큰제거() throws Exception {
 		String invalidToken = "invalid-token";
 
-		Set<String> fcmTokens = new HashSet<>(Set.of("valid-token", invalidToken));
-		mockUser.setFcmTokens(fcmTokens);
+		setFcmTokens(mockUser, "valid-token", invalidToken);
 
 		Set<String> blockerUserIds = Set.of();
 
@@ -179,4 +177,9 @@ class CeremonyNotificationServiceTest {
 		verify(firebasePushNotificationService).sendNotification(eq(invalidToken), any(), any());
 	}
 
+	private void setFcmTokens(User user, String... tokenValues) {
+		Set<FcmToken> entities = new HashSet<>();
+		for (String tv : tokenValues) entities.add(FcmToken.of(user, tv));
+		ReflectionTestUtils.setField(user, "fcmTokenEntities", entities);
+	}
 }

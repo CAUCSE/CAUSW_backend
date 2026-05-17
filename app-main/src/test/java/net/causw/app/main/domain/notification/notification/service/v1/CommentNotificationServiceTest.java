@@ -34,10 +34,13 @@ import net.causw.app.main.domain.notification.notification.entity.UserCommentSub
 import net.causw.app.main.domain.notification.notification.repository.NotificationLogRepository;
 import net.causw.app.main.domain.notification.notification.repository.NotificationRepository;
 import net.causw.app.main.domain.notification.notification.repository.UserCommentSubscribeRepository;
+import net.causw.app.main.domain.user.account.entity.user.FcmToken;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.relation.service.v1.UserBlockEntityService;
 import net.causw.app.main.shared.infra.firebase.FcmUtils;
 import net.causw.app.main.util.ObjectFixtures;
+
+import org.springframework.test.util.ReflectionTestUtils;
 
 import com.google.firebase.messaging.FirebaseMessagingException;
 
@@ -74,8 +77,7 @@ class CommentNotificationServiceTest {
 	@BeforeEach
 	void setUp() {
 		mockUser = ObjectFixtures.getUser();
-		mockUser.setFcmTokens(new HashSet<>());
-		mockUser.getFcmTokens().add("dummy-token");
+		setFcmTokens(mockUser, "dummy-token");
 
 		mockBoard = mock(Board.class);
 		mockPost = mock(Post.class);
@@ -125,7 +127,7 @@ class CommentNotificationServiceTest {
 	@DisplayName("정상 토큰일 경우 푸시 알림 전송 성공")
 	void sendByCommentIsSubscribed_푸시성공() throws Exception {
 		String validToken = "valid-token";
-		mockUser.getFcmTokens().add(validToken);
+		addFcmToken(mockUser, validToken);
 
 		given(mockPost.getId()).willReturn("post-id");
 		given(mockPost.getBoard()).willReturn(mockBoard);
@@ -148,7 +150,7 @@ class CommentNotificationServiceTest {
 	@DisplayName("비정상 토큰일 경우 푸시 알림 실패, 토큰 제거")
 	void sendByCommentIsSubscribed_푸시실패() throws Exception {
 		String invalidToken = "invalid-token";
-		mockUser.getFcmTokens().add(invalidToken);
+		addFcmToken(mockUser, invalidToken);
 
 		given(mockPost.getId()).willReturn("post-id");
 		given(mockPost.getBoard()).willReturn(mockBoard);
@@ -174,5 +176,21 @@ class CommentNotificationServiceTest {
 
 		assertThat(mockUser.getFcmTokens()).doesNotContain(invalidToken);
 		verify(firebasePushNotificationService).sendNotification(eq(invalidToken), any(), any());
+	}
+
+	private void setFcmTokens(User user, String... tokenValues) {
+		Set<FcmToken> entities = new HashSet<>();
+		for (String tv : tokenValues) entities.add(FcmToken.of(user, tv));
+		ReflectionTestUtils.setField(user, "fcmTokenEntities", entities);
+	}
+
+	@SuppressWarnings("unchecked")
+	private void addFcmToken(User user, String tokenValue) {
+		Set<FcmToken> entities = (Set<FcmToken>) ReflectionTestUtils.getField(user, "fcmTokenEntities");
+		if (entities == null) {
+			entities = new HashSet<>();
+			ReflectionTestUtils.setField(user, "fcmTokenEntities", entities);
+		}
+		entities.add(FcmToken.of(user, tokenValue));
 	}
 }
