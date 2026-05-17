@@ -232,8 +232,8 @@ class UserAccountServiceTest {
 
 		when(userReader.findUserById(userId)).thenReturn(user);
 		when(user.getId()).thenReturn(userId);
-		when(user.isDeleted()).thenReturn(false);
-		when(user.getState()).thenReturn(UserState.ACTIVE);
+		when(user.isInactive()).thenReturn(false);
+		when(user.isDropped()).thenReturn(false);
 
 		// 소셜 계정 목록 반환
 		when(socialAccountReader.findAllByUserId(userId)).thenReturn(List.of(socialAccount));
@@ -271,8 +271,8 @@ class UserAccountServiceTest {
 		User user = mock(User.class);
 		when(userReader.findUserById(userId)).thenReturn(user);
 		when(user.getId()).thenReturn(userId);
-		when(user.isDeleted()).thenReturn(false);
-		when(user.getState()).thenReturn(UserState.ACTIVE);
+		when(user.isInactive()).thenReturn(false);
+		when(user.isDropped()).thenReturn(false);
 
 		when(socialAccountReader.findAllByUserId(userId)).thenReturn(List.of());
 		when(lockerReader.findByUserId(userId)).thenReturn(Optional.empty());
@@ -294,7 +294,7 @@ class UserAccountServiceTest {
 		// given
 		User user = mock(User.class);
 		when(userReader.findUserById(userId)).thenReturn(user);
-		when(user.isDeleted()).thenReturn(true);
+		when(user.isInactive()).thenReturn(true);
 
 		// when & then
 		assertThrows(BaseRunTimeV2Exception.class,
