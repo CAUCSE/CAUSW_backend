@@ -232,7 +232,7 @@ class UserAccountServiceTest {
 
 		when(userReader.findUserById(userId)).thenReturn(user);
 		when(user.getId()).thenReturn(userId);
-		when(user.isDeleted()).thenReturn(false);
+		when(user.isInactive()).thenReturn(false);
 		when(user.getState()).thenReturn(UserState.ACTIVE);
 
 		// 소셜 계정 목록 반환
@@ -271,7 +271,7 @@ class UserAccountServiceTest {
 		User user = mock(User.class);
 		when(userReader.findUserById(userId)).thenReturn(user);
 		when(user.getId()).thenReturn(userId);
-		when(user.isDeleted()).thenReturn(false);
+		when(user.isInactive()).thenReturn(false);
 		when(user.getState()).thenReturn(UserState.ACTIVE);
 
 		when(socialAccountReader.findAllByUserId(userId)).thenReturn(List.of());
@@ -294,7 +294,7 @@ class UserAccountServiceTest {
 		// given
 		User user = mock(User.class);
 		when(userReader.findUserById(userId)).thenReturn(user);
-		when(user.isDeleted()).thenReturn(true);
+		when(user.isInactive()).thenReturn(true);
 
 		// when & then
 		assertThrows(BaseRunTimeV2Exception.class,
