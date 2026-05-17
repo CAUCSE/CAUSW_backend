@@ -180,6 +180,10 @@ public class User extends BaseEntity {
 		return this.state == UserState.INACTIVE;
 	}
 
+	public boolean isDropped() {
+		return this.state == UserState.DROP;
+	}
+
 	/**
 	 * 온보딩 플로우 분기 기준: 소셜 로그인 완료 여부
 	 */

@@ -215,7 +215,7 @@ public class UserAccountService {
 		User user = userReader.findUserById(userId);
 
 		// 관리자 강제 탈퇴(DROP) 먼저 체크
-		if (user.getState().equals(UserState.DROP)) {
+		if (user.isDropped()) {
 			throw UserErrorCode.USER_DROPPED.toBaseException();
 		}
 
@@ -288,7 +288,7 @@ public class UserAccountService {
 			throw UserErrorCode.USER_DELETED.toBaseException();
 		}
 
-		if (user.getState() == UserState.DROP) {
+		if (user.isDropped()) {
 			throw UserErrorCode.USER_DROPPED.toBaseException();
 		}
 
