@@ -110,13 +110,30 @@ public ApiResponse<PostCreateResponse> createPost(
 
 ### 작성 형식
 
-대부분 Lombok 기반 class.
+> **신규 코드 작성 시**: `.gemini/styleguide.md` Rule 68 — "불변 DTO 는 `record` 를 기본으로 사용한다" 를 따릅니다. 신규 Request/Response/Service DTO 는 record 를 우선 검토하세요.
+
+**신규 권장: record**
+
+```java
+public record PostCreateRequest(
+    @NotBlank String content,
+    @NotNull String boardId,
+    Boolean isAnonymous,
+    List<ImageMetadata> images
+) {}
+```
+
+신규 코드에서 record 가 채택되고 있는 위치는 주로 `community/report` 의 service Command/Result DTO (`PostReportCreateCommand`, `PostReportCreateResult` 등) 와 일부 도메인 이벤트.
+
+**현재 코드 다수의 패턴: Lombok class**
+
+대부분의 기존 v1/v2 DTO 는 아직 Lombok 기반입니다. 기존 코드를 수정할 때는 일관성을 위해 같은 패턴을 유지하되, 신규 추가는 가능한 한 record 로 작성합니다.
 
 ```java
 @Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class PostCreateRequest {
     @NotBlank
     private String content;
@@ -129,7 +146,7 @@ public class PostCreateRequest {
 
 - 검증: `@NotNull`, `@NotBlank`, `@Size`, `@Pattern` 등 Jakarta validation
 - 기본 생성자는 `PROTECTED` 또는 `PRIVATE` 로 외부 직접 생성 차단
-- `@Builder` 활용. `@AllArgsConstructor` 는 `PRIVATE` 권장
+- `@Builder` 활용. `@AllArgsConstructor` 는 `PRIVATE` 명시
 - DTO 내부 nested 클래스는 static class 로 정의
 
 ## 5. Mapper (MapStruct)

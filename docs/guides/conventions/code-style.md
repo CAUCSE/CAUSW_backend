@@ -80,11 +80,20 @@ public class Post extends BaseEntity { ... }
 ```
 
 **DTO**
+
+신규 불변 DTO 는 `.gemini/styleguide.md` Rule 68 에 따라 `record` 를 기본으로 사용합니다.
+
+```java
+public record PostCreateRequest(String content, String boardId) {}
+```
+
+기존 Lombok class 형태로 작성할 때는 모순 없이 다음 조합:
+
 ```java
 @Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class PostCreateRequest { ... }
 ```
 
@@ -182,7 +191,13 @@ public class PostService { ... }
 - JUnit 5 + Spring Boot Test (Gradle 의 `useJUnitPlatform()`)
 - 보안 테스트: `@WithMockCustomUser` 커스텀 어노테이션
 - 통합 테스트 시 H2 인메모리 (`runtimeOnly 'com.h2database:h2'`)
-- 테스트 클래스 명명: `{대상클래스}Test` 또는 `{기능}Test`
+- 테스트 클래스 명명 (`.gemini/styleguide.md` Rule 149~150):
+  - 단위 테스트: `{ClassName}Test`
+  - 통합 테스트: `{ClassName}IntegrationTest`
+- 테스트 메서드명: `given_when_then` 형태 (Given-When-Then 패턴)
+- **`@DisplayName` 은 반드시 한글로 작성** (`.gemini/styleguide.md` Rule 153)
+- assertion 은 AssertJ (`assertThat(...).isEqualTo(...)`) 를 기본으로 사용 (JUnit `assertEquals` / `assertTrue` 지양)
+- 테스트 데이터는 Fixture 클래스로 재사용
 
 ## 11. Git / 커밋
 
@@ -205,6 +220,16 @@ public class PostService { ... }
 
 - 브랜치 명명: `(타입)/(개발 내용)` 권장
 - 머지 전략: Squash merge (브랜치 정리 필요)
+
+### `db-change` 라벨 (필수)
+
+`.gemini/styleguide.md` Rule 178~180 에 따라, 아래 변경 중 하나라도 포함된 PR 은 **반드시 `db-change` 라벨** 을 추가해야 합니다. Flyway 마이그레이션 CI 가 라벨을 기준으로 실행됩니다.
+
+- Flyway 마이그레이션 스크립트 추가/수정 (`app-main/src/main/resources/db/migration/**`)
+- JPA Entity 클래스의 테이블/컬럼 구조 변경 (`@Entity`, `@Table`, `@Column` 등)
+- `ddl-auto` 또는 DB 스키마에 영향을 주는 설정 변경
+
+라벨이 누락된 채로 머지하면 마이그레이션이 실행되지 않아 운영 장애로 이어질 수 있으니, PR 생성 시점에 본인 / 리뷰어가 함께 확인합니다.
 
 ## 12. 사전 점검 명령어
 

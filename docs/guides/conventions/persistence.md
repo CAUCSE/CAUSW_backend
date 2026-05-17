@@ -49,12 +49,26 @@ public class Post extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User writer;
 
-    @Column(name = "is_deleted")
-    @Builder.Default
-    @ColumnDefault("false")
-    private Boolean isDeleted = false;
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
+    public static Post of(String content, User writer, Board board) {
+        return Post.builder()
+            .content(content)
+            .writer(writer)
+            .board(board)
+            .build();
+    }
 }
 ```
+
+### 정적 팩토리 메서드 (필수, 신규 코드)
+
+`.gemini/styleguide.md` Rule 104 — **"정적 팩토리 메서드 `of(...)` 를 사용한다"** 를 따릅니다. 신규 엔티티는 외부에서 `@Builder` 를 직접 호출하지 않고, 도메인 의미가 드러나는 `of(...)` / `from(...)` 정적 메서드를 통해 생성합니다.
+
+- 인자가 단일이면 `from(...)`, 다수면 `of(...)` 우선 사용 (Rule 144)
+- `@Builder(access = AccessLevel.PROTECTED)` 로 Builder 노출 범위를 제한해 외부 직접 호출 차단
+- 이미 적용된 위치 예: `community/report` 의 일부 엔티티 및 service Command/Result, `community/post/service/v2/util/PostCursorManager`. 현재 다수의 레거시 엔티티는 외부에서 직접 `@Builder` 호출하는 패턴이지만, 신규 코드는 반드시 정적 팩토리 방식으로 작성합니다.
 
 ### 명명 규약
 
@@ -62,7 +76,7 @@ public class Post extends BaseEntity {
 |------|------|
 | 클래스명 | PascalCase 단수형 (`Post`, `User`, `UserCouncilFee`) |
 | 테이블명 | `tb_{snake_case_단수}` (`tb_post`, `tb_user_council_fee`) |
-| 컬럼명 | `snake_case` (`is_deleted`, `created_at`) |
+| 컬럼명 | `snake_case` (`deleted_at`, `created_at`) |
 | 인덱스명 | `{columnList}_index` |
 
 ### Lombok 어노테이션 조합
@@ -85,7 +99,31 @@ public class Post extends BaseEntity {
 
 ## 3. 소프트 삭제
 
-물리적 삭제 대신 `is_deleted` 컬럼을 사용합니다.
+### 신규 엔티티: `deletedAt` (필수)
+
+`.gemini/styleguide.md` Rule 103 — **"소프트 삭제는 `deletedAt` 필드를 사용한다"** 를 따릅니다. 신규 엔티티는 `LocalDateTime deletedAt` 컬럼을 사용합니다.
+
+```java
+@Column(name = "deleted_at")
+private LocalDateTime deletedAt;
+
+public void softDelete() {
+    this.deletedAt = LocalDateTime.now();
+}
+
+public boolean isDeleted() {
+    return this.deletedAt != null;
+}
+```
+
+조회 / 삭제 규칙 (`.gemini/styleguide.md` Rule 107~112):
+- Reader/Repository 조회 메서드는 기본적으로 `deletedAt IS NULL` 조건 적용
+- 삭제된 데이터까지 포함해야 하는 메서드는 `IncludeDeleted` 접미사 (예: `findByIdIncludeDeleted(id)`)
+- QueryDSL: `.where(entity.deletedAt.isNull())`
+
+### 현재 코드 다수: `isDeleted` (Boolean) — 레거시
+
+현재 코드베이스의 대다수 엔티티 (`Post`, `Comment`, `ChildComment`, `Board`, `Circle`, `Event`, `Form` 등) 는 아직 `Boolean isDeleted` 필드를 사용합니다. `User` 만 `deletedAt` 으로 이전된 상태입니다.
 
 ```java
 @Column(name = "is_deleted")
@@ -94,14 +132,14 @@ public class Post extends BaseEntity {
 private Boolean isDeleted = false;
 ```
 
-조회 규칙:
-- Repository / QueryRepository 에서 `isDeleted = false` 조건 항상 추가
-- 메서드 명명 예: `findByIdAndIsDeletedFalse(String id)`
-- 일괄 조회는 QueryDSL 에서 `.where(post.isDeleted.isFalse())` 로 추가
+레거시 패턴을 마주칠 때:
+- Repository / QueryRepository 에서 `isDeleted = false` 조건을 추가 (메서드 명명 예: `findByIdAndIsDeletedFalse`)
+- Writer 의 `softDelete(...)` 에서 `post.setIsDeleted(true)` 호출
+- 신규 메서드를 추가할 때는 동일 엔티티의 기존 컨벤션을 따르되, **새 엔티티는 styleguide 의 `deletedAt` 방식으로 작성**합니다.
 
-삭제 흐름:
-- Writer 의 `softDelete(Post post)` 메서드에서 `post.setIsDeleted(true)` 호출
-- `cascade = CascadeType.REMOVE` 가 걸린 자식 엔티티가 있을 경우, soft delete 만으로는 cascade 되지 않으므로 자식도 별도 처리
+### cascade 주의
+
+`cascade = CascadeType.REMOVE` 가 걸린 자식 엔티티가 있을 경우 soft delete 만으로는 cascade 되지 않으므로 자식도 별도 처리가 필요합니다.
 
 ## 4. Repository
 
@@ -212,7 +250,8 @@ public class PostQueryRepository {
 - [ ] 모든 `@Column` 에 name / nullable / unique 명시
 - [ ] 적절한 인덱스 정의
 - [ ] 변경 메서드는 명시적 메서드로 (가능하면 `@Setter` 미사용)
-- [ ] `is_deleted` 컬럼 필요 여부 검토 (대부분 필요)
+- [ ] 소프트 삭제 컬럼 필요 여부 검토 (신규 엔티티는 `deletedAt`, 기존 엔티티 수정은 그 엔티티의 기존 패턴 유지)
+- [ ] 정적 팩토리 메서드 `of(...)` / `from(...)` 정의 (Builder 외부 노출 금지)
 - [ ] Flyway 마이그레이션 작성 (`./gradlew flywayCreate -Pdesc=...`)
 - [ ] Repository / 필요 시 QueryRepository 작성
 - [ ] Reader / Writer 컴포넌트 추가 (`implementation/`)

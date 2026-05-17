@@ -19,7 +19,7 @@ CAUSW Backend 의 레이어별 / 횡단별 코드 작성 규약입니다.
 3. **응답 표준화**: 모든 응답은 `ApiResponse<T>` 로 래핑
 4. **예외 표준화**: 비즈니스 예외는 `{Domain}ErrorCode` enum + `toBaseException()`
 5. **PK 표준화**: 모든 엔티티는 UUID String PK (`BaseEntity` 상속)
-6. **소프트 삭제**: `is_deleted` 컬럼 사용. 물리 삭제 금지(원칙)
+6. **소프트 삭제**: 신규 엔티티는 `deletedAt` (LocalDateTime), 기존 다수 엔티티는 `isDeleted` (Boolean). 물리 삭제 금지
 7. **MapStruct 매퍼**: Controller ↔ Service 사이 변환은 `*DtoMapper` 가 담당
 8. **Lombok 보수적 사용**: `@Data` X, `@Setter` 엔티티에는 X
 9. **Naver Eclipse 포맷터 + Spotless** 적용
