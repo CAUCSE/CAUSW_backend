@@ -349,7 +349,10 @@ public class User extends BaseEntity {
 		this.deletedAt = now;
 	}
 
-	// 탈퇴 처리
+	/**
+	 * V1에서 이용하던 회원 탈퇴 처리입니다.
+	 * @deprecated V2 탈퇴에서는 withdraw(LocalDateTime)을 이용합니다.
+	 */
 	public void withdraw() {
 		this.state = UserState.INACTIVE;
 		this.deletedAt = LocalDateTime.now();
