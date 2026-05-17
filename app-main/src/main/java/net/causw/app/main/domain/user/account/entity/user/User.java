@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.hibernate.annotations.BatchSize;
 
@@ -127,10 +128,9 @@ public class User extends BaseEntity {
 	@Builder.Default
 	private Boolean isV2 = true;
 
-	@ElementCollection(fetch = FetchType.LAZY)
-	@CollectionTable(name = "tb_user_fcm_token", joinColumns = @JoinColumn(name = "user_id"))
-	@Column(name = "fcm_token_value")
-	private Set<String> fcmTokens = new HashSet<>();
+	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+	@Builder.Default
+	private Set<FcmToken> fcmTokenEntities = new HashSet<>();
 
 	// 신고 관련 필드
 	@Column(name = "report_count", nullable = false)
@@ -370,8 +370,14 @@ public class User extends BaseEntity {
 		this.rejectionOrDropReason = null; // 거절 사유 초기화
 	}
 
+	public Set<String> getFcmTokens() {
+		return fcmTokenEntities.stream()
+			.map(FcmToken::getTokenValue)
+			.collect(Collectors.toUnmodifiableSet());
+	}
+
 	public boolean removeFcmToken(String targetToken) {
-		return this.fcmTokens.remove(targetToken);
+		return fcmTokenEntities.removeIf(t -> t.getTokenValue().equals(targetToken));
 	}
 
 	public boolean isOnlySocialUser() {
