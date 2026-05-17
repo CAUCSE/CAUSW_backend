@@ -15,7 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
-import net.causw.app.main.domain.asset.file.service.v2.UuidFileService;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.FileWriter;
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyContext;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyState;
@@ -40,7 +40,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Validated
 public class CeremonyService {
-	private final UuidFileService uuidFileService;
 	private final CeremonyCreator ceremonyCreator;
 	private final CeremonyReader ceremonyReader;
 	private final CeremonyCreateMapper ceremonyCreateMapper;
@@ -48,6 +47,7 @@ public class CeremonyService {
 	private final CeremonyValidator ceremonyValidator;
 	private final PageableFactory pageableFactory;
 	private final ApplicationEventPublisher applicationEventPublisher;
+	private final FileWriter fileWriter;
 
 	@Transactional
 	public CeremonyDetailResult createCeremony(
@@ -62,7 +62,7 @@ public class CeremonyService {
 
 		List<UuidFile> uuidFileList = (imageFileList == null || imageFileList.isEmpty())
 			? List.of()
-			: uuidFileService.saveFileList(imageFileList, FilePath.CEREMONY);
+			: fileWriter.uploadAndSaveList(imageFileList, FilePath.CEREMONY);
 
 		Ceremony ceremony = ceremonyCreateMapper.toCeremony(user, command, targetAdmissionYears,
 			uuidFileList);

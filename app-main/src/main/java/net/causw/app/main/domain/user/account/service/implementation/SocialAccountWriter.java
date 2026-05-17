@@ -46,4 +46,14 @@ public class SocialAccountWriter {
 	public void save(SocialAccount socialAccount) {
 		socialAccountRepository.save(socialAccount);
 	}
+
+	/**
+	 * 단일 소셜 계정 연동 정보를 삭제합니다.
+	 * 마이페이지에서 사용자가 직접 특정 provider 연동을 해제할 때 사용합니다.
+	 *
+	 * @param socialAccount 삭제할 소셜 계정 엔티티
+	 */
+	public void deleteSocialAccount(SocialAccount socialAccount) {
+		socialAccountRepository.delete(socialAccount);
+	}
 }

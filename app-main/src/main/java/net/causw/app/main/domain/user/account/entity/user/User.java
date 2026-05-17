@@ -25,6 +25,7 @@ import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
 import net.causw.app.main.domain.user.auth.service.dto.OAuthAttributes;
 import net.causw.app.main.shared.entity.BaseEntity;
+import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -105,7 +106,7 @@ public class User extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	@Column(name = "profile_image_type", nullable = false)
 	@Builder.Default
-	private ProfileImageType profileImageType = ProfileImageType.MALE_1;
+	private ProfileImageType profileImageType = ProfileImageType.UNSET;
 
 	@Column(name = "state", nullable = false)
 	@Enumerated(EnumType.STRING)
@@ -393,8 +394,8 @@ public class User extends BaseEntity {
 	 * 기존 커스텀 이미지(UserProfileImage)는 null로 초기화됩니다.
 	 */
 	public void updateProfileImageToDefault(ProfileImageType defaultType) {
-		if (defaultType == ProfileImageType.CUSTOM) {
-			throw new IllegalArgumentException("기본 이미지 타입만 허용됩니다.");
+		if (defaultType == ProfileImageType.CUSTOM || defaultType == ProfileImageType.UNSET) {
+			throw UserErrorCode.INVALID_PROFILE_IMAGE_TYPE.toBaseException();
 		}
 		this.profileImageType = defaultType;
 	}

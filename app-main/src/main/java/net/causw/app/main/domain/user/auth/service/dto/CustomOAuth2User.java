@@ -22,6 +22,9 @@ public record CustomOAuth2User(
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
+		if (user == null) {
+			return Collections.emptyList();
+		}
 		return Collections.singletonList(new SimpleGrantedAuthority(user.getState().name()));
 	}
 
@@ -31,6 +34,6 @@ public record CustomOAuth2User(
 	}
 
 	public String getEmail() {
-		return user.getEmail();
+		return user == null ? null : user.getEmail();
 	}
 }

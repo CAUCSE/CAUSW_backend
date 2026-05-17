@@ -10,7 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
-import net.causw.app.main.domain.asset.file.service.v2.UuidFileService;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.FileWriter;
 import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageWriter;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.ProfileImageResponse;
@@ -31,10 +31,10 @@ public class UserProfileImageService {
 
 	private final UserReader userReader;
 	private final UserWriter userWriter;
-	private final UuidFileService uuidFileService;
 	private final UserProfileImageReader userProfileImageReader;
 	private final UserProfileImageWriter userProfileImageWriter;
 	private final ApplicationEventPublisher applicationEventPublisher;
+	private final FileWriter fileWriter;
 
 	/**
 	 * 프로필 이미지를 기본 이미지로 변경합니다.
@@ -43,12 +43,14 @@ public class UserProfileImageService {
 	 * </p>
 	 *
 	 * @param userId          변경할 유저 ID
-	 * @param profileImageType 기본 이미지 타입 (MALE_1, MALE_2, FEMALE_1, FEMALE_2)
+	 * @param profileImageType 기본 이미지 타입 (MALE_1, MALE_2, FEMALE_1, FEMALE_2). UNSET, CUSTOM, GHOST는 허용되지 않습니다.
 	 * @return 변경된 프로필 이미지 정보
 	 */
 	@Transactional
 	public ProfileImageResponse updateToDefaultProfileImage(String userId, ProfileImageType profileImageType) {
-		if (profileImageType == ProfileImageType.CUSTOM || profileImageType == ProfileImageType.GHOST) {
+		if (profileImageType == ProfileImageType.CUSTOM
+			|| profileImageType == ProfileImageType.GHOST
+			|| profileImageType == ProfileImageType.UNSET) {
 			throw UserErrorCode.INVALID_PROFILE_IMAGE_TYPE.toBaseException();
 		}
 
@@ -63,7 +65,7 @@ public class UserProfileImageService {
 			UuidFile oldUuidFile = existingProfileImage.getUuidFile();
 			userProfileImageWriter.delete(existingProfileImage);
 			if (oldUuidFile != null) {
-				uuidFileService.deleteFile(oldUuidFile.getId());
+				fileWriter.delete(oldUuidFile);
 			}
 		}
 
@@ -86,7 +88,7 @@ public class UserProfileImageService {
 		UserProfileImage existingProfileImage = userProfileImageReader.findByUserIdOrNull(userId);
 
 		// 새 파일 먼저 업로드
-		UuidFile newUuidFile = uuidFileService.saveFile(imageFile, FilePath.USER_PROFILE);
+		UuidFile newUuidFile = fileWriter.uploadAndSave(imageFile, FilePath.USER_PROFILE);
 
 		if (existingProfileImage != null) {
 			UuidFile oldUuidFile = existingProfileImage.getUuidFile();
@@ -99,7 +101,7 @@ public class UserProfileImageService {
 
 			// 기존 파일 삭제 (User save 이후 수행)
 			if (oldUuidFile != null) {
-				uuidFileService.deleteFile(oldUuidFile.getId());
+				fileWriter.delete(oldUuidFile);
 			}
 		} else {
 			// 새 UserProfileImage 생성 및 저장
@@ -151,7 +153,7 @@ public class UserProfileImageService {
 					userProfileImageWriter.delete(profileImage);
 
 					if (uuidFile != null) {
-						uuidFileService.deleteFile(uuidFile.getId());
+						fileWriter.delete(uuidFile);
 					}
 				} catch (Exception e) {
 					log.error("[유저 정리 배치] 실패. UserID: {}", user.getId(), e);

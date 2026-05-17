@@ -11,6 +11,7 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.user.account.enums.user.SocialType;
+import net.causw.app.main.domain.user.auth.service.implementation.OAuthLinkTokenStore;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -36,15 +37,16 @@ public class AppleOAuth2AuthorizationRequestResolver implements OAuth2Authorizat
 
 	@Override
 	public OAuth2AuthorizationRequest resolve(HttpServletRequest request) {
-		return customizeIfApple(delegate.resolve(request));
+		return customize(request, delegate.resolve(request));
 	}
 
 	@Override
 	public OAuth2AuthorizationRequest resolve(HttpServletRequest request, String clientRegistrationId) {
-		return customizeIfApple(delegate.resolve(request, clientRegistrationId));
+		return customize(request, delegate.resolve(request, clientRegistrationId));
 	}
 
-	private OAuth2AuthorizationRequest customizeIfApple(OAuth2AuthorizationRequest authorizationRequest) {
+	private OAuth2AuthorizationRequest customize(HttpServletRequest request,
+		OAuth2AuthorizationRequest authorizationRequest) {
 		if (authorizationRequest == null) {
 			return null;
 		}
@@ -64,8 +66,17 @@ public class AppleOAuth2AuthorizationRequestResolver implements OAuth2Authorizat
 			additionalParameters.put(INCLUDE_GRANTED_SCOPES_PARAMETER_NAME, INCLUDE_GRANTED_SCOPES_TRUE);
 		}
 
+		// 소셜 계정 연동 플로우: linkToken을 attributes에 포함하여 세션에 함께 저장
+		// additionalParameters와 달리 attributes는 provider에 전송되지 않음
+		Map<String, Object> attributes = new LinkedHashMap<>(authorizationRequest.getAttributes());
+		String linkToken = request.getParameter(OAuthLinkTokenStore.LINK_TOKEN_QUERY_PARAM);
+		if (linkToken != null && !linkToken.isBlank()) {
+			attributes.put(OAuthLinkTokenStore.LINK_TOKEN_ATTR, linkToken);
+		}
+
 		return OAuth2AuthorizationRequest.from(authorizationRequest)
 			.additionalParameters(additionalParameters)
+			.attributes(attributes)
 			.build();
 	}
 }
