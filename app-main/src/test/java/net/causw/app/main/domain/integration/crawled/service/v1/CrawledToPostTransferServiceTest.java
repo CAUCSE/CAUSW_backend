@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,6 +21,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.repository.BoardRepository;
@@ -59,6 +61,13 @@ public class CrawledToPostTransferServiceTest {
 	@Mock
 	private CrawledPostImageRepository crawledPostImageRepository;
 
+	private static final String TEST_ADMIN_EMAIL = "admin@cau.ac.kr";
+
+	@BeforeEach
+	void setUp() {
+		ReflectionTestUtils.setField(crawledToPostTransferService, "crawlerAdminEmail", TEST_ADMIN_EMAIL);
+	}
+
 	@Test
 	@DisplayName("새 공지사항이 Post로 변환되어 저장됨")
 	void transferToPosts_shouldCreateNewPost_whenNewNotice() {
@@ -69,7 +78,7 @@ public class CrawledToPostTransferServiceTest {
 
 		given(boardRepository.findByName(StaticValue.CrawlingBoard))
 			.willReturn(Optional.of(mockBoard));
-		given(userRepository.findByStudentId(StaticValue.ADMIN_STUDENT_ID))
+		given(userRepository.findByEmail(TEST_ADMIN_EMAIL))
 			.willReturn(Optional.of(mockUser));
 		given(crawledNoticeRepository.findTop30ByIsUpdatedTrueOrderByLastModifiedDesc())
 			.willReturn(List.of(newNotice));
@@ -97,7 +106,7 @@ public class CrawledToPostTransferServiceTest {
 
 		given(boardRepository.findByName(StaticValue.CrawlingBoard))
 			.willReturn(Optional.of(mockBoard));
-		given(userRepository.findByStudentId(StaticValue.ADMIN_STUDENT_ID))
+		given(userRepository.findByEmail(TEST_ADMIN_EMAIL))
 			.willReturn(Optional.of(mockUser));
 		given(crawledNoticeRepository.findTop30ByIsUpdatedTrueOrderByLastModifiedDesc())
 			.willReturn(List.of(updatedNotice));
@@ -121,7 +130,7 @@ public class CrawledToPostTransferServiceTest {
 
 		given(boardRepository.findByName(StaticValue.CrawlingBoard))
 			.willReturn(Optional.of(mockBoard));
-		given(userRepository.findByStudentId(StaticValue.ADMIN_STUDENT_ID))
+		given(userRepository.findByEmail(TEST_ADMIN_EMAIL))
 			.willReturn(Optional.of(mockUser));
 		given(crawledNoticeRepository.findTop30ByIsUpdatedTrueOrderByLastModifiedDesc())
 			.willReturn(Collections.emptyList());
@@ -141,7 +150,7 @@ public class CrawledToPostTransferServiceTest {
 
 	private User createMockUser() {
 		User user = mock(User.class);
-		when(user.getStudentId()).thenReturn(StaticValue.ADMIN_STUDENT_ID);
+		when(user.getEmail()).thenReturn(TEST_ADMIN_EMAIL);
 		return user;
 	}
 
