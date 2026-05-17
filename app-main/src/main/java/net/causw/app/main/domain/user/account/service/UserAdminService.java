@@ -44,6 +44,7 @@ public class UserAdminService {
 	private final UserProfileImageReader userProfileImageReader;
 	private final DroppedUserIdentifierWriter droppedUserIdentifierWriter;
 	private final UserAccountService userAccountService;
+	private final UserAccountCleanupService userAccountCleanupService;
 
 	// 필터링 조건과 페이징 정보를 기반으로 전체 사용자 목록 조회
 	@Transactional(readOnly = true)
@@ -73,6 +74,8 @@ public class UserAdminService {
 
 		UserState beforeState = targetUser.getState();
 		Set<Role> beforeRoles = new HashSet<>(targetUser.getRoles());
+
+		userAccountCleanupService.cleanupForDrop(targetUser);
 
 		lockerReader.findByUserId(targetUser.getId()).ifPresent(locker -> {
 			lockerWriter.releaseLocker(locker, adminUser, targetUser.getEmail(), targetUser.getName());
