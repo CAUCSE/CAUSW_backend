@@ -22,6 +22,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.post.entity.Post;
@@ -36,8 +37,6 @@ import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.relation.service.v1.UserBlockEntityService;
 import net.causw.app.main.shared.infra.firebase.FcmUtils;
 import net.causw.app.main.util.ObjectFixtures;
-
-import org.springframework.test.util.ReflectionTestUtils;
 
 import com.google.firebase.messaging.FirebaseMessagingException;
 
@@ -160,13 +159,14 @@ class BoardNotificationServiceTest {
 
 	private void setFcmTokens(User user, String... tokenValues) {
 		Set<FcmToken> entities = new HashSet<>();
-		for (String tv : tokenValues) entities.add(FcmToken.of(user, tv));
+		for (String tv : tokenValues)
+			entities.add(FcmToken.of(user, tv));
 		ReflectionTestUtils.setField(user, "fcmTokenEntities", entities);
 	}
 
 	@SuppressWarnings("unchecked")
 	private void addFcmToken(User user, String tokenValue) {
-		Set<FcmToken> entities = (Set<FcmToken>) ReflectionTestUtils.getField(user, "fcmTokenEntities");
+		Set<FcmToken> entities = (Set<FcmToken>)ReflectionTestUtils.getField(user, "fcmTokenEntities");
 		if (entities == null) {
 			entities = new HashSet<>();
 			ReflectionTestUtils.setField(user, "fcmTokenEntities", entities);

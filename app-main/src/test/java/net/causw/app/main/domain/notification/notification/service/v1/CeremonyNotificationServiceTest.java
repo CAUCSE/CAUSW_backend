@@ -24,6 +24,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyCategory;
@@ -38,8 +39,6 @@ import net.causw.app.main.domain.user.account.api.v1.dto.UserCreateRequestDto;
 import net.causw.app.main.domain.user.account.entity.user.FcmToken;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Department;
-
-import org.springframework.test.util.ReflectionTestUtils;
 import net.causw.app.main.domain.user.relation.service.v1.UserBlockEntityService;
 import net.causw.app.main.shared.infra.firebase.FcmUtils;
 
@@ -179,7 +178,8 @@ class CeremonyNotificationServiceTest {
 
 	private void setFcmTokens(User user, String... tokenValues) {
 		Set<FcmToken> entities = new HashSet<>();
-		for (String tv : tokenValues) entities.add(FcmToken.of(user, tv));
+		for (String tv : tokenValues)
+			entities.add(FcmToken.of(user, tv));
 		ReflectionTestUtils.setField(user, "fcmTokenEntities", entities);
 	}
 }
