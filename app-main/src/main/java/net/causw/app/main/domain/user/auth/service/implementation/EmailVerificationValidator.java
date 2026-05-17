@@ -70,6 +70,11 @@ public class EmailVerificationValidator {
 	 */
 	public void validatePasswordResetSend(String name, String email) {
 		validateResendInterval(email, VerificationStatus.PASSWORD_FIND);
+		userReader.findByEmail(email).ifPresent(user -> {
+			if (user.isOnlySocialUser()) {
+				throw UserErrorCode.SOCIAL_ONLY_USER_CANNOT_CHANGE_PASSWORD.toBaseException();
+			}
+		});
 		if (!userReader.existsByEmailAndName(email, name)) {
 			throw UserErrorCode.USER_NOT_FOUND.toBaseException();
 		}

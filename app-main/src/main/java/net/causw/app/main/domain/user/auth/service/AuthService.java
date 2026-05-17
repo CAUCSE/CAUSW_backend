@@ -97,11 +97,13 @@ public class AuthService {
 	 */
 	@Transactional
 	public String resetPasswordByVerificationCode(String name, String email, String verificationCode) {
-		User user = userReader.findByEmailAndName(email, name);
+		userReader.findByEmail(email).ifPresent(user -> {
+			if (user.isOnlySocialUser()) {
+				throw UserErrorCode.SOCIAL_ONLY_USER_CANNOT_CHANGE_PASSWORD.toBaseException();
+			}
+		});
 
-		if (user.isOnlySocialUser()) {
-			throw UserErrorCode.SOCIAL_ONLY_USER_CANNOT_CHANGE_PASSWORD.toBaseException();
-		}
+		User user = userReader.findByEmailAndName(email, name);
 
 		EmailVerification emailVerification = emailVerificationReader.findLatestByEmailAndStatus(email,
 			VerificationStatus.PASSWORD_FIND);
