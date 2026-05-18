@@ -338,6 +338,7 @@ class UserAdminServiceTest {
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
 				.isEqualTo(UserErrorCode.USER_NOT_RESTORABLE);
+			verify(userValidator, never()).validateRestorable(any());
 			verify(userWriter, never()).restore(any());
 			verify(userAdminActionLogWriter, never()).logRestore(any(), any(), any(), any());
 		}
@@ -359,13 +360,14 @@ class UserAdminServiceTest {
 			user.setRoles(Set.of(Role.NONE));
 
 			when(userReader.findUserById(userId)).thenReturn(user);
-			when(userAccountService.restore(userId)).thenReturn(user);
+			when(userWriter.restore(user)).thenReturn(user);
 
 			// when
 			userAdminService.restoreWithdrawnUser(adminUser, userId);
 
 			// then
-			verify(userAccountService).restore(userId);
+			verify(userValidator).validateRestorable(user);
+			verify(userWriter).restore(user);
 			verify(userAdminActionLogWriter).logRestore(
 				eq(adminUser),
 				eq(user),
@@ -393,7 +395,8 @@ class UserAdminServiceTest {
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
 				.isEqualTo(UserErrorCode.USER_WITHDRAWN_NOT_RESTORABLE);
-			verify(userAccountService, never()).restore(any());
+			verify(userValidator, never()).validateRestorable(any());
+			verify(userWriter, never()).restore(any());
 			verify(userAdminActionLogWriter, never()).logRestore(any(), any(), any(), any());
 		}
 
@@ -417,7 +420,7 @@ class UserAdminServiceTest {
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
 				.isEqualTo(UserErrorCode.USER_WITHDRAWN_NOT_RESTORABLE);
-			verify(userAccountService, never()).restore(any());
+			verify(userWriter, never()).restore(any());
 			verify(userAdminActionLogWriter, never()).logRestore(any(), any(), any(), any());
 		}
 	}
