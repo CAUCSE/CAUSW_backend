@@ -50,7 +50,8 @@ public class UserAccountCleanupWriter {
 				log.error("[User Account Cleanup] 소셜 연동 해제 실패. SocialType: {}, UserID: {}, Error: {}",
 					socialAccount.getSocialType(),
 					user.getId(),
-					e.getMessage());
+					e.getMessage(),
+					e);
 			}
 		});
 	}
