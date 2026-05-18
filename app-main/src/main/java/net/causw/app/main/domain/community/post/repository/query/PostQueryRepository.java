@@ -87,12 +87,14 @@ public class PostQueryRepository {
 	 * @param boardIds 게시판 ID 목록 (null이면 전체 게시판, 빈 리스트면 조회 안함)
 	 * @param cursorCreatedAt 커서 (마지막 게시글의 createdAt)
 	 * @param cursorId 커서 (마지막 게시글의 ID, createdAt이 같을 때 사용)
+	 * @param blockedUserIds 차단한 사용자 ID 목록 (해당 사용자 게시글 제외)
 	 * @param size 조회할 개수
 	 * @param keyword 검색 키워드 (content 기준)
 	 * @return 게시글 목록 Slice
 	 */
 	public Slice<PostCursorResult> findPostsWithCursor(
 		List<String> boardIds,
+		Set<String> blockedUserIds,
 		String cursorCreatedAt,
 		String cursorId,
 		int size,
@@ -119,6 +121,7 @@ public class PostQueryRepository {
 		BooleanExpression[] conditions = new BooleanExpression[] {
 			boardCondition,
 			post.isDeleted.eq(false),
+			notInBlockedUsers(writer, blockedUserIds),
 			containsKeywordInContent(post, keyword),
 			cursorCondition
 		};
