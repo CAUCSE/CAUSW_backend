@@ -17,6 +17,7 @@ import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.dto.request.UserPasswordUpdateCommand;
 import net.causw.app.main.domain.user.account.service.dto.result.UserMeAccountResult;
 import net.causw.app.main.domain.user.account.service.dto.result.UserMeResult;
+import net.causw.app.main.domain.user.account.service.implementation.UserAccountCleanupWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
@@ -57,7 +58,7 @@ public class UserAccountService {
 	private final UserTermsAgreementWriter userTermsAgreementWriter;
 	private final UserPushTokenWriter userPushTokenWriter;
 	private final UserProfileImageService userProfileImageService;
-	private final UserAccountCleanupService userAccountCleanupService;
+	private final UserAccountCleanupWriter userAccountCleanupWriter;
 
 	/**
 	 * 소셜 로그인을 통해 생성된 임시 유저(GUEST)의 추가 정보를 등록하고 회원가입 절차를 완료합니다.
@@ -288,7 +289,7 @@ public class UserAccountService {
 			throw UserErrorCode.USER_DROPPED.toBaseException();
 		}
 
-		userAccountCleanupService.cleanupForWithdrawal(user, accessToken, refreshToken, platformHint);
+		userAccountCleanupWriter.cleanupForWithdrawal(user, accessToken, refreshToken, platformHint);
 
 		// 커스텀 프로필 이미지 파일 삭제 요청
 		userProfileImageService.requestProfileImageDeletionForWithdrawal(userId);

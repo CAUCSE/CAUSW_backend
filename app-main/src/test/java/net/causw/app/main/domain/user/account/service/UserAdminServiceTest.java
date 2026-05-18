@@ -38,6 +38,7 @@ import net.causw.app.main.domain.user.account.service.dto.response.UserDetailIte
 import net.causw.app.main.domain.user.account.service.dto.response.UserDropResult;
 import net.causw.app.main.domain.user.account.service.dto.response.UserListItem;
 import net.causw.app.main.domain.user.account.service.implementation.DroppedUserIdentifierWriter;
+import net.causw.app.main.domain.user.account.service.implementation.UserAccountCleanupWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserAdminActionLogWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
@@ -73,7 +74,7 @@ class UserAdminServiceTest {
 	private DroppedUserIdentifierWriter droppedUserIdentifierWriter;
 
 	@Mock
-	private UserAccountCleanupService userAccountCleanupService;
+	private UserAccountCleanupWriter userAccountCleanupWriter;
 
 	@Mock
 	private UserProfileImageReader userProfileImageReader;
@@ -207,7 +208,7 @@ class UserAdminServiceTest {
 
 			// then
 			verify(lockerWriter).releaseLocker(locker, adminUser, user.getEmail(), user.getName());
-			verify(userAccountCleanupService).cleanupForDrop(user);
+			verify(userAccountCleanupWriter).cleanupForDrop(user);
 			verify(userWriter).dropByAdmin(user, dropReason);
 			verify(userAdminActionLogWriter).logDrop(any(), any(), any(), any(), any());
 		}
@@ -373,7 +374,7 @@ class UserAdminServiceTest {
 		assertNotNull(result);
 
 		verify(userReader).findUserById(userId);
-		verify(userAccountCleanupService).cleanupForDrop(targetUser);
+		verify(userAccountCleanupWriter).cleanupForDrop(targetUser);
 		verify(lockerReader).findByUserId(userId);
 		verify(lockerWriter).releaseLocker(locker, adminUser, "test@example.com", "홍길동");
 		verify(userWriter).dropByAdmin(targetUser, dropReason);

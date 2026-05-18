@@ -31,6 +31,7 @@ import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerWr
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserWithdrawResponse;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.domain.user.account.service.implementation.UserAccountCleanupWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
@@ -81,7 +82,7 @@ class UserAccountServiceTest {
 	private UserProfileImageService userProfileImageService;
 
 	@Mock
-	private UserAccountCleanupService userAccountCleanupService;
+	private UserAccountCleanupWriter userAccountCleanupWriter;
 
 	private final String userId = "test-uuid";
 	private final String nickname = "푸앙";
@@ -219,7 +220,7 @@ class UserAccountServiceTest {
 
 		// verify
 		verify(userReader).findUserById(userId);
-		verify(userAccountCleanupService).cleanupForWithdrawal(user, accessToken, refresh, platformHint);
+		verify(userAccountCleanupWriter).cleanupForWithdrawal(user, accessToken, refresh, platformHint);
 		verify(userProfileImageService).requestProfileImageDeletionForWithdrawal(userId);
 		verify(lockerReader).findByUserId(userId);
 		verify(lockerWriter).returnLocker(locker, user);
@@ -249,7 +250,7 @@ class UserAccountServiceTest {
 		// then
 		assertNotNull(result);
 		assertEquals(now, result.deletedAt());
-		verify(userAccountCleanupService).cleanupForWithdrawal(user, accessToken, refresh, platformHint);
+		verify(userAccountCleanupWriter).cleanupForWithdrawal(user, accessToken, refresh, platformHint);
 		verify(userProfileImageService).requestProfileImageDeletionForWithdrawal(userId);
 		verify(lockerWriter, never()).returnLocker(any(), any());
 		verify(userWriter).withdraw(user);
@@ -268,6 +269,6 @@ class UserAccountServiceTest {
 			() -> userAccountService.withdraw(userId, "access-token", "refresh-token", platformHint));
 
 		verify(userReader).findUserById(userId);
-		verifyNoInteractions(userAccountCleanupService, lockerReader, lockerWriter);
+		verifyNoInteractions(userAccountCleanupWriter, lockerReader, lockerWriter);
 	}
 }

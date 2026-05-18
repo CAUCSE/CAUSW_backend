@@ -1,29 +1,29 @@
-package net.causw.app.main.domain.user.account.service;
+package net.causw.app.main.domain.user.account.service.implementation;
 
 import java.util.List;
 
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.notification.notification.service.implementation.UserPushTokenWriter;
 import net.causw.app.main.domain.user.account.entity.user.SocialAccount;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.service.implementation.SocialAccountReader;
-import net.causw.app.main.domain.user.account.service.implementation.SocialAccountUnlinkManager;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Service
+@Component
 @RequiredArgsConstructor
 @Slf4j
-public class UserAccountCleanupService {
+public class UserAccountCleanupWriter {
 
 	private final SocialAccountReader socialAccountReader;
 	private final SocialAccountUnlinkManager socialAccountUnlinkManager;
 	private final AuthTokenManager authTokenManager;
 	private final UserPushTokenWriter userPushTokenWriter;
 
+	@Transactional
 	public void cleanupForWithdrawal(
 		User user,
 		String accessToken,
@@ -34,6 +34,7 @@ public class UserAccountCleanupService {
 		userPushTokenWriter.clearFcmTokens(user);
 	}
 
+	@Transactional
 	public void cleanupForDrop(User user) {
 		unlinkSocialAccounts(user, null);
 		userPushTokenWriter.clearFcmTokens(user);
