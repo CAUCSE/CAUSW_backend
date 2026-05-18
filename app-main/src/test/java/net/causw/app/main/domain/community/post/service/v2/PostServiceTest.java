@@ -1179,6 +1179,60 @@ public class PostServiceTest {
 			verify(likePostReader, never()).countByPostId(anyString());
 		}
 
+		@DisplayName("작성자는 차단 관계여도 본인 게시글 상세 조회 가능")
+		@Test
+		void getPostDetail_shouldSucceed_asOwner_evenWhenBlocked() {
+			// given
+			PostDetailQuery query = new PostDetailQuery(postId, writer);
+			List<String> boardAdminIds = List.of("admin-id");
+
+			given(postReader.findById(postId)).willReturn(post);
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
+			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(likePostReader.countByPostId(postId)).willReturn(10L);
+			given(favoritePostReader.countByPostId(postId)).willReturn(3L);
+			given(likePostReader.existsByPostIdAndUserId(postId, "writer-id")).willReturn(false);
+			given(favoritePostReader.existsByPostIdAndUserId(postId, "writer-id")).willReturn(false);
+
+			// when
+			PostDetailResult result = postService.getPostDetail(query);
+
+			// then
+			assertAll(
+				() -> assertThat(result).isNotNull(),
+				() -> assertThat(result.id()).isEqualTo(postId),
+				() -> assertThat(result.isOwner()).isTrue());
+			verify(blockReader, never()).existsByBlockerAndBlocked(any(), any());
+		}
+
+		@DisplayName("게시판 관리자는 차단한 사용자의 게시글도 상세 조회 가능")
+		@Test
+		void getPostDetail_shouldSucceed_asBoardAdmin_evenWhenWriterIsBlocked() {
+			// given
+			User admin = ObjectFixtures.getCertifiedUserWithId("admin-id");
+			PostDetailQuery query = new PostDetailQuery(postId, admin);
+			List<String> boardAdminIds = List.of("admin-id");
+
+			given(postReader.findById(postId)).willReturn(post);
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
+			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(likePostReader.countByPostId(postId)).willReturn(10L);
+			given(favoritePostReader.countByPostId(postId)).willReturn(3L);
+			given(likePostReader.existsByPostIdAndUserId(postId, "admin-id")).willReturn(false);
+			given(favoritePostReader.existsByPostIdAndUserId(postId, "admin-id")).willReturn(false);
+
+			// when
+			PostDetailResult result = postService.getPostDetail(query);
+
+			// then
+			assertAll(
+				() -> assertThat(result).isNotNull(),
+				() -> assertThat(result.id()).isEqualTo(postId),
+				() -> assertThat(result.updatable()).isTrue(),
+				() -> assertThat(result.deletable()).isTrue());
+			verify(blockReader, never()).existsByBlockerAndBlocked(any(), any());
+		}
+
 		@DisplayName("게시글 상세 조회 성공")
 		@Test
 		void getPostDetail_shouldSucceed() {

@@ -257,7 +257,8 @@ public class PostService {
 
 		// 차단한 사용자가 작성한 게시글은 조회 불가
 		User writer = post.getWriter();
-		if (writer != null && userBlockReader.existsByBlockerAndBlocked(viewer, writer)) {
+		if (writer != null && !writer.getId().equals(viewer.getId()) && !boardAdminIds.contains(viewer.getId())
+			&& userBlockReader.existsByBlockerAndBlocked(viewer, writer)) {
 			throw PostErrorCode.BLOCKED_USER_CONTENT.toBaseException();
 		}
 
