@@ -36,7 +36,12 @@ public class PostValidator {
 	}
 
 	public static void validateDelete(User deleter, Post post, List<String> adminIds) {
-		if (post.getBoard().getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
+		// ADMIN은 무조건 삭제 가능
+		if (deleter.getRoles().contains(Role.ADMIN)) {
+			return;
+		}
+
+		if (post.getBoard().getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {	// TODO: APP_NOTICE 대신 BoardConfig의 isNotice 필드 활용
 			// 관리자 역할이 없고, 게시글의 작성자가 아니면 오류 발생
 			if (!adminIds.contains(deleter.getId())
 				&& !post.getWriter().getId().equals(deleter.getId())) {
@@ -86,6 +91,11 @@ public class PostValidator {
 	}
 
 	private static void validateWriteScope(User creator, BoardConfig boardConfig, List<String> boardAdminIds) {
+		// ADMIN은 무조건 작성 가능
+		if (creator.getRoles().contains(Role.ADMIN)) {
+			return;
+		}
+
 		BoardWriteScope writeScope = boardConfig.getWriteScope();
 		if (writeScope == BoardWriteScope.ALL_USER) {
 			return;
@@ -106,6 +116,11 @@ public class PostValidator {
 	}
 
 	public static void validateRead(User viewer, BoardConfig boardConfig, List<String> boardAdminIds) {
+		// ADMIN은 무조건 조회 가능
+		if (viewer.getRoles().contains(Role.ADMIN)) {
+			return;
+		}
+
 		// 게시판 관리자는 무조건 조회 가능
 		if (boardAdminIds.contains(viewer.getId())) {
 			return;

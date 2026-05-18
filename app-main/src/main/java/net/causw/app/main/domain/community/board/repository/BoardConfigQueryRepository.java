@@ -82,9 +82,10 @@ public class BoardConfigQueryRepository {
 	 * writeScope가 {@code ONLY_ADMIN}일 경우는 boardAdmin에 해당 boardId, userId가 exist하는지 체크합니다.
 	 *
 	 * @param userId 대상이 되는 user의 Id
+	 * @param isAdmin 대상이 되는 user가 ADMIN 권한을가지고 있는지 여부
 	 * @return 쓰기 가능한 게시판 목록
 	 */
-	public List<Board> findWritableBoardsByUserId(String userId) {
+	public List<Board> findWritableBoardsByUserId(String userId, boolean isAdmin) {
 		QBoard board = QBoard.board;
 		QBoardConfig boardConfig = QBoardConfig.boardConfig;
 		QBoardAdmin boardAdmin = QBoardAdmin.boardAdmin;
@@ -98,7 +99,8 @@ public class BoardConfigQueryRepository {
 				board.isDeleted.isFalse(),
 				visible(boardConfig),
 				// ALL_USER 이거나 ONLY_ADMIN이고 boardAdmin에 boardId와 userId 컬럼이 존재할 경우
-				boardConfig.writeScope.eq(BoardWriteScope.ALL_USER)
+				// isAdmin인 경우는 writeScope 체크 없이 모든 게시판 포함
+				isAdmin ? null : boardConfig.writeScope.eq(BoardWriteScope.ALL_USER)
 					.or(
 						boardConfig.writeScope.eq(BoardWriteScope.ONLY_ADMIN)
 							.and(
