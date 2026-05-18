@@ -41,6 +41,7 @@ import net.causw.app.main.domain.user.account.service.implementation.DroppedUser
 import net.causw.app.main.domain.user.account.service.implementation.UserAccountCleanupWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserAdminActionLogWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
+import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
@@ -64,9 +65,6 @@ class UserAdminServiceTest {
 	@Mock
 	private UserAdminActionLogWriter userAdminActionLogWriter;
 
-	@Mock
-	private UserAccountService userAccountService;
-
 	@InjectMocks
 	private UserAdminService userAdminService;
 
@@ -78,6 +76,9 @@ class UserAdminServiceTest {
 
 	@Mock
 	private UserProfileImageReader userProfileImageReader;
+
+	@Mock
+	private UserValidator userValidator;
 
 	/* =========================
 	 * 유저 목록 조회
@@ -283,13 +284,13 @@ class UserAdminServiceTest {
 			user.setDeletedAt(null);
 
 			when(userReader.findUserById(userId)).thenReturn(user);
-			when(userAccountService.restore(userId)).thenReturn(user);
+			when(userWriter.restore(user)).thenReturn(user);
 
 			// when
 			userAdminService.restoreUser(adminUser, userId);
 
 			// then
-			verify(userAccountService).restore(userId);
+			verify(userWriter).restore(user);
 			verify(userAdminActionLogWriter).logRestore(any(), any(), any(), any());
 		}
 

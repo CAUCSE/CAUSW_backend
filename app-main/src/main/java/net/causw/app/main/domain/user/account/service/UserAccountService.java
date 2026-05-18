@@ -238,24 +238,6 @@ public class UserAccountService {
 	}
 
 	/**
-	 * 탈퇴한 사용자의 계정을 복구합니다.
-	 * <p>
-	 * 탈퇴 후 30일 이내에만 복구가 가능합니다.
-	 * </p>
-	 *
-	 * @param userId 복구할 사용자의 고유 식별자 (PK)
-	 */
-	@Transactional
-	public User restore(String userId) {
-		User user = userReader.findUserById(userId);
-
-		// 30일 유예 기간 검증 (공통 로직 호출)
-		userValidator.validateRestorable(user);
-
-		return userWriter.restore(user);
-	}
-
-	/**
 	 * 서비스 회원 탈퇴를 처리합니다.
 	 * <p>
 	 * 본 메서드는 사용자의 계정 상태를 검증하고, 탈퇴에 따른 후속 처리(Clean-up)를 수행합니다.
