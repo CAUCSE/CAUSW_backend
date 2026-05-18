@@ -145,7 +145,6 @@ class PostNotificationServiceTest {
 		given(mockPost.getId()).willReturn("post-id");
 		given(mockPost.getBoard()).willReturn(mockBoard);
 		given(mockBoard.getId()).willReturn("board-id");
-		given(mockComment.getPost()).willReturn(mockPost);
 
 		given(userPostSubscribeRepository.findByPostAndIsSubscribedTrueExcludingBlockers(mockPost, Set.of()))
 			.willReturn(List.of(UserPostSubscribe.of(mockUser, mockPost, true)));
