@@ -19,6 +19,7 @@ CREATE TABLE tb_fcm_token
 INSERT INTO tb_fcm_token (id, user_id, token_value, created_at, updated_at)
 SELECT UUID(), MIN(user_id), fcm_token_value, NOW(), NOW()
 FROM tb_user_fcm_token
+where fcm_token_value is not null
 GROUP BY fcm_token_value;
 
 DROP TABLE tb_user_fcm_token;
