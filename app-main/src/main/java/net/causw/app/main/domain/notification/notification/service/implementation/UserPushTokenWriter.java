@@ -6,7 +6,6 @@ import java.util.Set;
 import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import net.causw.app.main.shared.infra.redis.RedisUtils;
 import net.causw.global.constant.StaticValue;
 
@@ -55,10 +54,7 @@ public class UserPushTokenWriter {
 	 * @param fcmToken 삭제할 FCM 토큰
 	 */
 	public void removeFcmToken(User user, String fcmToken) {
-		boolean isRemoved = user.removeFcmToken(fcmToken);
-		if (!isRemoved) {
-			throw AuthErrorCode.NO_PERMISSION_FOR_RESOURCE.toBaseException();
-		}
+		user.removeFcmToken(fcmToken);
 		redisUtils.deleteFcmTokenData(fcmToken);
 	}
 
