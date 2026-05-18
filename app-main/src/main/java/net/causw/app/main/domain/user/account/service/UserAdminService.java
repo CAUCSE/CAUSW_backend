@@ -145,7 +145,7 @@ public class UserAdminService {
 	// - DROP 상태만 복원 가능
 	// - 추방 후 30일 이내 복구 가능
 	private void validateRestorableUser(User targetUser) {
-		if (targetUser.getState() != UserState.DROP) {
+		if (!targetUser.isDropped()) {
 			throw UserErrorCode.USER_NOT_RESTORABLE.toBaseException();
 		}
 
