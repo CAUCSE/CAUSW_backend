@@ -207,8 +207,8 @@ class UserAccountServiceTest {
 
 		when(userReader.findUserById(userId)).thenReturn(user);
 		when(user.getId()).thenReturn(userId);
-		when(user.isDeleted()).thenReturn(false);
-		when(user.getState()).thenReturn(UserState.ACTIVE);
+		when(user.isInactive()).thenReturn(false);
+		when(user.isDropped()).thenReturn(false);
 
 		when(lockerReader.findByUserId(userId)).thenReturn(Optional.of(locker));
 		when(user.getDeletedAt()).thenReturn(now);
@@ -240,8 +240,8 @@ class UserAccountServiceTest {
 		User user = mock(User.class);
 		when(userReader.findUserById(userId)).thenReturn(user);
 		when(user.getId()).thenReturn(userId);
-		when(user.isDeleted()).thenReturn(false);
-		when(user.getState()).thenReturn(UserState.ACTIVE);
+		when(user.isInactive()).thenReturn(false);
+		when(user.isDropped()).thenReturn(false);
 
 		when(lockerReader.findByUserId(userId)).thenReturn(Optional.empty());
 		when(user.getDeletedAt()).thenReturn(now);
@@ -263,7 +263,7 @@ class UserAccountServiceTest {
 		// given
 		User user = mock(User.class);
 		when(userReader.findUserById(userId)).thenReturn(user);
-		when(user.isDeleted()).thenReturn(true);
+		when(user.isInactive()).thenReturn(true);
 
 		// when & then
 		assertThrows(BaseRunTimeV2Exception.class,

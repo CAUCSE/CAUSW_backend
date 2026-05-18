@@ -211,12 +211,12 @@ public class UserAccountService {
 		User user = userReader.findUserById(userId);
 
 		// 관리자 강제 탈퇴(DROP) 먼저 체크
-		if (user.getState().equals(UserState.DROP)) {
+		if (user.isDropped()) {
 			throw UserErrorCode.USER_DROPPED.toBaseException();
 		}
 
 		// 일반 탈퇴 유저 체크
-		if (user.isDeleted()) {
+		if (user.isInactive()) {
 			throw UserErrorCode.USER_DELETED.toBaseException();
 		}
 
@@ -262,11 +262,11 @@ public class UserAccountService {
 	public UserWithdrawResponse withdraw(String userId, String accessToken, String refreshToken, String platformHint) {
 		User user = userReader.findUserById(userId);
 
-		if (user.isDeleted()) {
+		if (user.isInactive()) {
 			throw UserErrorCode.USER_DELETED.toBaseException();
 		}
 
-		if (user.getState() == UserState.DROP) {
+		if (user.isDropped()) {
 			throw UserErrorCode.USER_DROPPED.toBaseException();
 		}
 

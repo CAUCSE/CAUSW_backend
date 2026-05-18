@@ -144,8 +144,8 @@ public class User extends BaseEntity {
 
 	// 자진 탈퇴 처리
 	public void withdraw(LocalDateTime now) {
+		this.state = UserState.INACTIVE;
 		this.deletedAt = now;
-		this.academicStatus = AcademicStatus.UNDETERMINED;
 	}
 
 	/*
@@ -179,6 +179,10 @@ public class User extends BaseEntity {
 
 	public boolean isInactive() {
 		return this.state == UserState.INACTIVE;
+	}
+
+	public boolean isDropped() {
+		return this.state == UserState.DROP;
 	}
 
 	/**
@@ -349,7 +353,10 @@ public class User extends BaseEntity {
 		this.deletedAt = now;
 	}
 
-	// 탈퇴 처리
+	/**
+	 * V1에서 이용하던 회원 탈퇴 처리입니다.
+	 * @deprecated V2 탈퇴에서는 withdraw(LocalDateTime)을 이용합니다.
+	 */
 	public void withdraw() {
 		this.state = UserState.INACTIVE;
 		this.deletedAt = LocalDateTime.now();
