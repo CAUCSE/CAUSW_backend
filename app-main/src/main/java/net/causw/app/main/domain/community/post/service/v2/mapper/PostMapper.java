@@ -67,8 +67,12 @@ public class PostMapper {
 		boolean isPostLike, boolean isOwner, boolean isOfficial, String officialNickname, String officialImageUrl) {
 		// 닉네임 마스킹
 		String writerNickname;
-		if (isOfficial && officialNickname != null && !officialNickname.isBlank()) {
-			writerNickname = officialNickname;
+		if (isOfficial) {
+			if (officialNickname != null && !officialNickname.isBlank()) {
+				writerNickname = officialNickname;
+			} else {
+				writerNickname = "게시판 관리자";
+			}
 		} else {
 			writerNickname = resolveWriterNickname(result);
 		}
@@ -142,8 +146,12 @@ public class PostMapper {
 
 		// 닉네임 마스킹
 		String displayWriterNickname;
-		if (isOfficial && officialNickname != null && !officialNickname.isBlank()) {
-			displayWriterNickname = officialNickname;
+		if (isOfficial) {
+			if (officialNickname != null && !officialNickname.isBlank()) {
+				displayWriterNickname = officialNickname;
+			} else {
+				displayWriterNickname = "게시판 관리자";
+			}
 		} else {
 			displayWriterNickname = resolveWriterNickname(post);
 		}
