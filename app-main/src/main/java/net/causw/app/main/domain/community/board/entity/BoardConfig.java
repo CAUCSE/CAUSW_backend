@@ -53,6 +53,12 @@ public class BoardConfig extends AuditableEntity {
 	@Column(name = "display_order", nullable = false)
 	private Integer displayOrder;
 
+	@Column(name = "official_nickname")
+	private String officialNickname;
+
+	@Column(name = "official_profile_image_url")
+	private String officialProfileImageUrl;
+
 	public static BoardConfig of(String boardId, boolean isAnonymous, BoardReadScope readScope,
 		BoardWriteScope writeScope, boolean isNotice, BoardVisibility visibility, int displayOrder) {
 		return BoardConfig.builder()
