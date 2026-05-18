@@ -11,6 +11,7 @@ CREATE TABLE tb_fcm_token
     updated_at  DATETIME(6)  NOT NULL DEFAULT NOW(6),
     CONSTRAINT pk_fcm_token PRIMARY KEY (id),
     CONSTRAINT uk_fcm_token_value UNIQUE (token_value),
+    INDEX idx_fcm_token_user_id (user_id),
     CONSTRAINT fk_fcm_token_user FOREIGN KEY (user_id) REFERENCES tb_user (id)
 );
 
