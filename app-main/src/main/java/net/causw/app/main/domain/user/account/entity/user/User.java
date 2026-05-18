@@ -9,6 +9,8 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
 
 import net.causw.app.main.domain.campus.circle.entity.CircleMember;
 import net.causw.app.main.domain.community.vote.entity.VoteRecord;
@@ -34,6 +36,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+@FilterDef(name = "softDelete", defaultCondition = "deleted_at IS NULL")
+@Filter(name = "softDelete")
 @Getter
 @Builder(access = AccessLevel.PROTECTED)
 @Setter

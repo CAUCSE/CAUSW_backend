@@ -5,9 +5,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import org.hibernate.Session;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.SocialAccount;
@@ -34,6 +38,9 @@ public class UserReader {
 	private final UserRepository userRepository;
 	private final SocialAccountRepository socialAccountRepository;
 
+	@PersistenceContext
+	private EntityManager entityManager;
+
 	/**
 	 * 유저 ID로 유저 조회(삭제 여부 상관 없음)
 	 *
@@ -43,6 +50,23 @@ public class UserReader {
 	public User findUserById(String userId) {
 		return userRepository.findById(userId)
 			.orElseThrow(UserErrorCode.USER_NOT_FOUND::toBaseException);
+	}
+
+	/**
+	 * 유저 ID로 유저 조회(softDelete 필터 무시, 삭제된 유저 포함)
+	 *
+	 * @param userId 유저 ID
+	 * @return 유저 Entity
+	 */
+	public User findByIdIncludeDeleted(String userId) {
+		Session session = entityManager.unwrap(Session.class);
+		session.disableFilter("softDelete");
+		try {
+			return userRepository.findById(userId)
+				.orElseThrow(UserErrorCode.USER_NOT_FOUND::toBaseException);
+		} finally {
+			session.enableFilter("softDelete");
+		}
 	}
 
 	/**
