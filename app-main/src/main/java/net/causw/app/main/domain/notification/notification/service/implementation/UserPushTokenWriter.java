@@ -2,16 +2,15 @@ package net.causw.app.main.domain.notification.notification.service.implementati
 
 import java.util.Optional;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.user.account.entity.user.FcmToken;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.repository.user.FcmTokenRepository;
-import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 사용자 FCM(Firebase Cloud Messaging) 토큰의 쓰기 작업을 담당하는 컴포넌트입니다.
@@ -65,7 +64,7 @@ public class UserPushTokenWriter {
 	 */
 	public void removeFcmToken(User user, String fcmToken) {
 		if (!user.removeFcmToken(fcmToken)) {
-//			throw AuthErrorCode.NO_PERMISSION_FOR_RESOURCE.toBaseException();
+			//			throw AuthErrorCode.NO_PERMISSION_FOR_RESOURCE.toBaseException();
 			log.info("[FCM 토큰 삭제 실패] 이미 삭제된 FCM 토큰입니다.");
 		}
 	}
