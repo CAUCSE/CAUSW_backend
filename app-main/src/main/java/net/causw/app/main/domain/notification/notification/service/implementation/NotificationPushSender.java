@@ -52,6 +52,10 @@ public class NotificationPushSender {
 	 * @param body body값
 	 */
 	private void send(User user, String title, String body) {
+		if (user.getFcmTokens() == null) {
+			return;
+		}
+
 		Set<String> tokens = new HashSet<>(user.getFcmTokens());
 		tokens.forEach(token -> trySend(user, token, title, body));
 	}

@@ -2,6 +2,7 @@ package net.causw.app.main.domain.notification.notification.service.implementati
 
 import java.util.Optional;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +26,7 @@ import lombok.RequiredArgsConstructor;
  * <li>회원 탈퇴 시 전체 토큰 삭제</li>
  * </ul>
  */
+@Slf4j
 @Component
 @Transactional
 @RequiredArgsConstructor
@@ -63,7 +65,8 @@ public class UserPushTokenWriter {
 	 */
 	public void removeFcmToken(User user, String fcmToken) {
 		if (!user.removeFcmToken(fcmToken)) {
-			throw AuthErrorCode.NO_PERMISSION_FOR_RESOURCE.toBaseException();
+//			throw AuthErrorCode.NO_PERMISSION_FOR_RESOURCE.toBaseException();
+			log.info("[FCM 토큰 삭제 실패] 이미 삭제된 FCM 토큰입니다.");
 		}
 	}
 
