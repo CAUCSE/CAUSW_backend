@@ -25,6 +25,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageWriter;
 import net.causw.app.main.domain.asset.locker.entity.Locker;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerReader;
 import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerWriter;
@@ -79,7 +80,7 @@ class UserAccountServiceTest {
 	private LockerWriter lockerWriter;
 
 	@Mock
-	private UserProfileImageService userProfileImageService;
+	private UserProfileImageWriter userProfileImageWriter;
 
 	@Mock
 	private UserAccountCleanupWriter userAccountCleanupWriter;
@@ -221,7 +222,7 @@ class UserAccountServiceTest {
 		// verify
 		verify(userReader).findUserById(userId);
 		verify(userAccountCleanupWriter).cleanupForWithdrawal(user, accessToken, refresh, platformHint);
-		verify(userProfileImageService).requestProfileImageDeletionForWithdrawal(userId);
+		verify(userProfileImageWriter).requestDeletionForWithdrawal(userId);
 		verify(lockerReader).findByUserId(userId);
 		verify(lockerWriter).returnLocker(locker, user);
 		verify(userWriter).withdraw(user);
@@ -251,7 +252,7 @@ class UserAccountServiceTest {
 		assertNotNull(result);
 		assertEquals(now, result.deletedAt());
 		verify(userAccountCleanupWriter).cleanupForWithdrawal(user, accessToken, refresh, platformHint);
-		verify(userProfileImageService).requestProfileImageDeletionForWithdrawal(userId);
+		verify(userProfileImageWriter).requestDeletionForWithdrawal(userId);
 		verify(lockerWriter, never()).returnLocker(any(), any());
 		verify(userWriter).withdraw(user);
 	}
