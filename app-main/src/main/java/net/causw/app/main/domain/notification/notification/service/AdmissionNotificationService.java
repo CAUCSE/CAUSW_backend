@@ -85,7 +85,6 @@ public class AdmissionNotificationService implements NotificationService {
 		saveNotification(notification);
 
 		adminUsers.forEach(admin -> {
-			fcmUtils.cleanInvalidFcmTokens(admin);
 			Set<String> copy = new HashSet<>(admin.getFcmTokens());
 			copy.forEach(token -> send(admin, token, title, body));
 			saveNotificationLog(admin, notification);
@@ -113,7 +112,6 @@ public class AdmissionNotificationService implements NotificationService {
 			null);
 		saveNotification(notification);
 
-		fcmUtils.cleanInvalidFcmTokens(targetUser);
 		Set<String> copy = new HashSet<>(targetUser.getFcmTokens());
 		copy.forEach(token -> send(targetUser, token, title, body));
 		saveNotificationLog(targetUser, notification);
@@ -140,7 +138,6 @@ public class AdmissionNotificationService implements NotificationService {
 			null);
 		saveNotification(notification);
 
-		fcmUtils.cleanInvalidFcmTokens(targetUser);
 		Set<String> copy = new HashSet<>(targetUser.getFcmTokens());
 		copy.forEach(token -> send(targetUser, token, title, body));
 		saveNotificationLog(targetUser, notification);

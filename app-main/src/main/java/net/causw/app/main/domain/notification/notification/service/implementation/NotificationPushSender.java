@@ -25,30 +25,48 @@ public class NotificationPushSender {
 	/**
 	 * 유저의 모든 FCM 토큰으로 푸시 알림을 전송합니다.
 	 * 유효하지 않은 토큰은 사전에 정리하고, 전송 실패 토큰은 자동으로 제거합니다.
-	 * @param user 알림을 받을 유저
+	 *
+	 * @param user  알림을 받을 유저
 	 * @param title 알림 제목
-	 * @param body 알림 내용
-	 * @throws FirebaseMessagingException FCM 전송 실패 시 예외 발생
-	 * @throws Exception 기타 예외 발생 시 예외 발생
+	 * @param body  알림 내용
 	 */
 	public void sendToUser(User user, String title, String body) {
-		userPushTokenWriter.cleanInvalidFcmTokens(user);
+		send(user, title, body);
+	}
+
+	/**
+	 * 여러 유저에게 일괄로 푸시 알림을 전송합니다.
+	 *
+	 * @param users 알림을 받을 유저 목록
+	 * @param title 알림 제목
+	 * @param body  알림 내용
+	 */
+	public void sendToUsers(List<User> users, String title, String body) {
+		users.forEach(user -> send(user, title, body));
+	}
+
+	/**
+	 * 푸시알림 전송
+	 * @param user 유저
+	 * @param title 제목
+	 * @param body body값
+	 */
+	private void send(User user, String title, String body) {
+		if (user.getFcmTokens() == null) {
+			return;
+		}
+
 		Set<String> tokens = new HashSet<>(user.getFcmTokens());
 		tokens.forEach(token -> trySend(user, token, title, body));
 	}
 
 	/**
-	 * 여러 유저에게 일괄로 푸시 알림을 전송합니다.
-	 * @param users 알림을 받을 유저 목록
-	 * @param title 알림 제목
-	 * @param body 알림 내용
-	 */
-	public void sendToUsers(List<User> users, String title, String body) {
-		users.forEach(user -> sendToUser(user, title, body));
-	}
-
-	/**
 	 * 단일 FCM 토큰으로 푸시 알림을 전송하는 시도 메서드입니다.
+	 *
+	 * @param user  타겟 유저
+	 * @param token fcm 토큰
+	 * @param title 제목
+	 * @param body  내용
 	 */
 	private void trySend(User user, String token, String title, String body) {
 		try {
