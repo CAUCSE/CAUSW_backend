@@ -69,7 +69,8 @@ public class UserInfoQueryRepository {
 
 		// 학적 상태 필터
 		if (academicStatusList == null || academicStatusList.isEmpty()) {
-			condition = condition.and(userInfo.user.academicStatus.in(AcademicStatus.GRADUATED, AcademicStatus.ENROLLED));
+			condition = condition
+				.and(userInfo.user.academicStatus.in(AcademicStatus.GRADUATED, AcademicStatus.ENROLLED));
 		} else {
 			List<AcademicStatus> academicStatuses = academicStatusList.stream()
 				.map(AcademicStatus::fromString)

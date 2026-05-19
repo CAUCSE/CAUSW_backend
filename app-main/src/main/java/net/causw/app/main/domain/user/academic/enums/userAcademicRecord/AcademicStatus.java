@@ -32,8 +32,7 @@ public enum AcademicStatus {
 	private final String value;
 	@Deprecated
 	private static final EnumSet<AcademicStatus> DEPRECATED_SET = EnumSet.of(
-		LEAVE_OF_ABSENCE, DROPPED_OUT, SUSPEND, EXPEL, PROFESSOR
-	);
+		LEAVE_OF_ABSENCE, DROPPED_OUT, SUSPEND, EXPEL, PROFESSOR);
 
 	public static AcademicStatus fromString(String academicStatus) {
 		if (academicStatus == null || academicStatus.isEmpty()) {
