@@ -109,9 +109,14 @@ public class PostValidator {
 	}
 
 	private static void validateAnonymousBoard(BoardConfig boardConfig, Boolean isAnonymous) {
-		// 익명 게시판인데 비익명 게시글을 작성하려고 할 때 에러 발생
-		if (boardConfig.isAnonymous() && Boolean.FALSE.equals(isAnonymous)) {
-			throw PostErrorCode.POST_ANONYMOUS_BOARD_NOT_ALLOWED.toBaseException();
+		// 공지 게시판에서는 익명 게시글 작성 불가
+		if (boardConfig.isNotice() && Boolean.TRUE.equals(isAnonymous)) {
+			throw PostErrorCode.POST_NOTICE_BOARD_NOT_ALLOW_ANONYMOUS.toBaseException();
+		}
+
+		// 익명 비허용 게시판에서 익명 게시글 작성 불가
+		if (!boardConfig.isAnonymous() && Boolean.TRUE.equals(isAnonymous)) {
+			throw PostErrorCode.POST_ANONYMOUS_FORBIDDEN.toBaseException();
 		}
 	}
 
