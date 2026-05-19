@@ -181,6 +181,8 @@ app:
         apple:
           web: apple
           ios: apple-ios
+  crawler:
+    admin-email: ${CRAWLER_ADMIN_EMAIL}
 
 server:
   forward-headers-strategy: framework
