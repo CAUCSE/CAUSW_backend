@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ApplicationEventPublisher;
@@ -436,7 +435,8 @@ public class PostService {
 				String officialNickname = boardConfig != null ? boardConfig.getOfficialNickname() : null;
 				String officialImageUrl = boardConfig != null ? boardConfig.getOfficialProfileImageUrl() : null;
 
-				return PostMapper.toPostListItem(result, imageUrls, isPostLike, isOwner, isOfficial, officialNickname, officialImageUrl);
+				return PostMapper.toPostListItem(result, imageUrls, isPostLike, isOwner, isOfficial, officialNickname,
+					officialImageUrl);
 			})
 			.toList();
 	}

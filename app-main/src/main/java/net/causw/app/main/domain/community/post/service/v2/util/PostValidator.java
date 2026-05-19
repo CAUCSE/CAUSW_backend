@@ -41,7 +41,7 @@ public class PostValidator {
 			return;
 		}
 
-		if (post.getBoard().getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {	// TODO: APP_NOTICE 대신 BoardConfig의 isNotice 필드 활용
+		if (post.getBoard().getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) { // TODO: APP_NOTICE 대신 BoardConfig의 isNotice 필드 활용
 			// 관리자 역할이 없고, 게시글의 작성자가 아니면 오류 발생
 			if (!adminIds.contains(deleter.getId())
 				&& !post.getWriter().getId().equals(deleter.getId())) {

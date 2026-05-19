@@ -73,8 +73,7 @@ public class BoardConfigQueryRepository {
 			.where(
 				visible(boardConfig),
 				boardConfig.readScope.in(boardReadScopes),
-				tabCondition
-			)
+				tabCondition)
 			.orderBy(boardConfig.displayOrder.asc())
 			.fetch();
 	}

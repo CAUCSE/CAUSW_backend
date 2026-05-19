@@ -32,15 +32,14 @@ public class BoardController {
 
 	@GetMapping("/available")
 	@ResponseStatus(HttpStatus.OK)
-	@Operation(summary = "이용 가능한 게시판 목록",
-		description = "현재 사용자가 이용 가능한 게시판의 id, name 목록을 표시 순서대로 반환합니다.\n"
-			+ "파라미터로 isTab 전달 시 탭으로 표시할 게시판 목록을 반환합니다.")
+	@Operation(summary = "이용 가능한 게시판 목록", description = "현재 사용자가 이용 가능한 게시판의 id, name 목록을 표시 순서대로 반환합니다.\n"
+		+ "파라미터로 isTab 전달 시 탭으로 표시할 게시판 목록을 반환합니다.")
 	public ApiResponse<BoardReadableListResponse> getAvailableBoards(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
-		@RequestParam(name = "isTab", defaultValue = "false", required = false) boolean isTab
-	) {
+		@RequestParam(name = "isTab", defaultValue = "false", required = false) boolean isTab) {
 		return ApiResponse.success(
-			boardReadableMapper.toReadableListResponse(boardService.getReadableBoards(userDetails.getUser().getId(), isTab)));
+			boardReadableMapper
+				.toReadableListResponse(boardService.getReadableBoards(userDetails.getUser().getId(), isTab)));
 	}
 
 	@GetMapping("/writable")

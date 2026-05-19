@@ -66,7 +66,7 @@ public class BoardService {
 
 		// ADMIN은 항상 권한 보유
 		boolean isAdmin = user.getRoles().contains(Role.ADMIN);
-		if(!isAdmin) {
+		if (!isAdmin) {
 			AcademicStatus academicStatus = userReader.findUserById(userId).getAcademicStatus();
 			//졸업, 재학 academicStatus만 허용
 			if (academicStatus != AcademicStatus.ENROLLED && academicStatus != AcademicStatus.GRADUATED) {
