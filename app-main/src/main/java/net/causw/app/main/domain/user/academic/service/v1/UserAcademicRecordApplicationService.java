@@ -269,22 +269,6 @@ public class UserAcademicRecordApplicationService {
 				createUserAcademicRecordApplicationRequestDto.getGraduationType(),
 				StaticValue.USER_APPLIED);
 
-		} else if (targetAcademicStatus == AcademicStatus.LEAVE_OF_ABSENCE) {
-			// 휴학생의 학적 최초 인증 이벤트 발행
-			if (user.getAcademicStatus() == AcademicStatus.UNDETERMINED) {
-				eventPublisher.publishEvent(new CertifiedUserCreatedEvent(user.getId()));
-			}
-
-			// 학적 상태 변경
-			user.setAcademicStatus(createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus());
-			userRepository.save(user);
-
-			userAcademicRecordLog = UserAcademicRecordLog.create(
-				user,
-				user,
-				createUserAcademicRecordApplicationRequestDto.getTargetAcademicStatus(),
-				StaticValue.USER_APPLIED);
-
 		} else {
 			throw new BadRequestException(
 				ErrorCode.INVALID_PARAMETER,
