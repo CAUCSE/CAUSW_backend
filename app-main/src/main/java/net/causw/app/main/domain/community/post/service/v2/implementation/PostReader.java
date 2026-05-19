@@ -56,6 +56,7 @@ public class PostReader {
 	 * 커서 기반 페이징으로 게시글 목록을 조회합니다. (V2용)
 	 *
 	 * @param boardIds 게시판 ID 목록 (null이면 전체 게시판)
+	 * @param blockedUserIds 차단된 유저 ID 목록 (null이면 차단된 유저 없음)
 	 * @param cursorCreatedAt 커서 (마지막 게시글의 createdAt)
 	 * @param cursorId 커서 (마지막 게시글의 ID)
 	 * @param size 조회할 개수
@@ -64,11 +65,13 @@ public class PostReader {
 	 */
 	public Slice<PostCursorResult> findPostsWithCursor(
 		List<String> boardIds,
+		Set<String> blockedUserIds,
 		String cursorCreatedAt,
 		String cursorId,
 		int size,
 		String keyword) {
-		return postQueryRepository.findPostsWithCursor(boardIds, cursorCreatedAt, cursorId, size, keyword);
+		return postQueryRepository.findPostsWithCursor(
+			boardIds, blockedUserIds, cursorCreatedAt, cursorId, size, keyword);
 	}
 
 	/**

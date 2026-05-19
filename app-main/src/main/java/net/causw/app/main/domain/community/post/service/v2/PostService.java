@@ -40,6 +40,7 @@ import net.causw.app.main.domain.community.reaction.service.implementation.LikeP
 import net.causw.app.main.domain.notification.notification.event.OfficialPostEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.relation.service.v2.implementation.BlockReader;
+import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
 import net.causw.global.constant.StaticValue;
 
 import lombok.RequiredArgsConstructor;
@@ -188,9 +189,13 @@ public class PostService {
 			return PostListResult.of(List.of(), null);
 		}
 
+		// 뷰어가 차단한 사용자 조회 
+		Set<String> blockedUserIds = userBlockReader.findBlockeeUserIdsByBlocker(viewer);
+
 		// 게시글 조회 (Slice 사용)
 		Slice<PostCursorResult> slice = postReader.findPostsWithCursor(
 			boardIds,
+			blockedUserIds,
 			parsedCursor.createdAt(),
 			parsedCursor.postId(),
 			size,
@@ -249,6 +254,13 @@ public class PostService {
 
 		// ReadScope 검증
 		PostValidator.validateRead(viewer, boardConfig, boardAdminIds);
+
+		// 차단한 사용자가 작성한 게시글은 조회 불가
+		User writer = post.getWriter();
+		if (writer != null && !writer.getId().equals(viewer.getId()) && !boardAdminIds.contains(viewer.getId())
+			&& userBlockReader.existsByBlockerAndBlocked(viewer, writer)) {
+			throw PostErrorCode.BLOCKED_USER_CONTENT.toBaseException();
+		}
 
 		// 게시글 이미지 조회
 		List<String> imageUrls = postReader.findPostImages(postId);

@@ -48,26 +48,6 @@ public class RedisUtils {
 		return Boolean.TRUE.equals(redisTemplate.hasKey(redisKey));
 	}
 
-	public void setFcmTokenData(String fcmToken, String refreshToken, Long expiredTime) {
-		String redisKey = "FcmToken:" + fcmToken;
-		redisTemplate.opsForValue().set(redisKey, refreshToken, expiredTime, TimeUnit.MILLISECONDS);
-	}
-
-	public String getFcmTokenData(String fcmToken) {
-		String redisKey = "FcmToken:" + fcmToken;
-		return (String)redisTemplate.opsForValue().get(redisKey);
-	}
-
-	public void deleteFcmTokenData(String fcmToken) {
-		String redisKey = "FcmToken:" + fcmToken;
-		redisTemplate.delete(redisKey);
-	}
-
-	public boolean existsFcmToken(String fcmToken) {
-		String redisKey = "FcmToken:" + fcmToken;
-		return Boolean.TRUE.equals(redisTemplate.hasKey(redisKey));
-	}
-
 	public void addToBlacklist(String token) {
 		String redisKey = "Blacklist" + token;
 		redisTemplate.opsForValue()
