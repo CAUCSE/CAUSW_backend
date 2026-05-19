@@ -129,10 +129,7 @@ public class PostValidator {
 
 		// ENROLLED인 경우 재학생만 가능
 		if (readScope == BoardReadScope.ENROLLED) {
-			if (academicStatus == AcademicStatus.ENROLLED
-				|| academicStatus == AcademicStatus.LEAVE_OF_ABSENCE
-				|| academicStatus == AcademicStatus.SUSPEND
-				|| academicStatus == AcademicStatus.PROFESSOR) {
+			if (academicStatus == AcademicStatus.ENROLLED) {
 				return;
 			}
 			throw BoardErrorCode.BOARD_FORBIDDEN.toBaseException();

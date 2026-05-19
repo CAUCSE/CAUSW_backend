@@ -358,8 +358,6 @@ public class FormService {
 
 		if (form.getIsAllowedEnrolled())
 			allowedAcademicStatus.add(AcademicStatus.ENROLLED);
-		if (form.getIsAllowedLeaveOfAbsence())
-			allowedAcademicStatus.add(AcademicStatus.LEAVE_OF_ABSENCE);
 		if (form.getIsAllowedGraduation())
 			allowedAcademicStatus.add(AcademicStatus.GRADUATED);
 
@@ -393,20 +391,6 @@ public class FormService {
 							ErrorCode.NOT_ALLOWED_TO_REPLY_FORM,
 							MessageUtil.NOT_ALLOWED_TO_REPLY_FORM);
 					}
-				}
-			}
-
-			if (allowedAcademicStatus.contains(AcademicStatus.LEAVE_OF_ABSENCE)
-				&& writer.getAcademicStatus().equals(AcademicStatus.LEAVE_OF_ABSENCE)) {
-				EnumSet<RegisteredSemester> allowedRegisteredSemester = form.getLeaveOfAbsenceRegisteredSemester();
-				if (!allowedRegisteredSemester
-					.stream()
-					.map(RegisteredSemester::getSemester)
-					.collect(Collectors.toSet())
-					.contains(writer.getCurrentCompletedSemester())) {
-					throw new BadRequestException(
-						ErrorCode.NOT_ALLOWED_TO_REPLY_FORM,
-						MessageUtil.NOT_ALLOWED_TO_REPLY_FORM);
 				}
 			}
 		}
