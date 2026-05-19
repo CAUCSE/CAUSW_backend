@@ -70,7 +70,7 @@ log/
 /app-main/src/main/generated/net/causw/app/main/dto/util/dtoMapper/custom/*Impl.java
 
 ### Monitoring Data (Do not commit) ###
-monitoring/prometheus-data/
+monitoring/promethcopilot-instructions.mdeus-data/
 monitoring/grafana-data/
 monitoring/loki-data/
 monitoring/mysqld-exporter/.my.cnf
@@ -79,3 +79,4 @@ monitoring/mysqld-exporter/.my.cnf
 .bkit
 
 CLAUDE.md
+.github/copilot-instructions.md

@@ -3,12 +3,15 @@ package net.causw.app.main.domain.campus.schedule.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.never;
 import static org.mockito.BDDMockito.verify;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -22,6 +25,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import net.causw.app.main.domain.campus.schedule.entity.Schedule;
 import net.causw.app.main.domain.campus.schedule.entity.enums.ScheduleType;
 import net.causw.app.main.domain.campus.schedule.service.dto.ScheduleDto;
+import net.causw.app.main.domain.campus.schedule.service.implementation.ScheduleMaskingResolver;
 import net.causw.app.main.domain.campus.schedule.service.implementation.ScheduleReader;
 import net.causw.app.main.domain.campus.schedule.service.implementation.ScheduleWriter;
 import net.causw.app.main.domain.campus.schedule.util.ScheduleMapper;
@@ -41,6 +45,9 @@ public class ScheduleServiceTest {
 
 	@Mock
 	private ScheduleReader scheduleReader;
+
+	@Mock
+	private ScheduleMaskingResolver scheduleMaskingResolver;
 
 	private User mockUser;
 	private Schedule mockSchedule;
@@ -296,6 +303,60 @@ public class ScheduleServiceTest {
 				});
 
 			verify(scheduleReader).findByCondition(from, to, null);
+		}
+	}
+
+	@Nested
+	@DisplayName("마스킹 조회 위임 테스트")
+	class MaskingDelegationTest {
+
+		@Test
+		@DisplayName("findByConditionWithMasking은 ScheduleMaskingResolver에 권한 검증을 위임한다")
+		void findByConditionWithMaskingDelegatesToResolver() {
+			// given
+			LocalDateTime from = LocalDateTime.of(2026, 4, 1, 0, 0);
+			LocalDateTime to = LocalDateTime.of(2026, 4, 30, 23, 59);
+			List<ScheduleType> types = List.of(ScheduleType.ACADEMIC);
+			User viewer = ObjectFixtures.getCertifiedUserWithId("viewer-id");
+
+			Schedule schedule = Schedule.of(
+				"일정", ScheduleType.ACADEMIC,
+				LocalDateTime.of(2026, 4, 15, 0, 0),
+				LocalDateTime.of(2026, 4, 21, 23, 59),
+				mockUser, "post-1");
+			given(scheduleReader.findByCondition(from, to, types)).willReturn(List.of(schedule));
+			given(scheduleMaskingResolver.resolveReadablePostIds(anyList(), eq(viewer))).willReturn(Set.of("post-1"));
+			given(scheduleMaskingResolver.maskIfUnreadable(any(ScheduleDto.class), eq(Set.of("post-1"))))
+				.willAnswer(inv -> inv.getArgument(0));
+
+			// when
+			List<ScheduleDto> result = scheduleService.findByConditionWithMasking(from, to, types, viewer);
+
+			// then
+			assertThat(result).hasSize(1);
+			verify(scheduleMaskingResolver).resolveReadablePostIds(anyList(), eq(viewer));
+			verify(scheduleMaskingResolver).maskIfUnreadable(any(ScheduleDto.class), any());
+		}
+
+		@Test
+		@DisplayName("findByIdWithMasking은 ScheduleMaskingResolver에 권한 검증을 위임한다")
+		void findByIdWithMaskingDelegatesToResolver() {
+			// given
+			String scheduleId = "schedule-id";
+			User viewer = ObjectFixtures.getCertifiedUserWithId("viewer-id");
+
+			given(scheduleReader.findById(scheduleId)).willReturn(mockSchedule);
+			given(scheduleMaskingResolver.resolveReadablePostIds(anyList(), eq(viewer))).willReturn(Set.of());
+			given(scheduleMaskingResolver.maskIfUnreadable(any(ScheduleDto.class), any()))
+				.willAnswer(inv -> inv.getArgument(0));
+
+			// when
+			scheduleService.findByIdWithMasking(scheduleId, viewer);
+
+			// then
+			verify(scheduleReader).findById(scheduleId);
+			verify(scheduleMaskingResolver).resolveReadablePostIds(anyList(), eq(viewer));
+			verify(scheduleMaskingResolver).maskIfUnreadable(any(ScheduleDto.class), any());
 		}
 	}
 }

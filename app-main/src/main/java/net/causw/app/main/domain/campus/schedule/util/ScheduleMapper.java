@@ -30,4 +30,22 @@ public class ScheduleMapper {
 			.build();
 	}
 
+	/**
+	 * targetPostId만 null로 마스킹한 새 ScheduleDto를 반환합니다.
+	 *
+	 * @param dto 원본 일정 DTO
+	 * @return targetPostId가 null인 새 ScheduleDto
+	 */
+	public static ScheduleDto toWithoutTargetPost(ScheduleDto dto) {
+		return ScheduleDto.builder()
+			.id(dto.id())
+			.title(dto.title())
+			.type(dto.type())
+			.start(dto.start())
+			.end(dto.end())
+			.creator(dto.creator())
+			.targetPostId(null)
+			.build();
+	}
+
 }
