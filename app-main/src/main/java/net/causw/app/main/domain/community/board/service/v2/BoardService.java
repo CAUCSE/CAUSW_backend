@@ -1,6 +1,8 @@
 package net.causw.app.main.domain.community.board.service.v2;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,18 +32,23 @@ public class BoardService {
 	 * 특정 사용자가 읽기 가능한 게시판의 id, name 목록을 표시 순서대로 반환합니다.
 	 *
 	 * @param userId 사용자 ID
+	 * @param isTab 탭 노출용 필터링 여부
 	 * @return 읽기 가능한 게시판 목록 (id, name)
 	 */
-	public List<BoardReadableItemResult> getReadableBoards(String userId) {
+	public List<BoardReadableItemResult> getReadableBoards(String userId, boolean isTab) {
 		List<String> boardIds = boardConfigReader.getAccessibleBoardIdsByAcademicStatus(
-			userReader.findUserById(userId).getAcademicStatus());
+			userReader.findUserById(userId).getAcademicStatus(), isTab);
 		if (boardIds.isEmpty()) {
 			return List.of();
 		}
 
 		List<Board> boards = boardReader.findAllByIdsNotDeleted(boardIds);
-		return boards.stream()
-			.map(b -> new BoardReadableItemResult(b.getId(), b.getName()))
+
+		Map<String, Board> boardMap = boards.stream().collect(Collectors.toMap(Board::getId, b -> b));
+
+		return boardIds.stream()
+			.filter(boardMap::containsKey)
+			.map(id -> new BoardReadableItemResult(boardMap.get(id).getId(), boardMap.get(id).getName()))
 			.toList();
 	}
 

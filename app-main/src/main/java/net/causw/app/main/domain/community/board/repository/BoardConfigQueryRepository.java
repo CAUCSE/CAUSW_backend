@@ -59,16 +59,23 @@ public class BoardConfigQueryRepository {
 	 * VISIBLE이고 사용자의 ReadScope에 맞는 게시판만 조회합니다.
 	 *
 	 * @param boardReadScopes 조회할 boardReadScope 집합
+	 * @param isTab 탭 노출 여부
 	 * @return 게시판 ID 목록
 	 */
-	public List<String> findBoardsByReadScopes(Set<BoardReadScope> boardReadScopes) {
+	public List<String> findBoardsByReadScopes(Set<BoardReadScope> boardReadScopes, boolean isTab) {
 		QBoardConfig boardConfig = QBoardConfig.boardConfig;
+
+		BooleanExpression tabCondition = isTab ? boardConfig.isNotice.isTrue() : null;
 
 		return jpaQueryFactory
 			.select(boardConfig.boardId)
 			.from(boardConfig)
-			.where(visible(boardConfig)
-				.and(boardConfig.readScope.in(boardReadScopes)))
+			.where(
+				visible(boardConfig),
+				boardConfig.readScope.in(boardReadScopes),
+				tabCondition
+			)
+			.orderBy(boardConfig.displayOrder.asc())
 			.fetch();
 	}
 
