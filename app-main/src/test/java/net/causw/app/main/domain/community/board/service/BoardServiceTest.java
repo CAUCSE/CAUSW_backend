@@ -182,7 +182,8 @@ class BoardServiceTest {
 		void givenDuplicateBoardName_whenCreateBoard_thenThrowsException() {
 			// given
 			org.mockito.Mockito.doThrow(new BaseRunTimeV2Exception(BoardErrorCode.BOARD_NAME_DUPLICATE))
-				.when(boardValidator).validateForCreate(BOARD_PART.name());
+				.when(boardValidator)
+				.validateForCreate(BOARD_PART.name(), CONFIG_PART.isNotice(), CONFIG_PART.isAnonymous());
 
 			// when & then
 			assertThatThrownBy(() -> boardService.createBoard(BOARD_PART, CONFIG_PART, ADMIN_IDS))
@@ -207,7 +208,8 @@ class BoardServiceTest {
 			boardService.createBoard(BOARD_PART, CONFIG_PART, ADMIN_IDS);
 
 			// then
-			then(boardValidator).should().validateForCreate(BOARD_PART.name());
+			then(boardValidator).should().validateForCreate(BOARD_PART.name(), CONFIG_PART.isNotice(),
+				CONFIG_PART.isAnonymous());
 			then(boardWriter).should().save(any(Board.class));
 			then(boardConfigReader).should().getNextDisplayOrder();
 			then(boardConfigWriter).should().save(config);
@@ -238,7 +240,8 @@ class BoardServiceTest {
 		void givenDuplicateBoardName_whenUpdateBoard_thenThrowsException() {
 			// given
 			org.mockito.Mockito.doThrow(new BaseRunTimeV2Exception(BoardErrorCode.BOARD_NAME_DUPLICATE))
-				.when(boardValidator).validateForUpdate(BOARD_PART.name(), BOARD_ID);
+				.when(boardValidator)
+				.validateForUpdate(BOARD_PART.name(), BOARD_ID, CONFIG_PART.isNotice(), CONFIG_PART.isAnonymous());
 
 			// when & then
 			assertThatThrownBy(() -> boardService.updateBoard(BOARD_ID, BOARD_PART, CONFIG_PART, ADMIN_IDS))
@@ -261,7 +264,8 @@ class BoardServiceTest {
 			boardService.updateBoard(BOARD_ID, BOARD_PART, CONFIG_PART, ADMIN_IDS);
 
 			// then
-			then(boardValidator).should().validateForUpdate(BOARD_PART.name(), BOARD_ID);
+			then(boardValidator).should().validateForUpdate(BOARD_PART.name(), BOARD_ID, CONFIG_PART.isNotice(),
+				CONFIG_PART.isAnonymous());
 			then(boardReader).should().getById(BOARD_ID);
 			then(boardConfigReader).should().getByBoardId(BOARD_ID);
 			then(boardWriter).should().updateBoard(board, BOARD_PART);
