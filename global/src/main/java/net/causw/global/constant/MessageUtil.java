@@ -204,6 +204,7 @@ public class MessageUtil {
 	public static final String VOTE_END_NOT_ACCESSIBLE = "투표 종료 권한이 존재하지 않습니다.";
 	public static final String VOTE_RESTART_NOT_ACCESSIBLE = "투표 재시작 권한이 존재하지 않습니다.";
 	public static final String VOTE_START_NOT_ACCESSIBLE = "투표 시작 권한이 존재하지 않습니다.";
+	public static final String VOTE_OPTION_NOT_IN_VOTE = "해당 투표에 속하지 않는 옵션입니다.";
 
 	// UserInfo
 	public static final String USER_INFO_NOT_ACCESSIBLE = "해당 사용자의 상세정보에 접근할 수 없습니다.";
