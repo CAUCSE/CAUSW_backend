@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.community.post.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -59,6 +60,9 @@ public interface PostRepository extends JpaRepository<Post, String> {
 	// fetch join으로 Board까지 가져오기
 	@Query(value = "SELECT DISTINCT p FROM Post p JOIN FETCH p.board WHERE p.id = :id")
 	Optional<Post> findById(@Param("id") String id);
+
+	@Query("SELECT DISTINCT p FROM Post p JOIN FETCH p.board WHERE p.id IN :ids")
+	List<Post> findAllByIdInWithBoard(@Param("ids") Collection<String> ids);
 
 	@Query("SELECT COUNT(c) FROM Comment c WHERE c.post.id = :postId AND c.isDeleted = false")
 	Long countCommentsByPostId(@Param("postId") String postId);

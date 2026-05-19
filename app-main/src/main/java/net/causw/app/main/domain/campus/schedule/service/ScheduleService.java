@@ -3,6 +3,7 @@ package net.causw.app.main.domain.campus.schedule.service;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,14 +11,10 @@ import org.springframework.transaction.annotation.Transactional;
 import net.causw.app.main.domain.campus.schedule.entity.Schedule;
 import net.causw.app.main.domain.campus.schedule.entity.enums.ScheduleType;
 import net.causw.app.main.domain.campus.schedule.service.dto.ScheduleDto;
+import net.causw.app.main.domain.campus.schedule.service.implementation.ScheduleMaskingResolver;
 import net.causw.app.main.domain.campus.schedule.service.implementation.ScheduleReader;
 import net.causw.app.main.domain.campus.schedule.service.implementation.ScheduleWriter;
 import net.causw.app.main.domain.campus.schedule.util.ScheduleMapper;
-import net.causw.app.main.domain.community.board.entity.BoardConfig;
-import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
-import net.causw.app.main.domain.community.post.entity.Post;
-import net.causw.app.main.domain.community.post.service.v2.implementation.PostReader;
-import net.causw.app.main.domain.community.post.service.v2.util.PostValidator;
 import net.causw.app.main.domain.user.account.entity.user.User;
 
 import lombok.RequiredArgsConstructor;
@@ -27,8 +24,7 @@ import lombok.RequiredArgsConstructor;
 public class ScheduleService {
 	private final ScheduleWriter scheduleWriter;
 	private final ScheduleReader scheduleReader;
-	private final PostReader postReader;
-	private final BoardConfigReader boardConfigReader;
+	private final ScheduleMaskingResolver scheduleMaskingResolver;
 
 	@Transactional
 	public ScheduleDto save(ScheduleDto dto) {
@@ -69,9 +65,13 @@ public class ScheduleService {
 	@Transactional(readOnly = true)
 	public List<ScheduleDto> findByConditionWithMasking(LocalDateTime from, LocalDateTime to,
 		Collection<ScheduleType> types, User viewer) {
-		return scheduleReader.findByCondition(from, to, types).stream()
+		List<ScheduleDto> scheduleDtos = scheduleReader.findByCondition(from, to, types).stream()
 			.map(ScheduleMapper::to)
-			.map(dto -> maskTargetPostIdIfNeeded(dto, viewer))
+			.toList();
+		Set<String> readablePostIds = scheduleMaskingResolver.resolveReadablePostIds(scheduleDtos, viewer);
+
+		return scheduleDtos.stream()
+			.map(dto -> scheduleMaskingResolver.maskIfUnreadable(dto, readablePostIds))
 			.toList();
 	}
 
@@ -84,55 +84,8 @@ public class ScheduleService {
 	 */
 	@Transactional(readOnly = true)
 	public ScheduleDto findByIdWithMasking(String scheduleId, User viewer) {
-		return maskTargetPostIdIfNeeded(ScheduleMapper.to(scheduleReader.findById(scheduleId)), viewer);
-	}
-
-	/**
-	 * 사용자가 연결된 게시물을 읽을 수 없는 경우 targetPostId를 null로 마스킹합니다.
-	 */
-	private ScheduleDto maskTargetPostIdIfNeeded(ScheduleDto dto, User viewer) {
-		if (dto.targetPostId() == null) {
-			return dto;
-		}
-		if (!canViewerReadPost(viewer, dto.targetPostId())) {
-			return ScheduleDto.builder()
-				.id(dto.id())
-				.title(dto.title())
-				.type(dto.type())
-				.start(dto.start())
-				.end(dto.end())
-				.creator(dto.creator())
-				.targetPostId(null)
-				.build();
-		}
-		return dto;
-	}
-
-	/**
-	 * 사용자가 특정 게시글을 읽을 수 있는지 확인합니다.
-	 * post·board 도메인의 implementation 계층(PostReader, BoardConfigReader)과
-	 * PostValidator 유틸리티를 직접 사용하여 권한을 검증합니다.
-	 *
-	 * @param viewer 조회 요청 사용자 (null이면 false 반환)
-	 * @param postId 게시글 ID
-	 * @return 읽기 가능 여부
-	 */
-	private boolean canViewerReadPost(User viewer, String postId) {
-		if (viewer == null || postId == null) {
-			return false;
-		}
-		try {
-			Post post = postReader.findById(postId);
-			if (post.getIsDeleted()) {
-				return false;
-			}
-			BoardConfig boardConfig = boardConfigReader.getByBoardId(post.getBoard().getId());
-			List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
-			PostValidator.validateRead(viewer, boardConfig, boardAdminIds);
-			return true;
-		} catch (Exception e) {
-			return false;
-		}
+		ScheduleDto scheduleDto = ScheduleMapper.to(scheduleReader.findById(scheduleId));
+		Set<String> readablePostIds = scheduleMaskingResolver.resolveReadablePostIds(List.of(scheduleDto), viewer);
+		return scheduleMaskingResolver.maskIfUnreadable(scheduleDto, readablePostIds);
 	}
 }
-
