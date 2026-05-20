@@ -252,8 +252,11 @@ public class PostServiceTest {
 			ReflectionTestUtils.setField(mockPost, "createdAt", LocalDateTime.now());
 			ReflectionTestUtils.setField(mockPost, "updatedAt", LocalDateTime.now());
 
+			BoardConfig anonymousBoardConfig = BoardConfig.of(
+				boardId, true, BoardReadScope.BOTH, BoardWriteScope.ALL_USER, false, BoardVisibility.VISIBLE, 10);
+
 			given(boardReader.getById(boardId)).willReturn(board);
-			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(anonymousBoardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
 			given(postWriter.save(any(Post.class))).willReturn(mockPost);
 			given(postImageManager.uploadAndBuildForCreate(any(Post.class), isNull(), isNull()))
@@ -267,13 +270,13 @@ public class PostServiceTest {
 			verify(postWriter, times(1)).save(any(Post.class));
 		}
 
-		@DisplayName("익명 게시판에 비익명 게시글 작성 시 실패")
+		@DisplayName("비익명 게시판에 익명 게시글 작성 시 실패")
 		@Test
-		void createPost_shouldFail_whenNonAnonymousPostOnAnonymousBoard() {
+		void createPost_shouldFail_whenAnonymousPostOnNonAnonymousBoard() {
 			// given
-			BoardConfig anonymousBoardConfig = BoardConfig.of(
+			BoardConfig nonAnonymousBoardConfig = BoardConfig.of(
 				boardId,
-				true, // 익명 게시판
+				false, // 비익명 게시판
 				BoardReadScope.BOTH,
 				BoardWriteScope.ALL_USER,
 				false,
@@ -281,20 +284,20 @@ public class PostServiceTest {
 				10);
 
 			PostCreateCommand command = new PostCreateCommand(
-				"비익명 게시글",
+				"익명 게시글",
 				boardId,
-				false, // 비익명으로 작성 시도
+				true, // 익명으로 작성 시도
 				writer,
 				null,
 				null);
 
 			given(boardReader.getById(boardId)).willReturn(board);
-			given(boardConfigReader.getByBoardId(boardId)).willReturn(anonymousBoardConfig);
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(nonAnonymousBoardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
 
 			// when & then
 			assertThatThrownBy(() -> postService.create(command))
-				.hasMessageContaining("익명 게시판");
+				.hasMessageContaining("비익명 게시판에서 익명으로 작성할 수 없습니다.");
 
 			verify(postWriter, never()).save(any(Post.class));
 		}
@@ -475,9 +478,9 @@ public class PostServiceTest {
 			verify(postImageManager, times(1)).deleteOrphanedFiles(List.of("old-file-id"));
 		}
 
-		@DisplayName("익명 게시판에서 비익명으로 수정 시 실패")
+		@DisplayName("비익명 게시판에서 익명으로 수정 시 실패")
 		@Test
-		void updatePost_shouldFail_whenChangingToNonAnonymousOnAnonymousBoard() {
+		void updatePost_shouldFail_whenChangingToAnonymousOnNonAnonymousBoard() {
 			// given
 			Post anonymousPost = Post.of(null, "익명 게시글", updater, true, board, List.of());
 			ReflectionTestUtils.setField(anonymousPost, "id", postId);
@@ -487,28 +490,28 @@ public class PostServiceTest {
 			PostUpdateCommand command = new PostUpdateCommand(
 				postId,
 				"수정된 내용",
-				false, // 비익명으로 변경 시도
+				true, // 익명으로 변경 시도
 				updater,
 				null,
 				null);
 
 			List<String> boardAdminIds = List.of("admin-id");
-			BoardConfig anonymousBoardConfig = BoardConfig.of(
+			BoardConfig nonAnonymousBoardConfig = BoardConfig.of(
 				boardId,
-				true, // 익명 게시판
+				false, // 비익명 게시판
 				BoardReadScope.BOTH,
 				BoardWriteScope.ALL_USER,
 				false,
 				BoardVisibility.VISIBLE,
 				10);
 
-			given(postReader.findById(postId)).willReturn(anonymousPost);
-			given(boardConfigReader.getByBoardId(boardId)).willReturn(anonymousBoardConfig);
+			given(postReader.findById(postId)).willReturn(post);
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(nonAnonymousBoardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
 
 			// when & then
 			assertThatThrownBy(() -> postService.update(command))
-				.hasMessageContaining("익명 게시판");
+				.hasMessageContaining("비익명 게시판에서 익명으로 작성할 수 없습니다.");
 
 			verify(postWriter, never()).updateContentAndImages(any(), any(), anyList());
 		}
@@ -536,6 +539,9 @@ public class PostServiceTest {
 				BoardVisibility.VISIBLE,
 				10);
 			Mockito.lenient().when(blockReader.findBlockeeUserIdsByBlocker(viewer)).thenReturn(Set.of());
+
+			Mockito.lenient().when(boardConfigReader.getBoardConfigMapByBoardIds(anyList()))
+				.thenReturn(Map.of(boardId, boardConfig));
 		}
 
 		@DisplayName("차단한 사용자의 게시글은 목록 조회 시 제외")
@@ -599,7 +605,6 @@ public class PostServiceTest {
 
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
-			given(boardConfigReader.getAdminIdSetMapByBoardIds(anySet())).willReturn(Map.of());
 			given(postReader.findPostsWithCursor(anyList(), anySet(), eq(null), eq(null), eq(20), eq(null)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
@@ -692,7 +697,8 @@ public class PostServiceTest {
 			given(boardConfigReader.getByBoardId(boardId2)).willReturn(boardConfig2);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId2)).willReturn(boardAdminIds);
-			given(boardConfigReader.getAdminIdSetMapByBoardIds(anySet())).willReturn(Map.of());
+			given(boardConfigReader.getBoardConfigMapByBoardIds(anyList()))
+				.willReturn(Map.of(boardId, boardConfig, boardId2, boardConfig2));
 			given(postReader.findPostsWithCursor(anyList(), anySet(), eq(null), eq(null), eq(20), eq(null)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
@@ -757,7 +763,6 @@ public class PostServiceTest {
 
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
-			given(boardConfigReader.getAdminIdSetMapByBoardIds(anySet())).willReturn(Map.of());
 			given(postReader.findPostsWithCursor(
 				anyList(),
 				anySet(),
@@ -827,7 +832,6 @@ public class PostServiceTest {
 
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
-			given(boardConfigReader.getAdminIdSetMapByBoardIds(anySet())).willReturn(Map.of());
 			given(postReader.findPostsWithCursor(anyList(), anySet(), eq(null), eq(null), eq(20), eq(keyword)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
@@ -884,7 +888,6 @@ public class PostServiceTest {
 
 			given(boardConfigReader.getAccessibleBoardIdsByAcademicStatus(AcademicStatus.ENROLLED))
 				.willReturn(accessibleBoardIds);
-			given(boardConfigReader.getAdminIdSetMapByBoardIds(anySet())).willReturn(Map.of());
 			given(
 				postReader.findPostsWithCursor(eq(accessibleBoardIds), anySet(), eq(null), eq(null), eq(20), eq(null)))
 				.willReturn(slice);
@@ -1013,7 +1016,6 @@ public class PostServiceTest {
 
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
-			given(boardConfigReader.getAdminIdSetMapByBoardIds(anySet())).willReturn(Map.of());
 			given(postReader.findPostsWithCursor(anyList(), anySet(), eq(null), eq(null), eq(20), eq(null)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
@@ -1095,7 +1097,6 @@ public class PostServiceTest {
 
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
-			given(boardConfigReader.getAdminIdSetMapByBoardIds(anySet())).willReturn(Map.of());
 			given(postReader.findPostsWithCursor(anyList(), anySet(), eq(null), eq(null), eq(20), eq(null)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
