@@ -21,4 +21,17 @@ public interface FcmTokenRepository extends JpaRepository<FcmToken, String> {
 	 * @param user 대상 유저
 	 */
 	void deleteAllByUser(User user);
+
+	/**
+	 * 특정 user의 fcm 토큰 삭제
+	 * @param userId 대상 유저 ID
+	 * @param tokenValue 삭제할 fcm 토큰 value
+	 */
+	void deleteByUser_IdAndTokenValue(String userId, String tokenValue);
+
+	/**
+	 * 특정 user의 전체 fcm 토큰 삭제
+	 * @param userId 대상 유저 ID
+	 */
+	void deleteAllByUser_Id(String userId);
 }
