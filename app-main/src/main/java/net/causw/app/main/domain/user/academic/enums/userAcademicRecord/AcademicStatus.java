@@ -40,7 +40,8 @@ public enum AcademicStatus {
 		for (AcademicStatus status : AcademicStatus.values()) {
 			if (status.name().equalsIgnoreCase(academicStatus)) {
 				if (DEPRECATED_SET.contains(status)) {
-					throw UserErrorCode.INVALID_ACADEMIC_STATUS.toBaseException();
+					log.warn("Deprecated academic status '{}' received", academicStatus);
+					return ENROLLED;
 				}
 				return status;
 			}
