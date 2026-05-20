@@ -3,7 +3,6 @@ package net.causw.app.main.shared.infra.redis;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ScanOptions;
@@ -105,7 +104,7 @@ public class RedisUtils {
 	 * @return 인덱스에 추가된 refresh token 개수
 	 */
 	public int migrateRefreshTokenUserIndex() {
-		if (Boolean.TRUE.equals(redisTemplate.hasKey(REFRESH_TOKEN_USER_INDEX_MIGRATION_KEY))) {
+		if (redisTemplate.hasKey(REFRESH_TOKEN_USER_INDEX_MIGRATION_KEY)) {
 			return 0;
 		}
 
@@ -120,35 +119,27 @@ public class RedisUtils {
 			.count(1000)
 			.build();
 
-		Integer result = redisTemplate.execute((RedisConnection connection) -> {
-			int migratedCount = 0;
-			try (Cursor<byte[]> cursor = connection.scan(scanOptions)) {
-				while (cursor.hasNext()) {
-					String redisKey = deserializeRedisKey(cursor.next());
-					if (redisKey == null || REFRESH_TOKEN_USER_INDEX_MIGRATION_KEY.equals(redisKey)) {
-						continue;
-					}
-
-					Object userId = redisTemplate.opsForValue().get(redisKey);
-					if (!(userId instanceof String userIdValue) || userIdValue.isBlank()) {
-						continue;
-					}
-
-					String refreshToken = redisKey.substring(REFRESH_TOKEN_PREFIX.length());
-					String userRefreshTokensKey = USER_REFRESH_TOKENS_PREFIX + userIdValue;
-					redisTemplate.opsForSet().add(userRefreshTokensKey, refreshToken);
-					syncUserRefreshTokenIndexTtl(redisKey, userRefreshTokensKey);
-					migratedCount++;
+		int migratedCount = 0;
+		try (Cursor<String> cursor = redisTemplate.scan(scanOptions)) {
+			while (cursor.hasNext()) {
+				String redisKey = cursor.next();
+				if (REFRESH_TOKEN_USER_INDEX_MIGRATION_KEY.equals(redisKey)) {
+					continue;
 				}
-			}
-			return migratedCount;
-		});
-		return result == null ? 0 : result;
-	}
 
-	private String deserializeRedisKey(byte[] rawKey) {
-		Object key = redisTemplate.getKeySerializer().deserialize(rawKey);
-		return key == null ? null : key.toString();
+				Object userId = redisTemplate.opsForValue().get(redisKey);
+				if (!(userId instanceof String userIdValue) || userIdValue.isBlank()) {
+					continue;
+				}
+
+				String refreshToken = redisKey.substring(REFRESH_TOKEN_PREFIX.length());
+				String userRefreshTokensKey = USER_REFRESH_TOKENS_PREFIX + userIdValue;
+				redisTemplate.opsForSet().add(userRefreshTokensKey, refreshToken);
+				syncUserRefreshTokenIndexTtl(redisKey, userRefreshTokensKey);
+				migratedCount++;
+			}
+		}
+		return migratedCount;
 	}
 
 	private void syncUserRefreshTokenIndexTtl(String refreshTokenKey, String userRefreshTokensKey) {
@@ -161,11 +152,6 @@ public class RedisUtils {
 		if (indexTtl == null || indexTtl < refreshTokenTtl) {
 			redisTemplate.expire(userRefreshTokensKey, refreshTokenTtl, TimeUnit.MILLISECONDS);
 		}
-	}
-
-	public boolean existsRefreshToken(String key) {
-		String redisKey = REFRESH_TOKEN_PREFIX + key;
-		return Boolean.TRUE.equals(redisTemplate.hasKey(redisKey));
 	}
 
 	public void addToBlacklist(String token) {
