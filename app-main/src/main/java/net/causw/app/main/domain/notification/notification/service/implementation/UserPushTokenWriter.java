@@ -67,7 +67,6 @@ public class UserPushTokenWriter {
 			//			throw AuthErrorCode.NO_PERMISSION_FOR_RESOURCE.toBaseException();
 			log.info("[FCM 토큰 삭제 실패] 이미 삭제된 FCM 토큰입니다.");
 		}
-		fcmTokenRepository.deleteByUser_IdAndTokenValue(user.getId(), fcmToken);
 	}
 
 	/**
@@ -78,7 +77,6 @@ public class UserPushTokenWriter {
 	 * @param user 사용자 엔티티
 	 */
 	public void clearFcmTokens(User user) {
-		user.getFcmTokens().forEach(user::removeFcmToken);
-		fcmTokenRepository.deleteAllByUser_Id(user.getId());
+		user.clearFcmTokens();
 	}
 }
