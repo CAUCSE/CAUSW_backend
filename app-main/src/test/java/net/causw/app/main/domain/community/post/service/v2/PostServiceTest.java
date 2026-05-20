@@ -1229,7 +1229,7 @@ public class PostServiceTest {
 			assertAll(
 				() -> assertThat(result).isNotNull(),
 				() -> assertThat(result.id()).isEqualTo(postId),
-				() -> assertThat(result.updatable()).isTrue(),
+				() -> assertThat(result.updatable()).isFalse(),
 				() -> assertThat(result.deletable()).isTrue());
 			verify(blockReader, never()).existsByBlockerAndBlocked(any(), any());
 		}
