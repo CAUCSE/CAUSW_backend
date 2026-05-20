@@ -21,7 +21,6 @@ public class RedisUtils {
 	// 사용자별 refresh token 목록 key prefix
 	private static final String USER_REFRESH_TOKENS_PREFIX = "UserRefreshTokens:";
 	private static final String REFRESH_TOKEN_USER_INDEX_MIGRATION_KEY = "Migration:RefreshTokenUserIndex:v1";
-	private static final String FCM_TOKEN_PREFIX = "FcmToken:";
 	private static final String BLACKLIST_PREFIX = "Blacklist";
 
 	private final RedisTemplate<String, Object> redisTemplate;
@@ -31,11 +30,7 @@ public class RedisUtils {
 	 * Key : RefreshToken:{RefreshToken 값}
 	 * Value: {User ID}
 	 *
-	 * 2. FcmToken
-	 * Key : FcmToken:{FcmToken 값}
-	 * Value: {RefreshToken 값}
-	 *
-	 * 3. Blacklist
+	 * 2. Blacklist
 	 * Key: Blacklist:{AccessToken 값}
 	 * Value: "BLACKLISTED"
 	 */
@@ -170,26 +165,6 @@ public class RedisUtils {
 
 	public boolean existsRefreshToken(String key) {
 		String redisKey = REFRESH_TOKEN_PREFIX + key;
-		return Boolean.TRUE.equals(redisTemplate.hasKey(redisKey));
-	}
-
-	public void setFcmTokenData(String fcmToken, String refreshToken, Long expiredTime) {
-		String redisKey = FCM_TOKEN_PREFIX + fcmToken;
-		redisTemplate.opsForValue().set(redisKey, refreshToken, expiredTime, TimeUnit.MILLISECONDS);
-	}
-
-	public String getFcmTokenData(String fcmToken) {
-		String redisKey = FCM_TOKEN_PREFIX + fcmToken;
-		return (String)redisTemplate.opsForValue().get(redisKey);
-	}
-
-	public void deleteFcmTokenData(String fcmToken) {
-		String redisKey = FCM_TOKEN_PREFIX + fcmToken;
-		redisTemplate.delete(redisKey);
-	}
-
-	public boolean existsFcmToken(String fcmToken) {
-		String redisKey = FCM_TOKEN_PREFIX + fcmToken;
 		return Boolean.TRUE.equals(redisTemplate.hasKey(redisKey));
 	}
 
