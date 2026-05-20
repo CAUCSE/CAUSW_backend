@@ -18,6 +18,8 @@ public record BoardConfigEditResponse(
 	@Schema(description = "공지 게시판 여부", example = "false") Boolean isNotice,
 	@Schema(description = "게시판 노출 여부", example = "VISIBLE") BoardVisibility visibility,
 	@Schema(description = "게시판 표시 순서", example = "1") Integer displayOrder,
+	@Schema(description = "공지 작성자 닉네임 (마스킹용)", example = "게시판 관리자") String officialNickname,
+	@Schema(description = "공지 작성자 프로필 이미지 URL (마스킹용)") String officialProfileImageUrl,
 	@Schema(description = "게시판 관리자 목록") List<AdminResponse> admins) {
 	public record AdminResponse(
 		@Schema(description = "관리자 고유 아이디", example = "uuid-1234-5678-9012-abcdefg") String id,

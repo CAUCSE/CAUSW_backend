@@ -16,5 +16,7 @@ public record BoardConfigPart(
 	BoardReadScope readScope,
 	BoardWriteScope writeScope,
 	boolean isNotice,
-	BoardVisibility visibility) {
+	BoardVisibility visibility,
+	String officialNickname,
+	String officialProfileImageUrl) {
 }

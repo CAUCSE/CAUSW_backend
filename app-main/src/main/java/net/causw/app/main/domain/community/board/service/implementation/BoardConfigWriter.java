@@ -55,7 +55,9 @@ public class BoardConfigWriter {
 			config.readScope(),
 			config.writeScope(),
 			config.isNotice(),
-			config.visibility());
+			config.visibility(),
+			config.officialNickname(),
+			config.officialProfileImageUrl());
 
 		boardConfigRepository.save(boardConfig);
 	}

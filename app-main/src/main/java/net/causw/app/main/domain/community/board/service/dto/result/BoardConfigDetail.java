@@ -24,5 +24,7 @@ public record BoardConfigDetail(
 	Boolean isNotice,
 	BoardVisibility visibility,
 	Integer displayOrder,
+	String officialNickname,
+	String officialProfileImageUrl,
 	List<BoardConfigAdmin> admins) {
 }

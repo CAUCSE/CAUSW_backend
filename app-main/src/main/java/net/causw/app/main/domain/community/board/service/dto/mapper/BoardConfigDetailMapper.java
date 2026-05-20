@@ -22,6 +22,8 @@ public interface BoardConfigDetailMapper {
 	@Mapping(source = "boardConfig.notice", target = "isNotice")
 	@Mapping(source = "boardConfig.visibility", target = "visibility")
 	@Mapping(source = "boardConfig.displayOrder", target = "displayOrder")
+	@Mapping(source = "boardConfig.officialNickname", target = "officialNickname")
+	@Mapping(source = "boardConfig.officialProfileImageUrl", target = "officialProfileImageUrl")
 	@Mapping(source = "admins", target = "admins")
 	BoardConfigDetail fromEntity(Board board, BoardConfig boardConfig, List<User> admins);
 }
