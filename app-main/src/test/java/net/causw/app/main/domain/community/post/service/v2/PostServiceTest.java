@@ -6,7 +6,6 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
 import static org.mockito.BDDMockito.times;
 import static org.mockito.BDDMockito.verify;
-import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -134,7 +133,9 @@ public class PostServiceTest {
 				BoardWriteScope.ALL_USER,
 				false,
 				BoardVisibility.VISIBLE,
-				10);
+				10,
+				null,
+				null);
 			boardAdminIds = List.of("admin-id");
 		}
 
@@ -253,7 +254,8 @@ public class PostServiceTest {
 			ReflectionTestUtils.setField(mockPost, "updatedAt", LocalDateTime.now());
 
 			BoardConfig anonymousBoardConfig = BoardConfig.of(
-				boardId, true, BoardReadScope.BOTH, BoardWriteScope.ALL_USER, false, BoardVisibility.VISIBLE, 10);
+				boardId, true, BoardReadScope.BOTH, BoardWriteScope.ALL_USER, false, BoardVisibility.VISIBLE, 10, null,
+				null);
 
 			given(boardReader.getById(boardId)).willReturn(board);
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(anonymousBoardConfig);
@@ -281,7 +283,9 @@ public class PostServiceTest {
 				BoardWriteScope.ALL_USER,
 				false,
 				BoardVisibility.VISIBLE,
-				10);
+				10,
+				null,
+				null);
 
 			PostCreateCommand command = new PostCreateCommand(
 				"익명 게시글",
@@ -400,7 +404,9 @@ public class PostServiceTest {
 				BoardWriteScope.ALL_USER,
 				false,
 				BoardVisibility.VISIBLE,
-				10);
+				10,
+				null,
+				null);
 
 			given(postReader.findById(postId)).willReturn(post);
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
@@ -459,7 +465,9 @@ public class PostServiceTest {
 				BoardWriteScope.ALL_USER,
 				false,
 				BoardVisibility.VISIBLE,
-				10);
+				10,
+				null,
+				null);
 
 			given(postReader.findById(postId)).willReturn(post);
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
@@ -503,7 +511,9 @@ public class PostServiceTest {
 				BoardWriteScope.ALL_USER,
 				false,
 				BoardVisibility.VISIBLE,
-				10);
+				10,
+				null,
+				null);
 
 			given(postReader.findById(postId)).willReturn(post);
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(nonAnonymousBoardConfig);
@@ -537,7 +547,9 @@ public class PostServiceTest {
 				BoardWriteScope.ALL_USER,
 				false,
 				BoardVisibility.VISIBLE,
-				10);
+				10,
+				null,
+				null);
 			Mockito.lenient().when(blockReader.findBlockeeUserIdsByBlocker(viewer)).thenReturn(Set.of());
 
 			Mockito.lenient().when(boardConfigReader.getBoardConfigMapByBoardIds(anyList()))
@@ -640,7 +652,9 @@ public class PostServiceTest {
 				BoardWriteScope.ALL_USER,
 				false,
 				BoardVisibility.VISIBLE,
-				10);
+				10,
+				null,
+				null);
 
 			PostCursorResult postCursorResult1 = new PostCursorResult(
 				"post-id-1",
@@ -938,7 +952,9 @@ public class PostServiceTest {
 				BoardWriteScope.ALL_USER,
 				false,
 				BoardVisibility.HIDDEN,
-				10);
+				10,
+				null,
+				null);
 
 			PostListQuery query = PostListQuery.of(viewer, List.of(boardId), null, 20, null);
 			List<String> boardAdminIds = List.of("admin-id");
@@ -1155,7 +1171,9 @@ public class PostServiceTest {
 				BoardWriteScope.ALL_USER,
 				false,
 				BoardVisibility.VISIBLE,
-				10);
+				10,
+				null,
+				null);
 			Mockito.lenient().when(blockReader.existsByBlockerAndBlocked(any(), any())).thenReturn(false);
 		}
 
@@ -1387,7 +1405,9 @@ public class PostServiceTest {
 				BoardWriteScope.ALL_USER,
 				false,
 				BoardVisibility.HIDDEN,
-				10);
+				10,
+				null,
+				null);
 
 			PostDetailQuery query = new PostDetailQuery(postId, viewer);
 			List<String> boardAdminIds = List.of("admin-id");

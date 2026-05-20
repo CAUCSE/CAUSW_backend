@@ -85,7 +85,7 @@ class BoardServiceTest {
 			Board board = ObjectFixtures.getBoardWithId("board-1");
 			List<Board> boards = List.of(board);
 			BoardConfig config = BoardConfig.of("board-1", false, BoardReadScope.BOTH, BoardWriteScope.ALL_USER,
-				false, BoardVisibility.VISIBLE, 10);
+				false, BoardVisibility.VISIBLE, 10, null, null);
 			Map<String, BoardConfig> configMap = Map.of("board-1", config);
 			BoardConfigSummary summary = BoardConfigSummary.builder()
 				.no(1L)
@@ -126,7 +126,7 @@ class BoardServiceTest {
 			String boardId = "board-1";
 			Board board = ObjectFixtures.getBoardWithId(boardId);
 			BoardConfig boardConfig = BoardConfig.of(boardId, false, BoardReadScope.BOTH, BoardWriteScope.ALL_USER,
-				false, BoardVisibility.VISIBLE, 10);
+				false, BoardVisibility.VISIBLE, 10, null, null);
 			List<String> adminIds = List.of("user-1");
 			List<User> adminUsers = List.of(ObjectFixtures.getCertifiedUser());
 			BoardConfigDetail detail = BoardConfigDetail.builder()
@@ -198,7 +198,7 @@ class BoardServiceTest {
 			// given
 			Board savedBoard = ObjectFixtures.getBoardV2WithId("board-1");
 			BoardConfig config = BoardConfig.of("board-1", false, BoardReadScope.BOTH, BoardWriteScope.ALL_USER,
-				false, BoardVisibility.VISIBLE, 10);
+				false, BoardVisibility.VISIBLE, 10, null, null);
 			given(boardPartMapper.toEntity(BOARD_PART)).willReturn(savedBoard);
 			given(boardWriter.save(any(Board.class))).willReturn(savedBoard);
 			given(boardConfigReader.getNextDisplayOrder()).willReturn(10);
@@ -256,7 +256,7 @@ class BoardServiceTest {
 			// given
 			Board board = ObjectFixtures.getBoardWithId(BOARD_ID);
 			BoardConfig boardConfig = BoardConfig.of(BOARD_ID, false, BoardReadScope.BOTH, BoardWriteScope.ALL_USER,
-				false, BoardVisibility.VISIBLE, 10);
+				false, BoardVisibility.VISIBLE, 10, null, null);
 			given(boardReader.getById(BOARD_ID)).willReturn(board);
 			given(boardConfigReader.getByBoardId(BOARD_ID)).willReturn(boardConfig);
 
