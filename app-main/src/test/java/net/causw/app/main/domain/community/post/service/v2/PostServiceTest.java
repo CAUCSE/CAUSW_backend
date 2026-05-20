@@ -1317,7 +1317,7 @@ public class PostServiceTest {
 			// then
 			assertAll(
 				() -> assertThat(result.isOwner()).isFalse(),
-				() -> assertThat(result.updatable()).isTrue(),
+				() -> assertThat(result.updatable()).isFalse(), // 게시판 관리자라도 수정 불가
 				() -> assertThat(result.deletable()).isTrue());
 		}
 

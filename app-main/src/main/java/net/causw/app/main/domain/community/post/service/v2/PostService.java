@@ -38,6 +38,7 @@ import net.causw.app.main.domain.community.reaction.service.implementation.Favor
 import net.causw.app.main.domain.community.reaction.service.implementation.LikePostReader;
 import net.causw.app.main.domain.notification.notification.event.OfficialPostEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.relation.service.v2.implementation.BlockReader;
 import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
 import net.causw.global.constant.StaticValue;
@@ -188,7 +189,7 @@ public class PostService {
 			return PostListResult.of(List.of(), null);
 		}
 
-		// 뷰어가 차단한 사용자 조회 
+		// 뷰어가 차단한 사용자 조회
 		Set<String> blockedUserIds = userBlockReader.findBlockeeUserIdsByBlocker(viewer);
 
 		// 게시글 조회 (Slice 사용)
@@ -276,9 +277,9 @@ public class PostService {
 		// 게시글 작성자 여부
 		boolean isOwner = post.getWriter().getId().equals(viewer.getId());
 
-		// 수정/삭제 가능 여부 (작성자 또는 게시판 관리자)
-		boolean updatable = isOwner || boardAdminIds.contains(viewer.getId());
-		boolean deletable = isOwner || boardAdminIds.contains(viewer.getId());
+		// 수정/삭제 가능 여부 (수정은 작성자만, 삭제는 작성자 + 게시판 관리자 + 시스템 관리자)
+		boolean updatable = isOwner;
+		boolean deletable = isOwner || boardAdminIds.contains(viewer.getId()) || viewer.getRoles().contains(Role.ADMIN);
 
 		// 공식계정 여부
 		boolean isOfficial = boardConfig.isNotice() || post.getIsCrawled();
