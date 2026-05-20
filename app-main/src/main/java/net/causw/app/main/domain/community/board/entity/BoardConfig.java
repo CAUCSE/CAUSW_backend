@@ -60,7 +60,7 @@ public class BoardConfig extends AuditableEntity {
 	private String officialProfileImageUrl;
 
 	public static BoardConfig of(String boardId, boolean isAnonymous, BoardReadScope readScope,
-		BoardWriteScope writeScope, boolean isNotice, BoardVisibility visibility, int displayOrder) {
+		BoardWriteScope writeScope, boolean isNotice, BoardVisibility visibility, int displayOrder, String officialNickname, String officialProfileImageUrl) {
 		return BoardConfig.builder()
 			.boardId(boardId)
 			.isAnonymous(isAnonymous)
@@ -69,16 +69,20 @@ public class BoardConfig extends AuditableEntity {
 			.isNotice(isNotice)
 			.visibility(visibility)
 			.displayOrder(displayOrder)
+			.officialNickname(officialNickname)
+			.officialProfileImageUrl(officialProfileImageUrl)
 			.build();
 	}
 
 	public void update(boolean isAnonymous, BoardReadScope readScope, BoardWriteScope writeScope,
-		boolean isNotice, BoardVisibility visibility) {
+		boolean isNotice, BoardVisibility visibility, String officialNickname, String officialProfileImageUrl) {
 		this.isAnonymous = isAnonymous;
 		this.readScope = readScope;
 		this.writeScope = writeScope;
 		this.isNotice = isNotice;
 		this.visibility = visibility;
+		this.officialNickname = officialNickname;
+		this.officialProfileImageUrl = officialProfileImageUrl;
 	}
 
 	public void updateDisplayOrder(int displayOrder) {
