@@ -60,7 +60,8 @@ public class BoardConfig extends AuditableEntity {
 	private String officialProfileImageUrl;
 
 	public static BoardConfig of(String boardId, boolean isAnonymous, BoardReadScope readScope,
-		BoardWriteScope writeScope, boolean isNotice, BoardVisibility visibility, int displayOrder, String officialNickname, String officialProfileImageUrl) {
+		BoardWriteScope writeScope, boolean isNotice, BoardVisibility visibility, int displayOrder,
+		String officialNickname, String officialProfileImageUrl) {
 		return BoardConfig.builder()
 			.boardId(boardId)
 			.isAnonymous(isAnonymous)
