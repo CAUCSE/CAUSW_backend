@@ -40,7 +40,7 @@ class UserAccountCleanupWriterTest {
 
 		@Test
 		@DisplayName("성공: 토큰 무효화와 FCM 토큰 전체 삭제를 수행한다")
-		void success() {
+		void givenUser_whenCleanupForWithdrawal_thenTokensInvalidatedAndCleared() {
 			// given
 			User user = mock(User.class);
 			String userId = "user-id";
@@ -67,7 +67,7 @@ class UserAccountCleanupWriterTest {
 
 		@Test
 		@DisplayName("성공: FCM 토큰 전체 삭제를 수행한다")
-		void success() {
+		void givenUser_whenCleanupForDrop_thenTokensCleared() {
 			// given
 			User user = mock(User.class);
 			String userId = "user-id";
