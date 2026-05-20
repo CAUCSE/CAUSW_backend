@@ -30,7 +30,6 @@ public enum AcademicStatus {
 	PROFESSOR("교수"); // 교수
 
 	private final String value;
-	@Deprecated
 	private static final EnumSet<AcademicStatus> DEPRECATED_SET = EnumSet.of(
 		LEAVE_OF_ABSENCE, DROPPED_OUT, SUSPEND, EXPEL, PROFESSOR);
 
