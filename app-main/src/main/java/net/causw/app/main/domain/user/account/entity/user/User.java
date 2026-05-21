@@ -389,6 +389,11 @@ public class User extends BaseEntity {
 		return fcmTokenEntities.removeIf(t -> t.getTokenValue().equals(targetToken));
 	}
 
+	// FCM 토큰 전체 삭제
+	public void clearFcmTokens() {
+		this.fcmTokenEntities.clear();
+	}
+
 	public boolean isOnlySocialUser() {
 		return this.password == null;
 	}

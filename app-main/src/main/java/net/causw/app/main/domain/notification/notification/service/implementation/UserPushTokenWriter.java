@@ -34,7 +34,7 @@ public class UserPushTokenWriter {
 	private final FcmTokenRepository fcmTokenRepository;
 
 	/**
-	 * 새로운 FCM 토큰을 등록하고 Redis에 메타데이터를 저장합니다.
+	 * 새로운 FCM 토큰을 DB에 저장합니다.
 	 * <p>
 	 * 동일 토큰이 다른 사용자에게 등록되어 있으면 먼저 제거한 뒤 현재 사용자에게 등록합니다.
 	 * 이미 현재 사용자에게 등록된 토큰이라면 중복 저장하지 않습니다.
@@ -57,7 +57,7 @@ public class UserPushTokenWriter {
 	/**
 	 * 특정 기기의 FCM 토큰을 삭제합니다.
 	 * <p>
-	 * 로그아웃 시 호출되며, DB와 Redis 양쪽에서 해당 토큰 데이터를 제거합니다.
+	 * 로그아웃 시 호출되며, DB에서 해당 토큰 데이터를 제거합니다.
 	 *
 	 * @param user     사용자 엔티티
 	 * @param fcmToken 삭제할 FCM 토큰
@@ -77,6 +77,6 @@ public class UserPushTokenWriter {
 	 * @param user 사용자 엔티티
 	 */
 	public void clearFcmTokens(User user) {
-		fcmTokenRepository.deleteAllByUser(user);
+		user.clearFcmTokens();
 	}
 }
