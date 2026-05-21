@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.community.post.service.v2.util;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -105,7 +106,7 @@ public class PostValidator {
 		}
 	}
 
-	public static void validateRead(User viewer, BoardConfig boardConfig, List<String> boardAdminIds) {
+	public static void validateRead(User viewer, BoardConfig boardConfig, Collection<String> boardAdminIds) {
 		// 게시판 관리자는 무조건 조회 가능
 		if (boardAdminIds.contains(viewer.getId())) {
 			return;
@@ -129,10 +130,7 @@ public class PostValidator {
 
 		// ENROLLED인 경우 재학생만 가능
 		if (readScope == BoardReadScope.ENROLLED) {
-			if (academicStatus == AcademicStatus.ENROLLED
-				|| academicStatus == AcademicStatus.LEAVE_OF_ABSENCE
-				|| academicStatus == AcademicStatus.SUSPEND
-				|| academicStatus == AcademicStatus.PROFESSOR) {
+			if (academicStatus == AcademicStatus.ENROLLED) {
 				return;
 			}
 			throw BoardErrorCode.BOARD_FORBIDDEN.toBaseException();

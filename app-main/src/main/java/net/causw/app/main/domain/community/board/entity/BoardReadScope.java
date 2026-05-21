@@ -30,11 +30,7 @@ public enum BoardReadScope {
 	 */
 	public List<AcademicStatus> getTargetAcademicStatuses() {
 		return switch (this) {
-			case ENROLLED -> List.of(
-				AcademicStatus.ENROLLED,
-				AcademicStatus.LEAVE_OF_ABSENCE,
-				AcademicStatus.SUSPEND,
-				AcademicStatus.PROFESSOR);
+			case ENROLLED -> List.of(AcademicStatus.ENROLLED);
 			case GRADUATED -> List.of(AcademicStatus.GRADUATED);
 			case BOTH -> List.of(); // 빈 리스트 = 모든 학적 허용
 		};
@@ -51,7 +47,7 @@ public enum BoardReadScope {
 			return List.of(BOTH);
 		}
 		return switch (academicStatus) {
-			case ENROLLED, LEAVE_OF_ABSENCE, SUSPEND, PROFESSOR -> List.of(BOTH, ENROLLED);
+			case ENROLLED -> List.of(BOTH, ENROLLED);
 			case GRADUATED -> List.of(BOTH, GRADUATED);
 			default -> List.of(BOTH);
 		};

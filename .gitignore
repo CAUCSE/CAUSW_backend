@@ -79,3 +79,4 @@ monitoring/mysqld-exporter/.my.cnf
 .bkit
 
 CLAUDE.md
+.github/copilot-instructions.md
