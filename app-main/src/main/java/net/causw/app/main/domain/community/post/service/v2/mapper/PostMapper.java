@@ -64,10 +64,11 @@ public class PostMapper {
 	 * PostCursorResult를 PostListResult.PostItem으로 변환합니다.
 	 */
 	public static PostListResult.PostItem toPostListItem(PostCursorResult result, List<String> imageUrls,
-		boolean isPostLike, boolean isOwner, boolean isOfficial, String officialNickname, String officialImageUrl) {
+		boolean isPostLike, boolean isOwner, boolean isNotice, boolean isOfficial, String officialNickname,
+		String officialImageUrl) {
 		// 닉네임 마스킹
 		String writerNickname;
-		if (isOfficial) {
+		if (isNotice) {
 			if (officialNickname != null && !officialNickname.isBlank()) {
 				writerNickname = officialNickname;
 			} else {
@@ -79,7 +80,7 @@ public class PostMapper {
 
 		// 프로필 이미지 마스킹
 		ProfileImageDto writerProfileImage;
-		if (isOfficial) {
+		if (isNotice) {
 			if (officialImageUrl != null && !officialImageUrl.isBlank()) {
 				// 커스텀 이미지가 존재하는 경우
 				writerProfileImage = ProfileImageDto.of(ProfileImageType.CUSTOM, officialImageUrl);
@@ -137,6 +138,7 @@ public class PostMapper {
 		Long numFavorite,
 		Boolean isPostLike,
 		Boolean isPostFavorite,
+		boolean isNotice,
 		boolean isOwner,
 		boolean updatable,
 		boolean deletable,
@@ -146,7 +148,7 @@ public class PostMapper {
 
 		// 닉네임 마스킹
 		String displayWriterNickname;
-		if (isOfficial) {
+		if (isNotice) {
 			if (officialNickname != null && !officialNickname.isBlank()) {
 				displayWriterNickname = officialNickname;
 			} else {
@@ -158,7 +160,7 @@ public class PostMapper {
 
 		// 프로필 이미지 마스킹
 		ProfileImageDto writerProfileImageDto;
-		if (isOfficial) {
+		if (isNotice) {
 			if (officialImageUrl != null && !officialImageUrl.isBlank()) {
 				writerProfileImageDto = ProfileImageDto.of(ProfileImageType.CUSTOM, officialImageUrl);
 			} else {

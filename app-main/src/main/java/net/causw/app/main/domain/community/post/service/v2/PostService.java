@@ -228,9 +228,17 @@ public class PostService {
 			.distinct().toList();
 		Map<String, BoardConfig> boardConfigMap = boardConfigReader.getBoardConfigMapByBoardIds(uniqueBoardIds);
 
+		// 작성자 중 Role이 ADMIN인 사용자 ID 조회 (시스템 관리자 판별용)
+		List<String> writerIds = posts.stream()
+			.map(PostCursorResult::writerId)
+			.filter(Objects::nonNull)
+			.distinct()
+			.toList();
+		Set<String> adminWriterIds = postReader.findAdminUserIds(writerIds);
+
 		// PostListResult로 변환 (PostMapper 사용)
 		List<PostListResult.PostItem> postItems = buildPostItems(posts, postImagesMap, likedPostIds, viewer,
-			boardConfigMap);
+			boardConfigMap, adminWriterIds);
 
 		return PostListResult.of(postItems, nextCursor);
 	}
@@ -281,15 +289,17 @@ public class PostService {
 		boolean updatable = isOwner;
 		boolean deletable = isOwner || boardAdminIds.contains(viewer.getId()) || viewer.getRoles().contains(Role.ADMIN);
 
-		// 공식계정 여부
-		boolean isOfficial = boardConfig.isNotice() || post.getIsCrawled();
+		// 닉네임 마스킹 및 공식 배지 여부 판단
+		boolean isNotice = boardConfig.isNotice() || post.getIsCrawled();
+		boolean isAdmin = post.getWriter() != null && post.getWriter().getRoles().contains(Role.ADMIN);
+		boolean isOfficial = isNotice || (isAdmin && !post.getIsAnonymous());
 
 		// 공식 프로필 정보 조회
 		String officialNickname = boardConfig.getOfficialNickname();
 		String officialImageUrl = boardConfig.getOfficialProfileImageUrl();
 
 		// 작성자 프로필 이미지 조회
-		UserProfileImage writerProfileImage = (!isOfficial && post.getWriter() != null)
+		UserProfileImage writerProfileImage = (!isNotice && post.getWriter() != null)
 			? userProfileImageReader.findByUserIdOrNull(post.getWriter().getId())
 			: null;
 
@@ -306,6 +316,7 @@ public class PostService {
 			isOwner,
 			updatable,
 			deletable,
+			isNotice,
 			isOfficial,
 			officialNickname,
 			officialImageUrl);
@@ -395,8 +406,16 @@ public class PostService {
 			.distinct().toList();
 		Map<String, BoardConfig> boardConfigMap = boardConfigReader.getBoardConfigMapByBoardIds(uniqueBoardIds);
 
+		// 작성자 중 Role이 ADMIN인 사용자 ID 조회 (시스템 관리자 판별용)
+		List<String> writerIds = posts.stream()
+			.map(PostCursorResult::writerId)
+			.filter(Objects::nonNull)
+			.distinct()
+			.toList();
+		Set<String> adminWriterIds = postReader.findAdminUserIds(writerIds);
+
 		List<PostListResult.PostItem> postItems = buildPostItems(posts, postImagesMap, likedPostIds, viewer,
-			boardConfigMap);
+			boardConfigMap, adminWriterIds);
 
 		String nextCursor = null;
 		if (slice.hasNext()) {
@@ -423,7 +442,8 @@ public class PostService {
 		Map<String, List<String>> postImagesMap,
 		Set<String> likedPostIds,
 		User viewer,
-		Map<String, BoardConfig> boardConfigMap) {
+		Map<String, BoardConfig> boardConfigMap,
+		Set<String> adminWriterIds) {
 
 		return posts.stream()
 			.map(result -> {
@@ -432,11 +452,17 @@ public class PostService {
 				boolean isOwner = result.writerId() != null && result.writerId().equals(viewer.getId());
 
 				BoardConfig boardConfig = boardConfigMap.get(result.boardId());
-				boolean isOfficial = (boardConfig != null && boardConfig.isNotice()) || result.isCrawled();
+
+				// 마스킹 및 공식배지 판단
+				boolean isNotice = (boardConfig != null && boardConfig.isNotice()) || result.isCrawled();
+				boolean isAdmin = result.writerId() != null && adminWriterIds.contains(result.writerId());
+				boolean isOfficial = isNotice || (isAdmin & !result.isAnonymous());
+
 				String officialNickname = boardConfig != null ? boardConfig.getOfficialNickname() : null;
 				String officialImageUrl = boardConfig != null ? boardConfig.getOfficialProfileImageUrl() : null;
 
-				return PostMapper.toPostListItem(result, imageUrls, isPostLike, isOwner, isOfficial, officialNickname,
+				return PostMapper.toPostListItem(result, imageUrls, isPostLike, isOwner, isNotice, isOfficial,
+					officialNickname,
 					officialImageUrl);
 			})
 			.toList();

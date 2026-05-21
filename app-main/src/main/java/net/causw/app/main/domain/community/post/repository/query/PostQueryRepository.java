@@ -1,7 +1,9 @@
 package net.causw.app.main.domain.community.post.repository.query;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,6 +27,7 @@ import net.causw.app.main.domain.community.post.entity.QPost;
 import net.causw.app.main.domain.community.reaction.entity.QFavoritePost;
 import net.causw.app.main.domain.community.reaction.entity.QLikePost;
 import net.causw.app.main.domain.user.account.entity.user.QUser;
+import net.causw.app.main.domain.user.account.enums.user.Role;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.SubQueryExpression;
@@ -494,5 +497,28 @@ public class PostQueryRepository {
 			.fetchOne();
 
 		return (commentCount != null ? commentCount : 0L) + (childCommentCount != null ? childCommentCount : 0L);
+	}
+
+	/**
+	 * 주어진 사용자 ID 목록 중 최고 관리자(ADMIN) 권한을 가진 사용자 ID를 조회합니다.
+	 * @param userIds 확인할 사용자 ID 목록
+	 * @return ADMIN 권한을 가진 사용자 ID Set
+	 */
+	public Set<String> findAdminUserIds(List<String> userIds) {
+		if (userIds == null || userIds.isEmpty()) {
+			return Collections.emptySet();
+		}
+
+		QUser user = QUser.user;
+
+		List<String> adminIds = jpaQueryFactory.select(user.id)
+			.from(user)
+			.where(
+				user.id.in(userIds),
+				user.roles.any().eq(Role.ADMIN)
+			)
+			.fetch();
+
+		return new HashSet<>(adminIds);
 	}
 }
