@@ -515,8 +515,7 @@ public class PostQueryRepository {
 			.from(user)
 			.where(
 				user.id.in(userIds),
-				user.roles.any().eq(Role.ADMIN)
-			)
+				user.roles.any().eq(Role.ADMIN))
 			.fetch();
 
 		return new HashSet<>(adminIds);
