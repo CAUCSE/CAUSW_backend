@@ -90,11 +90,9 @@ public class SemesterService {
 		semesterRepository.save(priorSemester);
 		semesterRepository.save(newSemester);
 
-		// 신학기 시작으로 학적상태가 재학 또는 휴학인 학생들을 미결정으로 변경
+		// 신학기 시작으로 학적상태가 재학인 학생들을 미결정으로 변경
 		List<User> userList = userRepository.findByAcademicStatusInOrAcademicStatusIsNull(
-			List.of(
-				AcademicStatus.ENROLLED,
-				AcademicStatus.LEAVE_OF_ABSENCE))
+			List.of(AcademicStatus.ENROLLED))
 			.stream()
 			.peek(
 				(u) -> u.setAcademicStatus(AcademicStatus.UNDETERMINED))

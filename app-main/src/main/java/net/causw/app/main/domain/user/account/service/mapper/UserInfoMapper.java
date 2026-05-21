@@ -78,9 +78,8 @@ public interface UserInfoMapper extends UuidFileToUrlDtoMapper {
 	static String mapAcademicStatus(UserInfo userInfo) {
 		return switch (userInfo.getUser().getAcademicStatus()) {
 			case ENROLLED -> "재학생";
-			case LEAVE_OF_ABSENCE -> "휴학생";
 			case GRADUATED -> "졸업생";
-			default -> "기타"; // 교수, 중퇴, 정학, 미정
+			default -> "기타"; // 미정
 		};
 	}
 
