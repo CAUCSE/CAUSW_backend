@@ -133,5 +133,3 @@ public class ScheduleMaskingResolver {
 		return readablePostIds;
 	}
 }
-
-

@@ -149,8 +149,8 @@ public class ScheduleMaskingResolverTest {
 			// given
 			User viewer = ObjectFixtures.getCertifiedUserWithId("viewer-id");
 			List<ScheduleDto> scheduleDtos = List.of(
-				buildScheduleDto("post-1"),  // 읽기 가능 (BoardReadScope.BOTH)
-				buildScheduleDto("post-2"),  // 읽기 불가 (BoardReadScope.GRADUATED - ENROLLED 사용자)
+				buildScheduleDto("post-1"), // 읽기 가능 (BoardReadScope.BOTH)
+				buildScheduleDto("post-2"), // 읽기 불가 (BoardReadScope.GRADUATED - ENROLLED 사용자)
 				buildScheduleDto("post-3")); // DB에 없음
 
 			Post readablePost = createPost("post-1", "board-1");
@@ -286,4 +286,3 @@ public class ScheduleMaskingResolverTest {
 			10);
 	}
 }
-
