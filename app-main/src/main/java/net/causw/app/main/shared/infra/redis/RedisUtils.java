@@ -124,9 +124,6 @@ public class RedisUtils {
 		try (Cursor<String> cursor = redisTemplate.scan(scanOptions)) {
 			while (cursor.hasNext()) {
 				String redisKey = cursor.next();
-				if (REFRESH_TOKEN_USER_INDEX_MIGRATION_KEY.equals(redisKey)) {
-					continue;
-				}
 
 				Object userId = redisTemplate.opsForValue().get(redisKey);
 				if (!(userId instanceof String userIdValue) || userIdValue.isBlank()) {
