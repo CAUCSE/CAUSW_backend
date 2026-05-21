@@ -2,6 +2,7 @@ package net.causw.app.main.shared.infra.redis;
 
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -85,10 +86,11 @@ public class RedisUtils {
 		String userRefreshTokensKey = USER_REFRESH_TOKENS_PREFIX + userId;
 		Set<Object> refreshTokens = redisTemplate.opsForSet().members(userRefreshTokensKey);
 
-		if (refreshTokens != null) {
-			for (Object refreshToken : refreshTokens) {
-				redisTemplate.delete(REFRESH_TOKEN_PREFIX + refreshToken);
-			}
+		if (refreshTokens != null && !refreshTokens.isEmpty()) {
+			Set<String> refreshTokenKeys = refreshTokens.stream()
+				.map(refreshToken -> REFRESH_TOKEN_PREFIX + refreshToken)
+				.collect(Collectors.toSet());
+			redisTemplate.delete(refreshTokenKeys);
 		}
 
 		redisTemplate.delete(userRefreshTokensKey);
