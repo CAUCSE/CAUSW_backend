@@ -70,7 +70,7 @@ log/
 /app-main/src/main/generated/net/causw/app/main/dto/util/dtoMapper/custom/*Impl.java
 
 ### Monitoring Data (Do not commit) ###
-monitoring/promethcopilot-instructions.mdeus-data/
+monitoring/prometheus-data/
 monitoring/grafana-data/
 monitoring/loki-data/
 monitoring/mysqld-exporter/.my.cnf
