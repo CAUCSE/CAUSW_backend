@@ -1163,6 +1163,8 @@ public class PostServiceTest {
 			ReflectionTestUtils.setField(post, "id", postId);
 			ReflectionTestUtils.setField(post, "createdAt", LocalDateTime.now());
 			ReflectionTestUtils.setField(post, "updatedAt", LocalDateTime.now());
+			ReflectionTestUtils.setField(post, "isCrawled", false);
+			ReflectionTestUtils.setField(post, "isAnonymous", false);
 
 			boardConfig = BoardConfig.of(
 				boardId,

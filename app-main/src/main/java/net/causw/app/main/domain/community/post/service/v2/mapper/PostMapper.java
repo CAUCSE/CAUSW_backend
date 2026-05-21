@@ -138,10 +138,10 @@ public class PostMapper {
 		Long numFavorite,
 		Boolean isPostLike,
 		Boolean isPostFavorite,
-		boolean isNotice,
 		boolean isOwner,
 		boolean updatable,
 		boolean deletable,
+		boolean isNotice,
 		boolean isOfficial,
 		String officialNickname,
 		String officialImageUrl) {
