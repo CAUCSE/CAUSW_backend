@@ -49,8 +49,7 @@ public class RedisUtils {
 
 		String userRefreshTokensKey = USER_REFRESH_TOKENS_PREFIX + value;
 		redisTemplate.opsForSet().add(userRefreshTokensKey, key);
-		redisTemplate.expire(userRefreshTokensKey, expiredTime, TimeUnit.MILLISECONDS);
-
+		syncUserRefreshTokenIndexTtl(redisKey, userRefreshTokensKey);
 	}
 
 	public String getRefreshTokenData(String key) {
