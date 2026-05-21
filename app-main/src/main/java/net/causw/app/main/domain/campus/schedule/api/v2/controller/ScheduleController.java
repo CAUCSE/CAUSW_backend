@@ -3,6 +3,7 @@ package net.causw.app.main.domain.campus.schedule.api.v2.controller;
 import java.time.LocalDateTime;
 import java.util.Set;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +16,8 @@ import net.causw.app.main.domain.campus.schedule.api.v2.mapper.ScheduleDtoMapper
 import net.causw.app.main.domain.campus.schedule.entity.enums.ScheduleType;
 import net.causw.app.main.domain.campus.schedule.service.ScheduleService;
 import net.causw.app.main.domain.campus.schedule.service.dto.ScheduleDto;
+import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,12 +39,14 @@ public class ScheduleController {
 		"types 사용 예시: <br>" +
 		"1) 쉼표 구분: ?types=ACADEMIC,CLUB,EXAM <br>" +
 		"2) 반복: ?types=ACADEMIC&types=CLUB&types=EXAM <br>" +
-		"3) 생략: 모든 타입 조회")
+		"3) 생략: 모든 타입 조회 <br><br>" +
+		"※ 연결된 게시물(targetPostId)에 대한 읽기 권한이 없는 경우 null로 반환됩니다.")
 	@GetMapping
 	public ApiResponse<ScheduleListResponse> readSchedules(
 		@RequestParam(required = false) LocalDateTime from,
 		@RequestParam(required = false) LocalDateTime to,
-		@RequestParam(required = false) Set<ScheduleType> types) {
+		@RequestParam(required = false) Set<ScheduleType> types,
+		@AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
 		LocalDateTime startDate = from;
 		LocalDateTime endDate = to;
@@ -51,15 +56,22 @@ public class ScheduleController {
 			endDate = LocalDateTime.now().toLocalDate().plusMonths(1).withDayOfMonth(1).atStartOfDay().minusSeconds(1);
 		}
 
+		User viewer = customUserDetails != null ? customUserDetails.getUser() : null;
+
 		return ApiResponse.success(
 			scheduleDtoMapper.toScheduleListResponse(
-				scheduleService.findByCondition(startDate, endDate, types)));
+				scheduleService.findByConditionWithMasking(startDate, endDate, types, viewer)));
 	}
 
-	@Operation(summary = "일정 단건 조회", description = "특정 ID의 일정을 조회합니다.")
+	@Operation(summary = "일정 단건 조회", description = "특정 ID의 일정을 조회합니다. <br>" +
+		"※ 연결된 게시물(targetPostId)에 대한 읽기 권한이 없는 경우 null로 반환됩니다.")
 	@GetMapping("/{scheduleId}")
-	public ApiResponse<ScheduleResponse> readSchedule(@PathVariable String scheduleId) {
-		ScheduleDto result = scheduleService.findById(scheduleId);
+	public ApiResponse<ScheduleResponse> readSchedule(
+		@PathVariable String scheduleId,
+		@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+
+		User viewer = customUserDetails != null ? customUserDetails.getUser() : null;
+		ScheduleDto result = scheduleService.findByIdWithMasking(scheduleId, viewer);
 		return ApiResponse.success(scheduleDtoMapper.toScheduleResponse(result));
 	}
 
