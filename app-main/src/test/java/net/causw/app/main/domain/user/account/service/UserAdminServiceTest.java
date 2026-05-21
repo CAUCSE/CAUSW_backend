@@ -38,8 +38,10 @@ import net.causw.app.main.domain.user.account.service.dto.response.UserDetailIte
 import net.causw.app.main.domain.user.account.service.dto.response.UserDropResult;
 import net.causw.app.main.domain.user.account.service.dto.response.UserListItem;
 import net.causw.app.main.domain.user.account.service.implementation.DroppedUserIdentifierWriter;
+import net.causw.app.main.domain.user.account.service.implementation.UserAccountCleanupWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserAdminActionLogWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
+import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
@@ -63,17 +65,20 @@ class UserAdminServiceTest {
 	@Mock
 	private UserAdminActionLogWriter userAdminActionLogWriter;
 
-	@Mock
-	private UserProfileImageReader userProfileImageReader;
-
-	@Mock
-	private UserAccountService userAccountService;
-
 	@InjectMocks
 	private UserAdminService userAdminService;
 
 	@Mock
 	private DroppedUserIdentifierWriter droppedUserIdentifierWriter;
+
+	@Mock
+	private UserAccountCleanupWriter userAccountCleanupWriter;
+
+	@Mock
+	private UserProfileImageReader userProfileImageReader;
+
+	@Mock
+	private UserValidator userValidator;
 
 	/* =========================
 	 * 유저 목록 조회
@@ -140,6 +145,7 @@ class UserAdminServiceTest {
 			User user = ObjectFixtures.getCertifiedUserWithId(userId);
 
 			when(userReader.findDetailById(userId)).thenReturn(user);
+			when(userProfileImageReader.findByUserIdOrNull(userId)).thenReturn(null);
 
 			// when
 			UserDetailItem result = userAdminService.getUserDetail(userId);
@@ -151,6 +157,7 @@ class UserAdminServiceTest {
 			assertThat(result.name()).isEqualTo(user.getName());
 
 			verify(userReader).findDetailById(userId);
+			verify(userProfileImageReader).findByUserIdOrNull(userId);
 		}
 
 		@Test
@@ -202,6 +209,7 @@ class UserAdminServiceTest {
 
 			// then
 			verify(lockerWriter).releaseLocker(locker, adminUser, user.getEmail(), user.getName());
+			verify(userAccountCleanupWriter).cleanupForDrop(user);
 			verify(userWriter).dropByAdmin(user, dropReason);
 			verify(userAdminActionLogWriter).logDrop(any(), any(), any(), any(), any());
 		}
@@ -276,13 +284,13 @@ class UserAdminServiceTest {
 			user.setDeletedAt(null);
 
 			when(userReader.findUserById(userId)).thenReturn(user);
-			when(userAccountService.restore(userId)).thenReturn(user);
+			when(userWriter.restore(user)).thenReturn(user);
 
 			// when
 			userAdminService.restoreUser(adminUser, userId);
 
 			// then
-			verify(userAccountService).restore(userId);
+			verify(userWriter).restore(user);
 			verify(userAdminActionLogWriter).logRestore(any(), any(), any(), any());
 		}
 
@@ -330,6 +338,7 @@ class UserAdminServiceTest {
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
 				.isEqualTo(UserErrorCode.USER_NOT_RESTORABLE);
+			verify(userValidator, never()).validateRestorable(any());
 			verify(userWriter, never()).restore(any());
 			verify(userAdminActionLogWriter, never()).logRestore(any(), any(), any(), any());
 		}
@@ -351,13 +360,14 @@ class UserAdminServiceTest {
 			user.setRoles(Set.of(Role.NONE));
 
 			when(userReader.findUserById(userId)).thenReturn(user);
-			when(userAccountService.restore(userId)).thenReturn(user);
+			when(userWriter.restore(user)).thenReturn(user);
 
 			// when
 			userAdminService.restoreWithdrawnUser(adminUser, userId);
 
 			// then
-			verify(userAccountService).restore(userId);
+			verify(userValidator).validateRestorable(user);
+			verify(userWriter).restore(user);
 			verify(userAdminActionLogWriter).logRestore(
 				eq(adminUser),
 				eq(user),
@@ -385,7 +395,8 @@ class UserAdminServiceTest {
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
 				.isEqualTo(UserErrorCode.USER_WITHDRAWN_NOT_RESTORABLE);
-			verify(userAccountService, never()).restore(any());
+			verify(userValidator, never()).validateRestorable(any());
+			verify(userWriter, never()).restore(any());
 			verify(userAdminActionLogWriter, never()).logRestore(any(), any(), any(), any());
 		}
 
@@ -409,7 +420,7 @@ class UserAdminServiceTest {
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
 				.isEqualTo(UserErrorCode.USER_WITHDRAWN_NOT_RESTORABLE);
-			verify(userAccountService, never()).restore(any());
+			verify(userWriter, never()).restore(any());
 			verify(userAdminActionLogWriter, never()).logRestore(any(), any(), any(), any());
 		}
 	}
@@ -446,6 +457,7 @@ class UserAdminServiceTest {
 		assertNotNull(result);
 
 		verify(userReader).findUserById(userId);
+		verify(userAccountCleanupWriter).cleanupForDrop(targetUser);
 		verify(lockerReader).findByUserId(userId);
 		verify(lockerWriter).releaseLocker(locker, adminUser, "test@example.com", "홍길동");
 		verify(userWriter).dropByAdmin(targetUser, dropReason);

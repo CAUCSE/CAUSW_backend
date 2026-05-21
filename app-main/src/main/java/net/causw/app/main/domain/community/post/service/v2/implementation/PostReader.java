@@ -1,8 +1,11 @@
 package net.causw.app.main.domain.community.post.service.v2.implementation;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Component;
@@ -39,6 +42,22 @@ public class PostReader {
 	public Post findById(String postId) {
 		return postRepository.findById(postId)
 			.orElseThrow(PostErrorCode.POST_NOT_FOUND::toBaseException);
+	}
+
+	/**
+	 * 여러 Post ID를 한 번에 조회하고, ID를 키로 하는 Map으로 반환합니다.
+	 * 각 Post는 Board와 함께 조회됩니다.
+	 *
+	 * @param postIds Post ID 목록
+	 * @return Post ID → Post Entity Map
+	 */
+	public Map<String, Post> findPostMapByIds(Collection<String> postIds) {
+		if (postIds == null || postIds.isEmpty()) {
+			return Map.of();
+		}
+
+		return postRepository.findAllByIdInWithBoard(postIds).stream()
+			.collect(Collectors.toMap(Post::getId, Function.identity()));
 	}
 
 	/**
