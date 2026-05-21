@@ -31,12 +31,14 @@ public class UserAccountCleanupWriter {
 		String platformHint) {
 		unlinkSocialAccounts(user, platformHint);
 		authTokenManager.invalidateTokens(accessToken, refreshToken);
+		authTokenManager.invalidateAllRefreshTokensByUserId(user.getId());
 		userPushTokenWriter.clearFcmTokens(user);
 	}
 
 	@Transactional
 	public void cleanupForDrop(User user) {
 		unlinkSocialAccounts(user, null);
+		authTokenManager.invalidateAllRefreshTokensByUserId(user.getId());
 		userPushTokenWriter.clearFcmTokens(user);
 	}
 

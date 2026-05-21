@@ -39,8 +39,8 @@ class UserAccountCleanupWriterTest {
 	class CleanupForWithdrawal {
 
 		@Test
-		@DisplayName("성공: 토큰 무효화와 FCM 토큰 전체 삭제를 수행한다")
-		void givenUser_whenCleanupForWithdrawal_thenTokensInvalidatedAndCleared() {
+		@DisplayName("성공: 현재 토큰과 사용자 전체 리프레시 토큰을 무효화하고 FCM 토큰을 삭제한다")
+		void givenUser_whenCleanupForWithdrawal_thenInvalidateTokensAndClearFcmTokens() {
 			// given
 			User user = mock(User.class);
 			String userId = "user-id";
@@ -57,6 +57,7 @@ class UserAccountCleanupWriterTest {
 			// then
 			verify(socialAccountReader).findAllByUserId(userId);
 			verify(authTokenManager).invalidateTokens(accessToken, refreshToken);
+			verify(authTokenManager).invalidateAllRefreshTokensByUserId(userId);
 			verify(userPushTokenWriter).clearFcmTokens(user);
 		}
 	}
@@ -66,8 +67,8 @@ class UserAccountCleanupWriterTest {
 	class CleanupForDrop {
 
 		@Test
-		@DisplayName("성공: FCM 토큰 전체 삭제를 수행한다")
-		void givenUser_whenCleanupForDrop_thenTokensCleared() {
+		@DisplayName("성공: 사용자 전체 리프레시 토큰을 무효화하고 FCM 토큰을 삭제한다")
+		void givenUser_whenCleanupForDrop_thenInvalidateAllRefreshTokensAndClearFcmTokens() {
 			// given
 			User user = mock(User.class);
 			String userId = "user-id";
@@ -80,6 +81,7 @@ class UserAccountCleanupWriterTest {
 
 			// then
 			verify(socialAccountReader).findAllByUserId(userId);
+			verify(authTokenManager).invalidateAllRefreshTokensByUserId(userId);
 			verify(userPushTokenWriter).clearFcmTokens(user);
 			verify(authTokenManager, never()).invalidateTokens(any(), any());
 		}

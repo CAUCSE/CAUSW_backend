@@ -1,3 +1,8 @@
 spring:
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:local}
+
+redis:
+  migration:
+    refresh-token-user-index:
+      enabled: false
