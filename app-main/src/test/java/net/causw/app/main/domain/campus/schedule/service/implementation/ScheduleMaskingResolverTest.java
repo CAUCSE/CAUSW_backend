@@ -283,6 +283,8 @@ public class ScheduleMaskingResolverTest {
 			BoardWriteScope.ALL_USER,
 			false,
 			BoardVisibility.VISIBLE,
-			10);
+			10,
+			null,
+			null);
 	}
 }
