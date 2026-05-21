@@ -64,12 +64,12 @@ public class RedisUtils {
 	 */
 	public void deleteRefreshTokenData(String key) {
 		String redisKey = REFRESH_TOKEN_PREFIX + key;
-		String userId = (String)redisTemplate.opsForValue().get(redisKey);
+		Object userId = redisTemplate.opsForValue().get(redisKey);
 
 		redisTemplate.delete(redisKey);
 
-		if (userId != null) {
-			redisTemplate.opsForSet().remove(USER_REFRESH_TOKENS_PREFIX + userId, key);
+		if (userId instanceof String userIdValue) {
+			redisTemplate.opsForSet().remove(USER_REFRESH_TOKENS_PREFIX + userIdValue, key);
 		}
 	}
 
