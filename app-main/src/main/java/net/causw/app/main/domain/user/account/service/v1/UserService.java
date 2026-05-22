@@ -1030,6 +1030,7 @@ public class UserService {
 		this.circleMemberRepository.findByUser_Id(user.getId())
 			.forEach(circleMember -> this.updateStatus(circleMember.getId(), CircleMemberStatus.LEAVE));
 
+		fcmUtils.clearFcmTokens(user);
 		user.withdraw();
 		User entity = userRepository.save(user);
 		return userDtoMapper.toUserResponseDto(entity, null, null, null);
@@ -1557,10 +1558,7 @@ public class UserService {
 				ErrorCode.INVALID_SIGNIN,
 				MessageUtil.INVALID_REFRESH_TOKEN);
 		}
-		// 2. fcmToken 최신화
-		fcmUtils.cleanInvalidFcmTokens(transactionUser);
-		// 3. fcmToken 추가
-		fcmUtils.addFcmToken(transactionUser, refreshToken, fcmToken);
+		fcmUtils.addFcmToken(transactionUser, fcmToken);
 		return UserDtoMapper.INSTANCE.toUserFcmTokenResponseDto(transactionUser);
 	}
 
@@ -1568,7 +1566,6 @@ public class UserService {
 	public UserFcmTokenResponseDto getUserFcmToken(User user) {
 		User transactionUser = userEntityService.findUserByUserId(user.getId());
 
-		fcmUtils.cleanInvalidFcmTokens(transactionUser);
 		return UserDtoMapper.INSTANCE.toUserFcmTokenResponseDto(transactionUser);
 	}
 

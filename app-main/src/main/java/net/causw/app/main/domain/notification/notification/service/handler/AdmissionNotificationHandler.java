@@ -20,6 +20,7 @@ import net.causw.app.main.domain.notification.notification.service.dto.UserNotif
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationPushSender;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationSettingReader;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationWriter;
+import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 
@@ -65,8 +66,11 @@ public class AdmissionNotificationHandler {
 			.findSettingMapByUserIds(adminIds);
 
 		String pushTitle = "재학정보 인증 요청";
-		String pushBody = String.format("%s(%s)님이 재학정보 인증을 요청했습니다.", requester.getName(), requester.getStudentId());
-		String serviceTitle = String.format("%s(%s)님이 재학정보 인증을 요청했습니다.", requester.getName(), requester.getStudentId());
+		String studentId = AcademicStatus.GRADUATED.equals(event.targetStatus()) ? "졸업생" : event.requestStudentId();
+		String message = String.format("%s(%s)님이 재학정보 인증을 요청했습니다.", requester.getName(), studentId);
+
+		String pushBody = message;
+		String serviceTitle = message;
 
 		// 알림 엔티티 저장 (발송자: 요청자)
 		Notification notification = notificationWriter.save(

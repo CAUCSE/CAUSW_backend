@@ -85,7 +85,6 @@ public class PostNotificationService implements NotificationService {
 		userPostSubscribeList.stream()
 			.map(UserPostSubscribe::getUser)
 			.forEach(user -> {
-				fcmUtils.cleanInvalidFcmTokens(user);
 				Set<String> copy = new HashSet<>(user.getFcmTokens());
 				copy.forEach(token -> send(user, token, postNotificationDto.getTitle(), postNotificationDto.getBody()));
 				saveNotificationLog(user, notification);

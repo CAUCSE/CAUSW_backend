@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.hibernate.annotations.BatchSize;
 
@@ -128,10 +129,10 @@ public class User extends BaseEntity {
 	@Builder.Default
 	private Boolean isV2 = true;
 
-	@ElementCollection(fetch = FetchType.LAZY)
-	@CollectionTable(name = "tb_user_fcm_token", joinColumns = @JoinColumn(name = "user_id"))
-	@Column(name = "fcm_token_value")
-	private Set<String> fcmTokens = new HashSet<>();
+	@BatchSize(size = 100)
+	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+	@Builder.Default
+	private Set<FcmToken> fcmTokenEntities = new HashSet<>();
 
 	// 신고 관련 필드
 	@Column(name = "report_count", nullable = false)
@@ -144,8 +145,8 @@ public class User extends BaseEntity {
 
 	// 자진 탈퇴 처리
 	public void withdraw(LocalDateTime now) {
+		this.state = UserState.INACTIVE;
 		this.deletedAt = now;
-		this.academicStatus = AcademicStatus.UNDETERMINED;
 	}
 
 	/*
@@ -179,6 +180,10 @@ public class User extends BaseEntity {
 
 	public boolean isInactive() {
 		return this.state == UserState.INACTIVE;
+	}
+
+	public boolean isDropped() {
+		return this.state == UserState.DROP;
 	}
 
 	/**
@@ -349,7 +354,10 @@ public class User extends BaseEntity {
 		this.deletedAt = now;
 	}
 
-	// 탈퇴 처리
+	/**
+	 * V1에서 이용하던 회원 탈퇴 처리입니다.
+	 * @deprecated V2 탈퇴에서는 withdraw(LocalDateTime)을 이용합니다.
+	 */
 	public void withdraw() {
 		this.state = UserState.INACTIVE;
 		this.deletedAt = LocalDateTime.now();
@@ -371,8 +379,19 @@ public class User extends BaseEntity {
 		this.rejectionOrDropReason = null; // 거절 사유 초기화
 	}
 
+	public Set<String> getFcmTokens() {
+		return fcmTokenEntities.stream()
+			.map(FcmToken::getTokenValue)
+			.collect(Collectors.toUnmodifiableSet());
+	}
+
 	public boolean removeFcmToken(String targetToken) {
-		return this.fcmTokens.remove(targetToken);
+		return fcmTokenEntities.removeIf(t -> t.getTokenValue().equals(targetToken));
+	}
+
+	// FCM 토큰 전체 삭제
+	public void clearFcmTokens() {
+		this.fcmTokenEntities.clear();
 	}
 
 	public boolean isOnlySocialUser() {

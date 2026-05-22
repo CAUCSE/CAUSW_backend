@@ -1,7 +1,6 @@
 package net.causw.app.main.core.batch;
 
 import java.time.LocalDateTime;
-import java.time.temporal.IsoFields;
 import java.util.List;
 
 import org.springframework.batch.core.Job;
@@ -13,7 +12,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyWriter;
-import net.causw.app.main.domain.notification.notification.service.implementation.UserPushTokenWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.app.main.domain.user.account.service.UserProfileImageService;
@@ -37,7 +35,6 @@ import lombok.extern.slf4j.Slf4j;
 public class BatchScheduler {
 
 	private final JobLauncher jobLauncher;
-	private final UserPushTokenWriter userPushTokenWriter;
 	private final UserRepository userRepository;
 	private final PageableFactory pageableFactory;
 	private final UserInfoWriter userInfoWriter;
@@ -61,31 +58,6 @@ public class BatchScheduler {
 			jobLauncher.run(cleanUpUnusedFilesJob, jobParameters);
 		} catch (Exception e) {
 			log.error("Batch job failed: {}", e.getMessage()); // 예외 로깅 추가
-			throw new InternalServerException(ErrorCode.INTERNAL_SERVER, MessageUtil.BATCH_FAIL + e.getMessage());
-		}
-	}
-
-	@Scheduled(cron = "0 0 5 ? * MON")
-	public void scheduleCleanInvalidFcmTokens() {
-		if (!isEvenWeek())
-			return;
-
-		try {
-			log.info("[FCM 배치] 유효하지 않은 FCM 토큰 정리 시작");
-
-			int pageNum = 0;
-			Page<User> userPage;
-			do {
-				userPage = userRepository.findAll(pageableFactory.create(pageNum++, StaticValue.BATCH_USER_LIST_SIZE));
-				userPage.forEach(user -> {
-					userPushTokenWriter.cleanInvalidFcmTokens(user);
-					userRepository.save(user);
-				});
-			} while (!userPage.isLast());
-
-			log.info("[FCM 배치] 유효하지 않은 FCM 토큰 정리 완료");
-		} catch (Exception e) {
-			log.error("FCM 정리 배치 실패: {}", e.getMessage(), e);
 			throw new InternalServerException(ErrorCode.INTERNAL_SERVER, MessageUtil.BATCH_FAIL + e.getMessage());
 		}
 	}
@@ -127,10 +99,6 @@ public class BatchScheduler {
 				ErrorCode.INTERNAL_SERVER,
 				MessageUtil.BATCH_FAIL + e.getMessage());
 		}
-	}
-
-	private boolean isEvenWeek() {
-		return LocalDateTime.now().get(IsoFields.WEEK_OF_WEEK_BASED_YEAR) % 2 == 0;
 	}
 
 }
