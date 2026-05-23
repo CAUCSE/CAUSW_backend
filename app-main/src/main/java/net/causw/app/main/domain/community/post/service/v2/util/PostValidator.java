@@ -21,7 +21,6 @@ import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import net.causw.app.main.shared.exception.errorcode.BoardErrorCode;
 import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
-import net.causw.global.constant.StaticValue;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -36,20 +35,25 @@ public class PostValidator {
 		validateAnonymousBoard(boardConfig, isAnonymous);
 	}
 
-	public static void validateDelete(User deleter, Post post, List<String> adminIds) {
+	public static void validateDelete(User deleter, Post post, List<String> boardAdminIds) {
+		validateUserAndBoard(deleter, post.getBoard());
+
 		// ADMIN은 무조건 삭제 가능
 		if (deleter.getRoles().contains(Role.ADMIN)) {
 			return;
 		}
 
-		if (post.getBoard().getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) { // TODO: APP_NOTICE 대신 BoardConfig의 isNotice 필드 활용
-			// 관리자 역할이 없고, 게시글의 작성자가 아니면 오류 발생
-			if (!adminIds.contains(deleter.getId())
-				&& !post.getWriter().getId().equals(deleter.getId())) {
-				throw PostErrorCode.POST_FORBIDDEN.toBaseException();
-			}
+		// 게시글 작성자는 삭제 가능
+		if (post.getWriter().getId().equals(deleter.getId())) {
+			return;
 		}
-		validateUserAndBoard(deleter, post.getBoard());
+
+		// 게시판 관리자 검증
+		if (boardAdminIds.contains(deleter.getId())) {
+			return;
+		}
+
+		throw PostErrorCode.POST_FORBIDDEN.toBaseException();
 	}
 
 	public static void validateUpdate(User updater, Post post, List<String> adminIds, BoardConfig boardConfig,

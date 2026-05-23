@@ -50,6 +50,9 @@ public class Board extends BaseEntity {
 	private String createRoles;
 
 	@Column(name = "category", nullable = false)
+	/**
+	 * @deprecated v1 게시판 카테고리 필드, v2에서는 "COMMUNITY"로 고정, boardConfig의 isNotice 필드로 대체
+	 */
 	private String category;
 
 	@Setter

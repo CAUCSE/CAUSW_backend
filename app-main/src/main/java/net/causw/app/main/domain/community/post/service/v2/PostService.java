@@ -107,7 +107,8 @@ public class PostService {
 	@Transactional
 	public void deletePost(User deleter, String postId) {
 		Post post = postReader.findById(postId);
-		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
+		String boardId = post.getBoard().getId();
+		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(boardId);
 		PostValidator.validateDelete(deleter, post, boardAdminIds);
 
 		// 소프트 삭제 처리
