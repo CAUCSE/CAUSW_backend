@@ -301,7 +301,7 @@ public class PostService {
 		// 공식 프로필 정보 조회
 		String officialNickname = boardConfig.getOfficialNickname();
 		String officialImageUrl = null;
-		if (boardConfig != null && boardConfig.getOfficialProfileImageId() != null) {
+		if (boardConfig.getOfficialProfileImageId() != null) {
 			UuidFile file = fileReader.findByIdOptional(boardConfig.getOfficialProfileImageId()).orElse(null);
 			if (file != null && Boolean.TRUE.equals(file.getIsUsed())) {
 				officialImageUrl = file.getFileUrl();
@@ -466,7 +466,7 @@ public class PostService {
 				// 마스킹 및 공식배지 판단
 				boolean isNotice = (boardConfig != null && boardConfig.isNotice()) || result.isCrawled();
 				boolean isAdmin = result.writerId() != null && adminWriterIds.contains(result.writerId());
-				boolean isOfficial = isNotice || (isAdmin & !result.isAnonymous());
+				boolean isOfficial = isNotice || (isAdmin && !result.isAnonymous());
 
 				String officialNickname = boardConfig != null ? boardConfig.getOfficialNickname() : null;
 				String officialImageUrl = null;
