@@ -18,6 +18,8 @@ public interface BoardConfigPartMapper {
 			part.writeScope(),
 			part.isNotice(),
 			part.visibility(),
-			displayOrder);
+			displayOrder,
+			part.officialNickname(),
+			part.officialProfileImageId());
 	}
 }

@@ -13,6 +13,7 @@ import net.causw.app.main.domain.community.post.service.v2.dto.PostDetailResult;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostListResult;
 import net.causw.app.main.domain.community.post.service.v2.dto.PostUpdateResult;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.enums.user.ProfileImageType;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.shared.dto.ProfileImageDto;
 import net.causw.global.constant.StaticValue;
@@ -63,9 +64,33 @@ public class PostMapper {
 	 * PostCursorResult를 PostListResult.PostItem으로 변환합니다.
 	 */
 	public static PostListResult.PostItem toPostListItem(PostCursorResult result, List<String> imageUrls,
-		boolean isPostLike, boolean isOwner, boolean isOfficial) {
-		String writerNickname = resolveWriterNickname(result);
-		ProfileImageDto writerProfileImage = resolveWriterProfileImage(result);
+		boolean isPostLike, boolean isOwner, boolean isNotice, boolean isOfficial, String officialNickname,
+		String officialImageUrl) {
+		// 닉네임 마스킹
+		String writerNickname;
+		if (isNotice) {
+			if (officialNickname != null && !officialNickname.isBlank()) {
+				writerNickname = officialNickname;
+			} else {
+				writerNickname = "게시판 관리자";
+			}
+		} else {
+			writerNickname = resolveWriterNickname(result);
+		}
+
+		// 프로필 이미지 마스킹
+		ProfileImageDto writerProfileImage;
+		if (isNotice) {
+			if (officialImageUrl != null && !officialImageUrl.isBlank()) {
+				// 커스텀 이미지가 존재하는 경우
+				writerProfileImage = ProfileImageDto.of(ProfileImageType.CUSTOM, officialImageUrl);
+			} else {
+				// 커스텀 이미지가 없는 경우 기본 이미지 사용
+				writerProfileImage = ProfileImageDto.of(ProfileImageType.UNSET, null);
+			}
+		} else {
+			writerProfileImage = resolveWriterProfileImage(result);
+		}
 
 		return PostListResult.PostItem.of(
 			result.postId(),
@@ -116,10 +141,35 @@ public class PostMapper {
 		boolean isOwner,
 		boolean updatable,
 		boolean deletable,
-		boolean isOfficial) {
+		boolean isNotice,
+		boolean isOfficial,
+		String officialNickname,
+		String officialImageUrl) {
 
-		String displayWriterNickname = resolveWriterNickname(post);
-		ProfileImageDto writerProfileImageDto = resolveWriterProfileImage(post, writerProfileImage);
+		// 닉네임 마스킹
+		String displayWriterNickname;
+		if (isNotice) {
+			if (officialNickname != null && !officialNickname.isBlank()) {
+				displayWriterNickname = officialNickname;
+			} else {
+				displayWriterNickname = "게시판 관리자";
+			}
+		} else {
+			displayWriterNickname = resolveWriterNickname(post);
+		}
+
+		// 프로필 이미지 마스킹
+		ProfileImageDto writerProfileImageDto;
+		if (isNotice) {
+			if (officialImageUrl != null && !officialImageUrl.isBlank()) {
+				writerProfileImageDto = ProfileImageDto.of(ProfileImageType.CUSTOM, officialImageUrl);
+			} else {
+				writerProfileImageDto = ProfileImageDto.of(ProfileImageType.UNSET, null);
+			}
+		} else {
+			writerProfileImageDto = resolveWriterProfileImage(post, writerProfileImage);
+		}
+
 		String voteId = resolveVoteId(post);
 
 		return PostDetailResult.builder()
