@@ -97,7 +97,6 @@ public class StaticValue {
 	public static final String ORIGINAL_NOTICE_SITE_NAME = "중앙대학교 소프트웨어학부 공지사항";
 	public static final String CAU_CSE_BASE_URL = "https://cse.cau.ac.kr/sub05/sub0501.php?offset=";
 	public static final String CAU_CSE_DOWNLOAD_URL_FORMAT = "https://cse.cau.ac.kr/_module/bbs/download.php?uid=%s&code=%s";
-	public static final String ADMIN_STUDENT_ID = "20220881";
 	public static final int CRAWLING_MAX_NOTICES = 30;
 	public static final int CRAWLING_MAX_RETRIES = 3;
 	public static final int CRAWLING_REQUEST_DELAY_MS = 2000;

@@ -6,6 +6,7 @@ import java.util.List;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +41,9 @@ public class CrawledToPostTransferService {
 	private final BoardNotificationService boardNotificationService;
 	private final CrawledPostImageRepository crawledPostImageRepository;
 
+	@Value("${app.crawler.admin-email}")
+	private String crawlerAdminEmail;
+
 	//크롤링 된 공지를 게시글로 반환
 	@Transactional
 	public void transferToPosts() {
@@ -66,7 +70,7 @@ public class CrawledToPostTransferService {
 
 	//관리자 조회
 	private User getAdminUser() {
-		return userRepository.findByStudentId(StaticValue.ADMIN_STUDENT_ID)
+		return userRepository.findByEmail(crawlerAdminEmail)
 			.orElseThrow(() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND));
 	}
