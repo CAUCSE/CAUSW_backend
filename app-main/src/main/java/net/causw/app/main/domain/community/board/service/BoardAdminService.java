@@ -94,7 +94,7 @@ public class BoardAdminService {
 	@Transactional
 	public void createBoard(BoardPart board, BoardConfigPart config, List<String> adminUserIds) {
 		// board 관련 검증
-		boardValidator.validateForCreate(board.name());
+		boardValidator.validateForCreate(board.name(), config.isNotice(), config.isAnonymous());
 
 		// board 생성
 		Board boardEntity = boardPartMapper.toEntity(board);
@@ -118,7 +118,7 @@ public class BoardAdminService {
 	@Transactional
 	public void updateBoard(String boardId, BoardPart board, BoardConfigPart config, List<String> adminUserIds) {
 		// board 관련 검증
-		boardValidator.validateForUpdate(board.name(), boardId);
+		boardValidator.validateForUpdate(board.name(), boardId, config.isNotice(), config.isAnonymous());
 
 		// board, boardConfig 조회
 		Board boardEntity = boardReader.getById(boardId);

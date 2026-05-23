@@ -6,13 +6,13 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
 import static org.mockito.BDDMockito.times;
 import static org.mockito.BDDMockito.verify;
-import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -21,7 +21,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
@@ -61,7 +63,10 @@ import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.Academic
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.ProfileImageType;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.domain.user.account.service.implementation.UserReader;
+import net.causw.app.main.domain.user.relation.service.v2.implementation.BlockReader;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
+import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
 import net.causw.app.main.util.ObjectFixtures;
 
 @ExtendWith(MockitoExtension.class)
@@ -95,6 +100,15 @@ public class PostServiceTest {
 	VoteWriter voteWriter;
 
 	@Mock
+	BlockReader blockReader;
+
+	@Mock
+	UserReader userReader;
+
+	@Mock
+	ApplicationEventPublisher eventPublisher;
+
+	@Mock
 	UserProfileImageReader userProfileImageReader;
 
 	@Nested
@@ -119,7 +133,9 @@ public class PostServiceTest {
 				BoardWriteScope.ALL_USER,
 				false,
 				BoardVisibility.VISIBLE,
-				10);
+				10,
+				null,
+				null);
 			boardAdminIds = List.of("admin-id");
 		}
 
@@ -237,8 +253,12 @@ public class PostServiceTest {
 			ReflectionTestUtils.setField(mockPost, "createdAt", LocalDateTime.now());
 			ReflectionTestUtils.setField(mockPost, "updatedAt", LocalDateTime.now());
 
+			BoardConfig anonymousBoardConfig = BoardConfig.of(
+				boardId, true, BoardReadScope.BOTH, BoardWriteScope.ALL_USER, false, BoardVisibility.VISIBLE, 10, null,
+				null);
+
 			given(boardReader.getById(boardId)).willReturn(board);
-			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(anonymousBoardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
 			given(postWriter.save(any(Post.class))).willReturn(mockPost);
 			given(postImageManager.uploadAndBuildForCreate(any(Post.class), isNull(), isNull()))
@@ -252,34 +272,36 @@ public class PostServiceTest {
 			verify(postWriter, times(1)).save(any(Post.class));
 		}
 
-		@DisplayName("익명 게시판에 비익명 게시글 작성 시 실패")
+		@DisplayName("비익명 게시판에 익명 게시글 작성 시 실패")
 		@Test
-		void createPost_shouldFail_whenNonAnonymousPostOnAnonymousBoard() {
+		void createPost_shouldFail_whenAnonymousPostOnNonAnonymousBoard() {
 			// given
-			BoardConfig anonymousBoardConfig = BoardConfig.of(
+			BoardConfig nonAnonymousBoardConfig = BoardConfig.of(
 				boardId,
-				true, // 익명 게시판
+				false, // 비익명 게시판
 				BoardReadScope.BOTH,
 				BoardWriteScope.ALL_USER,
 				false,
 				BoardVisibility.VISIBLE,
-				10);
+				10,
+				null,
+				null);
 
 			PostCreateCommand command = new PostCreateCommand(
-				"비익명 게시글",
+				"익명 게시글",
 				boardId,
-				false, // 비익명으로 작성 시도
+				true, // 익명으로 작성 시도
 				writer,
 				null,
 				null);
 
 			given(boardReader.getById(boardId)).willReturn(board);
-			given(boardConfigReader.getByBoardId(boardId)).willReturn(anonymousBoardConfig);
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(nonAnonymousBoardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
 
 			// when & then
 			assertThatThrownBy(() -> postService.create(command))
-				.hasMessageContaining("익명 게시판");
+				.hasMessageContaining("비익명 게시판에서 익명으로 작성할 수 없습니다.");
 
 			verify(postWriter, never()).save(any(Post.class));
 		}
@@ -382,7 +404,9 @@ public class PostServiceTest {
 				BoardWriteScope.ALL_USER,
 				false,
 				BoardVisibility.VISIBLE,
-				10);
+				10,
+				null,
+				null);
 
 			given(postReader.findById(postId)).willReturn(post);
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
@@ -441,7 +465,9 @@ public class PostServiceTest {
 				BoardWriteScope.ALL_USER,
 				false,
 				BoardVisibility.VISIBLE,
-				10);
+				10,
+				null,
+				null);
 
 			given(postReader.findById(postId)).willReturn(post);
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
@@ -460,9 +486,9 @@ public class PostServiceTest {
 			verify(postImageManager, times(1)).deleteOrphanedFiles(List.of("old-file-id"));
 		}
 
-		@DisplayName("익명 게시판에서 비익명으로 수정 시 실패")
+		@DisplayName("비익명 게시판에서 익명으로 수정 시 실패")
 		@Test
-		void updatePost_shouldFail_whenChangingToNonAnonymousOnAnonymousBoard() {
+		void updatePost_shouldFail_whenChangingToAnonymousOnNonAnonymousBoard() {
 			// given
 			Post anonymousPost = Post.of(null, "익명 게시글", updater, true, board, List.of());
 			ReflectionTestUtils.setField(anonymousPost, "id", postId);
@@ -472,28 +498,30 @@ public class PostServiceTest {
 			PostUpdateCommand command = new PostUpdateCommand(
 				postId,
 				"수정된 내용",
-				false, // 비익명으로 변경 시도
+				true, // 익명으로 변경 시도
 				updater,
 				null,
 				null);
 
 			List<String> boardAdminIds = List.of("admin-id");
-			BoardConfig anonymousBoardConfig = BoardConfig.of(
+			BoardConfig nonAnonymousBoardConfig = BoardConfig.of(
 				boardId,
-				true, // 익명 게시판
+				false, // 비익명 게시판
 				BoardReadScope.BOTH,
 				BoardWriteScope.ALL_USER,
 				false,
 				BoardVisibility.VISIBLE,
-				10);
+				10,
+				null,
+				null);
 
-			given(postReader.findById(postId)).willReturn(anonymousPost);
-			given(boardConfigReader.getByBoardId(boardId)).willReturn(anonymousBoardConfig);
+			given(postReader.findById(postId)).willReturn(post);
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(nonAnonymousBoardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
 
 			// when & then
 			assertThatThrownBy(() -> postService.update(command))
-				.hasMessageContaining("익명 게시판");
+				.hasMessageContaining("비익명 게시판에서 익명으로 작성할 수 없습니다.");
 
 			verify(postWriter, never()).updateContentAndImages(any(), any(), anyList());
 		}
@@ -519,7 +547,36 @@ public class PostServiceTest {
 				BoardWriteScope.ALL_USER,
 				false,
 				BoardVisibility.VISIBLE,
-				10);
+				10,
+				null,
+				null);
+			Mockito.lenient().when(blockReader.findBlockeeUserIdsByBlocker(viewer)).thenReturn(Set.of());
+
+			Mockito.lenient().when(boardConfigReader.getBoardConfigMapByBoardIds(anyList()))
+				.thenReturn(Map.of(boardId, boardConfig));
+		}
+
+		@DisplayName("차단한 사용자의 게시글은 목록 조회 시 제외")
+		@Test
+		void getPosts_shouldExcludeBlockedUsersPosts() {
+			// given
+			Set<String> blockedUserIds = Set.of("blocked-writer-id");
+			PostListQuery query = PostListQuery.of(viewer, List.of(boardId), null, 20, null);
+			List<String> boardAdminIds = List.of("admin-id");
+
+			given(blockReader.findBlockeeUserIdsByBlocker(viewer)).willReturn(blockedUserIds);
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
+			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(postReader.findPostsWithCursor(anyList(), eq(blockedUserIds), eq(null), eq(null), eq(20), eq(null)))
+				.willReturn(new SliceImpl<>(List.of(), PageRequest.of(0, 20), false));
+
+			// when
+			postService.getPosts(query);
+
+			// then
+			verify(blockReader, times(1)).findBlockeeUserIdsByBlocker(viewer);
+			verify(postReader, times(1)).findPostsWithCursor(
+				anyList(), eq(blockedUserIds), eq(null), eq(null), eq(20), eq(null));
 		}
 
 		@DisplayName("특정 게시판의 게시글 목록 조회 성공")
@@ -541,6 +598,7 @@ public class PostServiceTest {
 				false,
 				false,
 				true,
+				"writer-id",
 				"작성자",
 				"닉네임",
 				2020,
@@ -559,9 +617,10 @@ public class PostServiceTest {
 
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
-			given(postReader.findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(null)))
+			given(postReader.findPostsWithCursor(anyList(), anySet(), eq(null), eq(null), eq(20), eq(null)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
+			given(likePostReader.getLikedPostIds(anyString(), anyList())).willReturn(Set.of());
 
 			// when
 			PostListResult result = postService.getPosts(query);
@@ -575,7 +634,7 @@ public class PostServiceTest {
 				() -> assertThat(result.posts().get(0).boardName()).isEqualTo("테스트 게시판"),
 				() -> assertThat(result.nextCursor()).isNull());
 
-			verify(postReader, times(1)).findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(null));
+			verify(postReader, times(1)).findPostsWithCursor(anyList(), anySet(), eq(null), eq(null), eq(20), eq(null));
 		}
 
 		@DisplayName("여러 게시판의 게시글 목록 조회 성공")
@@ -593,7 +652,9 @@ public class PostServiceTest {
 				BoardWriteScope.ALL_USER,
 				false,
 				BoardVisibility.VISIBLE,
-				10);
+				10,
+				null,
+				null);
 
 			PostCursorResult postCursorResult1 = new PostCursorResult(
 				"post-id-1",
@@ -606,6 +667,7 @@ public class PostServiceTest {
 				false,
 				false,
 				true,
+				"writer-id-1",
 				"작성자1",
 				"닉네임1",
 				2020,
@@ -628,6 +690,7 @@ public class PostServiceTest {
 				false,
 				false,
 				true,
+				"writer-id-2",
 				"작성자2",
 				"닉네임2",
 				2021,
@@ -648,9 +711,12 @@ public class PostServiceTest {
 			given(boardConfigReader.getByBoardId(boardId2)).willReturn(boardConfig2);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId2)).willReturn(boardAdminIds);
-			given(postReader.findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(null)))
+			given(boardConfigReader.getBoardConfigMapByBoardIds(anyList()))
+				.willReturn(Map.of(boardId, boardConfig, boardId2, boardConfig2));
+			given(postReader.findPostsWithCursor(anyList(), anySet(), eq(null), eq(null), eq(20), eq(null)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
+			given(likePostReader.getLikedPostIds(anyString(), anyList())).willReturn(Set.of());
 
 			// when
 			PostListResult result = postService.getPosts(query);
@@ -669,7 +735,7 @@ public class PostServiceTest {
 
 			verify(boardConfigReader, times(1)).getByBoardId(boardId);
 			verify(boardConfigReader, times(1)).getByBoardId(boardId2);
-			verify(postReader, times(1)).findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(null));
+			verify(postReader, times(1)).findPostsWithCursor(anyList(), anySet(), eq(null), eq(null), eq(20), eq(null));
 		}
 
 		@DisplayName("커서 기반 페이징으로 게시글 목록 조회 성공")
@@ -692,6 +758,7 @@ public class PostServiceTest {
 				false,
 				false,
 				true,
+				"writer-id",
 				"작성자",
 				"닉네임",
 				2020,
@@ -712,12 +779,14 @@ public class PostServiceTest {
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
 			given(postReader.findPostsWithCursor(
 				anyList(),
+				anySet(),
 				eq("2024-01-01T12:00:00"),
 				eq("post-id-1"),
 				eq(20),
 				eq(null)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
+			given(likePostReader.getLikedPostIds(anyString(), anyList())).willReturn(Set.of());
 
 			// when
 			PostListResult result = postService.getPosts(query);
@@ -731,6 +800,7 @@ public class PostServiceTest {
 
 			verify(postReader, times(1)).findPostsWithCursor(
 				anyList(),
+				anySet(),
 				eq("2024-01-01T12:00:00"),
 				eq("post-id-1"),
 				eq(20),
@@ -757,6 +827,7 @@ public class PostServiceTest {
 				false,
 				false,
 				true,
+				"writer-id",
 				"작성자",
 				"닉네임",
 				2020,
@@ -775,9 +846,10 @@ public class PostServiceTest {
 
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
-			given(postReader.findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(keyword)))
+			given(postReader.findPostsWithCursor(anyList(), anySet(), eq(null), eq(null), eq(20), eq(keyword)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
+			given(likePostReader.getLikedPostIds(anyString(), anyList())).willReturn(Set.of());
 
 			// when
 			PostListResult result = postService.getPosts(query);
@@ -788,7 +860,8 @@ public class PostServiceTest {
 				() -> assertThat(result.posts()).hasSize(1),
 				() -> assertThat(result.posts().get(0).content()).contains("검색어"));
 
-			verify(postReader, times(1)).findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(keyword));
+			verify(postReader, times(1)).findPostsWithCursor(anyList(), anySet(), eq(null), eq(null), eq(20),
+				eq(keyword));
 		}
 
 		@DisplayName("게시판 ID 없이 전체 게시글 목록 조회 성공")
@@ -810,6 +883,7 @@ public class PostServiceTest {
 				false,
 				false,
 				true,
+				"writer-id",
 				"작성자",
 				"닉네임",
 				2020,
@@ -828,9 +902,11 @@ public class PostServiceTest {
 
 			given(boardConfigReader.getAccessibleBoardIdsByAcademicStatus(AcademicStatus.ENROLLED))
 				.willReturn(accessibleBoardIds);
-			given(postReader.findPostsWithCursor(eq(accessibleBoardIds), eq(null), eq(null), eq(20), eq(null)))
+			given(
+				postReader.findPostsWithCursor(eq(accessibleBoardIds), anySet(), eq(null), eq(null), eq(20), eq(null)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
+			given(likePostReader.getLikedPostIds(anyString(), anyList())).willReturn(Set.of());
 
 			// when
 			PostListResult result = postService.getPosts(query);
@@ -841,6 +917,28 @@ public class PostServiceTest {
 				() -> assertThat(result.posts()).hasSize(1));
 
 			verify(boardConfigReader, times(1)).getAccessibleBoardIdsByAcademicStatus(AcademicStatus.ENROLLED);
+		}
+
+		@DisplayName("접근 가능한 게시판이 없으면 게시글 조회 없이 빈 결과 반환")
+		@Test
+		void getPosts_shouldReturnEmpty_whenNoAccessibleBoards() {
+			// given
+			PostListQuery query = PostListQuery.of(viewer, null, null, 20, null);
+
+			given(boardConfigReader.getAccessibleBoardIdsByAcademicStatus(AcademicStatus.ENROLLED))
+				.willReturn(List.of());
+
+			// when
+			PostListResult result = postService.getPosts(query);
+
+			// then
+			assertAll(
+				() -> assertThat(result).isNotNull(),
+				() -> assertThat(result.posts()).isEmpty(),
+				() -> assertThat(result.nextCursor()).isNull());
+
+			verify(boardConfigReader, times(1)).getAccessibleBoardIdsByAcademicStatus(AcademicStatus.ENROLLED);
+			verify(postReader, never()).findPostsWithCursor(anyList(), any(), any(), any(), anyInt(), any());
 		}
 
 		@DisplayName("숨겨진 게시판은 관리자만 조회 가능")
@@ -854,7 +952,9 @@ public class PostServiceTest {
 				BoardWriteScope.ALL_USER,
 				false,
 				BoardVisibility.HIDDEN,
-				10);
+				10,
+				null,
+				null);
 
 			PostListQuery query = PostListQuery.of(viewer, List.of(boardId), null, 20, null);
 			List<String> boardAdminIds = List.of("admin-id");
@@ -882,7 +982,7 @@ public class PostServiceTest {
 
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
-			given(postReader.findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(null)))
+			given(postReader.findPostsWithCursor(anyList(), anySet(), eq(null), eq(null), eq(20), eq(null)))
 				.willReturn(emptySlice);
 
 			// when
@@ -913,6 +1013,7 @@ public class PostServiceTest {
 				false,
 				false,
 				true,
+				"writer-id",
 				"작성자",
 				"닉네임",
 				2020,
@@ -931,9 +1032,10 @@ public class PostServiceTest {
 
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
-			given(postReader.findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(null)))
+			given(postReader.findPostsWithCursor(anyList(), anySet(), eq(null), eq(null), eq(20), eq(null)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
+			given(likePostReader.getLikedPostIds(anyString(), anyList())).willReturn(Set.of());
 
 			// when
 			PostListResult result = postService.getPosts(query);
@@ -948,7 +1050,7 @@ public class PostServiceTest {
 					.isEqualTo(ProfileImageType.GHOST),
 				() -> assertThat(result.posts().get(0).writerProfileImage().profileImageUrl()).isNull());
 
-			verify(postReader, times(1)).findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(null));
+			verify(postReader, times(1)).findPostsWithCursor(anyList(), anySet(), eq(null), eq(null), eq(20), eq(null));
 		}
 
 		@DisplayName("익명 게시판에서 일반 게시글과 익명 게시글 혼합 조회")
@@ -969,6 +1071,7 @@ public class PostServiceTest {
 				false,
 				false,
 				true,
+				"writer-id-1",
 				"작성자1",
 				"닉네임1",
 				2020,
@@ -991,6 +1094,7 @@ public class PostServiceTest {
 				false,
 				false,
 				true,
+				"writer-id-2",
 				"작성자2",
 				"닉네임2",
 				2021,
@@ -1009,9 +1113,10 @@ public class PostServiceTest {
 
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
-			given(postReader.findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(null)))
+			given(postReader.findPostsWithCursor(anyList(), anySet(), eq(null), eq(null), eq(20), eq(null)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
+			given(likePostReader.getLikedPostIds(anyString(), anyList())).willReturn(Set.of());
 
 			// when
 			PostListResult result = postService.getPosts(query);
@@ -1031,7 +1136,7 @@ public class PostServiceTest {
 				() -> assertThat(result.posts().get(1).writerProfileImage().profileImageType())
 					.isEqualTo(ProfileImageType.GHOST),
 				() -> assertThat(result.posts().get(1).writerProfileImage().profileImageUrl()).isNull());
-			verify(postReader, times(1)).findPostsWithCursor(anyList(), eq(null), eq(null), eq(20), eq(null));
+			verify(postReader, times(1)).findPostsWithCursor(anyList(), anySet(), eq(null), eq(null), eq(20), eq(null));
 		}
 	}
 
@@ -1058,6 +1163,8 @@ public class PostServiceTest {
 			ReflectionTestUtils.setField(post, "id", postId);
 			ReflectionTestUtils.setField(post, "createdAt", LocalDateTime.now());
 			ReflectionTestUtils.setField(post, "updatedAt", LocalDateTime.now());
+			ReflectionTestUtils.setField(post, "isCrawled", false);
+			ReflectionTestUtils.setField(post, "isAnonymous", false);
 
 			boardConfig = BoardConfig.of(
 				boardId,
@@ -1066,7 +1173,85 @@ public class PostServiceTest {
 				BoardWriteScope.ALL_USER,
 				false,
 				BoardVisibility.VISIBLE,
-				10);
+				10,
+				null,
+				null);
+			Mockito.lenient().when(blockReader.existsByBlockerAndBlocked(any(), any())).thenReturn(false);
+		}
+
+		@DisplayName("차단한 사용자의 게시글은 상세 조회 불가")
+		@Test
+		void getPostDetail_shouldFail_whenWriterIsBlocked() {
+			// given
+			PostDetailQuery query = new PostDetailQuery(postId, viewer);
+			List<String> boardAdminIds = List.of("admin-id");
+
+			given(postReader.findById(postId)).willReturn(post);
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
+			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(blockReader.existsByBlockerAndBlocked(viewer, writer)).willReturn(true);
+
+			// when & then
+			assertThatThrownBy(() -> postService.getPostDetail(query))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.satisfies(ex -> assertThat(((BaseRunTimeV2Exception)ex).getErrorCode())
+					.isEqualTo(PostErrorCode.BLOCKED_USER_CONTENT));
+
+			verify(likePostReader, never()).countByPostId(anyString());
+		}
+
+		@DisplayName("작성자는 차단 관계여도 본인 게시글 상세 조회 가능")
+		@Test
+		void getPostDetail_shouldSucceed_asOwner_evenWhenBlocked() {
+			// given
+			PostDetailQuery query = new PostDetailQuery(postId, writer);
+			List<String> boardAdminIds = List.of("admin-id");
+
+			given(postReader.findById(postId)).willReturn(post);
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
+			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(likePostReader.countByPostId(postId)).willReturn(10L);
+			given(favoritePostReader.countByPostId(postId)).willReturn(3L);
+			given(likePostReader.existsByPostIdAndUserId(postId, "writer-id")).willReturn(false);
+			given(favoritePostReader.existsByPostIdAndUserId(postId, "writer-id")).willReturn(false);
+
+			// when
+			PostDetailResult result = postService.getPostDetail(query);
+
+			// then
+			assertAll(
+				() -> assertThat(result).isNotNull(),
+				() -> assertThat(result.id()).isEqualTo(postId),
+				() -> assertThat(result.isOwner()).isTrue());
+			verify(blockReader, never()).existsByBlockerAndBlocked(any(), any());
+		}
+
+		@DisplayName("게시판 관리자는 차단한 사용자의 게시글도 상세 조회 가능")
+		@Test
+		void getPostDetail_shouldSucceed_asBoardAdmin_evenWhenWriterIsBlocked() {
+			// given
+			User admin = ObjectFixtures.getCertifiedUserWithId("admin-id");
+			PostDetailQuery query = new PostDetailQuery(postId, admin);
+			List<String> boardAdminIds = List.of("admin-id");
+
+			given(postReader.findById(postId)).willReturn(post);
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
+			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(likePostReader.countByPostId(postId)).willReturn(10L);
+			given(favoritePostReader.countByPostId(postId)).willReturn(3L);
+			given(likePostReader.existsByPostIdAndUserId(postId, "admin-id")).willReturn(false);
+			given(favoritePostReader.existsByPostIdAndUserId(postId, "admin-id")).willReturn(false);
+
+			// when
+			PostDetailResult result = postService.getPostDetail(query);
+
+			// then
+			assertAll(
+				() -> assertThat(result).isNotNull(),
+				() -> assertThat(result.id()).isEqualTo(postId),
+				() -> assertThat(result.updatable()).isFalse(),
+				() -> assertThat(result.deletable()).isTrue());
+			verify(blockReader, never()).existsByBlockerAndBlocked(any(), any());
 		}
 
 		@DisplayName("게시글 상세 조회 성공")
@@ -1152,7 +1337,7 @@ public class PostServiceTest {
 			// then
 			assertAll(
 				() -> assertThat(result.isOwner()).isFalse(),
-				() -> assertThat(result.updatable()).isTrue(),
+				() -> assertThat(result.updatable()).isFalse(), // 게시판 관리자라도 수정 불가
 				() -> assertThat(result.deletable()).isTrue());
 		}
 
@@ -1222,7 +1407,9 @@ public class PostServiceTest {
 				BoardWriteScope.ALL_USER,
 				false,
 				BoardVisibility.HIDDEN,
-				10);
+				10,
+				null,
+				null);
 
 			PostDetailQuery query = new PostDetailQuery(postId, viewer);
 			List<String> boardAdminIds = List.of("admin-id");

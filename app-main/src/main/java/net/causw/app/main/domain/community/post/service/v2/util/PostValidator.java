@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.community.post.service.v2.util;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -20,19 +21,12 @@ import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import net.causw.app.main.shared.exception.errorcode.BoardErrorCode;
 import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
-import net.causw.global.constant.StaticValue;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class PostValidator {
-
-	public static void validateWriterNotDeleted(Post post) {
-		if (post.getWriter().isDeleted()) {
-			throw PostErrorCode.DELETED_WRITER.toBaseException();
-		}
-	}
 
 	public static void validateCreate(User creator, Board board, BoardConfig boardConfig,
 		List<String> boardAdminIds, Boolean isAnonymous) {
@@ -41,15 +35,25 @@ public class PostValidator {
 		validateAnonymousBoard(boardConfig, isAnonymous);
 	}
 
-	public static void validateDelete(User deleter, Post post, List<String> adminIds) {
-		if (post.getBoard().getCategory().equals(StaticValue.BOARD_NAME_APP_NOTICE)) {
-			// 관리자 역할이 없고, 게시글의 작성자가 아니면 오류 발생
-			if (!adminIds.contains(deleter.getId())
-				&& !post.getWriter().getId().equals(deleter.getId())) {
-				throw PostErrorCode.POST_FORBIDDEN.toBaseException();
-			}
-		}
+	public static void validateDelete(User deleter, Post post, List<String> boardAdminIds) {
 		validateUserAndBoard(deleter, post.getBoard());
+
+		// ADMIN은 무조건 삭제 가능
+		if (deleter.getRoles().contains(Role.ADMIN)) {
+			return;
+		}
+
+		// 게시글 작성자는 삭제 가능
+		if (post.getWriter().getId().equals(deleter.getId())) {
+			return;
+		}
+
+		// 게시판 관리자 검증
+		if (boardAdminIds.contains(deleter.getId())) {
+			return;
+		}
+
+		throw PostErrorCode.POST_FORBIDDEN.toBaseException();
 	}
 
 	public static void validateUpdate(User updater, Post post, List<String> adminIds, BoardConfig boardConfig,
@@ -76,7 +80,7 @@ public class PostValidator {
 		if (userState == UserState.DROP) {
 			throw UserErrorCode.USER_DROPPED.toBaseException();
 		}
-		if (user.isDeleted()) {
+		if (user.isInactive()) {
 			throw UserErrorCode.USER_INACTIVE_CAN_REJOIN.toBaseException();
 		}
 
@@ -92,6 +96,11 @@ public class PostValidator {
 	}
 
 	private static void validateWriteScope(User creator, BoardConfig boardConfig, List<String> boardAdminIds) {
+		// ADMIN은 무조건 작성 가능
+		if (creator.getRoles().contains(Role.ADMIN)) {
+			return;
+		}
+
 		BoardWriteScope writeScope = boardConfig.getWriteScope();
 		if (writeScope == BoardWriteScope.ALL_USER) {
 			return;
@@ -105,13 +114,23 @@ public class PostValidator {
 	}
 
 	private static void validateAnonymousBoard(BoardConfig boardConfig, Boolean isAnonymous) {
-		// 익명 게시판인데 비익명 게시글을 작성하려고 할 때 에러 발생
-		if (boardConfig.isAnonymous() && Boolean.FALSE.equals(isAnonymous)) {
-			throw PostErrorCode.POST_ANONYMOUS_BOARD_NOT_ALLOWED.toBaseException();
+		// 공지 게시판에서는 익명 게시글 작성 불가
+		if (boardConfig.isNotice() && Boolean.TRUE.equals(isAnonymous)) {
+			throw PostErrorCode.POST_NOTICE_BOARD_NOT_ALLOW_ANONYMOUS.toBaseException();
+		}
+
+		// 익명 비허용 게시판에서 익명 게시글 작성 불가
+		if (!boardConfig.isAnonymous() && Boolean.TRUE.equals(isAnonymous)) {
+			throw PostErrorCode.POST_ANONYMOUS_FORBIDDEN.toBaseException();
 		}
 	}
 
-	public static void validateRead(User viewer, BoardConfig boardConfig, List<String> boardAdminIds) {
+	public static void validateRead(User viewer, BoardConfig boardConfig, Collection<String> boardAdminIds) {
+		// ADMIN은 무조건 조회 가능
+		if (viewer.getRoles().contains(Role.ADMIN)) {
+			return;
+		}
+
 		// 게시판 관리자는 무조건 조회 가능
 		if (boardAdminIds.contains(viewer.getId())) {
 			return;
@@ -135,10 +154,7 @@ public class PostValidator {
 
 		// ENROLLED인 경우 재학생만 가능
 		if (readScope == BoardReadScope.ENROLLED) {
-			if (academicStatus == AcademicStatus.ENROLLED
-				|| academicStatus == AcademicStatus.LEAVE_OF_ABSENCE
-				|| academicStatus == AcademicStatus.SUSPEND
-				|| academicStatus == AcademicStatus.PROFESSOR) {
+			if (academicStatus == AcademicStatus.ENROLLED) {
 				return;
 			}
 			throw BoardErrorCode.BOARD_FORBIDDEN.toBaseException();

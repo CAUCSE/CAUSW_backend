@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * <h3>비즈니스 규칙</h3>
  * <ul>
  *   <li>CUSTOM 타입인 경우에만 URL이 포함되며, 나머지 타입은 URL이 null</li>
+ *   <li>UNSET 타입은 신규 가입 후 프로필 이미지를 아직 설정하지 않은 상태를 의미하며, URL은 null</li>
  *   <li>추방(DROP) / 탈퇴(DELETED, INACTIVE) 유저는 GHOST 타입, URL null</li>
  *   <li>차단된 유저는 GHOST 타입, URL null (비식별)</li>
  * </ul>
@@ -80,6 +81,6 @@ public record ProfileImageDto(
 
 	private static boolean isInactiveUser(User user) {
 		UserState state = user.getState();
-		return state == UserState.DROP || user.isDeleted();
+		return state == UserState.DROP || user.isInactive();
 	}
 }

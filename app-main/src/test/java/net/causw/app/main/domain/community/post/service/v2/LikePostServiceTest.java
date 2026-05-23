@@ -19,7 +19,6 @@ import net.causw.app.main.domain.community.post.service.v2.implementation.PostRe
 import net.causw.app.main.domain.community.post.service.v2.util.LikePostValidator;
 import net.causw.app.main.domain.community.reaction.service.implementation.LikePostWriter;
 import net.causw.app.main.domain.notification.notification.event.PostLikedEvent;
-import net.causw.app.main.domain.user.account.entity.user.User;
 
 @ExtendWith(MockitoExtension.class)
 public class LikePostServiceTest {
@@ -43,23 +42,16 @@ public class LikePostServiceTest {
 	@DisplayName("게시글 좋아요 테스트")
 	class LikePostTest {
 		Post post;
-		User writer;
 
 		@BeforeEach
 		void setUp() {
-			writer = mock(User.class);
 			post = mock(Post.class);
-
-			given(post.getWriter()).willReturn(writer);
-			given(writer.isDeleted()).willReturn(false);
 			given(postReader.findById("post-id")).willReturn(post);
 		}
 
 		@DisplayName("게시글 좋아요 성공")
 		@Test
 		void likePost_shouldSucceed() {
-			// given
-
 			// when
 			likePostService.likePost("user-id", "post-id");
 
@@ -73,7 +65,6 @@ public class LikePostServiceTest {
 		@Test
 		void likePost_shouldFail_whenAlreadyLiked() {
 			// given
-
 			doThrow(new RuntimeException())
 				.when(likePostValidator).validateForLike("user-id", "post-id");
 
@@ -88,18 +79,6 @@ public class LikePostServiceTest {
 	@Nested
 	@DisplayName("게시글 좋아요 취소 테스트")
 	class CancelLikePostTest {
-		Post post;
-		User writer;
-
-		@BeforeEach
-		void setUp() {
-			writer = mock(User.class);
-			post = mock(Post.class);
-
-			given(post.getWriter()).willReturn(writer);
-			given(writer.isDeleted()).willReturn(false);
-			given(postReader.findById("post-id")).willReturn(post);
-		}
 
 		@DisplayName("게시글 좋아요 취소 성공")
 		@Test

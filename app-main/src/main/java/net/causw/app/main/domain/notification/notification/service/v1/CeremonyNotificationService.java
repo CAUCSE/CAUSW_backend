@@ -128,7 +128,6 @@ public class CeremonyNotificationService implements NotificationService {
 		ceremonyNotificationSettings.stream()
 			.map(CeremonyNotificationSetting::getUser)
 			.forEach(user -> {
-				fcmUtils.cleanInvalidFcmTokens(user);
 				Set<String> copy = new HashSet<>(user.getFcmTokens());
 				copy.forEach(
 					token -> send(user, token, ceremonyNotificationDto.getTitle(), ceremonyNotificationDto.getBody()));

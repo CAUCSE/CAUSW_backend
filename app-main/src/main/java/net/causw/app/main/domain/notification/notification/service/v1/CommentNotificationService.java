@@ -87,7 +87,6 @@ public class CommentNotificationService implements NotificationService {
 		userCommentSubscribeList.stream()
 			.map(UserCommentSubscribe::getUser)
 			.forEach(user -> {
-				fcmUtils.cleanInvalidFcmTokens(user);
 				Set<String> copy = new HashSet<>(user.getFcmTokens());
 				copy.forEach(
 					token -> send(user, token, commentNotificationDto.getTitle(), commentNotificationDto.getBody()));

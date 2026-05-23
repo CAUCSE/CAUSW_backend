@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.hibernate.annotations.BatchSize;
 
@@ -24,6 +25,7 @@ import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
 import net.causw.app.main.domain.user.auth.service.dto.OAuthAttributes;
 import net.causw.app.main.shared.entity.BaseEntity;
+import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -104,7 +106,7 @@ public class User extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	@Column(name = "profile_image_type", nullable = false)
 	@Builder.Default
-	private ProfileImageType profileImageType = ProfileImageType.MALE_1;
+	private ProfileImageType profileImageType = ProfileImageType.UNSET;
 
 	@Column(name = "state", nullable = false)
 	@Enumerated(EnumType.STRING)
@@ -127,10 +129,10 @@ public class User extends BaseEntity {
 	@Builder.Default
 	private Boolean isV2 = true;
 
-	@ElementCollection(fetch = FetchType.LAZY)
-	@CollectionTable(name = "tb_user_fcm_token", joinColumns = @JoinColumn(name = "user_id"))
-	@Column(name = "fcm_token_value")
-	private Set<String> fcmTokens = new HashSet<>();
+	@BatchSize(size = 100)
+	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+	@Builder.Default
+	private Set<FcmToken> fcmTokenEntities = new HashSet<>();
 
 	// 신고 관련 필드
 	@Column(name = "report_count", nullable = false)
@@ -143,11 +145,8 @@ public class User extends BaseEntity {
 
 	// 자진 탈퇴 처리
 	public void withdraw(LocalDateTime now) {
+		this.state = UserState.INACTIVE;
 		this.deletedAt = now;
-		this.academicStatus = AcademicStatus.UNDETERMINED;
-		if (this.fcmTokens != null) {
-			this.fcmTokens.clear();
-		}
 	}
 
 	/*
@@ -170,8 +169,21 @@ public class User extends BaseEntity {
 		this.graduationType = null;
 	}
 
+	/**
+	 * deletedAt 존재 여부로 탈퇴 상태를 판정하던 메서드입니다.
+	 * @deprecated 탈퇴 상태 판정은 {@link #isInactive()} 사용을 권장합니다.
+	 */
+	@Deprecated
 	public boolean isDeleted() {
 		return this.deletedAt != null;
+	}
+
+	public boolean isInactive() {
+		return this.state == UserState.INACTIVE;
+	}
+
+	public boolean isDropped() {
+		return this.state == UserState.DROP;
 	}
 
 	/**
@@ -306,7 +318,7 @@ public class User extends BaseEntity {
 
 	// 활성 사용자이고 권한 있는 역할이 아닐 경우 추방 가능
 	public boolean isDroppable() {
-		boolean isDroppableState = this.state == UserState.ACTIVE && !this.isDeleted();
+		boolean isDroppableState = this.state == UserState.ACTIVE;
 		boolean isDroppableRole = this.roles.stream()
 			.noneMatch(Role.getPrivilegedRoles()::contains);
 		return isDroppableState && isDroppableRole;
@@ -342,6 +354,15 @@ public class User extends BaseEntity {
 		this.deletedAt = now;
 	}
 
+	/**
+	 * V1에서 이용하던 회원 탈퇴 처리입니다.
+	 * @deprecated V2 탈퇴에서는 withdraw(LocalDateTime)을 이용합니다.
+	 */
+	public void withdraw() {
+		this.state = UserState.INACTIVE;
+		this.deletedAt = LocalDateTime.now();
+	}
+
 	// 탈퇴, 추방된 유저의 계정 복구에 사용
 	public void restore() {
 		this.state = UserState.ACTIVE;
@@ -358,8 +379,19 @@ public class User extends BaseEntity {
 		this.rejectionOrDropReason = null; // 거절 사유 초기화
 	}
 
+	public Set<String> getFcmTokens() {
+		return fcmTokenEntities.stream()
+			.map(FcmToken::getTokenValue)
+			.collect(Collectors.toUnmodifiableSet());
+	}
+
 	public boolean removeFcmToken(String targetToken) {
-		return this.fcmTokens.remove(targetToken);
+		return fcmTokenEntities.removeIf(t -> t.getTokenValue().equals(targetToken));
+	}
+
+	// FCM 토큰 전체 삭제
+	public void clearFcmTokens() {
+		this.fcmTokenEntities.clear();
 	}
 
 	public boolean isOnlySocialUser() {
@@ -375,8 +407,8 @@ public class User extends BaseEntity {
 	 * 기존 커스텀 이미지(UserProfileImage)는 null로 초기화됩니다.
 	 */
 	public void updateProfileImageToDefault(ProfileImageType defaultType) {
-		if (defaultType == ProfileImageType.CUSTOM) {
-			throw new IllegalArgumentException("기본 이미지 타입만 허용됩니다.");
+		if (defaultType == ProfileImageType.CUSTOM || defaultType == ProfileImageType.UNSET) {
+			throw UserErrorCode.INVALID_PROFILE_IMAGE_TYPE.toBaseException();
 		}
 		this.profileImageType = defaultType;
 	}

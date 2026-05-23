@@ -2,6 +2,7 @@ package net.causw.app.main.domain.community.post.service.v2;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.jetbrains.annotations.NotNull;
@@ -10,8 +11,10 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.PostAttachImage;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.FileReader;
 import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
@@ -37,7 +40,9 @@ import net.causw.app.main.domain.community.reaction.service.implementation.Favor
 import net.causw.app.main.domain.community.reaction.service.implementation.LikePostReader;
 import net.causw.app.main.domain.notification.notification.event.OfficialPostEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.relation.service.v2.implementation.BlockReader;
+import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
 import net.causw.global.constant.StaticValue;
 
 import lombok.RequiredArgsConstructor;
@@ -57,6 +62,7 @@ public class PostService {
 	private final BlockReader userBlockReader;
 	private final ApplicationEventPublisher eventPublisher;
 	private final UserProfileImageReader userProfileImageReader;
+	private final FileReader fileReader;
 
 	/**
 	 * 게시글을 생성합니다. 게시글 내용과 첨부 이미지를 저장합니다.
@@ -101,7 +107,8 @@ public class PostService {
 	@Transactional
 	public void deletePost(User deleter, String postId) {
 		Post post = postReader.findById(postId);
-		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
+		String boardId = post.getBoard().getId();
+		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(boardId);
 		PostValidator.validateDelete(deleter, post, boardAdminIds);
 
 		// 소프트 삭제 처리
@@ -181,9 +188,18 @@ public class PostService {
 			boardIds = boardConfigReader.getAccessibleBoardIdsByAcademicStatus(viewer.getAcademicStatus());
 		}
 
+		// 접근 가능한 게시판이 없으면 게시글 조회를 건너뛰고 빈 결과를 반환
+		if (boardIds.isEmpty()) {
+			return PostListResult.of(List.of(), null);
+		}
+
+		// 뷰어가 차단한 사용자 조회
+		Set<String> blockedUserIds = userBlockReader.findBlockeeUserIdsByBlocker(viewer);
+
 		// 게시글 조회 (Slice 사용)
 		Slice<PostCursorResult> slice = postReader.findPostsWithCursor(
 			boardIds,
+			blockedUserIds,
 			parsedCursor.createdAt(),
 			parsedCursor.postId(),
 			size,
@@ -206,13 +222,27 @@ public class PostService {
 			? Map.of()
 			: postReader.findPostImagesByPostIds(postIds);
 
-		// PostListResult로 변환 (PostMapper 사용)
-		List<PostListResult.PostItem> postItems = posts.stream()
-			.map(result -> {
-				List<String> imageUrls = postImagesMap.getOrDefault(result.postId(), List.of());
-				return PostMapper.toPostListItem(result, imageUrls);
-			})
+		// 좋아요 여부 배치 조회
+		Set<String> likedPostIds = postIds.isEmpty()
+			? Set.of()
+			: likePostReader.getLikedPostIds(viewer.getId(), postIds);
+
+		// 게시판 설정 배치 조회
+		List<String> uniqueBoardIds = posts.stream().map(PostCursorResult::boardId).filter(Objects::nonNull)
+			.distinct().toList();
+		Map<String, BoardConfig> boardConfigMap = boardConfigReader.getBoardConfigMapByBoardIds(uniqueBoardIds);
+
+		// 작성자 중 Role이 ADMIN인 사용자 ID 조회 (시스템 관리자 판별용)
+		List<String> writerIds = posts.stream()
+			.map(PostCursorResult::writerId)
+			.filter(Objects::nonNull)
+			.distinct()
 			.toList();
+		Set<String> adminWriterIds = postReader.findAdminUserIds(writerIds);
+
+		// PostListResult로 변환 (PostMapper 사용)
+		List<PostListResult.PostItem> postItems = buildPostItems(posts, postImagesMap, likedPostIds, viewer,
+			boardConfigMap, adminWriterIds);
 
 		return PostListResult.of(postItems, nextCursor);
 	}
@@ -237,6 +267,13 @@ public class PostService {
 		// ReadScope 검증
 		PostValidator.validateRead(viewer, boardConfig, boardAdminIds);
 
+		// 차단한 사용자가 작성한 게시글은 조회 불가
+		User writer = post.getWriter();
+		if (writer != null && !writer.getId().equals(viewer.getId()) && !boardAdminIds.contains(viewer.getId())
+			&& userBlockReader.existsByBlockerAndBlocked(viewer, writer)) {
+			throw PostErrorCode.BLOCKED_USER_CONTENT.toBaseException();
+		}
+
 		// 게시글 이미지 조회
 		List<String> imageUrls = postReader.findPostImages(postId);
 
@@ -252,12 +289,27 @@ public class PostService {
 		// 게시글 작성자 여부
 		boolean isOwner = post.getWriter().getId().equals(viewer.getId());
 
-		// 수정/삭제 가능 여부 (작성자 또는 게시판 관리자)
-		boolean updatable = isOwner || boardAdminIds.contains(viewer.getId());
-		boolean deletable = isOwner || boardAdminIds.contains(viewer.getId());
+		// 수정/삭제 가능 여부 (수정은 작성자만, 삭제는 작성자 + 게시판 관리자 + 시스템 관리자)
+		boolean updatable = isOwner;
+		boolean deletable = isOwner || boardAdminIds.contains(viewer.getId()) || viewer.getRoles().contains(Role.ADMIN);
+
+		// 닉네임 마스킹 및 공식 배지 여부 판단
+		boolean isNotice = boardConfig.isNotice() || post.getIsCrawled();
+		boolean isAdmin = post.getWriter() != null && post.getWriter().getRoles().contains(Role.ADMIN);
+		boolean isOfficial = isNotice || (isAdmin && !post.getIsAnonymous());
+
+		// 공식 프로필 정보 조회
+		String officialNickname = boardConfig.getOfficialNickname();
+		String officialImageUrl = null;
+		if (boardConfig.getOfficialProfileImageId() != null) {
+			UuidFile file = fileReader.findByIdOptional(boardConfig.getOfficialProfileImageId()).orElse(null);
+			if (file != null && Boolean.TRUE.equals(file.getIsUsed())) {
+				officialImageUrl = file.getFileUrl();
+			}
+		}
 
 		// 작성자 프로필 이미지 조회
-		UserProfileImage writerProfileImage = (post.getWriter() != null)
+		UserProfileImage writerProfileImage = (!isNotice && post.getWriter() != null)
 			? userProfileImageReader.findByUserIdOrNull(post.getWriter().getId())
 			: null;
 
@@ -273,7 +325,11 @@ public class PostService {
 			isPostFavorite,
 			isOwner,
 			updatable,
-			deletable);
+			deletable,
+			isNotice,
+			isOfficial,
+			officialNickname,
+			officialImageUrl);
 	}
 
 	/**
@@ -297,7 +353,7 @@ public class PostService {
 			parsedCursor.postId(),
 			pageSize);
 
-		return getPostListResult(slice);
+		return getPostListResult(slice, user);
 	}
 
 	/**
@@ -318,7 +374,7 @@ public class PostService {
 			parsedCursor.postId(),
 			pageSize);
 
-		return getPostListResult(slice);
+		return getPostListResult(slice, user);
 	}
 
 	/**
@@ -340,11 +396,11 @@ public class PostService {
 			parsedCursor.postId(),
 			pageSize);
 
-		return getPostListResult(slice);
+		return getPostListResult(slice, user);
 	}
 
 	@NotNull
-	private PostListResult getPostListResult(Slice<PostCursorResult> slice) {
+	private PostListResult getPostListResult(Slice<PostCursorResult> slice, User viewer) {
 		List<PostCursorResult> posts = slice.getContent();
 		if (posts.isEmpty()) {
 			return PostListResult.of(List.of(), null);
@@ -353,12 +409,23 @@ public class PostService {
 		List<String> postIds = posts.stream().map(PostCursorResult::postId).toList();
 		Map<String, List<String>> postImagesMap = postReader.findPostImagesByPostIds(postIds);
 
-		List<PostListResult.PostItem> postItems = posts.stream()
-			.map(result -> {
-				List<String> imageUrls = postImagesMap.getOrDefault(result.postId(), List.of());
-				return PostMapper.toPostListItem(result, imageUrls);
-			})
+		Set<String> likedPostIds = likePostReader.getLikedPostIds(viewer.getId(), postIds);
+
+		// 게시판 설정 배치 조회
+		List<String> uniqueBoardIds = posts.stream().map(PostCursorResult::boardId).filter(Objects::nonNull)
+			.distinct().toList();
+		Map<String, BoardConfig> boardConfigMap = boardConfigReader.getBoardConfigMapByBoardIds(uniqueBoardIds);
+
+		// 작성자 중 Role이 ADMIN인 사용자 ID 조회 (시스템 관리자 판별용)
+		List<String> writerIds = posts.stream()
+			.map(PostCursorResult::writerId)
+			.filter(Objects::nonNull)
+			.distinct()
 			.toList();
+		Set<String> adminWriterIds = postReader.findAdminUserIds(writerIds);
+
+		List<PostListResult.PostItem> postItems = buildPostItems(posts, postImagesMap, likedPostIds, viewer,
+			boardConfigMap, adminWriterIds);
 
 		String nextCursor = null;
 		if (slice.hasNext()) {
@@ -367,5 +434,53 @@ public class PostService {
 		}
 
 		return PostListResult.of(postItems, nextCursor);
+	}
+
+	/**
+	 * 게시글 목록(PostCursorResult)을 PostItem 리스트로 변환합니다.
+	 * 게시판별 boardAdmin 목록을 통해 공식계정 여부를 판단하고, 좋아요/소유 여부를 포함한 PostItem을 생성합니다.
+	 *
+	 * @param posts          변환할 게시글 커서 결과 목록
+	 * @param postImagesMap  게시글 ID → 이미지 URL 목록 맵
+	 * @param likedPostIds   viewer가 좋아요한 게시글 ID 집합
+	 * @param viewer         조회 요청 사용자
+	 * @param boardConfigMap 게시판 ID → BoardConfig맵
+	 * @return PostItem 리스트
+	 */
+	private List<PostListResult.PostItem> buildPostItems(
+		List<PostCursorResult> posts,
+		Map<String, List<String>> postImagesMap,
+		Set<String> likedPostIds,
+		User viewer,
+		Map<String, BoardConfig> boardConfigMap,
+		Set<String> adminWriterIds) {
+
+		return posts.stream()
+			.map(result -> {
+				List<String> imageUrls = postImagesMap.getOrDefault(result.postId(), List.of());
+				boolean isPostLike = likedPostIds.contains(result.postId());
+				boolean isOwner = result.writerId() != null && result.writerId().equals(viewer.getId());
+
+				BoardConfig boardConfig = boardConfigMap.get(result.boardId());
+
+				// 마스킹 및 공식배지 판단
+				boolean isNotice = (boardConfig != null && boardConfig.isNotice()) || result.isCrawled();
+				boolean isAdmin = result.writerId() != null && adminWriterIds.contains(result.writerId());
+				boolean isOfficial = isNotice || (isAdmin && !result.isAnonymous());
+
+				String officialNickname = boardConfig != null ? boardConfig.getOfficialNickname() : null;
+				String officialImageUrl = null;
+				if (boardConfig != null && boardConfig.getOfficialProfileImageId() != null) {
+					UuidFile file = fileReader.findByIdOptional(boardConfig.getOfficialProfileImageId()).orElse(null);
+					if (file != null && Boolean.TRUE.equals(file.getIsUsed())) {
+						officialImageUrl = file.getFileUrl();
+					}
+				}
+
+				return PostMapper.toPostListItem(result, imageUrls, isPostLike, isOwner, isNotice, isOfficial,
+					officialNickname,
+					officialImageUrl);
+			})
+			.toList();
 	}
 }

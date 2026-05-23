@@ -1,8 +1,11 @@
 package net.causw.app.main.domain.community.post.service.v2.implementation;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Component;
@@ -12,6 +15,8 @@ import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.community.post.repository.query.PostCursorResult;
 import net.causw.app.main.domain.community.post.repository.query.PostQueryRepository;
+import net.causw.app.main.domain.integration.crawled.entity.CrawledPostImage;
+import net.causw.app.main.domain.integration.crawled.repository.CrawledPostImageRepository;
 import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -26,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 public class PostReader {
 	private final PostRepository postRepository;
 	private final PostQueryRepository postQueryRepository;
+	private final CrawledPostImageRepository crawledPostImageRepository;
 
 	/**
 	 * Post ID로 Post를 조회합니다. (Board와 함께 Fetch Join)
@@ -36,6 +42,22 @@ public class PostReader {
 	public Post findById(String postId) {
 		return postRepository.findById(postId)
 			.orElseThrow(PostErrorCode.POST_NOT_FOUND::toBaseException);
+	}
+
+	/**
+	 * 여러 Post ID를 한 번에 조회하고, ID를 키로 하는 Map으로 반환합니다.
+	 * 각 Post는 Board와 함께 조회됩니다.
+	 *
+	 * @param postIds Post ID 목록
+	 * @return Post ID → Post Entity Map
+	 */
+	public Map<String, Post> findPostMapByIds(Collection<String> postIds) {
+		if (postIds == null || postIds.isEmpty()) {
+			return Map.of();
+		}
+
+		return postRepository.findAllByIdInWithBoard(postIds).stream()
+			.collect(Collectors.toMap(Post::getId, Function.identity()));
 	}
 
 	/**
@@ -53,6 +75,7 @@ public class PostReader {
 	 * 커서 기반 페이징으로 게시글 목록을 조회합니다. (V2용)
 	 *
 	 * @param boardIds 게시판 ID 목록 (null이면 전체 게시판)
+	 * @param blockedUserIds 차단된 유저 ID 목록 (null이면 차단된 유저 없음)
 	 * @param cursorCreatedAt 커서 (마지막 게시글의 createdAt)
 	 * @param cursorId 커서 (마지막 게시글의 ID)
 	 * @param size 조회할 개수
@@ -61,11 +84,13 @@ public class PostReader {
 	 */
 	public Slice<PostCursorResult> findPostsWithCursor(
 		List<String> boardIds,
+		Set<String> blockedUserIds,
 		String cursorCreatedAt,
 		String cursorId,
 		int size,
 		String keyword) {
-		return postQueryRepository.findPostsWithCursor(boardIds, cursorCreatedAt, cursorId, size, keyword);
+		return postQueryRepository.findPostsWithCursor(
+			boardIds, blockedUserIds, cursorCreatedAt, cursorId, size, keyword);
 	}
 
 	/**
@@ -112,13 +137,25 @@ public class PostReader {
 	}
 
 	/**
-	 * 여러 게시글의 이미지 URL 목록을 조회합니다.
+	 * 여러 게시글의 이미지 URL 목록을 조회합니다. (S3 업로드 이미지 + 크롤링 이미지 병합)
 	 *
 	 * @param postIds 게시글 ID 목록
 	 * @return 게시글 ID를 키로, 이미지 URL 목록을 값으로 하는 맵
 	 */
 	public Map<String, List<String>> findPostImagesByPostIds(List<String> postIds) {
-		return postQueryRepository.findPostImagesByPostIds(postIds);
+		// S3 업로드 이미지 조회
+		Map<String, List<String>> imageMap = new java.util.HashMap<>(
+			postQueryRepository.findPostImagesByPostIds(postIds));
+
+		// 크롤링 이미지 병합
+		List<CrawledPostImage> crawledImages = crawledPostImageRepository
+			.findAllByPostIdInOrderByPostIdAscImageOrderAsc(postIds);
+		for (CrawledPostImage crawledImage : crawledImages) {
+			imageMap.computeIfAbsent(crawledImage.getPost().getId(), k -> new java.util.ArrayList<>())
+				.add(crawledImage.getImageUrl());
+		}
+
+		return imageMap;
 	}
 
 	/**
@@ -140,5 +177,14 @@ public class PostReader {
 	 */
 	public long countComments(String postId) {
 		return postQueryRepository.countCommentsByPostId(postId);
+	}
+
+	/**
+	 * 특정 사용자 ID 목록 중 최고 관리자(ADMIN) 권한을 가진 사용자 ID를 조회합니다.
+	 * @param userIds 조회할 사용자 ID 목록
+	 * @return ADMIN 권한을 가진 사용자 ID Set
+	 */
+	public Set<String> findAdminUserIds(List<String> userIds) {
+		return postQueryRepository.findAdminUserIds(userIds);
 	}
 }

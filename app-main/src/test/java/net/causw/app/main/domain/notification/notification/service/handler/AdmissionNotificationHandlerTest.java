@@ -59,9 +59,7 @@ class AdmissionNotificationHandlerTest {
 		void givenAdminsWithNotificationOn_whenHandleRequest_thenSendToAdmins() {
 			// given
 			User requester = mock(User.class);
-			// 성공 경로에서 pushBody 포맷에 사용되는 stub
 			given(requester.getName()).willReturn("홍길동");
-			given(requester.getStudentId()).willReturn("20191234");
 
 			User admin1 = userWithId("adminId1");
 			User admin2 = userWithId("adminId2");
@@ -76,7 +74,7 @@ class AdmissionNotificationHandlerTest {
 			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
 
 			// when
-			handler.handleRequest(new AdmissionRequestedEvent("requesterId", AcademicStatus.ENROLLED));
+			handler.handleRequest(new AdmissionRequestedEvent("requesterId", AcademicStatus.ENROLLED, "20191234"));
 
 			// then
 			verify(notificationWriter).save(any());
@@ -93,7 +91,7 @@ class AdmissionNotificationHandlerTest {
 			given(userReader.findAdminsByAcademicStatus(AcademicStatus.ENROLLED)).willReturn(List.of());
 
 			// when
-			handler.handleRequest(new AdmissionRequestedEvent("requesterId", AcademicStatus.ENROLLED));
+			handler.handleRequest(new AdmissionRequestedEvent("requesterId", AcademicStatus.ENROLLED, "20191234"));
 
 			// then
 			verify(notificationWriter, never()).save(any());
@@ -105,7 +103,6 @@ class AdmissionNotificationHandlerTest {
 			// given
 			User requester = mock(User.class);
 			given(requester.getName()).willReturn("홍길동");
-			given(requester.getStudentId()).willReturn("20191234");
 
 			User adminOn = userWithId("adminOnId");
 			User adminOff = userWithId("adminOffId");
@@ -120,7 +117,7 @@ class AdmissionNotificationHandlerTest {
 			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
 
 			// when
-			handler.handleRequest(new AdmissionRequestedEvent("requesterId", AcademicStatus.ENROLLED));
+			handler.handleRequest(new AdmissionRequestedEvent("requesterId", AcademicStatus.ENROLLED, "20191234"));
 
 			// then
 			verify(notificationPushSender).sendToUser(eq(adminOn), any(), any());

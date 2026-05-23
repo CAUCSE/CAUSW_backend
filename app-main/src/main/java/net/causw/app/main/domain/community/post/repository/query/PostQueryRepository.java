@@ -1,6 +1,9 @@
 package net.causw.app.main.domain.community.post.repository.query;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -24,6 +27,7 @@ import net.causw.app.main.domain.community.post.entity.QPost;
 import net.causw.app.main.domain.community.reaction.entity.QFavoritePost;
 import net.causw.app.main.domain.community.reaction.entity.QLikePost;
 import net.causw.app.main.domain.user.account.entity.user.QUser;
+import net.causw.app.main.domain.user.account.enums.user.Role;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.SubQueryExpression;
@@ -86,16 +90,24 @@ public class PostQueryRepository {
 	 * @param boardIds 게시판 ID 목록 (null이면 전체 게시판, 빈 리스트면 조회 안함)
 	 * @param cursorCreatedAt 커서 (마지막 게시글의 createdAt)
 	 * @param cursorId 커서 (마지막 게시글의 ID, createdAt이 같을 때 사용)
+	 * @param blockedUserIds 차단한 사용자 ID 목록 (해당 사용자 게시글 제외)
 	 * @param size 조회할 개수
 	 * @param keyword 검색 키워드 (content 기준)
 	 * @return 게시글 목록 Slice
 	 */
 	public Slice<PostCursorResult> findPostsWithCursor(
 		List<String> boardIds,
+		Set<String> blockedUserIds,
 		String cursorCreatedAt,
 		String cursorId,
 		int size,
 		String keyword) {
+		// 빈 리스트가 전달된 경우 "조회 가능한 게시판이 한 개도 없음"을 의미하므로 즉시 빈 결과 반환.
+		// (null은 docstring 계약상 "전체 게시판"이므로 별도 처리하지 않음)
+		if (boardIds != null && boardIds.isEmpty()) {
+			return new SliceImpl<>(List.of(), Pageable.ofSize(size), false);
+		}
+
 		QPost post = QPost.post;
 		QUser writer = new QUser("writer");
 
@@ -112,6 +124,7 @@ public class PostQueryRepository {
 		BooleanExpression[] conditions = new BooleanExpression[] {
 			boardCondition,
 			post.isDeleted.eq(false),
+			notInBlockedUsers(writer, blockedUserIds),
 			containsKeywordInContent(post, keyword),
 			cursorCondition
 		};
@@ -424,7 +437,7 @@ public class PostQueryRepository {
 			totalCommentCount, likeCount, favoriteCount,
 			post.isAnonymous, post.vote.id, post.isDeleted,
 			post.isCrawled,
-			writer.isNotNull(), writer.name, writer.nickname, writer.admissionYear, writer.state,
+			writer.isNotNull(), writer.id, writer.name, writer.nickname, writer.admissionYear, writer.state,
 			writer.profileImageType,
 			writerProfileImageUrl,
 			post.createdAt, post.updatedAt,
@@ -432,7 +445,7 @@ public class PostQueryRepository {
 	}
 
 	/**
-	 * 특정 게시글들의 이미지 URL 목록을 조회합니다.
+	 * 특정 게시글들의 S3 업로드 이미지 URL 목록을 조회합니다.
 	 *
 	 * @param postIds 게시글 ID 목록
 	 * @return 게시글 ID를 키로, 이미지 URL 목록을 값으로 하는 맵
@@ -449,12 +462,12 @@ public class PostQueryRepository {
 				postAttachImage.uuidFile.createdAt.asc())
 			.fetch();
 
-		return results.stream()
+		return new HashMap<>(results.stream()
 			.collect(Collectors.groupingBy(
 				tuple -> tuple.get(postAttachImage.post.id),
 				Collectors.mapping(
 					tuple -> tuple.get(postAttachImage.uuidFile.fileUrl),
-					Collectors.toList())));
+					Collectors.toList()))));
 	}
 
 	/**
@@ -484,5 +497,27 @@ public class PostQueryRepository {
 			.fetchOne();
 
 		return (commentCount != null ? commentCount : 0L) + (childCommentCount != null ? childCommentCount : 0L);
+	}
+
+	/**
+	 * 주어진 사용자 ID 목록 중 최고 관리자(ADMIN) 권한을 가진 사용자 ID를 조회합니다.
+	 * @param userIds 확인할 사용자 ID 목록
+	 * @return ADMIN 권한을 가진 사용자 ID Set
+	 */
+	public Set<String> findAdminUserIds(List<String> userIds) {
+		if (userIds == null || userIds.isEmpty()) {
+			return Collections.emptySet();
+		}
+
+		QUser user = QUser.user;
+
+		List<String> adminIds = jpaQueryFactory.select(user.id)
+			.from(user)
+			.where(
+				user.id.in(userIds),
+				user.roles.any().eq(Role.ADMIN))
+			.fetch();
+
+		return new HashSet<>(adminIds);
 	}
 }

@@ -24,12 +24,15 @@ public record PostListResult(
 		boolean isDeleted,
 		boolean isCrawled,
 		String writerNickname, // 익명인 경우 "익명", 아니면 실제 닉네임
-		ProfileImageDto writerProfileImage, // 익명인 경우 null
+		ProfileImageDto writerProfileImage, // 익명/차단/추방/탈퇴 시 GHOST
 		LocalDateTime createdAt,
 		LocalDateTime updatedAt,
 		List<String> postImageUrls,
 		String boardId,
-		String boardName) {
+		String boardName,
+		boolean isPostLike,
+		boolean isOwner,
+		boolean isOfficial) {
 		public static PostItem of(
 			String postId,
 			String content,
@@ -46,13 +49,16 @@ public record PostListResult(
 			LocalDateTime updatedAt,
 			List<String> postImageUrls,
 			String boardId,
-			String boardName) {
+			String boardName,
+			boolean isPostLike,
+			boolean isOwner,
+			boolean isOfficial) {
 			return new PostItem(
 				postId, content, numComment, numLike, numFavorite,
 				isAnonymous, voteId, isDeleted, isCrawled,
 				writerNickname, writerProfileImage,
 				createdAt, updatedAt, postImageUrls,
-				boardId, boardName);
+				boardId, boardName, isPostLike, isOwner, isOfficial);
 		}
 	}
 }

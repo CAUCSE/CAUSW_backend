@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.CeremonyAttachImage;
 import net.causw.app.main.domain.asset.file.repository.CeremonyAttachImageRepository;
-import net.causw.app.main.domain.asset.file.service.v2.UuidFileService;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.FileWriter;
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
 import net.causw.app.main.domain.community.ceremony.repository.CeremonyRepository;
 import net.causw.app.main.domain.user.account.entity.user.User;
@@ -22,7 +22,7 @@ public class CeremonyWriter {
 
 	private final CeremonyRepository ceremonyRepository;
 	private final CeremonyAttachImageRepository ceremonyAttachImageRepository;
-	private final UuidFileService uuidFileService;
+	private final FileWriter fileWriter;
 
 	public Ceremony save(Ceremony ceremony) {
 		return ceremonyRepository.save(ceremony);
@@ -67,13 +67,12 @@ public class CeremonyWriter {
 		List<CeremonyAttachImage> attachImages = ceremonyAttachImageRepository.findAllByCeremony_IdIn(ceremonyIds);
 
 		if (!attachImages.isEmpty()) {
-			List<String> fileIds = attachImages.stream()
+			List<UuidFile> uuidFiles = attachImages.stream()
 				.map(CeremonyAttachImage::getUuidFile)
-				.map(UuidFile::getId)
 				.toList();
 
 			ceremonyAttachImageRepository.deleteAll(attachImages);
-			uuidFileService.deleteFileList(fileIds);
+			fileWriter.deleteList(uuidFiles);
 		}
 
 		ceremonyRepository.deleteAll(ceremonies);

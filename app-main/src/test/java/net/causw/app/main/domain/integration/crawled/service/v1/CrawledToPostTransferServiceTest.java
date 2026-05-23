@@ -1,7 +1,6 @@
 package net.causw.app.main.domain.integration.crawled.service.v1;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.mock;
 import static org.mockito.BDDMockito.never;
@@ -20,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.springframework.context.ApplicationEventPublisher;
 
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.repository.BoardRepository;
@@ -27,7 +27,8 @@ import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
 import net.causw.app.main.domain.integration.crawled.repository.CrawledNoticeRepository;
-import net.causw.app.main.domain.notification.notification.service.v1.BoardNotificationService;
+import net.causw.app.main.domain.integration.crawled.repository.CrawledPostImageRepository;
+import net.causw.app.main.domain.notification.notification.event.OfficialPostEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.global.constant.StaticValue;
@@ -53,7 +54,10 @@ public class CrawledToPostTransferServiceTest {
 	private BoardRepository boardRepository;
 
 	@Mock
-	private BoardNotificationService boardNotificationService;
+	private CrawledPostImageRepository crawledPostImageRepository;
+
+	@Mock
+	private ApplicationEventPublisher applicationEventPublisher;
 
 	@Test
 	@DisplayName("새 공지사항이 Post로 변환되어 저장됨")
@@ -79,7 +83,7 @@ public class CrawledToPostTransferServiceTest {
 		verify(postRepository).save(any(Post.class));
 		verify(crawledNoticeRepository).save(newNotice);
 
-		verify(boardNotificationService).sendByBoardIsSubscribed(eq(mockBoard), any(Post.class));
+		verify(applicationEventPublisher).publishEvent(any(OfficialPostEvent.class));
 	}
 
 	@Test

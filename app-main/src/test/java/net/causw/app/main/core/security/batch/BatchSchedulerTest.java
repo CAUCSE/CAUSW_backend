@@ -22,11 +22,11 @@ import net.causw.app.main.core.batch.BatchScheduler;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
+import net.causw.app.main.domain.user.account.service.UserProfileImageService;
 import net.causw.app.main.domain.user.account.service.implementation.AdmissionWriter;
 import net.causw.app.main.domain.user.account.service.implementation.SocialAccountWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserInfoWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
-import net.causw.app.main.shared.infra.firebase.FcmUtils;
 import net.causw.app.main.shared.pageable.PageableFactory;
 
 @ExtendWith(MockitoExtension.class)
@@ -37,8 +37,6 @@ public class BatchSchedulerTest {
 
 	@Mock
 	private JobLauncher jobLauncher;
-	@Mock
-	private FcmUtils fcmUtils;
 	@Mock
 	private UserRepository userRepository;
 	@Mock
@@ -55,6 +53,8 @@ public class BatchSchedulerTest {
 	private UserWriter userWriter;
 	@Mock
 	private Job cleanUpUnusedFilesJob;
+	@Mock
+	private UserProfileImageService userProfileImageService;
 
 	@Test
 	@DisplayName("유예기간 지난 탈퇴 유저가 있으면 후처리 writer들을 순서대로 호출한다")
@@ -77,6 +77,7 @@ public class BatchSchedulerTest {
 		verify(userRepository).findAllByDeletedAtIsNotNullAndDeletedAtBefore(
 			any(LocalDateTime.class),
 			any(Pageable.class));
+		verify(userProfileImageService, times(1)).cleanupProfileImagesForBatch(anyList());
 		verify(userInfoWriter).deleteUserInfoByUsers(withdrawnUsers);
 		verify(ceremonyWriter).deleteCeremonyByUsers(withdrawnUsers);
 		verify(socialAccountWriter).deleteSocialAccountsByUsers(withdrawnUsers);

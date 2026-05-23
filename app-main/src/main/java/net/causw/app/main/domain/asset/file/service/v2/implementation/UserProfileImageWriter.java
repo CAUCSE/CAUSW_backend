@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.asset.file.service.v2.implementation;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -7,8 +8,10 @@ import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.asset.file.repository.UserProfileImageRepository;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.event.UserProfileImageDeletionRequestedEvent;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 유저 프로필 이미지 쓰기 전담 컴포넌트
@@ -16,9 +19,12 @@ import lombok.RequiredArgsConstructor;
 @Component
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class UserProfileImageWriter {
 
 	private final UserProfileImageRepository userProfileImageRepository;
+	private final UserProfileImageReader userProfileImageReader;
+	private final ApplicationEventPublisher applicationEventPublisher;
 
 	/**
 	 * 프로필 이미지를 저장합니다.
@@ -51,11 +57,24 @@ public class UserProfileImageWriter {
 	}
 
 	/**
-	 * 유저 ID에 해당하는 프로필 이미지를 삭제합니다.
+	 * 탈퇴 처리 시 커스텀 프로필 이미지 파일 삭제를 요청합니다.
+	 * <p>
+	 * 프로필 이미지 연결 정보와 파일 메타데이터는 D+30 배치에서 최종 삭제합니다.
+	 * </p>
 	 *
-	 * @param userId 유저 ID
+	 * @param userId 탈퇴 처리할 유저 ID
 	 */
-	public void deleteByUserId(String userId) {
-		userProfileImageRepository.deleteByUserId(userId);
+	public void requestDeletionForWithdrawal(String userId) {
+		userProfileImageReader.findByUserId(userId).ifPresent(profileImage -> {
+			UuidFile uuidFile = profileImage.getUuidFile();
+
+			if (uuidFile == null) {
+				log.warn("[User Withdraw] 프로필 이미지 파일 정보가 없어 삭제 요청을 건너뜁니다. userId: {}", userId);
+				return;
+			}
+
+			applicationEventPublisher.publishEvent(
+				new UserProfileImageDeletionRequestedEvent(uuidFile.getFileKey()));
+		});
 	}
 }

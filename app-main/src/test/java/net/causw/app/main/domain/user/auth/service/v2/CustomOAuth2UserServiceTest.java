@@ -33,6 +33,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import net.causw.app.main.domain.user.account.entity.user.SocialAccount;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.service.implementation.SocialAccountWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
@@ -54,6 +55,9 @@ class CustomOAuth2UserServiceTest {
 
 	@Mock
 	private UserWriter userWriter;
+
+	@Mock
+	private SocialAccountWriter socialAccountWriter;
 
 	@Mock
 	private UserValidator userValidator;
@@ -138,7 +142,7 @@ class CustomOAuth2UserServiceTest {
 			verify(droppedUserIdentifierValidator).validateEmail("test@test.com");
 			verify(userValidator).checkAccountExistByUserAndSocialType(any(), any());
 			verify(userValidator).validateUserStatusForIntegration(any(User.class));
-			verify(userWriter).save(any(SocialAccount.class));
+			verify(socialAccountWriter).save(any(SocialAccount.class));
 			verify(userWriter, never()).save(any(User.class));
 		}
 	}
@@ -161,7 +165,7 @@ class CustomOAuth2UserServiceTest {
 			//verify
 			verify(droppedUserIdentifierValidator).validateEmail("test@test.com");
 			verify(userWriter).save(any(User.class));
-			verify(userWriter).save(any(SocialAccount.class));
+			verify(socialAccountWriter).save(any(SocialAccount.class));
 		}
 	}
 
@@ -241,7 +245,7 @@ class CustomOAuth2UserServiceTest {
 
 			//verify
 			verify(userValidator).validateUserStatusForIntegration(any(User.class));
-			verify(userWriter, never()).save(any(SocialAccount.class));
+			verify(socialAccountWriter, never()).save(any(SocialAccount.class));
 		}
 	}
 
@@ -288,7 +292,7 @@ class CustomOAuth2UserServiceTest {
 			assertNotNull(result);
 
 			verify(userWriter).save(any(User.class));
-			verify(userWriter).save(any(SocialAccount.class));
+			verify(socialAccountWriter).save(any(SocialAccount.class));
 		}
 	}
 
@@ -334,7 +338,7 @@ class CustomOAuth2UserServiceTest {
 			verify(userReader).findBySocialTypeAndSocialId(any(), any());
 			verify(userReader, never()).findByEmail(any());
 			verify(userWriter, never()).save(any(User.class));
-			verify(userWriter, never()).save(any(SocialAccount.class));
+			verify(socialAccountWriter, never()).save(any(SocialAccount.class));
 		}
 	}
 
@@ -380,7 +384,7 @@ class CustomOAuth2UserServiceTest {
 			assertEquals(AuthErrorCode.SOCIAL_EMAIL_REQUIRED, cause.getErrorCode());
 
 			verify(userWriter, never()).save(any(User.class));
-			verify(userWriter, never()).save(any(SocialAccount.class));
+			verify(socialAccountWriter, never()).save(any(SocialAccount.class));
 		}
 	}
 }

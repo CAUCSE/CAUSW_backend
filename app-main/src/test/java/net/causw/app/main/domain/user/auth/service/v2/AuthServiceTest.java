@@ -37,12 +37,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
+import net.causw.app.main.domain.notification.notification.service.implementation.UserPushTokenWriter;
 import net.causw.app.main.domain.user.account.entity.user.SocialAccount;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.SocialType;
 import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
 import net.causw.app.main.domain.user.account.service.implementation.SocialAccountReader;
-import net.causw.app.main.domain.user.account.service.implementation.UserPushTokenWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
@@ -168,6 +168,7 @@ public class AuthServiceTest {
 			given(termsReader.findAllById(anyList())).willReturn(List.of(serviceTerms, privacyTerms));
 			given(emailVerificationReader.findLatestByEmailAndStatus(EMAIL, VerificationStatus.VERIFIED))
 				.willReturn(verifiedEmail);
+			given(authTokenManager.issueTokens(any(User.class), eq(null))).willReturn(authTokenPair);
 
 			// when
 			AuthResult result = authService.registerEmailUser(registerDto);
@@ -175,8 +176,8 @@ public class AuthServiceTest {
 			// then
 			assertThat(result).isNotNull();
 			assertThat(result.email()).isEqualTo(EMAIL);
-			assertThat(result.accessToken()).isNull();
-			assertThat(result.refreshToken()).isNull();
+			assertThat(result.accessToken()).isEqualTo(ACCESS_TOKEN);
+			assertThat(result.refreshToken()).isEqualTo(REFRESH_TOKEN);
 
 			// verify
 			verify(droppedUserIdentifierValidator).validateEmail(EMAIL);
@@ -637,7 +638,7 @@ public class AuthServiceTest {
 			// given
 			User deletedUser = mock(User.class);
 			given(userReader.checkUserExistByPhoneNumAndName(PHONE, NAME)).willReturn(Optional.of(deletedUser));
-			given(deletedUser.isDeleted()).willReturn(true);
+			given(deletedUser.isInactive()).willReturn(true);
 
 			// when
 			Optional<EmailFindResult> result = authService.findEmail(NAME, PHONE);
@@ -656,7 +657,7 @@ public class AuthServiceTest {
 			SocialAccount apple = mock(SocialAccount.class);
 
 			given(userReader.checkUserExistByPhoneNumAndName(PHONE, NAME)).willReturn(Optional.of(socialOnlyUser));
-			given(socialOnlyUser.isDeleted()).willReturn(false);
+			given(socialOnlyUser.isInactive()).willReturn(false);
 			given(socialOnlyUser.getId()).willReturn(USER_ID);
 			given(socialOnlyUser.isOnlySocialUser()).willReturn(true);
 			given(socialAccountReader.findAllByUserId(USER_ID)).willReturn(List.of(kakao, apple));
@@ -687,7 +688,7 @@ public class AuthServiceTest {
 			// given
 			User emailUser = mock(User.class);
 			given(userReader.checkUserExistByPhoneNumAndName(PHONE, NAME)).willReturn(Optional.of(emailUser));
-			given(emailUser.isDeleted()).willReturn(false);
+			given(emailUser.isInactive()).willReturn(false);
 			given(emailUser.getId()).willReturn(USER_ID);
 			given(emailUser.isOnlySocialUser()).willReturn(false);
 			given(emailUser.getEmail()).willReturn(EMAIL_FOR_FIND);

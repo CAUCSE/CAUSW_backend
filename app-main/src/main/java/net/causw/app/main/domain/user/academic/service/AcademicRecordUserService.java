@@ -9,7 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
-import net.causw.app.main.domain.asset.file.service.v2.UuidFileService;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.FileWriter;
 import net.causw.app.main.domain.user.academic.api.v2.dto.request.EnrollmentApplicationRequest;
 import net.causw.app.main.domain.user.academic.api.v2.dto.request.GraduationApplicationRequest;
 import net.causw.app.main.domain.user.academic.api.v2.dto.response.AcademicStatusResponse;
@@ -34,10 +34,10 @@ public class AcademicRecordUserService {
 
 	private final UserReader userReader;
 	private final UserWriter userWriter;
-	private final UuidFileService uuidFileService;
 	private final AcademicRecordApplicationWriter applicationWriter;
 	private final AcademicRecordLogCreator logCreator;
 	private final ApplicationEventPublisher eventPublisher;
+	private final FileWriter fileWriter;
 
 	/**
 	 * 졸업 상태 변경 요청을 처리한다.
@@ -97,8 +97,7 @@ public class AcademicRecordUserService {
 		List<MultipartFile> uploadedImageFileList = extractUploadedImageFiles(imageFileList);
 		validateEnrollmentTransition(user, uploadedImageFileList);
 
-		List<UuidFile> savedFiles = uuidFileService.saveFileList(
-			uploadedImageFileList,
+		List<UuidFile> savedFiles = fileWriter.uploadAndSaveList(uploadedImageFileList,
 			FilePath.USER_ACADEMIC_RECORD_APPLICATION);
 
 		UserAcademicRecordApplication application = applicationWriter.createEnrollmentApplication(

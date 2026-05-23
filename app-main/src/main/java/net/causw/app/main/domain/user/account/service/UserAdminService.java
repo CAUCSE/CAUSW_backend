@@ -25,8 +25,10 @@ import net.causw.app.main.domain.user.account.service.dto.response.UserRestoreWi
 import net.causw.app.main.domain.user.account.service.dto.response.UserRoleUpdateResult;
 import net.causw.app.main.domain.user.account.service.dto.result.DeletedUserListItemDto;
 import net.causw.app.main.domain.user.account.service.implementation.DroppedUserIdentifierWriter;
+import net.causw.app.main.domain.user.account.service.implementation.UserAccountCleanupWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserAdminActionLogWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
+import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 
@@ -43,7 +45,8 @@ public class UserAdminService {
 	private final UserAdminActionLogWriter userAdminActionLogWriter;
 	private final UserProfileImageReader userProfileImageReader;
 	private final DroppedUserIdentifierWriter droppedUserIdentifierWriter;
-	private final UserAccountService userAccountService;
+	private final UserValidator userValidator;
+	private final UserAccountCleanupWriter userAccountCleanupWriter;
 
 	// 필터링 조건과 페이징 정보를 기반으로 전체 사용자 목록 조회
 	@Transactional(readOnly = true)
@@ -74,6 +77,8 @@ public class UserAdminService {
 		UserState beforeState = targetUser.getState();
 		Set<Role> beforeRoles = new HashSet<>(targetUser.getRoles());
 
+		userAccountCleanupWriter.cleanupForDrop(targetUser);
+
 		lockerReader.findByUserId(targetUser.getId()).ifPresent(locker -> {
 			lockerWriter.releaseLocker(locker, adminUser, targetUser.getEmail(), targetUser.getName());
 		});
@@ -95,7 +100,7 @@ public class UserAdminService {
 		UserState beforeState = targetUser.getState();
 		Set<Role> beforeRoles = new HashSet<>(targetUser.getRoles());
 
-		User restoredUser = userAccountService.restore(targetUser.getId());
+		User restoredUser = userWriter.restore(targetUser);
 		userAdminActionLogWriter.logRestore(adminUser, restoredUser, beforeState, beforeRoles);
 		return UserRestoreResult.from(restoredUser);
 	}
@@ -109,7 +114,7 @@ public class UserAdminService {
 		UserState beforeState = targetUser.getState();
 		Set<Role> beforeRoles = new HashSet<>(targetUser.getRoles());
 
-		User restoredUser = userAccountService.restore(targetUser.getId());
+		User restoredUser = userWriter.restore(targetUser);
 
 		userAdminActionLogWriter.logRestore(adminUser, restoredUser, beforeState, beforeRoles);
 
@@ -138,24 +143,24 @@ public class UserAdminService {
 
 	// 사용자 복원이 가능한지 검증
 	// - DROP 상태만 복원 가능
+	// - 추방 후 30일 이내 복구 가능
 	private void validateRestorableUser(User targetUser) {
-		if (targetUser.getState() != UserState.DROP) {
+		if (!targetUser.isDropped()) {
 			throw UserErrorCode.USER_NOT_RESTORABLE.toBaseException();
 		}
+
+		userValidator.validateRestorable(targetUser);
 	}
 
 	// 자진 탈퇴 사용자 복원이 가능한지 검증
-	// - DROP 상태가 아니어야 하며, 실제로 탈퇴(isDeleted) 상태여야 함
+	// - INACTIVE 상태 (INACTIVE가 deletedAt 설정을 보장)
+	// - 자진 탈퇴 후 30일 이내 복구 가능
 	private void validateRestorableWithdrawnUser(User targetUser) {
-		// 1. 추방(DROP)된 유저는 이 API를 통해 복구할 수 없음 (restoreUser API 사용 유도)
-		if (targetUser.getState() == UserState.DROP) {
-			throw UserErrorCode.USER_NOT_RESTORABLE.toBaseException();
+		if (!targetUser.isInactive()) {
+			throw UserErrorCode.USER_WITHDRAWN_NOT_RESTORABLE.toBaseException();
 		}
 
-		// 2. 실제로 탈퇴(isDeleted) 상태인 유저여야 함
-		if (!targetUser.isDeleted()) {
-			throw UserErrorCode.USER_NOT_RESTORABLE.toBaseException();
-		}
+		userValidator.validateRestorable(targetUser);
 	}
 
 	// 요청된 currentRole이 사용자의 실제 역할과 일치하는지 검증
@@ -166,9 +171,9 @@ public class UserAdminService {
 	}
 
 	// 역할 변경 가능한 대상인지 검증
-	// - ACTIVE 상태여야 하고 탈퇴(isDeleted) 상태가 아니어야 함
+	// - ACTIVE 상태여야 함
 	private void validateRoleUpdatableUser(User targetUser) {
-		boolean roleUpdatable = targetUser.getState() == UserState.ACTIVE && !targetUser.isDeleted();
+		boolean roleUpdatable = targetUser.getState() == UserState.ACTIVE;
 		if (!roleUpdatable) {
 			throw UserErrorCode.USER_NOT_ROLE_UPDATABLE.toBaseException();
 		}

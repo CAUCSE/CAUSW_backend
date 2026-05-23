@@ -115,8 +115,6 @@ public class BoardNotificationService implements NotificationService {
 		userBoardSubscribeList.stream()
 			.map(UserBoardSubscribe::getUser)
 			.forEach(user -> {
-				// 유효하지 않은 FCM 토큰 정리
-				fcmUtils.cleanInvalidFcmTokens(user);
 				// FCM 토큰 복사 (동시성 문제 방지)
 				Set<String> copy = new HashSet<>(user.getFcmTokens());
 				// 각 토큰으로 푸시 알림 전송

@@ -1,7 +1,6 @@
 package net.causw.app.main.core.batch;
 
 import java.time.LocalDateTime;
-import java.time.temporal.IsoFields;
 import java.util.List;
 
 import org.springframework.batch.core.Job;
@@ -15,11 +14,11 @@ import org.springframework.scheduling.annotation.Scheduled;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
+import net.causw.app.main.domain.user.account.service.UserProfileImageService;
 import net.causw.app.main.domain.user.account.service.implementation.AdmissionWriter;
 import net.causw.app.main.domain.user.account.service.implementation.SocialAccountWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserInfoWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
-import net.causw.app.main.shared.infra.firebase.FcmUtils;
 import net.causw.app.main.shared.pageable.PageableFactory;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.constant.StaticValue;
@@ -36,7 +35,6 @@ import lombok.extern.slf4j.Slf4j;
 public class BatchScheduler {
 
 	private final JobLauncher jobLauncher;
-	private final FcmUtils fcmUtils;
 	private final UserRepository userRepository;
 	private final PageableFactory pageableFactory;
 	private final UserInfoWriter userInfoWriter;
@@ -44,6 +42,7 @@ public class BatchScheduler {
 	private final SocialAccountWriter socialAccountWriter;
 	private final UserWriter userWriter;
 	private final AdmissionWriter admissionWriter;
+	private final UserProfileImageService userProfileImageService;
 
 	@Resource(name = "cleanUpUnusedFilesJob")
 	private Job cleanUpUnusedFilesJob;
@@ -59,28 +58,6 @@ public class BatchScheduler {
 			jobLauncher.run(cleanUpUnusedFilesJob, jobParameters);
 		} catch (Exception e) {
 			log.error("Batch job failed: {}", e.getMessage()); // 예외 로깅 추가
-			throw new InternalServerException(ErrorCode.INTERNAL_SERVER, MessageUtil.BATCH_FAIL + e.getMessage());
-		}
-	}
-
-	@Scheduled(cron = "0 0 5 ? * MON")
-	public void scheduleCleanInvalidFcmTokens() {
-		if (!isEvenWeek())
-			return;
-
-		try {
-			log.info("[FCM 배치] 유효하지 않은 FCM 토큰 정리 시작");
-
-			int pageNum = 0;
-			Page<User> userPage;
-			do {
-				userPage = userRepository.findAll(pageableFactory.create(pageNum++, StaticValue.BATCH_USER_LIST_SIZE));
-				userPage.forEach(fcmUtils::cleanInvalidFcmTokens);
-			} while (!userPage.isLast());
-
-			log.info("[FCM 배치] 유효하지 않은 FCM 토큰 정리 완료");
-		} catch (Exception e) {
-			log.error("FCM 정리 배치 실패: {}", e.getMessage(), e);
 			throw new InternalServerException(ErrorCode.INTERNAL_SERVER, MessageUtil.BATCH_FAIL + e.getMessage());
 		}
 	}
@@ -104,6 +81,7 @@ public class BatchScheduler {
 					break;
 				}
 
+				userProfileImageService.cleanupProfileImagesForBatch(withdrawnUsers);
 				userInfoWriter.deleteUserInfoByUsers(withdrawnUsers);
 				ceremonyWriter.deleteCeremonyByUsers(withdrawnUsers);
 				socialAccountWriter.deleteSocialAccountsByUsers(withdrawnUsers);
@@ -121,10 +99,6 @@ public class BatchScheduler {
 				ErrorCode.INTERNAL_SERVER,
 				MessageUtil.BATCH_FAIL + e.getMessage());
 		}
-	}
-
-	private boolean isEvenWeek() {
-		return LocalDateTime.now().get(IsoFields.WEEK_OF_WEEK_BASED_YEAR) % 2 == 0;
 	}
 
 }

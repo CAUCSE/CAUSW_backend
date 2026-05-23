@@ -14,7 +14,6 @@ import net.causw.app.main.domain.user.account.entity.user.SocialAccount;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
 import net.causw.app.main.domain.user.account.enums.user.Role;
-import net.causw.app.main.domain.user.account.repository.user.SocialAccountRepository;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -26,16 +25,11 @@ import lombok.extern.slf4j.Slf4j;
 public class UserWriter {
 
 	private final UserRepository userRepository;
-	private final SocialAccountRepository socialAccountRepository;
 	private final SocialAccountReader socialAccountReader;
 	private final SocialAccountUnlinkManager socialAccountUnlinkManager;
 
 	public User save(User user) {
 		return this.userRepository.save(user);
-	}
-
-	public SocialAccount save(SocialAccount socialAccount) {
-		return socialAccountRepository.save(socialAccount);
 	}
 
 	/**
@@ -68,9 +62,9 @@ public class UserWriter {
 		return this.userRepository.save(user);
 	}
 
-	public User withdraw(User user) {
+	public void withdraw(User user) {
 		user.withdraw(LocalDateTime.now());
-		return this.userRepository.save(user);
+		this.userRepository.save(user);
 	}
 
 	public User dropByAdmin(User user, String dropReason) {
@@ -127,7 +121,7 @@ public class UserWriter {
 
 			for (SocialAccount socialAccount : socialAccounts) {
 				try {
-					socialAccountUnlinkManager.unlink(socialAccount);
+					socialAccountUnlinkManager.unlink(socialAccount, null);
 				} catch (Exception e) {
 					log.error("[유저 정리 배치] 소셜 연동 해제 실패 - userId: {}, socialType: {}",
 						user.getId(), socialAccount.getSocialType(), e);
@@ -141,7 +135,7 @@ public class UserWriter {
 	}
 
 	private boolean isAlreadyAnonymized(User user) {
-		return user.isDeleted() &&
+		return user.isInactive() &&
 			user.getEmail() != null &&
 			user.getEmail().startsWith("deleted_");
 	}
