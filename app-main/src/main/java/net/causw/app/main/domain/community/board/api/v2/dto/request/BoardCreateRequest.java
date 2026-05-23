@@ -20,5 +20,5 @@ public record BoardCreateRequest(
 	@Schema(description = "공지 게시판 여부", example = "false") @NotNull Boolean isNotice,
 	@Schema(description = "게시판 노출 여부", example = "VISIBLE") @NotNull BoardVisibility visibility,
 	@Schema(description = "공지 작성자 닉네임 (마스킹용)", example = "게시판 관리자") String officialNickname,
-	@Schema(description = "공지 작성자 프로필 이미지 ID (마스킹용)") String officialProfileImageId) {
+	@Schema(description = "공지 작성자 프로필 이미지 파일 ID (마스킹용)") String officialProfileImageId) {
 }
