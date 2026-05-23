@@ -18,5 +18,5 @@ public record BoardConfigPart(
 	boolean isNotice,
 	BoardVisibility visibility,
 	String officialNickname,
-	String officialProfileImageUrl) {
+	String officialProfileImageId) {
 }

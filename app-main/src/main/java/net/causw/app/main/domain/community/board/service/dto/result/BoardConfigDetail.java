@@ -25,6 +25,6 @@ public record BoardConfigDetail(
 	BoardVisibility visibility,
 	Integer displayOrder,
 	String officialNickname,
-	String officialProfileImageUrl,
+	String officialProfileImageId,
 	List<BoardConfigAdmin> admins) {
 }

@@ -11,8 +11,10 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.PostAttachImage;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
+import net.causw.app.main.domain.asset.file.service.v2.implementation.FileReader;
 import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
@@ -60,6 +62,7 @@ public class PostService {
 	private final BlockReader userBlockReader;
 	private final ApplicationEventPublisher eventPublisher;
 	private final UserProfileImageReader userProfileImageReader;
+	private final FileReader fileReader;
 
 	/**
 	 * 게시글을 생성합니다. 게시글 내용과 첨부 이미지를 저장합니다.
@@ -296,7 +299,13 @@ public class PostService {
 
 		// 공식 프로필 정보 조회
 		String officialNickname = boardConfig.getOfficialNickname();
-		String officialImageUrl = boardConfig.getOfficialProfileImageUrl();
+		String officialImageUrl = null;
+		if (boardConfig != null && boardConfig.getOfficialProfileImageId() != null) {
+			UuidFile file = fileReader.findByIdOptional(boardConfig.getOfficialProfileImageId()).orElse(null);
+			if (file != null && Boolean.TRUE.equals(file.getIsUsed())) {
+				officialImageUrl = file.getFileUrl();
+			}
+		}
 
 		// 작성자 프로필 이미지 조회
 		UserProfileImage writerProfileImage = (!isNotice && post.getWriter() != null)
@@ -459,7 +468,13 @@ public class PostService {
 				boolean isOfficial = isNotice || (isAdmin & !result.isAnonymous());
 
 				String officialNickname = boardConfig != null ? boardConfig.getOfficialNickname() : null;
-				String officialImageUrl = boardConfig != null ? boardConfig.getOfficialProfileImageUrl() : null;
+				String officialImageUrl = null;
+				if (boardConfig != null && boardConfig.getOfficialProfileImageId() != null) {
+					UuidFile file = fileReader.findByIdOptional(boardConfig.getOfficialProfileImageId()).orElse(null);
+					if (file != null && Boolean.TRUE.equals(file.getIsUsed())) {
+						officialImageUrl = file.getFileUrl();
+					}
+				}
 
 				return PostMapper.toPostListItem(result, imageUrls, isPostLike, isOwner, isNotice, isOfficial,
 					officialNickname,

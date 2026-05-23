@@ -56,12 +56,12 @@ public class BoardConfig extends AuditableEntity {
 	@Column(name = "official_nickname")
 	private String officialNickname;
 
-	@Column(name = "official_profile_image_url")
-	private String officialProfileImageUrl;
+	@Column(name = "official_profile_image_id")
+	private String officialProfileImageId;
 
 	public static BoardConfig of(String boardId, boolean isAnonymous, BoardReadScope readScope,
 		BoardWriteScope writeScope, boolean isNotice, BoardVisibility visibility, int displayOrder,
-		String officialNickname, String officialProfileImageUrl) {
+		String officialNickname, String officialProfileImageId) {
 		return BoardConfig.builder()
 			.boardId(boardId)
 			.isAnonymous(isAnonymous)
@@ -71,19 +71,19 @@ public class BoardConfig extends AuditableEntity {
 			.visibility(visibility)
 			.displayOrder(displayOrder)
 			.officialNickname(officialNickname)
-			.officialProfileImageUrl(officialProfileImageUrl)
+			.officialProfileImageId(officialProfileImageId)
 			.build();
 	}
 
 	public void update(boolean isAnonymous, BoardReadScope readScope, BoardWriteScope writeScope,
-		boolean isNotice, BoardVisibility visibility, String officialNickname, String officialProfileImageUrl) {
+		boolean isNotice, BoardVisibility visibility, String officialNickname, String officialProfileImageId) {
 		this.isAnonymous = isAnonymous;
 		this.readScope = readScope;
 		this.writeScope = writeScope;
 		this.isNotice = isNotice;
 		this.visibility = visibility;
 		this.officialNickname = officialNickname;
-		this.officialProfileImageUrl = officialProfileImageUrl;
+		this.officialProfileImageId = officialProfileImageId;
 	}
 
 	public void updateDisplayOrder(int displayOrder) {

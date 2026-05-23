@@ -20,6 +20,6 @@ public interface BoardConfigPartMapper {
 			part.visibility(),
 			displayOrder,
 			part.officialNickname(),
-			part.officialProfileImageUrl());
+			part.officialProfileImageId());
 	}
 }
