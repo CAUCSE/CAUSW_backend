@@ -25,6 +25,7 @@ public class AdmissionValidator {
 	/**
 	 * 재학정보 인증 신청이 가능한 상태인지 검증합니다.
 	 *
+	 * - 졸업자가 아닌 경우 학번 필수
 	 * - 추방된 학번인지 검증 (Blocked User)
 	 * - 사용자 상태가 AWAIT 또는 REJECT인 경우만 신청 가능
 	 * - 기존 신청이 존재하지 않아야 함
@@ -34,12 +35,25 @@ public class AdmissionValidator {
 	public void validateAdmissionCreate(User user, String requestedStudentId,
 		AcademicStatus requestedAcademicStatus, Integer graduationYear,
 		List<MultipartFile> attachImages) {
+		validateStudentIdRequired(requestedStudentId, requestedAcademicStatus);
 		validateBlockedStudentId(requestedStudentId);
 		validateUserStateForAdmission(user);
 		validateNoExistingAdmission(user);
 		validateAttachImages(attachImages);
 		validateStudentIdNotDuplicated(requestedStudentId);
 		validateGraduationYear(requestedAcademicStatus, graduationYear);
+	}
+
+	/**
+	 * 졸업자가 아닌 경우 학번이 필수임을 검증합니다.
+	 */
+	public void validateStudentIdRequired(String requestedStudentId, AcademicStatus requestedAcademicStatus) {
+		if (requestedAcademicStatus == AcademicStatus.GRADUATED) {
+			return;
+		}
+		if (requestedStudentId == null || requestedStudentId.isBlank()) {
+			throw UserErrorCode.STUDENT_ID_REQUIRED.toBaseException();
+		}
 	}
 
 	/**
@@ -83,7 +97,7 @@ public class AdmissionValidator {
 	 * DROP 상태의 사용자가 사용 중이면 예외를 발생시킵니다.
 	 */
 	public void validateStudentIdNotDuplicated(String requestedStudentId) {
-		if (requestedStudentId == null) {
+		if (requestedStudentId == null || requestedStudentId.isBlank()) {
 			return;
 		}
 

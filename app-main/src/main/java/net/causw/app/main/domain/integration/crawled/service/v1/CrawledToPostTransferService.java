@@ -6,6 +6,7 @@ import java.util.List;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,7 +19,7 @@ import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledPostImage;
 import net.causw.app.main.domain.integration.crawled.repository.CrawledNoticeRepository;
 import net.causw.app.main.domain.integration.crawled.repository.CrawledPostImageRepository;
-import net.causw.app.main.domain.notification.notification.service.v1.BoardNotificationService;
+import net.causw.app.main.domain.notification.notification.event.OfficialPostEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.global.constant.MessageUtil;
@@ -37,8 +38,9 @@ public class CrawledToPostTransferService {
 	private final PostRepository postRepository;
 	private final UserRepository userRepository;
 	private final BoardRepository boardRepository;
-	private final BoardNotificationService boardNotificationService;
 	private final CrawledPostImageRepository crawledPostImageRepository;
+
+	private final ApplicationEventPublisher applicationEventPublisher;
 
 	//크롤링 된 공지를 게시글로 반환
 	@Transactional
@@ -116,7 +118,8 @@ public class CrawledToPostTransferService {
 			savePostImages(newPost, imageUrls);
 
 			// 새 게시글인 경우에만 알림 전송
-			boardNotificationService.sendByBoardIsSubscribed(board, newPost);
+			//			boardNotificationService.sendByBoardIsSubscribed(board, newPost);
+			applicationEventPublisher.publishEvent(new OfficialPostEvent(board.getId(), newPost.getId()));
 		}
 		return true;
 	}
