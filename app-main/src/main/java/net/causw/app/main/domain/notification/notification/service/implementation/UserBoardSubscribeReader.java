@@ -1,13 +1,11 @@
 package net.causw.app.main.domain.notification.notification.service.implementation;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import net.causw.app.main.shared.entity.BaseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,21 +42,20 @@ public class UserBoardSubscribeReader {
 		List<UserBoardSubscribe> userBoardSubscribes = userBoardSubscribeRepository.findByUserAndBoardIn(user, boards);
 		// boardId -> 알림 설정 기록
 		Map<String, UserBoardSubscribe> boardIdSubscribeMap = userBoardSubscribes.stream().collect(Collectors.toMap(
-				userBoardSubscribe -> {
-					var board = userBoardSubscribe.getBoard();
-					return board.getId();
-				},
-				Function.identity()
-		));
+			userBoardSubscribe -> {
+				var board = userBoardSubscribe.getBoard();
+				return board.getId();
+			},
+			Function.identity()));
 
 		return boards.stream()
-				.map(Board::getId)
-				.filter(id -> {
-					UserBoardSubscribe boardSubscribe = boardIdSubscribeMap.get(id);
+			.map(Board::getId)
+			.filter(id -> {
+				UserBoardSubscribe boardSubscribe = boardIdSubscribeMap.get(id);
 
-					// boardSubscribe가 존재하지 않거나, 알림을 명시적으로 켜둔 경우 모두 return
-					return boardSubscribe == null || Boolean.TRUE.equals(boardSubscribe.getIsSubscribed());
-				}).collect(Collectors.toSet());
+				// boardSubscribe가 존재하지 않거나, 알림을 명시적으로 켜둔 경우 모두 return
+				return boardSubscribe == null || Boolean.TRUE.equals(boardSubscribe.getIsSubscribed());
+			}).collect(Collectors.toSet());
 	}
 
 	public List<UserBoardSubscribe> findForNotification(Board board, Set<String> blockerUserIds) {
