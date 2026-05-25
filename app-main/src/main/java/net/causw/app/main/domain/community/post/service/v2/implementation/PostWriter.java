@@ -63,6 +63,21 @@ public class PostWriter {
 	}
 
 	/**
+	 * Post의 내용, 익명 여부, 이미지를 업데이트합니다.
+	 *
+	 * @param post 수정할 Post
+	 * @param content 내용
+	 * @param isAnonymous 익명 여부
+	 * @param postAttachImageList 첨부 이미지 리스트
+	 * @return 수정된 Post Entity
+	 */
+	public Post updateContentImagesAndAnonymous(Post post, String content, Boolean isAnonymous,
+		List<PostAttachImage> postAttachImageList) {
+		post.updateContentImagesAndAnonymous(content, isAnonymous, postAttachImageList);
+		return postRepository.save(post);
+	}
+
+	/**
 	 * Post에 Vote를 연결합니다.
 	 *
 	 * @param post Post Entity

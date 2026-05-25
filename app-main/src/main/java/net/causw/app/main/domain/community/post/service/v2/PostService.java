@@ -139,8 +139,8 @@ public class PostService {
 			post, command.newImageFiles(), command.imageMetas());
 
 		// 게시글 업데이트
-		Post updatedPost = postWriter.updateContentAndImages(
-			post, command.content(), imageResult.finalImages());
+		Post updatedPost = postWriter.updateContentImagesAndAnonymous(
+			post, command.content(), command.isAnonymous(), imageResult.finalImages());
 
 		List<String> imageUrls = imageResult.finalImages().stream()
 			.map(img -> img.getUuidFile().getFileUrl())

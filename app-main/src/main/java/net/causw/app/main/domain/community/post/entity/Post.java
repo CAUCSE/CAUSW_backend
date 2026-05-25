@@ -164,6 +164,14 @@ public class Post extends BaseEntity {
 		this.postAttachImageList.addAll(postAttachImageList);
 	}
 
+	public void updateContentImagesAndAnonymous(String content, Boolean isAnonymous,
+		List<PostAttachImage> postAttachImageList) {
+		this.content = content;
+		this.isAnonymous = isAnonymous;
+		this.postAttachImageList.clear();
+		this.postAttachImageList.addAll(postAttachImageList);
+	}
+
 	public void setIsDeleted(Boolean isDeleted) {
 		this.isDeleted = isDeleted;
 		if (form != null) {
