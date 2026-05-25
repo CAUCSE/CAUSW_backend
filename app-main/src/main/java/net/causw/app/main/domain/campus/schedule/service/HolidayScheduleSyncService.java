@@ -1,7 +1,6 @@
 package net.causw.app.main.domain.campus.schedule.service;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.Year;
 import java.time.ZoneId;
 import java.util.HashSet;
