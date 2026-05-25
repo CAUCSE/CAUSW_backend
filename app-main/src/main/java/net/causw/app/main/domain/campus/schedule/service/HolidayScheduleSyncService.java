@@ -68,7 +68,7 @@ public class HolidayScheduleSyncService {
 			}
 
 			LocalDateTime start = holiday.date().atStartOfDay();
-			LocalDateTime end = holiday.date().atTime(LocalTime.MAX);
+			LocalDateTime end = holiday.date().atTime(23, 59, 59);
 			boolean exists = scheduleReader.existsByTypeAndTitleAndStartAndEnd(
 				ScheduleType.HOLIDAY,
 				holiday.name(),
