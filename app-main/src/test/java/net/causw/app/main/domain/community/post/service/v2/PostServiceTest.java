@@ -422,7 +422,7 @@ public class PostServiceTest {
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
 			given(postImageManager.mergeAndBuildForUpdate(eq(post), isNull(), isNull()))
 				.willReturn(new PostImageManager.ImageUpdateResult(List.of(), List.of()));
-			given(postWriter.updateContentImagesAndAnonymous(eq(post), eq("수정된 내용"), eq(false), anyList()))
+			given(postWriter.updateContentAndImages(eq(post), eq("수정된 내용"), eq(false), anyList()))
 				.willReturn(post);
 
 			// when
@@ -433,7 +433,7 @@ public class PostServiceTest {
 				() -> assertThat(result).isNotNull(),
 				() -> assertThat(result.id()).isEqualTo(postId));
 
-			verify(postWriter, times(1)).updateContentImagesAndAnonymous(eq(post), eq("수정된 내용"), eq(false),
+			verify(postWriter, times(1)).updateContentAndImages(eq(post), eq("수정된 내용"), eq(false),
 				anyList());
 		}
 
@@ -486,7 +486,7 @@ public class PostServiceTest {
 			given(postImageManager.mergeAndBuildForUpdate(eq(post), eq(newImageFiles), eq(imageMetas)))
 				.willReturn(new PostImageManager.ImageUpdateResult(
 					List.of(newAttachImage), List.of("old-file-id")));
-			given(postWriter.updateContentImagesAndAnonymous(eq(post), eq("수정된 내용"), eq(false), anyList()))
+			given(postWriter.updateContentAndImages(eq(post), eq("수정된 내용"), eq(false), anyList()))
 				.willReturn(post);
 
 			// when
@@ -535,7 +535,7 @@ public class PostServiceTest {
 			assertThatThrownBy(() -> postService.update(command))
 				.hasMessageContaining("비익명 게시판에서 익명으로 작성할 수 없습니다.");
 
-			verify(postWriter, never()).updateContentImagesAndAnonymous(any(), any(), any(), anyList());
+			verify(postWriter, never()).updateContentAndImages(any(), any(), any(), anyList());
 		}
 	}
 

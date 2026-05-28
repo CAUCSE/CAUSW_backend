@@ -94,7 +94,7 @@ public class PostService {
 			savedPost, command.imageFiles(), command.imageMetas());
 
 		if (!postAttachImages.isEmpty()) {
-			savedPost.updateContentAndImages(savedPost.getContent(), postAttachImages);
+			savedPost.updateContentAndImages(savedPost.getContent(), savedPost.getIsAnonymous(), postAttachImages);
 		}
 
 		List<String> imageUrls = postAttachImages.stream()
@@ -139,7 +139,7 @@ public class PostService {
 			post, command.newImageFiles(), command.imageMetas());
 
 		// 게시글 업데이트
-		Post updatedPost = postWriter.updateContentImagesAndAnonymous(
+		Post updatedPost = postWriter.updateContentAndImages(
 			post, command.content(), command.isAnonymous(), imageResult.finalImages());
 
 		List<String> imageUrls = imageResult.finalImages().stream()
