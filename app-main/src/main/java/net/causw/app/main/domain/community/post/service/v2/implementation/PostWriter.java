@@ -50,15 +50,18 @@ public class PostWriter {
 	}
 
 	/**
-	 * Post의 내용과 이미지만 업데이트합니다.
+	 * Post의 내용, 익명 여부, 이미지를 업데이트합니다.
+	 * isAnonymous가 null인 경우 기존 값을 유지합니다.
 	 *
 	 * @param post 수정할 Post
 	 * @param content 내용
+	 * @param isAnonymous 익명 여부 (null 허용 - null이면 기존 값 유지)
 	 * @param postAttachImageList 첨부 이미지 리스트
 	 * @return 수정된 Post Entity
 	 */
-	public Post updateContentAndImages(Post post, String content, List<PostAttachImage> postAttachImageList) {
-		post.updateContentAndImages(content, postAttachImageList);
+	public Post updateContentAndImages(Post post, String content, Boolean isAnonymous,
+		List<PostAttachImage> postAttachImageList) {
+		post.updateContentAndImages(content, isAnonymous, postAttachImageList);
 		return postRepository.save(post);
 	}
 

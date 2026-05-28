@@ -1,9 +1,18 @@
 package net.causw.app.main.domain.community.post.service.v2;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anySet;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.mock;
+import static org.mockito.BDDMockito.never;
 import static org.mockito.BDDMockito.times;
 import static org.mockito.BDDMockito.verify;
 
@@ -413,7 +422,8 @@ public class PostServiceTest {
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
 			given(postImageManager.mergeAndBuildForUpdate(eq(post), isNull(), isNull()))
 				.willReturn(new PostImageManager.ImageUpdateResult(List.of(), List.of()));
-			given(postWriter.updateContentAndImages(eq(post), eq("수정된 내용"), anyList())).willReturn(post);
+			given(postWriter.updateContentAndImages(eq(post), eq("수정된 내용"), eq(false), anyList()))
+				.willReturn(post);
 
 			// when
 			PostUpdateResult result = postService.update(command);
@@ -423,7 +433,8 @@ public class PostServiceTest {
 				() -> assertThat(result).isNotNull(),
 				() -> assertThat(result.id()).isEqualTo(postId));
 
-			verify(postWriter, times(1)).updateContentAndImages(eq(post), eq("수정된 내용"), anyList());
+			verify(postWriter, times(1)).updateContentAndImages(eq(post), eq("수정된 내용"), eq(false),
+				anyList());
 		}
 
 		@DisplayName("게시글 이미지 교체 성공")
@@ -475,7 +486,8 @@ public class PostServiceTest {
 			given(postImageManager.mergeAndBuildForUpdate(eq(post), eq(newImageFiles), eq(imageMetas)))
 				.willReturn(new PostImageManager.ImageUpdateResult(
 					List.of(newAttachImage), List.of("old-file-id")));
-			given(postWriter.updateContentAndImages(eq(post), eq("수정된 내용"), anyList())).willReturn(post);
+			given(postWriter.updateContentAndImages(eq(post), eq("수정된 내용"), eq(false), anyList()))
+				.willReturn(post);
 
 			// when
 			PostUpdateResult result = postService.update(command);
@@ -523,7 +535,7 @@ public class PostServiceTest {
 			assertThatThrownBy(() -> postService.update(command))
 				.hasMessageContaining("비익명 게시판에서 익명으로 작성할 수 없습니다.");
 
-			verify(postWriter, never()).updateContentAndImages(any(), any(), anyList());
+			verify(postWriter, never()).updateContentAndImages(any(), any(), any(), anyList());
 		}
 	}
 
