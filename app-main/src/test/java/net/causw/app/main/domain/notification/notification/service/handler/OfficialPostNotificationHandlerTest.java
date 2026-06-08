@@ -75,7 +75,7 @@ class OfficialPostNotificationHandlerTest {
 			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
 
 			// when
-			handler.handle(new OfficialPostEvent("boardId", "postId"));
+			handler.handle(new OfficialPostEvent("boardId", "postId", null));
 
 			// then
 			verify(notificationWriter).save(any());
@@ -97,7 +97,7 @@ class OfficialPostNotificationHandlerTest {
 			given(boardConfigReader.getByBoardId("boardId")).willReturn(boardConfig);
 
 			// when
-			handler.handle(new OfficialPostEvent("boardId", "postId"));
+			handler.handle(new OfficialPostEvent("boardId", "postId", null));
 
 			// then
 			verify(notificationWriter, never()).save(any());
@@ -119,7 +119,7 @@ class OfficialPostNotificationHandlerTest {
 			given(boardConfigReader.getByBoardId("boardId")).willReturn(boardConfig);
 
 			// when
-			handler.handle(new OfficialPostEvent("boardId", "postId"));
+			handler.handle(new OfficialPostEvent("boardId", "postId", null));
 
 			// then
 			verify(notificationWriter, never()).save(any());
@@ -145,7 +145,7 @@ class OfficialPostNotificationHandlerTest {
 			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
 
 			// when
-			handler.handle(new OfficialPostEvent("boardId", "postId"));
+			handler.handle(new OfficialPostEvent("boardId", "postId", null));
 
 			// then
 			verify(notificationWriter).save(any());
@@ -173,10 +173,39 @@ class OfficialPostNotificationHandlerTest {
 			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
 
 			// when
-			handler.handle(new OfficialPostEvent("boardId", "postId"));
+			handler.handle(new OfficialPostEvent("boardId", "postId", null));
 
 			// then
 			verify(userBoardSubscribeReader).findNotificationTargets("boardId", BoardReadScope.ENROLLED);
+		}
+
+		@Test
+		@DisplayName("성공: 크롤링 공지글(title 존재)인 경우 제목 기반으로 알림 발송")
+		void givenCrawledNotice_whenHandle_thenSendToSubscribersWithTitle() {
+			// given
+			Board board = mockBoard("boardId");
+			Post post = mockPost();
+			BoardConfig boardConfig = mockVisibleNoticeConfig(BoardReadScope.BOTH);
+			List<User> targets = List.of(mock(User.class), mock(User.class));
+			String crawledTitle = "크롤링 공지사항 제목입니다";
+
+			given(boardReader.getById("boardId")).willReturn(board);
+			given(postReader.findById("postId")).willReturn(post);
+			given(boardConfigReader.getByBoardId("boardId")).willReturn(boardConfig);
+			given(userBoardSubscribeReader.findNotificationTargets("boardId", BoardReadScope.BOTH)).willReturn(targets);
+
+			// 크롤링 글은 post.getContent()를 읽지 않으므로 해당 stub 불필요
+			given(board.getName()).willReturn("공지 게시판");
+			given(post.getId()).willReturn("postId");
+			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
+
+			// when (🚀 세 번째 파라미터에 title 주입)
+			handler.handle(new OfficialPostEvent("boardId", "postId", crawledTitle));
+
+			// then
+			verify(notificationWriter).save(any());
+			verify(notificationPushSender).sendToUsers(eq(targets), any(), any());
+			verify(notificationWriter).saveLogs(eq(targets), any());
 		}
 	}
 
