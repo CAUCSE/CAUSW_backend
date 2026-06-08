@@ -86,7 +86,7 @@ public class PostService {
 
 		// 공식 공지글인 경우 알림 발송 이벤트
 		if (boardConfig.isNotice()) {
-			eventPublisher.publishEvent(new OfficialPostEvent(savedPost.getBoard().getId(), savedPost.getId()));
+			eventPublisher.publishEvent(new OfficialPostEvent(savedPost.getBoard().getId(), savedPost.getId(), null));
 		}
 
 		// 이미지 업로드 및 PostAttachImage 구성 (PostImageManager에 위임)

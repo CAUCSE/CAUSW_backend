@@ -62,13 +62,26 @@ public class OfficialPostNotificationHandler {
 
 		// 알림 발송
 		// 푸시알림 제목: 게시판 이름
-		// 푸시알림 내용: 공지글 내용 (최대 60자, 그 이상은 ...으로 표시)
-		// 서비스 알림 제목: 공지글 내용 (최대 20자, 그 이상은 ...으로 표시)
-		String sanitizedContent = NotificationTextUtil.sanitize(post.getContent());
+		// 푸시알림 내용: 공지글 내용 (최대 60자, 그 이상은 ...으로 표시) (크롤링은 추출된 제목)
+		// 서비스 알림 제목: 공지글 내용 (최대 50자, 그 이상은 ...으로 표시) (크롤링은 추출된 제목)
 		String pushTitle = board.getName();
-		String pushBody = NotificationTextUtil.ellipsis(sanitizedContent, NotificationTextUtil.PUSH_BODY_MAX_LENGTH);
-		String serviceTitle = NotificationTextUtil.ellipsis(sanitizedContent,
-			NotificationTextUtil.SERVICE_TITLE_MAX_LENGTH);
+		String rawPushBody;
+		String serviceTitle;
+
+		// 크롤링 공지의 경우 제목이 존재하므로 제목을 사용. 일반 게시글은 본문에서 텍스트만 추출하여 사용
+		if (event.title() != null && !event.title().isBlank()) {
+			rawPushBody = event.title();
+			serviceTitle = NotificationTextUtil.ellipsis(event.title(), NotificationTextUtil.SERVICE_TITLE_MAX_LENGTH);
+		} else {
+			String rawHtml = post.getContent() == null ? "" : post.getContent();
+			String actualHtml = rawHtml.replace("&nbsp;", " ").replace("</p>", "\n</p>");
+			String sanitized = NotificationTextUtil.sanitize(actualHtml).trim();
+
+			rawPushBody = sanitized;
+			serviceTitle = NotificationTextUtil.ellipsis(sanitized, NotificationTextUtil.SERVICE_TITLE_MAX_LENGTH);
+		}
+
+		String pushBody = NotificationTextUtil.ellipsis(rawPushBody, NotificationTextUtil.PUSH_BODY_MAX_LENGTH);
 
 		// 알림 발송자를 게시글 작성자로 설정하여 알림 저장
 		Notification notification = notificationWriter.save(

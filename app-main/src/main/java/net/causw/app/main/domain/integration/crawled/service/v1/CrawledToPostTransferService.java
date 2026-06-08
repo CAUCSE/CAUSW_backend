@@ -119,7 +119,7 @@ public class CrawledToPostTransferService {
 
 			// 새 게시글인 경우에만 알림 전송
 			//			boardNotificationService.sendByBoardIsSubscribed(board, newPost);
-			applicationEventPublisher.publishEvent(new OfficialPostEvent(board.getId(), newPost.getId()));
+			applicationEventPublisher.publishEvent(new OfficialPostEvent(board.getId(), newPost.getId(), title));
 		}
 		return true;
 	}
