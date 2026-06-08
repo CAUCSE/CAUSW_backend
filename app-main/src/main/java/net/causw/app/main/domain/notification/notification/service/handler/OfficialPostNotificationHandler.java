@@ -69,7 +69,7 @@ public class OfficialPostNotificationHandler {
 		String serviceTitle;
 
 		// 크롤링 공지의 경우 제목이 존재하므로 제목을 사용. 일반 게시글은 본문에서 텍스트만 추출하여 사용
-		if (event.title() != null && !event.title().isBlank()) {
+		if (event.title() != null && !event.title().isBlank() && !"제목 없음".equals(event.title().trim())) {
 			rawPushBody = event.title();
 			serviceTitle = NotificationTextUtil.ellipsis(event.title(), NotificationTextUtil.SERVICE_TITLE_MAX_LENGTH);
 		} else {
