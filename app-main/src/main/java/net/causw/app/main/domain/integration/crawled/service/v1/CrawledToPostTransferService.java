@@ -149,13 +149,19 @@ public class CrawledToPostTransferService {
 			.toList();
 	}
 
-	//HTML 본문에서 <img> 태그를 제거하여 반환
-	private String removeImageTags(String html, String baseUri) {
+	//HTML 본문에서 <img> 태그 및 의미없는 빈 <p> 태그 제거하여 반환
+	private String cleanUpHtml(String html, String baseUri) {
 		if (html == null || html.isBlank()) {
 			return html;
 		}
 		Document doc = Jsoup.parse(html, baseUri != null ? baseUri : "");
 		doc.select("img").remove();
+
+		for (org.jsoup.nodes.Element p : doc.select("p")) {
+			if (!p.hasText()) {
+				p.remove();
+			}
+		}
 		return doc.body().html();
 	}
 
@@ -172,8 +178,7 @@ public class CrawledToPostTransferService {
 
 		// 원본 HTML 내용 (이미지 태그 제거)
 		String originalContent = (notice.getContent() == null || notice.getContent().isBlank())
-			? "<p>내용 없음</p>" : removeImageTags(notice.getContent(), notice.getLink());
-		originalContent = originalContent.replaceAll("(?i)<p[^>]*>(?:&nbsp;|\\s|<br\\s*/?>)*</p>", "");
+			? "<p>내용 없음</p>" : cleanUpHtml(notice.getContent(), notice.getLink());
 		contentBuilder.append(originalContent);
 
 		// 첨부파일이 있으면 링크 추가
