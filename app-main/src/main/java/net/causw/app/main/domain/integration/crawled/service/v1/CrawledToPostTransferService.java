@@ -84,7 +84,7 @@ public class CrawledToPostTransferService {
 			? "제목 없음" : notice.getTitle();
 
 		// Post 변환 시점에서 첨부파일 링크 추가
-		String contentHtml = buildContentWithAttachmentsAndLink(notice);
+		String contentHtml = buildContentWithAttachmentsAndLink(notice, title);
 
 		// 원본 HTML에서 이미지 URL 추출 (첨부파일 영역 추가 전 원본 기준)
 		List<String> imageUrls = extractImageUrls(notice.getContent(), notice.getLink());
@@ -160,8 +160,15 @@ public class CrawledToPostTransferService {
 	}
 
 	//본문 내용에 첨부파일 링크를 추가하여 반환
-	private String buildContentWithAttachmentsAndLink(CrawledNotice notice) {
+	private String buildContentWithAttachmentsAndLink(CrawledNotice notice, String title) {
 		StringBuilder contentBuilder = new StringBuilder();
+
+		// 제목도 본문에 포함
+		if (title != null && !"제목 없음".equals(title.trim())) {
+			contentBuilder.append("<p style='margin-bottom: 20px;'><strong>")
+				.append(title)
+				.append("</strong></p>");
+		}
 
 		// 원본 HTML 내용 (이미지 태그 제거)
 		String originalContent = (notice.getContent() == null || notice.getContent().isBlank())
