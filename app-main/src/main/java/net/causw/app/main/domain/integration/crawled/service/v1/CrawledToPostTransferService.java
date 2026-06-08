@@ -173,6 +173,7 @@ public class CrawledToPostTransferService {
 		// 원본 HTML 내용 (이미지 태그 제거)
 		String originalContent = (notice.getContent() == null || notice.getContent().isBlank())
 			? "<p>내용 없음</p>" : removeImageTags(notice.getContent(), notice.getLink());
+		originalContent = originalContent.replaceAll("<p>(?:&nbsp;|\\s|<br\\s*/?>)*</p>", "");
 		contentBuilder.append(originalContent);
 
 		// 첨부파일이 있으면 링크 추가
