@@ -165,7 +165,7 @@ public class PostReader {
 	 * @return 이미지 URL 목록
 	 */
 	public List<String> findPostImages(String postId) {
-		Map<String, List<String>> result = postQueryRepository.findPostImagesByPostIds(List.of(postId));
+		Map<String, List<String>> result = this.findPostImagesByPostIds(List.of(postId));
 		return result.getOrDefault(postId, List.of());
 	}
 

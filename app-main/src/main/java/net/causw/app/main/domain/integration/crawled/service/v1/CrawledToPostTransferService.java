@@ -84,7 +84,7 @@ public class CrawledToPostTransferService {
 			? "제목 없음" : notice.getTitle();
 
 		// Post 변환 시점에서 첨부파일 링크 추가
-		String contentHtml = buildContentWithAttachmentsAndLink(notice);
+		String contentHtml = buildContentWithAttachmentsAndLink(notice, title);
 
 		// 원본 HTML에서 이미지 URL 추출 (첨부파일 영역 추가 전 원본 기준)
 		List<String> imageUrls = extractImageUrls(notice.getContent(), notice.getLink());
@@ -119,7 +119,7 @@ public class CrawledToPostTransferService {
 
 			// 새 게시글인 경우에만 알림 전송
 			//			boardNotificationService.sendByBoardIsSubscribed(board, newPost);
-			applicationEventPublisher.publishEvent(new OfficialPostEvent(board.getId(), newPost.getId()));
+			applicationEventPublisher.publishEvent(new OfficialPostEvent(board.getId(), newPost.getId(), title));
 		}
 		return true;
 	}
@@ -149,23 +149,35 @@ public class CrawledToPostTransferService {
 			.toList();
 	}
 
-	//HTML 본문에서 <img> 태그를 제거하여 반환
-	private String removeImageTags(String html, String baseUri) {
+	//HTML 본문에서 <img> 태그 및 의미없는 빈 <p> 태그 제거하여 반환
+	private String cleanUpHtml(String html, String baseUri) {
 		if (html == null || html.isBlank()) {
 			return html;
 		}
 		Document doc = Jsoup.parse(html, baseUri != null ? baseUri : "");
 		doc.select("img").remove();
+
+		for (org.jsoup.nodes.Element p : doc.select("p")) {
+			if (p.text().isBlank()) {
+				p.remove();
+			}
+		}
 		return doc.body().html();
 	}
 
 	//본문 내용에 첨부파일 링크를 추가하여 반환
-	private String buildContentWithAttachmentsAndLink(CrawledNotice notice) {
+	private String buildContentWithAttachmentsAndLink(CrawledNotice notice, String title) {
 		StringBuilder contentBuilder = new StringBuilder();
+
+		// 제목도 본문에 포함
+		String safeTitle = Jsoup.clean(title, org.jsoup.safety.Safelist.none());
+		contentBuilder.append("<p style='margin-bottom: 20px;'><strong>")
+			.append(safeTitle)
+			.append("</strong></p>");
 
 		// 원본 HTML 내용 (이미지 태그 제거)
 		String originalContent = (notice.getContent() == null || notice.getContent().isBlank())
-			? "<p>내용 없음</p>" : removeImageTags(notice.getContent(), notice.getLink());
+			? "<p>내용 없음</p>" : cleanUpHtml(notice.getContent(), notice.getLink());
 		contentBuilder.append(originalContent);
 
 		// 첨부파일이 있으면 링크 추가

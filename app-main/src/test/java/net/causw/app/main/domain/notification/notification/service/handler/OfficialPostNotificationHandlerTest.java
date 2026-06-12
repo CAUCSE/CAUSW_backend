@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.notification.notification.service.handler;
 
+import static org.assertj.core.api.AssertionsForClassTypes.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -75,7 +77,7 @@ class OfficialPostNotificationHandlerTest {
 			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
 
 			// when
-			handler.handle(new OfficialPostEvent("boardId", "postId"));
+			handler.handle(new OfficialPostEvent("boardId", "postId", null));
 
 			// then
 			verify(notificationWriter).save(any());
@@ -97,7 +99,7 @@ class OfficialPostNotificationHandlerTest {
 			given(boardConfigReader.getByBoardId("boardId")).willReturn(boardConfig);
 
 			// when
-			handler.handle(new OfficialPostEvent("boardId", "postId"));
+			handler.handle(new OfficialPostEvent("boardId", "postId", null));
 
 			// then
 			verify(notificationWriter, never()).save(any());
@@ -119,7 +121,7 @@ class OfficialPostNotificationHandlerTest {
 			given(boardConfigReader.getByBoardId("boardId")).willReturn(boardConfig);
 
 			// when
-			handler.handle(new OfficialPostEvent("boardId", "postId"));
+			handler.handle(new OfficialPostEvent("boardId", "postId", null));
 
 			// then
 			verify(notificationWriter, never()).save(any());
@@ -145,7 +147,7 @@ class OfficialPostNotificationHandlerTest {
 			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
 
 			// when
-			handler.handle(new OfficialPostEvent("boardId", "postId"));
+			handler.handle(new OfficialPostEvent("boardId", "postId", null));
 
 			// then
 			verify(notificationWriter).save(any());
@@ -173,10 +175,45 @@ class OfficialPostNotificationHandlerTest {
 			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
 
 			// when
-			handler.handle(new OfficialPostEvent("boardId", "postId"));
+			handler.handle(new OfficialPostEvent("boardId", "postId", null));
 
 			// then
 			verify(userBoardSubscribeReader).findNotificationTargets("boardId", BoardReadScope.ENROLLED);
+		}
+
+		@Test
+		@DisplayName("성공: 크롤링 공지글(title 존재)인 경우 제목 기반으로 알림 발송")
+		void givenCrawledNotice_whenHandle_thenSendToSubscribersWithTitle() {
+			// given
+			Board board = mockBoard("boardId");
+			Post post = mockPost();
+			BoardConfig boardConfig = mockVisibleNoticeConfig(BoardReadScope.BOTH);
+			List<User> targets = List.of(mock(User.class), mock(User.class));
+			String crawledTitle = "크롤링 공지사항 제목입니다";
+
+			given(boardReader.getById("boardId")).willReturn(board);
+			given(postReader.findById("postId")).willReturn(post);
+			given(boardConfigReader.getByBoardId("boardId")).willReturn(boardConfig);
+			given(userBoardSubscribeReader.findNotificationTargets("boardId", BoardReadScope.BOTH)).willReturn(targets);
+
+			// 크롤링 글은 post.getContent()를 읽지 않으므로 해당 stub 불필요
+			given(board.getName()).willReturn("공지 게시판");
+			given(post.getId()).willReturn("postId");
+			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
+
+			// when
+			handler.handle(new OfficialPostEvent("boardId", "postId", crawledTitle));
+
+			// then
+			ArgumentCaptor<Notification> notificationCaptor = ArgumentCaptor.forClass(Notification.class);
+			verify(notificationWriter).save(notificationCaptor.capture());
+			Notification savedNotification = notificationCaptor.getValue();
+
+			assertThat(savedNotification.getTitle()).isEqualTo(crawledTitle);
+			assertThat(savedNotification.getBody()).isEqualTo(crawledTitle);
+
+			verify(notificationPushSender).sendToUsers(eq(targets), eq("공지 게시판"), eq(crawledTitle));
+			verify(notificationWriter).saveLogs(eq(targets), any());
 		}
 	}
 
