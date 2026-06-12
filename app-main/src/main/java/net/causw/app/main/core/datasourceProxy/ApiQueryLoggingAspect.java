@@ -36,7 +36,7 @@ public class ApiQueryLoggingAspect {
 			path = request.getRequestURI();
 		}
 
-		if (!path.startsWith("/api/v2")) {
+		if (!path.startsWith("/api/v1") && !path.startsWith("/api/v2")) {
 			return joinPoint.proceed();
 		}
 

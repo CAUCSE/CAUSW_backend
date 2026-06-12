@@ -34,6 +34,19 @@ public class SwaggerConfig {
 	}
 
 	/**
+	 * v1 API 그룹
+	 * - 패키지: net.causw.app.main.domain..api.v1.controller
+	 * - 경로:   /api/v1/**
+	 */
+	@Bean
+	public GroupedOpenApi v1Api() {
+		return GroupedOpenApi.builder()
+			.group("v1")
+			.pathsToMatch("/api/v1/**")
+			.build();
+	}
+
+	/**
 	 * v2 API 그룹
 	 * - 패키지: net.causw.app.main.domain..api.v2.controller (추가 예정)
 	 * - 경로:   /api/v2/**
@@ -46,6 +59,26 @@ public class SwaggerConfig {
 		return GroupedOpenApi.builder()
 			.group("v2")
 			.pathsToMatch("/api/v2/**")
+			.build();
+	}
+
+	/**
+	 * v1 관리자/운영용 API 그룹
+	 *
+	 * 명확히 운영/관리 도메인에 해당하는 엔드포인트 위주로 그룹화했습니다.
+	 * (개별 엔드포인트에는 여전히 v1, all 그룹에서도 같이 나타납니다.)
+	 */
+	@Bean
+	public GroupedOpenApi v1AdminApi() {
+		return GroupedOpenApi.builder()
+			.group("admin-v1")
+			.pathsToMatch(
+				"/api/v1/semesters/**",
+				"/api/v1/user-council-fee/**",
+				"/api/v1/users/academic-record/**",
+				"/api/v1/users/**",
+				"/api/v1/lockers/**",
+				"/api/v1/circles/**")
 			.build();
 	}
 

@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -48,6 +49,7 @@ public class WebSecurityConfig {
 
 	private final JwtTokenProvider jwtTokenProvider;
 	private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+	private final CustomAuthorizationManager authorizationManager;
 	private final AppleOAuth2AuthorizationRequestResolver appleOAuth2AuthorizationRequestResolver;
 	private final OAuth2AuthorizationRequestCookieRepository oAuth2AuthorizationRequestCookieRepository;
 	private final CustomOAuth2UserService customOAuth2UserService;
@@ -64,6 +66,7 @@ public class WebSecurityConfig {
 	}
 
 	@Bean
+	@Order(1)
 	public SecurityFilterChain securityFilterChainV2(HttpSecurity http) throws Exception {
 		http
 			.securityMatcher("/api/v2/**", "/oauth2/**", "/login/oauth2/**")
@@ -105,6 +108,39 @@ public class WebSecurityConfig {
 	}
 
 	@Bean
+	@Order(2)
+	public SecurityFilterChain securityFilterChainV1(HttpSecurity http) throws Exception {
+		http
+			.cors(cors -> cors.configurationSource(corsConfigurationSourceV1()))
+			.formLogin(AbstractHttpConfigurer::disable)
+			.httpBasic(AbstractHttpConfigurer::disable)
+			.csrf(AbstractHttpConfigurer::disable)
+			.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
+			.sessionManagement(
+				sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+			.authorizeHttpRequests(registry -> {
+				registry.requestMatchers(CorsUtils::isPreFlightRequest).permitAll();
+				RequestAuthorizationBinder.with(registry)
+					.bind("Public", authorizationManager.permitAll(), SecurityEndpoints.PUBLIC_ENDPOINTS)
+					.bind("Authenticated", authorizationManager.authenticated(),
+						SecurityEndpoints.AUTHENTICATED_ENDPOINTS)
+					.bind("Active", authorizationManager.isActiveUser(), SecurityEndpoints.ACTIVE_USER_ENDPOINTS)
+					.bind("Certified", authorizationManager.isCertifiedUser(),
+						SecurityEndpoints.CERTIFIED_USER_ENDPOINTS)
+					.sort(true)
+					.log(true)
+					.apply();
+				registry.anyRequest().authenticated();
+			})
+			.exceptionHandling(exceptionHandling -> exceptionHandling
+				.authenticationEntryPoint(customAuthenticationEntryPoint))
+			.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, customAuthenticationEntryPoint),
+				UsernamePasswordAuthenticationFilter.class);
+
+		return http.build();
+	}
+
+	@Bean
 	public CorsConfigurationSource corsConfigurationSourceV2() {
 		CorsConfiguration configuration = new CorsConfiguration();
 		List<String> origins = Arrays.asList(corsAllowedOrigins.split(","));
@@ -112,6 +148,19 @@ public class WebSecurityConfig {
 		configuration.addAllowedMethod("*");
 		configuration.addAllowedHeader("*");
 		configuration.setAllowCredentials(true);
+		configuration.setMaxAge(3600L);
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", configuration);
+		return source;
+	}
+
+	@Bean
+	public CorsConfigurationSource corsConfigurationSourceV1() {
+		CorsConfiguration configuration = new CorsConfiguration();
+		configuration.addAllowedOriginPattern("*");
+		configuration.addAllowedMethod("*");
+		configuration.addAllowedHeader("*");
+		configuration.setAllowCredentials(false);
 		configuration.setMaxAge(3600L);
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", configuration);
