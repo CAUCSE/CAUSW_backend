@@ -158,7 +158,7 @@ public class CrawledToPostTransferService {
 		doc.select("img").remove();
 
 		for (org.jsoup.nodes.Element p : doc.select("p")) {
-			if (!p.hasText()) {
+			if (p.text().isBlank()) {
 				p.remove();
 			}
 		}
