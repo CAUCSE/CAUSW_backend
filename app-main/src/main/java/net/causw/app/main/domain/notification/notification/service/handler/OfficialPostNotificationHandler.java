@@ -2,6 +2,7 @@ package net.causw.app.main.domain.notification.notification.service.handler;
 
 import java.util.List;
 
+import org.jsoup.Jsoup;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
@@ -74,8 +75,8 @@ public class OfficialPostNotificationHandler {
 			serviceTitle = NotificationTextUtil.ellipsis(event.title(), NotificationTextUtil.SERVICE_TITLE_MAX_LENGTH);
 		} else {
 			String rawHtml = post.getContent() == null ? "" : post.getContent();
-			String actualHtml = rawHtml.replace("&nbsp;", " ").replace("</p>", "\n</p>");
-			String sanitized = NotificationTextUtil.sanitize(actualHtml).trim();
+			String htmlWithNewlines = rawHtml.replace("</p>", "\n</p>");
+			String sanitized = Jsoup.parse(htmlWithNewlines).text().trim();
 
 			rawPushBody = sanitized;
 			serviceTitle = NotificationTextUtil.ellipsis(sanitized, NotificationTextUtil.SERVICE_TITLE_MAX_LENGTH);
