@@ -170,11 +170,10 @@ public class CrawledToPostTransferService {
 		StringBuilder contentBuilder = new StringBuilder();
 
 		// 제목도 본문에 포함
-		if (title != null && !"제목 없음".equals(title.trim())) {
-			contentBuilder.append("<p style='margin-bottom: 20px;'><strong>")
-				.append(title)
-				.append("</strong></p>");
-		}
+		String safeTitle = Jsoup.clean(title, org.jsoup.safety.Safelist.none());
+		contentBuilder.append("<p style='margin-bottom: 20px;'><strong>")
+			.append(safeTitle)
+			.append("</strong></p>");
 
 		// 원본 HTML 내용 (이미지 태그 제거)
 		String originalContent = (notice.getContent() == null || notice.getContent().isBlank())
