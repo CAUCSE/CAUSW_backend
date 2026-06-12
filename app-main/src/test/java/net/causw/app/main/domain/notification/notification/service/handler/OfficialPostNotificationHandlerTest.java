@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.notification.notification.service.handler;
 
+import static org.assertj.core.api.AssertionsForClassTypes.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -203,8 +205,14 @@ class OfficialPostNotificationHandlerTest {
 			handler.handle(new OfficialPostEvent("boardId", "postId", crawledTitle));
 
 			// then
-			verify(notificationWriter).save(any());
-			verify(notificationPushSender).sendToUsers(eq(targets), any(), any());
+			ArgumentCaptor<Notification> notificationCaptor = ArgumentCaptor.forClass(Notification.class);
+			verify(notificationWriter).save(notificationCaptor.capture());
+			Notification savedNotification = notificationCaptor.getValue();
+
+			assertThat(savedNotification.getTitle()).isEqualTo(crawledTitle);
+			assertThat(savedNotification.getBody()).isEqualTo(crawledTitle);
+
+			verify(notificationPushSender).sendToUsers(eq(targets), eq("공지 게시판"), eq(crawledTitle));
 			verify(notificationWriter).saveLogs(eq(targets), any());
 		}
 	}
