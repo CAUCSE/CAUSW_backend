@@ -76,6 +76,7 @@ monitoring/loki-data/
 monitoring/mysqld-exporter/.my.cnf
 
 /.claude
+docs/superpowers/
 .bkit
 
 CLAUDE.md
