@@ -199,7 +199,7 @@ class OfficialPostNotificationHandlerTest {
 			given(post.getId()).willReturn("postId");
 			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
 
-			// when (🚀 세 번째 파라미터에 title 주입)
+			// when
 			handler.handle(new OfficialPostEvent("boardId", "postId", crawledTitle));
 
 			// then
