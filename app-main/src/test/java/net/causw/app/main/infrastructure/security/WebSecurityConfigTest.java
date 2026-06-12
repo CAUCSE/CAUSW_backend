@@ -52,7 +52,7 @@ public class WebSecurityConfigTest {
 	@Test
 	@WithAnonymousUser
 	@DisplayName("/api/v2/auth/** 경로는 인증 없이 접근 허용")
-	void shouldAllowV2AuthAccess_WhenAnonymous() throws Exception {
+	void givenAnonymousUser_whenRequestV2Auth_thenSuccess() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.get("/api/v2/auth/login"))
 			.andExpect(status().isNotFound());
 	}
@@ -60,7 +60,7 @@ public class WebSecurityConfigTest {
 	@Test
 	@WithAnonymousUser
 	@DisplayName("/api/v2/admin/** 경로는 비로그인 시 접근 거부")
-	void shouldRejectV2AdminAccess_WhenAnonymous() throws Exception {
+	void givenAnonymousUser_whenRequestV2Admin_thenUnauthorized() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.get("/api/v2/admin/test"))
 			.andExpect(status().isUnauthorized());
 	}
@@ -68,7 +68,7 @@ public class WebSecurityConfigTest {
 	@Test
 	@WithMockUser(roles = "ADMIN")
 	@DisplayName("/api/v2/admin/** 경로는 ADMIN 권한 보유 시 접근 허용")
-	void shouldAllowV2AdminAccess_WhenAdmin() throws Exception {
+	void givenAdminUser_whenRequestV2Admin_thenSuccess() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.get("/api/v2/admin/test"))
 			.andExpect(status().isNotFound());
 	}
@@ -76,7 +76,7 @@ public class WebSecurityConfigTest {
 	@Test
 	@WithAnonymousUser
 	@DisplayName("/api/v2/terms 경로는 인증 없이 접근 허용")
-	void shouldAllowV2TermsAccess_WhenAnonymous() throws Exception {
+	void givenAnonymousUser_whenRequestV2Terms_thenSuccess() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.get("/api/v2/terms"))
 			.andExpect(status().isNotFound());
 	}
@@ -84,7 +84,7 @@ public class WebSecurityConfigTest {
 	@Test
 	@WithAnonymousUser
 	@DisplayName("/api/v2/users/password-change 경로는 인증 없이 접근 허용")
-	void shouldAllowV2PasswordChangeAccess_WhenAnonymous() throws Exception {
+	void givenAnonymousUser_whenRequestV2PasswordChange_thenSuccess() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.post("/api/v2/users/password-change"))
 			.andExpect(status().isNotFound());
 	}
@@ -92,7 +92,7 @@ public class WebSecurityConfigTest {
 	@Test
 	@WithAnonymousUser
 	@DisplayName("/api/v1/** 경로는 v1 보안 체인에 걸리지 않는다")
-	void shouldNotSecureV1Path_WhenAnonymous() throws Exception {
+	void givenAnonymousUser_whenRequestV1Path_thenNotSecuredByV1Chain() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/users/me"))
 			.andExpect(status().isNotFound());
 	}
