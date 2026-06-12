@@ -17,7 +17,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * /api/v1, /api/v2 경로의 모든 HTTP 요청을 가로채 MDC(Mapped Diagnostic Context)에
+ * /api/v2 경로의 모든 HTTP 요청을 가로채 MDC(Mapped Diagnostic Context)에
  * 요청 정보를 설정하고, 처리 완료 후 로그를 남기는 필터.
  *
  * MDC에 저장된 값들은 logback 패턴의 %X{key} 로 로그에 자동 포함된다.
@@ -92,7 +92,7 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
 	/**
 	 * 로깅 대상에서 제외할 요청을 판별한다.
 	 * - OPTIONS 메서드: CORS preflight 요청으로 로깅 불필요
-	 * - /api/v1, /api/v2 외 경로: 정적 리소스 등 API 외 요청
+	 * - /api/v2 외 경로: 정적 리소스 등 API 외 요청
 	 */
 	@Override
 	protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -103,7 +103,7 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
 			return true;
 		}
 
-		return !(uri.toLowerCase().startsWith("/api/v1") || uri.toLowerCase().startsWith("/api/v2"));
+		return !uri.toLowerCase().startsWith("/api/v2");
 	}
 
 	/**
