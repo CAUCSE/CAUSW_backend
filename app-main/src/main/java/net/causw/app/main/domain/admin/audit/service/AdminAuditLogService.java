@@ -20,6 +20,12 @@ public class AdminAuditLogService {
 
 	private final AdminAuditLogQueryRepository adminAuditLogQueryRepository;
 
+	/**
+	 * 관리자 감사 로그 검색 조건을 검증하고 목록을 조회
+	 * @param request 관리자 감사 로그 검색 조건
+	 * @param pageable 페이지 요청
+	 * @return 관리자 감사 로그 목록 페이지
+	 */
 	public Page<AdminAuditLogItem> getAuditLogs(AdminAuditLogRequest request, Pageable pageable) {
 		validateDateRange(request);
 		return adminAuditLogQueryRepository.findAuditLogs(toCondition(request), pageable);

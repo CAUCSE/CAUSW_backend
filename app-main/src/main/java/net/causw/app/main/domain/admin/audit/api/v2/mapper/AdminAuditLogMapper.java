@@ -16,6 +16,11 @@ public class AdminAuditLogMapper {
 
 	private static final String USER_TARGET_TYPE = "USER";
 
+	/**
+	 * 관리자 감사 로그 서비스 DTO를 API 응답 DTO로 변환
+	 * @param item 관리자 감사 로그 서비스 DTO
+	 * @return 관리자 감사 로그 API 응답 DTO
+	 */
 	public AdminAuditLogResponse toResponse(AdminAuditLogItem item) {
 		return new AdminAuditLogResponse(
 			item.id(),

@@ -29,6 +29,12 @@ public class AdminAuditLogController {
 	private final AdminAuditLogService adminAuditLogService;
 	private final AdminAuditLogMapper adminAuditLogMapper;
 
+	/**
+	 * 관리자 감사 로그 목록 조회 API
+	 * @param request 관리자 감사 로그 검색 조건
+	 * @param pageable 페이지 요청
+	 * @return 관리자 감사 로그 목록 페이지 응답
+	 */
 	@Operation(summary = "관리자 감사 로그 목록 조회", description = "관리자가 수행한 주요 관리자 활동 로그를 조회합니다.")
 	@GetMapping
 	public ApiResponse<PageResponse<AdminAuditLogResponse>> getAuditLogs(

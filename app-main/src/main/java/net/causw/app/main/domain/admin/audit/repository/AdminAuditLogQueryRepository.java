@@ -28,6 +28,12 @@ public class AdminAuditLogQueryRepository {
 
 	private final JPAQueryFactory jpaQueryFactory;
 
+	/**
+	 * 관리자 감사 로그 검색 조건에 맞는 사용자 관리 액션 로그를 조회
+	 * @param condition 관리자 감사 로그 검색 조건
+	 * @param pageable 페이지 요청
+	 * @return 관리자 감사 로그 목록 페이지
+	 */
 	public Page<AdminAuditLogItem> findAuditLogs(AdminAuditLogCondition condition, Pageable pageable) {
 		if (condition.category() != null && condition.category() != AdminAuditLogCategory.USER) {
 			return Page.empty(pageable);
