@@ -2,8 +2,6 @@ package net.causw.app.main.domain.user.auth.api.v2.controller;
 
 import java.util.Optional;
 
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -156,7 +154,7 @@ public class AuthController {
 		@SecurityRequirement(name = "refreshBearerAuth")
 	})
 	@PostMapping("/logout")
-	public ResponseEntity<ApiResponse<String>> logout(
+	public ApiResponse<String> logout(
 		@RequestHeader("Authorization") String bearerToken,
 		@RequestHeader(value = AuthorizationExtractor.REFRESH_AUTHORIZATION_HEADER, required = false) String refreshAuthHeader,
 		@AuthenticationPrincipal CustomUserDetails userDetails,
@@ -165,18 +163,10 @@ public class AuthController {
 		AuthorizationExtractor.validateRefresh(refreshAuthHeader);
 		String refreshToken = AuthorizationExtractor.extractRefresh(refreshAuthHeader);
 		AuthTokenPair tokens = AuthTokenPair.of(accessToken, refreshToken);
-		String fcmToken = (body != null) ? body.fcmToken() : null;
+		String fcmToken = (body != null && body.fcmToken() != null && !body.fcmToken().isBlank())
+			? body.fcmToken() : null;
 		authService.signOut(userDetails.getUserId(), tokens, fcmToken);
-		// 쿠키에서 refresh_token 제거
-		ResponseCookie cookie = ResponseCookie.from("refresh_token", "")
-			.httpOnly(false)
-			.secure(true)
-			.path("/")
-			.maxAge(0)
-			.sameSite("None")
-			.build();
-		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
-			.body(ApiResponse.success("로그아웃 성공"));
+		return ApiResponse.success("로그아웃 성공");
 	}
 
 }
