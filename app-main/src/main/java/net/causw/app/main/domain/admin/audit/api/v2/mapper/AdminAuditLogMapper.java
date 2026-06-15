@@ -6,9 +6,11 @@ import java.util.Map;
 import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.admin.audit.api.v2.dto.response.AdminAuditLogResponse;
+import net.causw.app.main.domain.admin.audit.api.v2.dto.request.AdminAuditLogRequest;
 import net.causw.app.main.domain.admin.audit.api.v2.dto.response.AuditActorResponse;
 import net.causw.app.main.domain.admin.audit.api.v2.dto.response.AuditTargetResponse;
 import net.causw.app.main.domain.admin.audit.service.dto.AdminAuditLogItem;
+import net.causw.app.main.domain.admin.audit.service.dto.AdminAuditLogCondition;
 import net.causw.app.main.shared.exception.errorcode.GlobalErrorCode;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -55,5 +57,14 @@ public class AdminAuditLogMapper {
 		} catch (JsonProcessingException e) {
 			throw GlobalErrorCode.INTERNAL_SERVER_ERROR.toBaseException();
 		}
+	}
+
+	public AdminAuditLogCondition toCondition(AdminAuditLogRequest request) {
+		return new AdminAuditLogCondition(
+			request.from(),
+			request.to(),
+			request.category(),
+			request.actionType(),
+			request.keyword());
 	}
 }

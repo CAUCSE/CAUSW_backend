@@ -40,9 +40,10 @@ public class AdminAuditLogController {
 	public ApiResponse<PageResponse<AdminAuditLogResponse>> getAuditLogs(
 		@ParameterObject AdminAuditLogRequest request,
 		@ParameterObject @PageableDefault(page = 0, size = 10) Pageable pageable) {
+		var query = adminAuditLogMapper.toCondition(request);
 		return ApiResponse.success(
 			PageResponse.from(
-				adminAuditLogService.getAuditLogs(request, pageable)
+				adminAuditLogService.getAuditLogs(query, pageable)
 					.map(adminAuditLogMapper::toResponse)));
 	}
 }

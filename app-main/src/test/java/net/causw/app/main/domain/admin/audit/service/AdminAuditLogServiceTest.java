@@ -22,10 +22,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import net.causw.app.main.domain.admin.audit.api.v2.dto.request.AdminAuditLogRequest;
 import net.causw.app.main.domain.admin.audit.enums.AdminAuditLogCategory;
-import net.causw.app.main.domain.admin.audit.repository.AdminAuditLogQueryRepository;
 import net.causw.app.main.domain.admin.audit.service.dto.AdminAuditLogCondition;
+import net.causw.app.main.domain.admin.audit.service.dto.AdminAuditLogItem;
+import net.causw.app.main.domain.admin.audit.service.implementation.AdminAuditLogReader;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.GlobalErrorCode;
 
@@ -36,7 +36,7 @@ class AdminAuditLogServiceTest {
 	private AdminAuditLogService adminAuditLogService;
 
 	@Mock
-	private AdminAuditLogQueryRepository adminAuditLogQueryRepository;
+	private AdminAuditLogReader adminAuditLogReader;
 
 	@Nested
 	@DisplayName("감사 로그 목록 조회 (getAuditLogs)")
@@ -46,7 +46,7 @@ class AdminAuditLogServiceTest {
 		@DisplayName("실패: 시작일이 종료일보다 늦으면 잘못된 요청 예외가 발생한다")
 		void givenFromAfterTo_whenGetAuditLogs_thenThrowBadRequest() {
 			// given
-			AdminAuditLogRequest request = new AdminAuditLogRequest(
+			AdminAuditLogCondition condition = new AdminAuditLogCondition(
 				LocalDateTime.of(2026, 6, 14, 0, 0),
 				LocalDateTime.of(2026, 6, 13, 0, 0),
 				AdminAuditLogCategory.USER,
@@ -54,7 +54,7 @@ class AdminAuditLogServiceTest {
 				null);
 
 			// when & then
-			assertThatThrownBy(() -> adminAuditLogService.getAuditLogs(request, PageRequest.of(0, 10)))
+			assertThatThrownBy(() -> adminAuditLogService.getAuditLogs(condition, PageRequest.of(0, 10)))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.hasFieldOrPropertyWithValue("errorCode", GlobalErrorCode.BAD_REQUEST);
 		}
@@ -64,22 +64,22 @@ class AdminAuditLogServiceTest {
 		void givenBlankKeyword_whenGetAuditLogs_thenNormalizeKeywordToNull() {
 			// given
 			Pageable pageable = PageRequest.of(0, 10);
-			AdminAuditLogRequest request = new AdminAuditLogRequest(
+			AdminAuditLogCondition condition = new AdminAuditLogCondition(
 				null,
 				null,
 				AdminAuditLogCategory.USER,
 				null,
 				"   ");
-			given(adminAuditLogQueryRepository.findAuditLogs(org.mockito.ArgumentMatchers.any(),
+			given(adminAuditLogReader.findAuditLogs(org.mockito.ArgumentMatchers.any(),
 				org.mockito.ArgumentMatchers.eq(pageable)))
 				.willReturn(Page.empty(pageable));
 
 			// when
-			adminAuditLogService.getAuditLogs(request, pageable);
+			adminAuditLogService.getAuditLogs(condition, pageable);
 
 			// then
 			ArgumentCaptor<AdminAuditLogCondition> captor = ArgumentCaptor.forClass(AdminAuditLogCondition.class);
-			verify(adminAuditLogQueryRepository).findAuditLogs(captor.capture(),
+			verify(adminAuditLogReader).findAuditLogs(captor.capture(),
 				org.mockito.ArgumentMatchers.eq(pageable));
 			assertThat(captor.getValue().keyword()).isNull();
 		}
@@ -89,17 +89,17 @@ class AdminAuditLogServiceTest {
 		void givenNullCategory_whenGetAuditLogs_thenPassNullCategory() {
 			// given
 			Pageable pageable = PageRequest.of(0, 10);
-			AdminAuditLogRequest request = new AdminAuditLogRequest(null, null, null, null, null);
-			given(adminAuditLogQueryRepository.findAuditLogs(org.mockito.ArgumentMatchers.any(),
+			AdminAuditLogCondition condition = new AdminAuditLogCondition(null, null, null, null, null);
+			given(adminAuditLogReader.findAuditLogs(org.mockito.ArgumentMatchers.any(),
 				org.mockito.ArgumentMatchers.eq(pageable)))
 				.willReturn(Page.empty(pageable));
 
 			// when
-			adminAuditLogService.getAuditLogs(request, pageable);
+			adminAuditLogService.getAuditLogs(condition, pageable);
 
 			// then
 			ArgumentCaptor<AdminAuditLogCondition> captor = ArgumentCaptor.forClass(AdminAuditLogCondition.class);
-			verify(adminAuditLogQueryRepository).findAuditLogs(captor.capture(),
+			verify(adminAuditLogReader).findAuditLogs(captor.capture(),
 				org.mockito.ArgumentMatchers.eq(pageable));
 			assertThat(captor.getValue().category()).isNull();
 		}
@@ -109,22 +109,22 @@ class AdminAuditLogServiceTest {
 		void givenBlankActionType_whenGetAuditLogs_thenNormalizeActionTypeToNull() {
 			// given
 			Pageable pageable = PageRequest.of(0, 10);
-			AdminAuditLogRequest request = new AdminAuditLogRequest(
+			AdminAuditLogCondition condition = new AdminAuditLogCondition(
 				null,
 				null,
 				AdminAuditLogCategory.USER,
 				"   ",
 				null);
-			given(adminAuditLogQueryRepository.findAuditLogs(org.mockito.ArgumentMatchers.any(),
+			given(adminAuditLogReader.findAuditLogs(org.mockito.ArgumentMatchers.any(),
 				org.mockito.ArgumentMatchers.eq(pageable)))
 				.willReturn(Page.empty(pageable));
 
 			// when
-			adminAuditLogService.getAuditLogs(request, pageable);
+			adminAuditLogService.getAuditLogs(condition, pageable);
 
 			// then
 			ArgumentCaptor<AdminAuditLogCondition> captor = ArgumentCaptor.forClass(AdminAuditLogCondition.class);
-			verify(adminAuditLogQueryRepository).findAuditLogs(captor.capture(),
+			verify(adminAuditLogReader).findAuditLogs(captor.capture(),
 				org.mockito.ArgumentMatchers.eq(pageable));
 			assertThat(captor.getValue().actionType()).isNull();
 		}
@@ -134,22 +134,22 @@ class AdminAuditLogServiceTest {
 		void givenActionType_whenGetAuditLogs_thenNormalizeActionTypeToUppercaseStringCondition() {
 			// given
 			Pageable pageable = PageRequest.of(0, 10);
-			AdminAuditLogRequest request = new AdminAuditLogRequest(
+			AdminAuditLogCondition condition = new AdminAuditLogCondition(
 				null,
 				null,
 				AdminAuditLogCategory.USER,
 				"drop",
 				null);
-			given(adminAuditLogQueryRepository.findAuditLogs(org.mockito.ArgumentMatchers.any(),
+			given(adminAuditLogReader.findAuditLogs(org.mockito.ArgumentMatchers.any(),
 				org.mockito.ArgumentMatchers.eq(pageable)))
 				.willReturn(Page.empty(pageable));
 
 			// when
-			adminAuditLogService.getAuditLogs(request, pageable);
+			adminAuditLogService.getAuditLogs(condition, pageable);
 
 			// then
 			ArgumentCaptor<AdminAuditLogCondition> captor = ArgumentCaptor.forClass(AdminAuditLogCondition.class);
-			verify(adminAuditLogQueryRepository).findAuditLogs(captor.capture(),
+			verify(adminAuditLogReader).findAuditLogs(captor.capture(),
 				org.mockito.ArgumentMatchers.eq(pageable));
 			assertThat(captor.getValue().actionType()).isEqualTo("DROP");
 		}
@@ -174,22 +174,22 @@ class AdminAuditLogServiceTest {
 			String expectedActionType) {
 			// given
 			Pageable pageable = PageRequest.of(0, 10);
-			AdminAuditLogRequest request = new AdminAuditLogRequest(
+			AdminAuditLogCondition condition = new AdminAuditLogCondition(
 				null,
 				null,
 				category,
 				actionType,
 				null);
-			given(adminAuditLogQueryRepository.findAuditLogs(org.mockito.ArgumentMatchers.any(),
+			given(adminAuditLogReader.findAuditLogs(org.mockito.ArgumentMatchers.any(),
 				org.mockito.ArgumentMatchers.eq(pageable)))
 				.willReturn(Page.empty(pageable));
 
 			// when
-			adminAuditLogService.getAuditLogs(request, pageable);
+			adminAuditLogService.getAuditLogs(condition, pageable);
 
 			// then
 			ArgumentCaptor<AdminAuditLogCondition> captor = ArgumentCaptor.forClass(AdminAuditLogCondition.class);
-			verify(adminAuditLogQueryRepository).findAuditLogs(captor.capture(),
+			verify(adminAuditLogReader).findAuditLogs(captor.capture(),
 				org.mockito.ArgumentMatchers.eq(pageable));
 			assertThat(captor.getValue().category()).isEqualTo(category);
 			assertThat(captor.getValue().actionType()).isEqualTo(expectedActionType);
@@ -200,7 +200,7 @@ class AdminAuditLogServiceTest {
 		void givenActionTypeForOtherCategory_whenGetAuditLogs_thenThrowBadRequestWithoutRepositoryCall() {
 			// given
 			Pageable pageable = PageRequest.of(0, 10);
-			AdminAuditLogRequest request = new AdminAuditLogRequest(
+			AdminAuditLogCondition condition = new AdminAuditLogCondition(
 				null,
 				null,
 				AdminAuditLogCategory.LOCKER,
@@ -208,10 +208,10 @@ class AdminAuditLogServiceTest {
 				null);
 
 			// when & then
-			assertThatThrownBy(() -> adminAuditLogService.getAuditLogs(request, pageable))
+			assertThatThrownBy(() -> adminAuditLogService.getAuditLogs(condition, pageable))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.hasFieldOrPropertyWithValue("errorCode", GlobalErrorCode.BAD_REQUEST);
-			verify(adminAuditLogQueryRepository, never()).findAuditLogs(org.mockito.ArgumentMatchers.any(),
+			verify(adminAuditLogReader, never()).findAuditLogs(org.mockito.ArgumentMatchers.any(),
 				org.mockito.ArgumentMatchers.any());
 		}
 
@@ -220,7 +220,7 @@ class AdminAuditLogServiceTest {
 		void givenInvalidActionType_whenGetAuditLogs_thenThrowBadRequestWithoutRepositoryCall() {
 			// given
 			Pageable pageable = PageRequest.of(0, 10);
-			AdminAuditLogRequest request = new AdminAuditLogRequest(
+			AdminAuditLogCondition condition = new AdminAuditLogCondition(
 				null,
 				null,
 				AdminAuditLogCategory.USER,
@@ -228,10 +228,10 @@ class AdminAuditLogServiceTest {
 				null);
 
 			// when & then
-			assertThatThrownBy(() -> adminAuditLogService.getAuditLogs(request, pageable))
+			assertThatThrownBy(() -> adminAuditLogService.getAuditLogs(condition, pageable))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.hasFieldOrPropertyWithValue("errorCode", GlobalErrorCode.BAD_REQUEST);
-			verify(adminAuditLogQueryRepository, never()).findAuditLogs(org.mockito.ArgumentMatchers.any(),
+			verify(adminAuditLogReader, never()).findAuditLogs(org.mockito.ArgumentMatchers.any(),
 				org.mockito.ArgumentMatchers.any());
 		}
 	}

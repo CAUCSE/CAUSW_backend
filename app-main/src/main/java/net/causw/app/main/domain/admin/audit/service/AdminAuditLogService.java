@@ -8,11 +8,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.domain.admin.audit.api.v2.dto.request.AdminAuditLogRequest;
 import net.causw.app.main.domain.admin.audit.enums.AdminAuditLogCategory;
-import net.causw.app.main.domain.admin.audit.repository.AdminAuditLogQueryRepository;
 import net.causw.app.main.domain.admin.audit.service.dto.AdminAuditLogCondition;
 import net.causw.app.main.domain.admin.audit.service.dto.AdminAuditLogItem;
+import net.causw.app.main.domain.admin.audit.service.implementation.AdminAuditLogReader;
 import net.causw.app.main.shared.exception.errorcode.GlobalErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -40,34 +39,34 @@ public class AdminAuditLogService {
 		AdminAuditLogCategory.LOCKER, LOCKER_ACTION_TYPES,
 		AdminAuditLogCategory.ACADEMIC, ACADEMIC_ACTION_TYPES);
 
-	private final AdminAuditLogQueryRepository adminAuditLogQueryRepository;
+	private final AdminAuditLogReader adminAuditLogReader;
 
 	/**
 	 * 관리자 감사 로그 검색 조건을 검증하고 목록을 조회
-	 * @param request 관리자 감사 로그 검색 조건
+	 * @param condition 관리자 감사 로그 검색 조건
 	 * @param pageable 페이지 요청
 	 * @return 관리자 감사 로그 목록 페이지
 	 */
-	public Page<AdminAuditLogItem> getAuditLogs(AdminAuditLogRequest request, Pageable pageable) {
-		validateDateRange(request);
-		String actionTypeValue = normalize(request.actionType());
-		String actionType = normalizeActionType(request.category(), actionTypeValue);
-		return adminAuditLogQueryRepository.findAuditLogs(toCondition(request, actionType), pageable);
+	public Page<AdminAuditLogItem> getAuditLogs(AdminAuditLogCondition condition, Pageable pageable) {
+		validateDateRange(condition);
+		String actionTypeValue = normalize(condition.actionType());
+		String actionType = normalizeActionType(condition.category(), actionTypeValue);
+		return adminAuditLogReader.findAuditLogs(toCondition(condition, actionType), pageable);
 	}
 
-	private void validateDateRange(AdminAuditLogRequest request) {
-		if (request.from() != null && request.to() != null && request.from().isAfter(request.to())) {
+	private void validateDateRange(AdminAuditLogCondition condition) {
+		if (condition.from() != null && condition.to() != null && condition.from().isAfter(condition.to())) {
 			throw GlobalErrorCode.BAD_REQUEST.toBaseException();
 		}
 	}
 
-	private AdminAuditLogCondition toCondition(AdminAuditLogRequest request, String actionType) {
+	private AdminAuditLogCondition toCondition(AdminAuditLogCondition condition, String actionType) {
 		return new AdminAuditLogCondition(
-			request.from(),
-			request.to(),
-			request.category(),
+			condition.from(),
+			condition.to(),
+			condition.category(),
 			actionType,
-			normalize(request.keyword()));
+			normalize(condition.keyword()));
 	}
 
 	private String normalizeActionType(AdminAuditLogCategory category, String actionType) {
