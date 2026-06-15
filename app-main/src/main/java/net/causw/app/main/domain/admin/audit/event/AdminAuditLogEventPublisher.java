@@ -24,6 +24,26 @@ public class AdminAuditLogEventPublisher {
 	private static final String TARGET_TYPE_LOCKER = "LOCKER";
 	private static final String TARGET_TYPE_USER = "USER";
 
+	private static final String META_LOCKER_ID = "사물함ID";
+	private static final String META_LOCKER_NUMBER = "사물함번호";
+	private static final String META_LOCKER_LOCATION_NAME = "사물함위치";
+	private static final String META_EXPIRE_DATE = "만료일";
+	private static final String META_RELEASED_USER_ID = "회수자ID";
+	private static final String META_EXPIRED_AT = "연장만료일";
+
+	private static final String META_ADMISSION_ID = "재학인증신청ID";
+	private static final String META_REQUESTED_ACADEMIC_STATUS = "요청학적상태";
+	private static final String META_REQUESTED_STUDENT_ID = "요청학번";
+	private static final String META_REQUESTED_ADMISSION_YEAR = "요청입학년도";
+	private static final String META_REQUESTED_DEPARTMENT = "요청학과";
+	private static final String META_REQUESTED_GRADUATION_YEAR = "요청졸업년도";
+	private static final String META_REJECT_REASON = "반려사유";
+
+	private static final String META_APPLICATION_ID = "학적변경신청ID";
+	private static final String META_BEFORE_ACADEMIC_STATUS = "변경전학적상태";
+	private static final String META_TARGET_ACADEMIC_STATUS = "변경후학적상태";
+	private static final String META_NOTE = "요청메모";
+
 	private final ApplicationEventPublisher eventPublisher;
 
 	public void publishLockerAssign(Locker locker, User admin, User assignee, LocalDateTime expiredAt) {
@@ -139,6 +159,22 @@ public class AdminAuditLogEventPublisher {
 			academicRecordMetadata(application, rejectReason)));
 	}
 
+	public void publishUserAction(
+		User adminUser,
+		User targetUser,
+		String actionType,
+		String actionDescription,
+		String summary,
+		Map<String, Object> metadata) {
+		publish(userActionCommand(
+			actionType,
+			actionDescription,
+			adminUser,
+			targetUser,
+			summary,
+			metadata));
+	}
+
 	private void publish(AdminAuditLogCreateCommand command) {
 		eventPublisher.publishEvent(new AdminAuditLogEvent(command));
 	}
@@ -192,12 +228,36 @@ public class AdminAuditLogEventPublisher {
 			metadata);
 	}
 
+	private AdminAuditLogCreateCommand userActionCommand(
+		String actionType,
+		String actionDescription,
+		User adminUser,
+		User targetUser,
+		String summary,
+		Map<String, Object> metadata) {
+		return new AdminAuditLogCreateCommand(
+			AdminAuditLogCategory.USER,
+			actionType,
+			actionDescription,
+			adminUser.getId(),
+			adminUser.getEmail(),
+			adminUser.getName(),
+			adminUser.getStudentId(),
+			TARGET_TYPE_USER,
+			targetUser.getId(),
+			targetUser.getEmail(),
+			targetUser.getName(),
+			targetUser.getStudentId(),
+			summary,
+			metadata);
+	}
+
 	private Map<String, Object> lockerMetadata(Locker locker, Map<String, Object> additionalMetadata) {
 		Map<String, Object> metadata = new LinkedHashMap<>();
-		metadata.put("lockerId", locker.getId());
-		metadata.put("lockerNumber", locker.getLockerNumber());
-		metadata.put("lockerLocationName", locker.getLocation().getName());
-		metadata.put("expireDate", locker.getExpireDate());
+		metadata.put(META_LOCKER_ID, locker.getId());
+		metadata.put(META_LOCKER_NUMBER, locker.getLockerNumber());
+		metadata.put(META_LOCKER_LOCATION_NAME, locker.getLocation().getName());
+		metadata.put(META_EXPIRE_DATE, locker.getExpireDate());
 		additionalMetadata.forEach((key, value) -> {
 			if (value != null) {
 				metadata.put(key, value);
@@ -208,27 +268,27 @@ public class AdminAuditLogEventPublisher {
 
 	private Map<String, Object> lockerMetadataWithReleasedUser(Locker locker, Optional<User> releasedUser) {
 		Map<String, Object> metadata = lockerMetadata(locker, Map.of());
-		releasedUser.map(User::getId).ifPresent(userId -> metadata.put("releasedUserId", userId));
+		releasedUser.map(User::getId).ifPresent(userId -> metadata.put(META_RELEASED_USER_ID, userId));
 		return metadata;
 	}
 
 	private Map<String, Object> lockerMetadataWithExpiredAt(Locker locker, LocalDateTime expiredAt) {
 		Map<String, Object> metadata = lockerMetadata(locker, Map.of());
 		if (expiredAt != null) {
-			metadata.put("expiredAt", expiredAt);
+			metadata.put(META_EXPIRED_AT, expiredAt);
 		}
 		return metadata;
 	}
 
 	private Map<String, Object> admissionMetadata(UserAdmission admission, String rejectReason) {
 		Map<String, Object> metadata = new LinkedHashMap<>();
-		putIfNotNull(metadata, "admissionId", admission.getId());
-		putIfNotNull(metadata, "requestedAcademicStatus", admission.getRequestedAcademicStatus());
-		putIfNotNull(metadata, "requestedStudentId", admission.getRequestedStudentId());
-		putIfNotNull(metadata, "requestedAdmissionYear", admission.getRequestedAdmissionYear());
-		putIfNotNull(metadata, "requestedDepartment", admission.getRequestedDepartment());
-		putIfNotNull(metadata, "requestedGraduationYear", admission.getRequestedGraduationYear());
-		putIfNotNull(metadata, "rejectReason", rejectReason);
+		putIfNotNull(metadata, META_ADMISSION_ID, admission.getId());
+		putIfNotNull(metadata, META_REQUESTED_ACADEMIC_STATUS, admission.getRequestedAcademicStatus());
+		putIfNotNull(metadata, META_REQUESTED_STUDENT_ID, admission.getRequestedStudentId());
+		putIfNotNull(metadata, META_REQUESTED_ADMISSION_YEAR, admission.getRequestedAdmissionYear());
+		putIfNotNull(metadata, META_REQUESTED_DEPARTMENT, admission.getRequestedDepartment());
+		putIfNotNull(metadata, META_REQUESTED_GRADUATION_YEAR, admission.getRequestedGraduationYear());
+		putIfNotNull(metadata, META_REJECT_REASON, rejectReason);
 		return metadata;
 	}
 
@@ -237,11 +297,11 @@ public class AdminAuditLogEventPublisher {
 		String rejectReason) {
 		User targetUser = application.getUser();
 		Map<String, Object> metadata = new LinkedHashMap<>();
-		putIfNotNull(metadata, "applicationId", application.getId());
-		putIfNotNull(metadata, "beforeAcademicStatus", targetUser.getAcademicStatus());
-		putIfNotNull(metadata, "targetAcademicStatus", application.getTargetAcademicStatus());
-		putIfNotNull(metadata, "note", application.getNote());
-		putIfNotNull(metadata, "rejectReason", rejectReason);
+		putIfNotNull(metadata, META_APPLICATION_ID, application.getId());
+		putIfNotNull(metadata, META_BEFORE_ACADEMIC_STATUS, targetUser.getAcademicStatus());
+		putIfNotNull(metadata, META_TARGET_ACADEMIC_STATUS, application.getTargetAcademicStatus());
+		putIfNotNull(metadata, META_NOTE, application.getNote());
+		putIfNotNull(metadata, META_REJECT_REASON, rejectReason);
 		return metadata;
 	}
 

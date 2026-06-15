@@ -9,9 +9,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.domain.admin.audit.enums.AdminAuditLogCategory;
-import net.causw.app.main.domain.admin.audit.service.dto.AdminAuditLogCreateCommand;
-import net.causw.app.main.domain.admin.audit.service.implementation.AdminAuditLogWriter;
+import net.causw.app.main.domain.admin.audit.event.AdminAuditLogEventPublisher;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserAdminActionType;
@@ -23,10 +21,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Transactional
 public class UserAdminActionLogWriter {
+	private static final String META_BEFORE_STATE = "이전상태";
+	private static final String META_AFTER_STATE = "이후상태";
+	private static final String META_BEFORE_ROLES = "이전역할";
+	private static final String META_AFTER_ROLES = "이후역할";
+	private static final String META_REASON = "사유";
 
-	private static final String USER_TARGET_TYPE = "USER";
-
-	private final AdminAuditLogWriter adminAuditLogWriter;
+	private final AdminAuditLogEventPublisher adminAuditLogEventPublisher;
 
 	public void logDrop(User adminUser, User targetUser, UserState beforeState, Set<Role> beforeRoles, String reason) {
 		writeUserActionLog(
@@ -73,21 +74,13 @@ public class UserAdminActionLogWriter {
 		String beforeRoles,
 		String afterRoles,
 		String reason) {
-		adminAuditLogWriter.write(new AdminAuditLogCreateCommand(
-			AdminAuditLogCategory.USER,
+		adminAuditLogEventPublisher.publishUserAction(
+			adminUser,
+			targetUser,
 			actionType.name(),
 			actionType.getDescription(),
-			adminUser.getId(),
-			adminUser.getEmail(),
-			adminUser.getName(),
-			adminUser.getStudentId(),
-			USER_TARGET_TYPE,
-			targetUser.getId(),
-			targetUser.getEmail(),
-			targetUser.getName(),
-			targetUser.getStudentId(),
 			summary(adminUser, targetUser, actionType),
-			metadata(beforeState, afterState, beforeRoles, afterRoles, reason)));
+			metadata(beforeState, afterState, beforeRoles, afterRoles, reason));
 	}
 
 	private String summary(User adminUser, User targetUser, UserAdminActionType actionType) {
@@ -105,11 +98,11 @@ public class UserAdminActionLogWriter {
 		String afterRoles,
 		String reason) {
 		Map<String, Object> metadata = new LinkedHashMap<>();
-		metadata.put("beforeState", beforeState == null ? null : beforeState.name());
-		metadata.put("afterState", afterState == null ? null : afterState.name());
-		metadata.put("beforeRoles", beforeRoles);
-		metadata.put("afterRoles", afterRoles);
-		metadata.put("reason", reason);
+		metadata.put(META_BEFORE_STATE, beforeState == null ? null : beforeState.name());
+		metadata.put(META_AFTER_STATE, afterState == null ? null : afterState.name());
+		metadata.put(META_BEFORE_ROLES, beforeRoles);
+		metadata.put(META_AFTER_ROLES, afterRoles);
+		metadata.put(META_REASON, reason);
 		return metadata;
 	}
 

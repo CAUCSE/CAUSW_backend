@@ -24,7 +24,7 @@ public record AdminAuditLogResponse(
 
 	@Schema(description = "목록과 상세에서 사용할 요약 문구", example = "admin@causw.net dropped user user@causw.net") String summary,
 
-	@Schema(description = "카테고리별 상세 변경 정보. USER 로그는 beforeState, afterState, beforeRoles, afterRoles, reason을 포함") Map<String, Object> metadata,
+	@Schema(description = "카테고리별 상세 변경 정보. USER 로그는 이전상태, 이후상태, 이전역할, 이후역할, 사유를 포함") Map<String, Object> metadata,
 
 	@Schema(description = "로그 생성 시각", example = "2026-06-13T10:30:00") LocalDateTime createdAt) {
 }

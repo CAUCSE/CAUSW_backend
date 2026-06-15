@@ -43,7 +43,7 @@ class AdminAuditLogEventListenerTest {
 			"사용자",
 			"20201234",
 			"사물함을 배정했습니다.",
-			Map.of("lockerId", "locker-id"));
+			Map.of("사물함ID", "locker-id"));
 
 		// when
 		adminAuditLogEventListener.handle(new AdminAuditLogEvent(command));

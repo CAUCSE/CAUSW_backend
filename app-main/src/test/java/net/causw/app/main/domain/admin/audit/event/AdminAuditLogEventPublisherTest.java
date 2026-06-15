@@ -5,6 +5,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -58,11 +59,11 @@ class AdminAuditLogEventPublisherTest {
 		assertThat(command.targetEmail()).isEqualTo("user@cau.ac.kr");
 		assertThat(command.summary()).isEqualTo("SECOND-12 사물함을 사용자에게 배정했습니다.");
 		assertThat(command.metadata())
-			.containsEntry("lockerId", "locker-id")
-			.containsEntry("lockerNumber", 12L)
-			.containsEntry("lockerLocationName", "SECOND")
-			.containsEntry("expireDate", expireDate)
-			.containsEntry("expiredAt", expiredAt);
+			.containsEntry("사물함ID", "locker-id")
+			.containsEntry("사물함번호", 12L)
+			.containsEntry("사물함위치", "SECOND")
+			.containsEntry("만료일", expireDate)
+			.containsEntry("연장만료일", expiredAt);
 	}
 
 	@Test
@@ -84,13 +85,13 @@ class AdminAuditLogEventPublisherTest {
 		assertThat(command.targetId()).isEqualTo("target-id");
 		assertThat(command.summary()).isEqualTo("대상자의 재학인증 신청을 거절했습니다.");
 		assertThat(command.metadata())
-			.containsEntry("admissionId", "admission-id")
-			.containsEntry("requestedAcademicStatus", AcademicStatus.ENROLLED)
-			.containsEntry("requestedStudentId", "20209999")
-			.containsEntry("requestedAdmissionYear", 2020)
-			.containsEntry("requestedDepartment", Department.SCHOOL_OF_SW)
-			.containsEntry("requestedGraduationYear", 2024)
-			.containsEntry("rejectReason", "서류 식별 불가");
+			.containsEntry("재학인증신청ID", "admission-id")
+			.containsEntry("요청학적상태", AcademicStatus.ENROLLED)
+			.containsEntry("요청학번", "20209999")
+			.containsEntry("요청입학년도", 2020)
+			.containsEntry("요청학과", Department.SCHOOL_OF_SW)
+			.containsEntry("요청졸업년도", 2024)
+			.containsEntry("반려사유", "서류 식별 불가");
 	}
 
 	@Test
@@ -112,11 +113,43 @@ class AdminAuditLogEventPublisherTest {
 		assertThat(command.targetId()).isEqualTo("target-id");
 		assertThat(command.summary()).isEqualTo("대상자의 학적변경 신청을 반려했습니다.");
 		assertThat(command.metadata())
-			.containsEntry("applicationId", "application-id")
-			.containsEntry("beforeAcademicStatus", AcademicStatus.ENROLLED)
-			.containsEntry("targetAcademicStatus", AcademicStatus.GRADUATED)
-			.containsEntry("note", "졸업 처리 요청")
-			.containsEntry("rejectReason", "증빙 부족");
+			.containsEntry("학적변경신청ID", "application-id")
+			.containsEntry("변경전학적상태", AcademicStatus.ENROLLED)
+			.containsEntry("변경후학적상태", AcademicStatus.GRADUATED)
+			.containsEntry("요청메모", "졸업 처리 요청")
+			.containsEntry("반려사유", "증빙 부족");
+	}
+
+	@Test
+	@DisplayName("유저 액션 로그는 USER 카테고리로 감사 로그 명령을 발행한다")
+	void givenUserActionSnapshot_whenPublishUserAction_thenPublishUserAuditEvent() {
+		// given
+		User admin = user("admin-id", "admin@cau.ac.kr", "관리자", "20200000", null);
+		User target = user("user-id", "user@cau.ac.kr", "사용자", "20201234", null);
+
+		// when
+		adminAuditLogEventPublisher.publishUserAction(
+			admin,
+			target,
+			"DROP",
+			"유저 추방",
+			"admin@cau.ac.kr dropped user user@cau.ac.kr",
+			Map.of("이전상태", "ACTIVE", "이후상태", "DROP", "이전역할", "COMMON", "이후역할", "NONE", "사유", "운영 정책 위반"));
+
+		// then
+		AdminAuditLogCreateCommand command = captureCommand();
+		assertThat(command.category()).isEqualTo(AdminAuditLogCategory.USER);
+		assertThat(command.actionType()).isEqualTo("DROP");
+		assertThat(command.targetType()).isEqualTo("USER");
+		assertThat(command.targetId()).isEqualTo("user-id");
+		assertThat(command.targetEmail()).isEqualTo("user@cau.ac.kr");
+		assertThat(command.summary()).isEqualTo("admin@cau.ac.kr dropped user user@cau.ac.kr");
+		assertThat(command.metadata())
+			.containsEntry("이전상태", "ACTIVE")
+			.containsEntry("이후상태", "DROP")
+			.containsEntry("이전역할", "COMMON")
+			.containsEntry("이후역할", "NONE")
+			.containsEntry("사유", "운영 정책 위반");
 	}
 
 	private AdminAuditLogCreateCommand captureCommand() {
