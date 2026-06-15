@@ -9,13 +9,22 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "관리자 감사 로그 응답")
 public record AdminAuditLogResponse(
-	@Schema(description = "감사 로그 ID") String id,
-	@Schema(description = "감사 로그 카테고리") AdminAuditLogCategory category,
-	@Schema(description = "액션 타입") String actionType,
-	@Schema(description = "액션 설명") String actionDescription,
+
+	@Schema(description = "감사 로그 ID", example = "11112222-aaaa-3333-bbbb-446655440000") String id,
+
+	@Schema(description = "감사 로그 카테고리", example = "USER") AdminAuditLogCategory category,
+
+	@Schema(description = "카테고리별 액션 타입", example = "DROP") String actionType,
+
+	@Schema(description = "액션 타입 표시명", example = "유저 추방") String actionDescription,
+
 	@Schema(description = "수행자") AuditActorResponse actor,
+
 	@Schema(description = "대상") AuditTargetResponse target,
-	@Schema(description = "요약 문구") String summary,
-	@Schema(description = "추가 메타데이터") Map<String, Object> metadata,
-	@Schema(description = "생성 시각") LocalDateTime createdAt) {
+
+	@Schema(description = "목록과 상세에서 사용할 요약 문구", example = "admin@causw.net dropped user user@causw.net") String summary,
+
+	@Schema(description = "카테고리별 상세 변경 정보. USER 로그는 beforeState, afterState, beforeRoles, afterRoles, reason을 포함") Map<String, Object> metadata,
+
+	@Schema(description = "로그 생성 시각", example = "2026-06-13T10:30:00") LocalDateTime createdAt) {
 }

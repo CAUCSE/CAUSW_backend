@@ -3,6 +3,7 @@ package net.causw.app.main.domain.admin.audit.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import java.time.LocalDateTime;
@@ -99,6 +100,76 @@ class AdminAuditLogServiceTest {
 			verify(adminAuditLogQueryRepository).findAuditLogs(captor.capture(),
 				org.mockito.ArgumentMatchers.eq(pageable));
 			assertThat(captor.getValue().category()).isNull();
+		}
+
+		@Test
+		@DisplayName("성공: 공백 액션 타입은 필터 없음으로 정규화한다")
+		void givenBlankActionType_whenGetAuditLogs_thenNormalizeActionTypeToNull() {
+			// given
+			Pageable pageable = PageRequest.of(0, 10);
+			AdminAuditLogRequest request = new AdminAuditLogRequest(
+				null,
+				null,
+				AdminAuditLogCategory.USER,
+				"   ",
+				null);
+			given(adminAuditLogQueryRepository.findAuditLogs(org.mockito.ArgumentMatchers.any(),
+				org.mockito.ArgumentMatchers.eq(pageable)))
+				.willReturn(Page.empty(pageable));
+
+			// when
+			adminAuditLogService.getAuditLogs(request, pageable);
+
+			// then
+			ArgumentCaptor<AdminAuditLogCondition> captor = ArgumentCaptor.forClass(AdminAuditLogCondition.class);
+			verify(adminAuditLogQueryRepository).findAuditLogs(captor.capture(),
+				org.mockito.ArgumentMatchers.eq(pageable));
+			assertThat(captor.getValue().actionType()).isNull();
+		}
+
+		@Test
+		@DisplayName("성공: 액션 타입 문자열을 대문자 문자열 조건으로 정규화한다")
+		void givenActionType_whenGetAuditLogs_thenNormalizeActionTypeToUppercaseStringCondition() {
+			// given
+			Pageable pageable = PageRequest.of(0, 10);
+			AdminAuditLogRequest request = new AdminAuditLogRequest(
+				null,
+				null,
+				AdminAuditLogCategory.USER,
+				"drop",
+				null);
+			given(adminAuditLogQueryRepository.findAuditLogs(org.mockito.ArgumentMatchers.any(),
+				org.mockito.ArgumentMatchers.eq(pageable)))
+				.willReturn(Page.empty(pageable));
+
+			// when
+			adminAuditLogService.getAuditLogs(request, pageable);
+
+			// then
+			ArgumentCaptor<AdminAuditLogCondition> captor = ArgumentCaptor.forClass(AdminAuditLogCondition.class);
+			verify(adminAuditLogQueryRepository).findAuditLogs(captor.capture(),
+				org.mockito.ArgumentMatchers.eq(pageable));
+			assertThat(captor.getValue().actionType()).isEqualTo("DROP");
+		}
+
+		@Test
+		@DisplayName("실패: 존재하지 않는 액션 타입은 잘못된 요청 예외가 발생하고 저장소를 조회하지 않는다")
+		void givenInvalidActionType_whenGetAuditLogs_thenThrowBadRequestWithoutRepositoryCall() {
+			// given
+			Pageable pageable = PageRequest.of(0, 10);
+			AdminAuditLogRequest request = new AdminAuditLogRequest(
+				null,
+				null,
+				AdminAuditLogCategory.USER,
+				"unknown",
+				null);
+
+			// when & then
+			assertThatThrownBy(() -> adminAuditLogService.getAuditLogs(request, pageable))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasFieldOrPropertyWithValue("errorCode", GlobalErrorCode.BAD_REQUEST);
+			verify(adminAuditLogQueryRepository, never()).findAuditLogs(org.mockito.ArgumentMatchers.any(),
+				org.mockito.ArgumentMatchers.any());
 		}
 	}
 }

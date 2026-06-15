@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.admin.audit.repository;
 
-import static net.causw.app.main.domain.user.account.entity.user.QUserAdminActionLog.userAdminActionLog;
+import static net.causw.app.main.domain.admin.audit.entity.QAdminAuditLog.adminAuditLog;
 
 import java.util.List;
 
@@ -9,11 +9,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
-import net.causw.app.main.domain.admin.audit.enums.AdminAuditLogCategory;
+import net.causw.app.main.domain.admin.audit.entity.AdminAuditLog;
 import net.causw.app.main.domain.admin.audit.service.dto.AdminAuditLogCondition;
 import net.causw.app.main.domain.admin.audit.service.dto.AdminAuditLogItem;
-import net.causw.app.main.domain.user.account.entity.user.UserAdminActionLog;
-import net.causw.app.main.domain.user.account.enums.user.UserAdminActionType;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -28,34 +26,20 @@ public class AdminAuditLogQueryRepository {
 
 	private final JPAQueryFactory jpaQueryFactory;
 
-	/**
-	 * 관리자 감사 로그 검색 조건에 맞는 사용자 관리 액션 로그를 조회
-	 * @param condition 관리자 감사 로그 검색 조건
-	 * @param pageable 페이지 요청
-	 * @return 관리자 감사 로그 목록 페이지
-	 */
 	public Page<AdminAuditLogItem> findAuditLogs(AdminAuditLogCondition condition, Pageable pageable) {
-		if (condition.category() != null && condition.category() != AdminAuditLogCategory.USER) {
-			return Page.empty(pageable);
-		}
-
-		UserAdminActionType actionType = parseActionType(condition.actionType());
-		if (condition.actionType() != null && actionType == null) {
-			return Page.empty(pageable);
-		}
-
 		BooleanBuilder where = new BooleanBuilder()
 			.and(createdAtGoe(condition))
 			.and(createdAtLoe(condition))
-			.and(actionTypeEq(actionType))
-			.and(emailKeywordContains(condition.keyword()));
+			.and(categoryEq(condition))
+			.and(actionTypeEq(condition))
+			.and(keywordContains(condition.keyword()));
 
-		List<UserAdminActionLog> logs = jpaQueryFactory
-			.selectFrom(userAdminActionLog)
+		List<AdminAuditLog> logs = jpaQueryFactory
+			.selectFrom(adminAuditLog)
 			.where(where)
 			.offset(pageable.getOffset())
 			.limit(pageable.getPageSize())
-			.orderBy(userAdminActionLog.createdAt.desc())
+			.orderBy(adminAuditLog.createdAt.desc())
 			.fetch();
 
 		List<AdminAuditLogItem> content = logs.stream()
@@ -63,58 +47,58 @@ public class AdminAuditLogQueryRepository {
 			.toList();
 
 		JPAQuery<Long> countQuery = jpaQueryFactory
-			.select(userAdminActionLog.count())
-			.from(userAdminActionLog)
+			.select(adminAuditLog.count())
+			.from(adminAuditLog)
 			.where(where);
 
 		return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
 	}
 
-	private UserAdminActionType parseActionType(String actionType) {
-		if (actionType == null) {
-			return null;
-		}
-		try {
-			return UserAdminActionType.valueOf(actionType.toUpperCase());
-		} catch (IllegalArgumentException ignored) {
-			return null;
-		}
-	}
-
 	private BooleanExpression createdAtGoe(AdminAuditLogCondition condition) {
-		return condition.from() == null ? null : userAdminActionLog.createdAt.goe(condition.from());
+		return condition.from() == null ? null : adminAuditLog.createdAt.goe(condition.from());
 	}
 
 	private BooleanExpression createdAtLoe(AdminAuditLogCondition condition) {
-		return condition.to() == null ? null : userAdminActionLog.createdAt.loe(condition.to());
+		return condition.to() == null ? null : adminAuditLog.createdAt.loe(condition.to());
 	}
 
-	private BooleanExpression actionTypeEq(UserAdminActionType actionType) {
-		return actionType == null ? null : userAdminActionLog.actionType.eq(actionType);
+	private BooleanExpression categoryEq(AdminAuditLogCondition condition) {
+		return condition.category() == null ? null : adminAuditLog.category.eq(condition.category());
 	}
 
-	private BooleanExpression emailKeywordContains(String keyword) {
+	private BooleanExpression actionTypeEq(AdminAuditLogCondition condition) {
+		return condition.actionType() == null ? null : adminAuditLog.actionType.eq(condition.actionType());
+	}
+
+	private BooleanExpression keywordContains(String keyword) {
 		if (keyword == null) {
 			return null;
 		}
-		return userAdminActionLog.adminUserEmail.containsIgnoreCase(keyword)
-			.or(userAdminActionLog.targetUserEmail.containsIgnoreCase(keyword));
+		return adminAuditLog.actorEmail.containsIgnoreCase(keyword)
+			.or(adminAuditLog.actorName.containsIgnoreCase(keyword))
+			.or(adminAuditLog.actorStudentId.containsIgnoreCase(keyword))
+			.or(adminAuditLog.targetEmail.containsIgnoreCase(keyword))
+			.or(adminAuditLog.targetName.containsIgnoreCase(keyword))
+			.or(adminAuditLog.targetStudentId.containsIgnoreCase(keyword));
 	}
 
-	private AdminAuditLogItem toItem(UserAdminActionLog log) {
+	private AdminAuditLogItem toItem(AdminAuditLog log) {
 		return new AdminAuditLogItem(
 			log.getId(),
-			AdminAuditLogCategory.USER,
-			log.getAdminUserId(),
-			log.getAdminUserEmail(),
-			log.getTargetUserId(),
-			log.getTargetUserEmail(),
+			log.getCategory(),
 			log.getActionType(),
-			log.getBeforeState(),
-			log.getAfterState(),
-			log.getBeforeRoles(),
-			log.getAfterRoles(),
-			log.getReason(),
+			log.getActionDescription(),
+			log.getActorUserId(),
+			log.getActorEmail(),
+			log.getActorName(),
+			log.getActorStudentId(),
+			log.getTargetType(),
+			log.getTargetId(),
+			log.getTargetEmail(),
+			log.getTargetName(),
+			log.getTargetStudentId(),
+			log.getSummary(),
+			log.getMetadataJson(),
 			log.getCreatedAt());
 	}
 }

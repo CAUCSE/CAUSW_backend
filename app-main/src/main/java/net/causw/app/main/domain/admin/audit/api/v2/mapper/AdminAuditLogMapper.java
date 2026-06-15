@@ -9,12 +9,19 @@ import net.causw.app.main.domain.admin.audit.api.v2.dto.response.AdminAuditLogRe
 import net.causw.app.main.domain.admin.audit.api.v2.dto.response.AuditActorResponse;
 import net.causw.app.main.domain.admin.audit.api.v2.dto.response.AuditTargetResponse;
 import net.causw.app.main.domain.admin.audit.service.dto.AdminAuditLogItem;
-import net.causw.app.main.domain.user.account.enums.user.UserAdminActionType;
+import net.causw.app.main.shared.exception.errorcode.GlobalErrorCode;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.RequiredArgsConstructor;
 
 @Component
+@RequiredArgsConstructor
 public class AdminAuditLogMapper {
 
-	private static final String USER_TARGET_TYPE = "USER";
+	private final ObjectMapper objectMapper;
 
 	/**
 	 * 관리자 감사 로그 서비스 DTO를 API 응답 DTO로 변환
@@ -25,35 +32,28 @@ public class AdminAuditLogMapper {
 		return new AdminAuditLogResponse(
 			item.id(),
 			item.category(),
-			item.actionType().name(),
-			item.actionType().getDescription(),
-			new AuditActorResponse(item.actorUserId(), item.actorEmail()),
-			new AuditTargetResponse(USER_TARGET_TYPE, item.targetId(), item.targetEmail()),
-			toSummary(item),
-			toMetadata(item),
+			item.actionType(),
+			item.actionDescription(),
+			new AuditActorResponse(item.actorUserId(), item.actorEmail(), item.actorName(), item.actorStudentId()),
+			new AuditTargetResponse(
+				item.targetType(),
+				item.targetId(),
+				item.targetEmail(),
+				item.targetName(),
+				item.targetStudentId()),
+			item.summary(),
+			toMetadata(item.metadataJson()),
 			item.createdAt());
 	}
 
-	private String toSummary(AdminAuditLogItem item) {
-		if (item.actionType() == UserAdminActionType.DROP) {
-			return item.actorEmail() + " dropped user " + item.targetEmail();
+	private Map<String, Object> toMetadata(String metadataJson) {
+		if (metadataJson == null || metadataJson.isBlank()) {
+			return new LinkedHashMap<>();
 		}
-		if (item.actionType() == UserAdminActionType.RESTORE) {
-			return item.actorEmail() + " restored user " + item.targetEmail();
+		try {
+			return objectMapper.readValue(metadataJson, new TypeReference<LinkedHashMap<String, Object>>() {});
+		} catch (JsonProcessingException e) {
+			throw GlobalErrorCode.INTERNAL_SERVER_ERROR.toBaseException();
 		}
-		if (item.actionType() == UserAdminActionType.ROLE_CHANGE) {
-			return item.actorEmail() + " changed roles for user " + item.targetEmail();
-		}
-		return item.actorEmail() + " performed " + item.actionType().name() + " on user " + item.targetEmail();
-	}
-
-	private Map<String, Object> toMetadata(AdminAuditLogItem item) {
-		Map<String, Object> metadata = new LinkedHashMap<>();
-		metadata.put("beforeState", item.beforeState() == null ? null : item.beforeState().name());
-		metadata.put("afterState", item.afterState() == null ? null : item.afterState().name());
-		metadata.put("beforeRoles", item.beforeRoles());
-		metadata.put("afterRoles", item.afterRoles());
-		metadata.put("reason", item.reason());
-		return metadata;
 	}
 }

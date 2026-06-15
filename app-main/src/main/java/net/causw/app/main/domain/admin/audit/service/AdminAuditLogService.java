@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.admin.audit.api.v2.dto.request.AdminAuditLogRequest;
+import net.causw.app.main.domain.admin.audit.enums.AdminAuditLogCategory;
 import net.causw.app.main.domain.admin.audit.repository.AdminAuditLogQueryRepository;
 import net.causw.app.main.domain.admin.audit.service.dto.AdminAuditLogCondition;
 import net.causw.app.main.domain.admin.audit.service.dto.AdminAuditLogItem;
@@ -28,7 +29,9 @@ public class AdminAuditLogService {
 	 */
 	public Page<AdminAuditLogItem> getAuditLogs(AdminAuditLogRequest request, Pageable pageable) {
 		validateDateRange(request);
-		return adminAuditLogQueryRepository.findAuditLogs(toCondition(request), pageable);
+		String actionTypeValue = normalize(request.actionType());
+		String actionType = normalizeActionType(request.category(), actionTypeValue);
+		return adminAuditLogQueryRepository.findAuditLogs(toCondition(request, actionType), pageable);
 	}
 
 	private void validateDateRange(AdminAuditLogRequest request) {
@@ -37,13 +40,27 @@ public class AdminAuditLogService {
 		}
 	}
 
-	private AdminAuditLogCondition toCondition(AdminAuditLogRequest request) {
+	private AdminAuditLogCondition toCondition(AdminAuditLogRequest request, String actionType) {
 		return new AdminAuditLogCondition(
 			request.from(),
 			request.to(),
 			request.category(),
-			normalize(request.actionType()),
+			actionType,
 			normalize(request.keyword()));
+	}
+
+	private String normalizeActionType(AdminAuditLogCategory category, String actionType) {
+		if (actionType == null) {
+			return null;
+		}
+		String normalizedActionType = actionType.toUpperCase();
+		if ((category == null || category == AdminAuditLogCategory.USER)
+			&& ("DROP".equals(normalizedActionType)
+				|| "RESTORE".equals(normalizedActionType)
+				|| "ROLE_CHANGE".equals(normalizedActionType))) {
+			return normalizedActionType;
+		}
+		throw GlobalErrorCode.BAD_REQUEST.toBaseException();
 	}
 
 	private String normalize(String value) {

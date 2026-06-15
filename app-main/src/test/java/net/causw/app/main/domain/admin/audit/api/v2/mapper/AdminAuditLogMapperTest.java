@@ -10,12 +10,12 @@ import org.junit.jupiter.api.Test;
 
 import net.causw.app.main.domain.admin.audit.enums.AdminAuditLogCategory;
 import net.causw.app.main.domain.admin.audit.service.dto.AdminAuditLogItem;
-import net.causw.app.main.domain.user.account.enums.user.UserAdminActionType;
-import net.causw.app.main.domain.user.account.enums.user.UserState;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 class AdminAuditLogMapperTest {
 
-	private final AdminAuditLogMapper mapper = new AdminAuditLogMapper();
+	private final AdminAuditLogMapper mapper = new AdminAuditLogMapper(new ObjectMapper());
 
 	@Nested
 	@DisplayName("감사 로그 응답 변환 (toResponse)")
@@ -29,16 +29,19 @@ class AdminAuditLogMapperTest {
 			AdminAuditLogItem item = new AdminAuditLogItem(
 				"log-id",
 				AdminAuditLogCategory.USER,
+				"DROP",
+				"유저 추방",
 				"admin-id",
 				"admin@causw.net",
+				"관리자",
+				"20190001",
+				"USER",
 				"user-id",
 				"user@causw.net",
-				UserAdminActionType.DROP,
-				UserState.ACTIVE,
-				UserState.DROP,
-				"COMMON",
-				"COMMON",
-				"운영 정책 위반",
+				"대상자",
+				"20200001",
+				"admin@causw.net dropped user user@causw.net",
+				"{\"beforeState\":\"ACTIVE\",\"afterState\":\"DROP\",\"beforeRoles\":\"COMMON\",\"afterRoles\":\"COMMON\",\"reason\":\"운영 정책 위반\"}",
 				createdAt);
 
 			// when
@@ -51,9 +54,13 @@ class AdminAuditLogMapperTest {
 			assertThat(response.actionDescription()).isEqualTo("유저 추방");
 			assertThat(response.actor().userId()).isEqualTo("admin-id");
 			assertThat(response.actor().email()).isEqualTo("admin@causw.net");
+			assertThat(response.actor().name()).isEqualTo("관리자");
+			assertThat(response.actor().studentId()).isEqualTo("20190001");
 			assertThat(response.target().type()).isEqualTo("USER");
 			assertThat(response.target().id()).isEqualTo("user-id");
 			assertThat(response.target().email()).isEqualTo("user@causw.net");
+			assertThat(response.target().name()).isEqualTo("대상자");
+			assertThat(response.target().studentId()).isEqualTo("20200001");
 			assertThat(response.summary()).isEqualTo("admin@causw.net dropped user user@causw.net");
 			assertThat(response.metadata())
 				.containsEntry("beforeState", "ACTIVE")
@@ -71,16 +78,19 @@ class AdminAuditLogMapperTest {
 			AdminAuditLogItem item = new AdminAuditLogItem(
 				"log-id",
 				AdminAuditLogCategory.USER,
+				"RESTORE",
+				"추방 유저 복구",
 				"admin-id",
 				"admin@causw.net",
+				"관리자",
+				"20190001",
+				"USER",
 				"user-id",
 				"user@causw.net",
-				UserAdminActionType.RESTORE,
-				UserState.DROP,
-				UserState.ACTIVE,
-				"COMMON",
-				"COMMON",
-				null,
+				"대상자",
+				"20200001",
+				"admin@causw.net restored user user@causw.net",
+				"{\"beforeState\":\"DROP\",\"afterState\":\"ACTIVE\",\"beforeRoles\":\"COMMON\",\"afterRoles\":\"COMMON\",\"reason\":null}",
 				LocalDateTime.of(2026, 6, 13, 10, 30));
 
 			// when
@@ -98,16 +108,19 @@ class AdminAuditLogMapperTest {
 			AdminAuditLogItem item = new AdminAuditLogItem(
 				"log-id",
 				AdminAuditLogCategory.USER,
+				"ROLE_CHANGE",
+				"유저 역할 변경",
 				"admin-id",
 				"admin@causw.net",
+				"관리자",
+				"20190001",
+				"USER",
 				"user-id",
 				"user@causw.net",
-				UserAdminActionType.ROLE_CHANGE,
-				UserState.ACTIVE,
-				UserState.ACTIVE,
-				"COMMON",
-				"COUNCIL_LEADER",
-				null,
+				"대상자",
+				"20200001",
+				"admin@causw.net changed roles for user user@causw.net",
+				"{\"beforeState\":\"ACTIVE\",\"afterState\":\"ACTIVE\",\"beforeRoles\":\"COMMON\",\"afterRoles\":\"COUNCIL_LEADER\",\"reason\":null}",
 				LocalDateTime.of(2026, 6, 13, 10, 30));
 
 			// when
