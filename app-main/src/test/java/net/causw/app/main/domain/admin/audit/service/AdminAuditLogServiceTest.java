@@ -12,6 +12,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -150,6 +152,67 @@ class AdminAuditLogServiceTest {
 			verify(adminAuditLogQueryRepository).findAuditLogs(captor.capture(),
 				org.mockito.ArgumentMatchers.eq(pageable));
 			assertThat(captor.getValue().actionType()).isEqualTo("DROP");
+		}
+
+		@ParameterizedTest
+		@CsvSource({
+			"LOCKER, assign, ASSIGN",
+			"LOCKER, extend, EXTEND",
+			"LOCKER, release, RELEASE",
+			"LOCKER, enable, ENABLE",
+			"LOCKER, disable, DISABLE",
+			"LOCKER, release_expired, RELEASE_EXPIRED",
+			"ACADEMIC, admission_accept, ADMISSION_ACCEPT",
+			"ACADEMIC, admission_reject, ADMISSION_REJECT",
+			"ACADEMIC, academic_record_accept, ACADEMIC_RECORD_ACCEPT",
+			"ACADEMIC, academic_record_reject, ACADEMIC_RECORD_REJECT"
+		})
+		@DisplayName("성공: 카테고리별 신규 액션 타입을 대문자 문자열 조건으로 정규화한다")
+		void givenAdditionalCategoryActionType_whenGetAuditLogs_thenNormalizeActionTypeToUppercaseStringCondition(
+			AdminAuditLogCategory category,
+			String actionType,
+			String expectedActionType) {
+			// given
+			Pageable pageable = PageRequest.of(0, 10);
+			AdminAuditLogRequest request = new AdminAuditLogRequest(
+				null,
+				null,
+				category,
+				actionType,
+				null);
+			given(adminAuditLogQueryRepository.findAuditLogs(org.mockito.ArgumentMatchers.any(),
+				org.mockito.ArgumentMatchers.eq(pageable)))
+				.willReturn(Page.empty(pageable));
+
+			// when
+			adminAuditLogService.getAuditLogs(request, pageable);
+
+			// then
+			ArgumentCaptor<AdminAuditLogCondition> captor = ArgumentCaptor.forClass(AdminAuditLogCondition.class);
+			verify(adminAuditLogQueryRepository).findAuditLogs(captor.capture(),
+				org.mockito.ArgumentMatchers.eq(pageable));
+			assertThat(captor.getValue().category()).isEqualTo(category);
+			assertThat(captor.getValue().actionType()).isEqualTo(expectedActionType);
+		}
+
+		@Test
+		@DisplayName("실패: 다른 카테고리의 액션 타입은 잘못된 요청 예외가 발생하고 저장소를 조회하지 않는다")
+		void givenActionTypeForOtherCategory_whenGetAuditLogs_thenThrowBadRequestWithoutRepositoryCall() {
+			// given
+			Pageable pageable = PageRequest.of(0, 10);
+			AdminAuditLogRequest request = new AdminAuditLogRequest(
+				null,
+				null,
+				AdminAuditLogCategory.LOCKER,
+				"ADMISSION_ACCEPT",
+				null);
+
+			// when & then
+			assertThatThrownBy(() -> adminAuditLogService.getAuditLogs(request, pageable))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasFieldOrPropertyWithValue("errorCode", GlobalErrorCode.BAD_REQUEST);
+			verify(adminAuditLogQueryRepository, never()).findAuditLogs(org.mockito.ArgumentMatchers.any(),
+				org.mockito.ArgumentMatchers.any());
 		}
 
 		@Test

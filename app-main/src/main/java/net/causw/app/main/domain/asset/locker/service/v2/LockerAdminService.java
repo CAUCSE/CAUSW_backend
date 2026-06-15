@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.domain.admin.audit.event.AdminAuditLogEventPublisher;
 import net.causw.app.main.domain.asset.locker.entity.Locker;
 import net.causw.app.main.domain.asset.locker.entity.LockerLog;
 import net.causw.app.main.domain.asset.locker.service.v2.dto.LockerListCondition;
@@ -39,6 +40,7 @@ public class LockerAdminService {
 	private final LockerLogReader lockerLogReader;
 	private final LockerValidator lockerValidator;
 	private final LockerWriter lockerWriter;
+	private final AdminAuditLogEventPublisher adminAuditLogEventPublisher;
 	private final UserReader userReader;
 
 	/**
@@ -93,6 +95,7 @@ public class LockerAdminService {
 
 		User user = userReader.findUserByIdNotDeleted(userId);
 		lockerWriter.assignLocker(locker, admin, user, expiredAt);
+		adminAuditLogEventPublisher.publishLockerAssign(locker, admin, user, expiredAt);
 	}
 
 	/**
@@ -111,6 +114,7 @@ public class LockerAdminService {
 		User user = locker.getUser().orElseThrow(UserErrorCode.USER_NOT_FOUND::toBaseException);
 
 		lockerWriter.extendLockerByAdmin(locker, admin, user, expiredAt);
+		adminAuditLogEventPublisher.publishLockerExtend(locker, admin, user, expiredAt);
 	}
 
 	/**
@@ -128,6 +132,7 @@ public class LockerAdminService {
 		User user = locker.getUser().orElseThrow(UserErrorCode.USER_NOT_FOUND::toBaseException);
 
 		lockerWriter.releaseLocker(locker, admin, user.getEmail(), user.getName());
+		adminAuditLogEventPublisher.publishLockerRelease(locker, admin, user);
 	}
 
 	/**
@@ -143,6 +148,7 @@ public class LockerAdminService {
 		lockerValidator.validateEnableable(locker);
 
 		lockerWriter.enableLocker(locker, admin);
+		adminAuditLogEventPublisher.publishLockerEnable(locker, admin);
 	}
 
 	/**
@@ -158,12 +164,13 @@ public class LockerAdminService {
 		lockerValidator.validateDisableable(locker);
 
 		// locker user 존재할 시에 반환
-		var user = locker.getUser();
-		if (user.isPresent()) {
-			lockerWriter.releaseLocker(locker, admin, user.get().getEmail(), user.get().getName());
+		var currentUser = locker.getUser();
+		if (currentUser.isPresent()) {
+			lockerWriter.releaseLocker(locker, admin, currentUser.get().getEmail(), currentUser.get().getName());
 		}
 
 		lockerWriter.disableLocker(locker, admin);
+		adminAuditLogEventPublisher.publishLockerDisable(locker, admin, currentUser);
 	}
 
 	@Transactional
@@ -172,9 +179,11 @@ public class LockerAdminService {
 
 		var expiredLockers = lockerReader.findExpiredLockers(LocalDateTime.now());
 		expiredLockers.forEach(locker -> {
-			var userEmail = locker.getUser().map(User::getEmail).orElse("알 수 없음");
-			var userName = locker.getUser().map(User::getName).orElse("알 수 없음");
+			var expiredUser = locker.getUser();
+			var userEmail = expiredUser.map(User::getEmail).orElse("알 수 없음");
+			var userName = expiredUser.map(User::getName).orElse("알 수 없음");
 			lockerWriter.releaseLocker(locker, admin, userEmail, userName);
+			adminAuditLogEventPublisher.publishLockerReleaseExpired(locker, admin, expiredUser);
 		});
 	}
 }

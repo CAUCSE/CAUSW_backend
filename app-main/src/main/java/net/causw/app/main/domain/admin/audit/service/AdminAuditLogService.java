@@ -1,5 +1,8 @@
 package net.causw.app.main.domain.admin.audit.service;
 
+import java.util.Map;
+import java.util.Set;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -18,6 +21,24 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class AdminAuditLogService {
+
+	private static final Set<String> USER_ACTION_TYPES = Set.of("DROP", "RESTORE", "ROLE_CHANGE");
+	private static final Set<String> LOCKER_ACTION_TYPES = Set.of(
+		"ASSIGN",
+		"EXTEND",
+		"RELEASE",
+		"ENABLE",
+		"DISABLE",
+		"RELEASE_EXPIRED");
+	private static final Set<String> ACADEMIC_ACTION_TYPES = Set.of(
+		"ADMISSION_ACCEPT",
+		"ADMISSION_REJECT",
+		"ACADEMIC_RECORD_ACCEPT",
+		"ACADEMIC_RECORD_REJECT");
+	private static final Map<AdminAuditLogCategory, Set<String>> ACTION_TYPES_BY_CATEGORY = Map.of(
+		AdminAuditLogCategory.USER, USER_ACTION_TYPES,
+		AdminAuditLogCategory.LOCKER, LOCKER_ACTION_TYPES,
+		AdminAuditLogCategory.ACADEMIC, ACADEMIC_ACTION_TYPES);
 
 	private final AdminAuditLogQueryRepository adminAuditLogQueryRepository;
 
@@ -54,13 +75,18 @@ public class AdminAuditLogService {
 			return null;
 		}
 		String normalizedActionType = actionType.toUpperCase();
-		if ((category == null || category == AdminAuditLogCategory.USER)
-			&& ("DROP".equals(normalizedActionType)
-				|| "RESTORE".equals(normalizedActionType)
-				|| "ROLE_CHANGE".equals(normalizedActionType))) {
+		if (isAllowedActionType(category, normalizedActionType)) {
 			return normalizedActionType;
 		}
 		throw GlobalErrorCode.BAD_REQUEST.toBaseException();
+	}
+
+	private boolean isAllowedActionType(AdminAuditLogCategory category, String actionType) {
+		if (category != null) {
+			return ACTION_TYPES_BY_CATEGORY.getOrDefault(category, Set.of()).contains(actionType);
+		}
+		return ACTION_TYPES_BY_CATEGORY.values().stream()
+			.anyMatch(actionTypes -> actionTypes.contains(actionType));
 	}
 
 	private String normalize(String value) {

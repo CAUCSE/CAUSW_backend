@@ -21,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
+import net.causw.app.main.domain.admin.audit.event.AdminAuditLogEventPublisher;
 import net.causw.app.main.domain.asset.locker.entity.Locker;
 import net.causw.app.main.domain.asset.locker.entity.LockerLocation;
 import net.causw.app.main.domain.asset.locker.entity.LockerLog;
@@ -52,6 +53,8 @@ class LockerAdminServiceTest {
 	private LockerValidator lockerValidator;
 	@Mock
 	private LockerWriter lockerWriter;
+	@Mock
+	private AdminAuditLogEventPublisher adminAuditLogEventPublisher;
 	@Mock
 	private UserReader userReader;
 
@@ -159,6 +162,7 @@ class LockerAdminServiceTest {
 			verify(lockerValidator).validateUserNotHavingLocker(userId);
 
 			verify(lockerWriter).assignLocker(locker, admin, user, expiredAt);
+			verify(adminAuditLogEventPublisher).publishLockerAssign(locker, admin, user, expiredAt);
 		}
 
 		@Test
@@ -188,6 +192,7 @@ class LockerAdminServiceTest {
 
 			verify(lockerWriter, never()).assignLocker(any(Locker.class), any(User.class), any(User.class),
 				any(LocalDateTime.class));
+			verifyNoInteractions(adminAuditLogEventPublisher);
 		}
 	}
 
@@ -217,6 +222,7 @@ class LockerAdminServiceTest {
 			// then
 			verify(lockerValidator).validateInUse(locker);
 			verify(lockerWriter).extendLockerByAdmin(locker, admin, lockerUser, newExpireAt);
+			verify(adminAuditLogEventPublisher).publishLockerExtend(locker, admin, lockerUser, newExpireAt);
 		}
 
 		@Test
@@ -245,6 +251,7 @@ class LockerAdminServiceTest {
 
 			verify(lockerWriter, never()).extendLockerByAdmin(any(Locker.class), any(User.class), any(User.class),
 				any(LocalDateTime.class));
+			verifyNoInteractions(adminAuditLogEventPublisher);
 		}
 	}
 
@@ -275,6 +282,7 @@ class LockerAdminServiceTest {
 			// then
 			verify(lockerValidator).validateInUse(locker);
 			verify(lockerWriter).releaseLocker(locker, admin, lockerUser.getEmail(), lockerUser.getName());
+			verify(adminAuditLogEventPublisher).publishLockerRelease(locker, admin, lockerUser);
 		}
 
 		@Test
@@ -301,6 +309,7 @@ class LockerAdminServiceTest {
 				.hasMessage(LockerErrorCode.LOCKER_NOT_IN_USE.getMessage());
 
 			verify(lockerWriter, never()).releaseLocker(any(Locker.class), any(User.class), anyString(), anyString());
+			verifyNoInteractions(adminAuditLogEventPublisher);
 		}
 	}
 
@@ -327,6 +336,7 @@ class LockerAdminServiceTest {
 			// then
 			verify(lockerValidator).validateEnableable(locker);
 			verify(lockerWriter).enableLocker(locker, admin);
+			verify(adminAuditLogEventPublisher).publishLockerEnable(locker, admin);
 		}
 	}
 
@@ -358,6 +368,7 @@ class LockerAdminServiceTest {
 
 			verify(lockerWriter).releaseLocker(locker, admin, currentUser.getEmail(), currentUser.getName());
 			verify(lockerWriter).disableLocker(locker, admin);
+			verify(adminAuditLogEventPublisher).publishLockerDisable(locker, admin, Optional.of(currentUser));
 		}
 
 		@Test
@@ -382,6 +393,7 @@ class LockerAdminServiceTest {
 
 			verify(lockerWriter, never()).releaseLocker(any(Locker.class), any(User.class), anyString(), anyString());
 			verify(lockerWriter).disableLocker(locker, admin);
+			verify(adminAuditLogEventPublisher).publishLockerDisable(locker, admin, Optional.empty());
 		}
 	}
 
@@ -416,6 +428,8 @@ class LockerAdminServiceTest {
 
 			verify(lockerWriter).releaseLocker(locker1, admin, user1.getEmail(), user1.getName());
 			verify(lockerWriter).releaseLocker(locker2, admin, user2.getEmail(), user2.getName());
+			verify(adminAuditLogEventPublisher).publishLockerReleaseExpired(locker1, admin, Optional.of(user1));
+			verify(adminAuditLogEventPublisher).publishLockerReleaseExpired(locker2, admin, Optional.of(user2));
 		}
 	}
 }
