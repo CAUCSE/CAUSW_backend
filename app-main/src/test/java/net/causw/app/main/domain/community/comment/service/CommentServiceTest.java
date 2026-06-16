@@ -49,7 +49,7 @@ import net.causw.app.main.domain.community.post.service.v2.implementation.PostRe
 import net.causw.app.main.domain.notification.notification.event.PostCommentCreatedEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
-import net.causw.app.main.domain.user.relation.service.v2.implementation.UserBlockEntityService;
+import net.causw.app.main.domain.user.relation.service.v2.implementation.BlockReader;
 
 @ExtendWith(MockitoExtension.class)
 public class CommentServiceTest {
@@ -74,7 +74,7 @@ public class CommentServiceTest {
 	@Mock
 	ApplicationEventPublisher eventPublisher;
 	@Mock
-	UserBlockEntityService userBlockEntityService;
+	BlockReader blockReader;
 	@Mock
 	CommentMetaReader commentMetaReader;
 	@Mock
@@ -161,7 +161,7 @@ public class CommentServiceTest {
 			given(userReader.findUserByIdNotDeleted("viewer-id")).willReturn(viewer);
 			given(postReader.findById("post-id")).willReturn(post);
 			given(boardConfigReader.getAdminIdsByBoardId("board-id")).willReturn(List.of("admin-id"));
-			given(userBlockEntityService.findBlockeeUserIdsByBlocker(viewer)).willReturn(Collections.emptySet());
+			given(blockReader.findBlockeeUserIdsByBlocker(viewer)).willReturn(Collections.emptySet());
 			given(commentReader.getComments("post-id", pageable)).willReturn(commentsPage);
 			given(commentMetaReader.fetch(eq("user-id"), any(Set.class), anyList()))
 				.willReturn(Map.of("comment-id", mock(CommentMeta.class)));
