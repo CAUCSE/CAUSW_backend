@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
-import net.causw.app.main.domain.user.account.api.v1.dto.UserInfoSearchConditionDto;
+import net.causw.app.main.domain.user.account.service.dto.request.UserInfoSearchCondition;
 import net.causw.app.main.domain.user.account.api.v1.dto.UserInfoSummaryResponseDto;
 import net.causw.app.main.domain.user.account.api.v1.mapper.UserDtoMapper;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
@@ -30,7 +30,7 @@ public class SearchUserInfoListUseCaseService {
 	private final UserDtoMapper userDtoMapper;
 	private final UserProfileImageReader userProfileImageReader;
 
-	public Page<UserInfoSummaryResponseDto> execute(UserInfoSearchConditionDto userInfoSearchCondition,
+	public Page<UserInfoSummaryResponseDto> execute(UserInfoSearchCondition userInfoSearchCondition,
 		Integer pageNum) {
 		Pageable pageable = pageableFactory.create(pageNum, DEFAULT_PAGE_SIZE);
 		Page<UserInfo> userInfos = userInfoV1Service.searchUserInfo(pageable, userInfoSearchCondition);

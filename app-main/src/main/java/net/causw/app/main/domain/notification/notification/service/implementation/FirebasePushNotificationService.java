@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.notification.notification.service.v1;
+package net.causw.app.main.domain.notification.notification.service.implementation;
 
 import org.springframework.stereotype.Service;
 
@@ -26,5 +26,4 @@ public class FirebasePushNotificationService {
 		String response = FirebaseMessaging.getInstance().send(message);
 		log.info("Successfully sent message: " + response);
 	}
-
 }

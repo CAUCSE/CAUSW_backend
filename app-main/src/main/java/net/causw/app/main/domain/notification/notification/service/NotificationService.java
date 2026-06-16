@@ -1,11 +1,8 @@
-package net.causw.app.main.domain.notification.notification.service.v1;
-
-import org.springframework.stereotype.Service;
+package net.causw.app.main.domain.notification.notification.service;
 
 import net.causw.app.main.domain.notification.notification.entity.Notification;
 import net.causw.app.main.domain.user.account.entity.user.User;
 
-@Service
 public interface NotificationService {
 	void send(User user, String targetToken, String title, String body);
 

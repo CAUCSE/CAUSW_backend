@@ -51,7 +51,7 @@ import net.causw.app.main.domain.notification.notification.repository.UserBoardS
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
-import net.causw.app.main.domain.user.relation.service.v1.UserBlockEntityService;
+import net.causw.app.main.domain.user.relation.service.v2.implementation.UserBlockEntityService;
 import net.causw.app.main.shared.pageable.PageableFactory;
 import net.causw.app.main.util.ObjectFixtures;
 import net.causw.global.constant.MessageUtil;

@@ -15,6 +15,8 @@ import net.causw.app.main.domain.community.comment.entity.ChildComment;
 import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.notification.notification.api.v1.dto.CommentNotificationDto;
 import net.causw.app.main.domain.notification.notification.entity.Notification;
+import net.causw.app.main.domain.notification.notification.service.NotificationService;
+import net.causw.app.main.domain.notification.notification.service.implementation.FirebasePushNotificationService;
 import net.causw.app.main.domain.notification.notification.entity.NotificationLog;
 import net.causw.app.main.domain.notification.notification.entity.UserCommentSubscribe;
 import net.causw.app.main.domain.notification.notification.enums.NoticeType;
@@ -22,7 +24,7 @@ import net.causw.app.main.domain.notification.notification.repository.Notificati
 import net.causw.app.main.domain.notification.notification.repository.NotificationRepository;
 import net.causw.app.main.domain.notification.notification.repository.UserCommentSubscribeRepository;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.relation.service.v1.UserBlockEntityService;
+import net.causw.app.main.domain.user.relation.service.v2.implementation.UserBlockEntityService;
 import net.causw.app.main.shared.entity.BaseEntity;
 import net.causw.app.main.shared.infra.firebase.FcmUtils;
 

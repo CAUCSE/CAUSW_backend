@@ -101,7 +101,8 @@ import net.causw.app.main.domain.user.account.util.UserRoleWithoutAdminValidator
 import net.causw.app.main.domain.user.account.util.UserStateIsDropOrIsInActiveValidator;
 import net.causw.app.main.domain.user.account.util.UserStateIsNotDropAndActiveValidator;
 import net.causw.app.main.domain.user.account.util.UserStateValidator;
-import net.causw.app.main.domain.user.relation.service.v1.UserBlockEntityService;
+import net.causw.app.main.domain.user.auth.service.implementation.PasswordGenerator;
+import net.causw.app.main.domain.user.relation.service.v2.implementation.UserBlockEntityService;
 import net.causw.app.main.shared.StatusPolicy;
 import net.causw.app.main.shared.ValidatorBucket;
 import net.causw.app.main.shared.entity.BaseEntity;

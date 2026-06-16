@@ -39,7 +39,7 @@ import net.causw.app.main.domain.user.account.api.v1.dto.UserCreateRequestDto;
 import net.causw.app.main.domain.user.account.entity.user.FcmToken;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Department;
-import net.causw.app.main.domain.user.relation.service.v1.UserBlockEntityService;
+import net.causw.app.main.domain.user.relation.service.v2.implementation.UserBlockEntityService;
 import net.causw.app.main.shared.infra.firebase.FcmUtils;
 
 import com.google.firebase.messaging.FirebaseMessagingException;

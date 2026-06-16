@@ -7,6 +7,7 @@ import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.community.comment.service.v1.CommentEntityService;
 import net.causw.app.main.domain.user.account.api.v1.dto.response.CreateBlockByCommentResponseDto;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.relation.service.v2.implementation.UserBlockEntityService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;

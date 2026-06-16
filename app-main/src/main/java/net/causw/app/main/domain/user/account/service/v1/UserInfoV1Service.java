@@ -4,7 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import net.causw.app.main.domain.user.account.api.v1.dto.UserInfoSearchConditionDto;
+import net.causw.app.main.domain.user.account.service.dto.request.UserInfoSearchCondition;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
 import net.causw.app.main.domain.user.account.repository.userInfo.UserInfoQueryV1Repository;
@@ -33,7 +33,7 @@ public class UserInfoV1Service {
 				MessageUtil.USER_NOT_FOUND));
 	}
 
-	public Page<UserInfo> searchUserInfo(Pageable pageable, UserInfoSearchConditionDto userInfoSearchCondition) {
+	public Page<UserInfo> searchUserInfo(Pageable pageable, UserInfoSearchCondition userInfoSearchCondition) {
 		return userInfoQueryV1Repository.searchUserInfo(userInfoSearchCondition, pageable);
 	}
 

@@ -42,7 +42,7 @@ import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.util.UserRoleIsNoneValidator;
 import net.causw.app.main.domain.user.account.util.UserStateIsDeletedValidator;
 import net.causw.app.main.domain.user.account.util.UserStateValidator;
-import net.causw.app.main.domain.user.relation.service.v1.UserBlockEntityService;
+import net.causw.app.main.domain.user.relation.service.v2.implementation.UserBlockEntityService;
 import net.causw.app.main.shared.StatusPolicy;
 import net.causw.app.main.shared.ValidatorBucket;
 import net.causw.app.main.shared.pageable.PageableFactory;
