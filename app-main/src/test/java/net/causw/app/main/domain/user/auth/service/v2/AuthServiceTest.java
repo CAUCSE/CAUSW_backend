@@ -59,6 +59,7 @@ import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificat
 import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationSender;
 import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationValidator;
 import net.causw.app.main.domain.user.auth.service.implementation.EmailVerificationWriter;
+import net.causw.app.main.domain.user.auth.service.implementation.PasswordGenerator;
 import net.causw.app.main.domain.user.terms.entity.Terms;
 import net.causw.app.main.domain.user.terms.service.implementation.TermsReader;
 import net.causw.app.main.domain.user.terms.service.implementation.TermsValidator;
@@ -106,7 +107,7 @@ public class AuthServiceTest {
 	@Mock
 	private DroppedUserIdentifierValidator droppedUserIdentifierValidator;
 	@Mock
-	private net.causw.app.main.domain.user.account.service.v1.PasswordGenerator passwordGenerator;
+	private PasswordGenerator passwordGenerator;
 	@Mock
 	private TermsReader termsReader;
 	@Mock

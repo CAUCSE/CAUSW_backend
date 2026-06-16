@@ -4,6 +4,8 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
+import java.util.Set;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -14,7 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import net.causw.app.main.domain.notification.notification.service.implementation.UserPushTokenWriter;
-import net.causw.app.main.domain.user.account.api.v1.dto.UserFcmTokenResponseDto;
+import net.causw.app.main.domain.user.account.api.v2.dto.response.UserFcmTokenResponse;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 
@@ -39,12 +41,14 @@ public class UserNotificationServiceTest {
 			String userId = "user-123";
 			User mockUser = mock(User.class);
 			given(userReader.findUserById(userId)).willReturn(mockUser);
+			given(mockUser.getFcmTokens()).willReturn(Set.of("token-1"));
 
 			// when
-			UserFcmTokenResponseDto result = userNotificationService.findFcmTokenByUser(userId);
+			UserFcmTokenResponse result = userNotificationService.findFcmTokenByUser(userId);
 
 			// then
 			assertThat(result).isNotNull();
+			assertThat(result.fcmToken()).isEqualTo(Set.of("token-1"));
 		}
 	}
 
@@ -66,12 +70,14 @@ public class UserNotificationServiceTest {
 		void success_register() {
 			// given
 			given(userReader.findUserById(userId)).willReturn(mockUser);
+			given(mockUser.getFcmTokens()).willReturn(Set.of(fcmToken));
 
 			// when
-			userNotificationService.createFcmToken(userId, fcmToken);
+			UserFcmTokenResponse result = userNotificationService.createFcmToken(userId, fcmToken);
 
 			// then
 			verify(userPushTokenWriter).addFcmToken(mockUser, fcmToken);
+			assertThat(result.fcmToken()).isEqualTo(Set.of(fcmToken));
 		}
 	}
 }

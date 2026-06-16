@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.user.account.service.v1;
+package net.causw.app.main.domain.user.auth.service.implementation;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
