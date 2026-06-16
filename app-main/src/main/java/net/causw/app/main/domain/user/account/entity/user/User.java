@@ -14,8 +14,6 @@ import org.hibernate.annotations.BatchSize;
 import net.causw.app.main.domain.campus.circle.entity.CircleMember;
 import net.causw.app.main.domain.community.vote.entity.VoteRecord;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
-import net.causw.app.main.domain.user.account.api.v1.dto.GraduatedUserCommand;
-import net.causw.app.main.domain.user.account.api.v1.dto.UserCreateRequestDto;
 import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.account.enums.user.GraduationType;
 import net.causw.app.main.domain.user.account.enums.user.ProfileImageType;
@@ -206,24 +204,31 @@ public class User extends BaseEntity {
 	}
 
 	public static User from(
-		UserCreateRequestDto userCreateRequestDto,
+		String email,
+		String name,
+		String studentId,
+		Integer admissionYear,
+		String nickname,
+		String major,
+		Department department,
+		String phoneNumber,
 		String encodedPassword) {
 		return User.builder()
-			.email(userCreateRequestDto.getEmail())
-			.name(userCreateRequestDto.getName())
+			.email(email)
+			.name(name)
 			.roles(new HashSet<>(Set.of(Role.NONE)))
 			.state(UserState.AWAIT)
 			.password(encodedPassword)
-			.studentId(userCreateRequestDto.getStudentId())
-			.admissionYear(userCreateRequestDto.getAdmissionYear())
-			.nickname(userCreateRequestDto.getNickname())
-			.major(userCreateRequestDto.getMajor())
+			.studentId(studentId)
+			.admissionYear(admissionYear)
+			.nickname(nickname)
+			.major(major)
 			.department(
 				DepartmentResolver.resolveByAdmissionYearOrDepartment(
-					userCreateRequestDto.getAdmissionYear(),
-					userCreateRequestDto.getDepartment()))
+					admissionYear,
+					department))
 			.academicStatus(AcademicStatus.UNDETERMINED)
-			.phoneNumber(userCreateRequestDto.getPhoneNumber())
+			.phoneNumber(phoneNumber)
 			.isV2(true)
 			.build();
 	}
@@ -244,21 +249,28 @@ public class User extends BaseEntity {
 	}
 
 	public static User createGraduate(
-		GraduatedUserCommand graduatedUserCommand,
+		String email,
+		String name,
+		String studentId,
+		Integer admissionYear,
+		Integer graduationYear,
+		String nickname,
+		Department department,
+		String phoneNumber,
 		String encodedPassword) {
 		return User.builder()
-			.email(graduatedUserCommand.email())
-			.name(graduatedUserCommand.name())
+			.email(email)
+			.name(name)
 			.roles(new HashSet<>(Set.of(Role.COMMON)))
 			.state(UserState.ACTIVE)
 			.password(encodedPassword)
-			.studentId(graduatedUserCommand.studentId())
-			.admissionYear(graduatedUserCommand.admissionYear())
-			.graduationYear(graduatedUserCommand.graduationYear())
-			.nickname(graduatedUserCommand.nickname())
-			.department(graduatedUserCommand.department())
+			.studentId(studentId)
+			.admissionYear(admissionYear)
+			.graduationYear(graduationYear)
+			.nickname(nickname)
+			.department(department)
 			.academicStatus(AcademicStatus.GRADUATED)
-			.phoneNumber(graduatedUserCommand.phoneNumber())
+			.phoneNumber(phoneNumber)
 			.isV2(true)
 			.build();
 	}

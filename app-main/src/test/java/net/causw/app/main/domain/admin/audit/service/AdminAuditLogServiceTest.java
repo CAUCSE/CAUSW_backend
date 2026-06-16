@@ -24,7 +24,6 @@ import org.springframework.data.domain.Pageable;
 
 import net.causw.app.main.domain.admin.audit.enums.AdminAuditLogCategory;
 import net.causw.app.main.domain.admin.audit.service.dto.AdminAuditLogCondition;
-import net.causw.app.main.domain.admin.audit.service.dto.AdminAuditLogItem;
 import net.causw.app.main.domain.admin.audit.service.implementation.AdminAuditLogReader;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.GlobalErrorCode;

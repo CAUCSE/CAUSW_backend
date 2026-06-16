@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
-import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
+import net.causw.app.main.domain.asset.file.service.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
 import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.community.comment.entity.LikeComment;
@@ -29,11 +29,11 @@ import net.causw.app.main.domain.community.comment.service.implementation.Commen
 import net.causw.app.main.domain.community.comment.service.implementation.LikeCommentWriter;
 import net.causw.app.main.domain.community.comment.util.CommentValidator;
 import net.causw.app.main.domain.community.post.entity.Post;
-import net.causw.app.main.domain.community.post.service.v2.implementation.PostReader;
+import net.causw.app.main.domain.community.post.service.implementation.PostReader;
 import net.causw.app.main.domain.notification.notification.event.PostCommentCreatedEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
-import net.causw.app.main.domain.user.relation.service.v1.UserBlockEntityService;
+import net.causw.app.main.domain.user.relation.service.implementation.BlockReader;
 
 import lombok.RequiredArgsConstructor;
 
@@ -56,7 +56,7 @@ public class CommentService {
 	private final CommentSubscribeWriter commentSubscribeWriter;
 	private final CommentValidator commentValidator;
 	private final ApplicationEventPublisher eventPublisher;
-	private final UserBlockEntityService userBlockEntityService;
+	private final BlockReader blockReader;
 	private final BoardConfigReader boardConfigReader;
 	private final CommentMetaReader commentMetaReader;
 	private final CommentMapper commentMapper;
@@ -116,7 +116,7 @@ public class CommentService {
 
 		// 게시판 권한 및 차단 정보 조회
 		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
-		Set<String> blockedUserIds = userBlockEntityService.findBlockeeUserIdsByBlocker(viewer);
+		Set<String> blockedUserIds = blockReader.findBlockeeUserIdsByBlocker(viewer);
 
 		// 댓글·대댓글 집계 데이터 배치 조회
 		Map<String, CommentMeta> metaMap = commentMetaReader.fetch(viewer.getId(), blockedUserIds,

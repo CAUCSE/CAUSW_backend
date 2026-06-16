@@ -12,7 +12,7 @@ import net.causw.app.main.domain.community.board.api.v2.dto.response.BoardReadab
 import net.causw.app.main.domain.community.board.api.v2.dto.response.BoardWritableListResponse;
 import net.causw.app.main.domain.community.board.api.v2.mapper.BoardReadableMapper;
 import net.causw.app.main.domain.community.board.api.v2.mapper.BoardWritableMapper;
-import net.causw.app.main.domain.community.board.service.v2.BoardService;
+import net.causw.app.main.domain.community.board.service.BoardService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 

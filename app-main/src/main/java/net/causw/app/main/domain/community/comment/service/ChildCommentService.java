@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
-import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
+import net.causw.app.main.domain.asset.file.service.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
 import net.causw.app.main.domain.community.comment.entity.ChildComment;
 import net.causw.app.main.domain.community.comment.entity.Comment;
@@ -25,7 +25,7 @@ import net.causw.app.main.domain.community.comment.service.implementation.LikeCh
 import net.causw.app.main.domain.community.comment.service.implementation.LikeChildCommentWriter;
 import net.causw.app.main.domain.community.comment.util.ChildCommentValidator;
 import net.causw.app.main.domain.community.post.entity.Post;
-import net.causw.app.main.domain.community.post.service.v2.implementation.PostReader;
+import net.causw.app.main.domain.community.post.service.implementation.PostReader;
 import net.causw.app.main.domain.notification.notification.event.CommentChildCommentCreatedEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;

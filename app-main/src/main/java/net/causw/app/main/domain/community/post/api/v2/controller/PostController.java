@@ -26,14 +26,14 @@ import net.causw.app.main.domain.community.post.api.v2.dto.response.PostListResp
 import net.causw.app.main.domain.community.post.api.v2.dto.response.PostResponse;
 import net.causw.app.main.domain.community.post.api.v2.dto.response.PostUpdateResponse;
 import net.causw.app.main.domain.community.post.api.v2.mapper.PostDtoMapper;
-import net.causw.app.main.domain.community.post.service.v2.LikePostService;
-import net.causw.app.main.domain.community.post.service.v2.PostService;
-import net.causw.app.main.domain.community.post.service.v2.dto.PostCreateResult;
-import net.causw.app.main.domain.community.post.service.v2.dto.PostDetailQuery;
-import net.causw.app.main.domain.community.post.service.v2.dto.PostDetailResult;
-import net.causw.app.main.domain.community.post.service.v2.dto.PostListQuery;
-import net.causw.app.main.domain.community.post.service.v2.dto.PostListResult;
-import net.causw.app.main.domain.community.post.service.v2.dto.PostUpdateResult;
+import net.causw.app.main.domain.community.post.service.LikePostService;
+import net.causw.app.main.domain.community.post.service.PostService;
+import net.causw.app.main.domain.community.post.service.dto.PostCreateResult;
+import net.causw.app.main.domain.community.post.service.dto.PostDetailQuery;
+import net.causw.app.main.domain.community.post.service.dto.PostDetailResult;
+import net.causw.app.main.domain.community.post.service.dto.PostListQuery;
+import net.causw.app.main.domain.community.post.service.dto.PostListResult;
+import net.causw.app.main.domain.community.post.service.dto.PostUpdateResult;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 
