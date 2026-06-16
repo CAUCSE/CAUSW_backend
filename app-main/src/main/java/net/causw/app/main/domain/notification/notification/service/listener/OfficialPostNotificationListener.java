@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.notification.notification.service.handler;
+package net.causw.app.main.domain.notification.notification.service.listener;
 
 import java.util.List;
 
@@ -31,7 +31,7 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class OfficialPostNotificationHandler {
+public class OfficialPostNotificationListener {
 
 	private final BoardReader boardReader;
 	private final PostReader postReader;

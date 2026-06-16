@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.notification.notification.service.handler;
+package net.causw.app.main.domain.notification.notification.service.listener;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -32,10 +32,10 @@ import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 
 @ExtendWith(MockitoExtension.class)
-class AdmissionNotificationHandlerTest {
+class AdmissionNotificationListenerTest {
 
 	@InjectMocks
-	private AdmissionNotificationHandler handler;
+	private AdmissionNotificationListener handler;
 
 	@Mock
 	private UserReader userReader;

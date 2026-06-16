@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.notification.notification.service.handler;
+package net.causw.app.main.domain.notification.notification.service.listener;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -30,7 +30,7 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class CeremonyNotificationHandler {
+public class CeremonyNotificationListener {
 
 	private final CeremonyReader ceremonyReader;
 	private final NotificationWriter notificationWriter;

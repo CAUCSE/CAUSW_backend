@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.notification.notification.service.handler;
+package net.causw.app.main.domain.notification.notification.service.listener;
 
 import java.util.List;
 import java.util.Map;
@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class AdmissionNotificationHandler {
+public class AdmissionNotificationListener {
 
 	private final UserReader userReader;
 	private final NotificationWriter notificationWriter;

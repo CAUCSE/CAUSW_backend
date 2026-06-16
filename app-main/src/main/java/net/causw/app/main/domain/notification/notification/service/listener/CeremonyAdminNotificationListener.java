@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.notification.notification.service.handler;
+package net.causw.app.main.domain.notification.notification.service.listener;
 
 import java.util.List;
 import java.util.Map;
@@ -29,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class CeremonyAdminNotificationHandler {
+public class CeremonyAdminNotificationListener {
 
 	private final CeremonyReader ceremonyReader;
 	private final UserReader userReader;

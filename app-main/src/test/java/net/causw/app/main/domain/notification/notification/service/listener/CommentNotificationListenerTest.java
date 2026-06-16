@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.notification.notification.service.handler;
+package net.causw.app.main.domain.notification.notification.service.listener;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -35,10 +35,10 @@ import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.relation.service.implementation.BlockReader;
 
 @ExtendWith(MockitoExtension.class)
-class CommentNotificationHandlerTest {
+class CommentNotificationListenerTest {
 
 	@InjectMocks
-	private CommentNotificationHandler handler;
+	private CommentNotificationListener handler;
 
 	@Mock
 	private PostReader postReader;

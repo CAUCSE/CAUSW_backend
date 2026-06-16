@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.notification.notification.service.handler;
+package net.causw.app.main.domain.notification.notification.service.listener;
 
 import static org.assertj.core.api.AssertionsForClassTypes.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -35,10 +35,10 @@ import net.causw.app.main.domain.notification.notification.service.implementatio
 import net.causw.app.main.domain.user.account.entity.user.User;
 
 @ExtendWith(MockitoExtension.class)
-class OfficialPostNotificationHandlerTest {
+class OfficialPostNotificationListenerTest {
 
 	@InjectMocks
-	private OfficialPostNotificationHandler handler;
+	private OfficialPostNotificationListener handler;
 
 	@Mock
 	private BoardReader boardReader;

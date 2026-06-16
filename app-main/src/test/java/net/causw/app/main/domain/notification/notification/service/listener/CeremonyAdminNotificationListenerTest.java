@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.notification.notification.service.handler;
+package net.causw.app.main.domain.notification.notification.service.listener;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -38,10 +38,10 @@ import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 
 @ExtendWith(MockitoExtension.class)
-class CeremonyAdminNotificationHandlerTest {
+class CeremonyAdminNotificationListenerTest {
 
 	@InjectMocks
-	private CeremonyAdminNotificationHandler handler;
+	private CeremonyAdminNotificationListener handler;
 
 	@Mock
 	private CeremonyReader ceremonyReader;
