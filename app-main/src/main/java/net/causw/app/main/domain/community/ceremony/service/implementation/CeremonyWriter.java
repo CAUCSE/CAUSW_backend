@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.CeremonyAttachImage;
 import net.causw.app.main.domain.asset.file.repository.CeremonyAttachImageRepository;
-import net.causw.app.main.domain.asset.file.service.v2.implementation.FileWriter;
+import net.causw.app.main.domain.asset.file.service.implementation.FileWriter;
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
 import net.causw.app.main.domain.community.ceremony.repository.CeremonyRepository;
 import net.causw.app.main.domain.user.account.entity.user.User;

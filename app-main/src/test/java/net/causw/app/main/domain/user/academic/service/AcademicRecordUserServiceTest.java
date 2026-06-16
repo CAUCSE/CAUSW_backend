@@ -23,7 +23,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
-import net.causw.app.main.domain.asset.file.service.v2.implementation.FileWriter;
+import net.causw.app.main.domain.asset.file.service.implementation.FileWriter;
 import net.causw.app.main.domain.user.academic.api.v2.dto.request.EnrollmentApplicationRequest;
 import net.causw.app.main.domain.user.academic.api.v2.dto.request.GraduationApplicationRequest;
 import net.causw.app.main.domain.user.academic.api.v2.dto.response.AcademicStatusResponse;
