@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.asset.file.service.v1;
+package net.causw.app.main.domain.asset.file.service.v2.implementation;
 
 import java.util.List;
 import java.util.Set;

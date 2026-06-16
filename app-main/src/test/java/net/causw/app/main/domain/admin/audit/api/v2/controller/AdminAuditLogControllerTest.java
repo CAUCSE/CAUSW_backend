@@ -36,7 +36,7 @@ import net.causw.app.main.domain.admin.audit.service.AdminAuditLogService;
 import net.causw.app.main.domain.admin.audit.service.dto.AdminAuditLogCondition;
 import net.causw.app.main.domain.admin.audit.service.dto.AdminAuditLogItem;
 import net.causw.app.main.domain.user.account.enums.user.Role;
-import net.causw.app.main.domain.user.auth.service.v1.SecurityService;
+import net.causw.app.main.domain.user.auth.service.SecurityService;
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(AdminAuditLogController.class)

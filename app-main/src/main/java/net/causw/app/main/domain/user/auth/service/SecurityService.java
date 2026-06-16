@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.user.auth.service.v1;
+package net.causw.app.main.domain.user.auth.service;
 
 import java.util.Collection;
 
