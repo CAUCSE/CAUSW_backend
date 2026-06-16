@@ -8,6 +8,5 @@ public record UserInfoSearchCondition(
 	String keyword,
 	Integer admissionYearStart,
 	Integer admissionYearEnd,
-	List<AcademicStatus> academicStatus
-) {
+	List<AcademicStatus> academicStatus) {
 }

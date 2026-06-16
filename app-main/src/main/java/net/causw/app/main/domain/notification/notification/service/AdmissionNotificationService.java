@@ -14,7 +14,6 @@ import net.causw.app.main.domain.notification.notification.enums.NoticeType;
 import net.causw.app.main.domain.notification.notification.repository.NotificationLogRepository;
 import net.causw.app.main.domain.notification.notification.repository.NotificationRepository;
 import net.causw.app.main.domain.notification.notification.service.implementation.FirebasePushNotificationService;
-import net.causw.app.main.domain.notification.notification.service.NotificationService;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;

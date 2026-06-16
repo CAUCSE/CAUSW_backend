@@ -66,7 +66,8 @@ class AdminAuditLogControllerTest {
 			"DROP",
 			"admin");
 
-		given(adminAuditLogMapper.toCondition(org.mockito.ArgumentMatchers.any(AdminAuditLogRequest.class))).willReturn(condition);
+		given(adminAuditLogMapper.toCondition(org.mockito.ArgumentMatchers.any(AdminAuditLogRequest.class)))
+			.willReturn(condition);
 		given(adminAuditLogService.getAuditLogs(any(AdminAuditLogCondition.class), any(Pageable.class)))
 			.willReturn(page);
 		given(adminAuditLogMapper.toResponse(item)).willReturn(response());
@@ -84,7 +85,8 @@ class AdminAuditLogControllerTest {
 		ArgumentCaptor<AdminAuditLogCondition> conditionCaptor = ArgumentCaptor.forClass(AdminAuditLogCondition.class);
 		ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
 		verify(adminAuditLogService).getAuditLogs(conditionCaptor.capture(), pageableCaptor.capture());
-		org.assertj.core.api.Assertions.assertThat(conditionCaptor.getValue().category()).isEqualTo(AdminAuditLogCategory.USER);
+		org.assertj.core.api.Assertions.assertThat(conditionCaptor.getValue().category())
+			.isEqualTo(AdminAuditLogCategory.USER);
 		org.assertj.core.api.Assertions.assertThat(conditionCaptor.getValue().actionType()).isEqualTo("DROP");
 		org.assertj.core.api.Assertions.assertThat(conditionCaptor.getValue().keyword()).isEqualTo("admin");
 		org.assertj.core.api.Assertions.assertThat(pageableCaptor.getValue().getPageSize()).isEqualTo(10);

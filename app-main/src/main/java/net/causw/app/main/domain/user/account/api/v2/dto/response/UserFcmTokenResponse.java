@@ -6,6 +6,5 @@ import lombok.Builder;
 
 @Builder
 public record UserFcmTokenResponse(
-	Set<String> fcmToken
-) {
+	Set<String> fcmToken) {
 }
