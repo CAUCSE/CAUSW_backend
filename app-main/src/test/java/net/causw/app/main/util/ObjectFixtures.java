@@ -52,7 +52,16 @@ public class ObjectFixtures {
 
 	public static User getUser() {
 		UserCreateRequestDto userCreateRequestDto = getUserCreateRequestDto();
-		User user = User.from(userCreateRequestDto, "password");
+		User user = User.from(
+			userCreateRequestDto.getEmail(),
+			userCreateRequestDto.getName(),
+			userCreateRequestDto.getStudentId(),
+			userCreateRequestDto.getAdmissionYear(),
+			userCreateRequestDto.getNickname(),
+			userCreateRequestDto.getMajor(),
+			userCreateRequestDto.getDepartment(),
+			userCreateRequestDto.getPhoneNumber(),
+			"password");
 		user.setCurrentCompletedSemester(4);
 		return user;
 	}

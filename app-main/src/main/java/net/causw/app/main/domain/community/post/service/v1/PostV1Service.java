@@ -819,7 +819,13 @@ public class PostV1Service {
 		List<FormQuestion> formQuestionList = generateFormQuestionList(formCreateRequestDto);
 
 		Form form = Form.createPostForm(
-			formCreateRequestDto,
+			formCreateRequestDto.getTitle(),
+			formCreateRequestDto.getIsAllowedEnrolled(),
+			formCreateRequestDto.getEnrolledRegisteredSemesterList(),
+			formCreateRequestDto.getIsNeedCouncilFeePaid(),
+			formCreateRequestDto.getIsAllowedLeaveOfAbsence(),
+			formCreateRequestDto.getLeaveOfAbsenceRegisteredSemesterList(),
+			formCreateRequestDto.getIsAllowedGraduation(),
 			formQuestionList);
 
 		formQuestionList.forEach(question -> question.setForm(form));
@@ -889,14 +895,17 @@ public class PostV1Service {
 
 						formQuestion = FormQuestion.createObjectiveQuestion(
 							questionNumber.getAndSet(questionNumber.get() + 1),
-							questionCreateRequestDto,
+							questionCreateRequestDto.getQuestionType(),
+							questionCreateRequestDto.getQuestionText(),
+							questionCreateRequestDto.getIsMultiple(),
 							formQuestionOptionList);
 
 						formQuestionOptionList.forEach(option -> option.setFormQuestion(formQuestion));
 					} else { // 주관식일 때
 						formQuestion = FormQuestion.createSubjectQuestion(
 							questionNumber.getAndSet(questionNumber.get() + 1),
-							questionCreateRequestDto);
+							questionCreateRequestDto.getQuestionType(),
+							questionCreateRequestDto.getQuestionText());
 					}
 
 					return formQuestion;

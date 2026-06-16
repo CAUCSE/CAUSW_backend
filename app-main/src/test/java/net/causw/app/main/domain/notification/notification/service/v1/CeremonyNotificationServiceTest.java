@@ -87,7 +87,16 @@ class CeremonyNotificationServiceTest {
 			.phoneNumber("010-1234-5678")
 			.build();
 
-		mockUser = User.from(userCreateRequestDto, "encodedPassword");
+		mockUser = User.from(
+			userCreateRequestDto.getEmail(),
+			userCreateRequestDto.getName(),
+			userCreateRequestDto.getStudentId(),
+			userCreateRequestDto.getAdmissionYear(),
+			userCreateRequestDto.getNickname(),
+			userCreateRequestDto.getMajor(),
+			userCreateRequestDto.getDepartment(),
+			userCreateRequestDto.getPhoneNumber(),
+			"encodedPassword");
 		setFcmTokens(mockUser, "valid-token");
 
 		mockCeremony = mock(Ceremony.class);

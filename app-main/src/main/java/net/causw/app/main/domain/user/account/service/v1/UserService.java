@@ -670,7 +670,16 @@ public class UserService {
 
 		// 신규 사용자 생성
 		validateUniqueness(dto.getNickname(), dto.getPhoneNumber(), dto.getStudentId(), null);
-		User newUser = User.from(dto, passwordEncoder.encode(dto.getPassword()));
+		User newUser = User.from(
+			dto.getEmail(),
+			dto.getName(),
+			dto.getStudentId(),
+			dto.getAdmissionYear(),
+			dto.getNickname(),
+			dto.getMajor(),
+			dto.getDepartment(),
+			dto.getPhoneNumber(),
+			passwordEncoder.encode(dto.getPassword()));
 		validateUser(dto, newUser);
 		userRepository.save(newUser);
 		return userDtoMapper.toUserResponseDto(newUser, null, null, null);
@@ -724,7 +733,16 @@ public class UserService {
 			.orElseGet(() -> {
 				validateEmailUniqueness(dto.email(), null);
 				validateUniqueness(dto.nickname(), dto.phoneNumber(), dto.studentId(), null);
-				return userRepository.save(User.createGraduate(dto.toGraduatedUserCommand(), encodedPassword));
+				return userRepository.save(User.createGraduate(
+					dto.email(),
+					dto.name(),
+					dto.studentId(),
+					dto.admissionYear(),
+					dto.graduationYear(),
+					dto.nickname(),
+					dto.department(),
+					dto.phoneNumber(),
+					encodedPassword));
 			});
 
 		eventPublisher.publishEvent(new CertifiedUserCreatedEvent(registeredUser.getId()));
