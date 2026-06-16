@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.domain.admin.audit.event.AdminAuditLogEventPublisher;
 import net.causw.app.main.domain.user.academic.entity.userAcademicRecord.UserAcademicRecordApplication;
 import net.causw.app.main.domain.user.academic.service.dto.request.AcademicRecordApplicationListCondition;
 import net.causw.app.main.domain.user.academic.service.dto.response.AcademicRecordApplicationDetailResult;
@@ -23,6 +24,7 @@ public class AcademicRecordAdminService {
 	private final AcademicRecordApplicationReader applicationReader;
 	private final AcademicRecordApplicationWriter applicationWriter;
 	private final AcademicRecordLogCreator logCreator;
+	private final AdminAuditLogEventPublisher adminAuditLogEventPublisher;
 
 	/**
 	 * 학적 변경 신청 목록을 조건에 따라 페이징 조회한다.
@@ -56,6 +58,7 @@ public class AcademicRecordAdminService {
 		UserAcademicRecordApplication application = applicationReader.findById(applicationId);
 		applicationWriter.approve(application);
 		logCreator.createFromApplication(admin, application);
+		adminAuditLogEventPublisher.publishAcademicRecordAccept(admin, application);
 	}
 
 	/**
@@ -66,5 +69,6 @@ public class AcademicRecordAdminService {
 		UserAcademicRecordApplication application = applicationReader.findById(applicationId);
 		applicationWriter.reject(application, rejectReason);
 		logCreator.createFromApplication(admin, application);
+		adminAuditLogEventPublisher.publishAcademicRecordReject(admin, application, rejectReason);
 	}
 }

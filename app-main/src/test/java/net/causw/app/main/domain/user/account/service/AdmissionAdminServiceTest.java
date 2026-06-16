@@ -29,6 +29,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import net.causw.app.main.domain.admin.audit.event.AdminAuditLogEventPublisher;
 import net.causw.app.main.domain.notification.notification.event.AdmissionAcceptedEvent;
 import net.causw.app.main.domain.notification.notification.event.AdmissionRejectedEvent;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
@@ -62,6 +63,9 @@ class AdmissionAdminServiceTest {
 
 	@Mock
 	private AdmissionLogWriter admissionLogWriter;
+
+	@Mock
+	private AdminAuditLogEventPublisher adminAuditLogEventPublisher;
 
 	@Mock
 	private UserWriter userWriter;
@@ -303,6 +307,7 @@ class AdmissionAdminServiceTest {
 			verify(userWriter).approveAdmission(targetUser, admission);
 			verify(eventPublisher).publishEvent(any(CertifiedUserCreatedEvent.class));
 			verify(admissionLogWriter).createAcceptLog(admission, adminUser);
+			verify(adminAuditLogEventPublisher).publishAdmissionAccept(admission, adminUser);
 			verify(admissionWriter).delete(admission);
 			verify(eventPublisher).publishEvent(any(AdmissionAcceptedEvent.class));
 		}
@@ -355,6 +360,7 @@ class AdmissionAdminServiceTest {
 			verify(userWriter, never()).approveAdmission(targetUser, admission);
 			verifyNoInteractions(eventPublisher);
 			verify(admissionLogWriter, never()).createAcceptLog(admission, adminUser);
+			verifyNoInteractions(adminAuditLogEventPublisher);
 			verify(admissionWriter, never()).delete(admission);
 		}
 
@@ -378,6 +384,7 @@ class AdmissionAdminServiceTest {
 			verifyNoInteractions(userWriter);
 			verifyNoInteractions(eventPublisher);
 			verifyNoInteractions(admissionLogWriter);
+			verifyNoInteractions(adminAuditLogEventPublisher);
 			verifyNoInteractions(admissionWriter);
 		}
 	}
@@ -409,6 +416,7 @@ class AdmissionAdminServiceTest {
 			verify(admissionReader).findAdmissionDetail(admissionId);
 			verify(userWriter).rejectAdmission(targetUser, rejectReason);
 			verify(admissionLogWriter).createRejectLog(admission, adminUser, rejectReason);
+			verify(adminAuditLogEventPublisher).publishAdmissionReject(admission, adminUser, rejectReason);
 			verify(admissionWriter).delete(admission);
 			verify(eventPublisher).publishEvent(any(AdmissionRejectedEvent.class));
 		}
@@ -431,6 +439,7 @@ class AdmissionAdminServiceTest {
 			verifyNoInteractions(admissionReader);
 			verifyNoInteractions(userWriter);
 			verifyNoInteractions(admissionLogWriter);
+			verifyNoInteractions(adminAuditLogEventPublisher);
 			verifyNoInteractions(admissionWriter);
 			verifyNoInteractions(eventPublisher);
 		}
@@ -474,6 +483,7 @@ class AdmissionAdminServiceTest {
 
 			verifyNoInteractions(userWriter);
 			verifyNoInteractions(admissionLogWriter);
+			verifyNoInteractions(adminAuditLogEventPublisher);
 			verifyNoInteractions(admissionWriter);
 			verifyNoInteractions(eventPublisher);
 		}

@@ -32,7 +32,7 @@ import net.causw.app.main.domain.community.board.entity.BoardVisibility;
 import net.causw.app.main.domain.community.board.entity.BoardWriteScope;
 import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
 import net.causw.app.main.domain.community.post.entity.Post;
-import net.causw.app.main.domain.community.post.service.v2.implementation.PostReader;
+import net.causw.app.main.domain.community.post.service.implementation.PostReader;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.util.ObjectFixtures;
 

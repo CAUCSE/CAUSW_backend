@@ -9,8 +9,8 @@ import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.respon
 import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.response.LockerLogListItemResponse;
 import net.causw.app.main.domain.asset.locker.entity.Locker;
 import net.causw.app.main.domain.asset.locker.entity.LockerLog;
-import net.causw.app.main.domain.asset.locker.service.v2.dto.LockerListCondition;
-import net.causw.app.main.domain.asset.locker.service.v2.dto.LockerLogListCondition;
+import net.causw.app.main.domain.asset.locker.service.dto.LockerListCondition;
+import net.causw.app.main.domain.asset.locker.service.dto.LockerLogListCondition;
 
 @Mapper(componentModel = "spring")
 public interface LockerListMapper {

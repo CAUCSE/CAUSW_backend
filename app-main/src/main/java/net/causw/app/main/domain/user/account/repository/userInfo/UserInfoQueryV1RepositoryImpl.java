@@ -8,12 +8,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
-import net.causw.app.main.domain.user.account.api.v1.dto.UserInfoSearchConditionDto;
 import net.causw.app.main.domain.user.account.entity.user.QUser;
 import net.causw.app.main.domain.user.account.entity.userInfo.QUserCareer;
 import net.causw.app.main.domain.user.account.entity.userInfo.QUserInfo;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.domain.user.account.service.dto.request.UserInfoSearchCondition;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.JPAExpressions;
@@ -27,7 +27,7 @@ public class UserInfoQueryV1RepositoryImpl implements UserInfoQueryV1Repository 
 	private final JPAQueryFactory jpaQueryFactory;
 
 	@Override
-	public Page<UserInfo> searchUserInfo(UserInfoSearchConditionDto userInfoSearchCondition, Pageable pageable) {
+	public Page<UserInfo> searchUserInfo(UserInfoSearchCondition userInfoSearchCondition, Pageable pageable) {
 		// keyword는 이름, 직업, 경력, like 검색
 		// user, job, user.career
 		QUserInfo userInfo = QUserInfo.userInfo;
@@ -64,7 +64,7 @@ public class UserInfoQueryV1RepositoryImpl implements UserInfoQueryV1Repository 
 	 * @return 검색 조건 booleanBuilder
 	 */
 	private BooleanBuilder buildSearchPredicate(
-		UserInfoSearchConditionDto userInfoSearchCondition,
+		UserInfoSearchCondition userInfoSearchCondition,
 		QUserInfo userInfo) {
 		BooleanBuilder predicate = new BooleanBuilder();
 		String keyword = userInfoSearchCondition.keyword();

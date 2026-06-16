@@ -24,7 +24,7 @@ import net.causw.app.main.domain.community.report.api.v2.mapper.ChildCommentRepo
 import net.causw.app.main.domain.community.report.api.v2.mapper.CommentReportDtoMapper;
 import net.causw.app.main.domain.community.report.api.v2.mapper.PostReportDtoMapper;
 import net.causw.app.main.domain.community.report.enums.ReportReason;
-import net.causw.app.main.domain.community.report.service.v2.ReportService;
+import net.causw.app.main.domain.community.report.service.ReportService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 

@@ -13,7 +13,7 @@ import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.reques
 import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.request.LockerPolicyRegisterPeriodRequest;
 import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.request.LockerPolicyRegisterStatusRequest;
 import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.response.LockerPolicyResponse;
-import net.causw.app.main.domain.asset.locker.service.v2.LockerPolicyAdminService;
+import net.causw.app.main.domain.asset.locker.service.LockerPolicyAdminService;
 import net.causw.app.main.shared.dto.ApiResponse;
 
 import io.swagger.v3.oas.annotations.Operation;

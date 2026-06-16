@@ -33,7 +33,6 @@ import net.causw.app.main.domain.finance.usercouncilfee.entity.UserCouncilFee;
 import net.causw.app.main.domain.notification.notification.entity.Notification;
 import net.causw.app.main.domain.notification.notification.enums.NoticeType;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
-import net.causw.app.main.domain.user.account.api.v1.dto.UserCreateRequestDto;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
@@ -51,8 +50,16 @@ import net.causw.global.constant.StaticValue;
 public class ObjectFixtures {
 
 	public static User getUser() {
-		UserCreateRequestDto userCreateRequestDto = getUserCreateRequestDto();
-		User user = User.from(userCreateRequestDto, "password");
+		User user = User.from(
+			"email@cau.ac.kr",
+			"name",
+			"20002000",
+			2000,
+			"nickName",
+			"major",
+			Department.SCHOOL_OF_SW,
+			"010-2000-2000",
+			"password");
 		user.setCurrentCompletedSemester(4);
 		return user;
 	}
@@ -84,19 +91,6 @@ public class ObjectFixtures {
 		ReflectionTestUtils.setField(user, "id", userId);
 		user.setState(UserState.REJECT);
 		return user;
-	}
-
-	public static UserCreateRequestDto getUserCreateRequestDto() {
-		return new UserCreateRequestDto(
-			"email@cau.ac.kr",
-			"name",
-			"password123!",
-			"20002000",
-			2000,
-			"nickName",
-			"major",
-			Department.SCHOOL_OF_SW,
-			"010-2000-2000");
 	}
 
 	public static CouncilFeeFakeUser getCouncilFeeFakeUser() {

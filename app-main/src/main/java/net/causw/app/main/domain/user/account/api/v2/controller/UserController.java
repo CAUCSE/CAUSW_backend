@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import net.causw.app.main.domain.user.account.api.v1.dto.UserFcmTokenResponseDto;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.AdmissionCreateRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.SocialLinkRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UpdateProfileImageRequest;
@@ -32,6 +31,7 @@ import net.causw.app.main.domain.user.account.api.v2.dto.response.AdmissionRespo
 import net.causw.app.main.domain.user.account.api.v2.dto.response.AdmissionStateResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.ProfileImageResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.SocialAccountsResponse;
+import net.causw.app.main.domain.user.account.api.v2.dto.response.UserFcmTokenResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserMeAccountResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserMeResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserWithdrawResponse;
@@ -135,7 +135,7 @@ public class UserController {
 
 	@PostMapping("/fcm")
 	@Operation(summary = "fcm 토큰 등록 API", description = "유저와 fcm 토큰을 기기 단위로 매핑한다.")
-	public ApiResponse<UserFcmTokenResponseDto> createFcmToken(
+	public ApiResponse<UserFcmTokenResponse> createFcmToken(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@Valid @RequestBody() UserFcmTokenRequest body) {
 		return ApiResponse
@@ -144,7 +144,7 @@ public class UserController {
 
 	@GetMapping("/fcm")
 	@Operation(summary = "fcm 토큰 조회 API", description = "유저에게 등록된 fcm 토큰을 조회한다.")
-	public ApiResponse<UserFcmTokenResponseDto> findFcmToken(@AuthenticationPrincipal CustomUserDetails userDetails) {
+	public ApiResponse<UserFcmTokenResponse> findFcmToken(@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return ApiResponse.success(userNotificationService.findFcmTokenByUser(userDetails.getUserId()));
 	}
 
