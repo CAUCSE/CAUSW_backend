@@ -1,7 +1,6 @@
 package net.causw.app.main.core.config.swagger;
 
 import org.springdoc.core.models.GroupedOpenApi;
-import org.springdoc.core.properties.SwaggerUiConfigParameters;
 import org.springdoc.core.properties.SwaggerUiConfigProperties;
 import org.springdoc.core.properties.SwaggerUiOAuthProperties;
 import org.springdoc.core.providers.ObjectMapperProvider;
@@ -83,10 +82,9 @@ public class SwaggerConfig {
 	public SwaggerIndexTransformer refreshBearerSwaggerIndexTransformer(
 		SwaggerUiConfigProperties swaggerUiConfig,
 		SwaggerUiOAuthProperties swaggerUiOAuthProperties,
-		SwaggerUiConfigParameters swaggerUiConfigParameters,
 		SwaggerWelcomeCommon swaggerWelcomeCommon,
 		ObjectMapperProvider objectMapperProvider) {
 		return new RefreshBearerSwaggerIndexTransformer(swaggerUiConfig, swaggerUiOAuthProperties,
-			swaggerUiConfigParameters, swaggerWelcomeCommon, objectMapperProvider);
+			swaggerWelcomeCommon, objectMapperProvider);
 	}
 }

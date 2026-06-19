@@ -65,7 +65,7 @@ dependencies {
     compileOnly 'org.jetbrains:annotations:26.0.2'
 
     // Swagger
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3'
 
     // Discord LogBack
     implementation 'com.github.napstr:logback-discord-appender:1.0.0'
