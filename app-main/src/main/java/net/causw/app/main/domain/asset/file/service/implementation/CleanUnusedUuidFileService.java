@@ -12,17 +12,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
-import net.causw.app.main.domain.asset.file.entity.joinEntity.CalendarAttachImage;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.CircleMainImage;
-import net.causw.app.main.domain.asset.file.entity.joinEntity.EventAttachImage;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.PostAttachImage;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserAcademicRecordApplicationAttachImage;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserAdmissionAttachImage;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserAdmissionLogAttachImage;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
-import net.causw.app.main.domain.asset.file.repository.CalendarAttachImageRepository;
 import net.causw.app.main.domain.asset.file.repository.CircleMainImageRepository;
-import net.causw.app.main.domain.asset.file.repository.EventAttachImageRepository;
 import net.causw.app.main.domain.asset.file.repository.PostAttachImageRepository;
 import net.causw.app.main.domain.asset.file.repository.UserAcademicRecordApplicationAttachImageRepository;
 import net.causw.app.main.domain.asset.file.repository.UserAdmissionAttachImageRepository;
@@ -44,9 +40,7 @@ public class CleanUnusedUuidFileService {
 
 	private final RedisUtils redisUtils;
 	private final UuidFileRepository uuidFileRepository;
-	private final CalendarAttachImageRepository calendarAttachImageRepository;
 	private final CircleMainImageRepository circleMainImageRepository;
-	private final EventAttachImageRepository eventAttachImageRepository;
 	private final PostAttachImageRepository postAttachImageRepository;
 	private final UserAcademicRecordApplicationAttachImageRepository userAcademicRecordApplicationAttachImageRepository;
 	private final UserAdmissionAttachImageRepository userAdmissionAttachImageRepository;
@@ -85,42 +79,6 @@ public class CleanUnusedUuidFileService {
 			!uuidFilePage.hasNext();
 	}
 
-	public void checkIsUsedWithCalendarAttachImageIntegration(StepExecution stepExecution) {
-		Boolean isLast = false;
-		do {
-			isLast = checkIsUsedWithCalendarAttachImage();
-		} while (!isLast);
-
-		stepExecution.getJobExecution().getExecutionContext().putInt(
-			"dataRow",
-			getPriorPageNum("calendarAttachImage") * StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE);
-
-		redisUtils.setPageNumData("calendarAttachImage", -1, StaticValue.CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME);
-	}
-
-	@Transactional
-	public Boolean checkIsUsedWithCalendarAttachImage() {
-		Integer pageNum = getPriorPageNum("calendarAttachImage");
-		Page<CalendarAttachImage> calendarAttachImagePage = calendarAttachImageRepository.findAll(
-			PageRequest.of(
-				pageNum,
-				StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE));
-		Set<UuidFile> uuidFileSet = calendarAttachImagePage.stream()
-			.map(CalendarAttachImage::getUuidFile)
-			.collect(Collectors.toSet());
-		uuidFileSet.forEach(uuidFile -> uuidFile.setIsUsed(true));
-		uuidFileRepository.saveAll(uuidFileSet);
-		pageNum++;
-		redisUtils.setPageNumData("calendarAttachImage", pageNum,
-			StaticValue.CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME);
-		return !calendarAttachImagePage.isLast() ||
-			calendarAttachImagePage.isEmpty() ||
-			calendarAttachImagePage.getTotalElements() == 0 ||
-			calendarAttachImagePage.getTotalPages() == 0 ||
-			calendarAttachImagePage.getSize() == 0 ||
-			!calendarAttachImagePage.hasNext();
-	}
-
 	public void checkIsUsedWithCircleMainImageIntegration(StepExecution stepExecution) {
 		Boolean isLast = false;
 		do {
@@ -154,41 +112,6 @@ public class CleanUnusedUuidFileService {
 			circleMainImagePage.getTotalPages() == 0 ||
 			circleMainImagePage.getSize() == 0 ||
 			!circleMainImagePage.hasNext();
-	}
-
-	public void checkIsUsedWithEventAttachImageIntegration(StepExecution stepExecution) {
-		Boolean isLast = false;
-		do {
-			isLast = checkIsUsedWithEventAttachImage();
-		} while (!isLast);
-
-		stepExecution.getJobExecution().getExecutionContext().putInt(
-			"dataRow",
-			getPriorPageNum("eventAttachImage") * StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE);
-
-		redisUtils.setPageNumData("eventAttachImage", -1, StaticValue.CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME);
-	}
-
-	@Transactional
-	public Boolean checkIsUsedWithEventAttachImage() {
-		Integer pageNum = getPriorPageNum("eventAttachImage");
-		Page<EventAttachImage> eventAttachImagePage = eventAttachImageRepository.findAll(
-			PageRequest.of(
-				pageNum,
-				StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE));
-		Set<UuidFile> uuidFileSet = eventAttachImagePage.stream()
-			.map(EventAttachImage::getUuidFile)
-			.collect(Collectors.toSet());
-		uuidFileSet.forEach(uuidFile -> uuidFile.setIsUsed(true));
-		uuidFileRepository.saveAll(uuidFileSet);
-		pageNum++;
-		redisUtils.setPageNumData("eventAttachImage", pageNum, StaticValue.CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME);
-		return !eventAttachImagePage.isLast() ||
-			eventAttachImagePage.isEmpty() ||
-			eventAttachImagePage.getTotalElements() == 0 ||
-			eventAttachImagePage.getTotalPages() == 0 ||
-			eventAttachImagePage.getSize() == 0 ||
-			!eventAttachImagePage.hasNext();
 	}
 
 	public void checkIsUsedWithPostAttachImageIntegration(StepExecution stepExecution) {
