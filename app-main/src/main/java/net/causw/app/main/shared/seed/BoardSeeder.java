@@ -31,8 +31,9 @@ public class BoardSeeder {
 			return;
 		}
 
-		userRepository.findTopBy()
-			.orElseThrow(() -> new IllegalStateException("🚫 Seed skipped: User not found for seeding boards"));
+		if (!userRepository.existsBy()) {
+			throw new IllegalStateException("🚫 Seed skipped: User not found for seeding boards");
+		}
 
 		process();
 	}
