@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 
 import org.hibernate.annotations.BatchSize;
 
-import net.causw.app.main.domain.campus.circle.entity.CircleMember;
 import net.causw.app.main.domain.community.vote.entity.VoteRecord;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.enums.user.Department;
@@ -112,9 +111,6 @@ public class User extends BaseEntity {
 
 	@Column(name = "deleted_at", nullable = true)
 	private LocalDateTime deletedAt;
-
-	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-	private List<CircleMember> circleMemberList;
 
 	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
 	private List<VoteRecord> voteRecordList;

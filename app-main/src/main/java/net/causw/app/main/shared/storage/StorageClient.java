@@ -1,9 +1,9 @@
-package net.causw.app.main.shared.storage.v2;
+package net.causw.app.main.shared.storage;
 
 import org.springframework.web.multipart.MultipartFile;
 
-import net.causw.app.main.shared.storage.v2.dto.FileMetadata;
-import net.causw.app.main.shared.storage.v2.dto.StorageResult;
+import net.causw.app.main.shared.storage.dto.FileMetadata;
+import net.causw.app.main.shared.storage.dto.StorageResult;
 
 /**
  * 파일 스토리지 업로드/삭제 인터페이스

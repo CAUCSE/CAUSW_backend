@@ -24,7 +24,6 @@ import net.causw.app.main.domain.asset.file.enums.FileExtensionType;
 import net.causw.app.main.domain.community.comment.entity.QChildComment;
 import net.causw.app.main.domain.community.comment.entity.QComment;
 import net.causw.app.main.domain.community.post.entity.QPost;
-import net.causw.app.main.domain.community.reaction.entity.QFavoritePost;
 import net.causw.app.main.domain.community.reaction.entity.QLikePost;
 import net.causw.app.main.domain.user.account.entity.user.QUser;
 import net.causw.app.main.domain.user.account.enums.user.Role;
@@ -346,7 +345,6 @@ public class PostQueryRepository {
 
 		QComment comment = QComment.comment;
 		QLikePost likePost = QLikePost.likePost;
-		QFavoritePost favoritePost = QFavoritePost.favoritePost;
 		QPostAttachImage postAttachImage = QPostAttachImage.postAttachImage;
 
 		// 숫자 카운트 서브쿼리
@@ -360,12 +358,6 @@ public class PostQueryRepository {
 			.select(likePost.count())
 			.from(likePost)
 			.where(likePost.post.eq(post));
-
-		// 즐겨찾기 개수 서브쿼리
-		SubQueryExpression<Long> favoriteCount = JPAExpressions
-			.select(favoritePost.count())
-			.from(favoritePost)
-			.where(favoritePost.post.eq(post));
 
 		// 문자열 서브쿼리 (썸네일 URL)
 		SubQueryExpression<String> thumbnailUrl = JPAExpressions.select(
@@ -381,7 +373,7 @@ public class PostQueryRepository {
 
 		return new QPostQueryResult(
 			post.id, post.title, post.content,
-			commentCount, likeCount, favoriteCount,
+			commentCount, likeCount,
 			post.isAnonymous, post.isQuestion, post.vote.isNotNull(), post.form.isNotNull(),
 			post.isDeleted,
 			writer.isNotNull(), writer.name, writer.nickname, writer.admissionYear, writer.state, writer.deletedAt,
@@ -400,7 +392,6 @@ public class PostQueryRepository {
 		QComment comment = QComment.comment;
 		QChildComment childComment = QChildComment.childComment;
 		QLikePost likePost = QLikePost.likePost;
-		QFavoritePost favoritePost = QFavoritePost.favoritePost;
 
 		// Comment 개수 + ChildComment 개수 (삭제되지 않은 것만)
 		SubQueryExpression<Long> totalCommentCount = JPAExpressions
@@ -419,12 +410,6 @@ public class PostQueryRepository {
 			.from(likePost)
 			.where(likePost.post.eq(post));
 
-		// 즐겨찾기 개수 서브쿼리
-		SubQueryExpression<Long> favoriteCount = JPAExpressions
-			.select(favoritePost.count())
-			.from(favoritePost)
-			.where(favoritePost.post.eq(post));
-
 		// 작성자 프로필 이미지 URL 서브쿼리 (UserProfileImage owning side 기준)
 		QUserProfileImage upi = QUserProfileImage.userProfileImage;
 		SubQueryExpression<String> writerProfileImageUrl = JPAExpressions
@@ -434,7 +419,7 @@ public class PostQueryRepository {
 
 		return new QPostCursorResult(
 			post.id, post.content,
-			totalCommentCount, likeCount, favoriteCount,
+			totalCommentCount, likeCount,
 			post.isAnonymous, post.vote.id, post.isDeleted,
 			post.isCrawled,
 			writer.isNotNull(), writer.id, writer.name, writer.nickname, writer.admissionYear, writer.state,

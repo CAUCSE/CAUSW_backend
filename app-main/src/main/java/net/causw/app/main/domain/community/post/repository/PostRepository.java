@@ -45,18 +45,6 @@ public interface PostRepository extends JpaRepository<Post, String> {
 		@Param("keyword") String keyword,
 		Pageable pageable);
 
-	// 특정 사용자가 작성한 게시글 검색
-	@Query("SELECT p " +
-		"FROM Post p " +
-		"JOIN p.board b " +
-		"LEFT JOIN b.circle c " +
-		"LEFT JOIN CircleMember cm ON p.writer.id = cm.user.id AND c.id = cm.circle.id " +
-		"WHERE p.writer.id = :user_id AND p.isDeleted = false AND b.isDeleted = false " +
-		"AND (c.id IS NULL " +
-		"OR (cm.status = 'MEMBER' AND c.isDeleted = false)) " +
-		"ORDER BY p.createdAt DESC")
-	Page<Post> findByUserId(@Param("user_id") String userId, Pageable pageable);
-
 	// fetch join으로 Board까지 가져오기
 	@Query(value = "SELECT DISTINCT p FROM Post p JOIN FETCH p.board WHERE p.id = :id")
 	Optional<Post> findById(@Param("id") String id);

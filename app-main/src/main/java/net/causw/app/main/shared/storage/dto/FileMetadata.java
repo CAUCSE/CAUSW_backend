@@ -1,4 +1,4 @@
-package net.causw.app.main.shared.storage.v2.dto;
+package net.causw.app.main.shared.storage.dto;
 
 import net.causw.app.main.domain.asset.file.enums.FilePath;
 
