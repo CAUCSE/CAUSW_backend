@@ -12,13 +12,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
-import net.causw.app.main.domain.asset.file.entity.joinEntity.CircleMainImage;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.PostAttachImage;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserAcademicRecordApplicationAttachImage;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserAdmissionAttachImage;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserAdmissionLogAttachImage;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
-import net.causw.app.main.domain.asset.file.repository.CircleMainImageRepository;
 import net.causw.app.main.domain.asset.file.repository.PostAttachImageRepository;
 import net.causw.app.main.domain.asset.file.repository.UserAcademicRecordApplicationAttachImageRepository;
 import net.causw.app.main.domain.asset.file.repository.UserAdmissionAttachImageRepository;
@@ -40,7 +38,6 @@ public class CleanUnusedUuidFileService {
 
 	private final RedisUtils redisUtils;
 	private final UuidFileRepository uuidFileRepository;
-	private final CircleMainImageRepository circleMainImageRepository;
 	private final PostAttachImageRepository postAttachImageRepository;
 	private final UserAcademicRecordApplicationAttachImageRepository userAcademicRecordApplicationAttachImageRepository;
 	private final UserAdmissionAttachImageRepository userAdmissionAttachImageRepository;
@@ -77,41 +74,6 @@ public class CleanUnusedUuidFileService {
 			uuidFilePage.getTotalPages() == 0 ||
 			uuidFilePage.getSize() == 0 ||
 			!uuidFilePage.hasNext();
-	}
-
-	public void checkIsUsedWithCircleMainImageIntegration(StepExecution stepExecution) {
-		Boolean isLast = false;
-		do {
-			isLast = checkIsUsedWithCircleMainImage();
-		} while (!isLast);
-
-		stepExecution.getJobExecution().getExecutionContext().putInt(
-			"dataRow",
-			getPriorPageNum("circleMainImage") * StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE);
-
-		redisUtils.setPageNumData("circleMainImage", -1, StaticValue.CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME);
-	}
-
-	@Transactional
-	public Boolean checkIsUsedWithCircleMainImage() {
-		Integer pageNum = getPriorPageNum("circleMainImage");
-		Page<CircleMainImage> circleMainImagePage = circleMainImageRepository.findAll(
-			PageRequest.of(
-				pageNum,
-				StaticValue.SELECT_UNUSED_UUID_FILE_PAGE_SIZE));
-		Set<UuidFile> uuidFileSet = circleMainImagePage.stream()
-			.map(CircleMainImage::getUuidFile)
-			.collect(Collectors.toSet());
-		uuidFileSet.forEach(uuidFile -> uuidFile.setIsUsed(true));
-		uuidFileRepository.saveAll(uuidFileSet);
-		pageNum++;
-		redisUtils.setPageNumData("circleMainImage", pageNum, StaticValue.CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME);
-		return !circleMainImagePage.isLast() ||
-			circleMainImagePage.isEmpty() ||
-			circleMainImagePage.getTotalElements() == 0 ||
-			circleMainImagePage.getTotalPages() == 0 ||
-			circleMainImagePage.getSize() == 0 ||
-			!circleMainImagePage.hasNext();
 	}
 
 	public void checkIsUsedWithPostAttachImageIntegration(StepExecution stepExecution) {

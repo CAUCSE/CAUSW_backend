@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 
 import org.hibernate.annotations.ColumnDefault;
 
-import net.causw.app.main.domain.campus.circle.entity.Circle;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.RoleGroup;
@@ -18,8 +17,6 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
@@ -88,13 +85,6 @@ public class Board extends BaseEntity {
 	 */
 	private Boolean isAnonymousAllowed;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "circle_id", nullable = true)
-	/**
-	 * @deprecated v1 동아리 연동 게시판 필드, v2에서는 사용되지 않음
-	 */
-	private Circle circle;
-
 	@OneToMany(mappedBy = "board", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
 	/**
 	 * @deprecated v1에서 사용되는 post set, v2에서는 사용되지 않음
@@ -109,8 +99,7 @@ public class Board extends BaseEntity {
 		String name,
 		String description,
 		String category,
-		Boolean isAnonymousAllowed,
-		Circle circle) {
+		Boolean isAnonymousAllowed) {
 		Set<String> roleSet = Arrays.stream(Role.values()) // 일반 게시판 생성시 글쓰기 권한 '모두 허용'
 			.map(Role::getValue)
 			.collect(Collectors.toSet());
@@ -127,7 +116,6 @@ public class Board extends BaseEntity {
 			.isDeleted(false)
 			.isDefault(false)
 			.isAnonymousAllowed(isAnonymousAllowed)
-			.circle(circle)
 			.postSet(new HashSet<>())
 			.isDefaultNotice(false)
 			.isAlumni(false) //FIXME : 크자회 서비스의 게시글 생성 신청 구현시 변경
@@ -141,8 +129,7 @@ public class Board extends BaseEntity {
 		List<String> createRoleList,
 		String category,
 		Boolean isAnonymousAllowed,
-		Boolean isAlumni,
-		Circle circle) {
+		Boolean isAlumni) {
 		Set<String> roleSet = RoleGroup.EXECUTIVES.getRoles().stream() // 집행부(관리자, 학생회장, 부학생회장) 글쓰기 권한 보장
 			.map(Role::getValue)
 			.collect(Collectors.toSet());
@@ -167,7 +154,6 @@ public class Board extends BaseEntity {
 			.isDeleted(false)
 			.isDefault(false)
 			.isAnonymousAllowed(isAnonymousAllowed)
-			.circle(circle)
 			.postSet(new HashSet<>())
 			.isDefaultNotice(false)
 			.isAlumni(isAlumni != null ? isAlumni : false)
@@ -196,7 +182,6 @@ public class Board extends BaseEntity {
 			.isDeleted(false)
 			.isDefault(false)
 			.isAnonymousAllowed(false)
-			.circle(null)
 			.postSet(new HashSet<>())
 			.isDefaultNotice(false)
 			.isAlumni(false)

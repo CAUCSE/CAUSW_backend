@@ -60,8 +60,7 @@ public class BoardSeeder {
 			name,
 			null,
 			StaticValue.BOARD_NAME_APP_FREE,
-			false,
-			null);
+			false);
 
 		this.boardRepository.save(newBoard);
 		em.persist(newBoard);

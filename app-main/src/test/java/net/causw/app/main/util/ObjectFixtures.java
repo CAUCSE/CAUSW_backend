@@ -157,8 +157,7 @@ public class ObjectFixtures {
 			"boardName",
 			"boardDescription",
 			"category",
-			true,
-			null);
+			true);
 	}
 
 	/**
@@ -177,8 +176,7 @@ public class ObjectFixtures {
 			List.of("ADMIN", "PRESIDENT", "VICE_PRESIDENT"),
 			StaticValue.BOARD_NAME_APP_NOTICE,
 			false,
-			isAlumni,
-			null);
+			isAlumni);
 	}
 
 	/**
