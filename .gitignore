@@ -76,6 +76,11 @@ monitoring/loki-data/
 monitoring/mysqld-exporter/.my.cnf
 
 /.claude
+docs/superpowers/
 .bkit
 
 CLAUDE.md
+.github/copilot-instructions.md
+
+.codex
+AGENTS.md

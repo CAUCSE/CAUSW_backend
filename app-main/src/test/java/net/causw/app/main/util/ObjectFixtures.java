@@ -20,25 +20,19 @@ import net.causw.app.main.domain.asset.locker.entity.LockerName;
 import net.causw.app.main.domain.campus.schedule.entity.Schedule;
 import net.causw.app.main.domain.campus.schedule.entity.enums.ScheduleType;
 import net.causw.app.main.domain.campus.schedule.service.dto.ScheduleDto;
-import net.causw.app.main.domain.campus.semester.entity.Semester;
-import net.causw.app.main.domain.campus.semester.enums.SemesterType;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.comment.entity.ChildComment;
 import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.vote.entity.Vote;
 import net.causw.app.main.domain.community.vote.entity.VoteOption;
-import net.causw.app.main.domain.finance.usercouncilfee.entity.CouncilFeeFakeUser;
-import net.causw.app.main.domain.finance.usercouncilfee.entity.UserCouncilFee;
 import net.causw.app.main.domain.notification.notification.entity.Notification;
 import net.causw.app.main.domain.notification.notification.enums.NoticeType;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
-import net.causw.app.main.domain.user.account.api.v1.dto.UserCreateRequestDto;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
 import net.causw.app.main.domain.user.account.enums.user.Department;
-import net.causw.app.main.domain.user.account.enums.user.GraduationType;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.dto.request.AdmissionCreateCommand;
@@ -51,8 +45,16 @@ import net.causw.global.constant.StaticValue;
 public class ObjectFixtures {
 
 	public static User getUser() {
-		UserCreateRequestDto userCreateRequestDto = getUserCreateRequestDto();
-		User user = User.from(userCreateRequestDto, "password");
+		User user = User.from(
+			"email@cau.ac.kr",
+			"name",
+			"20002000",
+			2000,
+			"nickName",
+			"major",
+			Department.SCHOOL_OF_SW,
+			"010-2000-2000",
+			"password");
 		user.setCurrentCompletedSemester(4);
 		return user;
 	}
@@ -84,54 +86,6 @@ public class ObjectFixtures {
 		ReflectionTestUtils.setField(user, "id", userId);
 		user.setState(UserState.REJECT);
 		return user;
-	}
-
-	public static UserCreateRequestDto getUserCreateRequestDto() {
-		return new UserCreateRequestDto(
-			"email@cau.ac.kr",
-			"name",
-			"password123!",
-			"20002000",
-			2000,
-			"nickName",
-			"major",
-			Department.SCHOOL_OF_SW,
-			"010-2000-2000");
-	}
-
-	public static CouncilFeeFakeUser getCouncilFeeFakeUser() {
-		return CouncilFeeFakeUser.of(
-			"name",
-			"20012001",
-			"010-2001-2001",
-			2001,
-			"major",
-			AcademicStatus.UNDETERMINED,
-			4,
-			2004,
-			GraduationType.FEBRUARY);
-	}
-
-	public static UserCouncilFee getUserCouncilFee(boolean isJoinedService) {
-		if (isJoinedService) {
-			return UserCouncilFee.of(
-				true,
-				getUser(),
-				null,
-				1,
-				8,
-				false,
-				0);
-		} else {
-			return UserCouncilFee.of(
-				false,
-				null,
-				getCouncilFeeFakeUser(),
-				1,
-				8,
-				false,
-				0);
-		}
 	}
 
 	/**
@@ -198,20 +152,12 @@ public class ObjectFixtures {
 		return uuidFile;
 	}
 
-	public static Semester getSemester() {
-		return Semester.of(
-			2000,
-			SemesterType.FIRST,
-			getUser());
-	}
-
 	public static Board getBoard() {
 		return Board.of(
 			"boardName",
 			"boardDescription",
 			"category",
-			true,
-			null);
+			true);
 	}
 
 	/**
@@ -230,8 +176,7 @@ public class ObjectFixtures {
 			List.of("ADMIN", "PRESIDENT", "VICE_PRESIDENT"),
 			StaticValue.BOARD_NAME_APP_NOTICE,
 			false,
-			isAlumni,
-			null);
+			isAlumni);
 	}
 
 	/**

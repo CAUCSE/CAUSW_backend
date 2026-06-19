@@ -1,7 +1,6 @@
 package net.causw.app.main.domain.campus.schedule.service;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.Year;
 import java.time.ZoneId;
 import java.util.HashSet;
@@ -68,7 +67,7 @@ public class HolidayScheduleSyncService {
 			}
 
 			LocalDateTime start = holiday.date().atStartOfDay();
-			LocalDateTime end = holiday.date().atTime(LocalTime.MAX);
+			LocalDateTime end = holiday.date().atTime(23, 59, 59);
 			boolean exists = scheduleReader.existsByTypeAndTitleAndStartAndEnd(
 				ScheduleType.HOLIDAY,
 				holiday.name(),

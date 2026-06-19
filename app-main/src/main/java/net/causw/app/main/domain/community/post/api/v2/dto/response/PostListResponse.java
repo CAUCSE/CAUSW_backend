@@ -18,7 +18,6 @@ public record PostListResponse(
 		@Schema(description = "내용") String content,
 		@Schema(description = "댓글 수") long numComment,
 		@Schema(description = "좋아요 수") long numLike,
-		@Schema(description = "즐겨찾기 수") long numFavorite,
 		@Schema(description = "익명 여부") boolean isAnonymous,
 		@Schema(description = "투표 ID (투표가 없으면 null)") String voteId,
 		@Schema(description = "삭제 여부") boolean isDeleted,

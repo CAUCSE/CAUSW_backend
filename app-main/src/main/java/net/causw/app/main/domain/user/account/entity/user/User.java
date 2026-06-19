@@ -7,14 +7,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.hibernate.annotations.BatchSize;
 
-import net.causw.app.main.domain.campus.circle.entity.CircleMember;
 import net.causw.app.main.domain.community.vote.entity.VoteRecord;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
-import net.causw.app.main.domain.user.account.api.v1.dto.GraduatedUserCommand;
-import net.causw.app.main.domain.user.account.api.v1.dto.UserCreateRequestDto;
 import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.account.enums.user.GraduationType;
 import net.causw.app.main.domain.user.account.enums.user.ProfileImageType;
@@ -115,9 +113,6 @@ public class User extends BaseEntity {
 	private LocalDateTime deletedAt;
 
 	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-	private List<CircleMember> circleMemberList;
-
-	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
 	private List<VoteRecord> voteRecordList;
 
 	@Column(name = "rejectionOrDropReason", nullable = true)
@@ -128,10 +123,10 @@ public class User extends BaseEntity {
 	@Builder.Default
 	private Boolean isV2 = true;
 
-	@ElementCollection(fetch = FetchType.LAZY)
-	@CollectionTable(name = "tb_user_fcm_token", joinColumns = @JoinColumn(name = "user_id"))
-	@Column(name = "fcm_token_value")
-	private Set<String> fcmTokens = new HashSet<>();
+	@BatchSize(size = 100)
+	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+	@Builder.Default
+	private Set<FcmToken> fcmTokenEntities = new HashSet<>();
 
 	// 신고 관련 필드
 	@Column(name = "report_count", nullable = false)
@@ -144,8 +139,8 @@ public class User extends BaseEntity {
 
 	// 자진 탈퇴 처리
 	public void withdraw(LocalDateTime now) {
+		this.state = UserState.INACTIVE;
 		this.deletedAt = now;
-		this.academicStatus = AcademicStatus.UNDETERMINED;
 	}
 
 	/*
@@ -181,6 +176,10 @@ public class User extends BaseEntity {
 		return this.state == UserState.INACTIVE;
 	}
 
+	public boolean isDropped() {
+		return this.state == UserState.DROP;
+	}
+
 	/**
 	 * 온보딩 플로우 분기 기준: 소셜 로그인 완료 여부
 	 */
@@ -201,24 +200,31 @@ public class User extends BaseEntity {
 	}
 
 	public static User from(
-		UserCreateRequestDto userCreateRequestDto,
+		String email,
+		String name,
+		String studentId,
+		Integer admissionYear,
+		String nickname,
+		String major,
+		Department department,
+		String phoneNumber,
 		String encodedPassword) {
 		return User.builder()
-			.email(userCreateRequestDto.getEmail())
-			.name(userCreateRequestDto.getName())
+			.email(email)
+			.name(name)
 			.roles(new HashSet<>(Set.of(Role.NONE)))
 			.state(UserState.AWAIT)
 			.password(encodedPassword)
-			.studentId(userCreateRequestDto.getStudentId())
-			.admissionYear(userCreateRequestDto.getAdmissionYear())
-			.nickname(userCreateRequestDto.getNickname())
-			.major(userCreateRequestDto.getMajor())
+			.studentId(studentId)
+			.admissionYear(admissionYear)
+			.nickname(nickname)
+			.major(major)
 			.department(
 				DepartmentResolver.resolveByAdmissionYearOrDepartment(
-					userCreateRequestDto.getAdmissionYear(),
-					userCreateRequestDto.getDepartment()))
+					admissionYear,
+					department))
 			.academicStatus(AcademicStatus.UNDETERMINED)
-			.phoneNumber(userCreateRequestDto.getPhoneNumber())
+			.phoneNumber(phoneNumber)
 			.isV2(true)
 			.build();
 	}
@@ -239,21 +245,28 @@ public class User extends BaseEntity {
 	}
 
 	public static User createGraduate(
-		GraduatedUserCommand graduatedUserCommand,
+		String email,
+		String name,
+		String studentId,
+		Integer admissionYear,
+		Integer graduationYear,
+		String nickname,
+		Department department,
+		String phoneNumber,
 		String encodedPassword) {
 		return User.builder()
-			.email(graduatedUserCommand.email())
-			.name(graduatedUserCommand.name())
+			.email(email)
+			.name(name)
 			.roles(new HashSet<>(Set.of(Role.COMMON)))
 			.state(UserState.ACTIVE)
 			.password(encodedPassword)
-			.studentId(graduatedUserCommand.studentId())
-			.admissionYear(graduatedUserCommand.admissionYear())
-			.graduationYear(graduatedUserCommand.graduationYear())
-			.nickname(graduatedUserCommand.nickname())
-			.department(graduatedUserCommand.department())
+			.studentId(studentId)
+			.admissionYear(admissionYear)
+			.graduationYear(graduationYear)
+			.nickname(nickname)
+			.department(department)
 			.academicStatus(AcademicStatus.GRADUATED)
-			.phoneNumber(graduatedUserCommand.phoneNumber())
+			.phoneNumber(phoneNumber)
 			.isV2(true)
 			.build();
 	}
@@ -349,7 +362,10 @@ public class User extends BaseEntity {
 		this.deletedAt = now;
 	}
 
-	// 탈퇴 처리
+	/**
+	 * V1에서 이용하던 회원 탈퇴 처리입니다.
+	 * @deprecated V2 탈퇴에서는 withdraw(LocalDateTime)을 이용합니다.
+	 */
 	public void withdraw() {
 		this.state = UserState.INACTIVE;
 		this.deletedAt = LocalDateTime.now();
@@ -371,8 +387,19 @@ public class User extends BaseEntity {
 		this.rejectionOrDropReason = null; // 거절 사유 초기화
 	}
 
+	public Set<String> getFcmTokens() {
+		return fcmTokenEntities.stream()
+			.map(FcmToken::getTokenValue)
+			.collect(Collectors.toUnmodifiableSet());
+	}
+
 	public boolean removeFcmToken(String targetToken) {
-		return this.fcmTokens.remove(targetToken);
+		return fcmTokenEntities.removeIf(t -> t.getTokenValue().equals(targetToken));
+	}
+
+	// FCM 토큰 전체 삭제
+	public void clearFcmTokens() {
+		this.fcmTokenEntities.clear();
 	}
 
 	public boolean isOnlySocialUser() {

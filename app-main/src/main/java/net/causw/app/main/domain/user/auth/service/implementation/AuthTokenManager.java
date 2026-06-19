@@ -84,4 +84,13 @@ public class AuthTokenManager {
 			redisUtils.deleteRefreshTokenData(refreshToken);
 		}
 	}
+
+	/**
+	 * 특정 사용자에게 발급된 모든 리프레시 토큰을 무효화합니다.
+	 *
+	 * @param userId 리프레시 토큰을 일괄 삭제할 사용자 ID
+	 */
+	public void invalidateAllRefreshTokensByUserId(String userId) {
+		redisUtils.deleteAllRefreshTokensByUserId(userId);
+	}
 }

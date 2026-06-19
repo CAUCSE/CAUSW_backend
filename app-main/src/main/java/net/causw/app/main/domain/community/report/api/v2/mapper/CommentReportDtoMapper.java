@@ -5,8 +5,8 @@ import org.mapstruct.Mapping;
 
 import net.causw.app.main.domain.community.report.api.v2.dto.request.CommentReportCreateRequest;
 import net.causw.app.main.domain.community.report.api.v2.dto.response.CommentReportResponse;
-import net.causw.app.main.domain.community.report.service.v2.dto.CommentReportCreateCommand;
-import net.causw.app.main.domain.community.report.service.v2.dto.CommentReportCreateResult;
+import net.causw.app.main.domain.community.report.service.dto.CommentReportCreateCommand;
+import net.causw.app.main.domain.community.report.service.dto.CommentReportCreateResult;
 import net.causw.app.main.domain.user.account.entity.user.User;
 
 @Mapper(componentModel = "spring")

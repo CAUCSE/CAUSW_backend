@@ -27,7 +27,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
-import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
+import net.causw.app.main.domain.asset.file.service.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
 import net.causw.app.main.domain.community.comment.entity.Comment;
@@ -45,11 +45,11 @@ import net.causw.app.main.domain.community.comment.service.implementation.Commen
 import net.causw.app.main.domain.community.comment.service.implementation.LikeCommentWriter;
 import net.causw.app.main.domain.community.comment.util.CommentValidator;
 import net.causw.app.main.domain.community.post.entity.Post;
-import net.causw.app.main.domain.community.post.service.v2.implementation.PostReader;
+import net.causw.app.main.domain.community.post.service.implementation.PostReader;
 import net.causw.app.main.domain.notification.notification.event.PostCommentCreatedEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
-import net.causw.app.main.domain.user.relation.service.v1.UserBlockEntityService;
+import net.causw.app.main.domain.user.relation.service.implementation.BlockReader;
 
 @ExtendWith(MockitoExtension.class)
 public class CommentServiceTest {
@@ -74,7 +74,7 @@ public class CommentServiceTest {
 	@Mock
 	ApplicationEventPublisher eventPublisher;
 	@Mock
-	UserBlockEntityService userBlockEntityService;
+	BlockReader blockReader;
 	@Mock
 	CommentMetaReader commentMetaReader;
 	@Mock
@@ -161,7 +161,7 @@ public class CommentServiceTest {
 			given(userReader.findUserByIdNotDeleted("viewer-id")).willReturn(viewer);
 			given(postReader.findById("post-id")).willReturn(post);
 			given(boardConfigReader.getAdminIdsByBoardId("board-id")).willReturn(List.of("admin-id"));
-			given(userBlockEntityService.findBlockeeUserIdsByBlocker(viewer)).willReturn(Collections.emptySet());
+			given(blockReader.findBlockeeUserIdsByBlocker(viewer)).willReturn(Collections.emptySet());
 			given(commentReader.getComments("post-id", pageable)).willReturn(commentsPage);
 			given(commentMetaReader.fetch(eq("user-id"), any(Set.class), anyList()))
 				.willReturn(Map.of("comment-id", mock(CommentMeta.class)));

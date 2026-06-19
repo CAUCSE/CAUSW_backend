@@ -93,7 +93,7 @@ public class StaticValue {
 	public static final Long CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME = 1000L * 60 * 60;   // 1hour
 
 	// Crawling
-	public static final String CrawlingBoard = "소프트웨어학부 학부 공지";
+	public static final String CrawlingBoard = "소프트웨어학부";
 	public static final String ORIGINAL_NOTICE_SITE_NAME = "중앙대학교 소프트웨어학부 공지사항";
 	public static final String CAU_CSE_BASE_URL = "https://cse.cau.ac.kr/sub05/sub0501.php?offset=";
 	public static final String CAU_CSE_DOWNLOAD_URL_FORMAT = "https://cse.cau.ac.kr/_module/bbs/download.php?uid=%s&code=%s";

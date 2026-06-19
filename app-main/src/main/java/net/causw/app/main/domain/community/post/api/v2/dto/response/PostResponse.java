@@ -24,8 +24,6 @@ public record PostResponse(
 
 	@Schema(description = "게시글 좋아요 개수", example = "10") Long numLike,
 
-	@Schema(description = "게시글 즐겨찾기 개수", example = "11") Long numFavorite,
-
 	@Schema(description = "게시글에 연결된 투표 ID (투표가 없으면 null)", example = "uuid 형식의 String 값") String voteId,
 
 	@Schema(description = "익명글 여부", example = "False") Boolean isAnonymous,
@@ -35,8 +33,6 @@ public record PostResponse(
 	@Schema(description = "게시글 작성자 여부", example = "False") Boolean isOwner,
 
 	@Schema(description = "로그인한 사용자가 좋아요를 이미 누른지 여부", example = "False") Boolean isPostLike,
-
-	@Schema(description = "로그인한 사용자가 즐겨찾기를 이미 누른지 여부", example = "False") Boolean isPostFavorite,
 
 	@Schema(description = "게시글 업데이트 가능여부", example = "true") Boolean updatable,
 

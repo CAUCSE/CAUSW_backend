@@ -2,7 +2,6 @@ package net.causw.app.main.domain.user.account.service;
 
 import java.util.List;
 
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -10,13 +9,12 @@ import org.springframework.web.multipart.MultipartFile;
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
-import net.causw.app.main.domain.asset.file.service.v2.implementation.FileWriter;
-import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
-import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageWriter;
+import net.causw.app.main.domain.asset.file.service.implementation.FileWriter;
+import net.causw.app.main.domain.asset.file.service.implementation.UserProfileImageReader;
+import net.causw.app.main.domain.asset.file.service.implementation.UserProfileImageWriter;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.ProfileImageResponse;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.ProfileImageType;
-import net.causw.app.main.domain.user.account.event.UserProfileImageDeletionRequestedEvent;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
@@ -33,7 +31,6 @@ public class UserProfileImageService {
 	private final UserWriter userWriter;
 	private final UserProfileImageReader userProfileImageReader;
 	private final UserProfileImageWriter userProfileImageWriter;
-	private final ApplicationEventPublisher applicationEventPublisher;
 	private final FileWriter fileWriter;
 
 	/**
@@ -111,28 +108,6 @@ public class UserProfileImageService {
 		}
 
 		return ProfileImageResponse.of(ProfileImageType.CUSTOM, newUuidFile.getFileUrl());
-	}
-
-	/**
-	 * 탈퇴 처리 시 커스텀 프로필 이미지 파일 삭제를 요청합니다.
-	 * <p>
-	 * 프로필 이미지 연결 정보와 파일 메타데이터는 D+30 배치에서 최종 삭제합니다.
-	 * </p>
-	 *
-	 * @param userId 탈퇴 처리할 유저 ID
-	 */
-	public void requestProfileImageDeletionForWithdrawal(String userId) {
-		userProfileImageReader.findByUserId(userId).ifPresent(profileImage -> {
-			UuidFile uuidFile = profileImage.getUuidFile();
-
-			if (uuidFile == null) {
-				log.warn("[User Withdraw] 프로필 이미지 파일 정보가 없어 삭제 요청을 건너뜁니다. userId: {}", userId);
-				return;
-			}
-
-			// S3 Key만 추출해서 이벤트 발행 (실시간 S3 삭제 시도용)
-			applicationEventPublisher.publishEvent(new UserProfileImageDeletionRequestedEvent(uuidFile.getFileKey()));
-		});
 	}
 
 	/**

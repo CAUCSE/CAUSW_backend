@@ -17,7 +17,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import net.causw.app.main.core.batch.listener.CheckMeasureStepListener;
 import net.causw.app.main.core.batch.listener.DeleteFileStepListener;
 import net.causw.app.main.core.batch.listener.DeleteUnusedFileJobCompletionNotificationListener;
-import net.causw.app.main.domain.asset.file.service.v1.CleanUnusedUuidFileService;
+import net.causw.app.main.domain.asset.file.service.implementation.CleanUnusedUuidFileService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -48,9 +48,6 @@ public class CleanUnusedUuidFilesBatchConfig {
 	public Job cleanUpUnusedFilesJob(JobRepository jobRepository,
 		DeleteUnusedFileJobCompletionNotificationListener deleteUnusedFileJobCompletionNotificationListener,
 		@Qualifier("initIsUsedUuidFileIntegrationStep") Step initIsUsedUuidFileIntegrationStep,
-		@Qualifier("checkIsUsedWithCalendarAttachImageIntegrationStep") Step checkIsUsedWithCalendarAttachImageIntegrationStep,
-		@Qualifier("checkIsUsedWithCircleMainImageIntegrationStep") Step checkIsUsedWithCircleMainImageIntegrationStep,
-		@Qualifier("checkIsUsedWithEventAttachImageIntegrationStep") Step checkIsUsedWithEventAttachImageIntegrationStep,
 		@Qualifier("checkIsUsedWithPostAttachImageIntegrationStep") Step checkIsUsedWithPostAttachImageIntegrationStep,
 		@Qualifier("checkIsUsedWithUserAcademicRecordApplicationAttachImageIntegrationStep") Step checkIsUsedWithUserAcademicRecordApplicationAttachImageIntegrationStep,
 		@Qualifier("checkIsUsedWithUserAdmissionAttachImageIntegrationStep") Step checkIsUsedWithUserAdmissionAttachImageIntegrationStep,
@@ -60,9 +57,6 @@ public class CleanUnusedUuidFilesBatchConfig {
 		return new JobBuilder("cleanUpUnusedFilesJob", jobRepository)
 			.listener(deleteUnusedFileJobCompletionNotificationListener)
 			.start(initIsUsedUuidFileIntegrationStep)
-			.next(checkIsUsedWithCalendarAttachImageIntegrationStep)
-			.next(checkIsUsedWithCircleMainImageIntegrationStep)
-			.next(checkIsUsedWithEventAttachImageIntegrationStep)
 			.next(checkIsUsedWithPostAttachImageIntegrationStep)
 			.next(checkIsUsedWithUserAcademicRecordApplicationAttachImageIntegrationStep)
 			.next(checkIsUsedWithUserAdmissionAttachImageIntegrationStep)
@@ -79,48 +73,6 @@ public class CleanUnusedUuidFilesBatchConfig {
 		return new StepBuilder("initIsUsedUuidFileIntegrationStep", jobRepository)
 			.tasklet((contribution, chunkContext) -> {
 				cleanUnusedUuidFileService.initIsUsedUuidFileIntegration(
-					chunkContext.getStepContext().getStepExecution());
-				return RepeatStatus.FINISHED;
-			}, transactionManager)
-			.listener(checkMeasureStepListener)
-			.build();
-	}
-
-	@Bean
-	public Step checkIsUsedWithCalendarAttachImageIntegrationStep(JobRepository jobRepository,
-		PlatformTransactionManager transactionManager,
-		CheckMeasureStepListener checkMeasureStepListener) {
-		return new StepBuilder("checkIsUsedWithCalendarAttachImageIntegrationStep", jobRepository)
-			.tasklet((contribution, chunkContext) -> {
-				cleanUnusedUuidFileService.checkIsUsedWithCalendarAttachImageIntegration(
-					chunkContext.getStepContext().getStepExecution());
-				return RepeatStatus.FINISHED;
-			}, transactionManager)
-			.listener(checkMeasureStepListener)
-			.build();
-	}
-
-	@Bean
-	public Step checkIsUsedWithCircleMainImageIntegrationStep(JobRepository jobRepository,
-		PlatformTransactionManager transactionManager,
-		CheckMeasureStepListener checkMeasureStepListener) {
-		return new StepBuilder("checkIsUsedWithCircleMainImageIntegrationStep", jobRepository)
-			.tasklet((contribution, chunkContext) -> {
-				cleanUnusedUuidFileService.checkIsUsedWithCircleMainImageIntegration(
-					chunkContext.getStepContext().getStepExecution());
-				return RepeatStatus.FINISHED;
-			}, transactionManager)
-			.listener(checkMeasureStepListener)
-			.build();
-	}
-
-	@Bean
-	public Step checkIsUsedWithEventAttachImageIntegrationStep(JobRepository jobRepository,
-		PlatformTransactionManager transactionManager,
-		CheckMeasureStepListener checkMeasureStepListener) {
-		return new StepBuilder("checkIsUsedWithEventAttachImageIntegrationStep", jobRepository)
-			.tasklet((contribution, chunkContext) -> {
-				cleanUnusedUuidFileService.checkIsUsedWithEventAttachImageIntegration(
 					chunkContext.getStepContext().getStepExecution());
 				return RepeatStatus.FINISHED;
 			}, transactionManager)

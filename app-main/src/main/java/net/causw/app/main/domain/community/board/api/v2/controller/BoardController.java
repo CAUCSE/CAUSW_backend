@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -11,7 +12,7 @@ import net.causw.app.main.domain.community.board.api.v2.dto.response.BoardReadab
 import net.causw.app.main.domain.community.board.api.v2.dto.response.BoardWritableListResponse;
 import net.causw.app.main.domain.community.board.api.v2.mapper.BoardReadableMapper;
 import net.causw.app.main.domain.community.board.api.v2.mapper.BoardWritableMapper;
-import net.causw.app.main.domain.community.board.service.v2.BoardService;
+import net.causw.app.main.domain.community.board.service.BoardService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 
@@ -31,11 +32,14 @@ public class BoardController {
 
 	@GetMapping("/available")
 	@ResponseStatus(HttpStatus.OK)
-	@Operation(summary = "이용 가능한 게시판 목록", description = "현재 사용자가 이용 가능한 게시판의 id, name 목록을 표시 순서대로 반환합니다.")
+	@Operation(summary = "이용 가능한 게시판 목록", description = "현재 사용자가 이용 가능한 게시판의 id, name 목록을 표시 순서대로 반환합니다.\n"
+		+ "파라미터로 isTab 전달 시 탭으로 표시할 게시판 목록을 반환합니다.")
 	public ApiResponse<BoardReadableListResponse> getAvailableBoards(
-		@AuthenticationPrincipal CustomUserDetails userDetails) {
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestParam(name = "isTab", defaultValue = "false", required = false) boolean isTab) {
 		return ApiResponse.success(
-			boardReadableMapper.toReadableListResponse(boardService.getReadableBoards(userDetails.getUser().getId())));
+			boardReadableMapper
+				.toReadableListResponse(boardService.getReadableBoards(userDetails.getUser().getId(), isTab)));
 	}
 
 	@GetMapping("/writable")

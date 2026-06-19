@@ -38,7 +38,6 @@ public class BoardAdminService {
 	// - findAllBoard: 사용자 역할/학적/동아리 기반 게시판 목록 필터링
 	// - mainBoard: 메인 게시판 + 최근 게시글 조회
 	// - checkBoardName: 이름 중복 체크 전용 API (v2는 create/update 시 validator로만 검사)
-	// - applyBoard, findAllBoardApply, findBoardApplyByApplyId, accept, reject: 게시판 신청/승인/거부
 	// - createNoticeBoard: 공지 전용 생성 (v2는 createBoard로 통합)
 	// - updateBoard: ValidatorBucket 기반 권한 검증(동아리/공지 등)
 	// - deleteBoard: 공지 게시판 ADMIN만 삭제 가능, 해당 게시판 게시글 일괄 삭제 처리
@@ -94,7 +93,7 @@ public class BoardAdminService {
 	@Transactional
 	public void createBoard(BoardPart board, BoardConfigPart config, List<String> adminUserIds) {
 		// board 관련 검증
-		boardValidator.validateForCreate(board.name());
+		boardValidator.validateForCreate(board.name(), config.isNotice(), config.isAnonymous());
 
 		// board 생성
 		Board boardEntity = boardPartMapper.toEntity(board);
@@ -118,7 +117,7 @@ public class BoardAdminService {
 	@Transactional
 	public void updateBoard(String boardId, BoardPart board, BoardConfigPart config, List<String> adminUserIds) {
 		// board 관련 검증
-		boardValidator.validateForUpdate(board.name(), boardId);
+		boardValidator.validateForUpdate(board.name(), boardId, config.isNotice(), config.isAnonymous());
 
 		// board, boardConfig 조회
 		Board boardEntity = boardReader.getById(boardId);
