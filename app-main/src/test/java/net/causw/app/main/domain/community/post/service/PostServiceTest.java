@@ -65,7 +65,6 @@ import net.causw.app.main.domain.community.post.service.dto.PostUpdateResult;
 import net.causw.app.main.domain.community.post.service.implementation.PostImageManager;
 import net.causw.app.main.domain.community.post.service.implementation.PostReader;
 import net.causw.app.main.domain.community.post.service.implementation.PostWriter;
-import net.causw.app.main.domain.community.reaction.service.implementation.FavoritePostReader;
 import net.causw.app.main.domain.community.reaction.service.implementation.LikePostReader;
 import net.causw.app.main.domain.community.vote.service.implementation.VoteWriter;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
@@ -101,9 +100,6 @@ public class PostServiceTest {
 
 	@Mock
 	LikePostReader likePostReader;
-
-	@Mock
-	FavoritePostReader favoritePostReader;
 
 	@Mock
 	VoteWriter voteWriter;
@@ -1223,9 +1219,7 @@ public class PostServiceTest {
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
 			given(likePostReader.countByPostId(postId)).willReturn(10L);
-			given(favoritePostReader.countByPostId(postId)).willReturn(3L);
 			given(likePostReader.existsByPostIdAndUserId(postId, "writer-id")).willReturn(false);
-			given(favoritePostReader.existsByPostIdAndUserId(postId, "writer-id")).willReturn(false);
 
 			// when
 			PostDetailResult result = postService.getPostDetail(query);
@@ -1250,9 +1244,7 @@ public class PostServiceTest {
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
 			given(likePostReader.countByPostId(postId)).willReturn(10L);
-			given(favoritePostReader.countByPostId(postId)).willReturn(3L);
 			given(likePostReader.existsByPostIdAndUserId(postId, "admin-id")).willReturn(false);
-			given(favoritePostReader.existsByPostIdAndUserId(postId, "admin-id")).willReturn(false);
 
 			// when
 			PostDetailResult result = postService.getPostDetail(query);
@@ -1277,9 +1269,7 @@ public class PostServiceTest {
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
 			given(likePostReader.countByPostId(postId)).willReturn(10L);
-			given(favoritePostReader.countByPostId(postId)).willReturn(3L);
 			given(likePostReader.existsByPostIdAndUserId(postId, "viewer-id")).willReturn(false);
-			given(favoritePostReader.existsByPostIdAndUserId(postId, "viewer-id")).willReturn(false);
 
 			// when
 			PostDetailResult result = postService.getPostDetail(query);
@@ -1290,9 +1280,7 @@ public class PostServiceTest {
 				() -> assertThat(result.id()).isEqualTo(postId),
 				() -> assertThat(result.content()).isEqualTo("게시글 내용"),
 				() -> assertThat(result.numLike()).isEqualTo(10L),
-				() -> assertThat(result.numFavorite()).isEqualTo(3L),
 				() -> assertThat(result.isPostLike()).isFalse(),
-				() -> assertThat(result.isPostFavorite()).isFalse(),
 				() -> assertThat(result.isOwner()).isFalse(),
 				() -> assertThat(result.updatable()).isFalse(),
 				() -> assertThat(result.deletable()).isFalse(),
@@ -1313,9 +1301,7 @@ public class PostServiceTest {
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
 			given(likePostReader.countByPostId(postId)).willReturn(10L);
-			given(favoritePostReader.countByPostId(postId)).willReturn(3L);
 			given(likePostReader.existsByPostIdAndUserId(postId, "writer-id")).willReturn(false);
-			given(favoritePostReader.existsByPostIdAndUserId(postId, "writer-id")).willReturn(false);
 
 			// when
 			PostDetailResult result = postService.getPostDetail(query);
@@ -1339,9 +1325,7 @@ public class PostServiceTest {
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
 			given(likePostReader.countByPostId(postId)).willReturn(10L);
-			given(favoritePostReader.countByPostId(postId)).willReturn(3L);
 			given(likePostReader.existsByPostIdAndUserId(postId, "admin-id")).willReturn(false);
-			given(favoritePostReader.existsByPostIdAndUserId(postId, "admin-id")).willReturn(false);
 
 			// when
 			PostDetailResult result = postService.getPostDetail(query);
@@ -1353,9 +1337,9 @@ public class PostServiceTest {
 				() -> assertThat(result.deletable()).isTrue());
 		}
 
-		@DisplayName("사용자가 좋아요/즐겨찾기한 게시글 상세 조회")
+		@DisplayName("사용자가 좋아요한 게시글 상세 조회")
 		@Test
-		void getPostDetail_shouldSucceed_withLikeAndFavorite() {
+		void getPostDetail_shouldSucceed_withLike() {
 			// given
 			PostDetailQuery query = new PostDetailQuery(postId, viewer);
 			List<String> boardAdminIds = List.of("admin-id");
@@ -1364,17 +1348,14 @@ public class PostServiceTest {
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
 			given(likePostReader.countByPostId(postId)).willReturn(10L);
-			given(favoritePostReader.countByPostId(postId)).willReturn(3L);
 			given(likePostReader.existsByPostIdAndUserId(postId, "viewer-id")).willReturn(true);
-			given(favoritePostReader.existsByPostIdAndUserId(postId, "viewer-id")).willReturn(true);
 
 			// when
 			PostDetailResult result = postService.getPostDetail(query);
 
 			// then
 			assertAll(
-				() -> assertThat(result.isPostLike()).isTrue(),
-				() -> assertThat(result.isPostFavorite()).isTrue());
+				() -> assertThat(result.isPostLike()).isTrue());
 		}
 
 		@DisplayName("익명 게시글 상세 조회 시 작성자 정보 보호")
@@ -1393,9 +1374,7 @@ public class PostServiceTest {
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
 			given(likePostReader.countByPostId(postId)).willReturn(10L);
-			given(favoritePostReader.countByPostId(postId)).willReturn(3L);
 			given(likePostReader.existsByPostIdAndUserId(postId, "viewer-id")).willReturn(false);
-			given(favoritePostReader.existsByPostIdAndUserId(postId, "viewer-id")).willReturn(false);
 
 			// when
 			PostDetailResult result = postService.getPostDetail(query);
