@@ -5,12 +5,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
@@ -32,21 +32,21 @@ public class WebSecurityConfigTest {
 	@Autowired
 	private MockMvc mockMvc;
 
-	@MockBean
+	@MockitoBean
 	private JwtTokenProvider jwtTokenProvider;
-	@MockBean
+	@MockitoBean
 	private AppleOAuth2AuthorizationRequestResolver appleOAuth2AuthorizationRequestResolver;
-	@MockBean
+	@MockitoBean
 	private OAuth2AuthorizationRequestCookieRepository oAuth2AuthorizationRequestCookieRepository;
-	@MockBean
+	@MockitoBean
 	private CustomOAuth2UserService customOAuth2UserService;
-	@MockBean
+	@MockitoBean
 	private OAuth2SuccessHandler oAuth2SuccessHandler;
-	@MockBean
+	@MockitoBean
 	private OAuth2FailureHandler oAuth2FailureHandler;
-	@MockBean
+	@MockitoBean
 	private OAuth2RefreshTokenCaptureClient oAuth2RefreshTokenCaptureClient;
-	@MockBean
+	@MockitoBean
 	private ClientRegistrationRepository clientRegistrationRepository;
 
 	@Test

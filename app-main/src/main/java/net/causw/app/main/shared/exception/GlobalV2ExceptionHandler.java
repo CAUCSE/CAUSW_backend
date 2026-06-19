@@ -20,9 +20,8 @@ import net.causw.global.exception.ForbiddenException;
 import net.causw.global.exception.ServiceUnavailableException;
 import net.causw.global.exception.UnauthorizedException;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
-
 import lombok.extern.slf4j.Slf4j;
+import tools.jackson.core.JacksonException;
 
 @Component
 @Slf4j
@@ -114,12 +113,12 @@ public class GlobalV2ExceptionHandler {
 		String message = "잘못된 요청 형식입니다.";
 
 		Throwable cause = ex.getCause();
-		if (cause instanceof JsonMappingException jme) {
+		if (cause instanceof JacksonException jme) {
 			Throwable rootCause = jme.getCause();
 			if (rootCause instanceof DateTimeParseException dtpe) {
 				String fieldName = jme.getPath().isEmpty()
 					? ""
-					: jme.getPath().get(0).getFieldName();
+					: jme.getPath().get(0).getPropertyName();
 				if (fieldName != null) {
 					if (fieldName.toLowerCase().contains("date")) {
 						message = "날짜 형식이 올바르지 않습니다. (yyyy-MM-dd)";
