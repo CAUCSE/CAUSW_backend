@@ -1,4 +1,4 @@
-package net.causw.app.main.shared.storage.v2;
+package net.causw.app.main.shared.storage;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,8 +13,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.core.aop.annotation.MeasureTime;
-import net.causw.app.main.shared.storage.v2.dto.FileMetadata;
-import net.causw.app.main.shared.storage.v2.dto.StorageResult;
+import net.causw.app.main.shared.storage.dto.FileMetadata;
+import net.causw.app.main.shared.storage.dto.StorageResult;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.InternalServerException;
