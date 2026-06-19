@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.integration.crawled.service.v1;
+package net.causw.app.main.domain.integration.crawled.service;
 
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;

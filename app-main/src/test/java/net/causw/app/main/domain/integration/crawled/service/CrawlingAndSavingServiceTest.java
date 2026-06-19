@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.integration.crawled.service.v1;
+package net.causw.app.main.domain.integration.crawled.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -20,6 +20,7 @@ import org.mockito.quality.Strictness;
 
 import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
 import net.causw.app.main.domain.integration.crawled.repository.CrawledNoticeRepository;
+import net.causw.app.main.domain.integration.crawled.service.implementation.Crawler;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)

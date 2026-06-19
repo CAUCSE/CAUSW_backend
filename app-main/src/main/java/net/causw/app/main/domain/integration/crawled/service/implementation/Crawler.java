@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.integration.crawled.service.v1;
+package net.causw.app.main.domain.integration.crawled.service.implementation;
 
 import java.util.List;
 
