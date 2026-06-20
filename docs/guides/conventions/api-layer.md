@@ -2,20 +2,13 @@
 
 `domain/{domain}/{sub}/api` 패키지에 위치하는 Controller, 요청/응답 DTO, Mapper 작성 규칙입니다.
 
-## 1. 버저닝: v1 vs v2
+## 1. 버저닝: v2
 
-이 프로젝트는 **두 개의 API 버전이 공존**합니다. 신규 기능은 항상 v2 로 작성합니다.
+이 프로젝트는 과거 v1(레거시)/v2(표준) API 가 공존했지만, v1 은 전부 제거되어 현재는 **v2 단일 버전**만 존재합니다. 경로/디렉터리는 향후 확장을 고려해 여전히 `api/v2/...` 로 버저닝되어 있습니다.
 
-| 버전 | 경로 prefix | DTO 위치 | 특징 |
-|------|-------------|----------|------|
-| **v1 (레거시)** | `/api/v1/...` | `api/v1/dto/` | 일부 응답 포맷이 다름. 유지 보수만, 신규 기능 추가 X |
-| **v2 (표준)** | `/api/v2/...` | `api/v2/dto/{request,response}/` | `ApiResponse<T>` 래퍼 사용. request/response 디렉터리 분리 |
-
-### v1 → v2 마이그레이션 시
-
-- 기존 v1 controller / service / DTO 는 유지한 채 v2 를 추가합니다.
-- 같은 서브 도메인 안에서 `service/v1` 과 `service/v2` 가 공존할 수 있습니다.
-- 클라이언트 호환성이 확보되어 deprecation 정책에 의해 제거될 때까지 v1 을 함부로 삭제하지 않습니다.
+| 경로 prefix | DTO 위치 | 특징 |
+|-------------|----------|------|
+| `/api/v2/...` | `api/v2/dto/{request,response}/` | `ApiResponse<T>` 래퍼 사용. request/response 디렉터리 분리 |
 
 ## 2. Controller 작성 규칙
 
@@ -35,10 +28,10 @@ public class PostController {
 ```
 
 규칙:
-- `@RestController` + `@RequestMapping("/api/v{n}/{리소스명}")` 조합
-- 클래스 이름: v2 는 `{Entity}Controller`, v1 은 `{Entity}V1Controller` 형태 (예: `PostController`, `PostV1Controller`)
+- `@RestController` + `@RequestMapping("/api/v2/{리소스명}")` 조합
+- 클래스 이름: `{Entity}Controller` (예: `PostController`)
 - 관리자 전용 Controller 는 `{Entity}AdminController` 패턴이 발견됨 (`community/report/api/v2/controller/ReportAdminController` 등) — 별도 권한 검증 적용
-- Swagger 태그: `@Tag(name = "{도메인} Public v{n}", description = "...")`
+- Swagger 태그: `@Tag(name = "{도메인} Public v2", description = "...")`
 - 의존성은 모두 `private final` + `@RequiredArgsConstructor` 로 생성자 주입
 
 ### 메서드 정의
@@ -90,7 +83,7 @@ public ApiResponse<PostCreateResponse> createPost(
 }
 ```
 
-- 모든 v2 응답은 이 구조를 따릅니다 (`@JsonInclude(JsonInclude.Include.NON_NULL)` 로 null 필드는 응답에서 제외).
+- 모든 응답은 이 구조를 따릅니다 (`@JsonInclude(JsonInclude.Include.NON_NULL)` 로 null 필드는 응답에서 제외).
 - 성공 코드/메시지는 `shared/exception/ResponseCode` enum 의 `SUCCESS` 값을 사용 (`S000`)
 - 실패: `code` 는 도메인별 `*ErrorCode` enum 의 값(예: `USER_404_001`), `message` 는 사람이 읽을 수 있는 한국어 메시지
 - 페이징은 `shared/dto/PageResponse` 활용
@@ -103,10 +96,9 @@ public ApiResponse<PostCreateResponse> createPost(
 
 | 종류 | 위치 | 명명 |
 |------|------|------|
-| v2 Request DTO | `api/v2/dto/request/` | `{Action}{Entity}Request` (예: `PostCreateRequest`) |
-| v2 Response DTO | `api/v2/dto/response/` | `{Entity}Response`, `{Action}{Entity}Response` (예: `PostResponse`, `PostCreateResponse`) |
-| v1 DTO | `api/v1/dto/` | `{Entity}{Action}RequestDto`, `{Entity}{Action}ResponseDto` (Dto 접미사, request/response 디렉터리 분리 안 됨) |
-| Service 계층 DTO | `service/{vN}/dto/` 또는 `service/dto/` | `{Entity}{Action}Query`, `{Entity}{Action}Result`, `{Entity}{Action}Command` |
+| Request DTO | `api/v2/dto/request/` | `{Action}{Entity}Request` (예: `PostCreateRequest`) |
+| Response DTO | `api/v2/dto/response/` | `{Entity}Response`, `{Action}{Entity}Response` (예: `PostResponse`, `PostCreateResponse`) |
+| Service 계층 DTO | `service/dto/` | `{Entity}{Action}Query`, `{Entity}{Action}Result`, `{Entity}{Action}Command` |
 
 ### 작성 형식
 
@@ -127,7 +119,7 @@ public record PostCreateRequest(
 
 **현재 코드 다수의 패턴: Lombok class**
 
-대부분의 기존 v1/v2 DTO 는 아직 Lombok 기반입니다. 기존 코드를 수정할 때는 일관성을 위해 같은 패턴을 유지하되, 신규 추가는 가능한 한 record 로 작성합니다.
+대부분의 기존 DTO 는 아직 Lombok 기반입니다. 기존 코드를 수정할 때는 일관성을 위해 같은 패턴을 유지하되, 신규 추가는 가능한 한 record 로 작성합니다.
 
 ```java
 @Getter
@@ -151,7 +143,7 @@ public class PostCreateRequest {
 
 ## 5. Mapper (MapStruct)
 
-위치: `api/v{n}/mapper/`, 명명: `{Entity}DtoMapper` (v2) / `{Entity}DtoV1Mapper` (v1)
+위치: `api/v2/mapper/`, 명명: `{Entity}DtoMapper`
 
 ```java
 @Mapper(componentModel = "spring")
@@ -197,7 +189,7 @@ User user = userDetails.getUser();
 
 ## 7. 예외 / 검증 실패
 
-Controller 에서는 별도 예외를 잡지 않습니다. 모든 예외는 `shared/exception/GlobalV2ExceptionHandler` 가 통합 처리.
+Controller 에서는 별도 예외를 잡지 않습니다. 모든 예외는 `shared/exception/GlobalV2ExceptionHandler` (단일 글로벌 핸들러) 가 통합 처리.
 
 - `@Valid` 위반 → `MethodArgumentNotValidException` → 400 BAD_REQUEST (`GlobalErrorCode.BAD_REQUEST`)
 - 비즈니스 예외 → `*ErrorCode.toBaseException()` throw → Handler 가 적절한 HTTP status 로 변환
@@ -212,7 +204,7 @@ Controller 에서는 별도 예외를 잡지 않습니다. 모든 예외는 `sha
 - 응답 스키마: `@Schema(description, example)` (DTO 필드에 추가)
 - 보안: `core/security/SwaggerSecurityConfig` 가 Swagger 경로 접근 권한 처리
 
-## 9. 체크리스트 (신규 v2 Controller 추가 시)
+## 9. 체크리스트 (신규 Controller 추가 시)
 
 - [ ] `api/v2/controller/{Entity}Controller` 생성, `/api/v2/{리소스}` 매핑
 - [ ] `@Tag` + `@Operation` 추가

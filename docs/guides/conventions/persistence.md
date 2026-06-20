@@ -68,14 +68,14 @@ public class Post extends BaseEntity {
 
 - 인자가 단일이면 `from(...)`, 다수면 `of(...)` 우선 사용 (Rule 144)
 - `@Builder(access = AccessLevel.PROTECTED)` 로 Builder 노출 범위를 제한해 외부 직접 호출 차단
-- 이미 적용된 위치 예: `community/report` 의 일부 엔티티 및 service Command/Result, `community/post/service/v2/util/PostCursorManager`. 현재 다수의 레거시 엔티티는 외부에서 직접 `@Builder` 호출하는 패턴이지만, 신규 코드는 반드시 정적 팩토리 방식으로 작성합니다.
+- 이미 적용된 위치 예: `community/report` 의 일부 엔티티 및 service Command/Result, `community/post/service/util/PostCursorManager`. 현재 다수의 레거시 엔티티는 외부에서 직접 `@Builder` 호출하는 패턴이지만, 신규 코드는 반드시 정적 팩토리 방식으로 작성합니다.
 
 ### 명명 규약
 
 | 대상 | 규칙 |
 |------|------|
-| 클래스명 | PascalCase 단수형 (`Post`, `User`, `UserCouncilFee`) |
-| 테이블명 | `tb_{snake_case_단수}` (`tb_post`, `tb_user_council_fee`) |
+| 클래스명 | PascalCase 단수형 (`Post`, `User`, `CrawledNotice`) |
+| 테이블명 | `tb_{snake_case_단수}` (`tb_post`, `tb_crawled_notice`) |
 | 컬럼명 | `snake_case` (`deleted_at`, `created_at`) |
 | 인덱스명 | `{columnList}_index` |
 
@@ -123,7 +123,7 @@ public boolean isDeleted() {
 
 ### 현재 코드 다수: `isDeleted` (Boolean) — 레거시
 
-현재 코드베이스의 대다수 엔티티 (`Post`, `Comment`, `ChildComment`, `Board`, `Circle`, `Event`, `Form` 등) 는 아직 `Boolean isDeleted` 필드를 사용합니다. `User` 만 `deletedAt` 으로 이전된 상태입니다.
+현재 코드베이스의 대다수 엔티티 (`Post`, `Comment`, `ChildComment`, `Board`, `Form` 등) 는 아직 `Boolean isDeleted` 필드를 사용합니다. `User` 만 `deletedAt` 으로 이전된 상태입니다.
 
 ```java
 @Column(name = "is_deleted")

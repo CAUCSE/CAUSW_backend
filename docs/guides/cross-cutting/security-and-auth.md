@@ -22,10 +22,7 @@
 
 ## 2. SecurityFilterChain
 
-`core/security/WebSecurityConfig` 가 `@EnableWebSecurity` + `@EnableMethodSecurity` 를 활성화하고, 여러 개의 `SecurityFilterChain` 을 `@Order` 로 우선순위를 매기는 구조입니다.
-
-- `securityFilterChainV2` (`@Order(1)`) — `/api/v2/**`, `/oauth2/**`, `/login/oauth2/**` 매칭
-- `securityFilterChainV1` (`@Order(2)`) — 그 외 경로 매칭
+`core/security/WebSecurityConfig` 가 `@EnableWebSecurity` + `@EnableMethodSecurity` 를 활성화하고, 단일 `SecurityFilterChain` (`securityFilterChainV2`) 으로 모든 경로를 처리합니다 (과거 v1/v2 두 체인이 공존했으나 v1 제거 후 단일 체인으로 통합됨).
 
 공통 정책:
 - **STATELESS** 세션 정책 (JWT 기반, HTTP 세션 안 씀)
@@ -59,6 +56,7 @@ jjwt 0.9.x 는 오래된 버전입니다. 0.11.x+ 의 새 API 를 도입할 때 
 
 지원 제공자:
 - Google
+- Kakao
 - Apple (iOS / Web — `AppleOAuth2AuthorizationRequestResolver` 가 client_id, nonce 등 별도 처리)
 
 설정 위치:
@@ -94,7 +92,7 @@ public ApiResponse<List<UserResponse>> listUsers() { ... }
 
 ### URL 기반 인가
 
-`authorizeHttpRequests` 안에서 경로/Method 별 권한 지정 (`WebSecurityConfig` 의 v1/v2 chain 내부).
+`authorizeHttpRequests` 안에서 경로/Method 별 권한 지정 (`WebSecurityConfig` 의 `securityFilterChainV2` 내부).
 
 `core/security/SecurityEndpoints` 가 공개 / 인증 필요 URL 목록을 관리.
 
@@ -120,7 +118,7 @@ User user = userDetails.getUser();
 
 ## 9. 보안 체크리스트
 
-- [ ] 신규 API 의 `SecurityFilterChain` 매칭 경로에 포함되었는지 확인 (v1 / v2 chain)
+- [ ] 신규 API 의 경로가 `SecurityFilterChain` 매칭 범위에 포함되었는지 확인
 - [ ] 공개 API 는 `permitAll()`, 인증 필요 API 는 기본값 `authenticated()`, 역할 제한 API 는 `@PreAuthorize`
 - [ ] `CustomUserDetails` 사용으로 일관된 사용자 추출
 - [ ] CSRF/CORS 정책이 운영 환경에서 적절한지 확인

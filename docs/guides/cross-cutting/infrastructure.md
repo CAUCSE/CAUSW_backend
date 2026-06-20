@@ -30,7 +30,7 @@
 
 위치:
 - `shared/infra/storage/` — S3 클라이언트 / 유틸
-- `shared/storage/{v1,v2}/` — 파일 스토리지 추상화 (`UuidFile` 도메인과 연결)
+- `shared/storage/` — 파일 스토리지 추상화 (`StorageClient` 인터페이스 + `S3StorageClient`/`LocalStorageClient` 구현체, `UuidFile` 도메인과 연결)
 
 흐름:
 1. Controller 가 `MultipartFile` 수신
@@ -56,7 +56,7 @@
 
 위치: `shared/infra/mail/`
 - `GoogleMailSender` — Gmail SMTP 사용 래퍼
-- `MailEventListener` — 도메인 이벤트 받아 메일 발송
+- `event/MailEventListener` — 도메인 이벤트 받아 메일 발송 (`EmailVerificationEvent`, `FindPasswordEvent`, `PasswordResetCodeEvent` 등)
 
 환경 변수: `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`
 - Gmail SMTP 사용 시 앱 비밀번호 발급 필요

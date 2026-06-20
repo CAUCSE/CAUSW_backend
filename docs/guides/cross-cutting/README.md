@@ -37,7 +37,8 @@ app-main/src/main/java/net/causw/app/main/
     │   ├── redis/          # Redis
     │   └── storage/        # S3
     └── storage/
-        ├── v1/, v2/        # 파일 스토리지 추상화
+        ├── StorageClient    # 파일 스토리지 추상화 인터페이스
+        └── S3StorageClient, LocalStorageClient  # 구현체
 ```
 
 ## 설계 원칙

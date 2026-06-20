@@ -116,14 +116,14 @@ public class PostService { ... }
 
 | 종류 | 패턴 | 예시 |
 |------|------|------|
-| Entity | PascalCase 단수 | `Post`, `User`, `UserCouncilFee` |
-| Controller | `{Entity}Controller` (v2), `{Entity}V1Controller` (v1), `{Entity}AdminController` (관리자) | `PostController`, `PostV1Controller`, `ReportAdminController` |
+| Entity | PascalCase 단수 | `Post`, `User`, `CrawledNotice` |
+| Controller | `{Entity}Controller`, `{Entity}AdminController` (관리자) | `PostController`, `ReportAdminController` |
 | Service | `{Entity}Service` | `PostService` |
 | Reader/Writer | `{Entity}Reader`, `{Entity}Writer` | `PostReader`, `PostWriter` |
 | Validator | `{Domain}Validator` 또는 `{Rule}Validator` | `UserValidator`, `AdmissionValidator` |
 | Manager / Creator / Linker 등 | 책임을 명확히 드러내는 동사 기반 명사 | `PostImageManager`, `UserInfoCreator`, `SocialAccountLinker` |
 | Repository | `{Entity}Repository`, `{Entity}QueryRepository` | `PostRepository`, `PostQueryRepository` |
-| Mapper | `{Entity}DtoMapper` (v2), `{Entity}DtoV1Mapper` (v1) | `PostDtoMapper` |
+| Mapper | `{Entity}DtoMapper` | `PostDtoMapper` |
 | ErrorCode | `{Domain}ErrorCode` | `PostErrorCode` |
 | DTO (Request) | `{Action}{Entity}Request` | `PostCreateRequest` |
 | DTO (Response) | `{Entity}Response`, `{Action}{Entity}Response` | `PostResponse`, `PostCreateResponse` |
@@ -156,7 +156,7 @@ public class PostService { ... }
 
 1. **도메인 우선** — 기능을 먼저 도메인에 매핑한 후 그 안에서 레이어로 분리
 2. **서브 도메인 단위 레이어 적용** — `api / service / repository / entity / enums`
-3. **버전 관리는 디렉터리로** — `api/v1`, `api/v2`, `service/v1`, `service/v2` 식으로 분리
+3. **API 버전 관리는 디렉터리로** — `api/v2` (v1 은 모두 제거되어 현재는 단일 버전). 서비스 레이어는 버전 디렉터리 없이 `service/` 바로 아래
 4. **공용은 `shared/`** — 두 개 이상의 도메인이 사용하는 경우만
 5. **인프라 / 횡단 관심사는 `core/`** — 보안, 배치, AOP, 설정 등
 

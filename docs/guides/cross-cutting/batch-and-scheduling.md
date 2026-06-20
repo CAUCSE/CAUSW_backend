@@ -58,22 +58,30 @@ public class CleanUnusedUuidFilesBatchConfig {
 
 활성화: `core/config/scheduling/SchedulingConfig` 의 `@EnableScheduling`
 
+대표 예: `domain/integration/crawled/service/CrawlingScheduler` — 매시 정각에 크롤링, 5분 후 게시글 변환을 수행합니다.
+
 ```java
-@Component
+@Service
 @RequiredArgsConstructor
-public class NoticeCrawlScheduler {
+public class CrawlingScheduler {
 
-    private final NoticeCrawlJobLauncher launcher;
+    private final CrawlingAndSavingService crawlingAndSavingService;
+    private final CrawledToPostTransferService crawledToPostTransferService;
 
-    @Scheduled(cron = "0 0 * * * *", zone = "Asia/Seoul")
-    public void crawlNotices() {
-        launcher.run();
+    @Scheduled(cron = "0 0 */1 * * *") // 매 1시간 (정시)
+    public void crawlAndSave() {
+        crawlingAndSavingService.crawlAndDetectUpdates();
+    }
+
+    @Scheduled(cron = "0 5 */1 * * *") // 매 1시간 5분 후
+    public void transferToPosts() {
+        crawledToPostTransferService.transferToPosts();
     }
 }
 ```
 
 규칙:
-- 모든 cron 은 `zone = "Asia/Seoul"` 명시 (앱은 이미 `Asia/Seoul` 타임존이지만 명시적으로 작성)
+- 신규 cron 에는 `zone = "Asia/Seoul"` 명시를 권장 (예: `campus/schedule/service/HolidayScheduleSyncService`). 다만 기존 스케줄러 다수는 명시 없이 앱 전역 타임존(`Asia/Seoul`)에 의존하고 있어 일관 적용된 규칙은 아닙니다
 - 스케줄러 메서드는 가능한 한 짧게 — 실제 작업은 별도 서비스 / 배치 잡에 위임
 - 동일 잡 중복 실행 방지가 필요하면 `@SchedulerLock` (ShedLock) 또는 분산 락 검토
 

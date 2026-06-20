@@ -4,12 +4,10 @@
 
 ## 1. 디렉터리 구조
 
-표준 형태:
+표준 형태 (v1 은 모두 제거되어 서비스 레이어에는 버전 디렉터리가 없습니다):
 
 ```
 service/
-├── v1/                  # 레거시. 일부 도메인에 한해 interface 존재
-├── v2/                  # 현재 표준. 트랜잭션 경계 서비스
 ├── dto/                 # 서비스 계층 input/output DTO
 ├── mapper/              # 필요 시 매퍼
 └── implementation/      # Reader / Writer / Validator 등 도메인 동작 컴포넌트
@@ -17,21 +15,19 @@ service/
 
 ### 도메인별 변형
 
-`implementation/` 의 위치는 도메인마다 다릅니다.
+`implementation/` 의 위치는 거의 모든 도메인에서 `service/implementation/` 으로 통일되어 있습니다.
 
 | 패턴 | 예 |
 |------|-----|
-| service 직속 (v1/v2 와 동등) | `user/account`, `user/auth` 등 |
-| v2 안에 (`service/v2/implementation/`) | `community/post`, `asset/file`, `asset/locker` 등 |
-| 별도 implementation 없음 (v2 에 `*Service.java` 직접) | `community/report` |
-| `service/v1/validators/` 같은 도메인 특화 패키지 추가 | `asset/locker` |
-| `service/handler/`, `service/util/` 등 보조 패키지 추가 | `notification/notification` |
+| `service/implementation/` 직속 | 대부분의 서브 도메인 (`user/account`, `user/auth`, `community/post`, `asset/file`, `asset/locker` 등) |
+| 별도 implementation 없이 `service/`에 `*Service.java` 직접 | `community/report` |
+| `service/util/`, `service/mapper/`, `service/listener/`, `service/event/` 등 보조 패키지 추가 | `notification/notification`, `community/post` |
 
 **원칙**: 새 서브 도메인을 만들 때는 비슷한 책임의 기존 서브 도메인을 따라가는 편이 안전합니다.
 
-## 2. v2 Service: 트랜잭션 경계
+## 2. Service: 트랜잭션 경계
 
-`v2` 아래 서비스 클래스는 비즈니스 흐름의 진입점이자 **트랜잭션 경계** 입니다.
+`service/` 아래 서비스 클래스는 비즈니스 흐름의 진입점이자 **트랜잭션 경계** 입니다.
 
 ```java
 @Service
@@ -72,7 +68,7 @@ public class PostService {
 | `*Query` | 조회 요청 input |
 | `*Result` | 서비스 반환 output (Controller 가 Response DTO 로 변환) |
 
-위치는 도메인마다 `service/dto/`, `service/v2/dto/`, 또는 `service/dto/{request,response,result}/` 처럼 세분화될 수 있음.
+위치는 도메인마다 `service/dto/` 또는 `service/dto/{request,response,result}/` 처럼 세분화될 수 있음.
 
 ## 3. implementation: 도메인 동작 컴포넌트 패턴
 
@@ -155,41 +151,43 @@ public class PostWriter {
 
 ## 5. Validator 패턴
 
-`shared/AbstractValidator` + `shared/ValidatorBucket` 를 활용한 체이닝 검증 패턴이 일부 도메인에서 사용됩니다.
+`shared/AbstractValidator` 를 상속하는 단순 검증 클래스 패턴이 일부에 남아 있습니다 (예: `user/account/util` 의 `UserStateValidator`, `PhoneNumberFormatValidator`).
 
 ```java
-public class StudentIdValidator extends AbstractValidator {
-    private final String studentId;
+public class PhoneNumberFormatValidator extends AbstractValidator {
+    private final String phoneNumber;
+
+    private PhoneNumberFormatValidator(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public static PhoneNumberFormatValidator of(String phoneNumber) {
+        return new PhoneNumberFormatValidator(phoneNumber);
+    }
 
     @Override
     public void validate() {
-        if (!studentId.matches("\\d{8}")) {
-            throw UserErrorCode.INVALID_STUDENT_ID.toBaseException();
+        if (!phoneNumber.matches("^01(?:0|1|[6-9])-(\\d{3}|\\d{4})-\\d{4}$")) {
+            throw new BadRequestException(ErrorCode.INVALID_USER_DATA_REQUEST, "전화번호 형식이 잘못되었습니다.");
         }
     }
 }
-
-// 사용
-ValidatorBucket.of()
-    .consistOf(new StudentIdValidator(req.studentId()))
-    .consistOf(new EmailFormatValidator(req.email()))
-    .validate();
 ```
+
+이 패턴의 `AbstractValidator` 구현체는 `*ErrorCode.toBaseException()` 대신 `global.exception` 의 `BadRequestException` 을 직접 throw 하는 예가 있습니다 — 신규 코드는 `shared/exception` 표준(§[exception.md](./exception.md))을 우선 검토하세요.
 
 규칙:
 - 단순 정규식/값 검증은 DTO 의 Jakarta validation 으로 처리
-- 도메인 상태 / 다중 필드 / DB 조회 결과를 동반하는 검증은 `AbstractValidator` 구현체로 분리
-- 한 Service 메서드에서 여러 검증을 모아 `ValidatorBucket` 으로 일괄 실행
-
-의존성이 필요한 검증은 별도로 `*Validator` 컴포넌트 (`@Component`) 로 둡니다 (예: `UserValidator`, `AdmissionValidator` 가 Repository 사용). 위치는 `service/implementation/` 또는 `service/v1/validators/` 등 도메인마다 다릅니다.
+- 도메인 상태 / 다중 필드 검증은 `AbstractValidator` 구현체로 분리해 `validate()` 안에서 직접 호출
+- 의존성(Repository 등)이 필요한 검증은 `@Component` 로 둔 별도 `*Validator` 클래스를 사용합니다 (예: `UserValidator`, `AdmissionValidator`). 위치는 보통 `service/implementation/`
 
 ## 6. 이벤트 발행
 
 도메인 이벤트는 Spring `ApplicationEventPublisher` 로 발행하고, `@TransactionalEventListener` 또는 `@EventListener` 로 처리합니다.
 
 예시:
-- notification 도메인의 `service/handler/` 가 다양한 도메인 이벤트를 받아 알림으로 변환
-- `shared/infra/mail/MailEventListener` 류가 이벤트 받아 메일 발송
+- notification 도메인의 `service/listener/` 가 다양한 도메인 이벤트를 받아 알림으로 변환 (`@Async("asyncExecutor")` + `@TransactionalEventListener(phase = AFTER_COMMIT)`)
+- `shared/infra/mail/event/MailEventListener` 가 이벤트 받아 메일 발송
 
 원칙: 같은 도메인 안의 트랜잭션 동기 흐름은 직접 호출, 다른 도메인의 후속 작업은 이벤트로 분리.
 
@@ -210,7 +208,7 @@ public class PostService {
 
 ## 8. 체크리스트 (신규 Service 추가 시)
 
-- [ ] `service/v2/{Entity}Service` 생성, `@Service` + `@RequiredArgsConstructor`
+- [ ] `service/{Entity}Service` 생성, `@Service` + `@RequiredArgsConstructor`
 - [ ] 영속화 접근은 `implementation/` 의 `*Reader` / `*Writer` 통해서만 (위치는 같은 도메인 내 다른 서브 도메인을 따라감)
 - [ ] Service 메서드 인자/반환은 도메인 엔티티가 아닌 `*Command` / `*Query` / `*Result` DTO
 - [ ] 메서드 레벨 `@Transactional`, 조회는 `readOnly = true`

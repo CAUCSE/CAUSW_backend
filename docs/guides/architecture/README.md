@@ -1,6 +1,6 @@
 # 아키텍처 개요
 
-Spring Boot 3.2 / Java 17 기반의 멀티 모듈 Gradle 프로젝트입니다. 루트 README 는 헥사고날(Ports and Adapters) 을 표방하지만 실제 코드 구조는 **도메인 중심 레이어드(Layered by Domain)** 에 가깝습니다.
+Spring Boot 3.2 / Java 17 기반의 멀티 모듈 Gradle 프로젝트입니다. 코드 구조는 **도메인 중심 레이어드(Layered by Domain)** 패턴을 따릅니다 (`api → service → repository → entity`).
 
 디렉터리 트리 상세는 [package-structure.md](./package-structure.md).
 
@@ -23,32 +23,17 @@ CAUSW_backend (root)
 - **단방향 의존**: `app-main → global` (역방향 금지)
 - 두 모듈 모두 Java 17, 공통 Lombok 의존성 적용
 
-## 2. 헥사고날 아키텍처 표방과 실제
+## 2. 레이어 표준 (서브 도메인 내부)
 
-루트 `readme.md` 는 헥사고날(Ports and Adapters)을 표방하지만, 코드에서 ports/adapters 인터페이스 분리가 엄격하게 적용되어 있지는 않습니다.
-
-| 헥사고날 개념 | 실제 코드에서의 매핑 |
-|---------------|----------------------|
-| Adapter (Web) | `domain/{domain}/{sub}/api/v{n}/controller` |
-| Adapter (Persistence) | `domain/{domain}/{sub}/repository` (Spring Data JPA 인터페이스를 직접 사용) |
-| Application | `domain/{domain}/{sub}/service/v{n}` 의 `*Service` |
-| Domain | `domain/{domain}/{sub}/entity`, `enums`, 그리고 `service/implementation`(또는 `service/v2/implementation`)의 도메인 동작 컴포넌트 |
-| Port (인터페이스) | 일부 `service/v1` 에 한정적으로 존재. 모든 도메인에 일관 적용된 형태는 아님 |
-
-→ 새 코드를 짤 때는 루트 README 의 헥사고날 설명보다 실제 코드의 레이어 패턴(`api → service → repository → entity`)을 기준으로 삼는 편이 정확합니다.
-
-## 3. 4계층 레이어 (서브 도메인 내부 표준)
+과거에는 API/서비스 모두 v1(레거시)/v2(표준)가 공존했지만, v1 은 모두 제거되어 현재는 단일 표준만 남아 있습니다. API 경로는 여전히 `api/v2/...` 로 버저닝되어 있으나(향후 v3 확장을 고려한 디렉터리 명명), 서비스 레이어는 버전 하위 디렉터리 없이 `service/` 바로 아래에 위치합니다.
 
 각 도메인 하위 서브 도메인은 다음 레이어를 표준으로 따릅니다. 단 도메인마다 변형(특히 service 하위 디렉터리 구성)이 있으므로 작업 전 해당 서브 도메인의 실제 트리를 한 번 확인하는 편이 안전합니다.
 
 ```
 domain/{domain}/{subDomain}/
 ├── api/
-│   ├── v1/                # 레거시 API
 │   └── v2/                # 현재 표준 API
 ├── service/
-│   ├── v1/                # 레거시 서비스
-│   ├── v2/                # 현재 표준 서비스
 │   ├── dto/               # 서비스 계층 input/output DTO
 │   ├── mapper/            # 필요 시 매퍼
 │   └── implementation/    # Reader / Writer 등 도메인 동작 컴포넌트
@@ -63,10 +48,9 @@ domain/{domain}/{subDomain}/
 
 | 패턴 | 예 |
 |------|-----|
-| `service/implementation/` 가 service 직속 (v1/v2 와 동등) | `user/account`, `user/auth` |
-| `service/v2/implementation/` 으로 v2 안에 위치 | `community/post`, `asset/file`, `asset/locker`, `notification/notification` |
-| `service/v2/` 에 `*Service.java` 만 있고 별도 implementation 디렉터리 없음 | `community/report` |
-| `service/v1/validators/` 처럼 도메인 특화 패키지가 더 있음 | `asset/locker` |
+| `service/implementation/` 가 service 직속 | 대부분의 서브 도메인 (`community/post`, `community/board`, `user/account`, `asset/file` 등) |
+| 별도 implementation 없음 (`service/`에 `*Service.java` 직접) | `community/report` |
+| `service/dto/` 외에 `service/util/`, `service/mapper/`, `service/listener/` 등 보조 패키지 추가 | `notification/notification`, `community/post` |
 
 → 표준은 위 트리지만, 신규 서브 도메인을 만들 때는 비슷한 책임의 기존 서브 도메인 구조를 참고하는 편이 안전합니다.
 
@@ -79,12 +63,12 @@ domain/{domain}/{subDomain}/
 
 레이어별 코딩 규약: [../conventions/](../conventions/).
 
-## 4. 의존성 흐름
+## 3. 의존성 흐름
 
 ```
 HTTP Request
    ↓
-Controller (api/v{n})
+Controller (api/v2)
    ↓  Mapper (DTO → ServiceInput)
 Service (트랜잭션 경계)
    ↓
@@ -101,7 +85,7 @@ Entity (JPA)
 - 다른 도메인의 데이터가 필요하면 그 도메인의 Reader 를 주입 (Repository 직접 호출 X)
 - `shared/` 와 `core/` 는 어디서든 의존 가능. 반대로 `shared/` / `core/` 가 특정 도메인을 의존해서는 안 됩니다.
 
-## 5. `app-main` 최상위 패키지
+## 4. `app-main` 최상위 패키지
 
 ```
 net.causw.app.main/
@@ -113,27 +97,24 @@ net.causw.app.main/
 │   ├── datasourceProxy/      # DataSource 프록시 (쿼리 카운팅/로깅)
 │   ├── favicon/              # 정적 리소스 처리
 │   ├── filter/               # Servlet Filter
-│   ├── global/               # core 내부 공통
 │   └── security/             # Spring Security, JWT, OAuth2
 ├── domain/                   # 8개 비즈니스 도메인
-│   ├── user, community, campus, finance, notification, integration, asset, etc
+│   ├── admin, asset, campus, community, etc, integration, notification, user
 └── shared/                   # 도메인 간 공용 컴포넌트
     ├── dto/                  # ApiResponse, PageResponse
-    ├── entity/               # BaseEntity, AuditableEntity
-    ├── exception/            # GlobalExceptionHandler, ErrorCode
-    ├── infra/                # Redis, Mail, S3 등 인프라 클라이언트
-    ├── pageable/             # 페이징 유틸
-    ├── seed/                 # 초기 시드 데이터
-    ├── storage/              # 파일 스토리지 추상화 (v1/v2)
-    ├── util/                 # 공용 유틸
-    ├── AbstractValidator     # Validator 추상 클래스
-    ├── ValidatorBucket       # Validator 체이닝 컨테이너
-    └── StatusPolicy          # 상태 정책
+    ├── entity/                # BaseEntity, AuditableEntity
+    ├── exception/             # GlobalV2ExceptionHandler, ErrorCode
+    ├── infra/                 # Redis, Mail, S3, Firebase 등 인프라 클라이언트
+    ├── pageable/               # 페이징 유틸
+    ├── seed/                  # 초기 시드 데이터
+    ├── storage/                # 파일 스토리지 추상화 (StorageClient, S3/Local 구현)
+    ├── util/                   # 공용 유틸
+    └── AbstractValidator       # Validator 추상 클래스
 ```
 
 자세한 항목 설명은 [package-structure.md](./package-structure.md).
 
-## 6. 외부 의존성 (요약)
+## 5. 외부 의존성 (요약)
 
 `app-main/build.gradle` 기준 주요 라이브러리.
 
@@ -158,7 +139,7 @@ net.causw.app.main/
 
 일부 의존성은 다소 오래된 메이저 버전(spring-cloud-aws 2.x, jjwt 0.9.x, MapStruct 1.4.x) 이라 신규 API 도입 전 호환성 점검이 필요합니다.
 
-## 7. 빌드 / 실행
+## 6. 빌드 / 실행
 
 ```bash
 # 빌드
