@@ -5,7 +5,6 @@ import static org.springdoc.core.utils.Constants.SWAGGER_INITIALIZER_JS;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import org.springdoc.core.properties.SwaggerUiConfigParameters;
 import org.springdoc.core.properties.SwaggerUiConfigProperties;
 import org.springdoc.core.properties.SwaggerUiOAuthProperties;
 import org.springdoc.core.providers.ObjectMapperProvider;
@@ -46,11 +45,9 @@ public class RefreshBearerSwaggerIndexTransformer extends SwaggerIndexPageTransf
 
 	public RefreshBearerSwaggerIndexTransformer(SwaggerUiConfigProperties swaggerUiConfig,
 		SwaggerUiOAuthProperties swaggerUiOAuthProperties,
-		SwaggerUiConfigParameters swaggerUiConfigParameters,
 		SwaggerWelcomeCommon swaggerWelcomeCommon,
 		ObjectMapperProvider objectMapperProvider) {
-		super(swaggerUiConfig, swaggerUiOAuthProperties, swaggerUiConfigParameters,
-			swaggerWelcomeCommon, objectMapperProvider);
+		super(swaggerUiConfig, swaggerUiOAuthProperties, swaggerWelcomeCommon, objectMapperProvider);
 	}
 
 	@Override
