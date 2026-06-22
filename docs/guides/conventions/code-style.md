@@ -4,8 +4,8 @@
 
 ## 1. 자바 / Spring 버전
 
-- Java 17
-- Spring Boot 3.2.x
+- Java 25
+- Spring Boot 4.0.x
 - jakarta.* 네임스페이스 사용 (Spring Boot 3 이상)
 
 ## 2. 코드 포맷터: Naver Eclipse + Spotless

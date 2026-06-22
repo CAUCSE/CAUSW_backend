@@ -1,6 +1,6 @@
 # 아키텍처
 
-Spring Boot 3.2 / Java 17 기반 멀티 모듈 Gradle 프로젝트입니다. 코드 구조는 **도메인 중심 레이어드(Layered by Domain)** 패턴을 따릅니다 (`api → service → repository → entity`).
+Spring Boot 4.0 / Java 25 기반 멀티 모듈 Gradle 프로젝트입니다. 코드 구조는 **도메인 중심 레이어드(Layered by Domain)** 패턴을 따릅니다 (`api → service → repository → entity`).
 
 > 이 문서는 자주 바뀌지 않는 구조 원칙만 다룹니다. 도메인/서브도메인 목록처럼 PR 한 번에도 바뀔 수 있는 항목은 일부러 자세히 나열하지 않으니, 정확한 현황은 코드(`domain/` 디렉터리)를 직접 확인하세요.
 
@@ -20,7 +20,7 @@ CAUSW_backend (root)
 | `app-main` | `net.causw.app.main` | Spring Boot 진입점(`CauswApplication`), 모든 도메인/설정/보안 코드 |
 
 - `app-main` 은 `implementation project(':global')` 로 단방향 의존 (`global → app-main` 역방향 금지)
-- 두 모듈 모두 Java 17, 공통 Lombok 의존성 적용
+- 두 모듈 모두 Java 25, 공통 Lombok 의존성 적용
 - `global` 은 Spring 의존성을 최소화함 — 도메인 로직이나 Spring 코드는 `app-main` 에 추가
 
 ## 2. 레이어 표준
