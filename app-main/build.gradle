@@ -47,7 +47,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-restclient'
 
     implementation 'org.jsoup:jsoup:1.18.1'
-    implementation 'io.jsonwebtoken:jjwt:0.9.1'
+    implementation 'io.jsonwebtoken:jjwt-api:0.13.0'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.13.0'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.13.0'
     implementation 'com.mysql:mysql-connector-j:8.4.0'
 
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
