@@ -108,8 +108,7 @@ dependencies {
     implementation 'org.flywaydb:flyway-mysql:12.4.0'
 
     // logback json 형식 관련
-    implementation 'ch.qos.logback.contrib:logback-json-classic:0.1.5'
-    implementation 'ch.qos.logback.contrib:logback-jackson:0.1.5'
+    implementation 'net.logstash.logback:logstash-logback-encoder:9.0'
 
     // query-dsl
     implementation "io.github.openfeign.querydsl:querydsl-core:${queryDslVersion}"
