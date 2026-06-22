@@ -18,10 +18,12 @@ import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.InternalServerException;
 
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetUrlRequest;
+import software.amazon.awssdk.services.s3.model.ObjectCannedACL;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,23 +38,30 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class S3StorageClient implements StorageClient {
 
-	private final AmazonS3Client amazonS3Client;
+	private final S3Client s3Client;
 
-	@Value("${cloud.aws.s3.bucket}")
+	@Value("${spring.cloud.aws.s3.bucket}")
 	private String bucketName;
 
 	@Override
 	public StorageResult upload(MultipartFile file, FileMetadata metadata) {
 		String fileKey = metadata.fileKey();
 
-		ObjectMetadata objectMetadata = createObjectMetadata(file, metadata);
+		PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+			.bucket(bucketName)
+			.key(fileKey)
+			.contentType(file.getContentType())
+			.contentDisposition(createContentDisposition(metadata))
+			.acl(ObjectCannedACL.PUBLIC_READ)
+			.build();
 
 		try (InputStream inputStream = file.getInputStream()) {
-			amazonS3Client.putObject(
-				new PutObjectRequest(bucketName, fileKey, inputStream, objectMetadata)
-					.withCannedAcl(CannedAccessControlList.PublicRead));
+			s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(inputStream, file.getSize()));
 
-			String fileUrl = amazonS3Client.getUrl(bucketName, fileKey).toString().trim();
+			String fileUrl = s3Client.utilities()
+				.getUrl(GetUrlRequest.builder().bucket(bucketName).key(fileKey).build())
+				.toString()
+				.trim();
 
 			log.debug("File uploaded successfully to S3. FileKey: {}, FileUrl: {}", fileKey, fileUrl);
 
@@ -73,7 +82,7 @@ public class S3StorageClient implements StorageClient {
 	@Override
 	public void delete(String fileKey) {
 		try {
-			amazonS3Client.deleteObject(bucketName, fileKey);
+			s3Client.deleteObject(DeleteObjectRequest.builder().bucket(bucketName).key(fileKey).build());
 			log.debug("File deleted successfully from S3. FileKey: {}", fileKey);
 
 		} catch (Exception e) {
@@ -84,18 +93,12 @@ public class S3StorageClient implements StorageClient {
 		}
 	}
 
-	private ObjectMetadata createObjectMetadata(MultipartFile file, FileMetadata metadata) {
-		ObjectMetadata objectMetadata = new ObjectMetadata();
-		objectMetadata.setContentType(file.getContentType());
-
+	private String createContentDisposition(FileMetadata metadata) {
 		// Content-Disposition : attachment 헤더 추가
 		// 브라우저가 파일을 열지 않고 다운로드하도록 설정
-		String contentDisposition = ContentDisposition.builder("attachment")
+		return ContentDisposition.builder("attachment")
 			.filename(metadata.originalFileName(), StandardCharsets.UTF_8)
 			.build()
 			.toString();
-		objectMetadata.setContentDisposition(contentDisposition);
-
-		return objectMetadata;
 	}
 }

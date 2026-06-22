@@ -68,7 +68,7 @@ dependencies {
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3'
 
     // S3
-    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+    implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3:4.0.0'
 
     // Redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
