@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -393,7 +392,6 @@ public class PostService {
 		return getPostListResult(slice, user);
 	}
 
-	@NotNull
 	private PostListResult getPostListResult(Slice<PostCursorResult> slice, User viewer) {
 		List<PostCursorResult> posts = slice.getContent();
 		if (posts.isEmpty()) {

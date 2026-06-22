@@ -1,6 +1,5 @@
 package net.causw.app.main.core.batch.listener;
 
-import org.jetbrains.annotations.NotNull;
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.StepExecutionListener;
@@ -10,7 +9,7 @@ import org.springframework.stereotype.Component;
 public class DeleteFileStepListener implements StepExecutionListener {
 
 	@Override
-	public void beforeStep(@NotNull StepExecution stepExecution) {
+	public void beforeStep(StepExecution stepExecution) {
 		// Step 실행 전 로직: Step 시작 시간 기록
 		stepExecution.getExecutionContext().putLong("startTime", System.currentTimeMillis());
 	}
