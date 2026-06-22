@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.stereotype.Component;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -106,6 +107,15 @@ public class GlobalV2ExceptionHandler {
 	public ApiResponse<String> handleNoResourceFoundException(NoResourceFoundException exception) {
 		log.debug("Static resource not found: {}", exception.getResourcePath());
 		return ApiResponse.error(GlobalErrorCode.NOT_FOUND);
+	}
+
+	@ExceptionHandler(value = {HttpRequestMethodNotSupportedException.class})
+	@ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
+	public ApiResponse<String> handleHttpRequestMethodNotSupportedException(
+		HttpRequestMethodNotSupportedException exception) {
+		log.warn("HTTP method not supported: method={}, supportedMethods={}",
+			exception.getMethod(), exception.getSupportedHttpMethods());
+		return ApiResponse.error(GlobalErrorCode.METHOD_NOT_ALLOWED);
 	}
 
 	@ExceptionHandler(value = {Exception.class})
