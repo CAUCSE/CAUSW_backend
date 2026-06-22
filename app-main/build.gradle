@@ -88,7 +88,7 @@ dependencies {
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
 
     // Apache POI for Excel file generation
-    implementation 'org.apache.poi:poi-ooxml:5.2.3'
+    implementation 'org.apache.poi:poi-ooxml:5.5.1'
 
     // Apache Common CSV
     implementation 'org.apache.commons:commons-csv:1.14.1'
