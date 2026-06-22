@@ -2,7 +2,6 @@ package net.causw.app.main.domain.community.comment.repository;
 
 import java.util.List;
 
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 
 import net.causw.app.main.domain.community.comment.entity.QLikeChildComment;
@@ -34,7 +33,6 @@ public class LikeChildCommentQueryRepository {
 			.fetch();
 	}
 
-	@NotNull
 	private static QChildCommentLikeCountDto getChildCommentLikeCountDto(QLikeChildComment likeChildComment) {
 		return new QChildCommentLikeCountDto(
 			likeChildComment.childComment.id,

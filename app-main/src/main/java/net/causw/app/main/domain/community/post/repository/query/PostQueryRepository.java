@@ -9,8 +9,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -248,7 +246,6 @@ public class PostQueryRepository {
 	 * @param post QPost 엔티티의 Q타입
 	 * @return 커서 조건 (createdAt과 ID 기반) 또는 null (커서 정보가 없는 경우)
 	 */
-	@Nullable
 	private static BooleanExpression createCursorCondition(String cursorCreatedAt, String cursorId, QPost post) {
 		BooleanExpression cursorCondition = NO_CONDITION;
 		if (cursorCreatedAt != null && cursorId != null) {
@@ -266,7 +263,6 @@ public class PostQueryRepository {
 	 * @param conditions 조회 조건 배열 (null 또는 빈 배열이면 조건 없이 조회)
 	 * @return 조회된 게시글 목록과 다음 페이지 존재 여부를 포함하는 Slice<PostCursorResult>
 	 */
-	@NotNull
 	private Slice<PostCursorResult> getPostCursorResults(
 		int size,
 		QPost post,

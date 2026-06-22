@@ -2,7 +2,7 @@ package net.causw.app.main.core.security;
 
 import java.io.IOException;
 
-import org.jetbrains.annotations.NotNull;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -44,9 +44,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	}
 
 	@Override
-	protected void doFilterInternal(@NotNull HttpServletRequest request,
-		@NotNull HttpServletResponse response,
-		@NotNull FilterChain chain) throws ServletException, IOException {
+	protected void doFilterInternal(@NonNull HttpServletRequest request,
+		@NonNull HttpServletResponse response,
+		@NonNull FilterChain chain) throws ServletException, IOException {
 		String token = AuthorizationExtractor.extract(request);
 
 		if (StringUtils.hasText(token)) {

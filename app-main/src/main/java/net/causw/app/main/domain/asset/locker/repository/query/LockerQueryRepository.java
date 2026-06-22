@@ -3,7 +3,6 @@ package net.causw.app.main.domain.asset.locker.repository.query;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
@@ -77,7 +76,6 @@ public class LockerQueryRepository {
 			.fetch();
 	}
 
-	@NotNull
 	private static BooleanBuilder getSearchCondition(String userKeyword, LockerName location, Boolean isActive,
 		Boolean isOccupied, Boolean isExpired, QUser user, QLockerLocation lockerLocation, QLocker locker) {
 		BooleanBuilder where = new BooleanBuilder();
