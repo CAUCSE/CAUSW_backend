@@ -13,7 +13,7 @@ import net.causw.app.main.domain.asset.file.service.implementation.FileReader;
 import net.causw.app.main.domain.asset.file.service.implementation.FileWriter;
 import net.causw.app.main.domain.asset.file.service.util.FileMetadataManager;
 import net.causw.app.main.domain.asset.file.service.util.FileValidator;
-import net.causw.app.main.shared.storage.v2.dto.FileMetadata;
+import net.causw.app.main.shared.storage.dto.FileMetadata;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

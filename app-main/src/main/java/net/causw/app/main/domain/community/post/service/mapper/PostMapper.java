@@ -97,7 +97,6 @@ public class PostMapper {
 			result.content(),
 			result.numComment(),
 			result.numLike(),
-			result.numFavorite(),
 			result.isAnonymous(),
 			result.voteId(),
 			result.isDeleted(),
@@ -121,9 +120,7 @@ public class PostMapper {
 	 * @param imageUrls 첨부 이미지 URL 리스트
 	 * @param numComment 댓글 개수
 	 * @param numLike 좋아요 개수
-	 * @param numFavorite 즐겨찾기 개수
 	 * @param isPostLike 사용자의 좋아요 여부
-	 * @param isPostFavorite 사용자의 즐겨찾기 여부
 	 * @param isOwner 작성자 여부
 	 * @param updatable 수정 가능 여부
 	 * @param deletable 삭제 가능 여부
@@ -135,9 +132,7 @@ public class PostMapper {
 		List<String> imageUrls,
 		Long numComment,
 		Long numLike,
-		Long numFavorite,
 		Boolean isPostLike,
-		Boolean isPostFavorite,
 		boolean isOwner,
 		boolean updatable,
 		boolean deletable,
@@ -181,13 +176,11 @@ public class PostMapper {
 			.fileUrlList(imageUrls)
 			.numComment(numComment)
 			.numLike(numLike)
-			.numFavorite(numFavorite)
 			.voteId(voteId)
 			.isAnonymous(post.getIsAnonymous())
 			.isCrawled(post.getIsCrawled())
 			.isOwner(isOwner)
 			.isPostLike(isPostLike)
-			.isPostFavorite(isPostFavorite)
 			.updatable(updatable)
 			.deletable(deletable)
 			.isOfficial(isOfficial)

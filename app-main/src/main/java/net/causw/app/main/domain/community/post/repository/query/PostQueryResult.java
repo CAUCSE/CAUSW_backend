@@ -15,7 +15,6 @@ public record PostQueryResult(
 	String content,
 	long numComment,
 	long numLike,
-	long numFavorite,
 	boolean isAnonymous,
 	boolean isQuestion,
 	boolean isPostVote, // 투표 포함 여부

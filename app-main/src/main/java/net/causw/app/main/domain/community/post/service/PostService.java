@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -36,7 +35,6 @@ import net.causw.app.main.domain.community.post.service.implementation.PostWrite
 import net.causw.app.main.domain.community.post.service.mapper.PostMapper;
 import net.causw.app.main.domain.community.post.service.util.PostCursorManager;
 import net.causw.app.main.domain.community.post.service.util.PostValidator;
-import net.causw.app.main.domain.community.reaction.service.implementation.FavoritePostReader;
 import net.causw.app.main.domain.community.reaction.service.implementation.LikePostReader;
 import net.causw.app.main.domain.notification.notification.event.OfficialPostEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
@@ -58,7 +56,6 @@ public class PostService {
 	private final BoardReader boardReader;
 	private final BoardConfigReader boardConfigReader;
 	private final LikePostReader likePostReader;
-	private final FavoritePostReader favoritePostReader;
 	private final BlockReader userBlockReader;
 	private final ApplicationEventPublisher eventPublisher;
 	private final UserProfileImageReader userProfileImageReader;
@@ -248,9 +245,9 @@ public class PostService {
 	}
 
 	/**
-	 * 게시글 단건 조회. 게시글 내용, 첨부 이미지 URL 목록, 좋아요/즐겨찾기/댓글 개수, 사용자의 좋아요/즐겨찾기 여부, 수정/삭제 가능 여부 등을 포함합니다.
+	 * 게시글 단건 조회. 게시글 내용, 첨부 이미지 URL 목록, 좋아요/댓글 개수, 사용자의 좋아요 여부, 수정/삭제 가능 여부 등을 포함합니다.
 	 * @param query 조회 조건 (게시글 ID, 조회 요청 사용자)
-	 * @return 게시글 상세 정보 (게시글 ID, 내용, 첨부 이미지 URL 목록, 좋아요/즐겨찾기/댓글 개수, 사용자의 좋아요/즐겨찾기 여부, 수정/삭제 가능 여부 등)
+	 * @return 게시글 상세 정보 (게시글 ID, 내용, 첨부 이미지 URL 목록, 좋아요/댓글 개수, 사용자의 좋아요 여부, 수정/삭제 가능 여부 등)
 	 */
 	public PostDetailResult getPostDetail(PostDetailQuery query) {
 		User viewer = query.viewer();
@@ -277,14 +274,12 @@ public class PostService {
 		// 게시글 이미지 조회
 		List<String> imageUrls = postReader.findPostImages(postId);
 
-		// 좋아요, 즐겨찾기, 댓글 개수 조회
+		// 좋아요, 댓글 개수 조회
 		Long numComment = postReader.countComments(postId);
 		Long numLike = likePostReader.countByPostId(postId);
-		Long numFavorite = favoritePostReader.countByPostId(postId);
 
-		// 사용자의 좋아요, 즐겨찾기 여부
+		// 사용자의 좋아요 여부
 		Boolean isPostLike = likePostReader.existsByPostIdAndUserId(postId, viewer.getId());
-		Boolean isPostFavorite = favoritePostReader.existsByPostIdAndUserId(postId, viewer.getId());
 
 		// 게시글 작성자 여부
 		boolean isOwner = post.getWriter().getId().equals(viewer.getId());
@@ -320,9 +315,7 @@ public class PostService {
 			imageUrls,
 			numComment,
 			numLike,
-			numFavorite,
 			isPostLike,
-			isPostFavorite,
 			isOwner,
 			updatable,
 			deletable,
@@ -399,7 +392,6 @@ public class PostService {
 		return getPostListResult(slice, user);
 	}
 
-	@NotNull
 	private PostListResult getPostListResult(Slice<PostCursorResult> slice, User viewer) {
 		List<PostCursorResult> posts = slice.getContent();
 		if (posts.isEmpty()) {

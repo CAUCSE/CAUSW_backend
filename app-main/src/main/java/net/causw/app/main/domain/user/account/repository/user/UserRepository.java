@@ -4,12 +4,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
@@ -27,8 +27,8 @@ public interface UserRepository extends JpaRepository<User, String> {
 	Optional<User> findByEmailAndNameAndStudentIdAndPhoneNumber(String email, String name, String studentId,
 		String phoneNumber);
 
-	@NotNull
-	Page<User> findAll(@NotNull Pageable pageable);
+	@NonNull
+	Page<User> findAll(@NonNull Pageable pageable);
 
 	Optional<User> findByEmailAndNameAndStudentId(String email, String name, String studentId);
 

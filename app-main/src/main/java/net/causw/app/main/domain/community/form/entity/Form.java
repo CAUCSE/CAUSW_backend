@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
-import net.causw.app.main.domain.campus.circle.entity.Circle;
 import net.causw.app.main.domain.community.form.enums.FormType;
 import net.causw.app.main.domain.community.form.enums.RegisteredSemester;
 import net.causw.app.main.domain.community.form.enums.RegisteredSemesterManager;
@@ -15,9 +14,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.Index;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
@@ -32,9 +28,7 @@ import lombok.Setter;
 @Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name = "tb_form", indexes = {
-	@Index(name = "circle_id_index", columnList = "circle_id")
-})
+@Table(name = "tb_form")
 public class Form extends BaseEntity {
 
 	@Enumerated(EnumType.STRING)
@@ -57,10 +51,6 @@ public class Form extends BaseEntity {
 	@Column(name = "is_closed", nullable = false)
 	@Builder.Default
 	private Boolean isClosed = false;
-
-	@ManyToOne
-	@JoinColumn(name = "circle_id", nullable = true)
-	private Circle circle;
 
 	@Column(name = "is_allowed_enrolled", nullable = false)
 	private Boolean isAllowedEnrolled;
@@ -110,43 +100,6 @@ public class Form extends BaseEntity {
 			.formType(FormType.POST_FORM)
 			.title(title)
 			.formQuestionList(formQuestionList)
-			.isAllowedEnrolled(isAllowedEnrolled)
-			.EnrolledRegisteredSemester(
-				isAllowedEnrolled ? RegisteredSemesterManager.fromEnumList(
-					enrolledRegisteredSemesterList).serialize()
-					: null)
-			.isNeedCouncilFeePaid(
-				(isAllowedEnrolled
-					&& isNeedCouncilFeePaid != null)
-						? isNeedCouncilFeePaid
-						: false)
-			.isAllowedLeaveOfAbsence(isAllowedLeaveOfAbsence)
-			.LeaveOfAbsenceRegisteredSemester(
-				(isAllowedLeaveOfAbsence &&
-					!(leaveOfAbsenceRegisteredSemesterList == null ||
-						leaveOfAbsenceRegisteredSemesterList.isEmpty()))
-							? RegisteredSemesterManager.fromEnumList(
-								leaveOfAbsenceRegisteredSemesterList).serialize()
-							: null)
-			.isAllowedGraduation(isAllowedGraduation)
-			.build();
-	}
-
-	public static Form createCircleApplicationForm(
-		String title,
-		Boolean isAllowedEnrolled,
-		List<RegisteredSemester> enrolledRegisteredSemesterList,
-		Boolean isNeedCouncilFeePaid,
-		Boolean isAllowedLeaveOfAbsence,
-		List<RegisteredSemester> leaveOfAbsenceRegisteredSemesterList,
-		Boolean isAllowedGraduation,
-		List<FormQuestion> formQuestionList,
-		Circle circle) {
-		return Form.builder()
-			.formType(FormType.CIRCLE_APPLICATION_FORM)
-			.title(title)
-			.formQuestionList(formQuestionList)
-			.circle(circle)
 			.isAllowedEnrolled(isAllowedEnrolled)
 			.EnrolledRegisteredSemester(
 				isAllowedEnrolled ? RegisteredSemesterManager.fromEnumList(

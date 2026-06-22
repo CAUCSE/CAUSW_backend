@@ -6,7 +6,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.domain.asset.file.enums.FilePath;
-import net.causw.app.main.shared.storage.v2.dto.FileMetadata;
+import net.causw.app.main.shared.storage.dto.FileMetadata;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
