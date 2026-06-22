@@ -1,7 +1,7 @@
 buildscript {
     dependencies {
         classpath 'org.flywaydb:flyway-mysql:12.4.0'
-        classpath 'com.mysql:mysql-connector-j:8.4.0'
+        classpath 'com.mysql:mysql-connector-j:9.7.0'
     }
 }
 
@@ -50,7 +50,7 @@ dependencies {
     implementation 'io.jsonwebtoken:jjwt-api:0.13.0'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.13.0'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.13.0'
-    implementation 'com.mysql:mysql-connector-j:8.4.0'
+    implementation 'com.mysql:mysql-connector-j:9.7.0'
 
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
