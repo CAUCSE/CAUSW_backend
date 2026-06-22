@@ -102,7 +102,7 @@ dependencies {
     implementation 'org.springframework.retry:spring-retry:2.0.13'
 
     // FCM
-    implementation 'com.google.firebase:firebase-admin:9.2.0'
+    implementation 'com.google.firebase:firebase-admin:9.9.0'
 
     // Flyway
     implementation 'org.springframework.boot:spring-boot-starter-flyway'
