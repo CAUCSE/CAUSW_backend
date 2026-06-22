@@ -7,39 +7,11 @@
 | 주제 | 문서 |
 |------|------|
 | Spring Security, JWT, OAuth2, 권한 | [security-and-auth.md](./security-and-auth.md) |
-| 로깅, MDC, AOP, Discord 알림 | [observability.md](./observability.md) |
+| 로깅, MDC, AOP | [observability.md](./observability.md) |
 | Redis, S3, Mail, FCM, DataSource 프록시 | [infrastructure.md](./infrastructure.md) |
 | Spring Batch, `@Scheduled`, `@Async` | [batch-and-scheduling.md](./batch-and-scheduling.md) |
 
-## 코드 위치 한눈에 보기
-
-```
-app-main/src/main/java/net/causw/app/main/
-├── core/
-│   ├── aop/                # AOP (LogAspect, @MeasureTime)
-│   ├── batch/              # Spring Batch 잡
-│   ├── config/
-│   │   ├── async/          # 비동기 설정
-│   │   ├── batch/          # 배치 설정
-│   │   ├── flyway/         # Flyway 설정
-│   │   ├── persistence/    # JPA / Audit / DataSource
-│   │   ├── querydsl/       # JPAQueryFactory
-│   │   ├── scheduling/     # @Scheduled 활성화
-│   │   └── swagger/        # OpenAPI
-│   ├── datasourceProxy/    # SQL 로깅
-│   ├── filter/             # Servlet Filter
-│   └── security/           # Spring Security, JWT, OAuth2
-└── shared/
-    ├── infra/
-    │   ├── firebase/       # FCM
-    │   ├── mail/           # Mail
-    │   ├── push/           # 푸시 인터페이스
-    │   ├── redis/          # Redis
-    │   └── storage/        # S3
-    └── storage/
-        ├── StorageClient    # 파일 스토리지 추상화 인터페이스
-        └── S3StorageClient, LocalStorageClient  # 구현체
-```
+`core/`, `shared/` 패키지 맵은 [../architecture.md](../architecture.md) §4 참조 (중복 관리 방지를 위해 여기서는 별도로 나열하지 않음).
 
 ## 설계 원칙
 

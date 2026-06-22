@@ -123,7 +123,7 @@ public boolean isDeleted() {
 
 ### 현재 코드 다수: `isDeleted` (Boolean) — 레거시
 
-현재 코드베이스의 대다수 엔티티 (`Post`, `Comment`, `ChildComment`, `Board`, `Form` 등) 는 아직 `Boolean isDeleted` 필드를 사용합니다. `User` 만 `deletedAt` 으로 이전된 상태입니다.
+대다수 엔티티는 아직 `Boolean isDeleted` 필드를 사용하고, `User` 등 일부만 `deletedAt` 으로 이전된 상태입니다 (마이그레이션 진행 중 — 어떤 엔티티가 어느 쪽인지는 시점에 따라 달라지므로 해당 엔티티를 직접 확인하세요).
 
 ```java
 @Column(name = "is_deleted")

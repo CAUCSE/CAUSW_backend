@@ -123,14 +123,14 @@ public class MailEventListener {
 3. 트리거 방식 결정:
    - 시간 기반 → `@Scheduled` + `JobLauncher` 호출
    - API 트리거 → 관리자 Controller 추가
-4. 실패 시 알림 — `JobExecutionListener` 또는 로깅으로 Discord 연동
+4. 실패 시 알림 — `JobExecutionListener` 또는 ERROR 레벨 로깅
 5. 멱등성 보장 — 같은 데이터에 두 번 실행해도 안전하게 동작하도록 설계
 6. 운영 환경에서만 활성화할 거라면 `@Profile("prod")` 또는 `@ConditionalOnProperty`
 
 ## 7. 운영 / 모니터링
 
 - 잡 실행 결과는 Spring Batch 메타 테이블 (`BATCH_JOB_EXECUTION`, `BATCH_STEP_EXECUTION` 등) 에 저장됨
-- 실패 시 ERROR 레벨 로그 + Discord 알림 (logback-discord-appender)
+- 실패 시 ERROR 레벨 로그 (스택트레이스 포함)
 - 장시간 잡은 분할 / chunk 처리 / heartbeat 로그로 진행률 노출
 - 동일 잡 동시 실행 방지: Spring Batch 기본은 동일 파라미터 동시 실행 불가, 다른 파라미터로는 허용됨 → 정책에 맞춰 설계
 

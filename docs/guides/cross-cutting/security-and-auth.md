@@ -22,7 +22,7 @@
 
 ## 2. SecurityFilterChain
 
-`core/security/WebSecurityConfig` 가 `@EnableWebSecurity` + `@EnableMethodSecurity` 를 활성화하고, 단일 `SecurityFilterChain` (`securityFilterChainV2`) 으로 모든 경로를 처리합니다 (과거 v1/v2 두 체인이 공존했으나 v1 제거 후 단일 체인으로 통합됨).
+`core/security/WebSecurityConfig` 가 `@EnableWebSecurity` + `@EnableMethodSecurity` 를 활성화하고, 단일 `SecurityFilterChain` (`securityFilterChainV2`) 으로 모든 경로를 처리합니다.
 
 공통 정책:
 - **STATELESS** 세션 정책 (JWT 기반, HTTP 세션 안 씀)

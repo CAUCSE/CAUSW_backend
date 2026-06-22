@@ -95,7 +95,7 @@
 
 상세: [observability.md](./observability.md) §6.
 
-## 6. Retry (의존성만 있고 미활성화)
+## 6. Retry
 
 라이브러리: `spring-retry` (build.gradle 에 추가되어 있음)
 
@@ -118,7 +118,7 @@
 - 로컬 실행 시 루트 `.env` 자동 적용
 - application.yml 의 `${VAR}` placeholder 가 `.env` 값으로 채워짐
 
-환경변수 운영 흐름: [../../env_guide.md](../../env_guide.md).
+환경변수 운영 흐름: [../../env_guide.md](../../env_guide.md)
 
 ## 8. 외부 의존성 추가 시 가이드
 
@@ -126,6 +126,5 @@
 2. **설정 Bean 클래스 위치** — `core/config/` 또는 `shared/infra/{대상}/`
 3. **환경 변수 분리** — 키/엔드포인트는 `application-{profile}.yml` 의 `${VAR}` placeholder 로
 4. **`.env.example` 갱신** — 키 템플릿 추가 + 커밋
-5. **Notion `.env (local/dev/prod)` 버전 기록 추가** — 운영 흐름 따름
-6. **로컬 fallback** — 외부 의존이 없을 때도 부팅이 가능하도록 `@ConditionalOnProperty` 등으로 옵셔널 처리 검토
-7. **에러 핸들링** — 외부 호출 실패는 `WARN` + (필요 시) 재시도, 영구 실패는 `ERROR` + 알림
+5. **로컬 fallback** — 외부 의존이 없을 때도 부팅이 가능하도록 `@ConditionalOnProperty` 등으로 옵셔널 처리 검토
+6. **에러 핸들링** — 외부 호출 실패는 `WARN` + (필요 시) 재시도, 영구 실패는 `ERROR` + 알림

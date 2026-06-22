@@ -152,7 +152,7 @@ public class PostService { ... }
 
 ## 6. 패키지 구조 원칙
 
-디렉터리 전체 트리: [../architecture/package-structure.md](../architecture/package-structure.md).
+디렉터리 전체 트리: [../architecture.md](../architecture.md).
 
 1. **도메인 우선** — 기능을 먼저 도메인에 매핑한 후 그 안에서 레이어로 분리
 2. **서브 도메인 단위 레이어 적용** — `api / service / repository / entity / enums`
@@ -176,7 +176,6 @@ public class PostService { ... }
   - `INFO` — 정상 흐름 중 의미 있는 이벤트
   - `WARN` — 4xx 클라이언트 에러 / 외부 의존성 일시 실패
   - `ERROR` — 5xx / 복구 불가 상황 + 스택트레이스
-- 운영에는 Discord appender 로 알림
 
 관측성 상세: [../cross-cutting/observability.md](../cross-cutting/observability.md).
 

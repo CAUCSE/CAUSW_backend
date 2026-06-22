@@ -3,7 +3,7 @@
 [![CI - Develop](https://github.com/CAUCSE/CAUSW_backend/actions/workflows/dev-ci.yml/badge.svg)](https://github.com/CAUCSE/CAUSW_backend/actions/workflows/dev-ci.yml)
 [![CI - Production](https://github.com/CAUCSE/CAUSW_backend/actions/workflows/main-ci.yml/badge.svg)](https://github.com/CAUCSE/CAUSW_backend/actions/workflows/main-ci.yml)
 
-중앙대학교 소프트웨어학부 동문네트워크 커뮤니티([causw.net](https://causw.net)) 서비스의 Backend 입니다.
+중앙대학교 소프트웨어학부 동문네트워크 커뮤니티([causw.co.kr](https://causw.co.kr)) 서비스의 Backend 입니다.
 
 서비스 이용 중 불편한 사항 혹은 문의사항이 있으신 경우 개발팀에 연락 부탁드리며, 서비스 개선을 위한 다양한 의견은 언제든 환영입니다.
 
@@ -17,7 +17,7 @@
 - **캠퍼스**: 학사 일정 관리
 - **알림**: 이벤트 기반 푸시 알림(FCM) 발송/구독 설정
 - **연동**: 외부 공지사항 크롤링 → 게시글 자동 변환
-- **관리자**: 운영자 행위에 대한 감사 로그(audit log)
+- **관리자**: 운영자 로깅 기능
 
 ## Tech Stack
 
@@ -57,12 +57,12 @@ cp .env.example .env
 ./gradlew test
 ```
 
-환경 변수 / `.env` 운영: [docs/env_guide.md](docs/env_guide.md)
-DB 마이그레이션(Flyway): [docs/flyway_guide.md](docs/flyway_guide.md)
+- 환경 변수 / `.env` 운영: [docs/env_guide.md](docs/env_guide.md)
+- DB 마이그레이션(Flyway): [docs/flyway_guide.md](docs/flyway_guide.md)
 
 ### API 문서
 
-서버 실행 후 Swagger UI 에서 확인할 수 있습니다 (`/swagger-ui/index.html`). dev/prod 환경은 `SWAGGER_USERNAME` / `SWAGGER_PASSWORD` Basic Auth 로 보호됩니다.
+서버 실행 후 Swagger UI 에서 확인할 수 있습니다 (`/swagger-ui/index.html`). `local` 은 인증 없이 전면 허용, `prod` 는 전면 차단(403)되며, 그 외(dev 등) 환경은 폼 로그인(`SWAGGER_USERNAME` / `SWAGGER_PASSWORD`)으로 보호됩니다.
 
 ## CI/CD
 

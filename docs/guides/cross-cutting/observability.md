@@ -9,7 +9,6 @@
 | 로깅 추상 | SLF4J |
 | 구현체 | Logback (Spring Boot 기본) |
 | JSON 포맷 | `logback-json-classic`, `logback-jackson` |
-| Discord 알림 | `logback-discord-appender` |
 | 메트릭 | Spring Boot Actuator + Micrometer Prometheus |
 
 설정 파일: `app-main/src/main/resources/logback-spring.xml`
@@ -74,15 +73,7 @@ public class PostService { ... }
 - N+1 쿼리 탐지에 유용
 - 활성화 조건은 application yml 에 따라 다름 — 로컬에서는 보통 활성화, 운영에서는 비활성화 또는 sampling
 
-## 7. Discord 알림
-
-`logback-discord-appender` 로 ERROR 이상 로그를 Discord 웹훅으로 전송할 수 있습니다.
-
-- 운영 (`application-prod.yml`) 환경에서 활성화
-- 환경 변수로 Discord 웹훅 URL 주입
-- 백엔드 `be` 채널 등 운영팀이 모니터링
-
-## 8. Prometheus / Actuator
+## 7. Prometheus / Actuator
 
 - `spring-boot-starter-actuator` + `micrometer-registry-prometheus` 의존성
 - `/actuator/health`, `/actuator/info`, `/actuator/prometheus` 등 노출
@@ -91,7 +82,7 @@ public class PostService { ... }
 
 루트 `monitoring/` 디렉터리 — Grafana 대시보드 / Prometheus 설정 모음 (운영 인프라용)
 
-## 9. 보안 / 개인정보 로깅 주의
+## 8. 보안 / 개인정보 로깅 주의
 
 ❌ **로그에 절대 출력하지 말 것**:
 - 비밀번호 (해시 포함)
@@ -101,11 +92,10 @@ public class PostService { ... }
 
 마스킹 유틸은 `domain/user/account/util/masking/` 참고 (예: `EmailMasker`).
 
-## 10. 로깅 / 메트릭 체크리스트
+## 9. 로깅 / 메트릭 체크리스트
 
 - [ ] 새 비즈니스 이벤트는 적절한 레벨로 로깅 (INFO 권장)
 - [ ] 외부 API 호출 / 재시도는 WARN
 - [ ] 예외는 GlobalExceptionHandler 에 위임 (직접 catch 후 로깅 지양)
 - [ ] 민감 정보는 마스킹
 - [ ] 신규 메트릭은 Micrometer `MeterRegistry` 로 등록
-- [ ] 운영 알람이 필요한 케이스는 ERROR 레벨로 보내 Discord 알림 받기
