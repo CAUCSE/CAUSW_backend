@@ -9,9 +9,25 @@
 | Spring Batch | `core/batch/`, `core/config/batch/` |
 | 스케줄링 | `core/config/scheduling/SchedulingConfig` (`@EnableScheduling`) |
 | 비동기 | `core/config/async/AsyncConfig` (`@EnableAsync`) |
-| 재시도 | `spring-retry` 의존성만 추가됨 — 현재 미활성화 (§5) |
+| 재시도 | `spring-retry` 의존성만 추가됨 — 현재 미활성화 (§6) |
 
-## 2. Spring Batch
+## 2. 현재 운영 중인 배치 / 스케줄링 작업
+
+| 이름 | 트리거 | 위치 | 설명 |
+|------|--------|------|------|
+| `cleanUpUnusedFilesJob` | cron `0 0 3 1 * ?` (매달 1일 03:00) — `BatchScheduler.scheduleCleanUpJob` 이 `JobLauncher` 로 기동 | `core/batch/BatchScheduler`, Job 정의: `core/config/batch/CleanUnusedUuidFilesBatchConfig` | 미사용 UUID 첨부파일 정리. init → 게시글/학적증명/입회신청/입회로그/프로필이미지 사용여부 체크 5단계 → 미사용 파일 삭제, 총 7-Step Job |
+| 탈퇴 유저 후처리 | cron `0 10 3 * * ?` (매일 03:10) | `core/batch/BatchScheduler#scheduleCleanupDeactivatedUsers` | Spring Batch Job 아님(일반 `@Scheduled`). `deletedAt` 30일 경과 탈퇴/추방 유저를 페이지 단위로 조회 후 프로필이미지/유저정보/세레모니/소셜계정/입회정보 삭제 및 유저 cleanup |
+| 크롤링 수집 | cron `0 0 */1 * * *` (매시 정각) | `domain/integration/crawled/service/CrawlingScheduler#crawlAndSave` | 외부 게시판 크롤링 + 변경 감지 |
+| 크롤링 → 게시글 변환 | cron `0 5 */1 * * *` (매시 5분) | `CrawlingScheduler#transferToPosts` | 크롤링 결과를 내부 게시글로 변환 (수집 5분 뒤 실행되도록 오프셋) |
+| 크롤링 즉시 실행 | `ApplicationReadyEvent`, `local` 프로필 한정 | `CrawlingScheduler#onApplicationStart` | 로컬 개발 시 기동 즉시 크롤링→변환을 1회 수행해 cron 대기 없이 데이터 확인 |
+| 공휴일 동기화(월간) | cron `0 0 0 1 * *`, zone `Asia/Seoul` (매달 1일 00:00) | `domain/campus/schedule/service/HolidayScheduleSyncService#syncMonthly` | 공공 API에서 올해/내년 공휴일을 조회해 `Schedule`(HOLIDAY) 로 upsert (중복/기존 존재 시 skip) |
+| 공휴일 동기화(기동 시) | `ApplicationReadyEvent`, `@Order(1)` | `HolidayScheduleSyncService#syncOnApplicationReady` | 앱 기동 직후 공휴일 동기화 1회 수행 (월간 cron 도달 전 공백 방지) |
+
+비활성/보류:
+- `spring-retry` — 의존성만 존재, `@EnableRetry`/`@Retryable` 사용처 없음 (§6)
+- `CleanUnusedUuidFilesBatchConfig` 내 `RetryTemplate` 빈은 정의돼 있으나 현재 Step 에서 참조하지 않음 — 실질 미사용
+
+## 3. Spring Batch
 
 라이브러리: `spring-boot-starter-batch`, `spring-batch-core`
 
@@ -54,7 +70,7 @@ public class CleanUnusedUuidFilesBatchConfig {
 - chunk 크기는 메모리/DB 부하 균형에서 결정 (보통 100~1000)
 - 트랜잭션 매니저: 동일 DB 사용 시 JPA `PlatformTransactionManager`
 
-## 3. 스케줄링 (`@Scheduled`)
+## 4. 스케줄링 (`@Scheduled`)
 
 활성화: `core/config/scheduling/SchedulingConfig` 의 `@EnableScheduling`
 
@@ -85,7 +101,7 @@ public class CrawlingScheduler {
 - 스케줄러 메서드는 가능한 한 짧게 — 실제 작업은 별도 서비스 / 배치 잡에 위임
 - 동일 잡 중복 실행 방지가 필요하면 `@SchedulerLock` (ShedLock) 또는 분산 락 검토
 
-## 4. 비동기 (`@Async`)
+## 5. 비동기 (`@Async`)
 
 활성화: `core/config/async/AsyncConfig` 의 `@EnableAsync` + Executor Bean
 
@@ -110,13 +126,13 @@ public class MailEventListener {
 - 메일/푸시 같은 외부 호출은 `@Async` 권장
 - 예외 발생 시 호출자에게 전파되지 않음 — Future 반환 또는 별도 로깅/알림 필수
 
-## 5. 재시도 (`spring-retry`)
+## 6. 재시도 (`spring-retry`)
 
 **현재 상태**: 의존성은 추가되어 있지만 `@EnableRetry` / `@Retryable` 사용처가 없습니다.
 
 활성화 절차 / 도입 시 고려 사항: [infrastructure.md](./infrastructure.md) §6.
 
-## 6. 배치 잡 추가 가이드
+## 7. 배치 잡 추가 가이드
 
 1. `core/batch/{잡명}/` 또는 `core/config/batch/` 에 설정 클래스 생성
 2. `@Configuration` 클래스에 `Job`, `Step`, `Reader/Processor/Writer` Bean 정의
@@ -127,14 +143,14 @@ public class MailEventListener {
 5. 멱등성 보장 — 같은 데이터에 두 번 실행해도 안전하게 동작하도록 설계
 6. 운영 환경에서만 활성화할 거라면 `@Profile("prod")` 또는 `@ConditionalOnProperty`
 
-## 7. 운영 / 모니터링
+## 8. 운영 / 모니터링
 
 - 잡 실행 결과는 Spring Batch 메타 테이블 (`BATCH_JOB_EXECUTION`, `BATCH_STEP_EXECUTION` 등) 에 저장됨
 - 실패 시 ERROR 레벨 로그 (스택트레이스 포함)
 - 장시간 잡은 분할 / chunk 처리 / heartbeat 로그로 진행률 노출
 - 동일 잡 동시 실행 방지: Spring Batch 기본은 동일 파라미터 동시 실행 불가, 다른 파라미터로는 허용됨 → 정책에 맞춰 설계
 
-## 8. 시간대 주의
+## 9. 시간대 주의
 
 - 모든 cron / 일정 / 로그 시각은 **`Asia/Seoul`** (`CauswApplication` 의 `init()` 이 강제)
 - DB 의 `created_at`, `updated_at` 도 Asia/Seoul 기준
