@@ -12,7 +12,7 @@ plugins {
 }
 
 ext {
-    queryDslVersion = "6.10.1"
+    queryDslVersion = "7.3.0"
 }
 
 spotless {
