@@ -10,6 +10,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import net.causw.app.main.shared.dto.ApiResponse;
 import net.causw.app.main.shared.exception.errorcode.GlobalErrorCode;
@@ -98,6 +99,13 @@ public class GlobalV2ExceptionHandler {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 				.body(ApiResponse.error(GlobalErrorCode.BAD_REQUEST.getCode(), exception.getMessage()));
 		}
+	}
+
+	@ExceptionHandler(value = {NoResourceFoundException.class})
+	@ResponseStatus(HttpStatus.NOT_FOUND)
+	public ApiResponse<String> handleNoResourceFoundException(NoResourceFoundException exception) {
+		log.debug("Static resource not found: {}", exception.getResourcePath());
+		return ApiResponse.error(GlobalErrorCode.NOT_FOUND);
 	}
 
 	@ExceptionHandler(value = {Exception.class})
