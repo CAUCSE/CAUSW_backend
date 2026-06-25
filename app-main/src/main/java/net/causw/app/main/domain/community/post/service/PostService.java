@@ -336,12 +336,15 @@ public class PostService {
 	 */
 	public PostListResult getPostsCommentedByUser(User user, String cursor, Integer size) {
 		Set<String> blockedUserIds = userBlockReader.findBlockeeUserIdsByBlocker(user);
+		List<String> accessibleBoardIds = boardConfigReader.getAccessibleBoardIdsByAcademicStatus(
+			user.getAcademicStatus());
 		int pageSize = size != null ? size : StaticValue.DEFAULT_POST_PAGE_SIZE;
 		PostCursorManager.ParsedCursor parsedCursor = PostCursorManager.parseCursor(cursor);
 
 		Slice<PostCursorResult> slice = postReader.findPostsCommentedByUserWithCursor(
 			user.getId(),
 			blockedUserIds,
+			accessibleBoardIds,
 			parsedCursor.createdAt(),
 			parsedCursor.postId(),
 			pageSize);
@@ -358,11 +361,14 @@ public class PostService {
 	 * @return 게시글 목록 결과
 	 */
 	public PostListResult getPostsWrittenByUser(User user, String cursor, Integer size) {
+		List<String> accessibleBoardIds = boardConfigReader.getAccessibleBoardIdsByAcademicStatus(
+			user.getAcademicStatus());
 		int pageSize = size != null ? size : StaticValue.DEFAULT_POST_PAGE_SIZE;
 		PostCursorManager.ParsedCursor parsedCursor = PostCursorManager.parseCursor(cursor);
 
 		Slice<PostCursorResult> slice = postReader.findPostsWrittenByUserWithCursor(
 			user.getId(),
+			accessibleBoardIds,
 			parsedCursor.createdAt(),
 			parsedCursor.postId(),
 			pageSize);
@@ -379,12 +385,15 @@ public class PostService {
 	 */
 	public PostListResult getPostsLikedByUser(User user, String cursor, Integer size) {
 		Set<String> blockedUserIds = userBlockReader.findBlockeeUserIdsByBlocker(user);
+		List<String> accessibleBoardIds = boardConfigReader.getAccessibleBoardIdsByAcademicStatus(
+			user.getAcademicStatus());
 		int pageSize = size != null ? size : StaticValue.DEFAULT_POST_PAGE_SIZE;
 		PostCursorManager.ParsedCursor parsedCursor = PostCursorManager.parseCursor(cursor);
 
 		Slice<PostCursorResult> slice = postReader.findPostsLikedByUserWithCursor(
 			user.getId(),
 			blockedUserIds,
+			accessibleBoardIds,
 			parsedCursor.createdAt(),
 			parsedCursor.postId(),
 			pageSize);
