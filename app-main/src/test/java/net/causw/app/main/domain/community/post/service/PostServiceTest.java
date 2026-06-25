@@ -1157,14 +1157,9 @@ public class PostServiceTest {
 		void getPostsCommentedByUser_shouldReturnEmpty_whenNoAccessibleBoards() {
 			// given
 			List<String> accessibleBoardIds = List.of();
-			Slice<PostCursorResult> emptySlice = new SliceImpl<>(List.of(), PageRequest.of(0, pageSize), false);
 
 			given(boardConfigReader.getAccessibleBoardIdsByAcademicStatus(AcademicStatus.ENROLLED))
 				.willReturn(accessibleBoardIds);
-			given(blockReader.findBlockeeUserIdsByBlocker(viewer)).willReturn(Set.of());
-			given(postReader.findPostsCommentedByUserWithCursor(
-				eq("viewer-id"), anySet(), eq(accessibleBoardIds), eq(null), eq(null), eq(pageSize)))
-				.willReturn(emptySlice);
 
 			// when
 			PostListResult result = postService.getPostsCommentedByUser(viewer, null, pageSize);
@@ -1173,8 +1168,9 @@ public class PostServiceTest {
 			assertAll(
 				() -> assertThat(result.posts()).isEmpty(),
 				() -> assertThat(result.nextCursor()).isNull());
-			verify(postReader, times(1)).findPostsCommentedByUserWithCursor(
-				eq("viewer-id"), anySet(), eq(accessibleBoardIds), eq(null), eq(null), eq(pageSize));
+			verify(blockReader, never()).findBlockeeUserIdsByBlocker(any(User.class));
+			verify(postReader, never()).findPostsCommentedByUserWithCursor(
+				anyString(), anySet(), anyList(), any(), any(), anyInt());
 		}
 
 		@DisplayName("접근 가능한 게시판이 없으면 내가 작성한 글 조회는 빈 결과를 반환한다")
@@ -1182,13 +1178,9 @@ public class PostServiceTest {
 		void getPostsWrittenByUser_shouldReturnEmpty_whenNoAccessibleBoards() {
 			// given
 			List<String> accessibleBoardIds = List.of();
-			Slice<PostCursorResult> emptySlice = new SliceImpl<>(List.of(), PageRequest.of(0, pageSize), false);
 
 			given(boardConfigReader.getAccessibleBoardIdsByAcademicStatus(AcademicStatus.ENROLLED))
 				.willReturn(accessibleBoardIds);
-			given(postReader.findPostsWrittenByUserWithCursor(
-				eq("viewer-id"), eq(accessibleBoardIds), eq(null), eq(null), eq(pageSize)))
-				.willReturn(emptySlice);
 
 			// when
 			PostListResult result = postService.getPostsWrittenByUser(viewer, null, pageSize);
@@ -1197,8 +1189,8 @@ public class PostServiceTest {
 			assertAll(
 				() -> assertThat(result.posts()).isEmpty(),
 				() -> assertThat(result.nextCursor()).isNull());
-			verify(postReader, times(1)).findPostsWrittenByUserWithCursor(
-				eq("viewer-id"), eq(accessibleBoardIds), eq(null), eq(null), eq(pageSize));
+			verify(postReader, never()).findPostsWrittenByUserWithCursor(anyString(), anyList(), any(), any(),
+				anyInt());
 		}
 
 		@DisplayName("접근 가능한 게시판이 없으면 내가 좋아요한 글 조회는 빈 결과를 반환한다")
@@ -1206,14 +1198,9 @@ public class PostServiceTest {
 		void getPostsLikedByUser_shouldReturnEmpty_whenNoAccessibleBoards() {
 			// given
 			List<String> accessibleBoardIds = List.of();
-			Slice<PostCursorResult> emptySlice = new SliceImpl<>(List.of(), PageRequest.of(0, pageSize), false);
 
 			given(boardConfigReader.getAccessibleBoardIdsByAcademicStatus(AcademicStatus.ENROLLED))
 				.willReturn(accessibleBoardIds);
-			given(blockReader.findBlockeeUserIdsByBlocker(viewer)).willReturn(Set.of());
-			given(postReader.findPostsLikedByUserWithCursor(
-				eq("viewer-id"), anySet(), eq(accessibleBoardIds), eq(null), eq(null), eq(pageSize)))
-				.willReturn(emptySlice);
 
 			// when
 			PostListResult result = postService.getPostsLikedByUser(viewer, null, pageSize);
@@ -1222,8 +1209,9 @@ public class PostServiceTest {
 			assertAll(
 				() -> assertThat(result.posts()).isEmpty(),
 				() -> assertThat(result.nextCursor()).isNull());
-			verify(postReader, times(1)).findPostsLikedByUserWithCursor(
-				eq("viewer-id"), anySet(), eq(accessibleBoardIds), eq(null), eq(null), eq(pageSize));
+			verify(blockReader, never()).findBlockeeUserIdsByBlocker(any(User.class));
+			verify(postReader, never()).findPostsLikedByUserWithCursor(
+				anyString(), anySet(), anyList(), any(), any(), anyInt());
 		}
 	}
 

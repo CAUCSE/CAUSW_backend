@@ -101,7 +101,7 @@ public class PostQueryRepository {
 		String keyword) {
 		// 빈 리스트가 전달된 경우 "조회 가능한 게시판이 한 개도 없음"을 의미하므로 즉시 빈 결과 반환.
 		// (null은 docstring 계약상 "전체 게시판"이므로 별도 처리하지 않음)
-		if (hasNoAccessibleBoards(boardIds)) {
+		if (hasEmptyBoardFilter(boardIds)) {
 			return emptySlice(size);
 		}
 
@@ -271,6 +271,10 @@ public class PostQueryRepository {
 	}
 
 	private static boolean hasNoAccessibleBoards(List<String> boardIds) {
+		return boardIds == null || boardIds.isEmpty();
+	}
+
+	private static boolean hasEmptyBoardFilter(List<String> boardIds) {
 		return boardIds != null && boardIds.isEmpty();
 	}
 

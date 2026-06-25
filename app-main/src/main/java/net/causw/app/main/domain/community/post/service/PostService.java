@@ -335,9 +335,13 @@ public class PostService {
 	 * @return 게시글 목록 결과
 	 */
 	public PostListResult getPostsCommentedByUser(User user, String cursor, Integer size) {
-		Set<String> blockedUserIds = userBlockReader.findBlockeeUserIdsByBlocker(user);
 		List<String> accessibleBoardIds = boardConfigReader.getAccessibleBoardIdsByAcademicStatus(
 			user.getAcademicStatus());
+		if (hasNoAccessibleBoards(accessibleBoardIds)) {
+			return PostListResult.of(List.of(), null);
+		}
+
+		Set<String> blockedUserIds = userBlockReader.findBlockeeUserIdsByBlocker(user);
 		int pageSize = size != null ? size : StaticValue.DEFAULT_POST_PAGE_SIZE;
 		PostCursorManager.ParsedCursor parsedCursor = PostCursorManager.parseCursor(cursor);
 
@@ -363,6 +367,10 @@ public class PostService {
 	public PostListResult getPostsWrittenByUser(User user, String cursor, Integer size) {
 		List<String> accessibleBoardIds = boardConfigReader.getAccessibleBoardIdsByAcademicStatus(
 			user.getAcademicStatus());
+		if (hasNoAccessibleBoards(accessibleBoardIds)) {
+			return PostListResult.of(List.of(), null);
+		}
+
 		int pageSize = size != null ? size : StaticValue.DEFAULT_POST_PAGE_SIZE;
 		PostCursorManager.ParsedCursor parsedCursor = PostCursorManager.parseCursor(cursor);
 
@@ -384,9 +392,13 @@ public class PostService {
 	 * @return 게시글 목록 결과
 	 */
 	public PostListResult getPostsLikedByUser(User user, String cursor, Integer size) {
-		Set<String> blockedUserIds = userBlockReader.findBlockeeUserIdsByBlocker(user);
 		List<String> accessibleBoardIds = boardConfigReader.getAccessibleBoardIdsByAcademicStatus(
 			user.getAcademicStatus());
+		if (hasNoAccessibleBoards(accessibleBoardIds)) {
+			return PostListResult.of(List.of(), null);
+		}
+
+		Set<String> blockedUserIds = userBlockReader.findBlockeeUserIdsByBlocker(user);
 		int pageSize = size != null ? size : StaticValue.DEFAULT_POST_PAGE_SIZE;
 		PostCursorManager.ParsedCursor parsedCursor = PostCursorManager.parseCursor(cursor);
 
@@ -435,6 +447,10 @@ public class PostService {
 		}
 
 		return PostListResult.of(postItems, nextCursor);
+	}
+
+	private static boolean hasNoAccessibleBoards(List<String> accessibleBoardIds) {
+		return accessibleBoardIds == null || accessibleBoardIds.isEmpty();
 	}
 
 	/**

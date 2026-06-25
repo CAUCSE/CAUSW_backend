@@ -51,6 +51,23 @@ class PostQueryRepositoryTest {
 			verifyNoInteractions(jpaQueryFactory);
 		}
 
+		@DisplayName("접근 가능한 게시판 목록이 null이면 내가 댓글 단 글 조회는 DB 조회 없이 빈 Slice를 반환한다")
+		@Test
+		void findPostsCommentedByUserWithCursor_shouldReturnEmptySlice_whenAccessibleBoardsAreNull() {
+			// when
+			Slice<PostCursorResult> result = postQueryRepository.findPostsCommentedByUserWithCursor(
+				"user-id",
+				Set.of(),
+				null,
+				null,
+				null,
+				20);
+
+			// then
+			assertEmptySlice(result, 20);
+			verifyNoInteractions(jpaQueryFactory);
+		}
+
 		@DisplayName("접근 가능한 게시판이 없으면 내가 작성한 글 조회는 DB 조회 없이 빈 Slice를 반환한다")
 		@Test
 		void findPostsWrittenByUserWithCursor_shouldReturnEmptySlice_whenNoAccessibleBoards() {
@@ -58,6 +75,22 @@ class PostQueryRepositoryTest {
 			Slice<PostCursorResult> result = postQueryRepository.findPostsWrittenByUserWithCursor(
 				"user-id",
 				List.of(),
+				null,
+				null,
+				20);
+
+			// then
+			assertEmptySlice(result, 20);
+			verifyNoInteractions(jpaQueryFactory);
+		}
+
+		@DisplayName("접근 가능한 게시판 목록이 null이면 내가 작성한 글 조회는 DB 조회 없이 빈 Slice를 반환한다")
+		@Test
+		void findPostsWrittenByUserWithCursor_shouldReturnEmptySlice_whenAccessibleBoardsAreNull() {
+			// when
+			Slice<PostCursorResult> result = postQueryRepository.findPostsWrittenByUserWithCursor(
+				"user-id",
+				null,
 				null,
 				null,
 				20);
@@ -75,6 +108,23 @@ class PostQueryRepositoryTest {
 				"user-id",
 				Set.of(),
 				List.of(),
+				null,
+				null,
+				20);
+
+			// then
+			assertEmptySlice(result, 20);
+			verifyNoInteractions(jpaQueryFactory);
+		}
+
+		@DisplayName("접근 가능한 게시판 목록이 null이면 내가 좋아요한 글 조회는 DB 조회 없이 빈 Slice를 반환한다")
+		@Test
+		void findPostsLikedByUserWithCursor_shouldReturnEmptySlice_whenAccessibleBoardsAreNull() {
+			// when
+			Slice<PostCursorResult> result = postQueryRepository.findPostsLikedByUserWithCursor(
+				"user-id",
+				Set.of(),
+				null,
 				null,
 				null,
 				20);
