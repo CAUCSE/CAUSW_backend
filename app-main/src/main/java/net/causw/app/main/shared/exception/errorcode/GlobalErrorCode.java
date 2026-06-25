@@ -13,6 +13,8 @@ public enum GlobalErrorCode implements BaseResponseCode {
 	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "G50001", "서버 내부 오류가 발생했습니다"),
 	SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "G50301", "서비스를 사용할 수 없습니다"),
 	BAD_REQUEST(HttpStatus.BAD_REQUEST, "G40001", "잘못된 요청입니다"),
+	NOT_FOUND(HttpStatus.NOT_FOUND, "G40401", "요청한 리소스를 찾을 수 없습니다"),
+	METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "G40501", "지원하지 않는 HTTP 메서드입니다"),
 	FORBIDDEN(HttpStatus.FORBIDDEN, "G40301", "권한이 없습니다"),
 	UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "G40101", "인증이 필요합니다"),
 	BLOCKED_API(HttpStatus.GONE, "G41001", "유효하지 않은 API입니다.");

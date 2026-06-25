@@ -21,7 +21,7 @@
 
 ## Tech Stack
 
-- Java 17, Spring Boot 3.2
+- Java 25, Spring Boot 4.0
 - JPA / QueryDSL, MySQL, Flyway
 - Spring Security, JWT, OAuth2(Google/Kakao/Apple)
 - Redis, S3, Firebase(FCM), Spring Batch
@@ -36,7 +36,7 @@
 
 ### 요구 사항
 
-- JDK 17
+- JDK 25
 - MySQL
 - Redis
 - (선택) AWS S3, Firebase, Gmail SMTP, OAuth2 클라이언트 키 — 해당 기능 사용 시에만 필요
