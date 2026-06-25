@@ -32,7 +32,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
  */
 @Slf4j
 @MeasureTime
-@Component("s3Client")
+@Component("s3StorageClient")
 @Profile("!local")
 @RequiredArgsConstructor
 public class S3StorageClient implements StorageClient {
