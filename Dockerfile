@@ -28,6 +28,7 @@ FROM eclipse-temurin:25-jre-jammy
 WORKDIR /app
 
 ENV TZ=Asia/Seoul
+ENV LOG_DIR=/app/log
 
 # 헬스체크용 curl 설치
 RUN apt-get update \
@@ -40,7 +41,8 @@ RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
 # 빌드 산출물만 복사
 COPY --from=builder /app/app-main/build/libs/*.jar app.jar
 
-RUN chown appuser:appgroup app.jar
+RUN mkdir -p "$LOG_DIR" \
+  && chown -R appuser:appgroup app.jar "$LOG_DIR"
 
 USER appuser
 
