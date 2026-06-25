@@ -42,6 +42,7 @@ jobs:
     runs-on: ubuntu-22.04
     outputs:
       image: ${{ steps.build-image.outputs.image }}
+      migration_image: ${{ steps.build-image.outputs.migration_image }}
 
     steps:
       - name: Checkout branch
@@ -75,10 +76,14 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
         run: |
           IMAGE="$REGISTRY/$ECR_REPOSITORY"
+          MIGRATION_IMAGE="$IMAGE:dev-$IMAGE_TAG-migration"
+          docker build --target builder -t "$MIGRATION_IMAGE" .
           docker build -t "$IMAGE:dev-$IMAGE_TAG" -t "$IMAGE:dev-latest" .
+          docker push "$MIGRATION_IMAGE"
           docker push "$IMAGE:dev-$IMAGE_TAG"
           docker push "$IMAGE:dev-latest"
           echo "image=$IMAGE:dev-$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+          echo "migration_image=$MIGRATION_IMAGE" >> "$GITHUB_OUTPUT"
 
   # ─────────────────────────────────────────
   # 2. DB 마이그레이션 (EC2에서 실행 - Private RDS 접근)
@@ -106,12 +111,13 @@ jobs:
         uses: appleboy/ssh-action@v1.2.0
         env:
           IMAGE: ${{ needs.build-and-push.outputs.image }}
+          MIGRATION_IMAGE: ${{ needs.build-and-push.outputs.migration_image }}
           AWS_REGION: ${{ env.AWS_REGION }}
         with:
           key: ${{ secrets.EC2_KEY_DEV }}
           host: ${{ secrets.EC2_HOST_DEV }}
           username: ${{ secrets.EC2_USER_DEV }}
-          envs: IMAGE,AWS_REGION
+          envs: IMAGE,MIGRATION_IMAGE,AWS_REGION
           script: |
             # ECR 로그인
             aws ecr get-login-password --region "$AWS_REGION" \
@@ -119,19 +125,20 @@ jobs:
 
             # 이미지 pull
             docker pull "$IMAGE"
+            docker pull "$MIGRATION_IMAGE"
 
             # flywayRepair
             docker run --rm \
               --env-file /home/ubuntu/app/app-main/.env \
               --add-host=host.docker.internal:host-gateway \
-              "$IMAGE" \
+              "$MIGRATION_IMAGE" \
               ./gradlew :app-main:flywayRepair || true
 
             # flywayMigrate
             docker run --rm \
               --env-file /home/ubuntu/app/app-main/.env \
               --add-host=host.docker.internal:host-gateway \
-              "$IMAGE" \
+              "$MIGRATION_IMAGE" \
               ./gradlew :app-main:flywayMigrate
 
   # ─────────────────────────────────────────
