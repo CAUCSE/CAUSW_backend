@@ -1,3 +1,23 @@
+# 사전 준비 (1회성, 콘솔에서 직접 설정):
+#   1. ECR private repo 생성: ccssaa/ccssaa-backend-dev
+#   2. AWS IAM에 GitHub OIDC provider 등록 (token.actions.githubusercontent.com)
+#   3. GitHub Actions용 IAM Role 생성 (DevGitHubActionsECRRole)
+#      - Trust Policy: repo:<org>/<repo>:ref:refs/heads/dev
+#      - 권한: AmazonEC2ContainerRegistryPowerUser
+#   4. EC2용 IAM Role 생성 (EC2ECRRole-dev)
+#      - Trust Policy: AWS service - EC2
+#      - 권한: AmazonEC2ContainerRegistryReadOnly
+#      - dev EC2 인스턴스에 부착
+#   5. EC2에 docker 설치 + redis-server systemd 유지
+#   6. GitHub Secrets 등록:
+#      - AWS_ROLE_ARN_DEV : DevGitHubActionsECRRole ARN
+#      - ENV_DEV          : .env 파일 전체 내용
+#      - EC2_KEY_DEV      : EC2 SSH private key (pem)
+#      - EC2_HOST_DEV     : EC2 IP 또는 도메인
+#      - EC2_USER_DEV     : EC2 접속 유저명 (ubuntu 등)
+#      - DISCORD_DEPLOY_WEBHOOK_URL_DEV : 디스코드 웹훅 URL
+#      - DISCORD_BACKEND_ROLE_ID        : 디스코드 Role ID
+
 name: CD - Develop (Docker/ECR)
 
 on:
@@ -15,40 +35,10 @@ env:
 
 jobs:
   # ─────────────────────────────────────────
-  # 1. DB 마이그레이션
-  # ─────────────────────────────────────────
-  flyway-migrate:
-    name: Flyway Repair and Migration
-    runs-on: ubuntu-22.04
-
-    steps:
-      - name: Checkout branch
-        uses: actions/checkout@v4
-        with:
-          ref: dev
-
-      - name: Setup JDK and Gradle
-        uses: ./.github/actions/setup-jdk-gradle
-
-      - name: Copy .env from secret
-        env:
-          ENV_CONTENT: ${{ secrets.ENV_DEV }}
-        run: |
-          cat <<EOF > .env
-          $ENV_CONTENT
-          EOF
-
-      - name: Run Flyway repair and migration
-        run: |
-          ./gradlew :app-main:flywayRepair || true
-          ./gradlew :app-main:flywayMigrate
-
-  # ─────────────────────────────────────────
-  # 2. Docker 이미지 빌드 & ECR push
+  # 1. Docker 이미지 빌드 & ECR push
   # ─────────────────────────────────────────
   build-and-push:
     name: Build & Push Docker Image to ECR
-    needs: flyway-migrate
     runs-on: ubuntu-22.04
     outputs:
       image: ${{ steps.build-image.outputs.image }}
@@ -91,24 +81,14 @@ jobs:
           echo "image=$IMAGE:dev-$IMAGE_TAG" >> "$GITHUB_OUTPUT"
 
   # ─────────────────────────────────────────
-  # 3. EC2 배포
+  # 2. DB 마이그레이션 (EC2에서 실행 - Private RDS 접근)
   # ─────────────────────────────────────────
-  deploy:
-    name: Deploy to EC2 via SSH
+  flyway-migrate:
+    name: Flyway Repair and Migration
     needs: build-and-push
     runs-on: ubuntu-22.04
 
     steps:
-      - name: Configure AWS credentials (OIDC)
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN_DEV }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Login to Amazon ECR
-        id: ecr-login
-        uses: aws-actions/amazon-ecr-login@v2
-
       - name: Write .env to EC2
         uses: appleboy/ssh-action@v1.2.0
         env:
@@ -122,16 +102,7 @@ jobs:
             mkdir -p /home/ubuntu/app/app-main
             printf '%s' "$ENV_CONTENT" > /home/ubuntu/app/app-main/.env
 
-      - name: Start redis-server
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          key: ${{ secrets.EC2_KEY_DEV }}
-          host: ${{ secrets.EC2_HOST_DEV }}
-          username: ${{ secrets.EC2_USER_DEV }}
-          script: |
-            sudo systemctl start redis-server
-
-      - name: Pull image and restart container
+      - name: Run Flyway on EC2
         uses: appleboy/ssh-action@v1.2.0
         env:
           IMAGE: ${{ needs.build-and-push.outputs.image }}
@@ -146,14 +117,56 @@ jobs:
             aws ecr get-login-password --region "$AWS_REGION" \
               | docker login --username AWS --password-stdin "${IMAGE%%/*}"
 
-            # 새 이미지 pull
+            # 이미지 pull
             docker pull "$IMAGE"
 
+            # flywayRepair
+            docker run --rm \
+              --env-file /home/ubuntu/app/app-main/.env \
+              --add-host=host.docker.internal:host-gateway \
+              "$IMAGE" \
+              ./gradlew :app-main:flywayRepair || true
+
+            # flywayMigrate
+            docker run --rm \
+              --env-file /home/ubuntu/app/app-main/.env \
+              --add-host=host.docker.internal:host-gateway \
+              "$IMAGE" \
+              ./gradlew :app-main:flywayMigrate
+
+  # ─────────────────────────────────────────
+  # 3. EC2 배포
+  # ─────────────────────────────────────────
+  deploy:
+    name: Deploy to EC2 via SSH
+    needs: flyway-migrate
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Start redis-server
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          key: ${{ secrets.EC2_KEY_DEV }}
+          host: ${{ secrets.EC2_HOST_DEV }}
+          username: ${{ secrets.EC2_USER_DEV }}
+          script: |
+            sudo systemctl start redis-server
+
+      - name: Restart container with new image
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          IMAGE: ${{ needs.build-and-push.outputs.image }}
+        with:
+          key: ${{ secrets.EC2_KEY_DEV }}
+          host: ${{ secrets.EC2_HOST_DEV }}
+          username: ${{ secrets.EC2_USER_DEV }}
+          envs: IMAGE
+          script: |
             # 기존 컨테이너 중지 및 제거
             docker stop causw-app || true
             docker rm   causw-app || true
 
-            # 새 컨테이너 실행
+            # 새 컨테이너 실행 (이미지는 flyway-migrate 단계에서 이미 pull됨)
             docker run -d \
               --name causw-app \
               --restart unless-stopped \
