@@ -253,7 +253,7 @@ public class CommentServiceTest {
 			given(post.getBoard()).willReturn(board);
 			given(board.getId()).willReturn("board-id");
 			given(boardConfigReader.getAdminIdsByBoardId("board-id")).willReturn(List.of("admin-id"));
-			given(commentMetaReader.fetchForComment(eq(updater), eq(comment)))
+			given(commentMetaReader.fetchForComment(eq(updater), eq(comment), eq(Set.of())))
 				.willReturn(mock(CommentMeta.class));
 			given(commentMapper.toResult(eq(comment), eq(updater), anyList(), any(CommentMeta.class), anyMap()))
 				.willReturn(expectedResult);
@@ -290,7 +290,7 @@ public class CommentServiceTest {
 			given(post.getBoard()).willReturn(board);
 			given(board.getId()).willReturn("board-id");
 			given(boardConfigReader.getAdminIdsByBoardId("board-id")).willReturn(List.of("admin-id"));
-			given(commentMetaReader.fetchForComment(eq(deleter), eq(comment)))
+			given(commentMetaReader.fetchForComment(eq(deleter), eq(comment), eq(Set.of())))
 				.willReturn(mock(CommentMeta.class));
 			given(commentMapper.toResult(eq(comment), eq(deleter), anyList(), any(CommentMeta.class), anyMap()))
 				.willReturn(expectedResult);

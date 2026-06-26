@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
@@ -82,27 +83,31 @@ public class CommentMetaReader {
 
 	/**
 	 * 단일 댓글 렌더링에 필요한 집계 데이터를 조회합니다.
-	 * 단건 owner 작업(수정/삭제)이므로 isBlocked=false, blockedChildIds=Set.of()
 	 *
 	 * @param user    현재 조회하는 유저
 	 * @param comment 렌더링할 댓글
+	 * @param blockedUserIds 현재 유저가 차단한 유저 ID 집합
 	 * @return CommentMeta
 	 */
-	public CommentMeta fetchForComment(User user, Comment comment) {
+	public CommentMeta fetchForComment(User user, Comment comment, Set<String> blockedUserIds) {
 		long numLike = likeCommentReader.getNumOfCommentLikes(comment.getId());
 		boolean isLiked = likeCommentReader.isCommentLiked(user, comment.getId());
 
 		List<String> childIds = comment.getChildCommentList().stream().map(Comment::getId).toList();
 		Map<String, Long> childLikeCounts = likeCommentReader.getCommentLikeCounts(childIds);
 		Set<String> likedChildIds = likeCommentReader.getLikedCommentIds(user.getId(), childIds);
+		Set<String> blockedChildIds = comment.getChildCommentList().stream()
+			.filter(child -> blockedUserIds.contains(child.getWriter().getId()))
+			.map(Comment::getId)
+			.collect(Collectors.toSet());
 
 		return new CommentMeta(
 			numLike,
 			isLiked,
-			false,
+			blockedUserIds.contains(comment.getWriter().getId()),
 			childLikeCounts,
 			likedChildIds,
-			Set.of());
+			blockedChildIds);
 	}
 
 }

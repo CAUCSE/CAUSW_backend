@@ -169,7 +169,7 @@ public class CommentService {
 		commentWriter.save(comment);
 
 		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
-		CommentMeta meta = commentMetaReader.fetchForComment(updater, comment);
+		CommentMeta meta = commentMetaReader.fetchForComment(updater, comment, Set.of());
 		Map<String, UserProfileImage> profileImageMap = userProfileImageReader.findMapByUserIds(
 			collectCommentWriterIds(comment));
 		return commentMapper.toResult(comment, updater, boardAdminIds, meta, profileImageMap);
@@ -193,7 +193,7 @@ public class CommentService {
 		commentWriter.save(comment);
 
 		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
-		CommentMeta meta = commentMetaReader.fetchForComment(deleter, comment);
+		CommentMeta meta = commentMetaReader.fetchForComment(deleter, comment, Set.of());
 		Map<String, UserProfileImage> profileImageMap = userProfileImageReader.findMapByUserIds(
 			collectCommentWriterIds(comment));
 		return commentMapper.toResult(comment, deleter, boardAdminIds, meta, profileImageMap);
