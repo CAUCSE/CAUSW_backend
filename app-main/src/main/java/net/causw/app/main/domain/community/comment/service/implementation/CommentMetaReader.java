@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.community.comment.entity.Comment;
+import net.causw.app.main.domain.community.comment.repository.CommentMetaQueryRepository;
 import net.causw.app.main.domain.community.comment.repository.query.CommentMetaQueryResult;
 import net.causw.app.main.domain.community.comment.service.dto.CommentMeta;
 import net.causw.app.main.domain.user.account.entity.user.User;
@@ -27,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CommentMetaReader {
 
-	private final LikeCommentReader likeCommentReader;
+	private final CommentMetaQueryRepository commentMetaQueryRepository;
 
 	/**
 	 * 댓글 목록 렌더링에 필요한 집계 데이터를 배치로 조회합니다.
@@ -76,7 +77,7 @@ public class CommentMetaReader {
 		String userId,
 		Set<String> blockedUserIds,
 		List<String> commentIds) {
-		return likeCommentReader.getCommentMetaQueryResults(userId, blockedUserIds, commentIds).stream()
+		return commentMetaQueryRepository.findCommentMetaByCommentIds(userId, blockedUserIds, commentIds).stream()
 			.collect(Collectors.toMap(CommentMetaQueryResult::commentId, result -> result));
 	}
 

@@ -19,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import net.causw.app.main.domain.community.comment.entity.Comment;
+import net.causw.app.main.domain.community.comment.repository.CommentMetaQueryRepository;
 import net.causw.app.main.domain.community.comment.repository.query.CommentMetaQueryResult;
 import net.causw.app.main.domain.community.comment.service.dto.CommentMeta;
 import net.causw.app.main.domain.user.account.entity.user.User;
@@ -30,7 +31,7 @@ class CommentMetaReaderTest {
 	private CommentMetaReader commentMetaReader;
 
 	@Mock
-	private LikeCommentReader likeCommentReader;
+	private CommentMetaQueryRepository commentMetaQueryRepository;
 
 	@Test
 	@DisplayName("루트 댓글과 답글 메타를 통합 ID 목록으로 한 번에 조회한다")
@@ -41,7 +42,7 @@ class CommentMetaReaderTest {
 		given(rootComment.getChildCommentList()).willReturn(List.of(childComment));
 
 		List<String> expectedIds = List.of("root-comment-id", "child-comment-id");
-		given(likeCommentReader.getCommentMetaQueryResults(
+		given(commentMetaQueryRepository.findCommentMetaByCommentIds(
 			eq("viewer-id"),
 			eq(Set.of("child-writer-id")),
 			argThat(ids -> ids.containsAll(expectedIds))))
@@ -61,7 +62,7 @@ class CommentMetaReaderTest {
 		assertThat(meta.childLikeCounts()).containsEntry("child-comment-id", 2L);
 		assertThat(meta.likedChildIds()).containsExactly("child-comment-id");
 		assertThat(meta.blockedChildIds()).containsExactly("child-comment-id");
-		then(likeCommentReader).should().getCommentMetaQueryResults("viewer-id", Set.of("child-writer-id"),
+		then(commentMetaQueryRepository).should().findCommentMetaByCommentIds("viewer-id", Set.of("child-writer-id"),
 			expectedIds);
 	}
 
@@ -75,7 +76,7 @@ class CommentMetaReaderTest {
 		given(rootComment.getChildCommentList()).willReturn(List.of(childComment));
 
 		List<String> expectedIds = List.of("root-comment-id", "child-comment-id");
-		given(likeCommentReader.getCommentMetaQueryResults(
+		given(commentMetaQueryRepository.findCommentMetaByCommentIds(
 			eq("viewer-id"),
 			eq(Set.of("child-writer-id")),
 			argThat(ids -> ids.containsAll(expectedIds))))
@@ -93,7 +94,7 @@ class CommentMetaReaderTest {
 		assertThat(meta.childLikeCounts()).containsEntry("child-comment-id", 2L);
 		assertThat(meta.likedChildIds()).isEmpty();
 		assertThat(meta.blockedChildIds()).containsExactly("child-comment-id");
-		then(likeCommentReader).should().getCommentMetaQueryResults("viewer-id", Set.of("child-writer-id"),
+		then(commentMetaQueryRepository).should().findCommentMetaByCommentIds("viewer-id", Set.of("child-writer-id"),
 			expectedIds);
 	}
 
