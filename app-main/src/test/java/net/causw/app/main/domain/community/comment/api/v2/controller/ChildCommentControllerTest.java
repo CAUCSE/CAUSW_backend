@@ -108,7 +108,6 @@ class ChildCommentControllerTest {
 			"post-id",
 			new CommentAuthorInfo(null, null, null, null, null, false, false, false, false, false),
 			true,
-			false,
 			3L,
 			0L,
 			List.of());

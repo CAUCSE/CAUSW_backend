@@ -30,7 +30,6 @@ public class CommentResponseDtoMapper {
 			.isAnonymous(author.isAnonymous())
 			.isOwner(author.isOwner())
 			.isCommentLike(result.isCommentLike())
-			.isCommentSubscribed(result.isCommentSubscribed())
 			.numLike(result.numLike())
 			.numChildComment(result.numChildComment())
 			.childCommentList(result.childCommentList().stream()

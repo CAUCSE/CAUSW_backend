@@ -74,7 +74,6 @@ public class CommentMapper {
 			comment.getPost().getId(),
 			authorInfo,
 			meta.isLiked(),
-			meta.isSubscribed(),
 			meta.numLike(),
 			(long)comment.getChildCommentList().size(),
 			childResults);

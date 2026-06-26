@@ -24,7 +24,6 @@ import net.causw.app.main.domain.community.comment.service.dto.CommentUpdateComm
 import net.causw.app.main.domain.community.comment.service.implementation.CommentMapper;
 import net.causw.app.main.domain.community.comment.service.implementation.CommentMetaReader;
 import net.causw.app.main.domain.community.comment.service.implementation.CommentReader;
-import net.causw.app.main.domain.community.comment.service.implementation.CommentSubscribeWriter;
 import net.causw.app.main.domain.community.comment.service.implementation.CommentWriter;
 import net.causw.app.main.domain.community.comment.service.implementation.LikeCommentWriter;
 import net.causw.app.main.domain.community.comment.util.CommentValidator;
@@ -42,7 +41,7 @@ import lombok.RequiredArgsConstructor;
  * 댓글 도메인의 비즈니스 로직을 처리합니다.
  *
  * <p>댓글 생성·수정·삭제·목록 조회 및 좋아요·좋아요 취소를 담당합니다.
- * 집계 데이터(좋아요 수, 구독·차단 여부)는 {@link CommentMetaReader}를 통해 배치 또는 단건으로 조회하며,
+ * 집계 데이터(좋아요 수, 차단 여부)는 {@link CommentMetaReader}를 통해 배치 또는 단건으로 조회하며,
  * 응답 객체 변환은 {@link CommentMapper}에 위임합니다.</p>
  */
 @Service
@@ -54,7 +53,6 @@ public class CommentService {
 	private final CommentReader commentReader;
 	private final CommentWriter commentWriter;
 	private final LikeCommentWriter likeCommentWriter;
-	private final CommentSubscribeWriter commentSubscribeWriter;
 	private final CommentValidator commentValidator;
 	private final ApplicationEventPublisher eventPublisher;
 	private final BlockReader blockReader;
@@ -67,7 +65,7 @@ public class CommentService {
 	/**
 	 * 댓글을 생성하고 응답 객체를 반환합니다.
 	 *
-	 * <p>생성 직후 작성자는 해당 댓글을 자동으로 구독하고, 게시글 구독자에게 알림을 발송합니다.
+	 * <p>생성 직후 게시글/댓글 작성자에게 알림을 발송합니다.
 	 * 신규 댓글이므로 좋아요·대댓글이 없는 {@link CommentMeta#forNew()} 를 사용합니다.</p>
 	 *
 	 * @param command 댓글 생성 요청 데이터
@@ -90,14 +88,13 @@ public class CommentService {
 		commentValidator.validateReplyDepth(parentComment);
 		commentWriter.save(comment);
 
-		// 신규 댓글: 좋아요 0, 대댓글 없음, 구독은 다음 단계에서 생성
+		// 신규 댓글: 좋아요 0, 대댓글 없음
 		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
 		Map<String, UserProfileImage> profileImageMap = userProfileImageReader.findMapByUserIds(
 			List.of(creator.getId()));
 		CommentResult result = commentMapper.toResult(comment, creator, boardAdminIds, CommentMeta.forNew(),
 			profileImageMap);
 
-		commentSubscribeWriter.createCommentSubscribe(creator, comment.getId());
 		if (parentComment == null) {
 			eventPublisher.publishEvent(new PostCommentCreatedEvent(post.getId(), comment.getId()));
 		} else {

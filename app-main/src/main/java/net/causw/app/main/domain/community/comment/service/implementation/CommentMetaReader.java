@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.community.comment.service.dto.CommentMeta;
-import net.causw.app.main.domain.notification.notification.service.implementation.UserCommentSubscribeReader;
 import net.causw.app.main.domain.user.account.entity.user.User;
 
 import lombok.RequiredArgsConstructor;
@@ -26,7 +25,6 @@ import lombok.RequiredArgsConstructor;
 public class CommentMetaReader {
 
 	private final LikeCommentReader likeCommentReader;
-	private final UserCommentSubscribeReader userCommentSubscribeReader;
 
 	/**
 	 * 댓글 목록 렌더링에 필요한 집계 데이터를 배치로 조회합니다.
@@ -45,7 +43,6 @@ public class CommentMetaReader {
 
 		Map<String, Long> commentLikeCounts = likeCommentReader.getCommentLikeCounts(commentIds);
 		Set<String> likedCommentIds = likeCommentReader.getLikedCommentIds(userId, commentIds);
-		Set<String> subscribedCommentIds = userCommentSubscribeReader.getSubscribedCommentIds(userId, commentIds);
 
 		Map<String, Long> childCommentLikeCounts = likeCommentReader.getCommentLikeCounts(childCommentIds);
 		Set<String> likedChildCommentIds = likeCommentReader.getLikedCommentIds(userId, childCommentIds);
@@ -75,7 +72,6 @@ public class CommentMetaReader {
 			result.put(cId, new CommentMeta(
 				commentLikeCounts.getOrDefault(cId, 0L),
 				likedCommentIds.contains(cId),
-				subscribedCommentIds.contains(cId),
 				blockedUserIds.contains(comment.getWriter().getId()),
 				Map.copyOf(myChildLikeCounts),
 				Set.copyOf(myLikedChildIds),
@@ -95,7 +91,6 @@ public class CommentMetaReader {
 	public CommentMeta fetchForComment(User user, Comment comment) {
 		long numLike = likeCommentReader.getNumOfCommentLikes(comment.getId());
 		boolean isLiked = likeCommentReader.isCommentLiked(user, comment.getId());
-		boolean isSubscribed = userCommentSubscribeReader.isCommentSubscribed(user, comment);
 
 		List<String> childIds = comment.getChildCommentList().stream().map(Comment::getId).toList();
 		Map<String, Long> childLikeCounts = likeCommentReader.getCommentLikeCounts(childIds);
@@ -104,7 +99,6 @@ public class CommentMetaReader {
 		return new CommentMeta(
 			numLike,
 			isLiked,
-			isSubscribed,
 			false,
 			childLikeCounts,
 			likedChildIds,

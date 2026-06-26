@@ -40,7 +40,6 @@ import net.causw.app.main.domain.community.comment.service.dto.CommentUpdateComm
 import net.causw.app.main.domain.community.comment.service.implementation.CommentMapper;
 import net.causw.app.main.domain.community.comment.service.implementation.CommentMetaReader;
 import net.causw.app.main.domain.community.comment.service.implementation.CommentReader;
-import net.causw.app.main.domain.community.comment.service.implementation.CommentSubscribeWriter;
 import net.causw.app.main.domain.community.comment.service.implementation.CommentWriter;
 import net.causw.app.main.domain.community.comment.service.implementation.LikeCommentWriter;
 import net.causw.app.main.domain.community.comment.util.CommentValidator;
@@ -68,8 +67,6 @@ public class CommentServiceTest {
 	CommentWriter commentWriter;
 	@Mock
 	LikeCommentWriter likeCommentWriter;
-	@Mock
-	CommentSubscribeWriter commentSubscribeWriter;
 	@Mock
 	CommentValidator commentValidator;
 	@Mock
@@ -123,7 +120,6 @@ public class CommentServiceTest {
 			assertThat(result).isNotNull();
 			verify(commentValidator, times(1)).validateForCreate(eq(creator), eq(post));
 			verify(commentWriter, times(1)).save(any(Comment.class));
-			verify(commentSubscribeWriter, times(1)).createCommentSubscribe(eq(creator), any());
 			verify(eventPublisher, times(1)).publishEvent(any(PostCommentCreatedEvent.class));
 		}
 

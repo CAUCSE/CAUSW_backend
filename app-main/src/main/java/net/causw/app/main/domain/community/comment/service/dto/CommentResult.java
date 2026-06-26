@@ -16,7 +16,6 @@ import java.util.List;
  * @param postId             이 댓글이 속한 게시글 ID
  * @param authorInfo         작성자 정보 및 접근 권한 정보
  * @param isCommentLike      현재 조회 유저가 이 댓글에 좋아요를 눌렀는지 여부
- * @param isCommentSubscribed 현재 조회 유저가 이 댓글을 구독했는지 여부
  * @param numLike            좋아요 수
  * @param numChildComment    대댓글 수
  * @param childCommentList   대댓글 목록
@@ -30,7 +29,6 @@ public record CommentResult(
 	String postId,
 	CommentAuthorInfo authorInfo,
 	Boolean isCommentLike,
-	Boolean isCommentSubscribed,
 	Long numLike,
 	Long numChildComment,
 	List<ChildCommentResult> childCommentList) {
