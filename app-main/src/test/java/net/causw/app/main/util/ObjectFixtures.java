@@ -21,7 +21,6 @@ import net.causw.app.main.domain.campus.schedule.entity.Schedule;
 import net.causw.app.main.domain.campus.schedule.entity.enums.ScheduleType;
 import net.causw.app.main.domain.campus.schedule.service.dto.ScheduleDto;
 import net.causw.app.main.domain.community.board.entity.Board;
-import net.causw.app.main.domain.community.comment.entity.ChildComment;
 import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.vote.entity.Vote;
@@ -217,15 +216,6 @@ public class ObjectFixtures {
 			user,
 			post);
 
-	}
-
-	public static ChildComment getChildComment(User user, Comment parentComment) {
-		return ChildComment.of(
-			"테스트 대댓글",
-			false,
-			false,
-			user,
-			parentComment);
 	}
 
 	public static List<VoteOption> getVoteOptions() {
