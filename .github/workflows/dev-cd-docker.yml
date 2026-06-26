@@ -145,23 +145,26 @@ jobs:
         uses: appleboy/ssh-action@v1.2.0
         env:
           IMAGE: ${{ needs.build-and-push.outputs.image }}
+          APP_CONTAINER_NAME: ${{ vars.APP_CONTAINER_NAME }}
         with:
           key: ${{ secrets.EC2_KEY_DEV }}
           host: ${{ secrets.EC2_HOST_DEV }}
           username: ${{ secrets.EC2_USER_DEV }}
-          envs: IMAGE
+          envs: IMAGE,APP_CONTAINER_NAME
           script: |
+            : "${APP_CONTAINER_NAME:?APP_CONTAINER_NAME variable is required}"
+
             # 로그 디렉터리 준비
             sudo mkdir -p /var/log/spring-boot/app-main
             sudo chmod -R a+rwX /var/log/spring-boot/app-main
 
             # 기존 컨테이너 중지 및 제거
-            docker stop causw-app || true
-            docker rm   causw-app || true
+            docker stop "$APP_CONTAINER_NAME" || true
+            docker rm "$APP_CONTAINER_NAME" || true
 
             # 새 컨테이너 실행 (이미지는 flyway-migrate 단계에서 이미 pull됨)
             docker run -d \
-              --name causw-app \
+              --name "$APP_CONTAINER_NAME" \
               --restart unless-stopped \
               -p 8080:8080 \
               --env-file /home/ubuntu/app/app-main/.env \
