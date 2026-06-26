@@ -46,6 +46,7 @@ import net.causw.app.main.domain.community.comment.service.implementation.LikeCo
 import net.causw.app.main.domain.community.comment.util.CommentValidator;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.implementation.PostReader;
+import net.causw.app.main.domain.notification.notification.event.CommentChildCommentCreatedEvent;
 import net.causw.app.main.domain.notification.notification.event.PostCommentCreatedEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
@@ -124,6 +125,37 @@ public class CommentServiceTest {
 			verify(commentWriter, times(1)).save(any(Comment.class));
 			verify(commentSubscribeWriter, times(1)).createCommentSubscribe(eq(creator), any());
 			verify(eventPublisher, times(1)).publishEvent(any(PostCommentCreatedEvent.class));
+		}
+
+		@DisplayName("답글 생성 성공")
+		@Test
+		void createReplyComment_shouldSucceed() {
+			// given
+			CommentCreateCommand command = new CommentCreateCommand(
+				"답글 내용", null, "parent-comment-id", false, "creator-id");
+			Comment parentComment = mock(Comment.class);
+			CommentResult expectedResult = mock(CommentResult.class);
+
+			given(userReader.findUserByIdNotDeleted("creator-id")).willReturn(creator);
+			given(commentReader.findByIdAndNotDeleted("parent-comment-id")).willReturn(parentComment);
+			given(parentComment.getPost()).willReturn(post);
+			given(parentComment.getId()).willReturn("parent-comment-id");
+			given(post.getId()).willReturn("post-id");
+			given(postReader.findById("post-id")).willReturn(post);
+			given(boardConfigReader.getAdminIdsByBoardId("board-id")).willReturn(List.of("admin-id"));
+			given(commentMapper.toResult(any(Comment.class), eq(creator), anyList(), any(CommentMeta.class), anyMap()))
+				.willReturn(expectedResult);
+
+			// when
+			CommentResult result = commentService.createComment(command);
+
+			// then
+			assertThat(result).isNotNull();
+			verify(commentValidator, times(1)).validateForCreate(eq(creator), eq(post));
+			verify(commentValidator, times(1)).validateReplyDepth(parentComment);
+			verify(commentWriter, times(1)).save(any(Comment.class));
+			verify(eventPublisher, times(1)).publishEvent(any(CommentChildCommentCreatedEvent.class));
+			verify(eventPublisher, never()).publishEvent(any(PostCommentCreatedEvent.class));
 		}
 	}
 

@@ -30,6 +30,7 @@ import net.causw.app.main.domain.community.comment.service.implementation.LikeCo
 import net.causw.app.main.domain.community.comment.util.CommentValidator;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.implementation.PostReader;
+import net.causw.app.main.domain.notification.notification.event.CommentChildCommentCreatedEvent;
 import net.causw.app.main.domain.notification.notification.event.PostCommentCreatedEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
@@ -75,10 +76,18 @@ public class CommentService {
 	@Transactional
 	public CommentResult createComment(CommentCreateCommand command) {
 		User creator = userReader.findUserByIdNotDeleted(command.creatorId());
-		Post post = postReader.findById(command.postId());
-		Comment comment = Comment.of(command.content(), false, command.isAnonymous(), creator, post);
+		Comment parentComment = command.parentCommentId() == null
+			? null
+			: commentReader.findByIdAndNotDeleted(command.parentCommentId());
+		Post post = parentComment == null
+			? postReader.findById(command.postId())
+			: postReader.findById(parentComment.getPost().getId());
+		Comment comment = parentComment == null
+			? Comment.ofRoot(command.content(), command.isAnonymous(), creator, post)
+			: Comment.ofReply(command.content(), command.isAnonymous(), creator, parentComment);
 
 		commentValidator.validateForCreate(creator, post);
+		commentValidator.validateReplyDepth(parentComment);
 		commentWriter.save(comment);
 
 		// 신규 댓글: 좋아요 0, 대댓글 없음, 구독은 다음 단계에서 생성
@@ -89,7 +98,11 @@ public class CommentService {
 			profileImageMap);
 
 		commentSubscribeWriter.createCommentSubscribe(creator, comment.getId());
-		eventPublisher.publishEvent(new PostCommentCreatedEvent(post.getId(), comment.getId()));
+		if (parentComment == null) {
+			eventPublisher.publishEvent(new PostCommentCreatedEvent(post.getId(), comment.getId()));
+		} else {
+			eventPublisher.publishEvent(new CommentChildCommentCreatedEvent(parentComment.getId(), comment.getId()));
+		}
 
 		return result;
 	}
