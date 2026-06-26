@@ -18,7 +18,7 @@ import java.util.List;
  * @param isCommentLike      현재 조회 유저가 이 댓글에 좋아요를 눌렀는지 여부
  * @param numLike            좋아요 수
  * @param numChildComment    대댓글 수
- * @param childCommentList   대댓글 목록
+ * @param childCommentList   답글 목록
  */
 public record CommentResult(
 	String id,
@@ -31,5 +31,5 @@ public record CommentResult(
 	Boolean isCommentLike,
 	Long numLike,
 	Long numChildComment,
-	List<ChildCommentResult> childCommentList) {
+	List<CommentResult> childCommentList) {
 }

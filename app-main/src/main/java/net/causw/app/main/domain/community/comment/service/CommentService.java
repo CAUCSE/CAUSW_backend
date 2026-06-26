@@ -108,7 +108,7 @@ public class CommentService {
 	 * 게시글에 속한 댓글 목록을 페이지 단위로 조회합니다.
 	 *
 	 * <p>댓글이 없으면 빈 페이지를 즉시 반환합니다(Early Exit).
-	 * N+1 방지를 위해 좋아요·구독·차단 집계 데이터를 {@link CommentMetaReader#fetch}로 배치 조회한 뒤
+	 * N+1 방지를 위해 좋아요·차단 집계 데이터를 {@link CommentMetaReader#fetch}로 배치 조회한 뒤
 	 * 각 댓글에 매핑합니다.</p>
 	 *
 	 * @param query 댓글 목록 조회 쿼리 데이터

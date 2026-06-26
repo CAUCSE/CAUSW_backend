@@ -110,6 +110,21 @@ class ChildCommentControllerTest {
 			true,
 			3L,
 			0L,
+			List.of(childCommentResult()));
+	}
+
+	private CommentResult childCommentResult() {
+		return new CommentResult(
+			"child-comment-id",
+			"답글 내용",
+			LocalDateTime.of(2026, 6, 26, 12, 2),
+			LocalDateTime.of(2026, 6, 26, 12, 3),
+			false,
+			"post-id",
+			new CommentAuthorInfo(null, null, null, null, null, false, false, false, false, false),
+			false,
+			1L,
+			0L,
 			List.of());
 	}
 }
