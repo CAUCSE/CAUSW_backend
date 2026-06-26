@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import net.causw.app.main.domain.community.comment.repository.LikeCommentQueryRepository;
 import net.causw.app.main.domain.community.comment.repository.LikeCommentRepository;
 import net.causw.app.main.domain.community.comment.repository.query.CommentLikeCountDto;
+import net.causw.app.main.domain.community.comment.repository.query.CommentMetaQueryResult;
 import net.causw.app.main.domain.user.account.entity.user.User;
 
 import lombok.RequiredArgsConstructor;
@@ -77,6 +78,21 @@ public class LikeCommentReader {
 			return Collections.emptySet();
 		}
 		return likeCommentRepository.findLikedCommentIdsByUserIdAndCommentIds(userId, commentIds);
+	}
+
+	/**
+	 * 댓글 ID 목록에 대한 렌더링 메타 데이터를 한 번에 조회합니다.
+	 *
+	 * @param userId 현재 조회하는 유저 ID
+	 * @param blockedUserIds 현재 유저가 차단한 유저 ID 집합
+	 * @param commentIds 조회할 댓글 ID 목록
+	 * @return 댓글별 좋아요 수, 좋아요 여부, 차단 여부
+	 */
+	public List<CommentMetaQueryResult> getCommentMetaQueryResults(
+		String userId,
+		Set<String> blockedUserIds,
+		List<String> commentIds) {
+		return likeCommentQueryRepository.findCommentMetaByCommentIds(userId, blockedUserIds, commentIds);
 	}
 
 }

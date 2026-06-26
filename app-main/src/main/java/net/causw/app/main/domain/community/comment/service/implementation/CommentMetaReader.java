@@ -6,10 +6,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.community.comment.entity.Comment;
+import net.causw.app.main.domain.community.comment.repository.query.CommentMetaQueryResult;
 import net.causw.app.main.domain.community.comment.service.dto.CommentMeta;
 import net.causw.app.main.domain.user.account.entity.user.User;
 
@@ -41,42 +43,14 @@ public class CommentMetaReader {
 			.flatMap(c -> c.getChildCommentList().stream())
 			.map(Comment::getId)
 			.toList();
-
-		Map<String, Long> commentLikeCounts = likeCommentReader.getCommentLikeCounts(commentIds);
-		Set<String> likedCommentIds = likeCommentReader.getLikedCommentIds(userId, commentIds);
-
-		Map<String, Long> childCommentLikeCounts = likeCommentReader.getCommentLikeCounts(childCommentIds);
-		Set<String> likedChildCommentIds = likeCommentReader.getLikedCommentIds(userId, childCommentIds);
+		Map<String, CommentMetaQueryResult> queryResultMap = fetchQueryResultMap(
+			userId,
+			blockedUserIds,
+			Stream.concat(commentIds.stream(), childCommentIds.stream()).toList());
 
 		Map<String, CommentMeta> result = new HashMap<>();
 		for (Comment comment : comments) {
-			String cId = comment.getId();
-
-			Map<String, Long> myChildLikeCounts = new HashMap<>();
-			Set<String> myLikedChildIds = new HashSet<>();
-			Set<String> myBlockedChildIds = new HashSet<>();
-
-			for (Comment child : comment.getChildCommentList()) {
-				String childId = child.getId();
-				Long likeCount = childCommentLikeCounts.get(childId);
-				if (likeCount != null) {
-					myChildLikeCounts.put(childId, likeCount);
-				}
-				if (likedChildCommentIds.contains(childId)) {
-					myLikedChildIds.add(childId);
-				}
-				if (blockedUserIds.contains(child.getWriter().getId())) {
-					myBlockedChildIds.add(childId);
-				}
-			}
-
-			result.put(cId, new CommentMeta(
-				commentLikeCounts.getOrDefault(cId, 0L),
-				likedCommentIds.contains(cId),
-				blockedUserIds.contains(comment.getWriter().getId()),
-				Map.copyOf(myChildLikeCounts),
-				Set.copyOf(myLikedChildIds),
-				Set.copyOf(myBlockedChildIds)));
+			result.put(comment.getId(), buildMeta(comment.getId(), comment.getChildCommentList(), queryResultMap));
 		}
 		return result;
 	}
@@ -90,24 +64,53 @@ public class CommentMetaReader {
 	 * @return CommentMeta
 	 */
 	public CommentMeta fetchForComment(User user, Comment comment, Set<String> blockedUserIds) {
-		long numLike = likeCommentReader.getNumOfCommentLikes(comment.getId());
-		boolean isLiked = likeCommentReader.isCommentLiked(user, comment.getId());
-
 		List<String> childIds = comment.getChildCommentList().stream().map(Comment::getId).toList();
-		Map<String, Long> childLikeCounts = likeCommentReader.getCommentLikeCounts(childIds);
-		Set<String> likedChildIds = likeCommentReader.getLikedCommentIds(user.getId(), childIds);
-		Set<String> blockedChildIds = comment.getChildCommentList().stream()
-			.filter(child -> blockedUserIds.contains(child.getWriter().getId()))
-			.map(Comment::getId)
-			.collect(Collectors.toSet());
+		Map<String, CommentMetaQueryResult> queryResultMap = fetchQueryResultMap(
+			user.getId(),
+			blockedUserIds,
+			Stream.concat(Stream.of(comment.getId()), childIds.stream()).toList());
+		return buildMeta(comment.getId(), comment.getChildCommentList(), queryResultMap);
+	}
+
+	private Map<String, CommentMetaQueryResult> fetchQueryResultMap(
+		String userId,
+		Set<String> blockedUserIds,
+		List<String> commentIds) {
+		return likeCommentReader.getCommentMetaQueryResults(userId, blockedUserIds, commentIds).stream()
+			.collect(Collectors.toMap(CommentMetaQueryResult::commentId, result -> result));
+	}
+
+	private CommentMeta buildMeta(
+		String commentId,
+		List<Comment> childComments,
+		Map<String, CommentMetaQueryResult> queryResultMap) {
+		CommentMetaQueryResult commentMeta = queryResultMap.get(commentId);
+		Map<String, Long> childLikeCounts = new HashMap<>();
+		Set<String> likedChildIds = new HashSet<>();
+		Set<String> blockedChildIds = new HashSet<>();
+
+		for (Comment child : childComments) {
+			String childId = child.getId();
+			CommentMetaQueryResult childMeta = queryResultMap.get(childId);
+			if (childMeta == null) {
+				continue;
+			}
+			childLikeCounts.put(childId, childMeta.numLike());
+			if (Boolean.TRUE.equals(childMeta.isLiked())) {
+				likedChildIds.add(childId);
+			}
+			if (Boolean.TRUE.equals(childMeta.isBlocked())) {
+				blockedChildIds.add(childId);
+			}
+		}
 
 		return new CommentMeta(
-			numLike,
-			isLiked,
-			blockedUserIds.contains(comment.getWriter().getId()),
-			childLikeCounts,
-			likedChildIds,
-			blockedChildIds);
+			commentMeta != null ? commentMeta.numLike() : 0L,
+			commentMeta != null && Boolean.TRUE.equals(commentMeta.isLiked()),
+			commentMeta != null && Boolean.TRUE.equals(commentMeta.isBlocked()),
+			Map.copyOf(childLikeCounts),
+			Set.copyOf(likedChildIds),
+			Set.copyOf(blockedChildIds));
 	}
 
 }
