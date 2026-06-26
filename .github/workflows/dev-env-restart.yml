@@ -26,7 +26,7 @@ jobs:
         env:
           ENV_CONTENT: ${{ secrets.ENV_DEV }}
           RESTART_MODE: ${{ inputs.restart_mode }}
-          APP_CONTAINER_NAME: ${{ secrets.APP_CONTAINER_NAME }}
+          APP_CONTAINER_NAME: ${{ vars.APP_CONTAINER_NAME }}
         with:
           key: ${{ secrets.EC2_KEY_DEV }}
           host: ${{ secrets.EC2_HOST_DEV }}
@@ -34,7 +34,7 @@ jobs:
           envs: ENV_CONTENT,RESTART_MODE,APP_CONTAINER_NAME
           script: |
             set -e
-            : "${APP_CONTAINER_NAME:?APP_CONTAINER_NAME secret is required}"
+            : "${APP_CONTAINER_NAME:?APP_CONTAINER_NAME variable is required}"
 
             mkdir -p /home/ubuntu/app/app-main
             printf '%s' "$ENV_CONTENT" > /home/ubuntu/app/app-main/.env
