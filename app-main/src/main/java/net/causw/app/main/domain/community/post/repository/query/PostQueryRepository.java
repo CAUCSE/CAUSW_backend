@@ -19,7 +19,6 @@ import org.springframework.stereotype.Repository;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.QPostAttachImage;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.QUserProfileImage;
 import net.causw.app.main.domain.asset.file.enums.FileExtensionType;
-import net.causw.app.main.domain.community.comment.entity.QChildComment;
 import net.causw.app.main.domain.community.comment.entity.QComment;
 import net.causw.app.main.domain.community.post.entity.QPost;
 import net.causw.app.main.domain.community.reaction.entity.QLikePost;
@@ -386,17 +385,11 @@ public class PostQueryRepository {
 	private static QPostCursorResult toPostCursorResult(QPost post, QUser writer) {
 
 		QComment comment = QComment.comment;
-		QChildComment childComment = QChildComment.childComment;
 		QLikePost likePost = QLikePost.likePost;
 
-		// Comment 개수 + ChildComment 개수 (삭제되지 않은 것만)
+		// Comment 개수 (답글 포함, 삭제되지 않은 것만)
 		SubQueryExpression<Long> totalCommentCount = JPAExpressions
-			.select(comment.count()
-				.add(JPAExpressions
-					.select(childComment.count())
-					.from(childComment)
-					.where(childComment.parentComment.post.eq(post)
-						.and(childComment.isDeleted.isFalse()))))
+			.select(comment.count())
 			.from(comment)
 			.where(comment.post.eq(post).and(comment.isDeleted.isFalse()));
 
@@ -452,16 +445,14 @@ public class PostQueryRepository {
 	}
 
 	/**
-	 * 특정 게시글의 댓글 개수를 조회합니다. (Comment + ChildComment, 삭제되지 않은 것만)
+	 * 특정 게시글의 댓글 개수를 조회합니다. (답글 포함, 삭제되지 않은 것만)
 	 *
 	 * @param postId 게시글 ID
-	 * @return 댓글 개수 (Comment 개수 + ChildComment 개수)
+	 * @return 댓글 개수
 	 */
 	public long countCommentsByPostId(String postId) {
 		QComment comment = QComment.comment;
-		QChildComment childComment = QChildComment.childComment;
 
-		// Comment 개수 조회 (삭제되지 않은 것만)
 		Long commentCount = jpaQueryFactory
 			.select(comment.count())
 			.from(comment)
@@ -469,15 +460,7 @@ public class PostQueryRepository {
 				.and(comment.isDeleted.isFalse()))
 			.fetchOne();
 
-		// ChildComment 개수 조회 (삭제되지 않은 것만)
-		Long childCommentCount = jpaQueryFactory
-			.select(childComment.count())
-			.from(childComment)
-			.where(childComment.parentComment.post.id.eq(postId)
-				.and(childComment.isDeleted.isFalse()))
-			.fetchOne();
-
-		return (commentCount != null ? commentCount : 0L) + (childCommentCount != null ? childCommentCount : 0L);
+		return commentCount != null ? commentCount : 0L;
 	}
 
 	/**

@@ -26,7 +26,6 @@ import lombok.RequiredArgsConstructor;
 public class CommentMetaReader {
 
 	private final LikeCommentReader likeCommentReader;
-	private final LikeChildCommentReader likeChildCommentReader;
 	private final UserCommentSubscribeReader userCommentSubscribeReader;
 
 	/**
@@ -48,8 +47,8 @@ public class CommentMetaReader {
 		Set<String> likedCommentIds = likeCommentReader.getLikedCommentIds(userId, commentIds);
 		Set<String> subscribedCommentIds = userCommentSubscribeReader.getSubscribedCommentIds(userId, commentIds);
 
-		Map<String, Long> childCommentLikeCounts = likeChildCommentReader.getChildCommentLikeCounts(childCommentIds);
-		Set<String> likedChildCommentIds = likeChildCommentReader.getLikedChildCommentIds(userId, childCommentIds);
+		Map<String, Long> childCommentLikeCounts = likeCommentReader.getCommentLikeCounts(childCommentIds);
+		Set<String> likedChildCommentIds = likeCommentReader.getLikedCommentIds(userId, childCommentIds);
 
 		Map<String, CommentMeta> result = new HashMap<>();
 		for (Comment comment : comments) {
@@ -99,8 +98,8 @@ public class CommentMetaReader {
 		boolean isSubscribed = userCommentSubscribeReader.isCommentSubscribed(user, comment);
 
 		List<String> childIds = comment.getChildCommentList().stream().map(Comment::getId).toList();
-		Map<String, Long> childLikeCounts = likeChildCommentReader.getChildCommentLikeCounts(childIds);
-		Set<String> likedChildIds = likeChildCommentReader.getLikedChildCommentIds(user.getId(), childIds);
+		Map<String, Long> childLikeCounts = likeCommentReader.getCommentLikeCounts(childIds);
+		Set<String> likedChildIds = likeCommentReader.getLikedCommentIds(user.getId(), childIds);
 
 		return new CommentMeta(
 			numLike,
