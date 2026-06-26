@@ -50,6 +50,8 @@ import net.causw.app.main.domain.notification.notification.event.PostCommentCrea
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.relation.service.implementation.BlockReader;
+import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
+import net.causw.app.main.shared.exception.errorcode.ChildCommentErrorCode;
 
 @ExtendWith(MockitoExtension.class)
 public class CommentServiceTest {
@@ -267,6 +269,25 @@ public class CommentServiceTest {
 			verify(comment, times(1)).update("수정된 댓글 내용");
 			verify(commentWriter, times(1)).save(comment);
 		}
+
+		@DisplayName("대댓글 수정 API에서 루트 댓글 ID를 전달하면 예외 발생")
+		@Test
+		void updateReplyComment_shouldFail_whenCommentIsRoot() {
+			// given
+			Comment rootComment = mock(Comment.class);
+			CommentUpdateCommand command = new CommentUpdateCommand("root-comment-id", "수정된 댓글 내용", "updater-id");
+
+			given(commentReader.findByIdAndNotDeleted("root-comment-id")).willReturn(rootComment);
+			given(rootComment.isReply()).willReturn(false);
+
+			// when & then
+			assertThatThrownBy(() -> commentService.updateReplyComment(command))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.extracting("errorCode")
+				.isEqualTo(ChildCommentErrorCode.CHILD_COMMENT_NOT_FOUND);
+
+			verify(commentWriter, never()).save(any(Comment.class));
+		}
 	}
 
 	@Nested
@@ -304,6 +325,24 @@ public class CommentServiceTest {
 			verify(comment, times(1)).delete();
 			verify(commentWriter, times(1)).save(comment);
 		}
+
+		@DisplayName("대댓글 삭제 API에서 루트 댓글 ID를 전달하면 예외 발생")
+		@Test
+		void deleteReplyComment_shouldFail_whenCommentIsRoot() {
+			// given
+			Comment rootComment = mock(Comment.class);
+
+			given(commentReader.findByIdAndNotDeleted("root-comment-id")).willReturn(rootComment);
+			given(rootComment.isReply()).willReturn(false);
+
+			// when & then
+			assertThatThrownBy(() -> commentService.deleteReplyComment("deleter-id", "root-comment-id"))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.extracting("errorCode")
+				.isEqualTo(ChildCommentErrorCode.CHILD_COMMENT_NOT_FOUND);
+
+			verify(commentWriter, never()).save(any(Comment.class));
+		}
 	}
 
 	@Nested
@@ -316,8 +355,8 @@ public class CommentServiceTest {
 		void setUp() {
 			user = mock(User.class);
 			comment = mock(Comment.class);
-			given(userReader.findUserByIdNotDeleted("user-id")).willReturn(user);
-			given(commentReader.getComment("comment-id")).willReturn(comment);
+			lenient().when(userReader.findUserByIdNotDeleted("user-id")).thenReturn(user);
+			lenient().when(commentReader.getComment("comment-id")).thenReturn(comment);
 		}
 
 		@DisplayName("댓글 좋아요 성공")
@@ -345,6 +384,24 @@ public class CommentServiceTest {
 
 			verify(likeCommentWriter, never()).save(any(LikeComment.class));
 		}
+
+		@DisplayName("대댓글 좋아요 API에서 루트 댓글 ID를 전달하면 예외 발생")
+		@Test
+		void likeReplyComment_shouldFail_whenCommentIsRoot() {
+			// given
+			Comment rootComment = mock(Comment.class);
+
+			given(commentReader.findByIdAndNotDeleted("root-comment-id")).willReturn(rootComment);
+			given(rootComment.isReply()).willReturn(false);
+
+			// when & then
+			assertThatThrownBy(() -> commentService.likeReplyComment("user-id", "root-comment-id"))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.extracting("errorCode")
+				.isEqualTo(ChildCommentErrorCode.CHILD_COMMENT_NOT_FOUND);
+
+			verify(likeCommentWriter, never()).save(any(LikeComment.class));
+		}
 	}
 
 	@Nested
@@ -357,8 +414,8 @@ public class CommentServiceTest {
 		void setUp() {
 			user = mock(User.class);
 			comment = mock(Comment.class);
-			given(userReader.findUserByIdNotDeleted("user-id")).willReturn(user);
-			given(commentReader.getComment("comment-id")).willReturn(comment);
+			lenient().when(userReader.findUserByIdNotDeleted("user-id")).thenReturn(user);
+			lenient().when(commentReader.getComment("comment-id")).thenReturn(comment);
 		}
 
 		@DisplayName("댓글 좋아요 취소 성공")
@@ -386,6 +443,24 @@ public class CommentServiceTest {
 			assertThatThrownBy(() -> commentService.cancelLikeComment("user-id", "comment-id"))
 				.isInstanceOf(RuntimeException.class)
 				.hasMessageContaining("좋아요를 누르지 않은 댓글입니다");
+
+			verify(likeCommentWriter, never()).delete(anyString(), anyString());
+		}
+
+		@DisplayName("대댓글 좋아요 취소 API에서 루트 댓글 ID를 전달하면 예외 발생")
+		@Test
+		void cancelLikeReplyComment_shouldFail_whenCommentIsRoot() {
+			// given
+			Comment rootComment = mock(Comment.class);
+
+			given(commentReader.findByIdAndNotDeleted("root-comment-id")).willReturn(rootComment);
+			given(rootComment.isReply()).willReturn(false);
+
+			// when & then
+			assertThatThrownBy(() -> commentService.cancelLikeReplyComment("user-id", "root-comment-id"))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.extracting("errorCode")
+				.isEqualTo(ChildCommentErrorCode.CHILD_COMMENT_NOT_FOUND);
 
 			verify(likeCommentWriter, never()).delete(anyString(), anyString());
 		}

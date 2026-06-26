@@ -81,7 +81,7 @@ class ChildCommentControllerTest {
 			// given
 			ChildCommentUpdateRequestDto request = new ChildCommentUpdateRequestDto("수정 내용");
 			given(userDetails.getUserId()).willReturn("updater-id");
-			given(commentService.updateComment(any(CommentUpdateCommand.class))).willReturn(commentResult());
+			given(commentService.updateReplyComment(any(CommentUpdateCommand.class))).willReturn(commentResult());
 			ArgumentCaptor<CommentUpdateCommand> captor = ArgumentCaptor.forClass(CommentUpdateCommand.class);
 
 			// when
@@ -89,7 +89,7 @@ class ChildCommentControllerTest {
 				"child-comment-id", request, userDetails);
 
 			// then
-			then(commentService).should().updateComment(captor.capture());
+			then(commentService).should().updateReplyComment(captor.capture());
 			CommentUpdateCommand command = captor.getValue();
 			assertThat(command.commentId()).isEqualTo("child-comment-id");
 			assertThat(command.content()).isEqualTo("수정 내용");

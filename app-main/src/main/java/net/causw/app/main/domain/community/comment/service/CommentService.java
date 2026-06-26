@@ -34,6 +34,7 @@ import net.causw.app.main.domain.notification.notification.event.PostCommentCrea
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.relation.service.implementation.BlockReader;
+import net.causw.app.main.shared.exception.errorcode.ChildCommentErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -162,6 +163,18 @@ public class CommentService {
 	public CommentResult updateComment(CommentUpdateCommand command) {
 		User updater = userReader.findUserByIdNotDeleted(command.updaterId());
 		Comment comment = commentReader.getComment(command.commentId());
+		return updateComment(command, updater, comment);
+	}
+
+	@Transactional
+	public CommentResult updateReplyComment(CommentUpdateCommand command) {
+		Comment comment = commentReader.findByIdAndNotDeleted(command.commentId());
+		validateReplyComment(comment);
+		User updater = userReader.findUserByIdNotDeleted(command.updaterId());
+		return updateComment(command, updater, comment);
+	}
+
+	private CommentResult updateComment(CommentUpdateCommand command, User updater, Comment comment) {
 		Post post = postReader.findById(comment.getPost().getId());
 
 		commentValidator.validateForUpdate(updater, post, comment);
@@ -186,6 +199,18 @@ public class CommentService {
 	public CommentResult deleteComment(String deleterId, String commentId) {
 		User deleter = userReader.findUserByIdNotDeleted(deleterId);
 		Comment comment = commentReader.getComment(commentId);
+		return deleteComment(deleter, comment);
+	}
+
+	@Transactional
+	public CommentResult deleteReplyComment(String deleterId, String commentId) {
+		Comment comment = commentReader.findByIdAndNotDeleted(commentId);
+		validateReplyComment(comment);
+		User deleter = userReader.findUserByIdNotDeleted(deleterId);
+		return deleteComment(deleter, comment);
+	}
+
+	private CommentResult deleteComment(User deleter, Comment comment) {
 		Post post = postReader.findById(comment.getPost().getId());
 
 		commentValidator.validateForDelete(deleter, post, comment);
@@ -209,7 +234,18 @@ public class CommentService {
 	public void likeComment(String userId, String commentId) {
 		User user = userReader.findUserByIdNotDeleted(userId);
 		Comment comment = commentReader.getComment(commentId);
+		likeComment(user, comment);
+	}
 
+	@Transactional
+	public void likeReplyComment(String userId, String commentId) {
+		Comment comment = commentReader.findByIdAndNotDeleted(commentId);
+		validateReplyComment(comment);
+		User user = userReader.findUserByIdNotDeleted(userId);
+		likeComment(user, comment);
+	}
+
+	private void likeComment(User user, Comment comment) {
 		commentValidator.validateForLike(user, comment);
 
 		LikeComment likeComment = LikeComment.of(comment, user);
@@ -226,10 +262,27 @@ public class CommentService {
 	public void cancelLikeComment(String userId, String commentId) {
 		User user = userReader.findUserByIdNotDeleted(userId);
 		Comment comment = commentReader.getComment(commentId);
+		cancelLikeComment(user, comment, commentId);
+	}
 
+	@Transactional
+	public void cancelLikeReplyComment(String userId, String commentId) {
+		Comment comment = commentReader.findByIdAndNotDeleted(commentId);
+		validateReplyComment(comment);
+		User user = userReader.findUserByIdNotDeleted(userId);
+		cancelLikeComment(user, comment, commentId);
+	}
+
+	private void cancelLikeComment(User user, Comment comment, String commentId) {
 		commentValidator.validateForCancelLike(user, comment);
 
 		likeCommentWriter.delete(commentId, user.getId());
+	}
+
+	private void validateReplyComment(Comment comment) {
+		if (!comment.isReply()) {
+			throw ChildCommentErrorCode.CHILD_COMMENT_NOT_FOUND.toBaseException();
+		}
 	}
 
 	/** 댓글과 그 대댓글의 작성자 ID를 중복 없이 수집합니다. */

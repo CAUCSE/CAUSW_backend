@@ -34,6 +34,7 @@ public interface CommentRepository extends JpaRepository<Comment, String> {
 	@Query("SELECT c FROM Comment c " +
 		"LEFT JOIN FETCH c.writer w " +
 		"LEFT JOIN FETCH c.parentComment pc " +
+		"LEFT JOIN FETCH c.post p " +
 		"WHERE c.parentComment.id IN :parentCommentIds " +
 		"ORDER BY c.createdAt ASC")
 	List<Comment> findRepliesByParentCommentIds(@Param("parentCommentIds") List<String> parentCommentIds);

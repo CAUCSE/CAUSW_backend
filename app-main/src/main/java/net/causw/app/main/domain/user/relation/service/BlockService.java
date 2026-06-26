@@ -16,6 +16,7 @@ import net.causw.app.main.domain.user.relation.service.dto.CommentBlockCreateCom
 import net.causw.app.main.domain.user.relation.service.implementation.BlockReader;
 import net.causw.app.main.domain.user.relation.service.implementation.BlockWriter;
 import net.causw.app.main.domain.user.relation.service.util.BlockValidator;
+import net.causw.app.main.shared.exception.errorcode.ChildCommentErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -105,6 +106,9 @@ public class BlockService {
 	public BlockCreateResult createBlockByChildComment(ChildCommentBlockCreateCommand command) {
 		User blocker = command.blocker();
 		Comment childComment = commentReader.findByIdAndNotDeleted(command.childCommentId());
+		if (!childComment.isReply()) {
+			throw ChildCommentErrorCode.CHILD_COMMENT_NOT_FOUND.toBaseException();
+		}
 		User blocked = childComment.getWriter();
 
 		boolean alreadyBlocked = blockReader.existsByBlockerAndBlocked(blocker, blocked);

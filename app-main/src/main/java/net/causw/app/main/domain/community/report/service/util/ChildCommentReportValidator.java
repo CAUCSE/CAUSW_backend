@@ -19,6 +19,10 @@ public class ChildCommentReportValidator {
 			throw ChildCommentErrorCode.CHILD_COMMENT_NOT_FOUND.toBaseException();
 		}
 
+		if (!childComment.isReply()) {
+			throw ChildCommentErrorCode.CHILD_COMMENT_NOT_FOUND.toBaseException();
+		}
+
 		if (childComment.getWriter().getId().equals(reporter.getId())) {
 			throw ChildCommentReportErrorCode.CHILD_COMMENT_REPORT_SELF_NOT_ALLOWED.toBaseException();
 		}

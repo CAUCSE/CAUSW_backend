@@ -65,7 +65,7 @@ public class ChildCommentController {
 			userDetails.getUserId());
 
 		return ApiResponse.success(
-			ChildCommentResponseDtoMapper.toResponseDto(commentService.updateComment(command)));
+			ChildCommentResponseDtoMapper.toResponseDto(commentService.updateReplyComment(command)));
 	}
 
 	@DeleteMapping(value = "/{id}")
@@ -77,7 +77,7 @@ public class ChildCommentController {
 
 		return ApiResponse.success(
 			ChildCommentResponseDtoMapper.toResponseDto(
-				commentService.deleteComment(userDetails.getUserId(), id)));
+				commentService.deleteReplyComment(userDetails.getUserId(), id)));
 	}
 
 	@PostMapping(value = "/{id}/like")
@@ -86,7 +86,7 @@ public class ChildCommentController {
 	public ApiResponse<Void> likeChildComment(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		commentService.likeComment(userDetails.getUserId(), id);
+		commentService.likeReplyComment(userDetails.getUserId(), id);
 		return ApiResponse.success();
 	}
 
@@ -96,7 +96,7 @@ public class ChildCommentController {
 	public ApiResponse<Void> cancelLikeChildComment(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		commentService.cancelLikeComment(userDetails.getUserId(), id);
+		commentService.cancelLikeReplyComment(userDetails.getUserId(), id);
 		return ApiResponse.success();
 	}
 }
