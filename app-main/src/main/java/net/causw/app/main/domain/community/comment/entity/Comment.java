@@ -55,7 +55,7 @@ public class Comment extends BaseEntity {
 	@Setter
 	@OneToMany(mappedBy = "parentComment")
 	@Builder.Default
-	private List<ChildComment> childCommentList = new ArrayList<>(); // 필드 초기화 없으면 NPE
+	private List<Comment> childCommentList = new ArrayList<>(); // 필드 초기화 없으면 NPE
 
 	public static Comment of(
 		String content,

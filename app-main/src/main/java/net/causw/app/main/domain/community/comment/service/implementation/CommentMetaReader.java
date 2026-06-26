@@ -8,7 +8,6 @@ import java.util.Set;
 
 import org.springframework.stereotype.Component;
 
-import net.causw.app.main.domain.community.comment.entity.ChildComment;
 import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.community.comment.service.dto.CommentMeta;
 import net.causw.app.main.domain.notification.notification.service.implementation.UserCommentSubscribeReader;
@@ -42,7 +41,7 @@ public class CommentMetaReader {
 		List<String> commentIds = comments.stream().map(Comment::getId).toList();
 		List<String> childCommentIds = comments.stream()
 			.flatMap(c -> c.getChildCommentList().stream())
-			.map(ChildComment::getId)
+			.map(Comment::getId)
 			.toList();
 
 		Map<String, Long> commentLikeCounts = likeCommentReader.getCommentLikeCounts(commentIds);
@@ -60,7 +59,7 @@ public class CommentMetaReader {
 			Set<String> myLikedChildIds = new HashSet<>();
 			Set<String> myBlockedChildIds = new HashSet<>();
 
-			for (ChildComment child : comment.getChildCommentList()) {
+			for (Comment child : comment.getChildCommentList()) {
 				String childId = child.getId();
 				Long likeCount = childCommentLikeCounts.get(childId);
 				if (likeCount != null) {
@@ -99,7 +98,7 @@ public class CommentMetaReader {
 		boolean isLiked = likeCommentReader.isCommentLiked(user, comment.getId());
 		boolean isSubscribed = userCommentSubscribeReader.isCommentSubscribed(user, comment);
 
-		List<String> childIds = comment.getChildCommentList().stream().map(ChildComment::getId).toList();
+		List<String> childIds = comment.getChildCommentList().stream().map(Comment::getId).toList();
 		Map<String, Long> childLikeCounts = likeChildCommentReader.getChildCommentLikeCounts(childIds);
 		Set<String> likedChildIds = likeChildCommentReader.getLikedChildCommentIds(user.getId(), childIds);
 
