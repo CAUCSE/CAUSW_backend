@@ -50,7 +50,7 @@ class BlockServiceTest {
 		Comment rootComment = mock(Comment.class);
 		ChildCommentBlockCreateCommand command = new ChildCommentBlockCreateCommand("root-comment-id", blocker);
 
-		given(commentReader.findByIdAndNotDeleted("root-comment-id")).willReturn(rootComment);
+		given(commentReader.getComment("root-comment-id")).willReturn(rootComment);
 		given(rootComment.isReply()).willReturn(false);
 
 		// when & then

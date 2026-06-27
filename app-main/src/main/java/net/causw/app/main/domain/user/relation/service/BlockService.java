@@ -69,7 +69,7 @@ public class BlockService {
 	@Transactional
 	public BlockCreateResult createBlockByComment(CommentBlockCreateCommand command) {
 		User blocker = command.blocker();
-		Comment comment = commentReader.findByIdAndNotDeleted(command.commentId());
+		Comment comment = commentReader.getComment(command.commentId());
 		User blocked = comment.getWriter();
 
 		boolean alreadyBlocked = blockReader.existsByBlockerAndBlocked(blocker, blocked);
@@ -105,7 +105,7 @@ public class BlockService {
 	@Transactional
 	public BlockCreateResult createBlockByChildComment(ChildCommentBlockCreateCommand command) {
 		User blocker = command.blocker();
-		Comment childComment = commentReader.findByIdAndNotDeleted(command.childCommentId());
+		Comment childComment = commentReader.getComment(command.childCommentId());
 		if (!childComment.isReply()) {
 			throw ChildCommentErrorCode.CHILD_COMMENT_NOT_FOUND.toBaseException();
 		}

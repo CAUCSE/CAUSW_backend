@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.community.comment.api.v2.mapper;
 
-import net.causw.app.main.domain.community.comment.api.v2.dto.response.ChildCommentResponseDto;
+import net.causw.app.main.domain.community.comment.api.v2.dto.response.ReplyCommentResponseDto;
 import net.causw.app.main.domain.community.comment.service.dto.CommentAuthorInfo;
 import net.causw.app.main.domain.community.comment.service.dto.CommentResult;
 
@@ -8,11 +8,11 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class ChildCommentResponseDtoMapper {
+public class ReplyCommentResponseDtoMapper {
 
-	public static ChildCommentResponseDto toResponseDto(CommentResult result) {
+	public static ReplyCommentResponseDto toResponseDto(CommentResult result) {
 		CommentAuthorInfo author = result.authorInfo();
-		return ChildCommentResponseDto.builder()
+		return ReplyCommentResponseDto.builder()
 			.id(result.id())
 			.content(result.content())
 			.isDeleted(result.isDeleted())

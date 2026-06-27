@@ -218,7 +218,7 @@ class CommentNotificationListenerTest {
 			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
 
 			// when
-			handler.handleChildComment(new CommentChildCommentCreatedEvent("commentId", "childCommentId"));
+			handler.handleReplyComment(new CommentChildCommentCreatedEvent("commentId", "childCommentId"));
 
 			// then
 			verify(notificationWriter).save(any());
@@ -239,7 +239,7 @@ class CommentNotificationListenerTest {
 			given(commentReader.getComment("childCommentId")).willReturn(childComment);
 
 			// when
-			handler.handleChildComment(new CommentChildCommentCreatedEvent("commentId", "childCommentId"));
+			handler.handleReplyComment(new CommentChildCommentCreatedEvent("commentId", "childCommentId"));
 
 			// then
 			verify(notificationWriter, never()).save(any());
@@ -261,7 +261,7 @@ class CommentNotificationListenerTest {
 				.willReturn(settingMapWith(UserNotificationSettingKey.COMMUNITY_REPLY_ON_MY_COMMENT, false));
 
 			// when
-			handler.handleChildComment(new CommentChildCommentCreatedEvent("commentId", "childCommentId"));
+			handler.handleReplyComment(new CommentChildCommentCreatedEvent("commentId", "childCommentId"));
 
 			// then
 			verify(notificationWriter, never()).save(any());
@@ -283,7 +283,7 @@ class CommentNotificationListenerTest {
 			given(blockReader.existsByBlockerAndBlocked(commentWriter, childCommentWriter)).willReturn(true);
 
 			// when
-			handler.handleChildComment(new CommentChildCommentCreatedEvent("commentId", "childCommentId"));
+			handler.handleReplyComment(new CommentChildCommentCreatedEvent("commentId", "childCommentId"));
 
 			// then
 			verify(notificationWriter, never()).save(any());

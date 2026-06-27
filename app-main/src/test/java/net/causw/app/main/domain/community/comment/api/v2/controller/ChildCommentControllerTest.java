@@ -19,7 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import net.causw.app.main.domain.community.comment.api.v2.dto.request.ChildCommentCreateRequestDto;
 import net.causw.app.main.domain.community.comment.api.v2.dto.request.ChildCommentUpdateRequestDto;
-import net.causw.app.main.domain.community.comment.api.v2.dto.response.ChildCommentResponseDto;
+import net.causw.app.main.domain.community.comment.api.v2.dto.response.ReplyCommentResponseDto;
 import net.causw.app.main.domain.community.comment.service.CommentService;
 import net.causw.app.main.domain.community.comment.service.dto.CommentAuthorInfo;
 import net.causw.app.main.domain.community.comment.service.dto.CommentCreateCommand;
@@ -55,7 +55,7 @@ class ChildCommentControllerTest {
 			ArgumentCaptor<CommentCreateCommand> captor = ArgumentCaptor.forClass(CommentCreateCommand.class);
 
 			// when
-			ApiResponse<ChildCommentResponseDto> response = childCommentController.createChildComment(
+			ApiResponse<ReplyCommentResponseDto> response = childCommentController.createChildComment(
 				request, userDetails);
 
 			// then
@@ -85,7 +85,7 @@ class ChildCommentControllerTest {
 			ArgumentCaptor<CommentUpdateCommand> captor = ArgumentCaptor.forClass(CommentUpdateCommand.class);
 
 			// when
-			ApiResponse<ChildCommentResponseDto> response = childCommentController.updateChildComment(
+			ApiResponse<ReplyCommentResponseDto> response = childCommentController.updateChildComment(
 				"child-comment-id", request, userDetails);
 
 			// then

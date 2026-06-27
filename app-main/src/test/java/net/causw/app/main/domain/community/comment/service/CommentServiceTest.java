@@ -135,7 +135,7 @@ public class CommentServiceTest {
 			CommentResult expectedResult = mock(CommentResult.class);
 
 			given(userReader.findUserByIdNotDeleted("creator-id")).willReturn(creator);
-			given(commentReader.findByIdAndNotDeleted("parent-comment-id")).willReturn(parentComment);
+			given(commentReader.getComment("parent-comment-id")).willReturn(parentComment);
 			given(parentComment.getPost()).willReturn(post);
 			given(parentComment.getId()).willReturn("parent-comment-id");
 			given(post.getId()).willReturn("post-id");
@@ -277,7 +277,7 @@ public class CommentServiceTest {
 			Comment rootComment = mock(Comment.class);
 			CommentUpdateCommand command = new CommentUpdateCommand("root-comment-id", "수정된 댓글 내용", "updater-id");
 
-			given(commentReader.findByIdAndNotDeleted("root-comment-id")).willReturn(rootComment);
+			given(commentReader.getComment("root-comment-id")).willReturn(rootComment);
 			given(rootComment.isReply()).willReturn(false);
 
 			// when & then
@@ -332,7 +332,7 @@ public class CommentServiceTest {
 			// given
 			Comment rootComment = mock(Comment.class);
 
-			given(commentReader.findByIdAndNotDeleted("root-comment-id")).willReturn(rootComment);
+			given(commentReader.getComment("root-comment-id")).willReturn(rootComment);
 			given(rootComment.isReply()).willReturn(false);
 
 			// when & then
@@ -391,7 +391,7 @@ public class CommentServiceTest {
 			// given
 			Comment rootComment = mock(Comment.class);
 
-			given(commentReader.findByIdAndNotDeleted("root-comment-id")).willReturn(rootComment);
+			given(commentReader.getComment("root-comment-id")).willReturn(rootComment);
 			given(rootComment.isReply()).willReturn(false);
 
 			// when & then
@@ -453,7 +453,7 @@ public class CommentServiceTest {
 			// given
 			Comment rootComment = mock(Comment.class);
 
-			given(commentReader.findByIdAndNotDeleted("root-comment-id")).willReturn(rootComment);
+			given(commentReader.getComment("root-comment-id")).willReturn(rootComment);
 			given(rootComment.isReply()).willReturn(false);
 
 			// when & then

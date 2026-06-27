@@ -25,18 +25,16 @@ public class CommentReader {
 	private final CommentRepository commentRepository;
 
 	/**
-	 * ID로 댓글을 조회합니다. 존재하지 않으면 예외를 발생시킵니다.
-	 *
-	 * @param commentId 조회할 댓글 ID
-	 * @return 조회된 {@link Comment} 엔티티
+	 * <p>
+	 * 삭제되지 않은 comment를 조회
+	 * <br>
+	 * 존재하지 않을 시 예외 발생
+	 * </p>
+	 * @param commentId 대상 댓글 id
+	 * @return comment 엔티티
 	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception 댓글이 존재하지 않는 경우
 	 */
 	public Comment getComment(String commentId) {
-		return commentRepository.findById(commentId).orElseThrow(
-			CommentErrorCode.COMMENT_NOT_FOUND::toBaseException);
-	}
-
-	public Comment findByIdAndNotDeleted(String commentId) {
 		return commentRepository.findByIdAndIsDeletedFalse(commentId)
 			.orElseThrow(CommentErrorCode.COMMENT_NOT_FOUND::toBaseException);
 	}

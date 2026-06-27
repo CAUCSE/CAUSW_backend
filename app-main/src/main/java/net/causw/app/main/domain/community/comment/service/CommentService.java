@@ -77,7 +77,7 @@ public class CommentService {
 		User creator = userReader.findUserByIdNotDeleted(command.creatorId());
 		Comment parentComment = command.parentCommentId() == null
 			? null
-			: commentReader.findByIdAndNotDeleted(command.parentCommentId());
+			: commentReader.getComment(command.parentCommentId());
 		Post post = parentComment == null
 			? postReader.findById(command.postId())
 			: postReader.findById(parentComment.getPost().getId());
@@ -168,7 +168,7 @@ public class CommentService {
 
 	@Transactional
 	public CommentResult updateReplyComment(CommentUpdateCommand command) {
-		Comment comment = commentReader.findByIdAndNotDeleted(command.commentId());
+		Comment comment = commentReader.getComment(command.commentId());
 		validateReplyComment(comment);
 		User updater = userReader.findUserByIdNotDeleted(command.updaterId());
 		return updateComment(command, updater, comment);
@@ -204,7 +204,7 @@ public class CommentService {
 
 	@Transactional
 	public CommentResult deleteReplyComment(String deleterId, String commentId) {
-		Comment comment = commentReader.findByIdAndNotDeleted(commentId);
+		Comment comment = commentReader.getComment(commentId);
 		validateReplyComment(comment);
 		User deleter = userReader.findUserByIdNotDeleted(deleterId);
 		return deleteComment(deleter, comment);
@@ -239,7 +239,7 @@ public class CommentService {
 
 	@Transactional
 	public void likeReplyComment(String userId, String commentId) {
-		Comment comment = commentReader.findByIdAndNotDeleted(commentId);
+		Comment comment = commentReader.getComment(commentId);
 		validateReplyComment(comment);
 		User user = userReader.findUserByIdNotDeleted(userId);
 		likeComment(user, comment);
@@ -267,7 +267,7 @@ public class CommentService {
 
 	@Transactional
 	public void cancelLikeReplyComment(String userId, String commentId) {
-		Comment comment = commentReader.findByIdAndNotDeleted(commentId);
+		Comment comment = commentReader.getComment(commentId);
 		validateReplyComment(comment);
 		User user = userReader.findUserByIdNotDeleted(userId);
 		cancelLikeComment(user, comment, commentId);

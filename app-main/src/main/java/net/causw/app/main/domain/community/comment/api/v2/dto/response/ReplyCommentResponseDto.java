@@ -8,7 +8,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
 @Builder
-public record ChildCommentResponseDto(
+public record ReplyCommentResponseDto(
 	String id,
 	String content,
 	LocalDateTime createdAt,

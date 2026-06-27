@@ -60,7 +60,7 @@ public class ReportService {
 	@Transactional
 	public CommentReportCreateResult createCommentReport(CommentReportCreateCommand command) {
 		User reporter = command.reporter();
-		Comment comment = commentReader.findByIdAndNotDeleted(command.commentId());
+		Comment comment = commentReader.getComment(command.commentId());
 
 		boolean alreadyReported = commentReportReader.existsByReporterAndCommentId(reporter, comment.getId());
 		CommentReportValidator.validateCreate(reporter, comment, alreadyReported);
@@ -80,7 +80,7 @@ public class ReportService {
 	@Transactional
 	public ChildCommentReportCreateResult createChildCommentReport(ChildCommentReportCreateCommand command) {
 		User reporter = command.reporter();
-		Comment childComment = commentReader.findByIdAndNotDeleted(command.childCommentId());
+		Comment childComment = commentReader.getComment(command.childCommentId());
 
 		boolean alreadyReported = childCommentReportReader.existsByReporterAndChildCommentId(
 			reporter, childComment.getId());
