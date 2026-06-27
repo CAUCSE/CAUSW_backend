@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.community.comment.entity.Comment;
-import net.causw.app.main.domain.community.comment.service.dto.ChildCommentResult;
 import net.causw.app.main.domain.community.comment.service.dto.CommentAuthorInfo;
 import net.causw.app.main.domain.community.comment.service.dto.CommentMeta;
 import net.causw.app.main.domain.community.comment.service.dto.CommentResult;
@@ -43,7 +42,7 @@ public class CommentMapper {
 	 */
 	public CommentResult toResult(Comment comment, User user, List<String> boardAdminIds, CommentMeta meta,
 		Map<String, UserProfileImage> profileImageMap) {
-		List<ChildCommentResult> childResults = comment.getChildCommentList().stream()
+		List<CommentResult> childResults = comment.getChildCommentList().stream()
 			.map(child -> childCommentMapper.toResult(child, user,
 				boardAdminIds,
 				meta.childLikeCounts().getOrDefault(child.getId(), 0L),
@@ -74,7 +73,6 @@ public class CommentMapper {
 			comment.getPost().getId(),
 			authorInfo,
 			meta.isLiked(),
-			meta.isSubscribed(),
 			meta.numLike(),
 			(long)comment.getChildCommentList().size(),
 			childResults);

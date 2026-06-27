@@ -7,12 +7,18 @@ package net.causw.app.main.domain.community.comment.service.dto;
  *
  * @param content     댓글 내용
  * @param postId      댓글을 작성할 게시글 ID
+ * @param parentCommentId 답글을 작성할 부모 댓글 ID
  * @param isAnonymous 익명 작성 여부
  * @param creatorId   댓글 작성자 ID
  */
 public record CommentCreateCommand(
 	String content,
 	String postId,
+	String parentCommentId,
 	Boolean isAnonymous,
 	String creatorId) {
+
+	public CommentCreateCommand(String content, String postId, Boolean isAnonymous, String creatorId) {
+		this(content, postId, null, isAnonymous, creatorId);
+	}
 }

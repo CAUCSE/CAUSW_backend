@@ -30,6 +30,12 @@ public class CommentValidator {
 		this.validateCreatorAndPostStatus(creator, post);
 	}
 
+	public void validateChildCommentDepth(Comment parentComment) {
+		if (parentComment != null && parentComment.isChildComment()) {
+			throw CommentErrorCode.COMMENT_NOT_FOUND.toBaseException();
+		}
+	}
+
 	/**
 	 * 댓글 리스트 조회 시 필요한 모든 검증 로직을 수행합니다.
 	 */

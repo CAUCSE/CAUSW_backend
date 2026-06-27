@@ -40,16 +40,18 @@ import net.causw.app.main.domain.community.comment.service.dto.CommentUpdateComm
 import net.causw.app.main.domain.community.comment.service.implementation.CommentMapper;
 import net.causw.app.main.domain.community.comment.service.implementation.CommentMetaReader;
 import net.causw.app.main.domain.community.comment.service.implementation.CommentReader;
-import net.causw.app.main.domain.community.comment.service.implementation.CommentSubscribeWriter;
 import net.causw.app.main.domain.community.comment.service.implementation.CommentWriter;
 import net.causw.app.main.domain.community.comment.service.implementation.LikeCommentWriter;
 import net.causw.app.main.domain.community.comment.util.CommentValidator;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.implementation.PostReader;
+import net.causw.app.main.domain.notification.notification.event.CommentChildCommentCreatedEvent;
 import net.causw.app.main.domain.notification.notification.event.PostCommentCreatedEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.relation.service.implementation.BlockReader;
+import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
+import net.causw.app.main.shared.exception.errorcode.ChildCommentErrorCode;
 
 @ExtendWith(MockitoExtension.class)
 public class CommentServiceTest {
@@ -67,8 +69,6 @@ public class CommentServiceTest {
 	CommentWriter commentWriter;
 	@Mock
 	LikeCommentWriter likeCommentWriter;
-	@Mock
-	CommentSubscribeWriter commentSubscribeWriter;
 	@Mock
 	CommentValidator commentValidator;
 	@Mock
@@ -122,8 +122,38 @@ public class CommentServiceTest {
 			assertThat(result).isNotNull();
 			verify(commentValidator, times(1)).validateForCreate(eq(creator), eq(post));
 			verify(commentWriter, times(1)).save(any(Comment.class));
-			verify(commentSubscribeWriter, times(1)).createCommentSubscribe(eq(creator), any());
 			verify(eventPublisher, times(1)).publishEvent(any(PostCommentCreatedEvent.class));
+		}
+
+		@DisplayName("답글 생성 성공")
+		@Test
+		void createChildComment_shouldSucceed() {
+			// given
+			CommentCreateCommand command = new CommentCreateCommand(
+				"답글 내용", null, "parent-comment-id", false, "creator-id");
+			Comment parentComment = mock(Comment.class);
+			CommentResult expectedResult = mock(CommentResult.class);
+
+			given(userReader.findUserByIdNotDeleted("creator-id")).willReturn(creator);
+			given(commentReader.getComment("parent-comment-id")).willReturn(parentComment);
+			given(parentComment.getPost()).willReturn(post);
+			given(parentComment.getId()).willReturn("parent-comment-id");
+			given(post.getId()).willReturn("post-id");
+			given(postReader.findById("post-id")).willReturn(post);
+			given(boardConfigReader.getAdminIdsByBoardId("board-id")).willReturn(List.of("admin-id"));
+			given(commentMapper.toResult(any(Comment.class), eq(creator), anyList(), any(CommentMeta.class), anyMap()))
+				.willReturn(expectedResult);
+
+			// when
+			CommentResult result = commentService.createComment(command);
+
+			// then
+			assertThat(result).isNotNull();
+			verify(commentValidator, times(1)).validateForCreate(eq(creator), eq(post));
+			verify(commentValidator, times(1)).validateChildCommentDepth(parentComment);
+			verify(commentWriter, times(1)).save(any(Comment.class));
+			verify(eventPublisher, times(1)).publishEvent(any(CommentChildCommentCreatedEvent.class));
+			verify(eventPublisher, never()).publishEvent(any(PostCommentCreatedEvent.class));
 		}
 	}
 
@@ -225,7 +255,7 @@ public class CommentServiceTest {
 			given(post.getBoard()).willReturn(board);
 			given(board.getId()).willReturn("board-id");
 			given(boardConfigReader.getAdminIdsByBoardId("board-id")).willReturn(List.of("admin-id"));
-			given(commentMetaReader.fetchForComment(eq(updater), eq(comment)))
+			given(commentMetaReader.fetchForComment(eq(updater), eq(comment), eq(Set.of())))
 				.willReturn(mock(CommentMeta.class));
 			given(commentMapper.toResult(eq(comment), eq(updater), anyList(), any(CommentMeta.class), anyMap()))
 				.willReturn(expectedResult);
@@ -238,6 +268,25 @@ public class CommentServiceTest {
 			verify(commentValidator, times(1)).validateForUpdate(updater, post, comment);
 			verify(comment, times(1)).update("수정된 댓글 내용");
 			verify(commentWriter, times(1)).save(comment);
+		}
+
+		@DisplayName("대댓글 수정 API에서 루트 댓글 ID를 전달하면 예외 발생")
+		@Test
+		void updateChildComment_shouldFail_whenCommentIsRoot() {
+			// given
+			Comment rootComment = mock(Comment.class);
+			CommentUpdateCommand command = new CommentUpdateCommand("root-comment-id", "수정된 댓글 내용", "updater-id");
+
+			given(commentReader.getComment("root-comment-id")).willReturn(rootComment);
+			given(rootComment.isChildComment()).willReturn(false);
+
+			// when & then
+			assertThatThrownBy(() -> commentService.updateChildComment(command))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.extracting("errorCode")
+				.isEqualTo(ChildCommentErrorCode.CHILD_COMMENT_NOT_FOUND);
+
+			verify(commentWriter, never()).save(any(Comment.class));
 		}
 	}
 
@@ -262,7 +311,7 @@ public class CommentServiceTest {
 			given(post.getBoard()).willReturn(board);
 			given(board.getId()).willReturn("board-id");
 			given(boardConfigReader.getAdminIdsByBoardId("board-id")).willReturn(List.of("admin-id"));
-			given(commentMetaReader.fetchForComment(eq(deleter), eq(comment)))
+			given(commentMetaReader.fetchForComment(eq(deleter), eq(comment), eq(Set.of())))
 				.willReturn(mock(CommentMeta.class));
 			given(commentMapper.toResult(eq(comment), eq(deleter), anyList(), any(CommentMeta.class), anyMap()))
 				.willReturn(expectedResult);
@@ -276,6 +325,24 @@ public class CommentServiceTest {
 			verify(comment, times(1)).delete();
 			verify(commentWriter, times(1)).save(comment);
 		}
+
+		@DisplayName("대댓글 삭제 API에서 루트 댓글 ID를 전달하면 예외 발생")
+		@Test
+		void deleteChildComment_shouldFail_whenCommentIsRoot() {
+			// given
+			Comment rootComment = mock(Comment.class);
+
+			given(commentReader.getComment("root-comment-id")).willReturn(rootComment);
+			given(rootComment.isChildComment()).willReturn(false);
+
+			// when & then
+			assertThatThrownBy(() -> commentService.deleteChildComment("deleter-id", "root-comment-id"))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.extracting("errorCode")
+				.isEqualTo(ChildCommentErrorCode.CHILD_COMMENT_NOT_FOUND);
+
+			verify(commentWriter, never()).save(any(Comment.class));
+		}
 	}
 
 	@Nested
@@ -288,8 +355,8 @@ public class CommentServiceTest {
 		void setUp() {
 			user = mock(User.class);
 			comment = mock(Comment.class);
-			given(userReader.findUserByIdNotDeleted("user-id")).willReturn(user);
-			given(commentReader.getComment("comment-id")).willReturn(comment);
+			lenient().when(userReader.findUserByIdNotDeleted("user-id")).thenReturn(user);
+			lenient().when(commentReader.getComment("comment-id")).thenReturn(comment);
 		}
 
 		@DisplayName("댓글 좋아요 성공")
@@ -317,6 +384,24 @@ public class CommentServiceTest {
 
 			verify(likeCommentWriter, never()).save(any(LikeComment.class));
 		}
+
+		@DisplayName("대댓글 좋아요 API에서 루트 댓글 ID를 전달하면 예외 발생")
+		@Test
+		void likeChildComment_shouldFail_whenCommentIsRoot() {
+			// given
+			Comment rootComment = mock(Comment.class);
+
+			given(commentReader.getComment("root-comment-id")).willReturn(rootComment);
+			given(rootComment.isChildComment()).willReturn(false);
+
+			// when & then
+			assertThatThrownBy(() -> commentService.likeChildComment("user-id", "root-comment-id"))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.extracting("errorCode")
+				.isEqualTo(ChildCommentErrorCode.CHILD_COMMENT_NOT_FOUND);
+
+			verify(likeCommentWriter, never()).save(any(LikeComment.class));
+		}
 	}
 
 	@Nested
@@ -329,8 +414,8 @@ public class CommentServiceTest {
 		void setUp() {
 			user = mock(User.class);
 			comment = mock(Comment.class);
-			given(userReader.findUserByIdNotDeleted("user-id")).willReturn(user);
-			given(commentReader.getComment("comment-id")).willReturn(comment);
+			lenient().when(userReader.findUserByIdNotDeleted("user-id")).thenReturn(user);
+			lenient().when(commentReader.getComment("comment-id")).thenReturn(comment);
 		}
 
 		@DisplayName("댓글 좋아요 취소 성공")
@@ -358,6 +443,24 @@ public class CommentServiceTest {
 			assertThatThrownBy(() -> commentService.cancelLikeComment("user-id", "comment-id"))
 				.isInstanceOf(RuntimeException.class)
 				.hasMessageContaining("좋아요를 누르지 않은 댓글입니다");
+
+			verify(likeCommentWriter, never()).delete(anyString(), anyString());
+		}
+
+		@DisplayName("대댓글 좋아요 취소 API에서 루트 댓글 ID를 전달하면 예외 발생")
+		@Test
+		void cancelLikeChildComment_shouldFail_whenCommentIsRoot() {
+			// given
+			Comment rootComment = mock(Comment.class);
+
+			given(commentReader.getComment("root-comment-id")).willReturn(rootComment);
+			given(rootComment.isChildComment()).willReturn(false);
+
+			// when & then
+			assertThatThrownBy(() -> commentService.cancelLikeChildComment("user-id", "root-comment-id"))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.extracting("errorCode")
+				.isEqualTo(ChildCommentErrorCode.CHILD_COMMENT_NOT_FOUND);
 
 			verify(likeCommentWriter, never()).delete(anyString(), anyString());
 		}

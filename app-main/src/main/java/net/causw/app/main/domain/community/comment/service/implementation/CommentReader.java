@@ -9,8 +9,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
-import net.causw.app.main.domain.community.comment.entity.ChildComment;
 import net.causw.app.main.domain.community.comment.entity.Comment;
+import net.causw.app.main.domain.community.comment.repository.CommentQueryRepository;
 import net.causw.app.main.domain.community.comment.repository.CommentRepository;
 import net.causw.app.main.shared.exception.errorcode.CommentErrorCode;
 
@@ -24,21 +24,19 @@ import lombok.RequiredArgsConstructor;
 public class CommentReader {
 
 	private final CommentRepository commentRepository;
-	private final ChildCommentReader childCommentReader;
+	private final CommentQueryRepository commentQueryRepository;
 
 	/**
-	 * ID로 댓글을 조회합니다. 존재하지 않으면 예외를 발생시킵니다.
-	 *
-	 * @param commentId 조회할 댓글 ID
-	 * @return 조회된 {@link Comment} 엔티티
+	 * <p>
+	 * 삭제되지 않은 comment를 조회
+	 * <br>
+	 * 존재하지 않을 시 예외 발생
+	 * </p>
+	 * @param commentId 대상 댓글 id
+	 * @return comment 엔티티
 	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception 댓글이 존재하지 않는 경우
 	 */
 	public Comment getComment(String commentId) {
-		return commentRepository.findById(commentId).orElseThrow(
-			CommentErrorCode.COMMENT_NOT_FOUND::toBaseException);
-	}
-
-	public Comment findByIdAndNotDeleted(String commentId) {
 		return commentRepository.findByIdAndIsDeletedFalse(commentId)
 			.orElseThrow(CommentErrorCode.COMMENT_NOT_FOUND::toBaseException);
 	}
@@ -54,13 +52,13 @@ public class CommentReader {
 	 * @return 대댓글이 채워진 댓글 페이지
 	 */
 	public Page<Comment> getComments(String postId, Pageable pageable) {
-		Page<Comment> comments = commentRepository.findByPost_IdOrderByCreatedAt(postId, pageable);
+		Page<Comment> comments = commentQueryRepository.findRootCommentsByPostId(postId, pageable);
 		List<String> commentIds = comments.getContent().stream().map(Comment::getId).toList();
 
 		if (!commentIds.isEmpty()) {
-			List<ChildComment> allChildComments = childCommentReader.getChildCommentsByParentIds(commentIds);
+			List<Comment> allChildComments = commentQueryRepository.findChildCommentsByParentCommentIds(commentIds);
 
-			Map<String, List<ChildComment>> childCommentMap = allChildComments.stream()
+			Map<String, List<Comment>> childCommentMap = allChildComments.stream()
 				.collect(Collectors.groupingBy(child -> child.getParentComment().getId()));
 
 			comments.forEach(comment -> comment

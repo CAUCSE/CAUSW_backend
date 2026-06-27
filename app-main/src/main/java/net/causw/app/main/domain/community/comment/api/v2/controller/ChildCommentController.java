@@ -15,9 +15,9 @@ import net.causw.app.main.domain.community.comment.api.v2.dto.request.ChildComme
 import net.causw.app.main.domain.community.comment.api.v2.dto.request.ChildCommentUpdateRequestDto;
 import net.causw.app.main.domain.community.comment.api.v2.dto.response.ChildCommentResponseDto;
 import net.causw.app.main.domain.community.comment.api.v2.mapper.ChildCommentResponseDtoMapper;
-import net.causw.app.main.domain.community.comment.service.ChildCommentService;
-import net.causw.app.main.domain.community.comment.service.dto.ChildCommentCreateCommand;
-import net.causw.app.main.domain.community.comment.service.dto.ChildCommentUpdateCommand;
+import net.causw.app.main.domain.community.comment.service.CommentService;
+import net.causw.app.main.domain.community.comment.service.dto.CommentCreateCommand;
+import net.causw.app.main.domain.community.comment.service.dto.CommentUpdateCommand;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 
@@ -31,7 +31,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/child-comments")
 public class ChildCommentController {
-	private final ChildCommentService childCommentService;
+	private final CommentService commentService;
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
@@ -40,14 +40,15 @@ public class ChildCommentController {
 		@Valid @RequestBody ChildCommentCreateRequestDto childCommentCreateRequestDto,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-		ChildCommentCreateCommand command = new ChildCommentCreateCommand(
+		CommentCreateCommand command = new CommentCreateCommand(
 			childCommentCreateRequestDto.content(),
+			null,
 			childCommentCreateRequestDto.parentCommentId(),
 			childCommentCreateRequestDto.isAnonymous(),
 			userDetails.getUserId());
 
 		return ApiResponse.success(
-			ChildCommentResponseDtoMapper.toResponseDto(childCommentService.createChildComment(command)));
+			ChildCommentResponseDtoMapper.toResponseDto(commentService.createComment(command)));
 	}
 
 	@PutMapping(value = "/{id}")
@@ -58,13 +59,13 @@ public class ChildCommentController {
 		@Valid @RequestBody ChildCommentUpdateRequestDto childCommentUpdateRequestDto,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-		ChildCommentUpdateCommand command = new ChildCommentUpdateCommand(
+		CommentUpdateCommand command = new CommentUpdateCommand(
 			id,
 			childCommentUpdateRequestDto.content(),
 			userDetails.getUserId());
 
 		return ApiResponse.success(
-			ChildCommentResponseDtoMapper.toResponseDto(childCommentService.updateChildComment(command)));
+			ChildCommentResponseDtoMapper.toResponseDto(commentService.updateChildComment(command)));
 	}
 
 	@DeleteMapping(value = "/{id}")
@@ -76,7 +77,7 @@ public class ChildCommentController {
 
 		return ApiResponse.success(
 			ChildCommentResponseDtoMapper.toResponseDto(
-				childCommentService.deleteChildComment(userDetails.getUserId(), id)));
+				commentService.deleteChildComment(userDetails.getUserId(), id)));
 	}
 
 	@PostMapping(value = "/{id}/like")
@@ -85,7 +86,7 @@ public class ChildCommentController {
 	public ApiResponse<Void> likeChildComment(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		childCommentService.likeChildComment(userDetails.getUserId(), id);
+		commentService.likeChildComment(userDetails.getUserId(), id);
 		return ApiResponse.success();
 	}
 
@@ -95,7 +96,7 @@ public class ChildCommentController {
 	public ApiResponse<Void> cancelLikeChildComment(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		childCommentService.cancelLikeChildComment(userDetails.getUserId(), id);
+		commentService.cancelLikeChildComment(userDetails.getUserId(), id);
 		return ApiResponse.success();
 	}
 }
