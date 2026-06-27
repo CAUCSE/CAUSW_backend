@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.community.comment.entity.Comment;
+import net.causw.app.main.domain.community.comment.repository.CommentQueryRepository;
 import net.causw.app.main.domain.community.comment.repository.CommentRepository;
 import net.causw.app.main.shared.exception.errorcode.CommentErrorCode;
 
@@ -23,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 public class CommentReader {
 
 	private final CommentRepository commentRepository;
+	private final CommentQueryRepository commentQueryRepository;
 
 	/**
 	 * <p>
@@ -50,11 +52,11 @@ public class CommentReader {
 	 * @return 대댓글이 채워진 댓글 페이지
 	 */
 	public Page<Comment> getComments(String postId, Pageable pageable) {
-		Page<Comment> comments = commentRepository.findRootCommentsByPostId(postId, pageable);
+		Page<Comment> comments = commentQueryRepository.findRootCommentsByPostId(postId, pageable);
 		List<String> commentIds = comments.getContent().stream().map(Comment::getId).toList();
 
 		if (!commentIds.isEmpty()) {
-			List<Comment> allChildComments = commentRepository.findRepliesByParentCommentIds(commentIds);
+			List<Comment> allChildComments = commentQueryRepository.findRepliesByParentCommentIds(commentIds);
 
 			Map<String, List<Comment>> childCommentMap = allChildComments.stream()
 				.collect(Collectors.groupingBy(child -> child.getParentComment().getId()));

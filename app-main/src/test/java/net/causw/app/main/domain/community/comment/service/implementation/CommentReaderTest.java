@@ -21,6 +21,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.comment.entity.Comment;
+import net.causw.app.main.domain.community.comment.repository.CommentQueryRepository;
 import net.causw.app.main.domain.community.comment.repository.CommentRepository;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.user.account.entity.user.User;
@@ -34,6 +35,9 @@ class CommentReaderTest {
 
 	@Mock
 	private CommentRepository commentRepository;
+
+	@Mock
+	private CommentQueryRepository commentQueryRepository;
 
 	@Nested
 	@DisplayName("댓글 목록 조회")
@@ -52,9 +56,9 @@ class CommentReaderTest {
 			ReflectionTestUtils.setField(reply, "id", "reply-comment-id");
 			Pageable pageable = PageRequest.of(0, 10);
 
-			given(commentRepository.findRootCommentsByPostId("post-id", pageable))
+			given(commentQueryRepository.findRootCommentsByPostId("post-id", pageable))
 				.willReturn(new PageImpl<>(List.of(root), pageable, 1));
-			given(commentRepository.findRepliesByParentCommentIds(List.of("root-comment-id")))
+			given(commentQueryRepository.findRepliesByParentCommentIds(List.of("root-comment-id")))
 				.willReturn(List.of(reply));
 
 			// when
@@ -63,8 +67,8 @@ class CommentReaderTest {
 			// then
 			assertThat(result.getContent()).containsExactly(root);
 			assertThat(result.getContent().get(0).getChildCommentList()).containsExactly(reply);
-			then(commentRepository).should().findRootCommentsByPostId("post-id", pageable);
-			then(commentRepository).should().findRepliesByParentCommentIds(List.of("root-comment-id"));
+			then(commentQueryRepository).should().findRootCommentsByPostId("post-id", pageable);
+			then(commentQueryRepository).should().findRepliesByParentCommentIds(List.of("root-comment-id"));
 		}
 	}
 }
