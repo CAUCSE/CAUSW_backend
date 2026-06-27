@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import net.causw.app.main.domain.community.comment.api.v2.dto.request.ChildCommentCreateRequestDto;
 import net.causw.app.main.domain.community.comment.api.v2.dto.request.ChildCommentUpdateRequestDto;
-import net.causw.app.main.domain.community.comment.api.v2.dto.response.ReplyCommentResponseDto;
-import net.causw.app.main.domain.community.comment.api.v2.mapper.ReplyCommentResponseDtoMapper;
+import net.causw.app.main.domain.community.comment.api.v2.dto.response.ChildCommentResponseDto;
+import net.causw.app.main.domain.community.comment.api.v2.mapper.ChildCommentResponseDtoMapper;
 import net.causw.app.main.domain.community.comment.service.CommentService;
 import net.causw.app.main.domain.community.comment.service.dto.CommentCreateCommand;
 import net.causw.app.main.domain.community.comment.service.dto.CommentUpdateCommand;
@@ -36,7 +36,7 @@ public class ChildCommentController {
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	@Operation(summary = "대댓글 생성 API", description = "대댓글을 생성하는 api입니다.")
-	public ApiResponse<ReplyCommentResponseDto> createChildComment(
+	public ApiResponse<ChildCommentResponseDto> createChildComment(
 		@Valid @RequestBody ChildCommentCreateRequestDto childCommentCreateRequestDto,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
@@ -48,13 +48,13 @@ public class ChildCommentController {
 			userDetails.getUserId());
 
 		return ApiResponse.success(
-			ReplyCommentResponseDtoMapper.toResponseDto(commentService.createComment(command)));
+			ChildCommentResponseDtoMapper.toResponseDto(commentService.createComment(command)));
 	}
 
 	@PutMapping(value = "/{id}")
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "대댓글 수정 API", description = "특정 대댓글을 수정하는 API입니다.")
-	public ApiResponse<ReplyCommentResponseDto> updateChildComment(
+	public ApiResponse<ChildCommentResponseDto> updateChildComment(
 		@PathVariable("id") String id,
 		@Valid @RequestBody ChildCommentUpdateRequestDto childCommentUpdateRequestDto,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -65,19 +65,19 @@ public class ChildCommentController {
 			userDetails.getUserId());
 
 		return ApiResponse.success(
-			ReplyCommentResponseDtoMapper.toResponseDto(commentService.updateReplyComment(command)));
+			ChildCommentResponseDtoMapper.toResponseDto(commentService.updateChildComment(command)));
 	}
 
 	@DeleteMapping(value = "/{id}")
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "대댓글 삭제 API", description = "특정 대댓글을 삭제하는 API입니다.")
-	public ApiResponse<ReplyCommentResponseDto> deleteChildComment(
+	public ApiResponse<ChildCommentResponseDto> deleteChildComment(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
 		return ApiResponse.success(
-			ReplyCommentResponseDtoMapper.toResponseDto(
-				commentService.deleteReplyComment(userDetails.getUserId(), id)));
+			ChildCommentResponseDtoMapper.toResponseDto(
+				commentService.deleteChildComment(userDetails.getUserId(), id)));
 	}
 
 	@PostMapping(value = "/{id}/like")
@@ -86,7 +86,7 @@ public class ChildCommentController {
 	public ApiResponse<Void> likeChildComment(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		commentService.likeReplyComment(userDetails.getUserId(), id);
+		commentService.likeChildComment(userDetails.getUserId(), id);
 		return ApiResponse.success();
 	}
 
@@ -96,7 +96,7 @@ public class ChildCommentController {
 	public ApiResponse<Void> cancelLikeChildComment(
 		@PathVariable("id") String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		commentService.cancelLikeReplyComment(userDetails.getUserId(), id);
+		commentService.cancelLikeChildComment(userDetails.getUserId(), id);
 		return ApiResponse.success();
 	}
 }

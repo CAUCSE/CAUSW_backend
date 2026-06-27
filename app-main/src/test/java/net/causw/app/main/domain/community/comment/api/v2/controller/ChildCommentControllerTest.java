@@ -19,7 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import net.causw.app.main.domain.community.comment.api.v2.dto.request.ChildCommentCreateRequestDto;
 import net.causw.app.main.domain.community.comment.api.v2.dto.request.ChildCommentUpdateRequestDto;
-import net.causw.app.main.domain.community.comment.api.v2.dto.response.ReplyCommentResponseDto;
+import net.causw.app.main.domain.community.comment.api.v2.dto.response.ChildCommentResponseDto;
 import net.causw.app.main.domain.community.comment.service.CommentService;
 import net.causw.app.main.domain.community.comment.service.dto.CommentAuthorInfo;
 import net.causw.app.main.domain.community.comment.service.dto.CommentCreateCommand;
@@ -55,7 +55,7 @@ class ChildCommentControllerTest {
 			ArgumentCaptor<CommentCreateCommand> captor = ArgumentCaptor.forClass(CommentCreateCommand.class);
 
 			// when
-			ApiResponse<ReplyCommentResponseDto> response = childCommentController.createChildComment(
+			ApiResponse<ChildCommentResponseDto> response = childCommentController.createChildComment(
 				request, userDetails);
 
 			// then
@@ -81,15 +81,15 @@ class ChildCommentControllerTest {
 			// given
 			ChildCommentUpdateRequestDto request = new ChildCommentUpdateRequestDto("수정 내용");
 			given(userDetails.getUserId()).willReturn("updater-id");
-			given(commentService.updateReplyComment(any(CommentUpdateCommand.class))).willReturn(commentResult());
+			given(commentService.updateChildComment(any(CommentUpdateCommand.class))).willReturn(commentResult());
 			ArgumentCaptor<CommentUpdateCommand> captor = ArgumentCaptor.forClass(CommentUpdateCommand.class);
 
 			// when
-			ApiResponse<ReplyCommentResponseDto> response = childCommentController.updateChildComment(
+			ApiResponse<ChildCommentResponseDto> response = childCommentController.updateChildComment(
 				"child-comment-id", request, userDetails);
 
 			// then
-			then(commentService).should().updateReplyComment(captor.capture());
+			then(commentService).should().updateChildComment(captor.capture());
 			CommentUpdateCommand command = captor.getValue();
 			assertThat(command.commentId()).isEqualTo("child-comment-id");
 			assertThat(command.content()).isEqualTo("수정 내용");

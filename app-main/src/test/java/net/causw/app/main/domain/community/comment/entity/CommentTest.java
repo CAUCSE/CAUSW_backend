@@ -35,35 +35,35 @@ class CommentTest {
 			assertThat(comment.getWriter()).isEqualTo(writer);
 			assertThat(comment.getPost()).isEqualTo(post);
 			assertThat(comment.getParentComment()).isNull();
-			assertThat(comment.isReply()).isFalse();
+			assertThat(comment.isChildComment()).isFalse();
 		}
 	}
 
 	@Nested
 	@DisplayName("답글 생성")
-	class CreateReply {
+	class CreateChildComment {
 
 		@Test
 		@DisplayName("부모 댓글의 게시글을 공유하는 답글을 생성한다")
-		void givenParentComment_whenCreateReply_thenInheritPost() {
+		void givenParentComment_whenCreateChildComment_thenInheritPost() {
 			// given
 			User parentWriter = ObjectFixtures.getUser();
-			User replyWriter = ObjectFixtures.getCertifiedUser();
+			User childCommentWriter = ObjectFixtures.getCertifiedUser();
 			Board board = ObjectFixtures.getBoard();
 			Post post = ObjectFixtures.getPost(parentWriter, board);
 			Comment parent = Comment.ofRoot("부모 댓글", false, parentWriter, post);
 
 			// when
-			Comment reply = Comment.ofReply("답글 내용", true, replyWriter, parent);
+			Comment childComment = Comment.ofChildComment("답글 내용", true, childCommentWriter, parent);
 
 			// then
-			assertThat(reply.getContent()).isEqualTo("답글 내용");
-			assertThat(reply.getIsDeleted()).isFalse();
-			assertThat(reply.getIsAnonymous()).isTrue();
-			assertThat(reply.getWriter()).isEqualTo(replyWriter);
-			assertThat(reply.getPost()).isEqualTo(post);
-			assertThat(reply.getParentComment()).isEqualTo(parent);
-			assertThat(reply.isReply()).isTrue();
+			assertThat(childComment.getContent()).isEqualTo("답글 내용");
+			assertThat(childComment.getIsDeleted()).isFalse();
+			assertThat(childComment.getIsAnonymous()).isTrue();
+			assertThat(childComment.getWriter()).isEqualTo(childCommentWriter);
+			assertThat(childComment.getPost()).isEqualTo(post);
+			assertThat(childComment.getParentComment()).isEqualTo(parent);
+			assertThat(childComment.isChildComment()).isTrue();
 		}
 	}
 }

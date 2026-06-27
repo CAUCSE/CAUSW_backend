@@ -106,7 +106,7 @@ public class BlockService {
 	public BlockCreateResult createBlockByChildComment(ChildCommentBlockCreateCommand command) {
 		User blocker = command.blocker();
 		Comment childComment = commentReader.getComment(command.childCommentId());
-		if (!childComment.isReply()) {
+		if (!childComment.isChildComment()) {
 			throw ChildCommentErrorCode.CHILD_COMMENT_NOT_FOUND.toBaseException();
 		}
 		User blocked = childComment.getWriter();

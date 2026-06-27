@@ -83,10 +83,10 @@ public class CommentService {
 			: postReader.findById(parentComment.getPost().getId());
 		Comment comment = parentComment == null
 			? Comment.ofRoot(command.content(), command.isAnonymous(), creator, post)
-			: Comment.ofReply(command.content(), command.isAnonymous(), creator, parentComment);
+			: Comment.ofChildComment(command.content(), command.isAnonymous(), creator, parentComment);
 
 		commentValidator.validateForCreate(creator, post);
-		commentValidator.validateReplyDepth(parentComment);
+		commentValidator.validateChildCommentDepth(parentComment);
 		commentWriter.save(comment);
 
 		// 신규 댓글: 좋아요 0, 대댓글 없음
@@ -167,9 +167,9 @@ public class CommentService {
 	}
 
 	@Transactional
-	public CommentResult updateReplyComment(CommentUpdateCommand command) {
+	public CommentResult updateChildComment(CommentUpdateCommand command) {
 		Comment comment = commentReader.getComment(command.commentId());
-		validateReplyComment(comment);
+		validateChildComment(comment);
 		User updater = userReader.findUserByIdNotDeleted(command.updaterId());
 		return updateComment(command, updater, comment);
 	}
@@ -203,9 +203,9 @@ public class CommentService {
 	}
 
 	@Transactional
-	public CommentResult deleteReplyComment(String deleterId, String commentId) {
+	public CommentResult deleteChildComment(String deleterId, String commentId) {
 		Comment comment = commentReader.getComment(commentId);
-		validateReplyComment(comment);
+		validateChildComment(comment);
 		User deleter = userReader.findUserByIdNotDeleted(deleterId);
 		return deleteComment(deleter, comment);
 	}
@@ -238,9 +238,9 @@ public class CommentService {
 	}
 
 	@Transactional
-	public void likeReplyComment(String userId, String commentId) {
+	public void likeChildComment(String userId, String commentId) {
 		Comment comment = commentReader.getComment(commentId);
-		validateReplyComment(comment);
+		validateChildComment(comment);
 		User user = userReader.findUserByIdNotDeleted(userId);
 		likeComment(user, comment);
 	}
@@ -266,9 +266,9 @@ public class CommentService {
 	}
 
 	@Transactional
-	public void cancelLikeReplyComment(String userId, String commentId) {
+	public void cancelLikeChildComment(String userId, String commentId) {
 		Comment comment = commentReader.getComment(commentId);
-		validateReplyComment(comment);
+		validateChildComment(comment);
 		User user = userReader.findUserByIdNotDeleted(userId);
 		cancelLikeComment(user, comment, commentId);
 	}
@@ -279,8 +279,8 @@ public class CommentService {
 		likeCommentWriter.delete(commentId, user.getId());
 	}
 
-	private void validateReplyComment(Comment comment) {
-		if (!comment.isReply()) {
+	private void validateChildComment(Comment comment) {
+		if (!comment.isChildComment()) {
 			throw ChildCommentErrorCode.CHILD_COMMENT_NOT_FOUND.toBaseException();
 		}
 	}

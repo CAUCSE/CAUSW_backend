@@ -45,30 +45,30 @@ class CommentReaderTest {
 
 		@Test
 		@DisplayName("루트 댓글만 페이지 조회하고 답글을 부모 댓글에 붙인다")
-		void givenPostId_whenGetComments_thenAttachRepliesToRootComments() {
+		void givenPostId_whenGetComments_thenAttachChildCommentsToRootComments() {
 			// given
 			User writer = ObjectFixtures.getUser();
 			Board board = ObjectFixtures.getBoard();
 			Post post = ObjectFixtures.getPost(writer, board);
 			Comment root = Comment.ofRoot("루트 댓글", false, writer, post);
 			ReflectionTestUtils.setField(root, "id", "root-comment-id");
-			Comment reply = Comment.ofReply("답글", false, writer, root);
-			ReflectionTestUtils.setField(reply, "id", "reply-comment-id");
+			Comment childComment = Comment.ofChildComment("답글", false, writer, root);
+			ReflectionTestUtils.setField(childComment, "id", "child-comment-id");
 			Pageable pageable = PageRequest.of(0, 10);
 
 			given(commentQueryRepository.findRootCommentsByPostId("post-id", pageable))
 				.willReturn(new PageImpl<>(List.of(root), pageable, 1));
-			given(commentQueryRepository.findRepliesByParentCommentIds(List.of("root-comment-id")))
-				.willReturn(List.of(reply));
+			given(commentQueryRepository.findChildCommentsByParentCommentIds(List.of("root-comment-id")))
+				.willReturn(List.of(childComment));
 
 			// when
 			Page<Comment> result = commentReader.getComments("post-id", pageable);
 
 			// then
 			assertThat(result.getContent()).containsExactly(root);
-			assertThat(result.getContent().get(0).getChildCommentList()).containsExactly(reply);
+			assertThat(result.getContent().get(0).getChildCommentList()).containsExactly(childComment);
 			then(commentQueryRepository).should().findRootCommentsByPostId("post-id", pageable);
-			then(commentQueryRepository).should().findRepliesByParentCommentIds(List.of("root-comment-id"));
+			then(commentQueryRepository).should().findChildCommentsByParentCommentIds(List.of("root-comment-id"));
 		}
 	}
 }

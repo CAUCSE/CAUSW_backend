@@ -51,7 +51,7 @@ class BlockServiceTest {
 		ChildCommentBlockCreateCommand command = new ChildCommentBlockCreateCommand("root-comment-id", blocker);
 
 		given(commentReader.getComment("root-comment-id")).willReturn(rootComment);
-		given(rootComment.isReply()).willReturn(false);
+		given(rootComment.isChildComment()).willReturn(false);
 
 		// when & then
 		assertThatThrownBy(() -> blockService.createBlockByChildComment(command))

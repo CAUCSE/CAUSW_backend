@@ -86,7 +86,7 @@ public class Comment extends BaseEntity {
 			.build();
 	}
 
-	public static Comment ofReply(
+	public static Comment ofChildComment(
 		String content,
 		Boolean isAnonymous,
 		User writer,
@@ -101,7 +101,7 @@ public class Comment extends BaseEntity {
 			.build();
 	}
 
-	public boolean isReply() {
+	public boolean isChildComment() {
 		return this.parentComment != null;
 	}
 

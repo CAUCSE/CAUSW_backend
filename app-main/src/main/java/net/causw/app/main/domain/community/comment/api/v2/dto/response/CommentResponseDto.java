@@ -41,6 +41,6 @@ public record CommentResponseDto(
 
 	@Schema(description = "대댓글 수", example = "5") Long numChildComment,
 
-	@Schema(description = "대댓글 DTO 리스트", example = "대댓글 DTO 리스트 입니다.") List<ReplyCommentResponseDto> childCommentList) {
+	@Schema(description = "대댓글 DTO 리스트", example = "대댓글 DTO 리스트 입니다.") List<ChildCommentResponseDto> childCommentList) {
 
 }

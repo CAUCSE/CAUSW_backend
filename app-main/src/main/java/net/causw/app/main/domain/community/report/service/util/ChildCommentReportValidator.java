@@ -19,7 +19,7 @@ public class ChildCommentReportValidator {
 			throw ChildCommentErrorCode.CHILD_COMMENT_NOT_FOUND.toBaseException();
 		}
 
-		if (!childComment.isReply()) {
+		if (!childComment.isChildComment()) {
 			throw ChildCommentErrorCode.CHILD_COMMENT_NOT_FOUND.toBaseException();
 		}
 

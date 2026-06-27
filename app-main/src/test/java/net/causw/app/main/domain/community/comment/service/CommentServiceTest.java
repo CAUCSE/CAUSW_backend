@@ -127,7 +127,7 @@ public class CommentServiceTest {
 
 		@DisplayName("답글 생성 성공")
 		@Test
-		void createReplyComment_shouldSucceed() {
+		void createChildComment_shouldSucceed() {
 			// given
 			CommentCreateCommand command = new CommentCreateCommand(
 				"답글 내용", null, "parent-comment-id", false, "creator-id");
@@ -150,7 +150,7 @@ public class CommentServiceTest {
 			// then
 			assertThat(result).isNotNull();
 			verify(commentValidator, times(1)).validateForCreate(eq(creator), eq(post));
-			verify(commentValidator, times(1)).validateReplyDepth(parentComment);
+			verify(commentValidator, times(1)).validateChildCommentDepth(parentComment);
 			verify(commentWriter, times(1)).save(any(Comment.class));
 			verify(eventPublisher, times(1)).publishEvent(any(CommentChildCommentCreatedEvent.class));
 			verify(eventPublisher, never()).publishEvent(any(PostCommentCreatedEvent.class));
@@ -272,16 +272,16 @@ public class CommentServiceTest {
 
 		@DisplayName("대댓글 수정 API에서 루트 댓글 ID를 전달하면 예외 발생")
 		@Test
-		void updateReplyComment_shouldFail_whenCommentIsRoot() {
+		void updateChildComment_shouldFail_whenCommentIsRoot() {
 			// given
 			Comment rootComment = mock(Comment.class);
 			CommentUpdateCommand command = new CommentUpdateCommand("root-comment-id", "수정된 댓글 내용", "updater-id");
 
 			given(commentReader.getComment("root-comment-id")).willReturn(rootComment);
-			given(rootComment.isReply()).willReturn(false);
+			given(rootComment.isChildComment()).willReturn(false);
 
 			// when & then
-			assertThatThrownBy(() -> commentService.updateReplyComment(command))
+			assertThatThrownBy(() -> commentService.updateChildComment(command))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.extracting("errorCode")
 				.isEqualTo(ChildCommentErrorCode.CHILD_COMMENT_NOT_FOUND);
@@ -328,15 +328,15 @@ public class CommentServiceTest {
 
 		@DisplayName("대댓글 삭제 API에서 루트 댓글 ID를 전달하면 예외 발생")
 		@Test
-		void deleteReplyComment_shouldFail_whenCommentIsRoot() {
+		void deleteChildComment_shouldFail_whenCommentIsRoot() {
 			// given
 			Comment rootComment = mock(Comment.class);
 
 			given(commentReader.getComment("root-comment-id")).willReturn(rootComment);
-			given(rootComment.isReply()).willReturn(false);
+			given(rootComment.isChildComment()).willReturn(false);
 
 			// when & then
-			assertThatThrownBy(() -> commentService.deleteReplyComment("deleter-id", "root-comment-id"))
+			assertThatThrownBy(() -> commentService.deleteChildComment("deleter-id", "root-comment-id"))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.extracting("errorCode")
 				.isEqualTo(ChildCommentErrorCode.CHILD_COMMENT_NOT_FOUND);
@@ -387,15 +387,15 @@ public class CommentServiceTest {
 
 		@DisplayName("대댓글 좋아요 API에서 루트 댓글 ID를 전달하면 예외 발생")
 		@Test
-		void likeReplyComment_shouldFail_whenCommentIsRoot() {
+		void likeChildComment_shouldFail_whenCommentIsRoot() {
 			// given
 			Comment rootComment = mock(Comment.class);
 
 			given(commentReader.getComment("root-comment-id")).willReturn(rootComment);
-			given(rootComment.isReply()).willReturn(false);
+			given(rootComment.isChildComment()).willReturn(false);
 
 			// when & then
-			assertThatThrownBy(() -> commentService.likeReplyComment("user-id", "root-comment-id"))
+			assertThatThrownBy(() -> commentService.likeChildComment("user-id", "root-comment-id"))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.extracting("errorCode")
 				.isEqualTo(ChildCommentErrorCode.CHILD_COMMENT_NOT_FOUND);
@@ -449,15 +449,15 @@ public class CommentServiceTest {
 
 		@DisplayName("대댓글 좋아요 취소 API에서 루트 댓글 ID를 전달하면 예외 발생")
 		@Test
-		void cancelLikeReplyComment_shouldFail_whenCommentIsRoot() {
+		void cancelLikeChildComment_shouldFail_whenCommentIsRoot() {
 			// given
 			Comment rootComment = mock(Comment.class);
 
 			given(commentReader.getComment("root-comment-id")).willReturn(rootComment);
-			given(rootComment.isReply()).willReturn(false);
+			given(rootComment.isChildComment()).willReturn(false);
 
 			// when & then
-			assertThatThrownBy(() -> commentService.cancelLikeReplyComment("user-id", "root-comment-id"))
+			assertThatThrownBy(() -> commentService.cancelLikeChildComment("user-id", "root-comment-id"))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.extracting("errorCode")
 				.isEqualTo(ChildCommentErrorCode.CHILD_COMMENT_NOT_FOUND);

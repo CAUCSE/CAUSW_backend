@@ -33,7 +33,7 @@ public class CommentResponseDtoMapper {
 			.numLike(result.numLike())
 			.numChildComment(result.numChildComment())
 			.childCommentList(result.childCommentList().stream()
-				.map(ReplyCommentResponseDtoMapper::toResponseDto)
+				.map(ChildCommentResponseDtoMapper::toResponseDto)
 				.toList())
 			.build();
 	}

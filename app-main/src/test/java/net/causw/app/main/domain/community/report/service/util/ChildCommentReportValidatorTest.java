@@ -28,7 +28,7 @@ class ChildCommentReportValidatorTest {
 		given(reporter.getState()).willReturn(UserState.ACTIVE);
 		given(reporter.isInactive()).willReturn(false);
 		given(reporter.getRoles()).willReturn(Set.of(Role.COMMON));
-		given(rootComment.isReply()).willReturn(false);
+		given(rootComment.isChildComment()).willReturn(false);
 
 		// when & then
 		assertThatThrownBy(() -> ChildCommentReportValidator.validateCreate(reporter, rootComment, false))

@@ -54,11 +54,11 @@ public class CommentQueryRepository {
 	}
 
 	/**
-	 * 특정 comment 들에 대한 replyComments find
+	 * 특정 comment 들에 대한 childComments find
 	 * @param parentCommentIds 부모 댓글 id
 	 * @return comment
 	 */
-	public List<Comment> findRepliesByParentCommentIds(List<String> parentCommentIds) {
+	public List<Comment> findChildCommentsByParentCommentIds(List<String> parentCommentIds) {
 		if (parentCommentIds == null || parentCommentIds.isEmpty()) {
 			return List.of();
 		}

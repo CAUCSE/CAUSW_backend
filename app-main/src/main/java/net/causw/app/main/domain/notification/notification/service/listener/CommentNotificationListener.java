@@ -109,16 +109,16 @@ public class CommentNotificationListener {
 	@Async("asyncExecutor")
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
-	public void handleReplyComment(CommentChildCommentCreatedEvent event) {
+	public void handleChildComment(CommentChildCommentCreatedEvent event) {
 		// ID로 댓글·대댓글 조회
 		Comment comment = commentReader.getComment(event.commentId());
-		Comment replyComment = commentReader.getComment(event.childCommentId());
+		Comment childComment = commentReader.getComment(event.childCommentId());
 		Post post = comment.getPost();
 		User commentWriter = comment.getWriter();
-		User replyCommentWriter = replyComment.getWriter();
+		User childCommentWriter = childComment.getWriter();
 
 		// 대댓글 작성자와 댓글 작성자가 동일한 경우 알림을 보내지 않음
-		if (replyCommentWriter.getId().equals(commentWriter.getId())) {
+		if (childCommentWriter.getId().equals(commentWriter.getId())) {
 			return;
 		}
 
@@ -129,12 +129,12 @@ public class CommentNotificationListener {
 		}
 
 		// 댓글 작성자가 대댓글 작성자를 차단한 경우 알림을 보내지 않음
-		if (blockReader.existsByBlockerAndBlocked(commentWriter, replyCommentWriter)) {
+		if (blockReader.existsByBlockerAndBlocked(commentWriter, childCommentWriter)) {
 			return;
 		}
 
-		String displayName = resolveDisplayName(replyCommentWriter, replyComment.getIsAnonymous());
-		String sanitizedContent = NotificationTextUtil.sanitize(replyComment.getContent());
+		String displayName = resolveDisplayName(childCommentWriter, childComment.getIsAnonymous());
+		String sanitizedContent = NotificationTextUtil.sanitize(childComment.getContent());
 
 		// 푸시알림 제목: "내 댓글에 답글"
 		// 푸시알림 내용: "작성자 님이 답글을 남겼어요"
@@ -149,7 +149,7 @@ public class CommentNotificationListener {
 			+ "\"";
 
 		Notification notification = notificationWriter.save(
-			Notification.of(replyCommentWriter, serviceTitle, pushBody, NoticeType.COMMUNITY, post.getId(),
+			Notification.of(childCommentWriter, serviceTitle, pushBody, NoticeType.COMMUNITY, post.getId(),
 				post.getBoard().getId()));
 
 		notificationPushSender.sendToUser(commentWriter, pushTitle, pushBody);

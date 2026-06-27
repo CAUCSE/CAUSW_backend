@@ -56,7 +56,7 @@ public class CommentReader {
 		List<String> commentIds = comments.getContent().stream().map(Comment::getId).toList();
 
 		if (!commentIds.isEmpty()) {
-			List<Comment> allChildComments = commentQueryRepository.findRepliesByParentCommentIds(commentIds);
+			List<Comment> allChildComments = commentQueryRepository.findChildCommentsByParentCommentIds(commentIds);
 
 			Map<String, List<Comment>> childCommentMap = allChildComments.stream()
 				.collect(Collectors.groupingBy(child -> child.getParentComment().getId()));

@@ -30,8 +30,8 @@ public class CommentValidator {
 		this.validateCreatorAndPostStatus(creator, post);
 	}
 
-	public void validateReplyDepth(Comment parentComment) {
-		if (parentComment != null && parentComment.isReply()) {
+	public void validateChildCommentDepth(Comment parentComment) {
+		if (parentComment != null && parentComment.isChildComment()) {
 			throw CommentErrorCode.COMMENT_NOT_FOUND.toBaseException();
 		}
 	}
