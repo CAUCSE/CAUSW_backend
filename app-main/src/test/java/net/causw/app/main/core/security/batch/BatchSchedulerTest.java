@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import net.causw.app.main.core.batch.BatchScheduler;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.app.main.domain.user.account.service.UserProfileImageService;
 import net.causw.app.main.domain.user.account.service.implementation.AdmissionWriter;
@@ -102,5 +103,47 @@ public class BatchSchedulerTest {
 		verify(userRepository).findAllByDeletedAtIsNotNullAndDeletedAtBefore(any(LocalDateTime.class),
 			any(Pageable.class));
 		verifyNoInteractions(userInfoWriter, ceremonyWriter, socialAccountWriter, userAdmissionWriter, userWriter);
+	}
+
+	@Test
+	@DisplayName("방치된 GUEST 유저가 있으면 프로필·소셜·User를 순서대로 정리한다")
+	void givenStaleGuestUsers_whenScheduleCleanup_thenCleansUpInOrder() {
+		// given
+		User guest1 = mock(User.class);
+		User guest2 = mock(User.class);
+		List<User> staleGuests = List.of(guest1, guest2);
+
+		when(pageableFactory.create(anyInt(), anyInt())).thenReturn(PageRequest.of(0, 10));
+		when(userRepository.findAllByStateAndUpdatedAtBefore(
+			eq(UserState.GUEST), any(LocalDateTime.class), any(Pageable.class)))
+			.thenReturn(new PageImpl<>(staleGuests), Page.empty());
+
+		// when
+		batchScheduler.scheduleCleanupStaleGuestUsers();
+
+		// then
+		verify(userRepository).findAllByStateAndUpdatedAtBefore(
+			eq(UserState.GUEST), any(LocalDateTime.class), any(Pageable.class));
+		verify(userProfileImageService).cleanupProfileImagesForBatch(staleGuests);
+		verify(socialAccountWriter).deleteSocialAccountsByUsers(staleGuests);
+		verify(userWriter).deleteGuestUsers(staleGuests);
+	}
+
+	@Test
+	@DisplayName("방치된 GUEST 유저가 없으면 정리 로직을 호출하지 않는다")
+	void givenNoStaleGuestUsers_whenScheduleCleanup_thenDoesNothing() {
+		// given
+		when(pageableFactory.create(anyInt(), anyInt())).thenReturn(PageRequest.of(0, 10));
+		when(userRepository.findAllByStateAndUpdatedAtBefore(
+			eq(UserState.GUEST), any(LocalDateTime.class), any(Pageable.class)))
+			.thenReturn(Page.empty());
+
+		// when
+		batchScheduler.scheduleCleanupStaleGuestUsers();
+
+		// then
+		verify(userRepository).findAllByStateAndUpdatedAtBefore(
+			eq(UserState.GUEST), any(LocalDateTime.class), any(Pageable.class));
+		verifyNoInteractions(userProfileImageService, socialAccountWriter, userWriter);
 	}
 }
