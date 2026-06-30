@@ -19,7 +19,6 @@ public class AdminAuditLogEventListener {
 
 	@Async
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	@Transactional
 	public void handle(AdminAuditLogEvent event) {
 		adminAuditLogWriter.write(event.command());
 	}
