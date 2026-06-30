@@ -17,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -32,6 +33,7 @@ import net.causw.app.main.domain.asset.locker.service.implementation.LockerLogRe
 import net.causw.app.main.domain.asset.locker.service.implementation.LockerReader;
 import net.causw.app.main.domain.asset.locker.service.implementation.LockerValidator;
 import net.causw.app.main.domain.asset.locker.service.implementation.LockerWriter;
+import net.causw.app.main.domain.notification.notification.event.LockerExpiredEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
@@ -55,6 +57,8 @@ class LockerAdminServiceTest {
 	private LockerWriter lockerWriter;
 	@Mock
 	private AdminAuditLogEventPublisher adminAuditLogEventPublisher;
+	@Mock
+	private ApplicationEventPublisher applicationEventPublisher;
 	@Mock
 	private UserReader userReader;
 
@@ -427,9 +431,11 @@ class LockerAdminServiceTest {
 			verify(lockerReader).findExpiredLockers(any(LocalDateTime.class));
 
 			verify(lockerWriter).releaseLocker(locker1, admin, user1.getEmail(), user1.getName());
-			verify(lockerWriter).releaseLocker(locker2, admin, user2.getEmail(), user2.getName());
-			verify(adminAuditLogEventPublisher).publishLockerReleaseExpired(locker1, admin, Optional.of(user1));
-			verify(adminAuditLogEventPublisher).publishLockerReleaseExpired(locker2, admin, Optional.of(user2));
+				verify(lockerWriter).releaseLocker(locker2, admin, user2.getEmail(), user2.getName());
+				verify(adminAuditLogEventPublisher).publishLockerReleaseExpired(locker1, admin, Optional.of(user1));
+				verify(adminAuditLogEventPublisher).publishLockerReleaseExpired(locker2, admin, Optional.of(user2));
+				verify(applicationEventPublisher).publishEvent(new LockerExpiredEvent(user1.getId(), locker1.getId()));
+				verify(applicationEventPublisher).publishEvent(new LockerExpiredEvent(user2.getId(), locker2.getId()));
+			}
 		}
 	}
-}
