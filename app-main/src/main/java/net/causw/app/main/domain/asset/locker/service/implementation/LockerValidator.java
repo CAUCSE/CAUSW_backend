@@ -35,7 +35,7 @@ public class LockerValidator {
 	 * 사물함 반납 기간 검증
 	 */
 	public void validateReturnPeriod(LocalDateTime time) {
-		if (!lockerPeriodResolver.isRegisterActive(time)) {
+		if (!lockerPeriodResolver.isRegisterActive(time) && !lockerPeriodResolver.isExtendActive(time)) {
 			throw LockerErrorCode.LOCKER_RETURN_NOT_ALLOWED.toBaseException();
 		}
 	}
