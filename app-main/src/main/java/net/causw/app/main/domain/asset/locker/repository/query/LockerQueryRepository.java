@@ -32,10 +32,10 @@ public class LockerQueryRepository {
 		QLockerLocation qlockerLocation = QLockerLocation.lockerLocation;
 
 		Locker locker = jpaQueryFactory
-				.selectFrom(qLocker)
-				.join(qLocker.location, qlockerLocation).fetchJoin()
-				.where(qLocker.id.eq(lockerId))
-				.fetchOne();
+			.selectFrom(qLocker)
+			.join(qLocker.location, qlockerLocation).fetchJoin()
+			.where(qLocker.id.eq(lockerId))
+			.fetchOne();
 		return Optional.ofNullable(locker);
 	}
 

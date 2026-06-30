@@ -35,7 +35,7 @@ public class LockerReader {
 	 */
 	public Locker findById(String lockerId) {
 		return lockerQueryRepository.findLockerById(lockerId)
-				.orElseThrow(LockerErrorCode.LOCKER_NOT_FOUND::toBaseException);
+			.orElseThrow(LockerErrorCode.LOCKER_NOT_FOUND::toBaseException);
 	}
 
 	/**

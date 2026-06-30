@@ -2,7 +2,6 @@ package net.causw.app.main.domain.asset.locker.service;
 
 import java.time.LocalDateTime;
 
-import net.causw.app.main.domain.notification.notification.event.LockerExpiredEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +17,7 @@ import net.causw.app.main.domain.asset.locker.service.implementation.LockerLogRe
 import net.causw.app.main.domain.asset.locker.service.implementation.LockerReader;
 import net.causw.app.main.domain.asset.locker.service.implementation.LockerValidator;
 import net.causw.app.main.domain.asset.locker.service.implementation.LockerWriter;
+import net.causw.app.main.domain.notification.notification.event.LockerExpiredEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
@@ -168,7 +168,7 @@ public class LockerAdminService {
 
 		// locker user 존재할 시에 반환
 		var currentUser = locker.getUser();
-        currentUser.ifPresent(user -> lockerWriter.releaseLocker(locker, admin, user.getEmail(), user.getName()));
+		currentUser.ifPresent(user -> lockerWriter.releaseLocker(locker, admin, user.getEmail(), user.getName()));
 
 		lockerWriter.disableLocker(locker, admin);
 		adminAuditLogEventPublisher.publishLockerDisable(locker, admin, currentUser);
