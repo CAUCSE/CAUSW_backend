@@ -45,18 +45,23 @@ public class Locker extends BaseEntity {
 	@JoinColumn(name = "location_id", nullable = false)
 	private LockerLocation location;
 
+	// 연장여부 (반납/회수 시 기본값 false)
+	private boolean isExtended;
+
 	public static Locker of(
 		Long lockerNumber,
 		Boolean isActive,
 		User user,
 		LockerLocation location,
-		LocalDateTime expireDate) {
+		LocalDateTime expireDate
+	) {
 		return Locker.builder()
 			.lockerNumber(lockerNumber)
 			.isActive(isActive)
 			.user(user)
 			.location(location)
 			.expireDate(expireDate)
+			.isExtended(false)
 			.build();
 	}
 
@@ -64,53 +69,48 @@ public class Locker extends BaseEntity {
 		return Optional.ofNullable(this.user);
 	}
 
-	public void update(boolean isActive, User user, LocalDateTime expireDate) {
-		this.isActive = isActive;
-		this.user = user;
-		this.expireDate = expireDate;
-	}
-
-	public void updateLocation(LockerLocation location) {
-		this.location = location;
-	}
-
-	public void registerV1(User user, LocalDateTime expiredAt) {
-		this.user = user;
-		this.isActive = Boolean.FALSE;
-		this.expireDate = expiredAt;
-	}
-
-	public void returnLockerV1() {
-		this.user = null;
-		this.isActive = Boolean.TRUE;
-		this.expireDate = null;
-	}
-
+	/**
+	 * 사물함 신청
+	 * @param user 신청 유저
+	 * @param expiredAt 만료일
+	 */
 	public void register(User user, LocalDateTime expiredAt) {
 		this.user = user;
 		this.expireDate = expiredAt;
+		this.isExtended = false;
 	}
 
+	/**
+	 * 사물함 반납
+	 */
 	public void returnLocker() {
 		this.user = null;
 		this.expireDate = null;
+		this.isExtended = false;
 	}
 
+	/**
+	 * 사물함 연장
+	 * @param expiredAt 연장 일시
+	 */
 	public void extendExpireDate(LocalDateTime expiredAt) {
 		this.expireDate = expiredAt;
+		this.isExtended = true;
 	}
 
+	/**
+	 * 사물함 활성화
+	 */
 	public void enable() {
 		this.isActive = true;
 	}
 
+	/**
+	 * 사물함 비활성화
+	 */
 	public void disable() {
 		this.isActive = false;
 		this.user = null;
-	}
-
-	public void move(LockerLocation lockerLocation) {
-		this.location = lockerLocation;
 	}
 
 	public LockerStatus getStatus() {
