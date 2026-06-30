@@ -19,7 +19,7 @@ public class AdminAuditLogEventListener {
 
 	@Async
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	@Transactional
 	public void handle(AdminAuditLogEvent event) {
 		adminAuditLogWriter.write(event.command());
 	}
