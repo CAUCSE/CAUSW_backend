@@ -18,8 +18,7 @@ public record MyLockerResult(
 	String lockerId,
 	String displayName,
 	LocalDateTime expiredAt,
-	Boolean isExtended
-	) {
+	Boolean isExtended) {
 
 	/**
 	 * 사물함을 보유하지 않은 상태를 나타내는 결과를 반환한다.

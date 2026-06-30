@@ -23,7 +23,8 @@ public record MyLockerResponse(
 		return new MyLockerResponse(false, null, null, null, null);
 	}
 
-	public static MyLockerResponse of(String lockerId, String displayName, LocalDateTime expiredAt, boolean isExtended) {
+	public static MyLockerResponse of(String lockerId, String displayName, LocalDateTime expiredAt,
+		boolean isExtended) {
 		return new MyLockerResponse(true, lockerId, displayName, expiredAt, isExtended);
 	}
 }
