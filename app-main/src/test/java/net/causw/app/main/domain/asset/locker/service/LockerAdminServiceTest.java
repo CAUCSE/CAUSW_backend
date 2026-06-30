@@ -431,11 +431,11 @@ class LockerAdminServiceTest {
 			verify(lockerReader).findExpiredLockers(any(LocalDateTime.class));
 
 			verify(lockerWriter).releaseLocker(locker1, admin, user1.getEmail(), user1.getName());
-				verify(lockerWriter).releaseLocker(locker2, admin, user2.getEmail(), user2.getName());
-				verify(adminAuditLogEventPublisher).publishLockerReleaseExpired(locker1, admin, Optional.of(user1));
-				verify(adminAuditLogEventPublisher).publishLockerReleaseExpired(locker2, admin, Optional.of(user2));
-				verify(applicationEventPublisher).publishEvent(new LockerExpiredEvent(user1.getId(), locker1.getId()));
-				verify(applicationEventPublisher).publishEvent(new LockerExpiredEvent(user2.getId(), locker2.getId()));
-			}
+			verify(lockerWriter).releaseLocker(locker2, admin, user2.getEmail(), user2.getName());
+			verify(adminAuditLogEventPublisher).publishLockerReleaseExpired(locker1, admin, Optional.of(user1));
+			verify(adminAuditLogEventPublisher).publishLockerReleaseExpired(locker2, admin, Optional.of(user2));
+			verify(applicationEventPublisher).publishEvent(new LockerExpiredEvent(user1.getId(), locker1.getId()));
+			verify(applicationEventPublisher).publishEvent(new LockerExpiredEvent(user2.getId(), locker2.getId()));
 		}
 	}
+}
