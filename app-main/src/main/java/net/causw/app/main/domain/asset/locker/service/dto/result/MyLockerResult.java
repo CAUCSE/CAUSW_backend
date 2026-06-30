@@ -17,7 +17,9 @@ public record MyLockerResult(
 	boolean hasLocker,
 	String lockerId,
 	String displayName,
-	LocalDateTime expiredAt) {
+	LocalDateTime expiredAt,
+	Boolean isExtended
+	) {
 
 	/**
 	 * 사물함을 보유하지 않은 상태를 나타내는 결과를 반환한다.
@@ -25,7 +27,7 @@ public record MyLockerResult(
 	 * @return 사물함 미보유 상태 결과
 	 */
 	public static MyLockerResult empty() {
-		return new MyLockerResult(false, null, null, null);
+		return new MyLockerResult(false, null, null, null, null);
 	}
 
 	/**
@@ -36,7 +38,7 @@ public record MyLockerResult(
 	 * @param expiredAt   사물함 만료 일시
 	 * @return 사물함 보유 상태 결과
 	 */
-	public static MyLockerResult of(String lockerId, String displayName, LocalDateTime expiredAt) {
-		return new MyLockerResult(true, lockerId, displayName, expiredAt);
+	public static MyLockerResult of(String lockerId, String displayName, LocalDateTime expiredAt, boolean isExtended) {
+		return new MyLockerResult(true, lockerId, displayName, expiredAt, isExtended);
 	}
 }

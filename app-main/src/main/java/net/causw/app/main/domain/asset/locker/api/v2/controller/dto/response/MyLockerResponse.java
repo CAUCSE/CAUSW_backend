@@ -13,13 +13,17 @@ public record MyLockerResponse(
 
 	@Schema(description = "사물함 위치 표시명", example = "4층 15번", nullable = true) String displayName,
 
-	@Schema(description = "만료일시", example = "2026-06-30T23:59:59", nullable = true) LocalDateTime expiredAt) {
+	@Schema(description = "만료일시", example = "2026-06-30T23:59:59", nullable = true) LocalDateTime expiredAt,
+
+	@Schema(description = "사물함 연장됨 여부", example = "false", nullable = true) Boolean isExtended
+
+) {
 
 	public static MyLockerResponse empty() {
-		return new MyLockerResponse(false, null, null, null);
+		return new MyLockerResponse(false, null, null, null, null);
 	}
 
-	public static MyLockerResponse of(String lockerId, String displayName, LocalDateTime expiredAt) {
-		return new MyLockerResponse(true, lockerId, displayName, expiredAt);
+	public static MyLockerResponse of(String lockerId, String displayName, LocalDateTime expiredAt, boolean isExtended) {
+		return new MyLockerResponse(true, lockerId, displayName, expiredAt, isExtended);
 	}
 }
