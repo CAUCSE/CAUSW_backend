@@ -27,6 +27,22 @@ public class LockerReader {
 	private final LockerRepository lockerRepository;
 	private final LockerQueryRepository lockerQueryRepository;
 
+	/**
+	 * 사물함 찾기
+	 *
+	 * @param lockerId locker id
+	 * @return Locker 사물함
+	 */
+	public Locker findById(String lockerId) {
+		return lockerQueryRepository.findLockerById(lockerId)
+			.orElseThrow(LockerErrorCode.LOCKER_NOT_FOUND::toBaseException);
+	}
+
+	/**
+	 * 사물함 쓰기용 찾기 (pessimistic lock)
+	 * @param lockerId locker id
+	 * @return 사물함
+	 */
 	public Locker findByIdForWrite(String lockerId) {
 		return lockerRepository.findByIdForWrite(lockerId)
 			.orElseThrow(LockerErrorCode.LOCKER_NOT_FOUND::toBaseException);

@@ -63,7 +63,7 @@ public class SchemaValidationTest {
 		public JpaVendorAdapter jpaVendorAdapter() {
 			HibernateJpaVendorAdapter adapter = new HibernateJpaVendorAdapter();
 			adapter.setShowSql(true);
-			adapter.setDatabasePlatform("org.hibernate.dialect.MySQL8Dialect");
+			adapter.setDatabasePlatform("org.hibernate.dialect.MySQLDialect");
 			return adapter;
 		}
 

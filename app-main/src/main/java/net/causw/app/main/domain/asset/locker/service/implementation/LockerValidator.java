@@ -35,7 +35,7 @@ public class LockerValidator {
 	 * 사물함 반납 기간 검증
 	 */
 	public void validateReturnPeriod(LocalDateTime time) {
-		if (!lockerPeriodResolver.isRegisterActive(time)) {
+		if (!lockerPeriodResolver.isRegisterActive(time) && !lockerPeriodResolver.isExtendActive(time)) {
 			throw LockerErrorCode.LOCKER_RETURN_NOT_ALLOWED.toBaseException();
 		}
 	}
@@ -78,7 +78,7 @@ public class LockerValidator {
 	 * 현재 만료일이 연장 목표 만료일과 동일하면 이미 연장된 것
 	 */
 	public void validateNotAlreadyExtended(Locker locker, LocalDateTime nextExpireDate) {
-		if (locker.getExpireDate() != null && locker.getExpireDate().isEqual(nextExpireDate)) {
+		if (locker.isExtended() || (locker.getExpireDate() != null && locker.getExpireDate().isEqual(nextExpireDate))) {
 			throw LockerErrorCode.LOCKER_ALREADY_EXTENDED.toBaseException();
 		}
 	}

@@ -31,6 +31,7 @@ public class NotificationPushSender {
 	 * @param body  알림 내용
 	 */
 	public void sendToUser(User user, String title, String body) {
+		log.debug("단일 유저 푸시알림 전송 요청: userId={}", user.getId());
 		send(user, title, body);
 	}
 
@@ -42,6 +43,7 @@ public class NotificationPushSender {
 	 * @param body  알림 내용
 	 */
 	public void sendToUsers(List<User> users, String title, String body) {
+		log.debug("다중 유저 푸시알림 전송 요청: userCount={}", users.size());
 		users.forEach(user -> send(user, title, body));
 	}
 
@@ -53,10 +55,18 @@ public class NotificationPushSender {
 	 */
 	private void send(User user, String title, String body) {
 		if (user.getFcmTokens() == null) {
+			log.debug("푸시알림 전송 생략: userId={}, reason=fcm_tokens_null", user.getId());
 			return;
 		}
 
 		Set<String> tokens = new HashSet<>(user.getFcmTokens());
+		if (tokens.isEmpty()) {
+			log.debug("푸시알림 전송 생략: userId={}, reason=fcm_tokens_empty", user.getId());
+			return;
+		}
+
+		log.debug("푸시알림 전송 시작: userId={}, tokenCount={}, titleLength={}, bodyLength={}", user.getId(),
+			tokens.size(), title == null ? 0 : title.length(), body == null ? 0 : body.length());
 		tokens.forEach(token -> trySend(user, token, title, body));
 	}
 
@@ -70,13 +80,15 @@ public class NotificationPushSender {
 	 */
 	private void trySend(User user, String token, String title, String body) {
 		try {
+			log.debug("푸시알림 토큰별 전송 시도: userId={}", user.getId());
 			pushNotificationSender.send(token, title, body);
+			log.debug("푸시알림 토큰별 전송 성공: userId={}", user.getId());
 		} catch (FirebaseMessagingException e) {
-			log.error("FCM 전송 실패: {}, 이유: {}", token, e.getMessage());
+			log.error("푸시알림 전송 실패: {}, 이유: {}", token, e.getMessage());
 			userPushTokenWriter.removeFcmToken(user, token);
-			log.info("오류 발생으로 FCM 토큰 제거됨: {}", token);
+			log.info("오류 발생으로 푸시알림 토큰 제거됨: {}", token);
 		} catch (Exception e) {
-			log.error("FCM 전송 중 알 수 없는 예외 발생: {}", e.getMessage(), e);
+			log.error("푸시알림 전송 중 알 수 없는 예외 발생: {}", e.getMessage(), e);
 		}
 	}
 }
