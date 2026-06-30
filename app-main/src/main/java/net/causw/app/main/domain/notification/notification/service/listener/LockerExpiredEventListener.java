@@ -40,12 +40,18 @@ public class LockerExpiredEventListener {
 	public void handle(LockerExpiredEvent event) {
 		Locker locker = lockerReader.findById(event.lockerId());
 		LockerLocation location = locker.getLocation();
-		User user = userReader.findUserById(event.userId());
+
+		User user;
+		try {
+			user = userReader.findUserById(event.userId());
+		} catch (Exception e) {
+			return;
+		}
 
 		String description = String.format("이용기간이 만료되어 사물함(%s %d번)이 자동으로 반납되었습니다.", location.getDescription(),
 			locker.getLockerNumber());
-		Notification notification = Notification.of(user, description, description, NoticeType.LOCKER, locker.getId(),
-			location.getId());
+		Notification notification = notificationWriter.save(Notification.of(user, description, description, NoticeType.LOCKER, locker.getId(),
+			location.getId()));
 
 		notificationPushSender.sendToUser(user, description, description);
 		notificationWriter.saveLog(user, notification);
