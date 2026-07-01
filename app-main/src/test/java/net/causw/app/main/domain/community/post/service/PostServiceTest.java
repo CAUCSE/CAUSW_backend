@@ -66,7 +66,6 @@ import net.causw.app.main.domain.community.post.service.implementation.PostImage
 import net.causw.app.main.domain.community.post.service.implementation.PostReader;
 import net.causw.app.main.domain.community.post.service.implementation.PostWriter;
 import net.causw.app.main.domain.community.reaction.service.implementation.LikePostReader;
-import net.causw.app.main.domain.community.vote.service.v2.implementation.VoteWriter;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.ProfileImageType;
@@ -100,9 +99,6 @@ public class PostServiceTest {
 
 	@Mock
 	LikePostReader likePostReader;
-
-	@Mock
-	VoteWriter voteWriter;
 
 	@Mock
 	BlockReader blockReader;
