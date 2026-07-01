@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.community.vote.service.v2.implementation;
+package net.causw.app.main.domain.community.vote.service.implementation;
 
 import java.util.List;
 

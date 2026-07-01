@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.community.vote.service.v2;
+package net.causw.app.main.domain.community.vote.service;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -12,21 +12,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.community.post.entity.Post;
-import net.causw.app.main.domain.community.post.service.v2.implementation.PostReader;
+import net.causw.app.main.domain.community.post.service.implementation.PostReader;
 import net.causw.app.main.domain.community.vote.api.v2.dto.request.CreateVoteRequest;
 import net.causw.app.main.domain.community.vote.api.v2.dto.response.VoteOptionResponse;
 import net.causw.app.main.domain.community.vote.api.v2.dto.response.VoteResponse;
 import net.causw.app.main.domain.community.vote.entity.Vote;
 import net.causw.app.main.domain.community.vote.entity.VoteOption;
 import net.causw.app.main.domain.community.vote.entity.VoteRecord;
-import net.causw.app.main.domain.community.vote.service.v2.implementation.VoteOptionReader;
-import net.causw.app.main.domain.community.vote.service.v2.implementation.VoteOptionWriter;
-import net.causw.app.main.domain.community.vote.service.v2.implementation.VoteReader;
-import net.causw.app.main.domain.community.vote.service.v2.implementation.VoteRecordReader;
-import net.causw.app.main.domain.community.vote.service.v2.implementation.VoteRecordWriter;
-import net.causw.app.main.domain.community.vote.service.v2.implementation.VoteWriter;
+import net.causw.app.main.domain.community.vote.service.implementation.VoteOptionReader;
+import net.causw.app.main.domain.community.vote.service.implementation.VoteOptionWriter;
+import net.causw.app.main.domain.community.vote.service.implementation.VoteReader;
+import net.causw.app.main.domain.community.vote.service.implementation.VoteRecordReader;
+import net.causw.app.main.domain.community.vote.service.implementation.VoteRecordWriter;
+import net.causw.app.main.domain.community.vote.service.implementation.VoteWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.shared.StatusPolicy;
 import net.causw.app.main.shared.exception.errorcode.VoteErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -193,7 +192,7 @@ public class VoteService {
 
 		return VoteResponse.of(
 			vote,
-			StatusPolicy.isVoteOwner(vote, user),
+			vote.getPost().getWriter().equals(user),
 			!votedOptionIds.isEmpty(),
 			allRecords.size(),
 			uniqueVoterIds.size(),

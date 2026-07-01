@@ -1,7 +1,4 @@
-package net.causw.app.main.domain.community.vote.service.v2.implementation;
-
-import java.util.List;
-import java.util.Optional;
+package net.causw.app.main.domain.community.vote.service.implementation;
 
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,15 +13,19 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
-public class VoteRecordReader {
+@Transactional
+public class VoteRecordWriter {
 	private final VoteRecordRepository voteRecordRepository;
 
-	public Optional<VoteRecord> findByVoteOptionAndUser(VoteOption voteOption, User user) {
-		return voteRecordRepository.findByVoteOptionAndUser(voteOption, user);
+	public VoteRecord save(VoteRecord voteRecord) {
+		return voteRecordRepository.save(voteRecord);
 	}
 
-	public List<VoteRecord> findAllByVote(Vote vote) {
-		return voteRecordRepository.findAllByVoteOption_Vote(vote);
+	public void deleteByVoteOptionAndUser(VoteOption voteOption, User user) {
+		voteRecordRepository.deleteByVoteOptionAndUser(voteOption, user);
+	}
+
+	public void deleteAllByVoteAndUser(Vote vote, User user) {
+		voteRecordRepository.deleteAllByVoteOption_VoteAndUser(vote, user);
 	}
 }

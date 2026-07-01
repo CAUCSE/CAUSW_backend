@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import net.causw.app.main.domain.community.vote.api.v2.dto.request.CreateVoteRequest;
 import net.causw.app.main.domain.community.vote.api.v2.dto.response.VoteResponse;
-import net.causw.app.main.domain.community.vote.service.v2.VoteService;
+import net.causw.app.main.domain.community.vote.service.VoteService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 
