@@ -37,11 +37,6 @@ public class UserQueryRepository {
 
 	private final JPAQueryFactory jpaQueryFactory;
 
-	private static BooleanExpression notDeleted() {
-		QUser user = QUser.user;
-		return user.deletedAt.isNull();
-	}
-
 	public List<User> findAllActiveUsersByRoles(List<Role> roles) {
 		QUser user = QUser.user;
 
@@ -54,10 +49,6 @@ public class UserQueryRepository {
 
 		return jpaQueryFactory.selectFrom(user)
 			.where(predicate)
-			.leftJoin(user.ceremonyNotificationSetting).fetchJoin()
-			.leftJoin(user.locker).fetchJoin()
-			.leftJoin(user.userProfileImage).fetchJoin()
-			.leftJoin(user.userProfileImage.uuidFile).fetchJoin()
 			.distinct()
 			.fetch();
 	}
@@ -67,10 +58,6 @@ public class UserQueryRepository {
 		User result = jpaQueryFactory.selectFrom(user)
 			.where(user.id.eq(userId))
 			.leftJoin(user.roles).fetchJoin()
-			.leftJoin(user.ceremonyNotificationSetting).fetchJoin()
-			.leftJoin(user.locker).fetchJoin()
-			.leftJoin(user.userProfileImage).fetchJoin()
-			.leftJoin(user.userProfileImage.uuidFile).fetchJoin()
 			.fetchOne();
 
 		return Optional.ofNullable(result);
@@ -82,10 +69,6 @@ public class UserQueryRepository {
 		User result = jpaQueryFactory.selectFrom(user)
 			.where(user.email.eq(email))
 			.leftJoin(user.roles).fetchJoin()
-			.leftJoin(user.ceremonyNotificationSetting).fetchJoin()
-			.leftJoin(user.locker).fetchJoin()
-			.leftJoin(user.userProfileImage).fetchJoin()
-			.leftJoin(user.userProfileImage.uuidFile).fetchJoin()
 			.fetchOne();
 
 		return Optional.ofNullable(result);
@@ -97,10 +80,6 @@ public class UserQueryRepository {
 		return jpaQueryFactory.selectFrom(user)
 			.where(user.id.in(userIds))
 			.leftJoin(user.roles).fetchJoin()
-			.leftJoin(user.ceremonyNotificationSetting).fetchJoin()
-			.leftJoin(user.locker).fetchJoin()
-			.leftJoin(user.userProfileImage).fetchJoin()
-			.leftJoin(user.userProfileImage.uuidFile).fetchJoin()
 			.distinct()
 			.fetch();
 	}
@@ -130,7 +109,7 @@ public class UserQueryRepository {
 
 	/**
 	 * 관리자 유저 목록 조회 — QueryDSL Projection으로 DTO 직접 반환.
-	 * 삭제 회원 제외(notDeleted), states 미지정 시 ACTIVE만 조회.
+	 * 탈퇴 회원 제외(notInactive), states 미지정 시 ACTIVE만 조회.
 	 */
 	public Page<UserListQueryResult> findUserList(UserListCondition condition, Pageable pageable) {
 		List<UserState> states = (condition.states() == null || condition.states().isEmpty())
@@ -138,7 +117,7 @@ public class UserQueryRepository {
 			: condition.states();
 
 		BooleanBuilder where = new BooleanBuilder()
-			.and(notDeleted())
+			.and(notInactive())
 			.and(userListKeywordCondition(condition.keyword()))
 			.and(userStatesCondition(states))
 			.and(academicStatusCondition(condition.academicStatus()))
@@ -163,14 +142,15 @@ public class UserQueryRepository {
 	}
 
 	/**
-	 * 삭제(탈퇴) 회원 전용 목록 조회 — deletedAt이 null이 아닌 유저만 반환.
+	 * 탈퇴 회원 전용 목록 조회 — INACTIVE 상태 유저만 반환.
+	 * TODO: 탈퇴 및 추방 유저 (익명화 이전) 조회
 	 */
 	public Page<DeletedUserListQueryResult> findDeletedUserList(
 		DeletedUserQueryCondition condition,
 		Pageable pageable) {
 
 		BooleanBuilder where = new BooleanBuilder()
-			.and(user.deletedAt.isNotNull())
+			.and(user.state.eq(UserState.INACTIVE))
 			.and(adminKeywordCondition(condition.keyword()))
 			.and(departmentCondition(condition.department()))
 			.and(admissionYearBetween(condition.admissionYearFrom(), condition.admissionYearTo()))
@@ -201,7 +181,7 @@ public class UserQueryRepository {
 		QUser user = QUser.user;
 
 		BooleanBuilder where = new BooleanBuilder()
-			.and(notDeleted())
+			.and(notInactive())
 			.and(nameOrStudentIdKeywordCondition(keyword))
 			.and(userStateCondition(state))
 			.and(academicStatusCondition(academicStatus))
@@ -242,7 +222,6 @@ public class UserQueryRepository {
 		return jpaQueryFactory.selectFrom(user)
 			.where(user.admissionYear.in(admissionYears))
 			.where(user.state.eq(UserState.ACTIVE))
-			.where(notDeleted())
 			.fetch();
 	}
 
@@ -254,7 +233,6 @@ public class UserQueryRepository {
 		QUser user = QUser.user;
 		return jpaQueryFactory.selectFrom(user)
 			.where(user.state.eq(UserState.ACTIVE))
-			.where(notDeleted())
 			.fetch();
 	}
 
@@ -276,7 +254,6 @@ public class UserQueryRepository {
 			.select(user.count())
 			.from(user)
 			.where(user.state.eq(UserState.ACTIVE))
-			.where(notDeleted())
 			.fetchOne();
 	}
 
@@ -308,7 +285,19 @@ public class UserQueryRepository {
 
 	// ─── 조건 헬퍼 ──────────────────────────────────────────────────────────────
 
-	/** 이메일·이름·학번 OR like 검색 (관리자 유저 목록, 삭제 회원 검색용) */
+	// deletedAt 타임스탬프가 없는 사용자만 포함
+	private static BooleanExpression notDeleted() {
+		QUser user = QUser.user;
+		return user.deletedAt.isNull();
+	}
+
+	// 탈퇴(INACTIVE) 상태가 아닌 사용자만 포함
+	private static BooleanExpression notInactive() {
+		QUser user = QUser.user;
+		return user.state.ne(UserState.INACTIVE);
+	}
+
+	/** 이메일·이름·학번 OR like 검색 (관리자 유저 목록, 탈퇴 회원 검색용) */
 	private BooleanExpression userListKeywordCondition(String keyword) {
 		if (keyword == null || keyword.isBlank()) {
 			return null;
@@ -319,7 +308,7 @@ public class UserQueryRepository {
 			.or(user.studentId.containsIgnoreCase(k));
 	}
 
-	/** 이메일·이름·학번 OR like 검색 (삭제 회원 전용) */
+	/** 이메일·이름·학번 OR like 검색 (탈퇴 회원 전용) */
 	private BooleanExpression adminKeywordCondition(String keyword) {
 		return userListKeywordCondition(keyword);
 	}

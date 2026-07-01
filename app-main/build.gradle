@@ -1,24 +1,24 @@
 buildscript {
     dependencies {
-        classpath 'org.flywaydb:flyway-mysql:11.15.0'
-        classpath 'com.mysql:mysql-connector-j:8.4.0'
+        classpath 'org.flywaydb:flyway-mysql:12.4.0'
+        classpath 'com.mysql:mysql-connector-j:9.7.0'
     }
 }
 
 plugins {
-    id 'org.springframework.boot' version '3.2.0'
-    id 'org.flywaydb.flyway' version '11.15.0'
-    id 'com.diffplug.spotless' version '8.1.0'
+    id 'org.springframework.boot' version '4.0.7'
+    id 'org.flywaydb.flyway' version '12.4.0'
+    id 'com.diffplug.spotless' version '8.7.0'
 }
 
 ext {
-    queryDslVersion = "6.10.1"
+    queryDslVersion = "7.3.0"
 }
 
 spotless {
     java {
         target '**/*.java'
-        lineEndings 'UNIX'
+        lineEndings = 'UNIX'
 
         // 네이버 자바 컨벤션 적용
         importOrder("\\#", "java", "javax", "org", "net", "com", "") // import 순서 정리 (\\# = static import 그룹, Eclipse 설정의 # 과 동일)
@@ -44,36 +44,39 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
+    implementation 'org.springframework.boot:spring-boot-starter-restclient'
 
-    implementation 'org.jsoup:jsoup:1.18.1'
-    implementation 'io.jsonwebtoken:jjwt:0.9.1'
-    implementation 'com.mysql:mysql-connector-j:8.4.0'
+    implementation 'org.jsoup:jsoup:1.22.2'
+    implementation 'io.jsonwebtoken:jjwt-api:0.13.0'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.13.0'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.13.0'
+    implementation 'com.mysql:mysql-connector-j:9.7.0'
 
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
     // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-security-test'
     testImplementation 'org.springframework.security:spring-security-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     // Lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
     // Swagger
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2'
-
-    // Discord LogBack
-    implementation 'com.github.napstr:logback-discord-appender:1.0.0'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3'
 
     // S3
-    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+    implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3:4.0.0'
 
     // Redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
     // MapStruct
-    implementation 'org.mapstruct:mapstruct:1.4.2.Final'
-    annotationProcessor 'org.mapstruct:mapstruct-processor:1.4.2.Final'
+    implementation 'org.mapstruct:mapstruct:1.6.3'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
     implementation 'javax.xml.bind:jaxb-api:2.3.1'
 
     // h2 database(테스트용)
@@ -84,7 +87,7 @@ dependencies {
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
 
     // Apache POI for Excel file generation
-    implementation 'org.apache.poi:poi-ooxml:5.2.3'
+    implementation 'org.apache.poi:poi-ooxml:5.5.1'
 
     // Apache Common CSV
     implementation 'org.apache.commons:commons-csv:1.14.1'
@@ -95,19 +98,17 @@ dependencies {
 
     // Retry 관련
     // https://mvnrepository.com/artifact/org.springframework.retry/spring-retry
-    implementation 'org.springframework.retry:spring-retry:1.0.3.RELEASE'
+    implementation 'org.springframework.retry:spring-retry:2.0.13'
 
     // FCM
-    implementation 'com.google.firebase:firebase-admin:9.2.0'
+    implementation 'com.google.firebase:firebase-admin:9.9.0'
 
     // Flyway
-    implementation 'org.flywaydb:flyway-core:11.15.0'
-    implementation 'org.flywaydb:flyway-mysql:11.15.0'
+    implementation 'org.springframework.boot:spring-boot-starter-flyway'
+    implementation 'org.flywaydb:flyway-mysql:12.4.0'
 
     // logback json 형식 관련
-    implementation 'ch.qos.logback.contrib:logback-json-classic:0.1.5'
-    implementation 'ch.qos.logback.contrib:logback-jackson:0.1.5'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+    implementation 'net.logstash.logback:logstash-logback-encoder:9.0'
 
     // query-dsl
     implementation "io.github.openfeign.querydsl:querydsl-core:${queryDslVersion}"
@@ -116,8 +117,9 @@ dependencies {
     annotationProcessor "jakarta.annotation:jakarta.annotation-api"
     annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 
-    //Datasource-Proxy
-    implementation 'com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:1.12.1'
+    // Datasource-Proxy
+    implementation 'com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:2.0.1'
+
 }
 
 bootJar {
@@ -146,7 +148,7 @@ test {
 
 def querydslDir = layout.buildDirectory.dir("generated/querydsl").get().asFile;
 
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
     options.generatedSourceOutputDirectory = file(querydslDir)
 }
 

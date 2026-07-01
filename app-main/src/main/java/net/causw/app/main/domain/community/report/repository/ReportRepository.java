@@ -57,7 +57,7 @@ public interface ReportRepository extends JpaRepository<Report, String> {
 		   ORDER BY CASE
 		                WHEN u.state = 'ACTIVE' THEN 0
 		                WHEN u.state = 'AWAIT' THEN 1
-		                WHEN u.deletedAt IS NOT NULL THEN 2
+		                WHEN u.state = 'INACTIVE' THEN 2
 		                WHEN u.state = 'REJECT' THEN 3
 		                WHEN u.state = 'DROP' THEN 4
 		                ELSE 99
@@ -90,8 +90,8 @@ public interface ReportRepository extends JpaRepository<Report, String> {
 		    UNION ALL
 		    SELECT
 		        r.id AS reportId,
-		        cc.id AS contentId,
-		        cc.content AS content,
+		        c.id AS contentId,
+		        c.content AS content,
 		        p.title AS postTitle,
 		        p.id AS postId,
 		        p.board_id AS boardId,
@@ -100,10 +100,9 @@ public interface ReportRepository extends JpaRepository<Report, String> {
 		        r.report_reason AS reportReason,
 		        r.created_at AS reportCreatedAt
 		    FROM tb_report r
-		    JOIN tb_child_comment cc ON r.target_id = cc.id AND r.report_type = 'CHILD_COMMENT'
-		    JOIN tb_comment parent_c ON cc.parent_comment_id = parent_c.id
-		    JOIN tb_post p ON parent_c.post_id = p.id
-		    JOIN tb_user u ON cc.user_id = u.id
+		    JOIN tb_comment c ON r.target_id = c.id AND r.report_type = 'CHILD_COMMENT'
+		    JOIN tb_post p ON c.post_id = p.id
+		    JOIN tb_user u ON c.user_id = u.id
 		    WHERE (:userId IS NULL OR u.id = :userId)
 		) AS combined_reports
 		ORDER BY reportCreatedAt DESC
@@ -117,8 +116,8 @@ public interface ReportRepository extends JpaRepository<Report, String> {
 		    UNION ALL
 		    SELECT r.id
 		    FROM tb_report r
-		    JOIN tb_child_comment cc ON r.target_id = cc.id AND r.report_type = 'CHILD_COMMENT'
-		    JOIN tb_user u ON cc.user_id = u.id
+		    JOIN tb_comment c ON r.target_id = c.id AND r.report_type = 'CHILD_COMMENT'
+		    JOIN tb_user u ON c.user_id = u.id
 		    WHERE (:userId IS NULL OR u.id = :userId)
 		) AS T
 		""", nativeQuery = true)

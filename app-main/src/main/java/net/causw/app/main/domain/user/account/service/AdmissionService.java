@@ -9,7 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
-import net.causw.app.main.domain.asset.file.service.v2.implementation.FileWriter;
+import net.causw.app.main.domain.asset.file.service.implementation.FileWriter;
 import net.causw.app.main.domain.notification.notification.event.AdmissionRequestedEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
@@ -38,17 +38,17 @@ public class AdmissionService {
 	 * v2 재학정보 인증 신청을 생성합니다.
 	 *
 	 * 검증 사항:
+	 * - 추방된 학번인지 검증
 	 * - 사용자 상태가 AWAIT 또는 REJECT인 경우만 신청 가능
 	 * - 기존 신청이 존재하지 않아야 함
 	 * - 첨부 이미지 1개 이상 필수
-	 * - 요청 학번이 다른 ACTIVE/탈퇴(deletedAt)/DROP 사용자와 중복되지 않아야 함
+	 * - 요청 학번이 다른 ACTIVE/INACTIVE/DROP 사용자와 중복되지 않아야 함
 	 */
 	@Transactional
 	public AdmissionResult createAdmission(
 		User user,
 		AdmissionCreateCommand dto,
 		List<MultipartFile> attachImages) {
-
 		// 인증 신청 생성 검증
 		admissionValidator.validateAdmissionCreate(user, dto.requestedStudentId(),
 			dto.requestedAcademicStatus(), dto.graduationYear(), attachImages);
@@ -70,7 +70,8 @@ public class AdmissionService {
 			dto.requestedDepartment(),
 			dto.graduationYear());
 
-		eventPublisher.publishEvent(new AdmissionRequestedEvent(user.getId(), admission.getRequestedAcademicStatus()));
+		eventPublisher.publishEvent(new AdmissionRequestedEvent(user.getId(), admission.getRequestedAcademicStatus(),
+			dto.requestedStudentId()));
 
 		return AdmissionResult.from(admission);
 	}

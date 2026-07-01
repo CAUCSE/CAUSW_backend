@@ -1,11 +1,13 @@
 package net.causw.app.main.domain.community.post.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -18,6 +20,7 @@ import net.causw.app.main.domain.community.post.entity.Post;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, String> {
+	@EntityGraph(attributePaths = {"postAttachImageList"})
 	Page<Post> findAllByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(String boardId, Pageable pageable);
 
 	Optional<Post> findTop1ByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(String boardId);
@@ -42,33 +45,19 @@ public interface PostRepository extends JpaRepository<Post, String> {
 		@Param("keyword") String keyword,
 		Pageable pageable);
 
-	// 특정 사용자가 작성한 게시글 검색
-	@Query("SELECT p " +
-		"FROM Post p " +
-		"JOIN p.board b " +
-		"LEFT JOIN b.circle c " +
-		"LEFT JOIN CircleMember cm ON p.writer.id = cm.user.id AND c.id = cm.circle.id " +
-		"WHERE p.writer.id = :user_id AND p.isDeleted = false AND b.isDeleted = false " +
-		"AND (c.id IS NULL " +
-		"OR (cm.status = 'MEMBER' AND c.isDeleted = false)) " +
-		"ORDER BY p.createdAt DESC")
-	Page<Post> findByUserId(@Param("user_id") String userId, Pageable pageable);
-
 	// fetch join으로 Board까지 가져오기
 	@Query(value = "SELECT DISTINCT p FROM Post p JOIN FETCH p.board WHERE p.id = :id")
 	Optional<Post> findById(@Param("id") String id);
 
+	@Query("SELECT DISTINCT p FROM Post p JOIN FETCH p.board WHERE p.id IN :ids")
+	List<Post> findAllByIdInWithBoard(@Param("ids") Collection<String> ids);
+
 	@Query("SELECT COUNT(c) FROM Comment c WHERE c.post.id = :postId AND c.isDeleted = false")
 	Long countCommentsByPostId(@Param("postId") String postId);
 
-	@Query("SELECT COUNT(cc) FROM ChildComment cc WHERE cc.parentComment.post.id = :postId AND cc.isDeleted = false")
-	Long countChildCommentsByPostId(@Param("postId") String postId);
-
-	// 게시글에 작성된 모든댓글(댓글 + 대댓글)의 수 반환
+	// 게시글에 작성된 모든댓글의 수 반환
 	default Long countAllCommentByPost_Id(String postId) {
-		Long commentCount = countCommentsByPostId(postId);
-		Long childCommentCount = countChildCommentsByPostId(postId);
-		return commentCount + childCommentCount;
+		return countCommentsByPostId(postId);
 	}
 
 	Optional<Post> findByForm(Form form);

@@ -7,17 +7,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.hibernate.annotations.BatchSize;
 
-import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
-import net.causw.app.main.domain.asset.locker.entity.Locker;
-import net.causw.app.main.domain.campus.circle.entity.CircleMember;
 import net.causw.app.main.domain.community.vote.entity.VoteRecord;
-import net.causw.app.main.domain.notification.notification.entity.CeremonyNotificationSetting;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
-import net.causw.app.main.domain.user.account.api.v1.dto.GraduatedUserCommand;
-import net.causw.app.main.domain.user.account.api.v1.dto.UserCreateRequestDto;
 import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.account.enums.user.GraduationType;
 import net.causw.app.main.domain.user.account.enums.user.ProfileImageType;
@@ -27,19 +22,9 @@ import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
 import net.causw.app.main.domain.user.auth.service.dto.OAuthAttributes;
 import net.causw.app.main.shared.entity.BaseEntity;
+import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.CollectionTable;
-import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -118,11 +103,7 @@ public class User extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	@Column(name = "profile_image_type", nullable = false)
 	@Builder.Default
-	private ProfileImageType profileImageType = ProfileImageType.MALE_1;
-
-	@OneToOne(cascade = {CascadeType.REMOVE,
-		CascadeType.PERSIST}, mappedBy = "user", fetch = FetchType.LAZY)
-	private UserProfileImage userProfileImage;
+	private ProfileImageType profileImageType = ProfileImageType.UNSET;
 
 	@Column(name = "state", nullable = false)
 	@Enumerated(EnumType.STRING)
@@ -130,15 +111,6 @@ public class User extends BaseEntity {
 
 	@Column(name = "deleted_at", nullable = true)
 	private LocalDateTime deletedAt;
-
-	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
-	private Locker locker;
-
-	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
-	private CeremonyNotificationSetting ceremonyNotificationSetting;
-
-	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-	private List<CircleMember> circleMemberList;
 
 	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
 	private List<VoteRecord> voteRecordList;
@@ -151,10 +123,10 @@ public class User extends BaseEntity {
 	@Builder.Default
 	private Boolean isV2 = true;
 
-	@ElementCollection(fetch = FetchType.EAGER)
-	@CollectionTable(name = "tb_user_fcm_token", joinColumns = @JoinColumn(name = "user_id"))
-	@Column(name = "fcm_token_value")
-	private Set<String> fcmTokens = new HashSet<>();
+	@BatchSize(size = 100)
+	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+	@Builder.Default
+	private Set<FcmToken> fcmTokenEntities = new HashSet<>();
 
 	// 신고 관련 필드
 	@Column(name = "report_count", nullable = false)
@@ -165,22 +137,47 @@ public class User extends BaseEntity {
 	@Builder.Default
 	private Boolean isEmailVerified = false;
 
-	public void delete() {
+	// 자진 탈퇴 처리
+	public void withdraw(LocalDateTime now) {
+		this.state = UserState.INACTIVE;
+		this.deletedAt = now;
+	}
+
+	/*
+	 * 개인정보 익명화
+	 * - row는 유지하고 개인정보만 제거
+	 */
+	public void anonymize() {
 		this.email = "deleted_" + this.getId();
 		this.name = "탈퇴한 사용자";
 		this.phoneNumber = null;
+		this.password = null;
 		this.studentId = null;
+		this.admissionYear = null;
 		this.nickname = null;
 		this.major = null;
+		this.department = null;
+		this.currentCompletedSemester = null;
 		this.profileImageType = ProfileImageType.GHOST;
-		this.userProfileImage = null;
 		this.graduationYear = null;
 		this.graduationType = null;
-		this.deletedAt = LocalDateTime.now();
 	}
 
+	/**
+	 * deletedAt 존재 여부로 탈퇴 상태를 판정하던 메서드입니다.
+	 * @deprecated 탈퇴 상태 판정은 {@link #isInactive()} 사용을 권장합니다.
+	 */
+	@Deprecated
 	public boolean isDeleted() {
 		return this.deletedAt != null;
+	}
+
+	public boolean isInactive() {
+		return this.state == UserState.INACTIVE;
+	}
+
+	public boolean isDropped() {
+		return this.state == UserState.DROP;
 	}
 
 	/**
@@ -203,24 +200,31 @@ public class User extends BaseEntity {
 	}
 
 	public static User from(
-		UserCreateRequestDto userCreateRequestDto,
+		String email,
+		String name,
+		String studentId,
+		Integer admissionYear,
+		String nickname,
+		String major,
+		Department department,
+		String phoneNumber,
 		String encodedPassword) {
 		return User.builder()
-			.email(userCreateRequestDto.getEmail())
-			.name(userCreateRequestDto.getName())
-			.roles(Set.of(Role.NONE))
+			.email(email)
+			.name(name)
+			.roles(new HashSet<>(Set.of(Role.NONE)))
 			.state(UserState.AWAIT)
 			.password(encodedPassword)
-			.studentId(userCreateRequestDto.getStudentId())
-			.admissionYear(userCreateRequestDto.getAdmissionYear())
-			.nickname(userCreateRequestDto.getNickname())
-			.major(userCreateRequestDto.getMajor())
+			.studentId(studentId)
+			.admissionYear(admissionYear)
+			.nickname(nickname)
+			.major(major)
 			.department(
 				DepartmentResolver.resolveByAdmissionYearOrDepartment(
-					userCreateRequestDto.getAdmissionYear(),
-					userCreateRequestDto.getDepartment()))
+					admissionYear,
+					department))
 			.academicStatus(AcademicStatus.UNDETERMINED)
-			.phoneNumber(userCreateRequestDto.getPhoneNumber())
+			.phoneNumber(phoneNumber)
 			.isV2(true)
 			.build();
 	}
@@ -229,7 +233,7 @@ public class User extends BaseEntity {
 		return User.builder()
 			.email(dto.email())
 			.name(dto.name())
-			.roles(Set.of(Role.NONE))
+			.roles(new HashSet<>(Set.of(Role.NONE)))
 			.state(UserState.AWAIT)
 			.password(encodedPassword)
 			.nickname(dto.nickname())
@@ -241,21 +245,28 @@ public class User extends BaseEntity {
 	}
 
 	public static User createGraduate(
-		GraduatedUserCommand graduatedUserCommand,
+		String email,
+		String name,
+		String studentId,
+		Integer admissionYear,
+		Integer graduationYear,
+		String nickname,
+		Department department,
+		String phoneNumber,
 		String encodedPassword) {
 		return User.builder()
-			.email(graduatedUserCommand.email())
-			.name(graduatedUserCommand.name())
-			.roles(Set.of(Role.COMMON))
+			.email(email)
+			.name(name)
+			.roles(new HashSet<>(Set.of(Role.COMMON)))
 			.state(UserState.ACTIVE)
 			.password(encodedPassword)
-			.studentId(graduatedUserCommand.studentId())
-			.admissionYear(graduatedUserCommand.admissionYear())
-			.graduationYear(graduatedUserCommand.graduationYear())
-			.nickname(graduatedUserCommand.nickname())
-			.department(graduatedUserCommand.department())
+			.studentId(studentId)
+			.admissionYear(admissionYear)
+			.graduationYear(graduationYear)
+			.nickname(nickname)
+			.department(department)
 			.academicStatus(AcademicStatus.GRADUATED)
-			.phoneNumber(graduatedUserCommand.phoneNumber())
+			.phoneNumber(phoneNumber)
 			.isV2(true)
 			.build();
 	}
@@ -268,16 +279,15 @@ public class User extends BaseEntity {
 		return User.builder()
 			.email(attributes.email())
 			.name(attributes.name())
-			.roles(Set.of(Role.NONE))
+			.roles(new HashSet<>(Set.of(Role.NONE)))
 			.state(UserState.GUEST)
 			.academicStatus(AcademicStatus.UNDETERMINED)
 			.isV2(true)
 			.build();
 	}
 
-	public void updateProfile(String nickname, UserProfileImage userProfileImage, String phoneNumber) {
+	public void updateProfile(String nickname, String phoneNumber) {
 		this.nickname = nickname;
-		this.userProfileImage = userProfileImage;
 		if (phoneNumber != null && !NO_PHONE_NUMBER_MESSAGE.equals(phoneNumber)) {
 			this.phoneNumber = phoneNumber;
 		}
@@ -316,7 +326,7 @@ public class User extends BaseEntity {
 
 	// 활성 사용자이고 권한 있는 역할이 아닐 경우 추방 가능
 	public boolean isDroppable() {
-		boolean isDroppableState = this.state == UserState.ACTIVE && !this.isDeleted();
+		boolean isDroppableState = this.state == UserState.ACTIVE;
 		boolean isDroppableRole = this.roles.stream()
 			.noneMatch(Role.getPrivilegedRoles()::contains);
 		return isDroppableState && isDroppableRole;
@@ -345,10 +355,20 @@ public class User extends BaseEntity {
 		this.rejectionOrDropReason = rejectReason;
 	}
 
-	public void dropByAdmin(String dropReason) {
+	public void dropByAdmin(String dropReason, LocalDateTime now) {
 		this.state = UserState.DROP;
 		this.roles = new HashSet<>(Set.of(Role.NONE));
 		this.rejectionOrDropReason = dropReason;
+		this.deletedAt = now;
+	}
+
+	/**
+	 * V1에서 이용하던 회원 탈퇴 처리입니다.
+	 * @deprecated V2 탈퇴에서는 withdraw(LocalDateTime)을 이용합니다.
+	 */
+	public void withdraw() {
+		this.state = UserState.INACTIVE;
+		this.deletedAt = LocalDateTime.now();
 	}
 
 	// 탈퇴, 추방된 유저의 계정 복구에 사용
@@ -367,22 +387,23 @@ public class User extends BaseEntity {
 		this.rejectionOrDropReason = null; // 거절 사유 초기화
 	}
 
+	public Set<String> getFcmTokens() {
+		return fcmTokenEntities.stream()
+			.map(FcmToken::getTokenValue)
+			.collect(Collectors.toUnmodifiableSet());
+	}
+
 	public boolean removeFcmToken(String targetToken) {
-		return this.fcmTokens.remove(targetToken);
+		return fcmTokenEntities.removeIf(t -> t.getTokenValue().equals(targetToken));
+	}
+
+	// FCM 토큰 전체 삭제
+	public void clearFcmTokens() {
+		this.fcmTokenEntities.clear();
 	}
 
 	public boolean isOnlySocialUser() {
 		return this.password == null;
-	}
-
-	public String getProfileUrl() {
-		if (this.profileImageType != ProfileImageType.CUSTOM) {
-			return null;
-		}
-		if (this.userProfileImage == null || this.userProfileImage.getUuidFile() == null) {
-			return null;
-		}
-		return this.userProfileImage.getUuidFile().getFileUrl();
 	}
 
 	public void updateNickname(String nickname) {
@@ -394,20 +415,14 @@ public class User extends BaseEntity {
 	 * 기존 커스텀 이미지(UserProfileImage)는 null로 초기화됩니다.
 	 */
 	public void updateProfileImageToDefault(ProfileImageType defaultType) {
-		if (defaultType == ProfileImageType.CUSTOM) {
-			throw new IllegalArgumentException("기본 이미지 타입만 허용됩니다.");
+		if (defaultType == ProfileImageType.CUSTOM || defaultType == ProfileImageType.UNSET) {
+			throw UserErrorCode.INVALID_PROFILE_IMAGE_TYPE.toBaseException();
 		}
 		this.profileImageType = defaultType;
-		this.userProfileImage = null;
 	}
 
-	/**
-	 * 프로필 이미지를 커스텀 이미지로 변경합니다.
-	 * profileImageType을 CUSTOM으로 설정하고 UserProfileImage를 연결합니다.
-	 */
-	public void updateProfileImageToCustom(UserProfileImage newProfileImage) {
+	public void updateProfileImageToCustom() {
 		this.profileImageType = ProfileImageType.CUSTOM;
-		this.userProfileImage = newProfileImage;
 	}
 
 	// 신고 관련 메소드

@@ -1,12 +1,13 @@
 package net.causw.app.main.domain.user.account.service.implementation;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.SocialType;
-import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.domain.user.account.policy.PasswordPolicy;
 import net.causw.app.main.domain.user.account.repository.user.SocialAccountRepository;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.app.main.domain.user.account.util.PhoneNumberFormatValidator;
@@ -21,7 +22,7 @@ import lombok.RequiredArgsConstructor;
  * <p>
  * 회원가입/로그인 시의 상태(State) 체크, 리프레시 토큰의 소유권 확인,
  * 이메일/전화번호/닉네임의 중복 여부를 검사합니다.
- * 상태 검증은 state 및 deletedAt 기준으로 판정합니다.
+ * 상태 검증은 UserState 기준으로 판정합니다.
  */
 @Component
 @RequiredArgsConstructor
@@ -42,12 +43,9 @@ public class UserValidator {
 	 * [USER_INACTIVE_CAN_REJOIN] 탈퇴 계정인 경우 (복구 절차 필요)
 	 */
 	public void validateUserStatusForSignup(User user) {
-		if (user.isDeleted()) {
-			throw UserErrorCode.USER_INACTIVE_CAN_REJOIN.toBaseException();
-		}
-
-		UserState state = user.getState();
-		switch (state) {
+		switch (user.getState()) {
+			case INACTIVE ->
+				throw UserErrorCode.USER_INACTIVE_CAN_REJOIN.toBaseException();
 			case DROP ->
 				throw UserErrorCode.USER_DROPPED.toBaseException();
 			case ACTIVE, AWAIT, REJECT ->
@@ -72,11 +70,9 @@ public class UserValidator {
 		switch (user.getState()) {
 			case DROP ->
 				throw UserErrorCode.USER_DROPPED.toBaseException();
+			case INACTIVE ->
+				throw UserErrorCode.USER_INACTIVE_CAN_REJOIN.toBaseException();
 			default -> {}
-		}
-
-		if (user.isDeleted()) {
-			throw UserErrorCode.USER_INACTIVE_CAN_REJOIN.toBaseException();
 		}
 	}
 
@@ -92,11 +88,9 @@ public class UserValidator {
 		switch (user.getState()) {
 			case DROP ->
 				throw UserErrorCode.INVALID_LOGIN_USER_DROPPED.toBaseException();
+			case INACTIVE ->
+				throw UserErrorCode.INVALID_LOGIN_USER_INACTIVE.toBaseException();
 			default -> {}
-		}
-
-		if (user.isDeleted()) {
-			throw UserErrorCode.INVALID_LOGIN_USER_INACTIVE.toBaseException();
 		}
 	}
 
@@ -112,11 +106,9 @@ public class UserValidator {
 		switch (user.getState()) {
 			case DROP ->
 				throw AuthErrorCode.DROPPED_USER.toBaseException();
+			case INACTIVE ->
+				throw AuthErrorCode.INACTIVE_USER.toBaseException();
 			default -> {}
-		}
-
-		if (user.isDeleted()) {
-			throw AuthErrorCode.INACTIVE_USER.toBaseException();
 		}
 	}
 
@@ -192,16 +184,32 @@ public class UserValidator {
 	/**
 	 * 비밀번호 형식이 정책에 맞는지 검사합니다.
 	 * <p>
-	 * 영문, 숫자, 특수문자를 각각 1개 이상 포함하고 8자 이상이어야 합니다.
+	 * {@link PasswordPolicy}와 동일합니다.
 	 *
 	 * @param password 검사할 비밀번호
 	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception
 	 * [INVALID_PASSWORD_REQUEST] 비밀번호 형식이 정책에 맞지 않는 경우
 	 */
 	public void validatePasswordFormat(String password) {
-		String passwordPolicy = "^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*()-_?]).{8,20}$";
-		if (!password.matches(passwordPolicy)) {
+		if (!PasswordPolicy.matches(password)) {
 			throw UserErrorCode.INVALID_PASSWORD_REQUEST.toBaseException();
+		}
+	}
+
+	/**
+	 * 사용자가 복구 가능한 기간 내에 있는지 검증합니다. (탈퇴/추방 후 30일 이내)
+	 *
+	 * @param user 복구 대상 사용자
+	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception 복구 가능 기간이 지난 경우
+	 */
+	public void validateRestorable(User user) {
+		if (user.getDeletedAt() == null) {
+			return;
+		}
+
+		LocalDateTime graceDeadline = user.getDeletedAt().plusDays(30);
+		if (graceDeadline.isBefore(LocalDateTime.now())) {
+			throw UserErrorCode.USER_NOT_RESTORABLE.toBaseException();
 		}
 	}
 }

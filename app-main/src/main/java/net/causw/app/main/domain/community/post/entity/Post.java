@@ -50,7 +50,7 @@ public class Post extends BaseEntity {
 	@Column(columnDefinition = "TEXT", name = "content", nullable = false)
 	private String content;
 
-	@OneToMany(cascade = {CascadeType.REMOVE, CascadeType.PERSIST}, mappedBy = "post")
+	@OneToMany(cascade = {CascadeType.REMOVE, CascadeType.PERSIST}, mappedBy = "post", fetch = FetchType.LAZY)
 	@Builder.Default
 	private List<PostAttachImage> postAttachImageList = new ArrayList<>();
 
@@ -158,8 +158,10 @@ public class Post extends BaseEntity {
 		this.postAttachImageList.addAll(postAttachImageList);
 	}
 
-	public void updateContentAndImages(String content, List<PostAttachImage> postAttachImageList) {
+	public void updateContentAndImages(String content, Boolean isAnonymous,
+		List<PostAttachImage> postAttachImageList) {
 		this.content = content;
+		this.isAnonymous = (isAnonymous != null) ? isAnonymous : this.isAnonymous;
 		this.postAttachImageList.clear();
 		this.postAttachImageList.addAll(postAttachImageList);
 	}

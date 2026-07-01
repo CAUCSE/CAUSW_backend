@@ -6,7 +6,9 @@ import org.springframework.security.oauth2.client.web.AuthorizationRequestReposi
 import org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizationRequestRepository;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
+import net.causw.app.main.domain.user.auth.service.implementation.OAuthLinkTokenStore;
 import net.causw.app.main.domain.user.auth.util.OAuthRedirectResolver;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -56,6 +58,10 @@ public class OAuth2AuthorizationRequestCookieRepository
 
 	/**
 	 * 세션에 저장된 OAuth2 AuthorizationRequest를 제거하고 반환합니다.
+	 * <p>
+	 * Spring Security의 {@code OAuth2LoginAuthenticationFilter}는 콜백 처리 시
+	 * {@code loadAuthorizationRequest}가 아닌 이 메서드를 호출합니다.
+	 * 연동 플로우 인식을 위해 linkToken을 request attribute로 전파합니다.
 	 *
 	 * @param request 현재 HTTP 요청
 	 * @param response 현재 HTTP 응답
@@ -64,7 +70,14 @@ public class OAuth2AuthorizationRequestCookieRepository
 	@Override
 	public OAuth2AuthorizationRequest removeAuthorizationRequest(HttpServletRequest request,
 		HttpServletResponse response) {
-		return delegate.removeAuthorizationRequest(request, response);
+		OAuth2AuthorizationRequest authRequest = delegate.removeAuthorizationRequest(request, response);
+		if (authRequest != null) {
+			String linkToken = authRequest.getAttribute(OAuthLinkTokenStore.LINK_TOKEN_ATTR);
+			if (StringUtils.hasText(linkToken)) {
+				request.setAttribute(OAuthLinkTokenStore.LINK_TOKEN_ATTR, linkToken);
+			}
+		}
+		return authRequest;
 	}
 
 	private ResponseCookie resolveEnvCookie(HttpServletRequest request) {

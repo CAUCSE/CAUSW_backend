@@ -85,7 +85,7 @@ class BoardServiceTest {
 			Board board = ObjectFixtures.getBoardWithId("board-1");
 			List<Board> boards = List.of(board);
 			BoardConfig config = BoardConfig.of("board-1", false, BoardReadScope.BOTH, BoardWriteScope.ALL_USER,
-				false, BoardVisibility.VISIBLE, 10);
+				false, BoardVisibility.VISIBLE, 10, null, null);
 			Map<String, BoardConfig> configMap = Map.of("board-1", config);
 			BoardConfigSummary summary = BoardConfigSummary.builder()
 				.no(1L)
@@ -126,7 +126,7 @@ class BoardServiceTest {
 			String boardId = "board-1";
 			Board board = ObjectFixtures.getBoardWithId(boardId);
 			BoardConfig boardConfig = BoardConfig.of(boardId, false, BoardReadScope.BOTH, BoardWriteScope.ALL_USER,
-				false, BoardVisibility.VISIBLE, 10);
+				false, BoardVisibility.VISIBLE, 10, null, null);
 			List<String> adminIds = List.of("user-1");
 			List<User> adminUsers = List.of(ObjectFixtures.getCertifiedUser());
 			BoardConfigDetail detail = BoardConfigDetail.builder()
@@ -182,7 +182,8 @@ class BoardServiceTest {
 		void givenDuplicateBoardName_whenCreateBoard_thenThrowsException() {
 			// given
 			org.mockito.Mockito.doThrow(new BaseRunTimeV2Exception(BoardErrorCode.BOARD_NAME_DUPLICATE))
-				.when(boardValidator).validateForCreate(BOARD_PART.name());
+				.when(boardValidator)
+				.validateForCreate(BOARD_PART.name(), CONFIG_PART.isNotice(), CONFIG_PART.isAnonymous());
 
 			// when & then
 			assertThatThrownBy(() -> boardService.createBoard(BOARD_PART, CONFIG_PART, ADMIN_IDS))
@@ -197,7 +198,7 @@ class BoardServiceTest {
 			// given
 			Board savedBoard = ObjectFixtures.getBoardV2WithId("board-1");
 			BoardConfig config = BoardConfig.of("board-1", false, BoardReadScope.BOTH, BoardWriteScope.ALL_USER,
-				false, BoardVisibility.VISIBLE, 10);
+				false, BoardVisibility.VISIBLE, 10, null, null);
 			given(boardPartMapper.toEntity(BOARD_PART)).willReturn(savedBoard);
 			given(boardWriter.save(any(Board.class))).willReturn(savedBoard);
 			given(boardConfigReader.getNextDisplayOrder()).willReturn(10);
@@ -207,7 +208,8 @@ class BoardServiceTest {
 			boardService.createBoard(BOARD_PART, CONFIG_PART, ADMIN_IDS);
 
 			// then
-			then(boardValidator).should().validateForCreate(BOARD_PART.name());
+			then(boardValidator).should().validateForCreate(BOARD_PART.name(), CONFIG_PART.isNotice(),
+				CONFIG_PART.isAnonymous());
 			then(boardWriter).should().save(any(Board.class));
 			then(boardConfigReader).should().getNextDisplayOrder();
 			then(boardConfigWriter).should().save(config);
@@ -238,7 +240,8 @@ class BoardServiceTest {
 		void givenDuplicateBoardName_whenUpdateBoard_thenThrowsException() {
 			// given
 			org.mockito.Mockito.doThrow(new BaseRunTimeV2Exception(BoardErrorCode.BOARD_NAME_DUPLICATE))
-				.when(boardValidator).validateForUpdate(BOARD_PART.name(), BOARD_ID);
+				.when(boardValidator)
+				.validateForUpdate(BOARD_PART.name(), BOARD_ID, CONFIG_PART.isNotice(), CONFIG_PART.isAnonymous());
 
 			// when & then
 			assertThatThrownBy(() -> boardService.updateBoard(BOARD_ID, BOARD_PART, CONFIG_PART, ADMIN_IDS))
@@ -253,7 +256,7 @@ class BoardServiceTest {
 			// given
 			Board board = ObjectFixtures.getBoardWithId(BOARD_ID);
 			BoardConfig boardConfig = BoardConfig.of(BOARD_ID, false, BoardReadScope.BOTH, BoardWriteScope.ALL_USER,
-				false, BoardVisibility.VISIBLE, 10);
+				false, BoardVisibility.VISIBLE, 10, null, null);
 			given(boardReader.getById(BOARD_ID)).willReturn(board);
 			given(boardConfigReader.getByBoardId(BOARD_ID)).willReturn(boardConfig);
 
@@ -261,7 +264,8 @@ class BoardServiceTest {
 			boardService.updateBoard(BOARD_ID, BOARD_PART, CONFIG_PART, ADMIN_IDS);
 
 			// then
-			then(boardValidator).should().validateForUpdate(BOARD_PART.name(), BOARD_ID);
+			then(boardValidator).should().validateForUpdate(BOARD_PART.name(), BOARD_ID, CONFIG_PART.isNotice(),
+				CONFIG_PART.isAnonymous());
 			then(boardReader).should().getById(BOARD_ID);
 			then(boardConfigReader).should().getByBoardId(BOARD_ID);
 			then(boardWriter).should().updateBoard(board, BOARD_PART);

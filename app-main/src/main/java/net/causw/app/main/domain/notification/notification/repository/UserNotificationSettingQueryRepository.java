@@ -24,7 +24,7 @@ public class UserNotificationSettingQueryRepository {
 	/**
 	 * 알림 설정을 고려하여 발송 대상 유저를 단일 쿼리로 조회한다.
 	 * <ul>
-	 *   <li>ACTIVE + deletedAt IS NULL 조건 기본 적용</li>
+	 *   <li>ACTIVE 상태 조건 기본 적용</li>
 	 *   <li>admissionYears 비어있으면 전체 활성 유저 대상</li>
 	 *   <li>key.defaultEnabled=true → 해당 key로 enabled=false인 row 가진 유저 제외</li>
 	 *   <li>key.defaultEnabled=false → 해당 key로 enabled=true인 row 가진 유저만 포함</li>
@@ -51,7 +51,6 @@ public class UserNotificationSettingQueryRepository {
 				.selectFrom(user)
 				.where(
 					user.state.eq(UserState.ACTIVE),
-					user.deletedAt.isNull(),
 					admissionYearCondition(user, admissionYears),
 					disabledIds.isEmpty() ? null : user.id.notIn(disabledIds))
 				.fetch();
@@ -71,7 +70,6 @@ public class UserNotificationSettingQueryRepository {
 				.selectFrom(user)
 				.where(
 					user.state.eq(UserState.ACTIVE),
-					user.deletedAt.isNull(),
 					admissionYearCondition(user, admissionYears),
 					user.id.in(enabledIds))
 				.fetch();

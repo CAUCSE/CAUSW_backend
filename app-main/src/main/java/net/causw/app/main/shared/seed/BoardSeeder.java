@@ -7,11 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.community.board.entity.Board;
-import net.causw.app.main.domain.community.board.entity.BoardApply;
-import net.causw.app.main.domain.community.board.entity.BoardApplyStatus;
-import net.causw.app.main.domain.community.board.repository.BoardApplyRepository;
 import net.causw.app.main.domain.community.board.repository.BoardRepository;
-import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.global.constant.StaticValue;
 
@@ -25,7 +21,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class BoardSeeder {
 	private final EntityManager em;
-	private final BoardApplyRepository boardApplyRepository;
 	private final BoardRepository boardRepository;
 	private final UserRepository userRepository;
 
@@ -36,13 +31,14 @@ public class BoardSeeder {
 			return;
 		}
 
-		User user = userRepository.findTopBy()
-			.orElseThrow(() -> new IllegalStateException("🚫 Seed skipped: User not found for seeding boards"));
+		if (!userRepository.existsBy()) {
+			throw new IllegalStateException("🚫 Seed skipped: User not found for seeding boards");
+		}
 
-		process(user);
+		process();
 	}
 
-	private void process(User user) {
+	private void process() {
 		// 게시판 카테고리 이름 예시 (20개)
 		List<String> boardNames = List.of(
 			"자유게시판", "익명게시판", "질문게시판", "정보공유", "취업게시판",
@@ -51,7 +47,7 @@ public class BoardSeeder {
 			"학생회 공지 게시판", "크자회 공지 게시판", "서비스 공지", "졸업생게시판", "새내기게시판");
 
 		for (String name : boardNames) {
-			createActiveBoard(user, name);
+			createActiveBoard(name);
 		}
 
 		em.flush();
@@ -60,24 +56,12 @@ public class BoardSeeder {
 		log.info("✅ Seeded {} boards completed.", boardNames.size());
 	}
 
-	private void createActiveBoard(User user, String name) {
-		BoardApply boardApply = BoardApply.of( // 일반 게시판 신청
-			user,
+	private void createActiveBoard(String name) {
+		Board newBoard = Board.of(
 			name,
 			null,
 			StaticValue.BOARD_NAME_APP_FREE,
-			false,
-			null);
-		boardApply.updateAcceptStatus(BoardApplyStatus.ACCEPTED);
-		this.boardApplyRepository.save(boardApply);
-		em.persist(boardApply);
-
-		Board newBoard = Board.of( // 일반 게시판 생성
-			boardApply.getBoardName(),
-			boardApply.getDescription(),
-			boardApply.getCategory(),
-			boardApply.getIsAnonymousAllowed(),
-			null);
+			false);
 
 		this.boardRepository.save(newBoard);
 		em.persist(newBoard);

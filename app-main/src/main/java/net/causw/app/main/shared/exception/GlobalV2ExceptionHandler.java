@@ -6,10 +6,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.stereotype.Component;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import net.causw.app.main.shared.dto.ApiResponse;
 import net.causw.app.main.shared.exception.errorcode.GlobalErrorCode;
@@ -20,9 +22,8 @@ import net.causw.global.exception.ForbiddenException;
 import net.causw.global.exception.ServiceUnavailableException;
 import net.causw.global.exception.UnauthorizedException;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
-
 import lombok.extern.slf4j.Slf4j;
+import tools.jackson.core.JacksonException;
 
 @Component
 @Slf4j
@@ -101,6 +102,22 @@ public class GlobalV2ExceptionHandler {
 		}
 	}
 
+	@ExceptionHandler(value = {NoResourceFoundException.class})
+	@ResponseStatus(HttpStatus.NOT_FOUND)
+	public ApiResponse<String> handleNoResourceFoundException(NoResourceFoundException exception) {
+		log.debug("Static resource not found: {}", exception.getResourcePath());
+		return ApiResponse.error(GlobalErrorCode.NOT_FOUND);
+	}
+
+	@ExceptionHandler(value = {HttpRequestMethodNotSupportedException.class})
+	@ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
+	public ApiResponse<String> handleHttpRequestMethodNotSupportedException(
+		HttpRequestMethodNotSupportedException exception) {
+		log.warn("HTTP method not supported: method={}, supportedMethods={}",
+			exception.getMethod(), exception.getSupportedHttpMethods());
+		return ApiResponse.error(GlobalErrorCode.METHOD_NOT_ALLOWED);
+	}
+
 	@ExceptionHandler(value = {Exception.class})
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	public ApiResponse<String> unknownException(Exception exception) {
@@ -114,12 +131,12 @@ public class GlobalV2ExceptionHandler {
 		String message = "잘못된 요청 형식입니다.";
 
 		Throwable cause = ex.getCause();
-		if (cause instanceof JsonMappingException jme) {
+		if (cause instanceof JacksonException jme) {
 			Throwable rootCause = jme.getCause();
 			if (rootCause instanceof DateTimeParseException dtpe) {
 				String fieldName = jme.getPath().isEmpty()
 					? ""
-					: jme.getPath().get(0).getFieldName();
+					: jme.getPath().get(0).getPropertyName();
 				if (fieldName != null) {
 					if (fieldName.toLowerCase().contains("date")) {
 						message = "날짜 형식이 올바르지 않습니다. (yyyy-MM-dd)";

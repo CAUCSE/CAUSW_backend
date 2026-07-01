@@ -36,6 +36,6 @@ public record LockerLocationResponse(
 		@Schema(description = "사물함 ID", example = "locker-uuid-1234") String lockerId,
 		@Schema(description = "사물함 번호", example = "15") String number,
 		@Schema(description = "사물함 상태", example = "AVAILABLE", allowableValues = {
-			"AVAILABLE", "MINE", "IN_USE", "DISABLED"}) String status){
+			"AVAILABLE", "MINE", "IN_USE", "DISABLED"}) String status) {
 	}
 }

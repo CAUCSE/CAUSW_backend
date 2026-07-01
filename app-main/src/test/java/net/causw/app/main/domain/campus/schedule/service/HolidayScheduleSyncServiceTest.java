@@ -9,7 +9,6 @@ import static org.mockito.Mockito.times;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 
 import org.junit.jupiter.api.DisplayName;
@@ -58,19 +57,19 @@ class HolidayScheduleSyncServiceTest {
 			ScheduleType.HOLIDAY,
 			newYear.name(),
 			newYear.date().atStartOfDay(),
-			newYear.date().atTime(LocalTime.MAX))).willReturn(false);
+			newYear.date().atTime(23, 59, 59))).willReturn(false);
 
 		given(scheduleReader.existsByTypeAndTitleAndStartAndEnd(
 			ScheduleType.HOLIDAY,
 			alreadySaved.name(),
 			alreadySaved.date().atStartOfDay(),
-			alreadySaved.date().atTime(LocalTime.MAX))).willReturn(true);
+			alreadySaved.date().atTime(23, 59, 59))).willReturn(true);
 
 		given(scheduleReader.existsByTypeAndTitleAndStartAndEnd(
 			ScheduleType.HOLIDAY,
 			nextYearHoliday.name(),
 			nextYearHoliday.date().atStartOfDay(),
-			nextYearHoliday.date().atTime(LocalTime.MAX))).willReturn(false);
+			nextYearHoliday.date().atTime(23, 59, 59))).willReturn(false);
 
 		given(scheduleWriter.save(any(Schedule.class))).willAnswer(invocation -> invocation.getArgument(0));
 

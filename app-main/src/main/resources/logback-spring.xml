@@ -9,36 +9,20 @@
     </appender>
 
     <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
-            <layout class="ch.qos.logback.contrib.json.classic.JsonLayout">
-                <appendLineSeparator>true</appendLineSeparator>
-                <jsonFormatter class="ch.qos.logback.contrib.jackson.JacksonJsonFormatter" />
-                <timestampFormat>yyyy-MM-dd'T'HH:mm:ss.SSSZ</timestampFormat>
-                <timestampFormatTimezoneId>Asia/Seoul</timestampFormatTimezoneId>
-                <includeContextName>true</includeContextName>
-                <includeLoggerName>true</includeLoggerName>
-                <includeThreadName>true</includeThreadName>
-                <includeMdc>true</includeMdc> <!-- traceId, spanId 등 사용 가능 -->
-                <includeFormattedMessage>true</includeFormattedMessage>
-            </layout>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <timeZone>Asia/Seoul</timeZone>
+            <includeContext>true</includeContext>
+            <includeMdc>true</includeMdc> <!-- traceId, spanId 등 사용 가능 -->
         </encoder>
     </appender>
 
     <!-- 운영용 파일 출력 설정 -->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_DIR}/general.log</file>
-        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
-            <layout class="ch.qos.logback.contrib.json.classic.JsonLayout">
-                <appendLineSeparator>true</appendLineSeparator>
-                <jsonFormatter class="ch.qos.logback.contrib.jackson.JacksonJsonFormatter" />
-                <timestampFormat>yyyy-MM-dd'T'HH:mm:ss.SSSZ</timestampFormat>
-                <timestampFormatTimezoneId>Asia/Seoul</timestampFormatTimezoneId>
-                <includeContextName>true</includeContextName>
-                <includeLoggerName>true</includeLoggerName>
-                <includeThreadName>true</includeThreadName>
-                <includeMdc>true</includeMdc> <!-- traceId, spanId 등 사용 가능 -->
-                <includeFormattedMessage>true</includeFormattedMessage>
-            </layout>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <timeZone>Asia/Seoul</timeZone>
+            <includeContext>true</includeContext>
+            <includeMdc>true</includeMdc> <!-- traceId, spanId 등 사용 가능 -->
         </encoder>
         <!-- 지난 로그는 loghistory로 저장 -->
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
@@ -51,18 +35,10 @@
     <!-- 개발 환경용 로그 파일 설정 -->
     <appender name="DEV_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_DIR}/dev.log</file>
-        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
-            <layout class="ch.qos.logback.contrib.json.classic.JsonLayout">
-                <appendLineSeparator>true</appendLineSeparator>
-                <jsonFormatter class="ch.qos.logback.contrib.jackson.JacksonJsonFormatter" />
-                <timestampFormat>yyyy-MM-dd'T'HH:mm:ss.SSSZ</timestampFormat>
-                <timestampFormatTimezoneId>Asia/Seoul</timestampFormatTimezoneId>
-                <includeContextName>true</includeContextName>
-                <includeLoggerName>true</includeLoggerName>
-                <includeThreadName>true</includeThreadName>
-                <includeMdc>true</includeMdc>
-                <includeFormattedMessage>true</includeFormattedMessage>
-            </layout>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <timeZone>Asia/Seoul</timeZone>
+            <includeContext>true</includeContext>
+            <includeMdc>true</includeMdc>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>${LOG_DIR}/dev-%d{yyyy-MM-dd}.log</fileNamePattern>

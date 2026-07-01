@@ -1,6 +1,7 @@
 HELP.md
 .gradle
 .env*
+!.env.example
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
@@ -45,20 +46,20 @@ dump.rdb
 .LSOverride
 
 ### Project security ###
-**/resources/application.yml
+#**/resources/application.yml
 **/resources/email-config.yaml
 **/resources/password-config.yaml
 **/resources/causw-dev-51ab1a030da2.json
-**/resources/application-dev.yml
-**/resources/application-prod.yml
-**/resources/application-local.yml
+#**/resources/application-dev.yml
+#**/resources/application-prod.yml
+#**/resources/application-local.yml
 **/resources/application-test.yml
 **/resources/application-qa.yml
 **/resources/application-seed.yml
 **/resources/dongnae_firebase_key.json
 
-Dockerfile
-docker-compose.yaml
+#Dockerfile
+#docker-compose.yaml
 deploy_*.sh
 app-*.yaml
 log/
@@ -75,6 +76,11 @@ monitoring/loki-data/
 monitoring/mysqld-exporter/.my.cnf
 
 /.claude
+docs/superpowers/
 .bkit
 
 CLAUDE.md
+.github/copilot-instructions.md
+
+.codex
+AGENTS.md

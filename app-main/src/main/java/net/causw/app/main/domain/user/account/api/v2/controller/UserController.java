@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,8 +20,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import net.causw.app.main.domain.user.account.api.v1.dto.UserFcmTokenResponseDto;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.AdmissionCreateRequest;
+import net.causw.app.main.domain.user.account.api.v2.dto.request.SocialLinkRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UpdateProfileImageRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserFcmTokenRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserNicknameUpdateRequest;
@@ -28,11 +30,16 @@ import net.causw.app.main.domain.user.account.api.v2.dto.request.UserRegistratio
 import net.causw.app.main.domain.user.account.api.v2.dto.response.AdmissionResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.AdmissionStateResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.ProfileImageResponse;
+import net.causw.app.main.domain.user.account.api.v2.dto.response.SocialAccountsResponse;
+import net.causw.app.main.domain.user.account.api.v2.dto.response.UserFcmTokenResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserMeAccountResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserMeResponse;
+import net.causw.app.main.domain.user.account.api.v2.dto.response.UserWithdrawResponse;
 import net.causw.app.main.domain.user.account.api.v2.mapper.AdmissionDtoMapper;
+import net.causw.app.main.domain.user.account.api.v2.mapper.SocialAccountsMapper;
 import net.causw.app.main.domain.user.account.api.v2.mapper.UserMeMapper;
 import net.causw.app.main.domain.user.account.service.AdmissionService;
+import net.causw.app.main.domain.user.account.service.SocialLinkService;
 import net.causw.app.main.domain.user.account.service.UserAccountService;
 import net.causw.app.main.domain.user.account.service.UserNotificationService;
 import net.causw.app.main.domain.user.account.service.UserProfileImageService;
@@ -40,12 +47,15 @@ import net.causw.app.main.domain.user.account.service.dto.request.UserPasswordUp
 import net.causw.app.main.domain.user.account.service.dto.response.AdmissionResult;
 import net.causw.app.main.domain.user.auth.api.v2.dto.AuthDtoMapper;
 import net.causw.app.main.domain.user.auth.api.v2.dto.response.AuthResponse;
+import net.causw.app.main.domain.user.auth.api.v2.dto.response.OAuthLinkTokenResponse;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
+import net.causw.app.main.domain.user.auth.service.implementation.OAuthLinkTokenStore;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 import net.causw.app.main.shared.util.AuthorizationExtractor;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -59,11 +69,14 @@ public class UserController {
 
 	private final UserNotificationService userNotificationService;
 	private final UserAccountService userAccountService;
+	private final SocialLinkService socialLinkService;
+	private final OAuthLinkTokenStore oAuthLinkTokenStore;
 	private final AuthDtoMapper authDtoMapper;
 	private final AdmissionService admissionService;
 	private final AdmissionDtoMapper admissionDtoMapper;
 	private final UserProfileImageService userProfileImageService;
 	private final UserMeMapper userMeMapper;
+	private final SocialAccountsMapper socialAccountsMapper;
 
 	// ── 내 정보 ──
 
@@ -121,22 +134,17 @@ public class UserController {
 	// ── FCM ──
 
 	@PostMapping("/fcm")
-	@Operation(summary = "fcm 토큰 등록 API", description = "유저와 fcm 토큰을 매핑한다.", security = {
-		@SecurityRequirement(name = "refreshBearerAuth")
-	})
-	public ApiResponse<UserFcmTokenResponseDto> createFcmToken(
-		@RequestHeader(value = AuthorizationExtractor.REFRESH_AUTHORIZATION_HEADER, required = false) String refreshAuthHeader,
+	@Operation(summary = "fcm 토큰 등록 API", description = "유저와 fcm 토큰을 기기 단위로 매핑한다.")
+	public ApiResponse<UserFcmTokenResponse> createFcmToken(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@Valid @RequestBody() UserFcmTokenRequest body) {
-		AuthorizationExtractor.validateRefresh(refreshAuthHeader);
-		String refreshToken = AuthorizationExtractor.extractRefresh(refreshAuthHeader);
 		return ApiResponse
-			.success(userNotificationService.createFcmToken(userDetails.getUserId(), body.fcmToken(), refreshToken));
+			.success(userNotificationService.createFcmToken(userDetails.getUserId(), body.fcmToken()));
 	}
 
 	@GetMapping("/fcm")
 	@Operation(summary = "fcm 토큰 조회 API", description = "유저에게 등록된 fcm 토큰을 조회한다.")
-	public ApiResponse<UserFcmTokenResponseDto> findFcmToken(@AuthenticationPrincipal CustomUserDetails userDetails) {
+	public ApiResponse<UserFcmTokenResponse> findFcmToken(@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return ApiResponse.success(userNotificationService.findFcmTokenByUser(userDetails.getUserId()));
 	}
 
@@ -179,14 +187,12 @@ public class UserController {
 		return ApiResponse.success();
 	}
 
-	@PostMapping("/me/password-change")
-	@Operation(summary = "비밀번호 재설정 API", description = "현재 비밀번호를 확인하고 새 비밀번호로 변경합니다.")
+	@PostMapping("/password-change")
+	@Operation(summary = "비밀번호 재설정 API", description = "이메일과 현재 비밀번호를 확인하고 새 비밀번호로 변경합니다. "
+		+ "비밀번호 찾기 후 임시 비밀번호로 로그인하기 전에도 호출할 수 있습니다.")
 	public ApiResponse<Void> updatePassword(
-		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@Valid @RequestBody UserPasswordUpdateRequest body) {
-		userAccountService.updatePassword(
-			userDetails.getUserId(),
-			UserPasswordUpdateCommand.from(body));
+		userAccountService.updatePassword(UserPasswordUpdateCommand.from(body));
 		return ApiResponse.success();
 	}
 
@@ -212,4 +218,72 @@ public class UserController {
 			userProfileImageService.updateToCustomProfileImage(userDetails.getUserId(), imageFile));
 	}
 
+	// ── 회원 탈퇴 ──
+	@DeleteMapping("/me")
+	@Operation(summary = "회원 탈퇴 API", description = "현재 로그인한 사용자를 탈퇴 처리합니다. (Soft Delete)", security = {
+		@SecurityRequirement(name = "bearerAuth"),
+		@SecurityRequirement(name = "refreshBearerAuth")
+	})
+	public ApiResponse<UserWithdrawResponse> withdraw(
+		@Parameter(description = "플랫폼 타입 (애플 로그인 연동 해제 시 정확한 처리를 위해 필요)", example = "ios / web") @RequestHeader(value = "X-Platform-Type", required = false) String platformHint,
+		@RequestHeader(value = "Authorization", required = false) String authorizationHeader,
+		@RequestHeader(value = AuthorizationExtractor.REFRESH_AUTHORIZATION_HEADER, required = false) String refreshAuthHeader,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
+
+		AuthorizationExtractor.validate(authorizationHeader);
+		String accessToken = AuthorizationExtractor.extract(authorizationHeader);
+
+		AuthorizationExtractor.validateRefresh(refreshAuthHeader);
+		String refreshToken = AuthorizationExtractor.extractRefresh(refreshAuthHeader);
+
+		return ApiResponse.success(
+			userAccountService.withdraw(userDetails.getUserId(), accessToken, refreshToken, platformHint));
+	}
+	// ── 소셜 계정 연동 ──
+
+	@GetMapping("/me/social-accounts")
+	@ResponseStatus(HttpStatus.OK)
+	@Operation(summary = "소셜 계정 연동 현황 조회 V2", description = "현재 로그인한 사용자의 소셜 계정(Google, Kakao, Apple) 연동 여부를 조회합니다.")
+	public ApiResponse<SocialAccountsResponse> getSocialAccounts(
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
+		return ApiResponse.success(
+			socialAccountsMapper.toResponse(
+				socialLinkService.getSocialAccounts(userDetails.getUserId())));
+	}
+
+	@PostMapping("/me/social-accounts/native")
+	@ResponseStatus(HttpStatus.OK)
+	@Operation(summary = "소셜 계정 연동 (Native)", description = "provider 토큰을 검증하여 현재 로그인한 사용자에게 소셜 계정을 연동합니다. "
+		+ "카카오는 accessToken, 구글/애플은 idToken을 전달합니다. (네이티브 앱 전용)")
+	public ApiResponse<Void> linkSocialAccount(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@Valid @RequestBody SocialLinkRequest body) {
+		socialLinkService.linkSocialAccount(
+			userDetails.getUserId(), body.provider(), body.accessToken(), body.idToken());
+		return ApiResponse.success();
+	}
+
+	@PostMapping("/me/social-accounts/{provider}/oauth")
+	@ResponseStatus(HttpStatus.OK)
+	@Operation(summary = "소셜 계정 연동 초기화 (OAuth)", description = "웹 브라우저에서 OAuth 방식으로 소셜 계정을 연동하기 위한 초기화 API입니다. "
+		+ "연동 가능 여부를 사전 검증하고 1회용 링크 토큰을 발급합니다. "
+		+ "응답의 linkToken을 /oauth2/authorization/{provider}?linkToken={value} 쿼리 파라미터로 전달하여 소셜 로그인을 진행합니다. (웹 브라우저 전용)")
+	public ApiResponse<OAuthLinkTokenResponse> initOAuthLink(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable String provider) {
+		socialLinkService.validateLinkable(userDetails.getUserId(), provider);
+		String linkToken = oAuthLinkTokenStore.issueToken(userDetails.getUserId());
+		return ApiResponse.success(new OAuthLinkTokenResponse(linkToken));
+	}
+
+	@DeleteMapping("/me/social-accounts/{provider}")
+	@ResponseStatus(HttpStatus.OK)
+	@Operation(summary = "소셜 계정 연동 해제", description = "현재 로그인한 사용자의 소셜 계정 연동을 해제합니다. "
+		+ "비밀번호 없는 계정의 마지막 소셜 계정은 해제할 수 없습니다.")
+	public ApiResponse<Void> unlinkSocialAccount(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable String provider) {
+		socialLinkService.unlinkSocialAccount(userDetails.getUserId(), provider);
+		return ApiResponse.success();
+	}
 }

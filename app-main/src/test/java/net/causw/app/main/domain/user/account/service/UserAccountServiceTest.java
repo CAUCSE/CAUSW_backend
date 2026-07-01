@@ -14,7 +14,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,17 +24,21 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
+import net.causw.app.main.domain.asset.file.service.implementation.UserProfileImageWriter;
+import net.causw.app.main.domain.asset.locker.entity.Locker;
+import net.causw.app.main.domain.asset.locker.service.implementation.LockerReader;
+import net.causw.app.main.domain.asset.locker.service.implementation.LockerWriter;
+import net.causw.app.main.domain.user.account.api.v2.dto.response.UserWithdrawResponse;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.domain.user.account.service.implementation.UserAccountCleanupWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.domain.user.auth.service.dto.AuthResult;
 import net.causw.app.main.domain.user.auth.service.dto.AuthTokenPair;
 import net.causw.app.main.domain.user.auth.service.implementation.AuthTokenManager;
-import net.causw.app.main.domain.user.auth.service.implementation.AuthValidator;
 import net.causw.app.main.domain.user.terms.entity.Terms;
 import net.causw.app.main.domain.user.terms.service.implementation.TermsReader;
 import net.causw.app.main.domain.user.terms.service.implementation.TermsValidator;
@@ -56,13 +62,7 @@ class UserAccountServiceTest {
 	private UserValidator userValidator;
 
 	@Mock
-	private AuthValidator authValidator;
-
-	@Mock
 	private AuthTokenManager authTokenManager;
-
-	@Mock
-	private PasswordEncoder passwordEncoder;
 
 	@Mock
 	private TermsReader termsReader;
@@ -73,11 +73,24 @@ class UserAccountServiceTest {
 	@Mock
 	private UserTermsAgreementWriter userTermsAgreementWriter;
 
+	@Mock
+	private LockerReader lockerReader;
+
+	@Mock
+	private LockerWriter lockerWriter;
+
+	@Mock
+	private UserProfileImageWriter userProfileImageWriter;
+
+	@Mock
+	private UserAccountCleanupWriter userAccountCleanupWriter;
+
 	private final String userId = "test-uuid";
 	private final String nickname = "푸앙";
 	private final String phoneNumber = "01012345678";
 	private final String name = "홍길동";
 	private final String refreshToken = "old-refresh-token";
+	private final String platformHint = "ios";
 	private final List<String> agreedTermsIds = List.of("term-id-1", "term-id-2");
 
 	@Test
@@ -179,5 +192,84 @@ class UserAccountServiceTest {
 
 		//verify
 		verify(userValidator).checkPhoneNumDuplication(phoneNumber);
+	}
+
+	@Test
+	@DisplayName("일반 회원 탈퇴 성공 - soft delete 및 부가 처리 수행")
+	void withdraw_Success() {
+		// given
+		String accessToken = "access-token";
+		String refresh = "refresh-token";
+		LocalDateTime now = LocalDateTime.now();
+
+		User user = mock(User.class);
+		Locker locker = mock(Locker.class);
+
+		when(userReader.findUserById(userId)).thenReturn(user);
+		when(user.getId()).thenReturn(userId);
+		when(user.isInactive()).thenReturn(false);
+		when(user.isDropped()).thenReturn(false);
+
+		when(lockerReader.findByUserId(userId)).thenReturn(Optional.of(locker));
+		when(user.getDeletedAt()).thenReturn(now);
+
+		UserWithdrawResponse result = userAccountService.withdraw(userId, accessToken, refresh, platformHint);
+
+		// then
+		assertNotNull(result);
+		assertEquals(now, result.deletedAt());
+
+		// verify
+		verify(userReader).findUserById(userId);
+		verify(userAccountCleanupWriter).cleanupForWithdrawal(user, accessToken, refresh, platformHint);
+		verify(userProfileImageWriter).requestDeletionForWithdrawal(userId);
+		verify(lockerReader).findByUserId(userId);
+		verify(lockerWriter).returnLocker(locker, user);
+		verify(userWriter).withdraw(user);
+	}
+
+	@Test
+	@DisplayName("사물함이 없는 회원도 탈퇴할 수 있다")
+	void withdraw_Success_WithoutLocker() {
+		// given
+		String accessToken = "access-token";
+		String refresh = "refresh-token";
+		String platformHint = null;
+		LocalDateTime now = LocalDateTime.now();
+
+		User user = mock(User.class);
+		when(userReader.findUserById(userId)).thenReturn(user);
+		when(user.getId()).thenReturn(userId);
+		when(user.isInactive()).thenReturn(false);
+		when(user.isDropped()).thenReturn(false);
+
+		when(lockerReader.findByUserId(userId)).thenReturn(Optional.empty());
+		when(user.getDeletedAt()).thenReturn(now);
+
+		UserWithdrawResponse result = userAccountService.withdraw(userId, accessToken, refresh, platformHint);
+
+		// then
+		assertNotNull(result);
+		assertEquals(now, result.deletedAt());
+		verify(userAccountCleanupWriter).cleanupForWithdrawal(user, accessToken, refresh, platformHint);
+		verify(userProfileImageWriter).requestDeletionForWithdrawal(userId);
+		verify(lockerWriter, never()).returnLocker(any(), any());
+		verify(userWriter).withdraw(user);
+	}
+
+	@Test
+	@DisplayName("이미 탈퇴한 회원은 다시 탈퇴할 수 없다")
+	void withdraw_Fail_AlreadyDeleted() {
+		// given
+		User user = mock(User.class);
+		when(userReader.findUserById(userId)).thenReturn(user);
+		when(user.isInactive()).thenReturn(true);
+
+		// when & then
+		assertThrows(BaseRunTimeV2Exception.class,
+			() -> userAccountService.withdraw(userId, "access-token", "refresh-token", platformHint));
+
+		verify(userReader).findUserById(userId);
+		verifyNoInteractions(userAccountCleanupWriter, lockerReader, lockerWriter);
 	}
 }

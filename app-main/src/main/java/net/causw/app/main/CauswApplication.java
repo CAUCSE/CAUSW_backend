@@ -29,7 +29,7 @@ public class CauswApplication {
 	private final Environment environment;
 
 	static {
-		System.setProperty("com.amazonaws.sdk.disableEc2Metadata", "true");
+		System.setProperty("aws.ec2MetadataDisabled", "true");
 	}
 
 	public static void main(String[] args) {

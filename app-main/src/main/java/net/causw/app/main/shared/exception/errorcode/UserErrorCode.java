@@ -46,7 +46,9 @@ public enum UserErrorCode implements BaseResponseCode {
 	USER_NOT_DROPPABLE(HttpStatus.BAD_REQUEST, "USER_400_015", "추방할 수 없는 사용자입니다."),
 	USER_NOT_RESTORABLE(HttpStatus.BAD_REQUEST, "USER_400_016", "관리자는 추방 상태의 사용자만 복구할 수 있습니다."),
 	USER_ROLE_MISMATCH(HttpStatus.BAD_REQUEST, "USER_400_017", "요청한 현재 역할이 사용자의 역할 목록과 일치하지 않습니다."),
-	USER_NOT_ROLE_UPDATABLE(HttpStatus.BAD_REQUEST, "USER_400_018", "활성된 사용자의 역할만 변경할 수 있습니다.");
+	USER_NOT_ROLE_UPDATABLE(HttpStatus.BAD_REQUEST, "USER_400_018", "활성된 사용자의 역할만 변경할 수 있습니다."),
+	USER_WITHDRAWN_NOT_RESTORABLE(HttpStatus.BAD_REQUEST, "USER_400_019", "자진 탈퇴 상태의 사용자만 복구할 수 있습니다."),
+	STUDENT_ID_REQUIRED(HttpStatus.BAD_REQUEST, "USER_400_020", "재학생의 경우 학번이 필수입니다.");
 
 	private final HttpStatus status;
 	private final String code;

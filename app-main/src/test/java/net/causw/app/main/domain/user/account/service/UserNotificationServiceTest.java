@@ -1,9 +1,10 @@
 package net.causw.app.main.domain.user.account.service;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
+
+import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -14,13 +15,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import net.causw.app.main.domain.user.account.api.v1.dto.UserFcmTokenResponseDto;
+import net.causw.app.main.domain.notification.notification.service.implementation.UserPushTokenWriter;
+import net.causw.app.main.domain.user.account.api.v2.dto.response.UserFcmTokenResponse;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.service.implementation.UserPushTokenWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
-import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
-import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
-import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 
 @ExtendWith(MockitoExtension.class)
 public class UserNotificationServiceTest {
@@ -31,27 +29,26 @@ public class UserNotificationServiceTest {
 	private UserReader userReader;
 	@Mock
 	private UserPushTokenWriter userPushTokenWriter;
-	@Mock
-	private UserValidator userValidator;
 
 	@Nested
 	@DisplayName("FCM 토큰 조회 (getFcmTokenByUser)")
 	class GetFcmTokenTest {
 
 		@Test
-		@DisplayName("성공: 유저 조회 및 만료된 토큰 정리가 수행되어야 한다")
+		@DisplayName("성공: 유저 조회 후 FCM 토큰 목록을 반환한다")
 		void success() {
 			// given
 			String userId = "user-123";
 			User mockUser = mock(User.class);
 			given(userReader.findUserById(userId)).willReturn(mockUser);
+			given(mockUser.getFcmTokens()).willReturn(Set.of("token-1"));
 
 			// when
-			UserFcmTokenResponseDto result = userNotificationService.findFcmTokenByUser(userId);
+			UserFcmTokenResponse result = userNotificationService.findFcmTokenByUser(userId);
 
 			// then
-			verify(userPushTokenWriter, times(1)).cleanInvalidFcmTokens(mockUser);
 			assertThat(result).isNotNull();
+			assertThat(result.fcmToken()).isEqualTo(Set.of("token-1"));
 		}
 	}
 
@@ -61,7 +58,6 @@ public class UserNotificationServiceTest {
 
 		private User mockUser;
 		private final String userId = "user-123";
-		private final String validRefreshToken = "valid_refresh_token";
 		private final String fcmToken = "new_fcm_token";
 
 		@BeforeEach
@@ -70,37 +66,18 @@ public class UserNotificationServiceTest {
 		}
 
 		@Test
-		@DisplayName("성공: 리프레시 토큰이 유효하면 토큰을 정리하고 새로 등록한다")
+		@DisplayName("성공: 기기 단위로 FCM 토큰을 등록한다")
 		void success_register() {
 			// given
 			given(userReader.findUserById(userId)).willReturn(mockUser);
+			given(mockUser.getFcmTokens()).willReturn(Set.of(fcmToken));
 
 			// when
-			userNotificationService.createFcmToken(userId, fcmToken, validRefreshToken);
+			UserFcmTokenResponse result = userNotificationService.createFcmToken(userId, fcmToken);
 
 			// then
-			verify(userValidator).validateRefreshToken(userId, validRefreshToken);
-			verify(userPushTokenWriter).cleanInvalidFcmTokens(mockUser);
-			verify(userPushTokenWriter).addFcmToken(mockUser, validRefreshToken, fcmToken);
-		}
-
-		@Test
-		@DisplayName("실패: Redis에 리프레시 토큰이 검증 실패 시(만료/삭제/불일치) 예외가 발생한다")
-		void fail_redis_null() {
-			// given
-			String expiredToken = "expired_token";
-			doThrow(AuthErrorCode.INVALID_REFRESH_TOKEN.toBaseException())
-				.when(userValidator).validateRefreshToken(userId, expiredToken);
-
-			// when & then
-			assertThatThrownBy(() -> userNotificationService.createFcmToken(userId, fcmToken, expiredToken))
-				.isInstanceOf(BaseRunTimeV2Exception.class)
-				.hasFieldOrPropertyWithValue("errorCode", AuthErrorCode.INVALID_REFRESH_TOKEN);
-
-			// then
-			verify(userReader, never()).findUserById(anyString());
-			verify(userPushTokenWriter, never()).cleanInvalidFcmTokens(any());
-			verify(userPushTokenWriter, never()).addFcmToken(any(), any(), any());
+			verify(userPushTokenWriter).addFcmToken(mockUser, fcmToken);
+			assertThat(result.fcmToken()).isEqualTo(Set.of(fcmToken));
 		}
 	}
 }

@@ -23,7 +23,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
-import net.causw.app.main.domain.asset.file.service.v2.UuidFileService;
+import net.causw.app.main.domain.asset.file.service.implementation.FileWriter;
 import net.causw.app.main.domain.user.academic.api.v2.dto.request.EnrollmentApplicationRequest;
 import net.causw.app.main.domain.user.academic.api.v2.dto.request.GraduationApplicationRequest;
 import net.causw.app.main.domain.user.academic.api.v2.dto.response.AcademicStatusResponse;
@@ -52,7 +52,7 @@ class AcademicRecordUserServiceTest {
 	private UserWriter userWriter;
 
 	@Mock
-	private UuidFileService uuidFileService;
+	private FileWriter fileWriter;
 
 	@Mock
 	private AcademicRecordApplicationWriter applicationWriter;
@@ -130,7 +130,7 @@ class AcademicRecordUserServiceTest {
 		ReflectionTestUtils.setField(application, "createdAt", LocalDateTime.of(2026, 3, 1, 10, 0));
 
 		when(userReader.findUserById(user.getId())).thenReturn(user);
-		when(uuidFileService.saveFileList(List.of(image), FilePath.USER_ACADEMIC_RECORD_APPLICATION))
+		when(fileWriter.uploadAndSaveList(List.of(image), FilePath.USER_ACADEMIC_RECORD_APPLICATION))
 			.thenReturn(List.of(uuidFile));
 		when(applicationWriter.createEnrollmentApplication(user, "복학 신청", List.of(uuidFile)))
 			.thenReturn(application);
@@ -146,7 +146,7 @@ class AcademicRecordUserServiceTest {
 		assertThat(response.recordDetails().requestStatus()).isEqualTo(AcademicRecordRequestStatus.AWAIT);
 		assertThat(response.recordDetails().requestedAt()).isEqualTo(LocalDateTime.of(2026, 3, 1, 10, 0));
 
-		verify(uuidFileService).saveFileList(List.of(image), FilePath.USER_ACADEMIC_RECORD_APPLICATION);
+		verify(fileWriter).uploadAndSaveList(List.of(image), FilePath.USER_ACADEMIC_RECORD_APPLICATION);
 		verify(applicationWriter).createEnrollmentApplication(user, "복학 신청", List.of(uuidFile));
 		verify(logCreator, never()).createFromApplication(any(), any());
 		verify(userWriter, never()).save(any(User.class));
@@ -165,7 +165,7 @@ class AcademicRecordUserServiceTest {
 		assertThatThrownBy(() -> academicRecordUserService.updateStatusToEnrolled(user, request, List.of(image)))
 			.isInstanceOf(BaseRunTimeV2Exception.class);
 
-		verifyNoInteractions(uuidFileService, applicationWriter, logCreator, userWriter);
+		verifyNoInteractions(fileWriter, applicationWriter, logCreator, userWriter);
 	}
 
 	@Test
@@ -182,6 +182,6 @@ class AcademicRecordUserServiceTest {
 		assertThatThrownBy(() -> academicRecordUserService.updateStatusToEnrolled(user, request, List.of(emptyImage)))
 			.isInstanceOf(BaseRunTimeV2Exception.class);
 
-		verifyNoInteractions(uuidFileService, applicationWriter, logCreator, userWriter, eventPublisher);
+		verifyNoInteractions(fileWriter, applicationWriter, logCreator, userWriter, eventPublisher);
 	}
 }

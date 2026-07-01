@@ -1,5 +1,6 @@
 package net.causw.app.main.shared.dto;
 
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.ProfileImageType;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
@@ -15,6 +16,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * <h3>비즈니스 규칙</h3>
  * <ul>
  *   <li>CUSTOM 타입인 경우에만 URL이 포함되며, 나머지 타입은 URL이 null</li>
+ *   <li>UNSET 타입은 신규 가입 후 프로필 이미지를 아직 설정하지 않은 상태를 의미하며, URL은 null</li>
  *   <li>추방(DROP) / 탈퇴(DELETED, INACTIVE) 유저는 GHOST 타입, URL null</li>
  *   <li>차단된 유저는 GHOST 타입, URL null (비식별)</li>
  * </ul>
@@ -33,17 +35,20 @@ public record ProfileImageDto(
 	public static final ProfileImageDto GHOST = new ProfileImageDto(ProfileImageType.GHOST, null);
 
 	/**
-	 * User 엔티티로부터 ProfileImageDto를 생성합니다.
+	 * User 엔티티와 UserProfileImage로부터 ProfileImageDto를 생성합니다.
 	 * 추방/탈퇴 유저는 GHOST 처리됩니다.
 	 */
-	public static ProfileImageDto from(User user) {
+	public static ProfileImageDto from(User user, UserProfileImage userProfileImage) {
 		if (user == null) {
 			return GHOST;
 		}
 		if (isInactiveUser(user)) {
 			return GHOST;
 		}
-		return of(user.getProfileImageType(), user.getProfileUrl());
+		String profileUrl = (userProfileImage != null && userProfileImage.getUuidFile() != null)
+			? userProfileImage.getUuidFile().getFileUrl()
+			: null;
+		return of(user.getProfileImageType(), profileUrl);
 	}
 
 	/**
@@ -76,6 +81,6 @@ public record ProfileImageDto(
 
 	private static boolean isInactiveUser(User user) {
 		UserState state = user.getState();
-		return state == UserState.DROP || user.isDeleted();
+		return state == UserState.DROP || user.isInactive();
 	}
 }

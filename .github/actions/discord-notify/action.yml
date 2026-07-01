@@ -2,8 +2,8 @@ name: "Discord Notify"
 description: "Send deploy result to Discord"
 inputs:
   repository:
-    description: "The GitHub repository"
-    required: true
+    description: "The GitHub repository. Deprecated; github.repository is used for links."
+    required: false
   status:
     description: "The status of the job, e.g., success or failure"
     required: true
@@ -50,7 +50,7 @@ runs:
           🛠 브랜치: `${{ inputs.branch }}`
           🔖 커밋: `${{ inputs.sha }}`
           🙋 작성자: `${{ inputs.actor }}`
-          🔗 [깃허브 액션 로그 보기](https://github.com/${{ inputs.repository }}/actions/runs/${{ inputs.run_id }})
+          🔗 [깃허브 액션 로그 보기](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
         color: ${{ inputs.status == 'success' && '0x00ff00' || '0xff0000' }}
 

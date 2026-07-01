@@ -1,16 +1,15 @@
 package net.causw.app.main.core.batch.listener;
 
-import org.jetbrains.annotations.NotNull;
 import org.springframework.batch.core.ExitStatus;
-import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.core.JobExecutionListener;
+import org.springframework.batch.core.job.JobExecution;
+import org.springframework.batch.core.listener.JobExecutionListener;
 import org.springframework.stereotype.Component;
 
 @Component
 public class DeleteUnusedFileJobCompletionNotificationListener implements JobExecutionListener {
 
 	@Override
-	public void beforeJob(@NotNull JobExecution jobExecution) {
+	public void beforeJob(JobExecution jobExecution) {
 		// Step 실행 전 로직: Step 시작 시간 기록
 		jobExecution.getExecutionContext().putLong("startTime", System.currentTimeMillis());
 	}

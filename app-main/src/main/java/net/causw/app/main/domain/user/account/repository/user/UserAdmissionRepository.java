@@ -1,13 +1,14 @@
 package net.causw.app.main.domain.user.account.repository.user;
 
+import java.util.List;
 import java.util.Optional;
 
-import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.lang.NonNull;
 
 import net.causw.app.main.domain.user.account.entity.user.UserAdmission;
 
@@ -31,9 +32,11 @@ public interface UserAdmissionRepository extends JpaRepository<UserAdmission, St
 	Page<UserAdmission> findAllWithStateAneName(@Param("user_state") String userState, @Param("name") String name,
 		Pageable pageable);
 
-	@NotNull
-	Page<UserAdmission> findAll(@NotNull Pageable pageable);
+	@NonNull
+	Page<UserAdmission> findAll(@NonNull Pageable pageable);
 
 	Page<UserAdmission> findAllByUserName(String name, Pageable pageable);
+
+	List<UserAdmission> findAllByUser_IdIn(List<String> userIds);
 
 }

@@ -1,0 +1,217 @@
+name: CD - Develop (Docker/ECR)
+
+on:
+  push:
+    branches: [ "dev" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  AWS_REGION: ap-northeast-2
+  ECR_REPOSITORY: ccssaa/ccssaa-backend-dev
+
+jobs:
+  # ─────────────────────────────────────────
+  # 1. Docker 이미지 빌드 & ECR push
+  # ─────────────────────────────────────────
+  build-and-push:
+    name: Build & Push Docker Image to ECR
+    runs-on: ubuntu-22.04
+    outputs:
+      image: ${{ steps.build-image.outputs.image }}
+      migration_image: ${{ steps.build-image.outputs.migration_image }}
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN_DEV }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Ensure ECR repository exists
+        run: |
+          aws ecr describe-repositories \
+            --repository-names "$ECR_REPOSITORY" \
+            --region "$AWS_REGION" \
+          || aws ecr create-repository \
+            --repository-name "$ECR_REPOSITORY" \
+            --region "$AWS_REGION"
+
+      - name: Build and push image
+        id: build-image
+        env:
+          REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          IMAGE="$REGISTRY/$ECR_REPOSITORY"
+          MIGRATION_IMAGE="$IMAGE:dev-$IMAGE_TAG-migration"
+          docker build --target builder -t "$MIGRATION_IMAGE" .
+          docker build -t "$IMAGE:dev-$IMAGE_TAG" -t "$IMAGE:dev-latest" .
+          docker push "$MIGRATION_IMAGE"
+          docker push "$IMAGE:dev-$IMAGE_TAG"
+          docker push "$IMAGE:dev-latest"
+          echo "image=$IMAGE:dev-$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+          echo "migration_image=$MIGRATION_IMAGE" >> "$GITHUB_OUTPUT"
+
+  # ─────────────────────────────────────────
+  # 2. DB 마이그레이션 (EC2에서 실행 - Private RDS 접근)
+  # ─────────────────────────────────────────
+  flyway-migrate:
+    name: Flyway Repair and Migration
+    needs: build-and-push
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Write .env to EC2
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          ENV_CONTENT: ${{ secrets.ENV_DEV }}
+        with:
+          key: ${{ secrets.EC2_KEY_DEV }}
+          host: ${{ secrets.EC2_HOST_DEV }}
+          username: ${{ secrets.EC2_USER_DEV }}
+          envs: ENV_CONTENT
+          script: |
+            mkdir -p /home/ubuntu/app/app-main
+            printf '%s' "$ENV_CONTENT" > /home/ubuntu/app/app-main/.env
+
+      - name: Run Flyway on EC2
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          IMAGE: ${{ needs.build-and-push.outputs.image }}
+          MIGRATION_IMAGE: ${{ needs.build-and-push.outputs.migration_image }}
+          AWS_REGION: ${{ env.AWS_REGION }}
+        with:
+          key: ${{ secrets.EC2_KEY_DEV }}
+          host: ${{ secrets.EC2_HOST_DEV }}
+          username: ${{ secrets.EC2_USER_DEV }}
+          envs: IMAGE,MIGRATION_IMAGE,AWS_REGION
+          script: |
+            # ECR 로그인
+            aws ecr get-login-password --region "$AWS_REGION" \
+              | docker login --username AWS --password-stdin "${IMAGE%%/*}"
+
+            # 이미지 pull
+            docker pull "$IMAGE"
+            docker pull "$MIGRATION_IMAGE"
+
+            # flywayRepair
+            docker run --rm \
+              --env-file /home/ubuntu/app/app-main/.env \
+              -v /home/ubuntu/app/app-main/.env:/app/.env:ro \
+              --add-host=host.docker.internal:host-gateway \
+              "$MIGRATION_IMAGE" \
+              ./gradlew :app-main:flywayRepair || true
+
+            # flywayMigrate
+            docker run --rm \
+              --env-file /home/ubuntu/app/app-main/.env \
+              -v /home/ubuntu/app/app-main/.env:/app/.env:ro \
+              --add-host=host.docker.internal:host-gateway \
+              "$MIGRATION_IMAGE" \
+              ./gradlew :app-main:flywayMigrate
+
+  # ─────────────────────────────────────────
+  # 3. EC2 배포
+  # ─────────────────────────────────────────
+  deploy:
+    name: Deploy to EC2 via SSH
+    needs: [ build-and-push, flyway-migrate ]
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Start redis-server
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          key: ${{ secrets.EC2_KEY_DEV }}
+          host: ${{ secrets.EC2_HOST_DEV }}
+          username: ${{ secrets.EC2_USER_DEV }}
+          script: |
+            sudo systemctl start redis-server
+
+      - name: Restart container with new image
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          IMAGE: ${{ needs.build-and-push.outputs.image }}
+          APP_CONTAINER_NAME: ${{ vars.APP_CONTAINER_NAME }}
+        with:
+          key: ${{ secrets.EC2_KEY_DEV }}
+          host: ${{ secrets.EC2_HOST_DEV }}
+          username: ${{ secrets.EC2_USER_DEV }}
+          envs: IMAGE,APP_CONTAINER_NAME
+          script: |
+            : "${APP_CONTAINER_NAME:?APP_CONTAINER_NAME variable is required}"
+
+            # 로그 디렉터리 준비
+            sudo mkdir -p /var/log/spring-boot/app-main
+            sudo chmod -R a+rwX /var/log/spring-boot/app-main
+
+            # 기존 컨테이너 중지 및 제거
+            docker stop "$APP_CONTAINER_NAME" || true
+            docker rm "$APP_CONTAINER_NAME" || true
+
+            # 새 컨테이너 실행 (이미지는 flyway-migrate 단계에서 이미 pull됨)
+            docker run -d \
+              --name "$APP_CONTAINER_NAME" \
+              --restart unless-stopped \
+              -p 8080:8080 \
+              --env-file /home/ubuntu/app/app-main/.env \
+              -v /var/log/spring-boot/app-main:/app/log \
+              --add-host=host.docker.internal:host-gateway \
+              "$IMAGE"
+
+            # 사용하지 않는 이미지 정리
+            docker image prune -f
+
+  # ─────────────────────────────────────────
+  # 4. Discord 배포 결과 알림
+  # ─────────────────────────────────────────
+  notify:
+    name: Discord Notify
+    needs: [ deploy ]
+    runs-on: ubuntu-22.04
+    if: always()
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+
+      - name: Notify Success
+        if: needs.deploy.result == 'success'
+        uses: ./.github/actions/discord-notify
+        with:
+          repository: ${{ github.repository }}
+          status: success
+          branch: ${{ github.ref_name }}
+          sha: ${{ github.sha }}
+          actor: ${{ github.actor }}
+          run_id: ${{ github.run_id }}
+          webhook: ${{ secrets.DISCORD_DEPLOY_WEBHOOK_URL_DEV }}
+          role_id: ${{ secrets.DISCORD_BACKEND_ROLE_ID }}
+
+      - name: Notify Failure
+        if: needs.deploy.result != 'success'
+        uses: ./.github/actions/discord-notify
+        with:
+          repository: ${{ github.repository }}
+          status: failure
+          branch: ${{ github.ref_name }}
+          sha: ${{ github.sha }}
+          actor: ${{ github.actor }}
+          run_id: ${{ github.run_id }}
+          webhook: ${{ secrets.DISCORD_DEPLOY_WEBHOOK_URL_DEV }}
+          role_id: ${{ secrets.DISCORD_BACKEND_ROLE_ID }}

@@ -30,6 +30,12 @@ public class CommentValidator {
 		this.validateCreatorAndPostStatus(creator, post);
 	}
 
+	public void validateChildCommentDepth(Comment parentComment) {
+		if (parentComment != null && parentComment.isChildComment()) {
+			throw CommentErrorCode.COMMENT_NOT_FOUND.toBaseException();
+		}
+	}
+
 	/**
 	 * 댓글 리스트 조회 시 필요한 모든 검증 로직을 수행합니다.
 	 */
@@ -66,18 +72,12 @@ public class CommentValidator {
 	}
 
 	public void validateForLike(User user, Comment comment) {
-		if (comment.getWriter().isDeleted()) {
-			throw AuthErrorCode.INACTIVE_USER.toBaseException();
-		}
 		if (likeCommentReader.isCommentLiked(user, comment.getId())) {
 			throw CommentErrorCode.COMMENT_ALREADY_LIKED.toBaseException();
 		}
 	}
 
 	public void validateForCancelLike(User user, Comment comment) {
-		if (comment.getWriter().isDeleted()) {
-			throw AuthErrorCode.INACTIVE_USER.toBaseException();
-		}
 		if (!likeCommentReader.isCommentLiked(user, comment.getId())) {
 			throw CommentErrorCode.COMMENT_NOT_LIKE.toBaseException();
 		}
@@ -90,7 +90,7 @@ public class CommentValidator {
 		UserState userState = user.getState();
 		if (userState == UserState.DROP)
 			throw AuthErrorCode.DROPPED_USER.toBaseException();
-		if (user.isDeleted())
+		if (user.isInactive())
 			throw AuthErrorCode.INACTIVE_USER.toBaseException();
 
 		if (user.getRoles().contains(Role.NONE))
