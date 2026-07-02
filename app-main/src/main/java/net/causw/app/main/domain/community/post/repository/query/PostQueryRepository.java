@@ -100,8 +100,8 @@ public class PostQueryRepository {
 		String keyword) {
 		// 빈 리스트가 전달된 경우 "조회 가능한 게시판이 한 개도 없음"을 의미하므로 즉시 빈 결과 반환.
 		// (null은 docstring 계약상 "전체 게시판"이므로 별도 처리하지 않음)
-		if (boardIds != null && boardIds.isEmpty()) {
-			return new SliceImpl<>(List.of(), Pageable.ofSize(size), false);
+		if (hasEmptyBoardFilter(boardIds)) {
+			return emptySlice(size);
 		}
 
 		QPost post = QPost.post;
@@ -111,10 +111,7 @@ public class PostQueryRepository {
 		BooleanExpression cursorCondition = createCursorCondition(cursorCreatedAt, cursorId, post);
 
 		// 게시판 조건
-		BooleanExpression boardCondition = NO_CONDITION;
-		if (boardIds != null && !boardIds.isEmpty()) {
-			boardCondition = post.board.id.in(boardIds);
-		}
+		BooleanExpression boardCondition = inBoards(post, boardIds);
 
 		// 게시글 조회 조건
 		BooleanExpression[] conditions = new BooleanExpression[] {
@@ -143,9 +140,14 @@ public class PostQueryRepository {
 	public Slice<PostCursorResult> findPostsCommentedByUserWithCursor(
 		String userId,
 		Set<String> blockedUserIds,
+		List<String> accessibleBoardIds,
 		String cursorCreatedAt,
 		String cursorId,
 		int size) {
+		if (hasNoAccessibleBoards(accessibleBoardIds)) {
+			return emptySlice(size);
+		}
+
 		QPost post = QPost.post;
 		QUser writer = new QUser("writer");
 		QComment comment = QComment.comment;
@@ -164,6 +166,7 @@ public class PostQueryRepository {
 			.exists();
 
 		BooleanExpression[] conditions = new BooleanExpression[] {
+			inBoards(post, accessibleBoardIds),
 			userCommentedPost, // 댓글 단 글만 조회
 			writer.id.ne(userId), // 자신이 쓴 글은 제외
 			post.isDeleted.eq(false), // 삭제된 글 제외
@@ -184,15 +187,21 @@ public class PostQueryRepository {
 	 */
 	public Slice<PostCursorResult> findPostsWrittenByUserWithCursor(
 		String userId,
+		List<String> accessibleBoardIds,
 		String cursorCreatedAt,
 		String cursorId,
 		int size) {
+		if (hasNoAccessibleBoards(accessibleBoardIds)) {
+			return emptySlice(size);
+		}
+
 		QPost post = QPost.post;
 		QUser writer = new QUser("writer");
 
 		BooleanExpression cursorCondition = createCursorCondition(cursorCreatedAt, cursorId, post);
 
 		BooleanExpression[] conditions = new BooleanExpression[] {
+			inBoards(post, accessibleBoardIds),
 			post.writer.id.eq(userId), // 자신이 쓴 글만 조회
 			post.isDeleted.eq(false), // 삭제된 글 제외
 			cursorCondition // 커서 조건
@@ -213,9 +222,14 @@ public class PostQueryRepository {
 	public Slice<PostCursorResult> findPostsLikedByUserWithCursor(
 		String userId,
 		Set<String> blockedUserIds,
+		List<String> accessibleBoardIds,
 		String cursorCreatedAt,
 		String cursorId,
 		int size) {
+		if (hasNoAccessibleBoards(accessibleBoardIds)) {
+			return emptySlice(size);
+		}
+
 		QPost post = QPost.post;
 		QUser writer = new QUser("writer");
 		QLikePost likePost = QLikePost.likePost;
@@ -229,6 +243,7 @@ public class PostQueryRepository {
 			.exists();
 
 		BooleanExpression[] conditions = new BooleanExpression[] {
+			inBoards(post, accessibleBoardIds),
 			userLikedPost, // 좋아요 누른 글만 조회
 			post.isDeleted.eq(false), // 삭제된 글 제외
 			notInBlockedUsers(writer, blockedUserIds), // 차단한 사용자 글 제외
@@ -252,6 +267,22 @@ public class PostQueryRepository {
 				.or(post.createdAt.eq(LocalDateTime.parse(cursorCreatedAt)).and(post.id.lt(cursorId)));
 		}
 		return cursorCondition;
+	}
+
+	private static boolean hasNoAccessibleBoards(List<String> boardIds) {
+		return boardIds == null || boardIds.isEmpty();
+	}
+
+	private static boolean hasEmptyBoardFilter(List<String> boardIds) {
+		return boardIds != null && boardIds.isEmpty();
+	}
+
+	private static Slice<PostCursorResult> emptySlice(int size) {
+		return new SliceImpl<>(List.of(), Pageable.ofSize(size), false);
+	}
+
+	private static BooleanExpression inBoards(QPost post, List<String> boardIds) {
+		return boardIds == null ? NO_CONDITION : post.board.id.in(boardIds);
 	}
 
 	/**
