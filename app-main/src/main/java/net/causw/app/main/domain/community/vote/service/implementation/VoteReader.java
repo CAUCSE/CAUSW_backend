@@ -5,20 +5,23 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.community.vote.entity.Vote;
 import net.causw.app.main.domain.community.vote.repository.VoteRepository;
+import net.causw.app.main.shared.exception.errorcode.VoteErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-@Transactional
-public class VoteWriter {
+@Transactional(readOnly = true)
+public class VoteReader {
 	private final VoteRepository voteRepository;
 
-	public Vote save(Vote vote) {
-		return voteRepository.save(vote);
+	public Vote findById(String voteId) {
+		return voteRepository.findById(voteId)
+			.orElseThrow(VoteErrorCode.VOTE_NOT_FOUND::toBaseException);
 	}
 
-	public void delete(Vote vote) {
-		voteRepository.delete(vote);
+	public Vote findByPostId(String postId) {
+		return voteRepository.findByPostId(postId)
+			.orElseThrow(VoteErrorCode.VOTE_NOT_FOUND::toBaseException);
 	}
 }
