@@ -139,4 +139,23 @@ public class UserWriter {
 			user.getEmail() != null &&
 			user.getEmail().startsWith("deleted_");
 	}
+
+	/**
+	 * 소셜 로그인만 완료하고 방치된 GUEST 유저를 DB에서 영구 삭제합니다.
+	 * <p>
+	 * GUEST는 회원가입을 중단한 상태라 보존할 개인정보가 없으므로 익명화 대신 하드 삭제합니다.
+	 * SocialAccount는 User를 참조하는 FK(NOT NULL)이며 User 엔티티에 cascade 매핑이 없으므로,
+	 * 이 메서드 호출 전에 호출 측에서 먼저 삭제되어야 합니다.
+	 * FcmToken은 User의 cascade(ALL)/orphanRemoval 설정으로 함께 삭제됩니다.
+	 * </p>
+	 *
+	 * @param users 영구 삭제할 GUEST 유저 엔티티 목록
+	 */
+	@Transactional
+	public void deleteGuestUsers(List<User> users) {
+		if (users.isEmpty()) {
+			return;
+		}
+		userRepository.deleteAll(users);
+	}
 }

@@ -13,6 +13,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.app.main.domain.user.account.service.UserProfileImageService;
 import net.causw.app.main.domain.user.account.service.implementation.AdmissionWriter;
@@ -95,6 +96,44 @@ public class BatchScheduler {
 			log.info("[유저 정리 배치] 탈퇴 유저 후처리 완료");
 		} catch (Exception e) {
 			log.error("유저 정리 배치 실패: {}", e.getMessage(), e);
+			throw new InternalServerException(
+				ErrorCode.INTERNAL_SERVER,
+				MessageUtil.BATCH_FAIL + e.getMessage());
+		}
+	}
+
+	@Scheduled(cron = "0 20 3 * * ?") // 매일 새벽 3시 20분 (다른 배치와 시각 충돌 방지)
+	public void scheduleCleanupStaleGuestUsers() {
+		try {
+			log.info("[GUEST 정리 배치] 소셜로그인 대기 방치 유저 정리 시작");
+
+			LocalDateTime dueDate = LocalDateTime.now().minusDays(7);
+
+			boolean hasNext;
+			do {
+				Page<User> userPage = userRepository.findAllByStateAndUpdatedAtBefore(
+					UserState.GUEST,
+					dueDate,
+					pageableFactory.create(0, StaticValue.BATCH_USER_LIST_SIZE));
+
+				List<User> staleGuests = userPage.getContent();
+
+				if (staleGuests.isEmpty()) {
+					break;
+				}
+
+				// FK 참조 데이터를 먼저 정리한 뒤 User를 하드 삭제한다. (FcmToken은 cascade로 함께 삭제됨)
+				userProfileImageService.cleanupProfileImagesForBatch(staleGuests);
+				socialAccountWriter.deleteSocialAccountsByUsers(staleGuests);
+				userWriter.deleteGuestUsers(staleGuests);
+
+				hasNext = userPage.hasNext();
+				log.info("[GUEST 정리 배치] {}명 삭제 완료", staleGuests.size());
+
+			} while (hasNext);
+			log.info("[GUEST 정리 배치] 소셜로그인 대기 방치 유저 정리 완료");
+		} catch (Exception e) {
+			log.error("GUEST 정리 배치 실패: {}", e.getMessage(), e);
 			throw new InternalServerException(
 				ErrorCode.INTERNAL_SERVER,
 				MessageUtil.BATCH_FAIL + e.getMessage());
