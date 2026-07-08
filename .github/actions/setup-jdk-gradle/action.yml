@@ -9,7 +9,7 @@ runs:
       uses: actions/setup-java@v4
       with:
         java-version: '25'
-        distribution: 'zulu'
+        distribution: 'temurin'
 
     # Gradle 패키지 캐싱
     - name: Cache Gradle packages

@@ -110,9 +110,10 @@ jobs:
             sudo fuser -k -n tcp 8080 || true
             sleep 15
             APP_MAIN_JAR=$(ls -t /home/ubuntu/app/app-main/*.jar | head -n 1)
+            JAVA_HOME=/home/ubuntu/.sdkman/candidates/java/25.0.3-tem
             sudo mkdir -p /var/log/spring-boot/app-main
             cd /home/ubuntu/app/app-main
-            sudo nohup java -DLOG_DIR=/var/log/spring-boot/app-main -jar "$APP_MAIN_JAR" 1>/dev/null 2>&1 &
+            sudo nohup "$JAVA_HOME/bin/java" -DLOG_DIR=/var/log/spring-boot/app-main -jar "$APP_MAIN_JAR" 1>/dev/null 2>&1 &
 
 
   notify:
