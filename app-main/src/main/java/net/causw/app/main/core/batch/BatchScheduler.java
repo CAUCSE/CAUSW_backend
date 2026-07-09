@@ -9,6 +9,7 @@ import org.springframework.batch.core.job.parameters.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Slice;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyWriter;
@@ -111,12 +112,12 @@ public class BatchScheduler {
 
 			boolean hasNext;
 			do {
-				Page<User> userPage = userRepository.findAllByStateAndUpdatedAtBefore(
+				Slice<User> userSlice = userRepository.findAllByStateAndUpdatedAtBeforeAndDeletedAtIsNull(
 					UserState.GUEST,
 					dueDate,
 					pageableFactory.create(0, StaticValue.BATCH_USER_LIST_SIZE));
 
-				List<User> staleGuests = userPage.getContent();
+				List<User> staleGuests = userSlice.getContent();
 
 				if (staleGuests.isEmpty()) {
 					break;
@@ -127,7 +128,7 @@ public class BatchScheduler {
 				socialAccountWriter.deleteSocialAccountsByUsers(staleGuests);
 				userWriter.deleteGuestUsers(staleGuests);
 
-				hasNext = userPage.hasNext();
+				hasNext = userSlice.hasNext();
 				log.info("[GUEST 정리 배치] {}명 삭제 완료", staleGuests.size());
 
 			} while (hasNext);
