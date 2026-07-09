@@ -17,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.SliceImpl;
 
 import net.causw.app.main.core.batch.BatchScheduler;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyWriter;
@@ -114,15 +115,15 @@ public class BatchSchedulerTest {
 		List<User> staleGuests = List.of(guest1, guest2);
 
 		when(pageableFactory.create(anyInt(), anyInt())).thenReturn(PageRequest.of(0, 10));
-		when(userRepository.findAllByStateAndUpdatedAtBefore(
+		when(userRepository.findAllByStateAndUpdatedAtBeforeAndDeletedAtIsNull(
 			eq(UserState.GUEST), any(LocalDateTime.class), any(Pageable.class)))
-			.thenReturn(new PageImpl<>(staleGuests), Page.empty());
+			.thenReturn(new SliceImpl<>(staleGuests, PageRequest.of(0, 10), false));
 
 		// when
 		batchScheduler.scheduleCleanupStaleGuestUsers();
 
 		// then
-		verify(userRepository).findAllByStateAndUpdatedAtBefore(
+		verify(userRepository).findAllByStateAndUpdatedAtBeforeAndDeletedAtIsNull(
 			eq(UserState.GUEST), any(LocalDateTime.class), any(Pageable.class));
 		verify(userProfileImageService).cleanupProfileImagesForBatch(staleGuests);
 		verify(socialAccountWriter).deleteSocialAccountsByUsers(staleGuests);
@@ -134,15 +135,15 @@ public class BatchSchedulerTest {
 	void givenNoStaleGuestUsers_whenScheduleCleanup_thenDoesNothing() {
 		// given
 		when(pageableFactory.create(anyInt(), anyInt())).thenReturn(PageRequest.of(0, 10));
-		when(userRepository.findAllByStateAndUpdatedAtBefore(
+		when(userRepository.findAllByStateAndUpdatedAtBeforeAndDeletedAtIsNull(
 			eq(UserState.GUEST), any(LocalDateTime.class), any(Pageable.class)))
-			.thenReturn(Page.empty());
+			.thenReturn(new SliceImpl<>(List.of(), PageRequest.of(0, 10), false));
 
 		// when
 		batchScheduler.scheduleCleanupStaleGuestUsers();
 
 		// then
-		verify(userRepository).findAllByStateAndUpdatedAtBefore(
+		verify(userRepository).findAllByStateAndUpdatedAtBeforeAndDeletedAtIsNull(
 			eq(UserState.GUEST), any(LocalDateTime.class), any(Pageable.class));
 		verifyNoInteractions(userProfileImageService, socialAccountWriter, userWriter);
 	}
