@@ -105,11 +105,12 @@ public class PostReader {
 	public Slice<PostCursorResult> findPostsCommentedByUserWithCursor(
 		String userId,
 		Set<String> blockedUserIds,
+		List<String> accessibleBoardIds,
 		String cursorCreatedAt,
 		String cursorId,
 		int size) {
 		return postQueryRepository.findPostsCommentedByUserWithCursor(
-			userId, blockedUserIds, cursorCreatedAt, cursorId, size);
+			userId, blockedUserIds, accessibleBoardIds, cursorCreatedAt, cursorId, size);
 	}
 
 	/**
@@ -117,10 +118,12 @@ public class PostReader {
 	 */
 	public Slice<PostCursorResult> findPostsWrittenByUserWithCursor(
 		String userId,
+		List<String> accessibleBoardIds,
 		String cursorCreatedAt,
 		String cursorId,
 		int size) {
-		return postQueryRepository.findPostsWrittenByUserWithCursor(userId, cursorCreatedAt, cursorId, size);
+		return postQueryRepository.findPostsWrittenByUserWithCursor(
+			userId, accessibleBoardIds, cursorCreatedAt, cursorId, size);
 	}
 
 	/**
@@ -129,11 +132,12 @@ public class PostReader {
 	public Slice<PostCursorResult> findPostsLikedByUserWithCursor(
 		String userId,
 		Set<String> blockedUserIds,
+		List<String> accessibleBoardIds,
 		String cursorCreatedAt,
 		String cursorId,
 		int size) {
 		return postQueryRepository.findPostsLikedByUserWithCursor(
-			userId, blockedUserIds, cursorCreatedAt, cursorId, size);
+			userId, blockedUserIds, accessibleBoardIds, cursorCreatedAt, cursorId, size);
 	}
 
 	/**
