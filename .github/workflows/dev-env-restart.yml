@@ -15,6 +15,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: dev-ec2-docker-deploy
+  cancel-in-progress: false
+
 jobs:
   restart:
     name: Update .env and Restart Dev Container

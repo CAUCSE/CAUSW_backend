@@ -13,6 +13,10 @@ env:
   AWS_REGION: ap-northeast-2
   ECR_REPOSITORY: ccssaa/ccssaa-backend-dev
 
+concurrency:
+  group: dev-ec2-docker-deploy
+  cancel-in-progress: false
+
 jobs:
   # ─────────────────────────────────────────
   # 1. Docker 이미지 빌드 & ECR push
@@ -69,7 +73,7 @@ jobs:
   # 2. DB 마이그레이션 (EC2에서 실행 - Private RDS 접근)
   # ─────────────────────────────────────────
   flyway-migrate:
-    name: Flyway Repair and Migration
+    name: Flyway Migration
     needs: build-and-push
     runs-on: ubuntu-22.04
 
@@ -90,38 +94,34 @@ jobs:
       - name: Run Flyway on EC2
         uses: appleboy/ssh-action@v1.2.0
         env:
-          IMAGE: ${{ needs.build-and-push.outputs.image }}
           MIGRATION_IMAGE: ${{ needs.build-and-push.outputs.migration_image }}
           AWS_REGION: ${{ env.AWS_REGION }}
         with:
           key: ${{ secrets.EC2_KEY_DEV }}
           host: ${{ secrets.EC2_HOST_DEV }}
           username: ${{ secrets.EC2_USER_DEV }}
-          envs: IMAGE,MIGRATION_IMAGE,AWS_REGION
+          envs: MIGRATION_IMAGE,AWS_REGION
           script: |
-            # ECR 로그인
-            aws ecr get-login-password --region "$AWS_REGION" \
-              | docker login --username AWS --password-stdin "${IMAGE%%/*}"
+            bash -se <<'BASH'
+            set -Eeuo pipefail
 
-            # 이미지 pull
-            docker pull "$IMAGE"
+            cleanup_migration_image() {
+              docker image rm "$MIGRATION_IMAGE" >/dev/null 2>&1 || true
+            }
+            trap cleanup_migration_image EXIT
+
+            aws ecr get-login-password --region "$AWS_REGION" \
+              | docker login --username AWS --password-stdin "${MIGRATION_IMAGE%%/*}"
+
             docker pull "$MIGRATION_IMAGE"
 
-            # flywayRepair
-            docker run --rm \
-              --env-file /home/ubuntu/app/app-main/.env \
-              -v /home/ubuntu/app/app-main/.env:/app/.env:ro \
-              --add-host=host.docker.internal:host-gateway \
-              "$MIGRATION_IMAGE" \
-              ./gradlew :app-main:flywayRepair || true
-
-            # flywayMigrate
             docker run --rm \
               --env-file /home/ubuntu/app/app-main/.env \
               -v /home/ubuntu/app/app-main/.env:/app/.env:ro \
               --add-host=host.docker.internal:host-gateway \
               "$MIGRATION_IMAGE" \
               ./gradlew :app-main:flywayMigrate
+            BASH
 
   # ─────────────────────────────────────────
   # 3. EC2 배포
@@ -146,34 +146,149 @@ jobs:
         env:
           IMAGE: ${{ needs.build-and-push.outputs.image }}
           APP_CONTAINER_NAME: ${{ vars.APP_CONTAINER_NAME }}
+          AWS_REGION: ${{ env.AWS_REGION }}
+          KEEP_APP_IMAGES: "3"
         with:
           key: ${{ secrets.EC2_KEY_DEV }}
           host: ${{ secrets.EC2_HOST_DEV }}
           username: ${{ secrets.EC2_USER_DEV }}
-          envs: IMAGE,APP_CONTAINER_NAME
+          command_timeout: 20m
+          envs: IMAGE,APP_CONTAINER_NAME,AWS_REGION,KEEP_APP_IMAGES
           script: |
+            bash -se <<'BASH'
+            set -Eeuo pipefail
+
             : "${APP_CONTAINER_NAME:?APP_CONTAINER_NAME variable is required}"
+            : "${IMAGE:?IMAGE variable is required}"
+            : "${AWS_REGION:?AWS_REGION variable is required}"
+
+            APP_REPOSITORY="${IMAGE%:*}"
+            ECR_REGISTRY="${IMAGE%%/*}"
+
+            run_app() {
+              local image="$1"
+
+              docker run -d \
+                --name "$APP_CONTAINER_NAME" \
+                --restart unless-stopped \
+                -p 8080:8080 \
+                --env-file /home/ubuntu/app/app-main/.env \
+                -v /var/log/spring-boot/app-main:/app/log \
+                --add-host=host.docker.internal:host-gateway \
+                "$image"
+            }
+
+            stop_and_remove_app() {
+              if docker container inspect "$APP_CONTAINER_NAME" >/dev/null 2>&1; then
+                docker stop -t 30 "$APP_CONTAINER_NAME"
+                docker rm "$APP_CONTAINER_NAME"
+              fi
+            }
+
+            wait_until_healthy() {
+              local status
+
+              for _ in $(seq 1 40); do
+                status="$(
+                  docker inspect \
+                    --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' \
+                    "$APP_CONTAINER_NAME" 2>/dev/null || true
+                )"
+
+                case "$status" in
+                  healthy)
+                    return 0
+                    ;;
+                  unhealthy|exited|dead)
+                    return 1
+                    ;;
+                esac
+
+                sleep 5
+              done
+
+              return 1
+            }
+
+            cleanup_deployment_images() {
+              local current_image_id ref candidate_id
+              local -a app_image_refs migration_image_refs
+
+              current_image_id="$(docker inspect --format '{{.Image}}' "$APP_CONTAINER_NAME")"
+
+              mapfile -t app_image_refs < <(
+                docker image ls "$APP_REPOSITORY" \
+                  --format '{{.CreatedAt}}\t{{.Repository}}:{{.Tag}}' \
+                  | awk -F '\t' '$2 ~ /:dev-[0-9a-f]+$/ { print }' \
+                  | sort -r \
+                  | cut -f2
+              )
+
+              for ((i = KEEP_APP_IMAGES; i < ${#app_image_refs[@]}; i++)); do
+                ref="${app_image_refs[$i]}"
+                candidate_id="$(
+                  docker image inspect --format '{{.Id}}' "$ref" 2>/dev/null || true
+                )"
+
+                if [[ -z "$candidate_id" || "$candidate_id" == "$current_image_id" ]]; then
+                  continue
+                fi
+
+                docker image rm "$ref" \
+                  || echo "Warning: failed to remove image: $ref" >&2
+              done
+
+              mapfile -t migration_image_refs < <(
+                docker image ls "$APP_REPOSITORY" \
+                  --format '{{.Repository}}:{{.Tag}}' \
+                  | awk '$0 ~ /:dev-[0-9a-f]+-migration$/ { print }'
+              )
+
+              for ref in "${migration_image_refs[@]}"; do
+                docker image rm "$ref" \
+                  || echo "Warning: failed to remove migration image: $ref" >&2
+              done
+
+              docker image prune -f
+            }
 
             # 로그 디렉터리 준비
             sudo mkdir -p /var/log/spring-boot/app-main
             sudo chmod -R a+rwX /var/log/spring-boot/app-main
 
-            # 기존 컨테이너 중지 및 제거
-            docker stop "$APP_CONTAINER_NAME" || true
-            docker rm "$APP_CONTAINER_NAME" || true
+            aws ecr get-login-password --region "$AWS_REGION" \
+              | docker login --username AWS --password-stdin "$ECR_REGISTRY"
 
-            # 새 컨테이너 실행 (이미지는 flyway-migrate 단계에서 이미 pull됨)
-            docker run -d \
-              --name "$APP_CONTAINER_NAME" \
-              --restart unless-stopped \
-              -p 8080:8080 \
-              --env-file /home/ubuntu/app/app-main/.env \
-              -v /var/log/spring-boot/app-main:/app/log \
-              --add-host=host.docker.internal:host-gateway \
-              "$IMAGE"
+            # 기존 컨테이너를 중지하기 전에 새 이미지를 확보한다.
+            docker pull "$IMAGE"
 
-            # 사용하지 않는 이미지 정리
-            docker image prune -f
+            OLD_IMAGE="$(
+              docker inspect --format '{{.Config.Image}}' \
+                "$APP_CONTAINER_NAME" 2>/dev/null || true
+            )"
+
+            stop_and_remove_app
+
+            if ! run_app "$IMAGE" || ! wait_until_healthy; then
+              echo "New container did not become healthy." >&2
+              docker logs --tail 200 "$APP_CONTAINER_NAME" >&2 || true
+              stop_and_remove_app
+
+              if [[ -n "$OLD_IMAGE" ]]; then
+                echo "Rolling back to $OLD_IMAGE" >&2
+
+                if ! run_app "$OLD_IMAGE" || ! wait_until_healthy; then
+                  echo "Rollback container also failed health check." >&2
+                  docker logs --tail 200 "$APP_CONTAINER_NAME" >&2 || true
+                fi
+              fi
+
+              exit 1
+            fi
+
+            cleanup_deployment_images
+            docker system df
+            BASH
 
   # ─────────────────────────────────────────
   # 4. Discord 배포 결과 알림
