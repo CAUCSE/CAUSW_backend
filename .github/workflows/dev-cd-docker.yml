@@ -23,12 +23,24 @@ jobs:
     outputs:
       image: ${{ steps.build-image.outputs.image }}
       migration_image: ${{ steps.build-image.outputs.migration_image }}
+      migration_changed: ${{ steps.filter.outputs.migration }}
 
     steps:
       - name: Checkout branch
         uses: actions/checkout@v4
         with:
           ref: dev
+          fetch-depth: 0
+
+      - name: Detect migration changes
+        id: filter
+        if: ${{ github.event_name == 'push' }}
+        uses: dorny/paths-filter@v3
+        with:
+          base: ${{ github.event.before }}
+          filters: |
+            migration:
+              - 'app-main/src/main/resources/db/migration/**'
 
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
@@ -71,6 +83,7 @@ jobs:
   flyway-migrate:
     name: Flyway Migration
     needs: build-and-push
+    if: ${{ github.event_name == 'workflow_dispatch' || needs.build-and-push.outputs.migration_changed == 'true' }}
     runs-on: ubuntu-22.04
 
     steps:
@@ -119,6 +132,7 @@ jobs:
   deploy:
     name: Deploy to EC2 via SSH
     needs: [ build-and-push, flyway-migrate ]
+    if: ${{ always() && needs.build-and-push.result == 'success' && (needs.flyway-migrate.result == 'success' || needs.flyway-migrate.result == 'skipped') }}
     runs-on: ubuntu-22.04
 
     steps:
