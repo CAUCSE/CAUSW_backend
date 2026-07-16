@@ -1,3 +1,16 @@
+# ─── Flyway Migration ─────────────────────────────────────────────────────────
+FROM flyway/flyway:12.4.0-alpine AS migration
+
+COPY app-main/src/main/resources/db/migration /flyway/migrations
+COPY app-main/gradle/flyway/flyway-dev.conf /flyway/conf/flyway-dev.conf
+COPY --chmod=755 docker/flyway/entrypoint.sh /flyway/causw-entrypoint.sh
+
+ENV FLYWAY_CONFIG_FILES=/flyway/conf/flyway-dev.conf
+ENV FLYWAY_LOCATIONS=filesystem:/flyway/migrations
+
+ENTRYPOINT ["/flyway/causw-entrypoint.sh"]
+CMD ["migrate"]
+
 # ─── Stage 1: Build ───────────────────────────────────────────────────────────
 FROM eclipse-temurin:25-jdk-jammy AS builder
 
