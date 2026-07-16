@@ -60,10 +60,7 @@ flyway {
 
         case 'dev':
             logger.lifecycle("🚀 Applying DEV Flyway configuration")
-            outOfOrder = false
-            validateOnMigrate = true
-            cleanDisabled = true
-            baselineOnMigrate = true
+            configFiles = [project.file("gradle/flyway/flyway-dev.conf").absolutePath]
             break
 
         case 'staging':
