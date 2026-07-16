@@ -124,7 +124,7 @@ public class ScheduleMaskingResolver {
 
 			try {
 				Set<String> boardAdminIds = boardAdminMap.getOrDefault(boardId, Set.of());
-				PostValidator.validateRead(viewer, boardConfig, boardAdminIds);
+				PostValidator.validateRead(viewer, post, boardConfig, boardAdminIds);
 				readablePostIds.add(post.getId());
 			} catch (BaseRunTimeV2Exception ignored) {
 				// 권한 없음 → targetPostId 마스킹 대상

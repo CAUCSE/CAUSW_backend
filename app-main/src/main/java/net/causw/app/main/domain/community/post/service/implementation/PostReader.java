@@ -15,6 +15,7 @@ import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.community.post.repository.query.PostCursorResult;
 import net.causw.app.main.domain.community.post.repository.query.PostQueryRepository;
+import net.causw.app.main.domain.community.post.repository.query.PostReadQueryContext;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledPostImage;
 import net.causw.app.main.domain.integration.crawled.repository.CrawledPostImageRepository;
 import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
@@ -84,13 +85,13 @@ public class PostReader {
 	 */
 	public Slice<PostCursorResult> findPostsWithCursor(
 		List<String> boardIds,
-		Set<String> blockedUserIds,
+		PostReadQueryContext readContext,
 		String cursorCreatedAt,
 		String cursorId,
 		int size,
 		String keyword) {
 		return postQueryRepository.findPostsWithCursor(
-			boardIds, blockedUserIds, cursorCreatedAt, cursorId, size, keyword);
+			boardIds, readContext, cursorCreatedAt, cursorId, size, keyword);
 	}
 
 	/**
@@ -104,12 +105,12 @@ public class PostReader {
 	 */
 	public Slice<PostCursorResult> findPostsCommentedByUserWithCursor(
 		String userId,
-		Set<String> blockedUserIds,
+		PostReadQueryContext readContext,
 		String cursorCreatedAt,
 		String cursorId,
 		int size) {
 		return postQueryRepository.findPostsCommentedByUserWithCursor(
-			userId, blockedUserIds, cursorCreatedAt, cursorId, size);
+			userId, readContext, cursorCreatedAt, cursorId, size);
 	}
 
 	/**
@@ -117,10 +118,12 @@ public class PostReader {
 	 */
 	public Slice<PostCursorResult> findPostsWrittenByUserWithCursor(
 		String userId,
+		PostReadQueryContext readContext,
 		String cursorCreatedAt,
 		String cursorId,
 		int size) {
-		return postQueryRepository.findPostsWrittenByUserWithCursor(userId, cursorCreatedAt, cursorId, size);
+		return postQueryRepository.findPostsWrittenByUserWithCursor(
+			userId, readContext, cursorCreatedAt, cursorId, size);
 	}
 
 	/**
@@ -128,12 +131,12 @@ public class PostReader {
 	 */
 	public Slice<PostCursorResult> findPostsLikedByUserWithCursor(
 		String userId,
-		Set<String> blockedUserIds,
+		PostReadQueryContext readContext,
 		String cursorCreatedAt,
 		String cursorId,
 		int size) {
 		return postQueryRepository.findPostsLikedByUserWithCursor(
-			userId, blockedUserIds, cursorCreatedAt, cursorId, size);
+			userId, readContext, cursorCreatedAt, cursorId, size);
 	}
 
 	/**

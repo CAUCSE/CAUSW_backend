@@ -28,6 +28,10 @@ public class BoardConfigReader {
 	private final BoardAdminQueryRepository boardAdminQueryRepository;
 	private final BoardConfigRepository boardConfigRepository;
 
+	public List<BoardConfig> getAllOrderByDisplayOrder() {
+		return boardConfigQueryRepository.findAllOrderByDisplayOrder();
+	}
+
 	/**
 	 * 알림 설정 가능하게 설정된 게시판 리스트 확인
 	 * @return 알림 설정 가능하게 설정된 게시판 리스트
