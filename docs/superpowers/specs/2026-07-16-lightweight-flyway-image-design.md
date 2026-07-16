@@ -14,7 +14,9 @@ dev CD에서 Gradle builder 전체를 마이그레이션 이미지로 배포하�
 
 ## 선택한 접근
 
-기존 `Dockerfile`에 `flyway/flyway:12.4.0-alpine` 기반의 `migration` stage를 추가한다. 프로젝트에서 사용하는 Flyway Gradle 플러그인 및 MySQL 모듈과 버전을 맞추고, migration SQL과 환경변수 매핑 entrypoint만 추가한다.
+기존 `Dockerfile`에 `flyway/flyway:12.4.0-alpine` 기반의 `migration` stage를 추가한다. 프로젝트에서 사용하는 Flyway Gradle 플러그인 및 MySQL 모듈과 버전을 맞추고, migration SQL, 공통 dev 설정 파일과 환경변수 매핑 entrypoint만 추가한다.
+
+dev 환경의 Flyway 동작 옵션은 `app-main/gradle/flyway/flyway-dev.conf`를 단일 원본으로 사용한다. Gradle 플러그인과 migration 이미지가 같은 설정 파일을 읽어 Dockerfile 또는 workflow에 dev 옵션을 중복 선언하지 않는다.
 
 다른 접근은 선택하지 않는다.
 
@@ -27,6 +29,7 @@ dev CD에서 Gradle builder 전체를 마이그레이션 이미지로 배포하�
 
 - base image: `flyway/flyway:12.4.0-alpine`
 - migration SQL: `app-main/src/main/resources/db/migration`을 `/flyway/migrations`로 복사
+- 공통 dev 설정: `app-main/gradle/flyway/flyway-dev.conf`를 `/flyway/conf/flyway-dev.conf`로 복사
 - entrypoint: `docker/flyway/entrypoint.sh`
 
 entrypoint는 기존 `.env`의 다음 값을 검증하고 Flyway 표준 환경변수로 변환한다.
@@ -39,13 +42,21 @@ DB 비밀번호는 CLI 인자로 전달하거나 로그에 출력하지 않는�
 
 ## Flyway 설정
 
-기존 Gradle dev 설정과 동작을 맞춘다.
+기존 Gradle dev 설정을 `app-main/gradle/flyway/flyway-dev.conf`로 이동한다.
 
-- `FLYWAY_LOCATIONS=filesystem:/flyway/migrations`
-- `FLYWAY_BASELINE_ON_MIGRATE=true`
-- `FLYWAY_VALIDATE_ON_MIGRATE=true`
-- `FLYWAY_OUT_OF_ORDER=false`
-- `FLYWAY_CLEAN_DISABLED=true`
+- `flyway.baselineOnMigrate=true`
+- `flyway.validateOnMigrate=true`
+- `flyway.outOfOrder=false`
+- `flyway.cleanDisabled=true`
+
+Gradle의 `flyway-config.gradle`은 dev 프로필에서 Flyway Gradle 플러그인의 `configFiles`에 이 파일을 지정한다. migration 이미지는 `FLYWAY_CONFIG_FILES=/flyway/conf/flyway-dev.conf`로 같은 파일을 읽는다.
+
+migration 위치는 실행 환경마다 파일 시스템 경로가 다르므로 공통 설정에 포함하지 않는다.
+
+- Gradle: `filesystem:src/main/resources/db/migration`
+- migration 이미지: `FLYWAY_LOCATIONS=filesystem:/flyway/migrations`
+
+DB URL, 사용자명과 비밀번호도 공통 설정 파일에 저장하지 않고 기존 `.env`에서 주입한다. Flyway 설정 우선순위에 따라 환경변수로 주입한 접속정보와 migration 위치가 공통 config file보다 우선한다.
 
 정상 CD에서는 `migrate`만 실행한다. `repair`는 자동 실행하지 않으며, 장애 원인과 DB 상태를 확인한 후 운영자가 별도로 수행하는 복구 작업으로 둔다.
 
@@ -75,6 +86,8 @@ DB 비밀번호는 CLI 인자로 전달하거나 로그에 출력하지 않는�
 
 - `Dockerfile`
 - `docker/flyway/entrypoint.sh`
+- `app-main/gradle/flyway/flyway-dev.conf`
+- `app-main/gradle/flyway/flyway-config.gradle`
 - `.github/workflows/dev-cd-docker.yml`
 
 애플리케이션 코드, Flyway migration SQL, 운영 CD workflow는 변경하지 않는다.
