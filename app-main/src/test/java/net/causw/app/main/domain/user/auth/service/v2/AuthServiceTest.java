@@ -388,7 +388,7 @@ public class AuthServiceTest {
 
 			given(userReader.findByEmail(EMAIL)).willReturn(Optional.of(mockedUser));
 			given(mockedUser.isOnlySocialUser()).willReturn(false);
-			given(userReader.findByEmailAndName(EMAIL, NAME)).willReturn(mockedUser);
+			given(mockedUser.getName()).willReturn(NAME);
 			given(emailVerificationReader.findLatestByEmailAndStatus(EMAIL, VerificationStatus.PASSWORD_FIND))
 				.willReturn(emailVerification);
 			given(passwordGenerator.generate()).willReturn(TEMP_PASSWORD);
@@ -399,6 +399,29 @@ public class AuthServiceTest {
 			assertThat(temporaryPassword).isEqualTo(TEMP_PASSWORD);
 			verify(mockedUser).updatePassword(ENCODED_PASSWORD);
 			verify(emailVerificationWriter).delete(emailVerification);
+		}
+
+		@Test
+		@DisplayName("이메일에 해당하는 유저가 없으면 실패")
+		void resetPasswordByVerificationCode_fail_userNotFound() {
+			given(userReader.findByEmail(EMAIL)).willReturn(Optional.empty());
+
+			assertThatThrownBy(() -> authService.resetPasswordByVerificationCode(NAME, EMAIL, CODE))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasMessage(UserErrorCode.USER_NOT_FOUND.getMessage());
+		}
+
+		@Test
+		@DisplayName("이름 불일치 시 실패")
+		void resetPasswordByVerificationCode_fail_nameMismatch() {
+			User mockedUser = mock(User.class);
+			given(userReader.findByEmail(EMAIL)).willReturn(Optional.of(mockedUser));
+			given(mockedUser.isOnlySocialUser()).willReturn(false);
+			given(mockedUser.getName()).willReturn("다른이름");
+
+			assertThatThrownBy(() -> authService.resetPasswordByVerificationCode(NAME, EMAIL, CODE))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasMessage(UserErrorCode.USER_NOT_FOUND.getMessage());
 		}
 
 		@Test
@@ -422,7 +445,7 @@ public class AuthServiceTest {
 
 			given(userReader.findByEmail(EMAIL)).willReturn(Optional.of(mockedUser));
 			given(mockedUser.isOnlySocialUser()).willReturn(false);
-			given(userReader.findByEmailAndName(EMAIL, NAME)).willReturn(mockedUser);
+			given(mockedUser.getName()).willReturn(NAME);
 			given(emailVerificationReader.findLatestByEmailAndStatus(EMAIL, VerificationStatus.PASSWORD_FIND))
 				.willReturn(emailVerification);
 
@@ -440,7 +463,7 @@ public class AuthServiceTest {
 
 			given(userReader.findByEmail(EMAIL)).willReturn(Optional.of(mockedUser));
 			given(mockedUser.isOnlySocialUser()).willReturn(false);
-			given(userReader.findByEmailAndName(EMAIL, NAME)).willReturn(mockedUser);
+			given(mockedUser.getName()).willReturn(NAME);
 			given(emailVerificationReader.findLatestByEmailAndStatus(EMAIL, VerificationStatus.PASSWORD_FIND))
 				.willReturn(expired);
 
