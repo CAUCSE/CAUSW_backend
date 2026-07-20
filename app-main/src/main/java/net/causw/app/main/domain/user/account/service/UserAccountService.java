@@ -7,10 +7,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
-import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageReader;
-import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageWriter;
-import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerReader;
-import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerWriter;
+import net.causw.app.main.domain.asset.file.service.implementation.UserProfileImageReader;
+import net.causw.app.main.domain.asset.file.service.implementation.UserProfileImageWriter;
+import net.causw.app.main.domain.asset.locker.service.implementation.LockerReader;
+import net.causw.app.main.domain.asset.locker.service.implementation.LockerWriter;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserWithdrawResponse;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;

@@ -1,0 +1,17 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: causw-app
+    env_file:
+      - .env
+      - .env.docker-local
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      # DB_URL/DB_USERNAME/DB_PASSWORD/REDIS_HOST/REDIS_PORT는 .env.local에서 override
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "8080:8080"
+    restart: unless-stopped

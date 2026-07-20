@@ -1,0 +1,254 @@
+package net.causw.app.main.domain.community.post.service.mapper;
+
+import java.util.List;
+
+import net.causw.app.main.domain.asset.file.entity.UuidFile;
+import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
+import net.causw.app.main.domain.community.board.entity.Board;
+import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.repository.query.PostCursorResult;
+import net.causw.app.main.domain.community.post.service.dto.PostCreateCommand;
+import net.causw.app.main.domain.community.post.service.dto.PostCreateResult;
+import net.causw.app.main.domain.community.post.service.dto.PostDetailResult;
+import net.causw.app.main.domain.community.post.service.dto.PostListResult;
+import net.causw.app.main.domain.community.post.service.dto.PostUpdateResult;
+import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.enums.user.ProfileImageType;
+import net.causw.app.main.domain.user.account.enums.user.UserState;
+import net.causw.app.main.shared.dto.ProfileImageDto;
+import net.causw.global.constant.StaticValue;
+
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public class PostMapper {
+
+	public static Post fromCreateCommand(PostCreateCommand command, User writer, Board board,
+		List<UuidFile> images) {
+		return Post.of(null,
+			command.content(),
+			writer,
+			command.isAnonymous(),
+			board,
+			images);
+	}
+
+	public static PostCreateResult toCreateResult(Post post, List<String> images) {
+		return PostCreateResult.builder()
+			.id(post.getId())
+			.content(post.getContent())
+			.isAnonymous(post.getIsAnonymous())
+			.fileUrlList(images)
+			.writerId(post.getWriter().getId())
+			.createdAt(post.getCreatedAt())
+			.updatedAt(post.getUpdatedAt())
+			.boardName(post.getBoard().getName())
+			.build();
+	}
+
+	public static PostUpdateResult toUpdateResult(Post post, List<String> images) {
+		return PostUpdateResult.builder()
+			.id(post.getId())
+			.content(post.getContent())
+			.isAnonymous(post.getIsAnonymous())
+			.fileUrlList(images)
+			.writerId(post.getWriter().getId())
+			.createdAt(post.getCreatedAt())
+			.updatedAt(post.getUpdatedAt())
+			.boardName(post.getBoard().getName())
+			.build();
+	}
+
+	/**
+	 * PostCursorResult를 PostListResult.PostItem으로 변환합니다.
+	 */
+	public static PostListResult.PostItem toPostListItem(PostCursorResult result, List<String> imageUrls,
+		boolean isPostLike, boolean isOwner, boolean isNotice, boolean isOfficial, String officialNickname,
+		String officialImageUrl) {
+		// 닉네임 마스킹
+		String writerNickname;
+		if (isNotice) {
+			if (officialNickname != null && !officialNickname.isBlank()) {
+				writerNickname = officialNickname;
+			} else {
+				writerNickname = "게시판 관리자";
+			}
+		} else {
+			writerNickname = resolveWriterNickname(result);
+		}
+
+		// 프로필 이미지 마스킹
+		ProfileImageDto writerProfileImage;
+		if (isNotice) {
+			if (officialImageUrl != null && !officialImageUrl.isBlank()) {
+				// 커스텀 이미지가 존재하는 경우
+				writerProfileImage = ProfileImageDto.of(ProfileImageType.CUSTOM, officialImageUrl);
+			} else {
+				// 커스텀 이미지가 없는 경우 기본 이미지 사용
+				writerProfileImage = ProfileImageDto.of(ProfileImageType.UNSET, null);
+			}
+		} else {
+			writerProfileImage = resolveWriterProfileImage(result);
+		}
+
+		return PostListResult.PostItem.of(
+			result.postId(),
+			result.content(),
+			result.numComment(),
+			result.numLike(),
+			result.isAnonymous(),
+			result.voteId(),
+			result.isDeleted(),
+			result.isCrawled(),
+			writerNickname,
+			writerProfileImage,
+			result.createdAt(),
+			result.updatedAt(),
+			imageUrls,
+			result.boardId(),
+			result.boardName(),
+			isPostLike,
+			isOwner,
+			isOfficial);
+	}
+
+	/**
+	 * Post 엔티티와 관련 데이터를 PostDetailResult로 변환합니다.
+	 *
+	 * @param post 게시글 엔티티
+	 * @param imageUrls 첨부 이미지 URL 리스트
+	 * @param numComment 댓글 개수
+	 * @param numLike 좋아요 개수
+	 * @param isPostLike 사용자의 좋아요 여부
+	 * @param isOwner 작성자 여부
+	 * @param updatable 수정 가능 여부
+	 * @param deletable 삭제 가능 여부
+	 * @return PostDetailResult
+	 */
+	public static PostDetailResult toPostDetailResult(
+		Post post,
+		UserProfileImage writerProfileImage,
+		List<String> imageUrls,
+		Long numComment,
+		Long numLike,
+		Boolean isPostLike,
+		boolean isOwner,
+		boolean updatable,
+		boolean deletable,
+		boolean isNotice,
+		boolean isOfficial,
+		String officialNickname,
+		String officialImageUrl) {
+
+		// 닉네임 마스킹
+		String displayWriterNickname;
+		if (isNotice) {
+			if (officialNickname != null && !officialNickname.isBlank()) {
+				displayWriterNickname = officialNickname;
+			} else {
+				displayWriterNickname = "게시판 관리자";
+			}
+		} else {
+			displayWriterNickname = resolveWriterNickname(post);
+		}
+
+		// 프로필 이미지 마스킹
+		ProfileImageDto writerProfileImageDto;
+		if (isNotice) {
+			if (officialImageUrl != null && !officialImageUrl.isBlank()) {
+				writerProfileImageDto = ProfileImageDto.of(ProfileImageType.CUSTOM, officialImageUrl);
+			} else {
+				writerProfileImageDto = ProfileImageDto.of(ProfileImageType.UNSET, null);
+			}
+		} else {
+			writerProfileImageDto = resolveWriterProfileImage(post, writerProfileImage);
+		}
+
+		String voteId = resolveVoteId(post);
+
+		return PostDetailResult.builder()
+			.id(post.getId())
+			.content(post.getContent())
+			.isDeleted(post.getIsDeleted())
+			.displayWriterNickname(displayWriterNickname)
+			.writerProfileImage(writerProfileImageDto)
+			.fileUrlList(imageUrls)
+			.numComment(numComment)
+			.numLike(numLike)
+			.voteId(voteId)
+			.isAnonymous(post.getIsAnonymous())
+			.isCrawled(post.getIsCrawled())
+			.isOwner(isOwner)
+			.isPostLike(isPostLike)
+			.updatable(updatable)
+			.deletable(deletable)
+			.isOfficial(isOfficial)
+			.createdAt(post.getCreatedAt())
+			.updatedAt(post.getUpdatedAt())
+			.boardId(post.getBoard().getId())
+			.boardName(post.getBoard().getName())
+			.build();
+	}
+
+	// ── 비식별 처리 헬퍼 ──────────────────────────────────────────────────────────
+
+	private static String resolveWriterNickname(PostCursorResult result) {
+		if (isInactiveWriter(result.writerUserState(), !result.hasWriter())) {
+			return StaticValue.INACTIVE_USER_NICKNAME;
+		}
+		if (result.isAnonymous()) {
+			return StaticValue.ANONYMOUS_USER_NICKNAME;
+		}
+		return result.writerNickname();
+	}
+
+	private static ProfileImageDto resolveWriterProfileImage(PostCursorResult result) {
+		if (isInactiveWriter(result.writerUserState(), !result.hasWriter()) || result.isAnonymous()) {
+			return ProfileImageDto.GHOST;
+		}
+		return ProfileImageDto.of(result.writerProfileImageType(), result.writerProfileImageUrl());
+	}
+
+	private static String resolveWriterNickname(Post post) {
+		User writer = post.getWriter();
+		if (isInactiveWriter(writer)) {
+			return StaticValue.INACTIVE_USER_NICKNAME;
+		}
+		if (post.getIsAnonymous()) {
+			return StaticValue.ANONYMOUS_USER_NICKNAME;
+		}
+		return writer.getNickname();
+	}
+
+	private static ProfileImageDto resolveWriterProfileImage(Post post, UserProfileImage writerProfileImage) {
+		if (isInactiveWriter(post.getWriter()) || post.getIsAnonymous()) {
+			return ProfileImageDto.GHOST;
+		}
+		return ProfileImageDto.from(post.getWriter(), writerProfileImage);
+	}
+
+	private static String resolveVoteId(Post post) {
+		if (post.getVote() != null) {
+			return post.getVote().getId();
+		}
+		return null;
+	}
+
+	/**
+	 * 작성자가 비활성 상태(추방/탈퇴)인지 확인합니다.
+	 * <ul>
+	 *   <li>state == null: 작성자가 존재하지 않음</li>
+	 *   <li>state == DROP: 추방</li>
+	 *   <li>isDeleted == true: 탈퇴</li>
+	 * </ul>
+	 */
+	private static boolean isInactiveWriter(UserState state, boolean isDeleted) {
+		return state == null || state == UserState.DROP || isDeleted;
+	}
+
+	private static boolean isInactiveWriter(User writer) {
+		return writer == null || writer.isInactive() || writer.getState() == UserState.DROP;
+	}
+
+}

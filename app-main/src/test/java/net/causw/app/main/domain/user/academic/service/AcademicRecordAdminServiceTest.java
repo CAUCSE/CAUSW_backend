@@ -17,6 +17,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import net.causw.app.main.domain.admin.audit.event.AdminAuditLogEventPublisher;
 import net.causw.app.main.domain.user.academic.entity.userAcademicRecord.UserAcademicRecordApplication;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicRecordRequestStatus;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
@@ -42,6 +43,9 @@ class AcademicRecordAdminServiceTest {
 
 	@Mock
 	private AcademicRecordLogCreator logCreator;
+
+	@Mock
+	private AdminAuditLogEventPublisher adminAuditLogEventPublisher;
 
 	@InjectMocks
 	private AcademicRecordAdminService academicRecordAdminService;
@@ -166,6 +170,7 @@ class AcademicRecordAdminServiceTest {
 			verify(applicationReader).findById(applicationId);
 			verify(applicationWriter).approve(application);
 			verify(logCreator).createFromApplication(admin, application);
+			verify(adminAuditLogEventPublisher).publishAcademicRecordAccept(admin, application);
 		}
 
 		@Test
@@ -186,6 +191,7 @@ class AcademicRecordAdminServiceTest {
 
 			verify(applicationWriter, never()).approve(any());
 			verify(logCreator, never()).createFromApplication(any(), any());
+			verifyNoInteractions(adminAuditLogEventPublisher);
 		}
 
 		@Test
@@ -213,6 +219,7 @@ class AcademicRecordAdminServiceTest {
 				.isInstanceOf(BaseRunTimeV2Exception.class);
 
 			verify(logCreator, never()).createFromApplication(any(), any());
+			verifyNoInteractions(adminAuditLogEventPublisher);
 		}
 	}
 
@@ -246,6 +253,7 @@ class AcademicRecordAdminServiceTest {
 			verify(applicationReader).findById(applicationId);
 			verify(applicationWriter).reject(application, rejectReason);
 			verify(logCreator).createFromApplication(admin, application);
+			verify(adminAuditLogEventPublisher).publishAcademicRecordReject(admin, application, rejectReason);
 		}
 
 		@Test
@@ -266,6 +274,7 @@ class AcademicRecordAdminServiceTest {
 
 			verify(applicationWriter, never()).reject(any(), any());
 			verify(logCreator, never()).createFromApplication(any(), any());
+			verifyNoInteractions(adminAuditLogEventPublisher);
 		}
 
 		@Test
@@ -294,6 +303,7 @@ class AcademicRecordAdminServiceTest {
 				.isInstanceOf(BaseRunTimeV2Exception.class);
 
 			verify(logCreator, never()).createFromApplication(any(), any());
+			verifyNoInteractions(adminAuditLogEventPublisher);
 		}
 	}
 }

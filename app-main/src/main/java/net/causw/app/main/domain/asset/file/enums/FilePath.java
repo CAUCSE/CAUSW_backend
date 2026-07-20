@@ -29,6 +29,11 @@ public enum FilePath {
 		5 * 1024 * 1024L, // 5MB
 		1,
 		List.of(FileExtensionType.IMAGE)),
+	BOARD_PROFILE(
+		"board/profile",
+		5 * 1024 * 1024L, // 5MB)
+		1,
+		List.of(FileExtensionType.IMAGE)),
 	POST(
 		"post",
 		10 * 1024 * 1024L, // 10MB

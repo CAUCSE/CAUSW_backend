@@ -78,30 +78,7 @@ public class CommentSeeder extends BasePostSeeder<CommentSeeder.CommentItem> {
 			}
 		});
 
-		// 2. 구독자 연결
-		String sqlSubscribe = "INSERT INTO tb_user_comment_subscribe " +
-			"(id, is_subscribed, comment_id, user_id, created_at, updated_at) " +
-			"VALUES (?, true, ?, ?, ?, ?)";
-
-		jdbcTemplate.batchUpdate(sqlSubscribe, new BatchPreparedStatementSetter() {
-			@Override
-			public void setValues(PreparedStatement ps, int i) throws SQLException {
-				CommentItem item = items.get(i);
-
-				ps.setString(1, UUID.randomUUID().toString());
-				ps.setString(2, item.id);
-				ps.setString(3, item.writerId());
-				ps.setTimestamp(4, Timestamp.valueOf(item.createdAt()));
-				ps.setTimestamp(5, Timestamp.valueOf(item.createdAt()));
-			}
-
-			@Override
-			public int getBatchSize() {
-				return items.size();
-			}
-		});
-
-		// 3. 알림 삽입
+		// 2. 알림 삽입
 		String sqlNotification = "INSERT INTO tb_notification " +
 			"(id, user_id, content, notice_type, target_id, is_global, created_at, updated_at) " +
 			"VALUES (?, ?, ?, 'POST', ?, false, ?, ?)";

@@ -5,10 +5,10 @@ import java.util.List;
 
 import net.causw.app.main.domain.asset.locker.entity.Locker;
 import net.causw.app.main.domain.asset.locker.entity.LockerLocation;
-import net.causw.app.main.domain.asset.locker.service.v2.dto.result.LockerFloorListResult;
-import net.causw.app.main.domain.asset.locker.service.v2.dto.result.LockerLocationResult;
-import net.causw.app.main.domain.asset.locker.service.v2.dto.result.MyLockerResult;
-import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerAggregator;
+import net.causw.app.main.domain.asset.locker.service.dto.result.LockerFloorListResult;
+import net.causw.app.main.domain.asset.locker.service.dto.result.LockerLocationResult;
+import net.causw.app.main.domain.asset.locker.service.dto.result.MyLockerResult;
+import net.causw.app.main.domain.asset.locker.service.implementation.LockerAggregator;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -19,7 +19,7 @@ public class LockerMapper {
 	public static MyLockerResult toMyLockerResult(Locker locker) {
 		LockerLocation location = locker.getLocation();
 		String displayName = location.getDescription() + " " + locker.getLockerNumber() + "번";
-		return MyLockerResult.of(locker.getId(), displayName, locker.getExpireDate());
+		return MyLockerResult.of(locker.getId(), displayName, locker.getExpireDate(), locker.isExtended());
 	}
 
 	public static List<LockerLocationResult.LockerItemResult> toLockerItemResults(

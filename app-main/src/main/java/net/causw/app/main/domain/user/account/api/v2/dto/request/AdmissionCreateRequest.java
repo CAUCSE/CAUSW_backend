@@ -20,7 +20,7 @@ public record AdmissionCreateRequest(
 
 	@Schema(description = "입학년도", example = "2021") @NotNull(message = "입학년도를 입력해 주세요.") @Min(value = 1950, message = "올바른 네 자리 연도를 입력해 주세요.") @Max(value = 2200, message = "올바른 네 자리 연도를 입력해 주세요.") Integer requestedAdmissionYear,
 
-	@Schema(description = "학번", example = "20210001") @NotBlank(message = "학번을 입력해 주세요.") @Pattern(regexp = "^\\d{8}$|^\\d{10}$", message = "학번은 8자리 또는 10자리 숫자여야 합니다.") String requestedStudentId,
+	@Schema(description = "학번 (졸업자는 선택)", example = "20210001") @Pattern(regexp = "^$|^\\d{8}$|^\\d{10}$", message = "학번은 8자리 또는 10자리 숫자여야 합니다.") String requestedStudentId,
 
 	@Schema(description = "재학분류", example = "ENROLLED") @NotNull(message = "재학 분류를 선택해 주세요.") AcademicStatus requestedAcademicStatus,
 

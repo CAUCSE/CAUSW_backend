@@ -6,7 +6,7 @@ import org.mapstruct.Mapper;
 
 import net.causw.app.main.domain.community.board.api.v2.dto.response.BoardReadableItemResponse;
 import net.causw.app.main.domain.community.board.api.v2.dto.response.BoardReadableListResponse;
-import net.causw.app.main.domain.community.board.service.v2.dto.BoardReadableItemResult;
+import net.causw.app.main.domain.community.board.service.dto.BoardReadableItemResult;
 
 @Mapper(componentModel = "spring")
 public interface BoardReadableMapper {

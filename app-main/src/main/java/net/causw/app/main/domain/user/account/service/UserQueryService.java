@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.user.account.service.dto.request.UserQueryCondition;
 import net.causw.app.main.domain.user.account.service.dto.result.UserSearchListResult;
+import net.causw.app.main.domain.user.account.service.implementation.AdmissionLogReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 
 import lombok.RequiredArgsConstructor;
@@ -20,16 +21,17 @@ import lombok.RequiredArgsConstructor;
 public class UserQueryService {
 
 	private final UserReader userReader;
+	private final AdmissionLogReader admissionLogReader;
 
 	public UserSearchListResult searchUsers(UserQueryCondition condition) {
 		return UserSearchListResult.from(userReader.searchByCondition(condition));
 	}
 
-	public Long getDailySignupStats(LocalDate targetDate) {
+	public Long getDailyApprovedStats(LocalDate targetDate) {
 		LocalDateTime startOfDay = targetDate.atStartOfDay();
 		LocalDateTime endOfDay = targetDate.atTime(MAX);
 
-		return userReader.countByCreatedAtBetween(startOfDay, endOfDay);
+		return admissionLogReader.countAcceptedBetween(startOfDay, endOfDay);
 	}
 
 	public Long getTotalUserCount() {

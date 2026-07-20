@@ -1,4 +1,9 @@
 spring:
+  config:
+    import:
+      - optional:file:.env[.properties]
+      - optional:file:../.env[.properties]
+
   servlet:
     multipart:
       max-file-size: 1000MB
@@ -125,29 +130,27 @@ spring:
             jwk-set-uri: https://appleid.apple.com/auth/keys
             user-name-attribute: sub
 
+  cloud:
+    aws:
+      s3:
+        # AWS S3 콘솔 -> 버킷 -> caucse-s3-bucket
+        bucket: ${AWS_S3_BUCKET_NAME}
+      credentials:
+        # AWS IAM 콘솔 -> 사용자 -> iam-user -> 보안 자격 증명 -> 액세스 키
+        access-key: ${AWS_ACCESS_KEY}
+        secret-key: ${AWS_SECRET_KEY}
+      region:
+        static: ap-northeast-2
+
 logging:
   level:
     org.hibernate.SQL: DEBUG
-    com:
-      amazonaws:
-        util:
-          EC2MetadataUtils: ERROR
 
-cloud:
-  aws:
-    s3:
-      # AWS S3 콘솔 -> 버킷 -> caucse-s3-bucket
-      bucket: ${AWS_S3_BUCKET_NAME}
-    credentials:
-      # AWS IAM 콘솔 -> 사용자 -> iam-user -> 보안 자격 증명 -> 액세스 키
-      access-key: ${AWS_ACCESS_KEY}
-      secret-key: ${AWS_SECRET_KEY}
-    region:
-      static: ap-northeast-2
-      auto: false
-    stack:
-      auto: false
-
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus,health,info
 
 springdoc:
   api-docs:

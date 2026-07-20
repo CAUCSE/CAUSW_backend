@@ -16,7 +16,6 @@ import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.user.academic.entity.userAcademicRecord.UserAcademicRecordApplication;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicRecordRequestStatus;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
-import net.causw.app.main.domain.user.account.api.v1.dto.UserCreateRequestDto;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.user.UserAdmissionLog;
 import net.causw.app.main.domain.user.account.enums.user.Department;
@@ -91,19 +90,16 @@ public class UserSeeder {
 	}
 
 	private User createActiveCommonUser(int i, String encodedPassword) {
-		UserCreateRequestDto dto = UserCreateRequestDto.builder()
-			.email("seed" + i + "@cau.ac.kr")
-			.name("시드유저" + i)
-			.password("password00!!") // 정규식 통과
-			.studentId("2020" + String.format("%04d", i))
-			.admissionYear(2020)
-			.nickname("seed_" + i)
-			.major("소프트웨어학부")
-			.department(Department.SCHOOL_OF_SW)
-			.phoneNumber(String.format("010-%04d-%04d", 2000 + i / 10000, i % 10000))
-			.build();
-
-		User user = User.from(dto, encodedPassword);
+		User user = User.from(
+			"seed" + i + "@cau.ac.kr",
+			"시드유저" + i,
+			"2020" + String.format("%04d", i),
+			2020,
+			"seed_" + i,
+			"소프트웨어학부",
+			Department.SCHOOL_OF_SW,
+			String.format("010-%04d-%04d", 2000 + i / 10000, i % 10000),
+			encodedPassword);
 		user.setRoles(Set.of(Role.COMMON));
 		user.setState(UserState.ACTIVE);
 		em.persist(user);

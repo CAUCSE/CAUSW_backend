@@ -22,7 +22,7 @@ import net.causw.app.main.domain.asset.file.api.v2.dto.response.FileUploadRespon
 import net.causw.app.main.domain.asset.file.api.v2.dto.response.MultipleFilesUploadResponse;
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
-import net.causw.app.main.domain.asset.file.service.v2.UuidFileService;
+import net.causw.app.main.domain.asset.file.service.UuidFileService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

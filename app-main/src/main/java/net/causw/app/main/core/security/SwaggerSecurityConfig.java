@@ -94,8 +94,7 @@ public class SwaggerSecurityConfig {
 
 			InMemoryUserDetailsManager userDetailsService = new InMemoryUserDetailsManager(user);
 
-			DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-			provider.setUserDetailsService(userDetailsService);
+			DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
 
 			return provider;
 		}

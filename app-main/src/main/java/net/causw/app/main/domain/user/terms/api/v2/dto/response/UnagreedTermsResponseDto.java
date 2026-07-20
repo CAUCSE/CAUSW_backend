@@ -3,7 +3,7 @@ package net.causw.app.main.domain.user.terms.api.v2.dto.response;
 import java.time.LocalDate;
 
 import net.causw.app.main.domain.user.terms.entity.TermsType;
-import net.causw.app.main.domain.user.terms.service.v2.dto.UnagreedTermsInfo;
+import net.causw.app.main.domain.user.terms.service.dto.UnagreedTermsInfo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

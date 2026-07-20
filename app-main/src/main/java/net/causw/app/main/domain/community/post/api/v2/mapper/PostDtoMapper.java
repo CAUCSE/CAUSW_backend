@@ -14,16 +14,16 @@ import net.causw.app.main.domain.community.post.api.v2.dto.response.PostCreateRe
 import net.causw.app.main.domain.community.post.api.v2.dto.response.PostListResponse;
 import net.causw.app.main.domain.community.post.api.v2.dto.response.PostResponse;
 import net.causw.app.main.domain.community.post.api.v2.dto.response.PostUpdateResponse;
-import net.causw.app.main.domain.community.post.service.v2.dto.ImageCreateMeta;
-import net.causw.app.main.domain.community.post.service.v2.dto.ImageUpdateMeta;
-import net.causw.app.main.domain.community.post.service.v2.dto.PostCreateCommand;
-import net.causw.app.main.domain.community.post.service.v2.dto.PostCreateResult;
-import net.causw.app.main.domain.community.post.service.v2.dto.PostDetailQuery;
-import net.causw.app.main.domain.community.post.service.v2.dto.PostDetailResult;
-import net.causw.app.main.domain.community.post.service.v2.dto.PostListQuery;
-import net.causw.app.main.domain.community.post.service.v2.dto.PostListResult;
-import net.causw.app.main.domain.community.post.service.v2.dto.PostUpdateCommand;
-import net.causw.app.main.domain.community.post.service.v2.dto.PostUpdateResult;
+import net.causw.app.main.domain.community.post.service.dto.ImageCreateMeta;
+import net.causw.app.main.domain.community.post.service.dto.ImageUpdateMeta;
+import net.causw.app.main.domain.community.post.service.dto.PostCreateCommand;
+import net.causw.app.main.domain.community.post.service.dto.PostCreateResult;
+import net.causw.app.main.domain.community.post.service.dto.PostDetailQuery;
+import net.causw.app.main.domain.community.post.service.dto.PostDetailResult;
+import net.causw.app.main.domain.community.post.service.dto.PostListQuery;
+import net.causw.app.main.domain.community.post.service.dto.PostListResult;
+import net.causw.app.main.domain.community.post.service.dto.PostUpdateCommand;
+import net.causw.app.main.domain.community.post.service.dto.PostUpdateResult;
 import net.causw.app.main.domain.user.account.entity.user.User;
 
 @Mapper(componentModel = "spring")

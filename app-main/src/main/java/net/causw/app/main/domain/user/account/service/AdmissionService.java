@@ -9,7 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
-import net.causw.app.main.domain.asset.file.service.v2.implementation.FileWriter;
+import net.causw.app.main.domain.asset.file.service.implementation.FileWriter;
 import net.causw.app.main.domain.notification.notification.event.AdmissionRequestedEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.entity.user.UserAdmission;

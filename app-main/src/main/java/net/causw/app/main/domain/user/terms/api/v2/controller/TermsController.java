@@ -15,7 +15,7 @@ import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.domain.user.terms.api.v2.dto.request.TermsAgreementRequestDto;
 import net.causw.app.main.domain.user.terms.api.v2.dto.response.TermsResponseDto;
 import net.causw.app.main.domain.user.terms.api.v2.dto.response.UserTermsAgreementStatusResponseDto;
-import net.causw.app.main.domain.user.terms.service.v2.TermsService;
+import net.causw.app.main.domain.user.terms.service.TermsService;
 import net.causw.app.main.shared.dto.ApiResponse;
 
 import io.swagger.v3.oas.annotations.Operation;

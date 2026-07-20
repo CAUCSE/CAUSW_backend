@@ -14,9 +14,8 @@ import org.springframework.web.client.RestClientResponseException;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import lombok.extern.slf4j.Slf4j;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * OIDC/OAuth2 공급자 토큰 엔드포인트에 authorization code grant로 요청해 리프레시 토큰을 획득합니다.

@@ -11,7 +11,7 @@ import net.causw.global.constant.StaticValue;
 /**
  * 댓글·대댓글 작성자 정보 및 접근 권한을 담는 공통 DTO.
  *
- * <p>{@link CommentResult}와 {@link ChildCommentResult}에서 공통으로 사용합니다.
+ * <p>{@link CommentResult}에서 공통으로 사용합니다.
  * 익명 댓글이거나 탈퇴·비활성 유저인 경우 닉네임을 고정값으로 치환하고,
  * 개인 정보(이름, 입학연도, 프로필 이미지)를 노출하지 않습니다.</p>
  *

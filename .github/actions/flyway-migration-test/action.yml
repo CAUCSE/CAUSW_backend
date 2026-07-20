@@ -22,7 +22,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    # JDK 17 설정 및 Gradle 캐시 복원
+    # JDK 25 설정 및 Gradle 캐시 복원
     - name: Setup JDK and Gradle
       uses: ./.github/actions/setup-jdk-gradle
 

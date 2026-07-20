@@ -56,9 +56,9 @@ public class ChildCommentSeeder extends BasePostSeeder<ChildCommentSeeder.ChildC
 	@Override
 	protected void batchInsert(List<ChildCommentItem> items) {
 		// 1. 대댓글 삽입
-		String sqlChildComment = "INSERT INTO tb_child_comment " +
-			"(id, content, parent_comment_id, user_id, is_anonymous, is_deleted, created_at, updated_at) " +
-			"VALUES (?, ?, ?, ?, false, false, ?, ?)";
+		String sqlChildComment = "INSERT INTO tb_comment " +
+			"(id, content, post_id, parent_comment_id, user_id, is_anonymous, is_deleted, created_at, updated_at) " +
+			"VALUES (?, ?, ?, ?, ?, false, false, ?, ?)";
 
 		jdbcTemplate.batchUpdate(sqlChildComment, new BatchPreparedStatementSetter() {
 			@Override
@@ -67,10 +67,11 @@ public class ChildCommentSeeder extends BasePostSeeder<ChildCommentSeeder.ChildC
 
 				ps.setString(1, item.id());
 				ps.setString(2, item.content());
-				ps.setString(3, item.parentId());
-				ps.setString(4, item.writerId());
-				ps.setTimestamp(5, Timestamp.valueOf(item.createdAt()));
+				ps.setString(3, item.postId());
+				ps.setString(4, item.parentId());
+				ps.setString(5, item.writerId());
 				ps.setTimestamp(6, Timestamp.valueOf(item.createdAt()));
+				ps.setTimestamp(7, Timestamp.valueOf(item.createdAt()));
 			}
 
 			@Override

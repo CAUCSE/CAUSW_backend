@@ -2,8 +2,8 @@ package net.causw.app.main.domain.asset.locker.repository.query;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
-import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
@@ -26,6 +26,18 @@ import lombok.RequiredArgsConstructor;
 public class LockerQueryRepository {
 
 	private final JPAQueryFactory jpaQueryFactory;
+
+	public Optional<Locker> findLockerById(String lockerId) {
+		QLocker qLocker = QLocker.locker;
+		QLockerLocation qlockerLocation = QLockerLocation.lockerLocation;
+
+		Locker locker = jpaQueryFactory
+			.selectFrom(qLocker)
+			.join(qLocker.location, qlockerLocation).fetchJoin()
+			.where(qLocker.id.eq(lockerId))
+			.fetchOne();
+		return Optional.ofNullable(locker);
+	}
 
 	public Page<Locker> findLockers(
 		String userKeyword,
@@ -77,7 +89,6 @@ public class LockerQueryRepository {
 			.fetch();
 	}
 
-	@NotNull
 	private static BooleanBuilder getSearchCondition(String userKeyword, LockerName location, Boolean isActive,
 		Boolean isOccupied, Boolean isExpired, QUser user, QLockerLocation lockerLocation, QLocker locker) {
 		BooleanBuilder where = new BooleanBuilder();

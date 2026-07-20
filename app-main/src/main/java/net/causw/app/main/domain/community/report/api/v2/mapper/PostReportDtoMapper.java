@@ -5,8 +5,8 @@ import org.mapstruct.Mapping;
 
 import net.causw.app.main.domain.community.report.api.v2.dto.request.PostReportCreateRequestDto;
 import net.causw.app.main.domain.community.report.api.v2.dto.response.PostReportResponseDto;
-import net.causw.app.main.domain.community.report.service.v2.dto.PostReportCreateCommand;
-import net.causw.app.main.domain.community.report.service.v2.dto.PostReportCreateResult;
+import net.causw.app.main.domain.community.report.service.dto.PostReportCreateCommand;
+import net.causw.app.main.domain.community.report.service.dto.PostReportCreateResult;
 import net.causw.app.main.domain.user.account.entity.user.User;
 
 @Mapper(componentModel = "spring")

@@ -25,10 +25,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import net.causw.app.main.domain.asset.file.service.v2.implementation.UserProfileImageWriter;
+import net.causw.app.main.domain.asset.file.service.implementation.UserProfileImageWriter;
 import net.causw.app.main.domain.asset.locker.entity.Locker;
-import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerReader;
-import net.causw.app.main.domain.asset.locker.service.v2.implementation.LockerWriter;
+import net.causw.app.main.domain.asset.locker.service.implementation.LockerReader;
+import net.causw.app.main.domain.asset.locker.service.implementation.LockerWriter;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserWithdrawResponse;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;

@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.domain.admin.audit.event.AdminAuditLogEventPublisher;
 import net.causw.app.main.domain.notification.notification.event.AdmissionAcceptedEvent;
 import net.causw.app.main.domain.notification.notification.event.AdmissionRejectedEvent;
 import net.causw.app.main.domain.user.academic.event.CertifiedUserCreatedEvent;
@@ -30,6 +31,7 @@ public class AdmissionAdminService {
 	private final AdmissionValidator admissionValidator;
 	private final AdmissionWriter admissionWriter;
 	private final AdmissionLogWriter admissionLogWriter;
+	private final AdminAuditLogEventPublisher adminAuditLogEventPublisher;
 	private final UserWriter userWriter;
 	private final ApplicationEventPublisher eventPublisher;
 
@@ -81,6 +83,7 @@ public class AdmissionAdminService {
 
 		// 로그 생성
 		admissionLogWriter.createAcceptLog(admission, adminUser);
+		adminAuditLogEventPublisher.publishAdmissionAccept(admission, adminUser);
 
 		// 신청 삭제
 		admissionWriter.delete(admission);
@@ -112,6 +115,7 @@ public class AdmissionAdminService {
 
 		// 로그 생성
 		admissionLogWriter.createRejectLog(admission, adminUser, rejectReason);
+		adminAuditLogEventPublisher.publishAdmissionReject(admission, adminUser, rejectReason);
 
 		// 신청 삭제
 		admissionWriter.delete(admission);

@@ -12,7 +12,7 @@ import net.causw.app.main.domain.asset.locker.api.v2.controller.dto.response.Loc
 import net.causw.app.main.domain.asset.locker.api.v2.controller.dto.response.LockerPeriodStatusResponse;
 import net.causw.app.main.domain.asset.locker.api.v2.controller.dto.response.MyLockerResponse;
 import net.causw.app.main.domain.asset.locker.api.v2.mapper.LockerResponseMapper;
-import net.causw.app.main.domain.asset.locker.service.v2.LockerService;
+import net.causw.app.main.domain.asset.locker.service.LockerService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 

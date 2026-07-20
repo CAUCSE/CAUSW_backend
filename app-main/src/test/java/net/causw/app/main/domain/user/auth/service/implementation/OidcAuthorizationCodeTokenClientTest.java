@@ -9,7 +9,7 @@ import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 class OidcAuthorizationCodeTokenClientTest {
 

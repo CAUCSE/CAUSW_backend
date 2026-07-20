@@ -2,7 +2,7 @@ package net.causw.app.main.domain.user.terms.api.v2.dto.response;
 
 import java.util.List;
 
-import net.causw.app.main.domain.user.terms.service.v2.dto.UserTermsAgreementStatusInfo;
+import net.causw.app.main.domain.user.terms.service.dto.UserTermsAgreementStatusInfo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

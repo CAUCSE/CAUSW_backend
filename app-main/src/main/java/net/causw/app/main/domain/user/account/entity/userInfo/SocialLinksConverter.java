@@ -3,13 +3,12 @@ package net.causw.app.main.domain.user.account.entity.userInfo;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 import lombok.extern.slf4j.Slf4j;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 @Slf4j
 @Converter
@@ -25,7 +24,7 @@ public class SocialLinksConverter implements AttributeConverter<List<String>, St
 
 		try {
 			return objectMapper.writeValueAsString(attribute);
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			log.error("socialLink-convert-to-json-error", e);
 			return "[]";
 		}
@@ -39,7 +38,7 @@ public class SocialLinksConverter implements AttributeConverter<List<String>, St
 
 		try {
 			return objectMapper.readValue(dbData, new TypeReference<List<String>>() {});
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			log.error("socialLink-convert-to-attribute-error", e);
 			return new ArrayList<>();
 		}

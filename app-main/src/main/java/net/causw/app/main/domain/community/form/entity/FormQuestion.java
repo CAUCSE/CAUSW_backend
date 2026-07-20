@@ -3,7 +3,6 @@ package net.causw.app.main.domain.community.form.entity;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.causw.app.main.domain.community.form.api.v1.dto.request.create.QuestionCreateRequestDto;
 import net.causw.app.main.domain.community.form.enums.QuestionType;
 import net.causw.app.main.shared.entity.BaseEntity;
 
@@ -60,24 +59,27 @@ public class FormQuestion extends BaseEntity {
 
 	public static FormQuestion createObjectiveQuestion(
 		Integer number,
-		QuestionCreateRequestDto questionCreateRequestDto,
+		QuestionType questionType,
+		String questionText,
+		Boolean isMultiple,
 		List<FormQuestionOption> formQuestionOptionList) {
 		return FormQuestion.builder()
 			.number(number)
-			.questionType(questionCreateRequestDto.getQuestionType())
-			.questionText(questionCreateRequestDto.getQuestionText())
-			.isMultiple(questionCreateRequestDto.getIsMultiple())
+			.questionType(questionType)
+			.questionText(questionText)
+			.isMultiple(isMultiple)
 			.formQuestionOptionList(formQuestionOptionList)
 			.build();
 	}
 
 	public static FormQuestion createSubjectQuestion(
 		Integer number,
-		QuestionCreateRequestDto questionCreateRequestDto) {
+		QuestionType questionType,
+		String questionText) {
 		return FormQuestion.builder()
 			.number(number)
-			.questionType(questionCreateRequestDto.getQuestionType())
-			.questionText(questionCreateRequestDto.getQuestionText())
+			.questionType(questionType)
+			.questionText(questionText)
 			.build();
 	}
 

@@ -6,7 +6,7 @@ import org.mapstruct.Mapper;
 
 import net.causw.app.main.domain.community.board.api.v2.dto.response.BoardWritableItemResponse;
 import net.causw.app.main.domain.community.board.api.v2.dto.response.BoardWritableListResponse;
-import net.causw.app.main.domain.community.board.service.v2.dto.BoardWritableItemResult;
+import net.causw.app.main.domain.community.board.service.dto.BoardWritableItemResult;
 
 @Mapper(componentModel = "spring")
 public interface BoardWritableMapper {

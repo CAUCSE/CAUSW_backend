@@ -14,7 +14,7 @@ import net.causw.app.main.domain.community.report.api.v2.dto.response.ReportedCo
 import net.causw.app.main.domain.community.report.api.v2.dto.response.ReportedPostSummaryResponse;
 import net.causw.app.main.domain.community.report.api.v2.dto.response.ReportedUserSummaryResponse;
 import net.causw.app.main.domain.community.report.api.v2.mapper.ReportAdminMapper;
-import net.causw.app.main.domain.community.report.service.v2.ReportAdminService;
+import net.causw.app.main.domain.community.report.service.ReportAdminService;
 import net.causw.app.main.shared.dto.ApiResponse;
 import net.causw.app.main.shared.dto.PageResponse;
 

@@ -4,8 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.notification.notification.service.implementation.UserPushTokenWriter;
-import net.causw.app.main.domain.user.account.api.v1.dto.UserFcmTokenResponseDto;
-import net.causw.app.main.domain.user.account.api.v1.mapper.UserDtoMapper;
+import net.causw.app.main.domain.user.account.api.v2.dto.response.UserFcmTokenResponse;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 
@@ -20,15 +19,19 @@ public class UserNotificationService {
 	private final UserPushTokenWriter userPushTokenWriter;
 
 	@Transactional
-	public UserFcmTokenResponseDto findFcmTokenByUser(String userId) {
+	public UserFcmTokenResponse findFcmTokenByUser(String userId) {
 		User validatedUser = userReader.findUserById(userId);
-		return UserDtoMapper.INSTANCE.toUserFcmTokenResponseDto(validatedUser);
+		return UserFcmTokenResponse.builder()
+			.fcmToken(validatedUser.getFcmTokens())
+			.build();
 	}
 
 	@Transactional
-	public UserFcmTokenResponseDto createFcmToken(String userId, String fcmToken) {
+	public UserFcmTokenResponse createFcmToken(String userId, String fcmToken) {
 		User validatedUser = userReader.findUserById(userId);
 		userPushTokenWriter.addFcmToken(validatedUser, fcmToken);
-		return UserDtoMapper.INSTANCE.toUserFcmTokenResponseDto(validatedUser);
+		return UserFcmTokenResponse.builder()
+			.fcmToken(validatedUser.getFcmTokens())
+			.build();
 	}
 }

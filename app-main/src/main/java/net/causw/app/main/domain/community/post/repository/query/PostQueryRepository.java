@@ -1,14 +1,14 @@
 package net.causw.app.main.domain.community.post.repository.query;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -19,12 +19,11 @@ import org.springframework.stereotype.Repository;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.QPostAttachImage;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.QUserProfileImage;
 import net.causw.app.main.domain.asset.file.enums.FileExtensionType;
-import net.causw.app.main.domain.community.comment.entity.QChildComment;
 import net.causw.app.main.domain.community.comment.entity.QComment;
 import net.causw.app.main.domain.community.post.entity.QPost;
-import net.causw.app.main.domain.community.reaction.entity.QFavoritePost;
 import net.causw.app.main.domain.community.reaction.entity.QLikePost;
 import net.causw.app.main.domain.user.account.entity.user.QUser;
+import net.causw.app.main.domain.user.account.enums.user.Role;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.SubQueryExpression;
@@ -101,8 +100,8 @@ public class PostQueryRepository {
 		String keyword) {
 		// 빈 리스트가 전달된 경우 "조회 가능한 게시판이 한 개도 없음"을 의미하므로 즉시 빈 결과 반환.
 		// (null은 docstring 계약상 "전체 게시판"이므로 별도 처리하지 않음)
-		if (boardIds != null && boardIds.isEmpty()) {
-			return new SliceImpl<>(List.of(), Pageable.ofSize(size), false);
+		if (hasEmptyBoardFilter(boardIds)) {
+			return emptySlice(size);
 		}
 
 		QPost post = QPost.post;
@@ -112,10 +111,7 @@ public class PostQueryRepository {
 		BooleanExpression cursorCondition = createCursorCondition(cursorCreatedAt, cursorId, post);
 
 		// 게시판 조건
-		BooleanExpression boardCondition = NO_CONDITION;
-		if (boardIds != null && !boardIds.isEmpty()) {
-			boardCondition = post.board.id.in(boardIds);
-		}
+		BooleanExpression boardCondition = inBoards(post, boardIds);
 
 		// 게시글 조회 조건
 		BooleanExpression[] conditions = new BooleanExpression[] {
@@ -144,9 +140,14 @@ public class PostQueryRepository {
 	public Slice<PostCursorResult> findPostsCommentedByUserWithCursor(
 		String userId,
 		Set<String> blockedUserIds,
+		List<String> accessibleBoardIds,
 		String cursorCreatedAt,
 		String cursorId,
 		int size) {
+		if (hasNoAccessibleBoards(accessibleBoardIds)) {
+			return emptySlice(size);
+		}
+
 		QPost post = QPost.post;
 		QUser writer = new QUser("writer");
 		QComment comment = QComment.comment;
@@ -165,6 +166,7 @@ public class PostQueryRepository {
 			.exists();
 
 		BooleanExpression[] conditions = new BooleanExpression[] {
+			inBoards(post, accessibleBoardIds),
 			userCommentedPost, // 댓글 단 글만 조회
 			writer.id.ne(userId), // 자신이 쓴 글은 제외
 			post.isDeleted.eq(false), // 삭제된 글 제외
@@ -185,15 +187,21 @@ public class PostQueryRepository {
 	 */
 	public Slice<PostCursorResult> findPostsWrittenByUserWithCursor(
 		String userId,
+		List<String> accessibleBoardIds,
 		String cursorCreatedAt,
 		String cursorId,
 		int size) {
+		if (hasNoAccessibleBoards(accessibleBoardIds)) {
+			return emptySlice(size);
+		}
+
 		QPost post = QPost.post;
 		QUser writer = new QUser("writer");
 
 		BooleanExpression cursorCondition = createCursorCondition(cursorCreatedAt, cursorId, post);
 
 		BooleanExpression[] conditions = new BooleanExpression[] {
+			inBoards(post, accessibleBoardIds),
 			post.writer.id.eq(userId), // 자신이 쓴 글만 조회
 			post.isDeleted.eq(false), // 삭제된 글 제외
 			cursorCondition // 커서 조건
@@ -214,9 +222,14 @@ public class PostQueryRepository {
 	public Slice<PostCursorResult> findPostsLikedByUserWithCursor(
 		String userId,
 		Set<String> blockedUserIds,
+		List<String> accessibleBoardIds,
 		String cursorCreatedAt,
 		String cursorId,
 		int size) {
+		if (hasNoAccessibleBoards(accessibleBoardIds)) {
+			return emptySlice(size);
+		}
+
 		QPost post = QPost.post;
 		QUser writer = new QUser("writer");
 		QLikePost likePost = QLikePost.likePost;
@@ -230,6 +243,7 @@ public class PostQueryRepository {
 			.exists();
 
 		BooleanExpression[] conditions = new BooleanExpression[] {
+			inBoards(post, accessibleBoardIds),
 			userLikedPost, // 좋아요 누른 글만 조회
 			post.isDeleted.eq(false), // 삭제된 글 제외
 			notInBlockedUsers(writer, blockedUserIds), // 차단한 사용자 글 제외
@@ -246,7 +260,6 @@ public class PostQueryRepository {
 	 * @param post QPost 엔티티의 Q타입
 	 * @return 커서 조건 (createdAt과 ID 기반) 또는 null (커서 정보가 없는 경우)
 	 */
-	@Nullable
 	private static BooleanExpression createCursorCondition(String cursorCreatedAt, String cursorId, QPost post) {
 		BooleanExpression cursorCondition = NO_CONDITION;
 		if (cursorCreatedAt != null && cursorId != null) {
@@ -254,6 +267,22 @@ public class PostQueryRepository {
 				.or(post.createdAt.eq(LocalDateTime.parse(cursorCreatedAt)).and(post.id.lt(cursorId)));
 		}
 		return cursorCondition;
+	}
+
+	private static boolean hasNoAccessibleBoards(List<String> boardIds) {
+		return boardIds == null || boardIds.isEmpty();
+	}
+
+	private static boolean hasEmptyBoardFilter(List<String> boardIds) {
+		return boardIds != null && boardIds.isEmpty();
+	}
+
+	private static Slice<PostCursorResult> emptySlice(int size) {
+		return new SliceImpl<>(List.of(), Pageable.ofSize(size), false);
+	}
+
+	private static BooleanExpression inBoards(QPost post, List<String> boardIds) {
+		return boardIds == null ? NO_CONDITION : post.board.id.in(boardIds);
 	}
 
 	/**
@@ -264,7 +293,6 @@ public class PostQueryRepository {
 	 * @param conditions 조회 조건 배열 (null 또는 빈 배열이면 조건 없이 조회)
 	 * @return 조회된 게시글 목록과 다음 페이지 존재 여부를 포함하는 Slice<PostCursorResult>
 	 */
-	@NotNull
 	private Slice<PostCursorResult> getPostCursorResults(
 		int size,
 		QPost post,
@@ -343,7 +371,6 @@ public class PostQueryRepository {
 
 		QComment comment = QComment.comment;
 		QLikePost likePost = QLikePost.likePost;
-		QFavoritePost favoritePost = QFavoritePost.favoritePost;
 		QPostAttachImage postAttachImage = QPostAttachImage.postAttachImage;
 
 		// 숫자 카운트 서브쿼리
@@ -357,12 +384,6 @@ public class PostQueryRepository {
 			.select(likePost.count())
 			.from(likePost)
 			.where(likePost.post.eq(post));
-
-		// 즐겨찾기 개수 서브쿼리
-		SubQueryExpression<Long> favoriteCount = JPAExpressions
-			.select(favoritePost.count())
-			.from(favoritePost)
-			.where(favoritePost.post.eq(post));
 
 		// 문자열 서브쿼리 (썸네일 URL)
 		SubQueryExpression<String> thumbnailUrl = JPAExpressions.select(
@@ -378,7 +399,7 @@ public class PostQueryRepository {
 
 		return new QPostQueryResult(
 			post.id, post.title, post.content,
-			commentCount, likeCount, favoriteCount,
+			commentCount, likeCount,
 			post.isAnonymous, post.isQuestion, post.vote.isNotNull(), post.form.isNotNull(),
 			post.isDeleted,
 			writer.isNotNull(), writer.name, writer.nickname, writer.admissionYear, writer.state, writer.deletedAt,
@@ -395,18 +416,11 @@ public class PostQueryRepository {
 	private static QPostCursorResult toPostCursorResult(QPost post, QUser writer) {
 
 		QComment comment = QComment.comment;
-		QChildComment childComment = QChildComment.childComment;
 		QLikePost likePost = QLikePost.likePost;
-		QFavoritePost favoritePost = QFavoritePost.favoritePost;
 
-		// Comment 개수 + ChildComment 개수 (삭제되지 않은 것만)
+		// Comment 개수 (답글 포함, 삭제되지 않은 것만)
 		SubQueryExpression<Long> totalCommentCount = JPAExpressions
-			.select(comment.count()
-				.add(JPAExpressions
-					.select(childComment.count())
-					.from(childComment)
-					.where(childComment.parentComment.post.eq(post)
-						.and(childComment.isDeleted.isFalse()))))
+			.select(comment.count())
 			.from(comment)
 			.where(comment.post.eq(post).and(comment.isDeleted.isFalse()));
 
@@ -415,12 +429,6 @@ public class PostQueryRepository {
 			.select(likePost.count())
 			.from(likePost)
 			.where(likePost.post.eq(post));
-
-		// 즐겨찾기 개수 서브쿼리
-		SubQueryExpression<Long> favoriteCount = JPAExpressions
-			.select(favoritePost.count())
-			.from(favoritePost)
-			.where(favoritePost.post.eq(post));
 
 		// 작성자 프로필 이미지 URL 서브쿼리 (UserProfileImage owning side 기준)
 		QUserProfileImage upi = QUserProfileImage.userProfileImage;
@@ -431,7 +439,7 @@ public class PostQueryRepository {
 
 		return new QPostCursorResult(
 			post.id, post.content,
-			totalCommentCount, likeCount, favoriteCount,
+			totalCommentCount, likeCount,
 			post.isAnonymous, post.vote.id, post.isDeleted,
 			post.isCrawled,
 			writer.isNotNull(), writer.id, writer.name, writer.nickname, writer.admissionYear, writer.state,
@@ -468,16 +476,14 @@ public class PostQueryRepository {
 	}
 
 	/**
-	 * 특정 게시글의 댓글 개수를 조회합니다. (Comment + ChildComment, 삭제되지 않은 것만)
+	 * 특정 게시글의 댓글 개수를 조회합니다. (답글 포함, 삭제되지 않은 것만)
 	 *
 	 * @param postId 게시글 ID
-	 * @return 댓글 개수 (Comment 개수 + ChildComment 개수)
+	 * @return 댓글 개수
 	 */
 	public long countCommentsByPostId(String postId) {
 		QComment comment = QComment.comment;
-		QChildComment childComment = QChildComment.childComment;
 
-		// Comment 개수 조회 (삭제되지 않은 것만)
 		Long commentCount = jpaQueryFactory
 			.select(comment.count())
 			.from(comment)
@@ -485,14 +491,28 @@ public class PostQueryRepository {
 				.and(comment.isDeleted.isFalse()))
 			.fetchOne();
 
-		// ChildComment 개수 조회 (삭제되지 않은 것만)
-		Long childCommentCount = jpaQueryFactory
-			.select(childComment.count())
-			.from(childComment)
-			.where(childComment.parentComment.post.id.eq(postId)
-				.and(childComment.isDeleted.isFalse()))
-			.fetchOne();
+		return commentCount != null ? commentCount : 0L;
+	}
 
-		return (commentCount != null ? commentCount : 0L) + (childCommentCount != null ? childCommentCount : 0L);
+	/**
+	 * 주어진 사용자 ID 목록 중 최고 관리자(ADMIN) 권한을 가진 사용자 ID를 조회합니다.
+	 * @param userIds 확인할 사용자 ID 목록
+	 * @return ADMIN 권한을 가진 사용자 ID Set
+	 */
+	public Set<String> findAdminUserIds(List<String> userIds) {
+		if (userIds == null || userIds.isEmpty()) {
+			return Collections.emptySet();
+		}
+
+		QUser user = QUser.user;
+
+		List<String> adminIds = jpaQueryFactory.select(user.id)
+			.from(user)
+			.where(
+				user.id.in(userIds),
+				user.roles.any().eq(Role.ADMIN))
+			.fetch();
+
+		return new HashSet<>(adminIds);
 	}
 }
