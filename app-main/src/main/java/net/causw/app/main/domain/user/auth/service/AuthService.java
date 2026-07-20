@@ -97,13 +97,19 @@ public class AuthService {
 	 */
 	@Transactional
 	public String resetPasswordByVerificationCode(String name, String email, String verificationCode) {
-		userReader.findByEmail(email).ifPresent(user -> {
-			if (user.isOnlySocialUser()) {
-				throw UserErrorCode.SOCIAL_ONLY_USER_CANNOT_CHANGE_PASSWORD.toBaseException();
-			}
-		});
+		// 이메일로 유저 조회
+		User user = userReader.findByEmail(email)
+			.orElseThrow(UserErrorCode.USER_NOT_FOUND::toBaseException);
 
-		User user = userReader.findByEmailAndName(email, name);
+		// 소셜 전용 계정은 비밀번호가 없으므로 재설정 불가
+		if (user.isOnlySocialUser()) {
+			throw UserErrorCode.SOCIAL_ONLY_USER_CANNOT_CHANGE_PASSWORD.toBaseException();
+		}
+
+		// 이름 불일치 시 유저를 찾을 수 없는 것과 동일하게 처리
+		if (!user.getName().equals(name)) {
+			throw UserErrorCode.USER_NOT_FOUND.toBaseException();
+		}
 
 		EmailVerification emailVerification = emailVerificationReader.findLatestByEmailAndStatus(email,
 			VerificationStatus.PASSWORD_FIND);
