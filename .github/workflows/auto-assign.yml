@@ -1,4 +1,4 @@
-name: PR 리뷰어 2명 랜덤 지정
+name: PR 리뷰어 1명 랜덤 지정
 
 on:
   pull_request:

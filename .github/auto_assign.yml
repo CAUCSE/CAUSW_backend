@@ -1,15 +1,16 @@
 addReviewers: true
 addAssignees: false
 reviewers:
-  - kyh0726
-  - gomx3
-  - Head-ddy
-  - MlNTYS
-  - lee0jae330
-  - clue31415
-  - fresh-woo
-  - plamingo509
-numberOfReviewers: 2
+  - riadan710
+  - bingle625
+  - kyeoungwoon
+  - glucosei
+  - KEEKE132
+  - chaeyeonlee898
+  - wldy4627
+  - yvngyeong
+  - sopp1313
+numberOfReviewers: 1
 useReviewGroups: false
 skipKeywords:
   - hotfix
