@@ -120,6 +120,10 @@ dependencies {
     // Datasource-Proxy
     implementation 'com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:2.0.1'
 
+    // spring dotenv
+    developmentOnly(platform("me.paulschwarz:spring-dotenv-bom:5.1.0"))
+    developmentOnly("me.paulschwarz:springboot4-dotenv")
+
 }
 
 bootJar {
