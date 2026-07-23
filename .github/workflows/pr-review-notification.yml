@@ -15,8 +15,8 @@ jobs:
     steps:
       - name: Send Discord Notification
         env:
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_BACKEND_GIT_WEBHOOK_URL }}
-          DISCORD_ROLE_ID: ${{ vars.DISCORD_ROLE_ID }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_BACKEND_PR_WEBHOOK_URL }}
+          DISCORD_BACKEND_ROLE_ID: ${{ vars.DISCORD_BACKEND_ROLE_ID }}
           REVIEW_STATE: ${{ github.event.review.state }}
           REVIEW_BODY: ${{ github.event.review.body }}
           REVIEW_AUTHOR: ${{ github.event.review.user.login }}
@@ -30,12 +30,12 @@ jobs:
             "approved")
               REVIEW_TYPE="✅ 승인"
               EMBED_COLOR=3066993
-              MESSAGE="<@&${DISCORD_ROLE_ID}> **${PR_AUTHOR}**님의 PR이 승인되었습니다!"
+              MESSAGE="<@&${DISCORD_BACKEND_ROLE_ID}> **${PR_AUTHOR}**님의 PR이 승인되었습니다!"
               ;;
             "changes_requested")
               REVIEW_TYPE="🔄 변경 요청"
               EMBED_COLOR=15158332
-              MESSAGE="<@&${DISCORD_ROLE_ID}> **${PR_AUTHOR}**님에게 변경 요청이 있습니다!"
+              MESSAGE="<@&${DISCORD_BACKEND_ROLE_ID}> **${PR_AUTHOR}**님에게 변경 요청이 있습니다!"
               ;;
           esac
 
