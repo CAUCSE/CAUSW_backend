@@ -1,3 +1,20 @@
+# ─── Flyway Migration ─────────────────────────────────────────────────────────
+FROM flyway/flyway:12.4.0-alpine AS migration
+
+COPY app-main/src/main/resources/db/migration /flyway/migrations
+COPY app-main/gradle/flyway/flyway-dev.conf /flyway/conf/flyway-dev.conf
+COPY --chmod=755 docker/flyway/entrypoint.sh /flyway/causw-entrypoint.sh
+
+# flyway gradle 실행 환경 변수 관련 사항: https://documentation.red-gate.com/flyway/reference/usage/gradle-task
+# flyway gradle sql 저장 위치 관련 사항: https://documentation.red-gate.com/flyway/reference/configuration/flyway-namespace/flyway-locations-setting
+# FLYWAY_CONFIG_FILES: 환경 변수로 설정 파일 지정 가능 (명령줄 파라미터보다 우선)
+ENV FLYWAY_CONFIG_FILES=/flyway/conf/flyway-dev.conf
+# FLYWAY_LOCATIONS: 환경 변수로 sql 저장 위치 지정 가능
+ENV FLYWAY_LOCATIONS=filesystem:/flyway/migrations
+
+ENTRYPOINT ["/flyway/causw-entrypoint.sh"]
+CMD ["migrate"]
+
 # ─── Stage 1: Build ───────────────────────────────────────────────────────────
 FROM eclipse-temurin:25-jdk-jammy AS builder
 

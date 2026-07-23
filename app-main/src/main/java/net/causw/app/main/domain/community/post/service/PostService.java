@@ -336,14 +336,20 @@ public class PostService {
 	 */
 	public PostListResult getPostsCommentedByUser(User user, String cursor, Integer size) {
 		CommunityPermissionPolicy.validateActiveUser(user);
+		List<String> accessibleBoardIds = boardConfigReader.getAccessibleBoardIdsByAcademicStatus(
+			user.getAcademicStatus());
+		if (hasNoAccessibleBoards(accessibleBoardIds)) {
+			return PostListResult.of(List.of(), null);
+		}
+
 		Set<String> blockedUserIds = userBlockReader.findBlockeeUserIdsByBlocker(user);
-		PostReadQueryContext readContext = PostReadQueryContext.from(user, blockedUserIds);
 		int pageSize = size != null ? size : StaticValue.DEFAULT_POST_PAGE_SIZE;
 		PostCursorManager.ParsedCursor parsedCursor = PostCursorManager.parseCursor(cursor);
 
 		Slice<PostCursorResult> slice = postReader.findPostsCommentedByUserWithCursor(
 			user.getId(),
-			readContext,
+			blockedUserIds,
+			accessibleBoardIds,
 			parsedCursor.createdAt(),
 			parsedCursor.postId(),
 			pageSize);
@@ -361,14 +367,18 @@ public class PostService {
 	 */
 	public PostListResult getPostsWrittenByUser(User user, String cursor, Integer size) {
 		CommunityPermissionPolicy.validateActiveUser(user);
+		List<String> accessibleBoardIds = boardConfigReader.getAccessibleBoardIdsByAcademicStatus(
+			user.getAcademicStatus());
+		if (hasNoAccessibleBoards(accessibleBoardIds)) {
+			return PostListResult.of(List.of(), null);
+		}
+
 		int pageSize = size != null ? size : StaticValue.DEFAULT_POST_PAGE_SIZE;
 		PostCursorManager.ParsedCursor parsedCursor = PostCursorManager.parseCursor(cursor);
-		PostReadQueryContext readContext = PostReadQueryContext.from(
-			user, userBlockReader.findBlockeeUserIdsByBlocker(user));
 
 		Slice<PostCursorResult> slice = postReader.findPostsWrittenByUserWithCursor(
 			user.getId(),
-			readContext,
+			accessibleBoardIds,
 			parsedCursor.createdAt(),
 			parsedCursor.postId(),
 			pageSize);
@@ -385,14 +395,20 @@ public class PostService {
 	 */
 	public PostListResult getPostsLikedByUser(User user, String cursor, Integer size) {
 		CommunityPermissionPolicy.validateActiveUser(user);
+		List<String> accessibleBoardIds = boardConfigReader.getAccessibleBoardIdsByAcademicStatus(
+			user.getAcademicStatus());
+		if (hasNoAccessibleBoards(accessibleBoardIds)) {
+			return PostListResult.of(List.of(), null);
+		}
+
 		Set<String> blockedUserIds = userBlockReader.findBlockeeUserIdsByBlocker(user);
-		PostReadQueryContext readContext = PostReadQueryContext.from(user, blockedUserIds);
 		int pageSize = size != null ? size : StaticValue.DEFAULT_POST_PAGE_SIZE;
 		PostCursorManager.ParsedCursor parsedCursor = PostCursorManager.parseCursor(cursor);
 
 		Slice<PostCursorResult> slice = postReader.findPostsLikedByUserWithCursor(
 			user.getId(),
-			readContext,
+			blockedUserIds,
+			accessibleBoardIds,
 			parsedCursor.createdAt(),
 			parsedCursor.postId(),
 			pageSize);
@@ -435,6 +451,10 @@ public class PostService {
 		}
 
 		return PostListResult.of(postItems, nextCursor);
+	}
+
+	private static boolean hasNoAccessibleBoards(List<String> accessibleBoardIds) {
+		return accessibleBoardIds == null || accessibleBoardIds.isEmpty();
 	}
 
 	/**

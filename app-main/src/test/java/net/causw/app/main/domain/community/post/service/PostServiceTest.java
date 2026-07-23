@@ -4,7 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -1223,6 +1225,82 @@ public class PostServiceTest {
 				() -> assertThat(result.posts().get(1).writerProfileImage().profileImageUrl()).isNull());
 			verify(postReader, times(1)).findPostsWithCursor(anyList(), any(PostReadQueryContext.class), eq(null),
 				eq(null), eq(20), eq(null));
+		}
+	}
+
+	@Nested
+	@DisplayName("마이페이지 게시글 목록 조회 테스트")
+	class GetMyPostsTest {
+
+		User viewer;
+		int pageSize;
+
+		@BeforeEach
+		void setUp() {
+			viewer = ObjectFixtures.getCertifiedUserWithId("viewer-id");
+			pageSize = 20;
+		}
+
+		@DisplayName("접근 가능한 게시판이 없으면 내가 댓글 단 글 조회는 빈 결과를 반환한다")
+		@Test
+		void getPostsCommentedByUser_shouldReturnEmpty_whenNoAccessibleBoards() {
+			// given
+			List<String> accessibleBoardIds = List.of();
+
+			given(boardConfigReader.getAccessibleBoardIdsByAcademicStatus(AcademicStatus.ENROLLED))
+				.willReturn(accessibleBoardIds);
+
+			// when
+			PostListResult result = postService.getPostsCommentedByUser(viewer, null, pageSize);
+
+			// then
+			assertAll(
+				() -> assertThat(result.posts()).isEmpty(),
+				() -> assertThat(result.nextCursor()).isNull());
+			verify(blockReader, never()).findBlockeeUserIdsByBlocker(any(User.class));
+			verify(postReader, never()).findPostsCommentedByUserWithCursor(
+				anyString(), anySet(), anyList(), any(), any(), anyInt());
+		}
+
+		@DisplayName("접근 가능한 게시판이 없으면 내가 작성한 글 조회는 빈 결과를 반환한다")
+		@Test
+		void getPostsWrittenByUser_shouldReturnEmpty_whenNoAccessibleBoards() {
+			// given
+			List<String> accessibleBoardIds = List.of();
+
+			given(boardConfigReader.getAccessibleBoardIdsByAcademicStatus(AcademicStatus.ENROLLED))
+				.willReturn(accessibleBoardIds);
+
+			// when
+			PostListResult result = postService.getPostsWrittenByUser(viewer, null, pageSize);
+
+			// then
+			assertAll(
+				() -> assertThat(result.posts()).isEmpty(),
+				() -> assertThat(result.nextCursor()).isNull());
+			verify(postReader, never()).findPostsWrittenByUserWithCursor(anyString(), anyList(), any(), any(),
+				anyInt());
+		}
+
+		@DisplayName("접근 가능한 게시판이 없으면 내가 좋아요한 글 조회는 빈 결과를 반환한다")
+		@Test
+		void getPostsLikedByUser_shouldReturnEmpty_whenNoAccessibleBoards() {
+			// given
+			List<String> accessibleBoardIds = List.of();
+
+			given(boardConfigReader.getAccessibleBoardIdsByAcademicStatus(AcademicStatus.ENROLLED))
+				.willReturn(accessibleBoardIds);
+
+			// when
+			PostListResult result = postService.getPostsLikedByUser(viewer, null, pageSize);
+
+			// then
+			assertAll(
+				() -> assertThat(result.posts()).isEmpty(),
+				() -> assertThat(result.nextCursor()).isNull());
+			verify(blockReader, never()).findBlockeeUserIdsByBlocker(any(User.class));
+			verify(postReader, never()).findPostsLikedByUserWithCursor(
+				anyString(), anySet(), anyList(), any(), any(), anyInt());
 		}
 	}
 
