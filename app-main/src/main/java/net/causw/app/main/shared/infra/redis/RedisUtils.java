@@ -162,19 +162,4 @@ public class RedisUtils {
 		String redisKey = BLACKLIST_PREFIX + token;
 		return "BLACKLISTED".equals(redisTemplate.opsForValue().get(redisKey));
 	}
-
-	/* UuidFile 관련 Redis 메서드
-	 * 1. PageNum
-	 * Key: {tableName}PageNum
-	 * Value: {PageNum}
-	 */
-	public void setPageNumData(String tableName, Integer pageNum, Long expiredTime) {
-		String redisKey = tableName + "PageNum";
-		redisTemplate.opsForValue().set(redisKey, pageNum, expiredTime, TimeUnit.MILLISECONDS);
-	}
-
-	public Integer getPageNumData(String tableName) {
-		String redisKey = tableName + "PageNum";
-		return (Integer)redisTemplate.opsForValue().get(redisKey);
-	}
 }
