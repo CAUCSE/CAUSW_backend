@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.asset.file.entity.joinEntity.PostAttachImage;
 import net.causw.app.main.domain.community.form.entity.Form;
+import net.causw.app.main.domain.community.form.repository.FormRepository;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.community.vote.entity.Vote;
@@ -23,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 public class PostWriter {
 	private final PostRepository postRepository;
+	private final FormRepository formRepository;
 
 	/**
 	 * 새로운 Post를 저장합니다.
@@ -109,6 +111,7 @@ public class PostWriter {
 	 * @return 삭제된 게시글 개수
 	 */
 	public int deleteAllByBoardId(String boardId) {
+		formRepository.softDeleteAllByBoardId(boardId);
 		return postRepository.deleteAllPostsByBoardId(boardId);
 	}
 

@@ -58,7 +58,7 @@ public class Post extends BaseEntity {
 	@JoinColumn(name = "user_id", nullable = false)
 	private User writer;
 
-	@Column(name = "is_deleted")
+	@Column(name = "is_deleted", nullable = false)
 	@Builder.Default
 	@ColumnDefault("false")
 	private Boolean isDeleted = false;
@@ -167,9 +167,9 @@ public class Post extends BaseEntity {
 	}
 
 	public void setIsDeleted(Boolean isDeleted) {
-		this.isDeleted = isDeleted;
+		this.isDeleted = Boolean.TRUE.equals(isDeleted);
 		if (form != null) {
-			this.form.setIsDeleted(isDeleted);
+			this.form.setIsDeleted(this.isDeleted);
 		}
 	}
 

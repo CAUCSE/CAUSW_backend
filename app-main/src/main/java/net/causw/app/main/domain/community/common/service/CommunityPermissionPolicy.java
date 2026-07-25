@@ -194,8 +194,6 @@ public final class CommunityPermissionPolicy {
 	public static boolean isAlive(Comment comment) {
 		return comment != null
 			&& !Boolean.TRUE.equals(comment.getIsDeleted())
-			&& (!comment.isChildComment()
-				|| !Boolean.TRUE.equals(comment.getParentComment().getIsDeleted()))
 			&& isAlive(comment.getPost());
 	}
 

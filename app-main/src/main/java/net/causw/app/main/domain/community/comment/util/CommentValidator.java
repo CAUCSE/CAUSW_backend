@@ -95,9 +95,9 @@ public class CommentValidator {
 	 * 작성자의 권한/상태 및 상위 게시글/게시판의 삭제 여부를 확인합니다.
 	 */
 	private void validatePostAlive(Post post) {
-		if (post.getBoard().getIsDeleted())
+		if (!CommunityPermissionPolicy.isAlive(post.getBoard()))
 			throw BoardErrorCode.BOARD_DELETED.toBaseException();
-		if (post.getIsDeleted())
+		if (!CommunityPermissionPolicy.isAlive(post))
 			throw PostErrorCode.POST_NOT_FOUND.toBaseException();
 	}
 

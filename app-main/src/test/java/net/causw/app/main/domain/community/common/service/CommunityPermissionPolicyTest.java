@@ -308,6 +308,19 @@ class CommunityPermissionPolicyTest {
 	}
 
 	@Test
+	@DisplayName("부모 댓글이 삭제되어도 미삭제 답글의 권한은 유지된다")
+	void deletedRootCommentDoesNotRemoveChildCommentPermissions() {
+		rootComment.delete();
+
+		assertThat(CommunityPermissionPolicy.canReadComment(
+			owner, childComment, visibleAllUserBoardConfig, BOARD_ADMIN_IDS)).isTrue();
+		assertThat(CommunityPermissionPolicy.canUpdateComment(
+			owner, childComment, visibleAllUserBoardConfig, BOARD_ADMIN_IDS)).isTrue();
+		assertThat(CommunityPermissionPolicy.canDeleteComment(
+			owner, childComment, visibleAllUserBoardConfig, BOARD_ADMIN_IDS)).isTrue();
+	}
+
+	@Test
 	@DisplayName("게시판이 삭제되면 하위 게시글과 댓글의 모든 권한도 사라진다")
 	void deletedBoardRemovesAllContentPermissions() {
 		board.setIsDeleted(true);
@@ -351,7 +364,7 @@ class CommunityPermissionPolicyTest {
 	}
 
 	@Test
-	@DisplayName("생존 판단은 상위 게시판·게시글·부모 댓글 삭제 상태를 모두 반영한다")
+	@DisplayName("답글 생존 판단은 게시판·게시글 상태만 상속하고 부모 댓글 삭제 상태는 상속하지 않는다")
 	void aliveChecksIncludeAncestorDeletion() {
 		assertThat(CommunityPermissionPolicy.isAlive(board)).isTrue();
 		assertThat(CommunityPermissionPolicy.isAlive(post)).isTrue();
@@ -361,7 +374,7 @@ class CommunityPermissionPolicyTest {
 		rootComment.delete();
 
 		assertThat(CommunityPermissionPolicy.isAlive(rootComment)).isFalse();
-		assertThat(CommunityPermissionPolicy.isAlive(childComment)).isFalse();
+		assertThat(CommunityPermissionPolicy.isAlive(childComment)).isTrue();
 	}
 
 	private static Board aliveBoard() {

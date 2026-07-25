@@ -80,7 +80,7 @@ public class CommentService {
 		User creator = userReader.findUserByIdNotDeleted(command.creatorId());
 		Comment parentComment = command.parentCommentId() == null
 			? null
-			: commentReader.getComment(command.parentCommentId());
+			: commentReader.getReplyParent(command.parentCommentId());
 		Post post = parentComment == null
 			? postReader.findByIdAndNotDeleted(command.postId())
 			: postReader.findByIdAndNotDeleted(parentComment.getPost().getId());
