@@ -7,8 +7,7 @@ import lombok.Getter;
 @Getter
 public enum CeremonyContext {
 	GENERAL("general", "전체 알림 페이지에서 접근"),
-	MY("my", "나의 경조사 페이지에서 접근"),
-	ADMIN("admin", "경조사 관리 페이지에서 접근");
+	MY("my", "나의 경조사 페이지에서 접근");
 
 	private final String value;
 	private final String description;
