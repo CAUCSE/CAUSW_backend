@@ -1,0 +1,104 @@
+name: CD - Develop Env Restart
+
+on:
+  workflow_dispatch:
+    inputs:
+      restart_mode:
+        description: "How to restart the dev app after writing ENV_DEV"
+        required: true
+        default: recreate
+        type: choice
+        options:
+          - recreate
+          - restart
+
+permissions:
+  contents: read
+
+jobs:
+  restart:
+    name: Update .env and Restart Dev Container
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Write .env and restart container on EC2
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          ENV_CONTENT: ${{ secrets.ENV_DEV }}
+          RESTART_MODE: ${{ inputs.restart_mode }}
+          APP_CONTAINER_NAME: ${{ vars.APP_CONTAINER_NAME }}
+        with:
+          key: ${{ secrets.EC2_KEY_DEV }}
+          host: ${{ secrets.EC2_HOST_DEV }}
+          username: ${{ secrets.EC2_USER_DEV }}
+          envs: ENV_CONTENT,RESTART_MODE,APP_CONTAINER_NAME
+          script: |
+            set -e
+            : "${APP_CONTAINER_NAME:?APP_CONTAINER_NAME variable is required}"
+
+            mkdir -p /home/ubuntu/app/app-main
+            printf '%s' "$ENV_CONTENT" > /home/ubuntu/app/app-main/.env
+
+            sudo systemctl start redis-server
+            sudo mkdir -p /var/log/spring-boot/app-main
+            sudo chmod -R a+rwX /var/log/spring-boot/app-main
+
+            if [ "$RESTART_MODE" = "restart" ]; then
+              docker restart "$APP_CONTAINER_NAME"
+              exit 0
+            fi
+
+            IMAGE=$(docker inspect --format='{{.Config.Image}}' "$APP_CONTAINER_NAME" 2>/dev/null || true)
+
+            if [ -z "$IMAGE" ]; then
+              echo "Could not determine current image for $APP_CONTAINER_NAME."
+              exit 1
+            fi
+
+            docker stop "$APP_CONTAINER_NAME" || true
+            docker rm "$APP_CONTAINER_NAME" || true
+
+            docker run -d \
+              --name "$APP_CONTAINER_NAME" \
+              --restart unless-stopped \
+              -p 8080:8080 \
+              --env-file /home/ubuntu/app/app-main/.env \
+              -v /var/log/spring-boot/app-main:/app/log \
+              --add-host=host.docker.internal:host-gateway \
+              "$IMAGE"
+
+  notify:
+    name: Discord Notify
+    needs: [ restart ]
+    runs-on: ubuntu-22.04
+    if: always()
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      - name: Notify Success
+        if: needs.restart.result == 'success'
+        uses: ./.github/actions/discord-notify
+        with:
+          repository: ${{ github.repository }}
+          status: success
+          branch: ${{ github.ref_name }}
+          sha: ${{ github.sha }}
+          actor: ${{ github.actor }}
+          run_id: ${{ github.run_id }}
+          webhook: ${{ secrets.DISCORD_DEPLOY_WEBHOOK_URL_DEV }}
+          role_id: ${{ secrets.DISCORD_BACKEND_ROLE_ID }}
+
+      - name: Notify Failure
+        if: needs.restart.result != 'success'
+        uses: ./.github/actions/discord-notify
+        with:
+          repository: ${{ github.repository }}
+          status: failure
+          branch: ${{ github.ref_name }}
+          sha: ${{ github.sha }}
+          actor: ${{ github.actor }}
+          run_id: ${{ github.run_id }}
+          webhook: ${{ secrets.DISCORD_DEPLOY_WEBHOOK_URL_DEV }}
+          role_id: ${{ secrets.DISCORD_BACKEND_ROLE_ID }}

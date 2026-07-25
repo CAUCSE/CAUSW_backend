@@ -1,9 +1,12 @@
 package net.causw.app.main.core.security;
 
-import java.util.Base64;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,7 +27,6 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -34,28 +36,28 @@ import lombok.RequiredArgsConstructor;
 public class JwtTokenProvider {
 
 	@Value("${spring.jwt.secret}")
-	private String secretKey;
+	private String secret;
+
+	private SecretKey secretKey;
 
 	private final CustomUserDetailsService userDetailsService;
 	private final RedisUtils redisUtils;
 
 	@PostConstruct
 	protected void init() {
-		this.secretKey = Base64.getEncoder().encodeToString(this.secretKey.getBytes());
+		this.secretKey = new SecretKeySpec(this.secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
 	}
 
 	public String createAccessToken(String userPk, Set<Role> roles, UserState userState) {
 		Date now = new Date();
 
-		Claims claims = Jwts.claims().setSubject(userPk);
-		claims.put("roles", roles.stream().map(Role::getValue).collect(Collectors.toSet()));
-		claims.put("state", userState.getValue());
-
 		return Jwts.builder()
-			.setClaims(claims)
-			.setIssuedAt(now)
-			.setExpiration(new Date(now.getTime() + StaticValue.JWT_ACCESS_TOKEN_VALID_TIME))
-			.signWith(SignatureAlgorithm.HS256, this.secretKey)
+			.subject(userPk)
+			.claim("roles", roles.stream().map(Role::getValue).collect(Collectors.toSet()))
+			.claim("state", userState.getValue())
+			.issuedAt(now)
+			.expiration(new Date(now.getTime() + StaticValue.JWT_ACCESS_TOKEN_VALID_TIME))
+			.signWith(secretKey, Jwts.SIG.HS256)
 			.compact();
 	}
 
@@ -63,8 +65,8 @@ public class JwtTokenProvider {
 		Date now = new Date();
 
 		return Jwts.builder()
-			.setExpiration(new Date(now.getTime() + StaticValue.JWT_REFRESH_TOKEN_VALID_TIME))
-			.signWith(SignatureAlgorithm.HS256, this.secretKey)
+			.expiration(new Date(now.getTime() + StaticValue.JWT_REFRESH_TOKEN_VALID_TIME))
+			.signWith(secretKey, Jwts.SIG.HS256)
 			.compact();
 	}
 
@@ -113,8 +115,9 @@ public class JwtTokenProvider {
 
 	private Claims parseClaims(String token) {
 		return Jwts.parser()
-			.setSigningKey(this.secretKey)
-			.parseClaimsJws(token)
-			.getBody();
+			.verifyWith(secretKey)
+			.build()
+			.parseSignedClaims(token)
+			.getPayload();
 	}
 }

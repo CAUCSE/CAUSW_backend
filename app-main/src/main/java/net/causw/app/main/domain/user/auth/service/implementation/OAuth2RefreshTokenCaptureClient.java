@@ -1,8 +1,8 @@
 package net.causw.app.main.domain.user.auth.service.implementation;
 
-import org.springframework.security.oauth2.client.endpoint.DefaultAuthorizationCodeTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
+import org.springframework.security.oauth2.client.endpoint.RestClientAuthorizationCodeTokenResponseClient;
 import org.springframework.security.oauth2.core.OAuth2RefreshToken;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
 import org.springframework.stereotype.Component;
@@ -24,7 +24,7 @@ public class OAuth2RefreshTokenCaptureClient
 
 	public static final String REQUEST_ATTR_REFRESH_TOKEN = "causw.oauth2.refreshToken";
 
-	private final OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> delegate = new DefaultAuthorizationCodeTokenResponseClient();
+	private final OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> delegate = new RestClientAuthorizationCodeTokenResponseClient();
 
 	@Override
 	public OAuth2AccessTokenResponse getTokenResponse(OAuth2AuthorizationCodeGrantRequest authorizationGrantRequest) {

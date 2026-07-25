@@ -155,7 +155,7 @@ public class RedisUtils {
 	public void addToBlacklist(String token) {
 		String redisKey = BLACKLIST_PREFIX + token;
 		redisTemplate.opsForValue()
-			.set(redisKey, "BLACKLISTED", StaticValue.JWT_ACCESS_TOKEN_VALID_TIME, TimeUnit.SECONDS);
+			.set(redisKey, "BLACKLISTED", StaticValue.JWT_ACCESS_TOKEN_VALID_TIME, TimeUnit.MILLISECONDS);
 	}
 
 	public boolean isTokenBlacklisted(String token) {

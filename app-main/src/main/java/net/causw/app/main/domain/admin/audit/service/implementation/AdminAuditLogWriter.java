@@ -10,10 +10,9 @@ import net.causw.app.main.domain.admin.audit.repository.AdminAuditLogRepository;
 import net.causw.app.main.domain.admin.audit.service.dto.AdminAuditLogCreateCommand;
 import net.causw.app.main.shared.exception.errorcode.GlobalErrorCode;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import lombok.RequiredArgsConstructor;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 @Component
 @RequiredArgsConstructor
@@ -44,7 +43,7 @@ public class AdminAuditLogWriter {
 	private String serializeMetadata(Map<String, Object> metadata) {
 		try {
 			return objectMapper.writeValueAsString(metadata == null ? Map.of() : metadata);
-		} catch (JsonProcessingException exception) {
+		} catch (JacksonException exception) {
 			throw GlobalErrorCode.INTERNAL_SERVER_ERROR.toBaseException();
 		}
 	}

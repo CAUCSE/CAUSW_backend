@@ -118,31 +118,24 @@ spring:
             jwk-set-uri: https://appleid.apple.com/auth/keys
             user-name-attribute: sub
 
+  cloud:
+    aws:
+      s3:
+        # AWS S3 콘솔 -> 버킷 -> caucse-s3-bucket-prod
+        bucket: ${AWS_S3_BUCKET_NAME}
+      credentials:
+        # AWS IAM 콘솔 -> 사용자 -> iam-user-prod -> 보안 자격 증명 -> 액세스 키
+        access-key: ${AWS_ACCESS_KEY}
+        secret-key: ${AWS_SECRET_KEY}
+      region:
+        static: ap-northeast-2
+
 logging:
   level:
     root: INFO
     org.hibernate.SQL: OFF
     org.hibernate.type.descriptor.sql.BasicBinder: OFF
     net.causw.domain.aop.LogAspect: INFO
-    com:
-      amazonaws:
-        util:
-          EC2MetadataUtils: ERROR
-
-cloud:
-  aws:
-    s3:
-      # AWS S3 콘솔 -> 버킷 -> caucse-s3-bucket-prod
-      bucket: ${AWS_S3_BUCKET_NAME}
-    credentials:
-      # AWS IAM 콘솔 -> 사용자 -> iam-user-prod -> 보안 자격 증명 -> 액세스 키
-      access-key: ${AWS_ACCESS_KEY}
-      secret-key: ${AWS_SECRET_KEY}
-    region:
-      static: ap-northeast-2
-      auto: false
-    stack:
-      auto: false
 
 springdoc:
   api-docs:

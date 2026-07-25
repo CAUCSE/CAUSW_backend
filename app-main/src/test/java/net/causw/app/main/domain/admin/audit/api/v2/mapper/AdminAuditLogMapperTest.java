@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import net.causw.app.main.domain.admin.audit.enums.AdminAuditLogCategory;
 import net.causw.app.main.domain.admin.audit.service.dto.AdminAuditLogItem;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 class AdminAuditLogMapperTest {
 

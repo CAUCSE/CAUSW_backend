@@ -70,7 +70,13 @@ public class EmailVerificationValidator {
 	 */
 	public void validatePasswordResetSend(String name, String email) {
 		validateResendInterval(email, VerificationStatus.PASSWORD_FIND);
-		if (!userReader.existsByEmailAndName(email, name)) {
+		// 단일 쿼리로 유저 조회 후 소셜 전용 여부 및 이름 일치 검증
+		User user = userReader.findByEmail(email)
+			.orElseThrow(UserErrorCode.USER_NOT_FOUND::toBaseException);
+		if (user.isOnlySocialUser()) {
+			throw UserErrorCode.SOCIAL_ONLY_USER_CANNOT_CHANGE_PASSWORD.toBaseException();
+		}
+		if (!user.getName().equals(name)) {
 			throw UserErrorCode.USER_NOT_FOUND.toBaseException();
 		}
 	}

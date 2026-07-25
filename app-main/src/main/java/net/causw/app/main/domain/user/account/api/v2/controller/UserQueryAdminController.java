@@ -46,12 +46,12 @@ public class UserQueryAdminController {
 		return ApiResponse.success(response);
 	}
 
-	@Operation(summary = "일일 신규 가입자 수 조회")
+	@Operation(summary = "일일 신규 가입자 수 조회", description = "해당 날짜의 신규 승인된 사용자 수를 조회합니다. 날짜 미입력 시 오늘(Asia/Seoul) 기준으로 조회합니다.")
 	@GetMapping("/daily-count")
-	public ApiResponse<UserDailyCountResponse> getDailySignupCount(
+	public ApiResponse<UserDailyCountResponse> getDailyApprovedCount(
 		@RequestParam(value = "targetDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate targetDate) {
 		LocalDate date = (targetDate != null) ? targetDate : LocalDate.now(ZoneId.of("Asia/Seoul"));
-		Long count = userQueryService.getDailySignupStats(date);
+		Long count = userQueryService.getDailyApprovedStats(date);
 		return ApiResponse.success(new UserDailyCountResponse(date, count));
 	}
 

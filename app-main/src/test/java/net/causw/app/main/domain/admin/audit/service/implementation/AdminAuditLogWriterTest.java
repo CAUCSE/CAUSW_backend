@@ -21,8 +21,8 @@ import net.causw.app.main.domain.admin.audit.enums.AdminAuditLogCategory;
 import net.causw.app.main.domain.admin.audit.repository.AdminAuditLogRepository;
 import net.causw.app.main.domain.admin.audit.service.dto.AdminAuditLogCreateCommand;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 @ExtendWith(MockitoExtension.class)
 class AdminAuditLogWriterTest {

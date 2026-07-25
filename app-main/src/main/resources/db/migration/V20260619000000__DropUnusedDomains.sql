@@ -1,0 +1,11 @@
+DROP TABLE IF EXISTS tb_calendar_attach_image_uuid_file;
+DROP TABLE IF EXISTS tb_event_attach_image_uuid_file;
+DROP TABLE IF EXISTS tb_board_apply;
+DROP TABLE IF EXISTS tb_favorite_board;
+DROP TABLE IF EXISTS tb_favorite_post;
+DROP TABLE IF EXISTS tb_user_council_fee_log;
+DROP TABLE IF EXISTS tb_user_council_fee;
+DROP TABLE IF EXISTS tb_calendar;
+DROP TABLE IF EXISTS tb_event;
+DROP TABLE IF EXISTS tb_semester;
+DROP TABLE IF EXISTS tb_council_fee_fake_user;

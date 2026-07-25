@@ -18,7 +18,6 @@ public record PostListResult(
 		String content,
 		long numComment,
 		long numLike,
-		long numFavorite,
 		boolean isAnonymous,
 		String voteId, // 투표 ID (투표가 없으면 null)
 		boolean isDeleted,
@@ -38,7 +37,6 @@ public record PostListResult(
 			String content,
 			long numComment,
 			long numLike,
-			long numFavorite,
 			boolean isAnonymous,
 			String voteId,
 			boolean isDeleted,
@@ -54,7 +52,7 @@ public record PostListResult(
 			boolean isOwner,
 			boolean isOfficial) {
 			return new PostItem(
-				postId, content, numComment, numLike, numFavorite,
+				postId, content, numComment, numLike,
 				isAnonymous, voteId, isDeleted, isCrawled,
 				writerNickname, writerProfileImage,
 				createdAt, updatedAt, postImageUrls,

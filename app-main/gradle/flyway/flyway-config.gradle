@@ -60,10 +60,7 @@ flyway {
 
         case 'dev':
             logger.lifecycle("🚀 Applying DEV Flyway configuration")
-            outOfOrder = false
-            validateOnMigrate = true
-            cleanDisabled = true
-            baselineOnMigrate = true
+            configFiles = [project.file("gradle/flyway/flyway-dev.conf").absolutePath]
             break
 
         case 'staging':
@@ -76,10 +73,7 @@ flyway {
 
         case 'prod':
             logger.lifecycle("🔒 Applying PRODUCTION Flyway configuration")
-            outOfOrder = false
-            validateOnMigrate = true
-            cleanDisabled = true
-            baselineOnMigrate = false
+            configFiles = [project.file("gradle/flyway/flyway-prod.conf").absolutePath]
             // ignoreMigrationPatterns 설정 안함 (무시된 마이그레이션 허용 안함)
             break
 

@@ -9,5 +9,5 @@ public record AcademicStatusResponse<T>(
 	@Schema(description = "요청한 학적 상태", example = "GRADUATED") AcademicStatus requestedStatus,
 	@Schema(description = "변경 후 현재 학적 상태", example = "GRADUATED") AcademicStatus updatedStatus,
 	@Schema(description = "학적 상태 변경 상세 정보", oneOf = {
-		GraduationDetailsResponse.class, EnrollmentDetailsResponse.class}) T recordDetails){
+		GraduationDetailsResponse.class, EnrollmentDetailsResponse.class}) T recordDetails) {
 }

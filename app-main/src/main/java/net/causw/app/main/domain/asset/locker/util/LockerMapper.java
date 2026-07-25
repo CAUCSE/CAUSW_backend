@@ -19,7 +19,7 @@ public class LockerMapper {
 	public static MyLockerResult toMyLockerResult(Locker locker) {
 		LockerLocation location = locker.getLocation();
 		String displayName = location.getDescription() + " " + locker.getLockerNumber() + "번";
-		return MyLockerResult.of(locker.getId(), displayName, locker.getExpireDate());
+		return MyLockerResult.of(locker.getId(), displayName, locker.getExpireDate(), locker.isExtended());
 	}
 
 	public static List<LockerLocationResult.LockerItemResult> toLockerItemResults(

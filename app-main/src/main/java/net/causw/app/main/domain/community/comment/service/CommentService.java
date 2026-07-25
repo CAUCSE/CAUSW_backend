@@ -24,16 +24,17 @@ import net.causw.app.main.domain.community.comment.service.dto.CommentUpdateComm
 import net.causw.app.main.domain.community.comment.service.implementation.CommentMapper;
 import net.causw.app.main.domain.community.comment.service.implementation.CommentMetaReader;
 import net.causw.app.main.domain.community.comment.service.implementation.CommentReader;
-import net.causw.app.main.domain.community.comment.service.implementation.CommentSubscribeWriter;
 import net.causw.app.main.domain.community.comment.service.implementation.CommentWriter;
 import net.causw.app.main.domain.community.comment.service.implementation.LikeCommentWriter;
 import net.causw.app.main.domain.community.comment.util.CommentValidator;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.implementation.PostReader;
+import net.causw.app.main.domain.notification.notification.event.CommentChildCommentCreatedEvent;
 import net.causw.app.main.domain.notification.notification.event.PostCommentCreatedEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.relation.service.implementation.BlockReader;
+import net.causw.app.main.shared.exception.errorcode.ChildCommentErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -41,7 +42,7 @@ import lombok.RequiredArgsConstructor;
  * 댓글 도메인의 비즈니스 로직을 처리합니다.
  *
  * <p>댓글 생성·수정·삭제·목록 조회 및 좋아요·좋아요 취소를 담당합니다.
- * 집계 데이터(좋아요 수, 구독·차단 여부)는 {@link CommentMetaReader}를 통해 배치 또는 단건으로 조회하며,
+ * 집계 데이터(좋아요 수, 차단 여부)는 {@link CommentMetaReader}를 통해 배치 또는 단건으로 조회하며,
  * 응답 객체 변환은 {@link CommentMapper}에 위임합니다.</p>
  */
 @Service
@@ -53,7 +54,6 @@ public class CommentService {
 	private final CommentReader commentReader;
 	private final CommentWriter commentWriter;
 	private final LikeCommentWriter likeCommentWriter;
-	private final CommentSubscribeWriter commentSubscribeWriter;
 	private final CommentValidator commentValidator;
 	private final ApplicationEventPublisher eventPublisher;
 	private final BlockReader blockReader;
@@ -66,7 +66,7 @@ public class CommentService {
 	/**
 	 * 댓글을 생성하고 응답 객체를 반환합니다.
 	 *
-	 * <p>생성 직후 작성자는 해당 댓글을 자동으로 구독하고, 게시글 구독자에게 알림을 발송합니다.
+	 * <p>생성 직후 게시글/댓글 작성자에게 알림을 발송합니다.
 	 * 신규 댓글이므로 좋아요·대댓글이 없는 {@link CommentMeta#forNew()} 를 사용합니다.</p>
 	 *
 	 * @param command 댓글 생성 요청 데이터
@@ -75,21 +75,32 @@ public class CommentService {
 	@Transactional
 	public CommentResult createComment(CommentCreateCommand command) {
 		User creator = userReader.findUserByIdNotDeleted(command.creatorId());
-		Post post = postReader.findById(command.postId());
-		Comment comment = Comment.of(command.content(), false, command.isAnonymous(), creator, post);
+		Comment parentComment = command.parentCommentId() == null
+			? null
+			: commentReader.getComment(command.parentCommentId());
+		Post post = parentComment == null
+			? postReader.findById(command.postId())
+			: postReader.findById(parentComment.getPost().getId());
+		Comment comment = parentComment == null
+			? Comment.ofRoot(command.content(), command.isAnonymous(), creator, post)
+			: Comment.ofChildComment(command.content(), command.isAnonymous(), creator, parentComment);
 
 		commentValidator.validateForCreate(creator, post);
+		commentValidator.validateChildCommentDepth(parentComment);
 		commentWriter.save(comment);
 
-		// 신규 댓글: 좋아요 0, 대댓글 없음, 구독은 다음 단계에서 생성
+		// 신규 댓글: 좋아요 0, 대댓글 없음
 		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
 		Map<String, UserProfileImage> profileImageMap = userProfileImageReader.findMapByUserIds(
 			List.of(creator.getId()));
 		CommentResult result = commentMapper.toResult(comment, creator, boardAdminIds, CommentMeta.forNew(),
 			profileImageMap);
 
-		commentSubscribeWriter.createCommentSubscribe(creator, comment.getId());
-		eventPublisher.publishEvent(new PostCommentCreatedEvent(post.getId(), comment.getId()));
+		if (parentComment == null) {
+			eventPublisher.publishEvent(new PostCommentCreatedEvent(post.getId(), comment.getId()));
+		} else {
+			eventPublisher.publishEvent(new CommentChildCommentCreatedEvent(parentComment.getId(), comment.getId()));
+		}
 
 		return result;
 	}
@@ -98,7 +109,7 @@ public class CommentService {
 	 * 게시글에 속한 댓글 목록을 페이지 단위로 조회합니다.
 	 *
 	 * <p>댓글이 없으면 빈 페이지를 즉시 반환합니다(Early Exit).
-	 * N+1 방지를 위해 좋아요·구독·차단 집계 데이터를 {@link CommentMetaReader#fetch}로 배치 조회한 뒤
+	 * N+1 방지를 위해 좋아요·차단 집계 데이터를 {@link CommentMetaReader#fetch}로 배치 조회한 뒤
 	 * 각 댓글에 매핑합니다.</p>
 	 *
 	 * @param query 댓글 목록 조회 쿼리 데이터
@@ -152,6 +163,18 @@ public class CommentService {
 	public CommentResult updateComment(CommentUpdateCommand command) {
 		User updater = userReader.findUserByIdNotDeleted(command.updaterId());
 		Comment comment = commentReader.getComment(command.commentId());
+		return updateComment(command, updater, comment);
+	}
+
+	@Transactional
+	public CommentResult updateChildComment(CommentUpdateCommand command) {
+		Comment comment = commentReader.getComment(command.commentId());
+		validateChildComment(comment);
+		User updater = userReader.findUserByIdNotDeleted(command.updaterId());
+		return updateComment(command, updater, comment);
+	}
+
+	private CommentResult updateComment(CommentUpdateCommand command, User updater, Comment comment) {
 		Post post = postReader.findById(comment.getPost().getId());
 
 		commentValidator.validateForUpdate(updater, post, comment);
@@ -159,7 +182,7 @@ public class CommentService {
 		commentWriter.save(comment);
 
 		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
-		CommentMeta meta = commentMetaReader.fetchForComment(updater, comment);
+		CommentMeta meta = commentMetaReader.fetchForComment(updater, comment, Set.of());
 		Map<String, UserProfileImage> profileImageMap = userProfileImageReader.findMapByUserIds(
 			collectCommentWriterIds(comment));
 		return commentMapper.toResult(comment, updater, boardAdminIds, meta, profileImageMap);
@@ -176,6 +199,18 @@ public class CommentService {
 	public CommentResult deleteComment(String deleterId, String commentId) {
 		User deleter = userReader.findUserByIdNotDeleted(deleterId);
 		Comment comment = commentReader.getComment(commentId);
+		return deleteComment(deleter, comment);
+	}
+
+	@Transactional
+	public CommentResult deleteChildComment(String deleterId, String commentId) {
+		Comment comment = commentReader.getComment(commentId);
+		validateChildComment(comment);
+		User deleter = userReader.findUserByIdNotDeleted(deleterId);
+		return deleteComment(deleter, comment);
+	}
+
+	private CommentResult deleteComment(User deleter, Comment comment) {
 		Post post = postReader.findById(comment.getPost().getId());
 
 		commentValidator.validateForDelete(deleter, post, comment);
@@ -183,7 +218,7 @@ public class CommentService {
 		commentWriter.save(comment);
 
 		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
-		CommentMeta meta = commentMetaReader.fetchForComment(deleter, comment);
+		CommentMeta meta = commentMetaReader.fetchForComment(deleter, comment, Set.of());
 		Map<String, UserProfileImage> profileImageMap = userProfileImageReader.findMapByUserIds(
 			collectCommentWriterIds(comment));
 		return commentMapper.toResult(comment, deleter, boardAdminIds, meta, profileImageMap);
@@ -199,7 +234,18 @@ public class CommentService {
 	public void likeComment(String userId, String commentId) {
 		User user = userReader.findUserByIdNotDeleted(userId);
 		Comment comment = commentReader.getComment(commentId);
+		likeComment(user, comment);
+	}
 
+	@Transactional
+	public void likeChildComment(String userId, String commentId) {
+		Comment comment = commentReader.getComment(commentId);
+		validateChildComment(comment);
+		User user = userReader.findUserByIdNotDeleted(userId);
+		likeComment(user, comment);
+	}
+
+	private void likeComment(User user, Comment comment) {
 		commentValidator.validateForLike(user, comment);
 
 		LikeComment likeComment = LikeComment.of(comment, user);
@@ -216,10 +262,27 @@ public class CommentService {
 	public void cancelLikeComment(String userId, String commentId) {
 		User user = userReader.findUserByIdNotDeleted(userId);
 		Comment comment = commentReader.getComment(commentId);
+		cancelLikeComment(user, comment, commentId);
+	}
 
+	@Transactional
+	public void cancelLikeChildComment(String userId, String commentId) {
+		Comment comment = commentReader.getComment(commentId);
+		validateChildComment(comment);
+		User user = userReader.findUserByIdNotDeleted(userId);
+		cancelLikeComment(user, comment, commentId);
+	}
+
+	private void cancelLikeComment(User user, Comment comment, String commentId) {
 		commentValidator.validateForCancelLike(user, comment);
 
 		likeCommentWriter.delete(commentId, user.getId());
+	}
+
+	private void validateChildComment(Comment comment) {
+		if (!comment.isChildComment()) {
+			throw ChildCommentErrorCode.CHILD_COMMENT_NOT_FOUND.toBaseException();
+		}
 	}
 
 	/** 댓글과 그 대댓글의 작성자 ID를 중복 없이 수집합니다. */

@@ -7,9 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-import net.causw.app.main.domain.community.comment.entity.ChildComment;
 import net.causw.app.main.domain.community.comment.entity.Comment;
-import net.causw.app.main.domain.community.comment.service.implementation.ChildCommentReader;
 import net.causw.app.main.domain.community.comment.service.implementation.CommentReader;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.implementation.PostReader;
@@ -35,7 +33,6 @@ public class CommentNotificationListener {
 
 	private final PostReader postReader;
 	private final CommentReader commentReader;
-	private final ChildCommentReader childCommentReader;
 	private final NotificationWriter notificationWriter;
 	private final NotificationPushSender notificationPushSender;
 	private final NotificationSettingReader notificationSettingReader;
@@ -115,7 +112,7 @@ public class CommentNotificationListener {
 	public void handleChildComment(CommentChildCommentCreatedEvent event) {
 		// ID로 댓글·대댓글 조회
 		Comment comment = commentReader.getComment(event.commentId());
-		ChildComment childComment = childCommentReader.findById(event.childCommentId());
+		Comment childComment = commentReader.getComment(event.childCommentId());
 		Post post = comment.getPost();
 		User commentWriter = comment.getWriter();
 		User childCommentWriter = childComment.getWriter();

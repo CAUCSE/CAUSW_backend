@@ -48,10 +48,14 @@ public class Comment extends BaseEntity {
 	@JoinColumn(name = "post_id", nullable = false)
 	private Post post;
 
+	@ManyToOne(targetEntity = Comment.class)
+	@JoinColumn(name = "parent_comment_id")
+	private Comment parentComment;
+
 	@Setter
 	@OneToMany(mappedBy = "parentComment")
 	@Builder.Default
-	private List<ChildComment> childCommentList = new ArrayList<>(); // 필드 초기화 없으면 NPE
+	private List<Comment> childCommentList = new ArrayList<>(); // 필드 초기화 없으면 NPE
 
 	public static Comment of(
 		String content,
@@ -66,6 +70,39 @@ public class Comment extends BaseEntity {
 			.writer(writer)
 			.post(post)
 			.build();
+	}
+
+	public static Comment ofRoot(
+		String content,
+		Boolean isAnonymous,
+		User writer,
+		Post post) {
+		return Comment.builder()
+			.content(content)
+			.isDeleted(false)
+			.isAnonymous(isAnonymous)
+			.writer(writer)
+			.post(post)
+			.build();
+	}
+
+	public static Comment ofChildComment(
+		String content,
+		Boolean isAnonymous,
+		User writer,
+		Comment parentComment) {
+		return Comment.builder()
+			.content(content)
+			.isDeleted(false)
+			.isAnonymous(isAnonymous)
+			.writer(writer)
+			.post(parentComment.getPost())
+			.parentComment(parentComment)
+			.build();
+	}
+
+	public boolean isChildComment() {
+		return this.parentComment != null;
 	}
 
 	public void update(String content) {

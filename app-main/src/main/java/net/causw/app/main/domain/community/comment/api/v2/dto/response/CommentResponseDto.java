@@ -37,8 +37,6 @@ public record CommentResponseDto(
 
 	@Schema(description = "로그인한 유저가 댓글에 좋아요를 이미 누른지 여부", example = "False") Boolean isCommentLike,
 
-	@Schema(description = "댓글 구독 여부") Boolean isCommentSubscribed,
-
 	@Schema(description = "댓글 좋아요 수", example = "10") Long numLike,
 
 	@Schema(description = "대댓글 수", example = "5") Long numChildComment,

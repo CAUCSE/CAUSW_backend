@@ -20,7 +20,7 @@ public class LockerLocationReader {
 
 	public LockerLocation findById(String locationId) {
 		return lockerLocationRepository.findById(locationId)
-			.orElseThrow(LockerErrorCode.LOCKER_NOT_FOUND::toBaseException);
+			.orElseThrow(LockerErrorCode.LOCKER_LOCATION_NOT_FOUND::toBaseException);
 	}
 
 	public List<LockerLocation> findAll() {

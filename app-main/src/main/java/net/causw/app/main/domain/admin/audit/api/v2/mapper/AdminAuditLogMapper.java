@@ -13,11 +13,10 @@ import net.causw.app.main.domain.admin.audit.service.dto.AdminAuditLogCondition;
 import net.causw.app.main.domain.admin.audit.service.dto.AdminAuditLogItem;
 import net.causw.app.main.shared.exception.errorcode.GlobalErrorCode;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import lombok.RequiredArgsConstructor;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 @Component
 @RequiredArgsConstructor
@@ -54,7 +53,7 @@ public class AdminAuditLogMapper {
 		}
 		try {
 			return objectMapper.readValue(metadataJson, new TypeReference<LinkedHashMap<String, Object>>() {});
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			throw GlobalErrorCode.INTERNAL_SERVER_ERROR.toBaseException();
 		}
 	}

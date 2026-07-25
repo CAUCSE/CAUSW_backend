@@ -3,9 +3,7 @@ package net.causw.app.main.domain.community.report.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.domain.community.comment.entity.ChildComment;
 import net.causw.app.main.domain.community.comment.entity.Comment;
-import net.causw.app.main.domain.community.comment.service.implementation.ChildCommentReader;
 import net.causw.app.main.domain.community.comment.service.implementation.CommentReader;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.implementation.PostReader;
@@ -41,7 +39,6 @@ public class ReportService {
 	private final CommentReader commentReader;
 	private final CommentReportReader commentReportReader;
 	private final CommentReportWriter commentReportWriter;
-	private final ChildCommentReader childCommentReader;
 	private final ChildCommentReportReader childCommentReportReader;
 	private final ChildCommentReportWriter childCommentReportWriter;
 
@@ -63,7 +60,7 @@ public class ReportService {
 	@Transactional
 	public CommentReportCreateResult createCommentReport(CommentReportCreateCommand command) {
 		User reporter = command.reporter();
-		Comment comment = commentReader.findByIdAndNotDeleted(command.commentId());
+		Comment comment = commentReader.getComment(command.commentId());
 
 		boolean alreadyReported = commentReportReader.existsByReporterAndCommentId(reporter, comment.getId());
 		CommentReportValidator.validateCreate(reporter, comment, alreadyReported);
@@ -83,7 +80,7 @@ public class ReportService {
 	@Transactional
 	public ChildCommentReportCreateResult createChildCommentReport(ChildCommentReportCreateCommand command) {
 		User reporter = command.reporter();
-		ChildComment childComment = childCommentReader.findByIdAndNotDeleted(command.childCommentId());
+		Comment childComment = commentReader.getComment(command.childCommentId());
 
 		boolean alreadyReported = childCommentReportReader.existsByReporterAndChildCommentId(
 			reporter, childComment.getId());

@@ -17,9 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import net.causw.app.main.domain.community.board.entity.Board;
-import net.causw.app.main.domain.community.comment.entity.ChildComment;
 import net.causw.app.main.domain.community.comment.entity.Comment;
-import net.causw.app.main.domain.community.comment.service.implementation.ChildCommentReader;
 import net.causw.app.main.domain.community.comment.service.implementation.CommentReader;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.implementation.PostReader;
@@ -44,8 +42,6 @@ class CommentNotificationListenerTest {
 	private PostReader postReader;
 	@Mock
 	private CommentReader commentReader;
-	@Mock
-	private ChildCommentReader childCommentReader;
 	@Mock
 	private NotificationWriter notificationWriter;
 	@Mock
@@ -211,12 +207,12 @@ class CommentNotificationListenerTest {
 			given(post.getBoard()).willReturn(board);
 
 			Comment comment = commentWithWriterAndPost(commentWriter, post);
-			ChildComment childComment = childCommentWithWriter(childCommentWriter);
+			Comment childComment = childCommentWithWriter(childCommentWriter);
 			given(childComment.getIsAnonymous()).willReturn(false);
 			given(childComment.getContent()).willReturn("대댓글 내용");
 
 			given(commentReader.getComment("commentId")).willReturn(comment);
-			given(childCommentReader.findById("childCommentId")).willReturn(childComment);
+			given(commentReader.getComment("childCommentId")).willReturn(childComment);
 			given(notificationSettingReader.findSettingMap("commentWriterId")).willReturn(settingMapAllOn());
 			given(blockReader.existsByBlockerAndBlocked(commentWriter, childCommentWriter)).willReturn(false);
 			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
@@ -237,10 +233,10 @@ class CommentNotificationListenerTest {
 			User sameUser = userWithId("userId");
 			Post post = mock(Post.class);
 			Comment comment = commentWithWriterAndPost(sameUser, post);
-			ChildComment childComment = childCommentWithWriter(sameUser);
+			Comment childComment = childCommentWithWriter(sameUser);
 
 			given(commentReader.getComment("commentId")).willReturn(comment);
-			given(childCommentReader.findById("childCommentId")).willReturn(childComment);
+			given(commentReader.getComment("childCommentId")).willReturn(childComment);
 
 			// when
 			handler.handleChildComment(new CommentChildCommentCreatedEvent("commentId", "childCommentId"));
@@ -257,10 +253,10 @@ class CommentNotificationListenerTest {
 			User childCommentWriter = userWithId("childCommentWriterId");
 			Post post = mock(Post.class);
 			Comment comment = commentWithWriterAndPost(commentWriter, post);
-			ChildComment childComment = childCommentWithWriter(childCommentWriter);
+			Comment childComment = childCommentWithWriter(childCommentWriter);
 
 			given(commentReader.getComment("commentId")).willReturn(comment);
-			given(childCommentReader.findById("childCommentId")).willReturn(childComment);
+			given(commentReader.getComment("childCommentId")).willReturn(childComment);
 			given(notificationSettingReader.findSettingMap("commentWriterId"))
 				.willReturn(settingMapWith(UserNotificationSettingKey.COMMUNITY_REPLY_ON_MY_COMMENT, false));
 
@@ -279,10 +275,10 @@ class CommentNotificationListenerTest {
 			User childCommentWriter = userWithId("childCommentWriterId");
 			Post post = mock(Post.class);
 			Comment comment = commentWithWriterAndPost(commentWriter, post);
-			ChildComment childComment = childCommentWithWriter(childCommentWriter);
+			Comment childComment = childCommentWithWriter(childCommentWriter);
 
 			given(commentReader.getComment("commentId")).willReturn(comment);
-			given(childCommentReader.findById("childCommentId")).willReturn(childComment);
+			given(commentReader.getComment("childCommentId")).willReturn(childComment);
 			given(notificationSettingReader.findSettingMap("commentWriterId")).willReturn(settingMapAllOn());
 			given(blockReader.existsByBlockerAndBlocked(commentWriter, childCommentWriter)).willReturn(true);
 
@@ -328,8 +324,8 @@ class CommentNotificationListenerTest {
 	}
 
 	/** getWriter()만 stub */
-	private ChildComment childCommentWithWriter(User writer) {
-		ChildComment childComment = mock(ChildComment.class);
+	private Comment childCommentWithWriter(User writer) {
+		Comment childComment = mock(Comment.class);
 		given(childComment.getWriter()).willReturn(writer);
 		return childComment;
 	}

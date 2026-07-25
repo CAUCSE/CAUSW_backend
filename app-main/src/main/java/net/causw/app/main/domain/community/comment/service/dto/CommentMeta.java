@@ -11,7 +11,6 @@ import java.util.Set;
  *
  * @param numLike         이 댓글의 좋아요 수
  * @param isLiked         현재 조회 유저가 이 댓글에 좋아요를 눌렀는지 여부
- * @param isSubscribed    현재 조회 유저가 이 댓글을 구독했는지 여부
  * @param isBlocked       이 댓글 작성자가 현재 조회 유저에 의해 차단됐는지 여부
  * @param childLikeCounts 이 댓글에 속한 대댓글들의 좋아요 수 {@code Map<대댓글ID, 좋아요 수>}
  * @param likedChildIds   현재 조회 유저가 좋아요를 누른 대댓글 ID 집합 (이 댓글의 자식만)
@@ -20,7 +19,6 @@ import java.util.Set;
 public record CommentMeta(
 	long numLike,
 	boolean isLiked,
-	boolean isSubscribed,
 	boolean isBlocked,
 	Map<String, Long> childLikeCounts,
 	Set<String> likedChildIds,
@@ -28,9 +26,9 @@ public record CommentMeta(
 
 	/**
 	 * 신규 댓글 생성 직후 응답에 사용하는 빈 메타 데이터를 반환합니다.
-	 * 좋아요 0, 구독·차단·대댓글 없음 상태입니다.
+	 * 좋아요 0, 차단·대댓글 없음 상태입니다.
 	 */
 	public static CommentMeta forNew() {
-		return new CommentMeta(0L, false, false, false, Map.of(), Set.of(), Set.of());
+		return new CommentMeta(0L, false, false, Map.of(), Set.of(), Set.of());
 	}
 }

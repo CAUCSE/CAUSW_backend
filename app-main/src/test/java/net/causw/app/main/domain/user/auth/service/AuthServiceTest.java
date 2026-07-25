@@ -386,8 +386,9 @@ public class AuthServiceTest {
 			EmailVerification emailVerification = EmailVerification.of(
 				EMAIL, CODE, LocalDateTime.now().plusMinutes(5), VerificationStatus.PASSWORD_FIND);
 
-			given(userReader.findByEmailAndName(EMAIL, NAME)).willReturn(mockedUser);
+			given(userReader.findByEmail(EMAIL)).willReturn(Optional.of(mockedUser));
 			given(mockedUser.isOnlySocialUser()).willReturn(false);
+			given(mockedUser.getName()).willReturn(NAME);
 			given(emailVerificationReader.findLatestByEmailAndStatus(EMAIL, VerificationStatus.PASSWORD_FIND))
 				.willReturn(emailVerification);
 			given(passwordGenerator.generate()).willReturn(TEMP_PASSWORD);
@@ -401,10 +402,33 @@ public class AuthServiceTest {
 		}
 
 		@Test
+		@DisplayName("이메일에 해당하는 유저가 없으면 실패")
+		void resetPasswordByVerificationCode_fail_userNotFound() {
+			given(userReader.findByEmail(EMAIL)).willReturn(Optional.empty());
+
+			assertThatThrownBy(() -> authService.resetPasswordByVerificationCode(NAME, EMAIL, CODE))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasMessage(UserErrorCode.USER_NOT_FOUND.getMessage());
+		}
+
+		@Test
+		@DisplayName("이름 불일치 시 실패")
+		void resetPasswordByVerificationCode_fail_nameMismatch() {
+			User mockedUser = mock(User.class);
+			given(userReader.findByEmail(EMAIL)).willReturn(Optional.of(mockedUser));
+			given(mockedUser.isOnlySocialUser()).willReturn(false);
+			given(mockedUser.getName()).willReturn("다른이름");
+
+			assertThatThrownBy(() -> authService.resetPasswordByVerificationCode(NAME, EMAIL, CODE))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasMessage(UserErrorCode.USER_NOT_FOUND.getMessage());
+		}
+
+		@Test
 		@DisplayName("소셜 전용 계정은 비밀번호 초기화 불가")
 		void resetPasswordByVerificationCode_fail_socialOnlyUser() {
 			User mockedUser = mock(User.class);
-			given(userReader.findByEmailAndName(EMAIL, NAME)).willReturn(mockedUser);
+			given(userReader.findByEmail(EMAIL)).willReturn(Optional.of(mockedUser));
 			given(mockedUser.isOnlySocialUser()).willReturn(true);
 
 			assertThatThrownBy(() -> authService.resetPasswordByVerificationCode(NAME, EMAIL, CODE))
@@ -419,8 +443,9 @@ public class AuthServiceTest {
 			EmailVerification emailVerification = EmailVerification.of(
 				EMAIL, CODE, LocalDateTime.now().plusMinutes(5), VerificationStatus.PASSWORD_FIND);
 
-			given(userReader.findByEmailAndName(EMAIL, NAME)).willReturn(mockedUser);
+			given(userReader.findByEmail(EMAIL)).willReturn(Optional.of(mockedUser));
 			given(mockedUser.isOnlySocialUser()).willReturn(false);
+			given(mockedUser.getName()).willReturn(NAME);
 			given(emailVerificationReader.findLatestByEmailAndStatus(EMAIL, VerificationStatus.PASSWORD_FIND))
 				.willReturn(emailVerification);
 
@@ -436,8 +461,9 @@ public class AuthServiceTest {
 			EmailVerification expired = EmailVerification.of(
 				EMAIL, CODE, LocalDateTime.now().minusMinutes(1), VerificationStatus.PASSWORD_FIND);
 
-			given(userReader.findByEmailAndName(EMAIL, NAME)).willReturn(mockedUser);
+			given(userReader.findByEmail(EMAIL)).willReturn(Optional.of(mockedUser));
 			given(mockedUser.isOnlySocialUser()).willReturn(false);
+			given(mockedUser.getName()).willReturn(NAME);
 			given(emailVerificationReader.findLatestByEmailAndStatus(EMAIL, VerificationStatus.PASSWORD_FIND))
 				.willReturn(expired);
 
