@@ -2,10 +2,12 @@ package net.causw.app.main.domain.notification.notification.service.listener;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.verify;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -21,6 +23,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Map;
+
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyCategory;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyType;
@@ -28,7 +32,10 @@ import net.causw.app.main.domain.community.ceremony.enums.RelationType;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyReader;
 import net.causw.app.main.domain.notification.notification.entity.Notification;
 import net.causw.app.main.domain.notification.notification.enums.UserNotificationSettingKey;
+import net.causw.app.main.domain.notification.notification.event.CeremonyApprovedEvent;
 import net.causw.app.main.domain.notification.notification.event.CeremonyNotificationEvent;
+import net.causw.app.main.domain.notification.notification.event.CeremonyRejectedEvent;
+import net.causw.app.main.domain.notification.notification.service.dto.UserNotificationSettingMap;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationPushSender;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationSettingReader;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationWriter;
@@ -152,6 +159,111 @@ class CeremonyNotificationListenerTest {
 		}
 	}
 
+	@Nested
+	@DisplayName("경조사 승인 결과 알림 (handleApproved)")
+	class HandleApprovedTest {
+
+		@Test
+		@DisplayName("성공: SERVICE_NOTICE_ENABLED ON이면 신청자에게 푸시 + 서비스 알림 발송")
+		void givenServiceNoticeOn_whenHandleApproved_thenSendToApplicant() {
+			// given
+			User applicant = mock(User.class);
+			given(applicant.getId()).willReturn("userId");
+
+			Ceremony ceremony = mock(Ceremony.class);
+			given(ceremony.getId()).willReturn("ceremonyId");
+			given(ceremony.getUser()).willReturn(applicant);
+
+			given(ceremonyReader.findById("ceremonyId")).willReturn(Optional.of(ceremony));
+			given(notificationSettingReader.findSettingMap("userId"))
+				.willReturn(serviceNoticeOn());
+			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
+
+			// when
+			handler.handleApproved(new CeremonyApprovedEvent("ceremonyId"));
+
+			// then
+			verify(notificationPushSender).sendToUser(eq(applicant), eq("경조사 신청 승인"), any());
+			verify(notificationWriter).saveLog(eq(applicant), any());
+		}
+
+		@Test
+		@DisplayName("스킵: SERVICE_NOTICE_ENABLED OFF이면 알림 발송하지 않음")
+		void givenServiceNoticeOff_whenHandleApproved_thenSkip() {
+			// given
+			User applicant = mock(User.class);
+			given(applicant.getId()).willReturn("userId");
+
+			Ceremony ceremony = mock(Ceremony.class);
+			given(ceremony.getUser()).willReturn(applicant);
+
+			given(ceremonyReader.findById("ceremonyId")).willReturn(Optional.of(ceremony));
+			given(notificationSettingReader.findSettingMap("userId"))
+				.willReturn(serviceNoticeOff());
+
+			// when
+			handler.handleApproved(new CeremonyApprovedEvent("ceremonyId"));
+
+			// then
+			verify(notificationPushSender, never()).sendToUser(any(), any(), any());
+			verify(notificationWriter, never()).saveLog(any(), any());
+		}
+
+	}
+
+	@Nested
+	@DisplayName("경조사 거절 결과 알림 (handleRejected)")
+	class HandleRejectedTest {
+
+		@Test
+		@DisplayName("성공: SERVICE_NOTICE_ENABLED ON이면 신청자에게 푸시 발송하고 서비스 알림 제목에 거절 사유 포함")
+		void givenServiceNoticeOn_whenHandleRejected_thenSendToApplicantAndIncludeRejectReason() {
+			// given
+			User applicant = mock(User.class);
+			given(applicant.getId()).willReturn("userId");
+
+			Ceremony ceremony = mock(Ceremony.class);
+			given(ceremony.getId()).willReturn("ceremonyId");
+			given(ceremony.getUser()).willReturn(applicant);
+
+			given(ceremonyReader.findById("ceremonyId")).willReturn(Optional.of(ceremony));
+			given(notificationSettingReader.findSettingMap("userId"))
+				.willReturn(serviceNoticeOn());
+			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
+
+			// when
+			handler.handleRejected(new CeremonyRejectedEvent("ceremonyId", "요건에 부합하지 않습니다."));
+
+			// then
+			verify(notificationPushSender).sendToUser(eq(applicant), eq("경조사 신청 거절"), eq("경조사 신청이 거절되었습니다."));
+			verify(notificationWriter).save(argThat(n -> n.getTitle().contains("요건에 부합하지 않습니다.")));
+			verify(notificationWriter).saveLog(eq(applicant), any());
+		}
+
+		@Test
+		@DisplayName("스킵: SERVICE_NOTICE_ENABLED OFF이면 알림 발송하지 않음")
+		void givenServiceNoticeOff_whenHandleRejected_thenSkip() {
+			// given
+			User applicant = mock(User.class);
+			given(applicant.getId()).willReturn("userId");
+
+			Ceremony ceremony = mock(Ceremony.class);
+			given(ceremony.getUser()).willReturn(applicant);
+
+			given(ceremonyReader.findById("ceremonyId")).willReturn(Optional.of(ceremony));
+			given(notificationSettingReader.findSettingMap("userId"))
+				.willReturn(serviceNoticeOff());
+
+			// when
+			handler.handleRejected(new CeremonyRejectedEvent("ceremonyId", "사유"));
+
+			// then
+			verify(notificationPushSender, never()).sendToUser(any(), any(), any());
+			verify(notificationWriter, never()).saveLog(any(), any());
+		}
+
+	}
+
 	// ─────────────────────────────────────────────────
 	// 헬퍼
 	// ─────────────────────────────────────────────────
@@ -180,6 +292,16 @@ class CeremonyNotificationListenerTest {
 		given(ceremony.isSetAll()).willReturn(false);
 		given(ceremony.getTargetAdmissionYears()).willReturn(targetYears);
 		return ceremony;
+	}
+
+	private UserNotificationSettingMap serviceNoticeOn() {
+		return UserNotificationSettingMap.ofFull(
+			Map.of(UserNotificationSettingKey.SERVICE_NOTICE_ENABLED, true));
+	}
+
+	private UserNotificationSettingMap serviceNoticeOff() {
+		return UserNotificationSettingMap.ofFull(
+			Map.of(UserNotificationSettingKey.SERVICE_NOTICE_ENABLED, false));
 	}
 
 	/** 조사(CONDOLENCE, FUNERAL), isSetAll=true */
