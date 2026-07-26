@@ -14,6 +14,7 @@ import net.causw.app.main.domain.notification.notification.entity.Notification;
 import net.causw.app.main.domain.notification.notification.enums.NoticeType;
 import net.causw.app.main.domain.notification.notification.enums.UserNotificationSettingKey;
 import net.causw.app.main.domain.notification.notification.event.PostLikedEvent;
+import net.causw.app.main.domain.notification.notification.service.dto.PushNotificationData;
 import net.causw.app.main.domain.notification.notification.service.dto.UserNotificationSettingMap;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationPushSender;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationSettingReader;
@@ -79,6 +80,8 @@ public class LikePostNotificationListener {
 		String serviceTitle = String.format("게시물이 좋아요 %d개를 달성했습니다!", likeCount);
 		String serviceBody = String.format("내 게시글에 좋아요가 %d개 달렸어요.", likeCount);
 		String pushTitle = String.format("게시물 좋아요 %d개 달성", likeCount);
+		PushNotificationData pushData = new PushNotificationData(NoticeType.COMMUNITY, post.getId(),
+			post.getBoard().getId());
 
 		// 알림 발송자를 게시글 작성자로 설정하여 알림 생성
 		Notification notification = notificationWriter.save(
@@ -86,7 +89,7 @@ public class LikePostNotificationListener {
 				post.getBoard().getId()));
 
 		// 작성자에게 푸시 알림 발송 및 알림 로그 저장
-		notificationPushSender.sendToUser(postWriter, pushTitle, serviceBody);
+		notificationPushSender.sendToUser(postWriter, pushTitle, serviceBody, pushData);
 		notificationWriter.saveLog(postWriter, notification);
 	}
 

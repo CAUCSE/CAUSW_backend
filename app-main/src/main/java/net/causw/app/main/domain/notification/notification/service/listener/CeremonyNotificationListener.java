@@ -20,6 +20,7 @@ import net.causw.app.main.domain.notification.notification.entity.Notification;
 import net.causw.app.main.domain.notification.notification.enums.NoticeType;
 import net.causw.app.main.domain.notification.notification.enums.UserNotificationSettingKey;
 import net.causw.app.main.domain.notification.notification.event.CeremonyNotificationEvent;
+import net.causw.app.main.domain.notification.notification.service.dto.PushNotificationData;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationPushSender;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationSettingReader;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationWriter;
@@ -67,11 +68,12 @@ public class CeremonyNotificationListener {
 		String pushTitle = buildPushTitle(ceremony);
 		String pushBody = buildPushBody(ceremony);
 		String serviceTitle = buildServiceTitle(ceremony);
+		PushNotificationData pushData = new PushNotificationData(NoticeType.CEREMONY_V2, ceremony.getId(), null);
 
 		Notification notification = notificationWriter.save(
 			Notification.of(ceremonyUser, serviceTitle, pushBody, NoticeType.CEREMONY_V2, ceremony.getId(), null));
 
-		notificationPushSender.sendToUsers(targets, pushTitle, pushBody);
+		notificationPushSender.sendToUsers(targets, pushTitle, pushBody, pushData);
 		notificationWriter.saveLogs(targets, notification);
 	}
 
