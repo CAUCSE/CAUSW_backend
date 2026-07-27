@@ -126,7 +126,7 @@ class AdmissionNotificationListenerTest {
 			// then
 			PushNotificationData expectedData = new PushNotificationData(NoticeType.SYSTEM, null, null);
 			verify(notificationPushSender).sendToUser(eq(adminOn), any(), any(), eq(expectedData));
-			verify(notificationPushSender, never()).sendToUser(eq(adminOff), any(), any(), eq(expectedData));
+			verify(notificationPushSender, never()).sendToUser(eq(adminOff), any(), any(), any());
 		}
 	}
 
