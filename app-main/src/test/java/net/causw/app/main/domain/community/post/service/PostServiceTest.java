@@ -71,6 +71,7 @@ import net.causw.app.main.domain.community.vote.service.implementation.VoteWrite
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.ProfileImageType;
+import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.relation.service.implementation.BlockReader;
@@ -378,6 +379,86 @@ public class PostServiceTest {
 
 			// then
 			assertThat(post.getIsDeleted()).isTrue();
+		}
+
+		@DisplayName("삭제 권한이 있는 작성자의 재삭제 요청은 성공")
+		@Test
+		void deletePost_shouldSucceed_whenWriterRequestsDeletedPost() {
+			// given
+			post.setIsDeleted(true);
+			List<String> boardAdminIds = List.of("admin-id");
+
+			given(postReader.findById(postId)).willReturn(post);
+			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
+
+			// when
+			postService.deletePost(deleter, postId);
+
+			// then
+			assertThat(post.getIsDeleted()).isTrue();
+			verify(boardConfigReader, times(1)).getAdminIdsByBoardId(boardId);
+			verify(boardConfigReader, times(1)).getByBoardId(boardId);
+		}
+
+		@DisplayName("삭제 권한이 없는 사용자의 재삭제 요청은 실패")
+		@Test
+		void deletePost_shouldFail_whenUnauthorizedUserRequestsDeletedPost() {
+			// given
+			post.setIsDeleted(true);
+			User unauthorizedUser = ObjectFixtures.getCertifiedUserWithId("unauthorized-user-id");
+			List<String> boardAdminIds = List.of("admin-id");
+
+			given(postReader.findById(postId)).willReturn(post);
+			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
+
+			// when & then
+			assertThatThrownBy(() -> postService.deletePost(unauthorizedUser, postId))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.satisfies(ex -> assertThat(((BaseRunTimeV2Exception)ex).getErrorCode())
+					.isEqualTo(PostErrorCode.POST_FORBIDDEN));
+		}
+
+		@DisplayName("삭제 권한이 있어도 차단한 작성자의 삭제된 게시글은 재삭제할 수 없음")
+		@Test
+		void deletePost_shouldFail_whenExecutiveBlockedWriterOfDeletedPost() {
+			// given
+			post.setIsDeleted(true);
+			User president = ObjectFixtures.getCertifiedUserWithId("president-id");
+			president.setRoles(Set.of(Role.PRESIDENT));
+			List<String> boardAdminIds = List.of("admin-id");
+
+			given(postReader.findById(postId)).willReturn(post);
+			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
+			given(blockReader.existsByBlockerAndBlocked(president, deleter)).willReturn(true);
+
+			// when & then
+			assertThatThrownBy(() -> postService.deletePost(president, postId))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.satisfies(ex -> assertThat(((BaseRunTimeV2Exception)ex).getErrorCode())
+					.isEqualTo(PostErrorCode.BLOCKED_USER_CONTENT));
+		}
+
+		@DisplayName("게시판 관리자는 차단한 작성자의 삭제된 게시글도 재삭제 요청 가능")
+		@Test
+		void deletePost_shouldSucceed_whenBoardAdminRequestsBlockedDeletedPost() {
+			// given
+			post.setIsDeleted(true);
+			User boardAdmin = ObjectFixtures.getCertifiedUserWithId("admin-id");
+			List<String> boardAdminIds = List.of("admin-id");
+
+			given(postReader.findById(postId)).willReturn(post);
+			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
+
+			// when
+			postService.deletePost(boardAdmin, postId);
+
+			// then
+			assertThat(post.getIsDeleted()).isTrue();
+			verify(blockReader, never()).existsByBlockerAndBlocked(any(), any());
 		}
 	}
 

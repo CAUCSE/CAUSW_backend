@@ -245,6 +245,8 @@ class CommunityPermissionPolicyTest {
 			User executive = actorUser(actor, AcademicStatus.ENROLLED);
 			assertThat(CommunityPermissionPolicy.canDeletePost(
 				executive, post, hiddenConfig, BOARD_ADMIN_IDS)).isFalse();
+			assertThat(CommunityPermissionPolicy.canRequestPostDeletion(
+				executive, post, hiddenConfig, BOARD_ADMIN_IDS)).isFalse();
 			assertThat(CommunityPermissionPolicy.canDeleteComment(
 				executive, rootComment, hiddenConfig, BOARD_ADMIN_IDS)).isFalse();
 		}
@@ -265,6 +267,8 @@ class CommunityPermissionPolicyTest {
 			assertThat(CommunityPermissionPolicy.canUpdatePost(
 				moderator, post, hiddenConfig, BOARD_ADMIN_IDS)).isFalse();
 			assertThat(CommunityPermissionPolicy.canDeletePost(
+				moderator, post, hiddenConfig, BOARD_ADMIN_IDS)).isTrue();
+			assertThat(CommunityPermissionPolicy.canRequestPostDeletion(
 				moderator, post, hiddenConfig, BOARD_ADMIN_IDS)).isTrue();
 			assertThat(CommunityPermissionPolicy.canReadComment(
 				moderator, rootComment, hiddenConfig, BOARD_ADMIN_IDS)).isTrue();
@@ -289,6 +293,25 @@ class CommunityPermissionPolicyTest {
 			assertThat(CommunityPermissionPolicy.canDeletePost(
 				user, post, visibleAllUserBoardConfig, BOARD_ADMIN_IDS)).isFalse();
 		}
+	}
+
+	@ParameterizedTest(name = "삭제된 게시글 재삭제 요청: {0} -> {1}")
+	@CsvSource({
+		"OWNER, true",
+		"BOARD_ADMIN, true",
+		"SYSTEM_ADMIN, true",
+		"PRESIDENT, true",
+		"VICE_PRESIDENT, true",
+		"COMMON, false"
+	})
+	void deletedPostDeletionRequestFollowsActorMatrix(Actor actor, boolean expected) {
+		post.setIsDeleted(true);
+
+		assertThat(CommunityPermissionPolicy.canRequestPostDeletion(
+			actorUser(actor, AcademicStatus.ENROLLED),
+			post,
+			visibleAllUserBoardConfig,
+			BOARD_ADMIN_IDS)).isEqualTo(expected);
 	}
 
 	@Test
@@ -319,6 +342,8 @@ class CommunityPermissionPolicyTest {
 			assertThat(CommunityPermissionPolicy.canUpdatePost(
 				user, post, visibleAllUserBoardConfig, BOARD_ADMIN_IDS)).isFalse();
 			assertThat(CommunityPermissionPolicy.canDeletePost(
+				user, post, visibleAllUserBoardConfig, BOARD_ADMIN_IDS)).isFalse();
+			assertThat(CommunityPermissionPolicy.canRequestPostDeletion(
 				user, post, visibleAllUserBoardConfig, BOARD_ADMIN_IDS)).isFalse();
 			assertThat(CommunityPermissionPolicy.canReadComment(
 				user, rootComment, visibleAllUserBoardConfig, BOARD_ADMIN_IDS)).isFalse();

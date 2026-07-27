@@ -34,8 +34,11 @@ public class PostValidator {
 	public static void validateDelete(User deleter, Post post, List<String> boardAdminIds,
 		BoardConfig boardConfig) {
 		CommunityPermissionPolicy.validateActiveUser(deleter);
-		validatePostAlive(post);
-		if (!CommunityPermissionPolicy.canDeletePost(deleter, post, boardConfig, boardAdminIds)) {
+		if (post == null) {
+			throw PostErrorCode.POST_NOT_FOUND.toBaseException();
+		}
+		validateBoardAlive(post.getBoard());
+		if (!CommunityPermissionPolicy.canRequestPostDeletion(deleter, post, boardConfig, boardAdminIds)) {
 			throw PostErrorCode.POST_FORBIDDEN.toBaseException();
 		}
 	}
