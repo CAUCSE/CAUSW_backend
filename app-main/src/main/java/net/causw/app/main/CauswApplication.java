@@ -11,7 +11,6 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.servers.Server;
@@ -63,7 +62,5 @@ public class CauswApplication {
 		log.info("Spring Boot    : {}", SpringBootVersion.getVersion());
 		log.info("Java Version   : {}", System.getProperty("java.version"));
 		log.info("Active Profile : {}", profiles);
-
-		System.out.println(new BCryptPasswordEncoder().encode("password"));
 	}
 }

@@ -11,10 +11,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.batch.core.job.Job;
-import org.springframework.batch.core.launch.JobLauncher;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
@@ -36,8 +32,6 @@ public class BatchSchedulerTest {
 	private BatchScheduler batchScheduler;
 
 	@Mock
-	private JobLauncher jobLauncher;
-	@Mock
 	private UserRepository userRepository;
 	@Mock
 	private PageableFactory pageableFactory;
@@ -52,8 +46,6 @@ public class BatchSchedulerTest {
 	@Mock
 	private UserWriter userWriter;
 	@Mock
-	private Job cleanUpUnusedFilesJob;
-	@Mock
 	private UserProfileImageService userProfileImageService;
 
 	@Test
@@ -67,14 +59,16 @@ public class BatchSchedulerTest {
 		when(pageableFactory.create(anyInt(), anyInt())).thenReturn(PageRequest.of(0, 10));
 
 		when(
-			userRepository.findAllByDeletedAtIsNotNullAndDeletedAtBefore(any(LocalDateTime.class), any(Pageable.class)))
-			.thenReturn(new PageImpl<>(withdrawnUsers), Page.empty());
+			userRepository.findCleanupTargets(
+				any(LocalDateTime.class),
+				any(Pageable.class)))
+			.thenReturn(withdrawnUsers, List.of());
 
 		// when
 		batchScheduler.scheduleCleanupDeactivatedUsers();
 
 		// then
-		verify(userRepository).findAllByDeletedAtIsNotNullAndDeletedAtBefore(
+		verify(userRepository, times(2)).findCleanupTargets(
 			any(LocalDateTime.class),
 			any(Pageable.class));
 		verify(userProfileImageService, times(1)).cleanupProfileImagesForBatch(anyList());
@@ -92,14 +86,17 @@ public class BatchSchedulerTest {
 		when(pageableFactory.create(anyInt(), anyInt())).thenReturn(PageRequest.of(0, 10));
 
 		when(
-			userRepository.findAllByDeletedAtIsNotNullAndDeletedAtBefore(any(LocalDateTime.class), any(Pageable.class)))
-			.thenReturn(Page.empty());
+			userRepository.findCleanupTargets(
+				any(LocalDateTime.class),
+				any(Pageable.class)))
+			.thenReturn(List.of());
 
 		// when
 		batchScheduler.scheduleCleanupDeactivatedUsers();
 
 		// then
-		verify(userRepository).findAllByDeletedAtIsNotNullAndDeletedAtBefore(any(LocalDateTime.class),
+		verify(userRepository).findCleanupTargets(
+			any(LocalDateTime.class),
 			any(Pageable.class));
 		verifyNoInteractions(userInfoWriter, ceremonyWriter, socialAccountWriter, userAdmissionWriter, userWriter);
 	}
