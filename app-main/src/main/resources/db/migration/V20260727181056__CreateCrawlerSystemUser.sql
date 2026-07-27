@@ -1,0 +1,49 @@
+-- Migration: CreateCrawlerSystemUser
+
+-- 1. 크롤링 시스템 계정 생성
+INSERT INTO tb_user (
+                     id,
+                     email,
+                     name,
+                     nickname,
+                     password,
+                     state,
+                     academic_status,
+                     profile_image_type,
+                     is_v2,
+                     is_email_verified,
+                     report_count,
+                     created_at,
+                     updated_at
+)
+SELECT
+    'system-crawler-id',
+    'SYSTEM_CRAWLER_ACCOUNT',
+    '크롤링 시스템 계정',
+    '동네 크롤러',
+    'LOGIN_DISABLED',
+    'ACTIVE',
+    'ENROLLED',
+    'UNSET',
+    true,
+    false,
+    0,
+    NOW(),
+    NOW()
+WHERE NOT EXISTS (
+    SELECT 1 FROM tb_user WHERE email = 'SYSTEM_CRAWLER_ACCOUNT'
+);
+
+
+-- 2. 크롤링 시스템 계정 권한 부여
+INSERT INTO user_roles (user_id, role)
+SELECT 'system-crawler-id', 'ADMIN'
+WHERE NOT EXISTS (
+    SELECT 1 FROM user_roles WHERE user_id = 'system-crawler-id' AND role = 'ADMIN'
+);
+
+
+-- 3. 기존 크롤링 게시물의 작성자 변경
+UPDATE tb_post
+SET user_id = 'system-crawler-id'
+WHERE is_crawled = true;
