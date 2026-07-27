@@ -46,9 +46,8 @@ public class BatchScheduler {
 
 			while (true) {
 				List<User> withdrawnUsers =
-					userRepository.findAllByDeletedAtIsNotNullAndDeletedAtBeforeAndEmailNotStartingWith(
+					userRepository.findCleanupTargets(
 						dueDate,
-						"deleted_",
 						pageableFactory.create(0, StaticValue.BATCH_USER_LIST_SIZE)
 					);
 
