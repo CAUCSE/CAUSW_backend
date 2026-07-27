@@ -45,11 +45,13 @@ public class BatchScheduler {
 
 			LocalDateTime dueDate = LocalDateTime.now().minusDays(30);
 
-			boolean hasNext;
-			do {
-				Page<User> userPage = userRepository.findAllByDeletedAtIsNotNullAndDeletedAtBefore(
-					dueDate,
-					pageableFactory.create(0, StaticValue.BATCH_USER_LIST_SIZE));
+			while (true) {
+				Page<User> userPage =
+					userRepository.findAllByDeletedAtIsNotNullAndDeletedAtBeforeAndEmailNotStartingWith(
+						dueDate,
+						"deleted_",
+						pageableFactory.create(0, StaticValue.BATCH_USER_LIST_SIZE)
+					);
 
 				List<User> withdrawnUsers = userPage.getContent();
 
@@ -64,10 +66,9 @@ public class BatchScheduler {
 				admissionWriter.deleteAdmissionByUsers(withdrawnUsers);
 				userWriter.cleanupWithdrawnUsers(withdrawnUsers);
 
-				hasNext = userPage.hasNext();
 				log.info("[유저 정리 배치] {}명 처리 완료", withdrawnUsers.size());
+			}
 
-			} while (hasNext);
 			log.info("[유저 정리 배치] 탈퇴 유저 후처리 완료");
 		} catch (Exception e) {
 			log.error("유저 정리 배치 실패: {}", e.getMessage(), e);

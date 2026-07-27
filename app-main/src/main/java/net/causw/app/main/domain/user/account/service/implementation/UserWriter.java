@@ -113,10 +113,6 @@ public class UserWriter {
 			.collect(Collectors.groupingBy(sa -> sa.getUser().getId()));
 
 		for (User user : users) {
-			if (user.isAnonymized()) {
-				continue;
-			}
-
 			List<SocialAccount> socialAccounts = socialAccountMap.getOrDefault(user.getId(), List.of());
 
 			for (SocialAccount socialAccount : socialAccounts) {
