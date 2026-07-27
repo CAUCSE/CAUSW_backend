@@ -101,7 +101,7 @@ public interface UserRepository extends JpaRepository<User, String> {
 
 	Long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 
-	Page<User> findAllByDeletedAtIsNotNullAndDeletedAtBeforeAndEmailNotStartingWith(
+	List<User> findAllByDeletedAtIsNotNullAndDeletedAtBeforeAndEmailNotStartingWith(
 		LocalDateTime deletedAt,
 		String prefix,
 		Pageable pageable

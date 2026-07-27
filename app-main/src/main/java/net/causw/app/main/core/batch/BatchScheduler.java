@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.domain.Page;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyWriter;
@@ -46,14 +45,12 @@ public class BatchScheduler {
 			LocalDateTime dueDate = LocalDateTime.now().minusDays(30);
 
 			while (true) {
-				Page<User> userPage =
+				List<User> withdrawnUsers =
 					userRepository.findAllByDeletedAtIsNotNullAndDeletedAtBeforeAndEmailNotStartingWith(
 						dueDate,
 						"deleted_",
 						pageableFactory.create(0, StaticValue.BATCH_USER_LIST_SIZE)
 					);
-
-				List<User> withdrawnUsers = userPage.getContent();
 
 				if (withdrawnUsers.isEmpty()) {
 					break;
