@@ -28,6 +28,7 @@ import net.causw.app.main.domain.notification.notification.entity.Notification;
 import net.causw.app.main.domain.notification.notification.enums.NoticeType;
 import net.causw.app.main.domain.notification.notification.enums.UserNotificationSettingKey;
 import net.causw.app.main.domain.notification.notification.event.CeremonyAdminNotificationEvent;
+import net.causw.app.main.domain.notification.notification.service.dto.PushNotificationData;
 import net.causw.app.main.domain.notification.notification.service.dto.UserNotificationSettingMap;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationPushSender;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationSettingReader;
@@ -96,10 +97,12 @@ class CeremonyAdminNotificationListenerTest {
 			assertThat(captured.getNoticeType()).isEqualTo(NoticeType.SYSTEM);
 			assertThat(captured.getTargetId()).isEqualTo("ceremonyId");
 
+			PushNotificationData expectedData = new PushNotificationData(NoticeType.SYSTEM, "ceremonyId", null);
 			verify(notificationPushSender).sendToUsers(
 				eq(List.of(admin1, admin2)),
 				eq("경조사 신청"),
-				eq("김신청님이 경조사를 신청했습니다."));
+				eq("김신청님이 경조사를 신청했습니다."),
+				eq(expectedData));
 			verify(notificationWriter).saveLogs(eq(List.of(admin1, admin2)), eq(savedNotification));
 		}
 
@@ -121,7 +124,7 @@ class CeremonyAdminNotificationListenerTest {
 
 			// then
 			verify(notificationWriter, never()).save(any());
-			verify(notificationPushSender, never()).sendToUsers(any(), any(), any());
+			verify(notificationPushSender, never()).sendToUsers(any(), any(), any(), any());
 		}
 
 		@Test
@@ -154,7 +157,8 @@ class CeremonyAdminNotificationListenerTest {
 			handler.handle(new CeremonyAdminNotificationEvent("ceremonyId"));
 
 			// then
-			verify(notificationPushSender).sendToUsers(eq(List.of(adminOn)), any(), any());
+			PushNotificationData expectedData = new PushNotificationData(NoticeType.SYSTEM, "ceremonyId", null);
+			verify(notificationPushSender).sendToUsers(eq(List.of(adminOn)), any(), any(), eq(expectedData));
 			verify(notificationWriter).saveLogs(eq(List.of(adminOn)), eq(savedNotification));
 		}
 

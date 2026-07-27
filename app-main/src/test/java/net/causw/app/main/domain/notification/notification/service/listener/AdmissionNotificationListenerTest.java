@@ -19,10 +19,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import net.causw.app.main.domain.notification.notification.entity.Notification;
+import net.causw.app.main.domain.notification.notification.enums.NoticeType;
 import net.causw.app.main.domain.notification.notification.enums.UserNotificationSettingKey;
 import net.causw.app.main.domain.notification.notification.event.AdmissionAcceptedEvent;
 import net.causw.app.main.domain.notification.notification.event.AdmissionRejectedEvent;
 import net.causw.app.main.domain.notification.notification.event.AdmissionRequestedEvent;
+import net.causw.app.main.domain.notification.notification.service.dto.PushNotificationData;
 import net.causw.app.main.domain.notification.notification.service.dto.UserNotificationSettingMap;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationPushSender;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationSettingReader;
@@ -78,8 +80,10 @@ class AdmissionNotificationListenerTest {
 
 			// then
 			verify(notificationWriter).save(any());
-			verify(notificationPushSender).sendToUser(eq(admin1), any(), any());
-			verify(notificationPushSender).sendToUser(eq(admin2), any(), any());
+
+			PushNotificationData expectedData = new PushNotificationData(NoticeType.SYSTEM, null, null);
+			verify(notificationPushSender).sendToUser(eq(admin1), any(), any(), eq(expectedData));
+			verify(notificationPushSender).sendToUser(eq(admin2), any(), any(), eq(expectedData));
 		}
 
 		@Test
@@ -120,8 +124,9 @@ class AdmissionNotificationListenerTest {
 			handler.handleRequest(new AdmissionRequestedEvent("requesterId", AcademicStatus.ENROLLED, "20191234"));
 
 			// then
-			verify(notificationPushSender).sendToUser(eq(adminOn), any(), any());
-			verify(notificationPushSender, never()).sendToUser(eq(adminOff), any(), any());
+			PushNotificationData expectedData = new PushNotificationData(NoticeType.SYSTEM, null, null);
+			verify(notificationPushSender).sendToUser(eq(adminOn), any(), any(), eq(expectedData));
+			verify(notificationPushSender, never()).sendToUser(eq(adminOff), any(), any(), eq(expectedData));
 		}
 	}
 
@@ -150,7 +155,9 @@ class AdmissionNotificationListenerTest {
 
 			// then
 			verify(notificationWriter).save(any());
-			verify(notificationPushSender).sendToUser(any(), any(), any());
+
+			PushNotificationData expectedData = new PushNotificationData(NoticeType.SYSTEM, null, null);
+			verify(notificationPushSender).sendToUser(any(), any(), any(), eq(expectedData));
 			verify(notificationWriter).saveLog(any(), any());
 		}
 
@@ -171,7 +178,7 @@ class AdmissionNotificationListenerTest {
 
 			// then
 			verify(notificationWriter, never()).save(any());
-			verify(notificationPushSender, never()).sendToUser(any(), any(), any());
+			verify(notificationPushSender, never()).sendToUser(any(), any(), any(), any());
 		}
 	}
 
@@ -200,7 +207,9 @@ class AdmissionNotificationListenerTest {
 
 			// then
 			verify(notificationWriter).save(any());
-			verify(notificationPushSender).sendToUser(any(), any(), any());
+
+			PushNotificationData expectedData = new PushNotificationData(NoticeType.SYSTEM, null, null);
+			verify(notificationPushSender).sendToUser(any(), any(), any(), eq(expectedData));
 			verify(notificationWriter).saveLog(any(), any());
 		}
 

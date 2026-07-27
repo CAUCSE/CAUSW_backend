@@ -27,8 +27,10 @@ import net.causw.app.main.domain.community.ceremony.enums.CeremonyType;
 import net.causw.app.main.domain.community.ceremony.enums.RelationType;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyReader;
 import net.causw.app.main.domain.notification.notification.entity.Notification;
+import net.causw.app.main.domain.notification.notification.enums.NoticeType;
 import net.causw.app.main.domain.notification.notification.enums.UserNotificationSettingKey;
 import net.causw.app.main.domain.notification.notification.event.CeremonyNotificationEvent;
+import net.causw.app.main.domain.notification.notification.service.dto.PushNotificationData;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationPushSender;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationSettingReader;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationWriter;
@@ -74,7 +76,9 @@ class CeremonyNotificationListenerTest {
 
 			// then
 			verify(notificationWriter).save(any());
-			verify(notificationPushSender).sendToUsers(any(), any(), any());
+
+			PushNotificationData expectedData = new PushNotificationData(NoticeType.CEREMONY_V2, "ceremonyId", null);
+			verify(notificationPushSender).sendToUsers(any(), any(), any(), eq(expectedData));
 			verify(notificationWriter).saveLogs(any(), any());
 		}
 
@@ -96,7 +100,8 @@ class CeremonyNotificationListenerTest {
 			handler.handle(new CeremonyNotificationEvent("ceremonyId"));
 
 			// then
-			verify(notificationPushSender).sendToUsers(any(), any(), any());
+			PushNotificationData expectedData = new PushNotificationData(NoticeType.CEREMONY_V2, "ceremonyId", null);
+			verify(notificationPushSender).sendToUsers(any(), any(), any(), eq(expectedData));
 		}
 
 		@Test
@@ -148,7 +153,8 @@ class CeremonyNotificationListenerTest {
 			handler.handle(new CeremonyNotificationEvent("ceremonyId"));
 
 			// then
-			verify(notificationPushSender).sendToUsers(any(), eq("조사 소식"), any());
+			PushNotificationData expectedData = new PushNotificationData(NoticeType.CEREMONY_V2, "ceremonyId", null);
+			verify(notificationPushSender).sendToUsers(any(), eq("조사 소식"), any(), eq(expectedData));
 		}
 	}
 
