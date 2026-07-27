@@ -111,6 +111,5 @@ public interface UserRepository extends JpaRepository<User, String> {
 		""")
 	List<User> findCleanupTargets(
 		@Param("deletedAt") LocalDateTime deletedAt,
-		Pageable pageable
-	);
+		Pageable pageable);
 }

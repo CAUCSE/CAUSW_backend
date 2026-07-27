@@ -45,11 +45,9 @@ public class BatchScheduler {
 			LocalDateTime dueDate = LocalDateTime.now().minusDays(30);
 
 			while (true) {
-				List<User> withdrawnUsers =
-					userRepository.findCleanupTargets(
-						dueDate,
-						pageableFactory.create(0, StaticValue.BATCH_USER_LIST_SIZE)
-					);
+				List<User> withdrawnUsers = userRepository.findCleanupTargets(
+					dueDate,
+					pageableFactory.create(0, StaticValue.BATCH_USER_LIST_SIZE));
 
 				if (withdrawnUsers.isEmpty()) {
 					break;
