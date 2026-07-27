@@ -19,7 +19,6 @@ import org.springframework.stereotype.Repository;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.QPostAttachImage;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.QUserProfileImage;
 import net.causw.app.main.domain.asset.file.enums.FileExtensionType;
-import net.causw.app.main.domain.community.board.entity.BoardReadScope;
 import net.causw.app.main.domain.community.board.entity.BoardVisibility;
 import net.causw.app.main.domain.community.board.entity.QBoardAdmin;
 import net.causw.app.main.domain.community.board.entity.QBoardConfig;
@@ -132,7 +131,6 @@ public class PostQueryRepository {
 	 * 특정 사용자가 댓글을 작성한 게시글을 커서 기반 페이징으로 조회합니다.
 	 * findPostsWithCursor와 동일하게 PostCursorResult를 반환하여 재사용합니다.
 	 *
-	 * @param userId         댓글 작성자 ID
 	 * @param readContext 조회자의 읽기 범위·관리자 여부·차단 관계 컨텍스트
 	 * @param cursorCreatedAt 커서 (마지막 게시글의 createdAt)
 	 * @param cursorId       커서 (마지막 게시글의 ID)
@@ -140,16 +138,10 @@ public class PostQueryRepository {
 	 * @return 게시글 목록 Slice
 	 */
 	public Slice<PostCursorResult> findPostsCommentedByUserWithCursor(
-		String userId,
-		Set<String> blockedUserIds,
-		List<String> accessibleBoardIds,
+		PostReadQueryContext readContext,
 		String cursorCreatedAt,
 		String cursorId,
 		int size) {
-		if (hasNoAccessibleBoards(accessibleBoardIds)) {
-			return emptySlice(size);
-		}
-
 		QPost post = QPost.post;
 		QUser writer = new QUser("writer");
 		QComment comment = QComment.comment;
@@ -163,24 +155,21 @@ public class PostQueryRepository {
 			.from(comment)
 			.where(
 				comment.post.eq(post),
-				comment.writer.id.eq(userId),
+				comment.writer.id.eq(readContext.viewerId()),
 				comment.isDeleted.isFalse())
 			.exists();
 
 		BooleanExpression[] conditions = new BooleanExpression[] {
-			inBoards(post, accessibleBoardIds),
 			userCommentedPost, // 댓글 단 글만 조회
-			writer.id.ne(userId), // 자신이 쓴 글은 제외
+			writer.id.ne(readContext.viewerId()), // 자신이 쓴 글은 제외
 			cursorCondition // 커서 조건
 		};
 
-		PostReadQueryContext readContext = createAccessibleBoardReadContext(userId, blockedUserIds);
 		return getPostCursorResults(size, post, writer, readContext, conditions);
 	}
 
 	/**
 	 * 특정 사용자가 작성한 게시글을 커서 기반 페이징으로 조회합니다.
-	 * @param userId 작성자 ID
 	 * @param readContext 조회자의 읽기 범위·관리자 여부·차단 관계 컨텍스트
 	 * @param cursorCreatedAt 커서 (마지막 게시글의 createdAt)
 	 * @param cursorId 커서 (마지막 게시글의 ID)
@@ -188,33 +177,25 @@ public class PostQueryRepository {
 	 * @return
 	 */
 	public Slice<PostCursorResult> findPostsWrittenByUserWithCursor(
-		String userId,
-		List<String> accessibleBoardIds,
+		PostReadQueryContext readContext,
 		String cursorCreatedAt,
 		String cursorId,
 		int size) {
-		if (hasNoAccessibleBoards(accessibleBoardIds)) {
-			return emptySlice(size);
-		}
-
 		QPost post = QPost.post;
 		QUser writer = new QUser("writer");
 
 		BooleanExpression cursorCondition = createCursorCondition(cursorCreatedAt, cursorId, post);
 
 		BooleanExpression[] conditions = new BooleanExpression[] {
-			inBoards(post, accessibleBoardIds),
-			post.writer.id.eq(userId), // 자신이 쓴 글만 조회
+			post.writer.id.eq(readContext.viewerId()), // 자신이 쓴 글만 조회
 			cursorCondition // 커서 조건
 		};
 
-		PostReadQueryContext readContext = createAccessibleBoardReadContext(userId, Set.of());
 		return getPostCursorResults(size, post, writer, readContext, conditions);
 	}
 
 	/**
 	 * 특정 사용자가 좋아요를 누른 게시글을 커서 기반 페이징으로 조회합니다.
-	 * @param userId 좋아요 누른 사용자 ID
 	 * @param readContext 조회자의 읽기 범위·관리자 여부·차단 관계 컨텍스트
 	 * @param cursorCreatedAt 커서 (마지막 게시글의 createdAt)
 	 * @param cursorId 커서 (마지막 게시글의 ID)
@@ -222,16 +203,10 @@ public class PostQueryRepository {
 	 * @return 게시글 목록 Slice
 	 */
 	public Slice<PostCursorResult> findPostsLikedByUserWithCursor(
-		String userId,
-		Set<String> blockedUserIds,
-		List<String> accessibleBoardIds,
+		PostReadQueryContext readContext,
 		String cursorCreatedAt,
 		String cursorId,
 		int size) {
-		if (hasNoAccessibleBoards(accessibleBoardIds)) {
-			return emptySlice(size);
-		}
-
 		QPost post = QPost.post;
 		QUser writer = new QUser("writer");
 		QLikePost likePost = QLikePost.likePost;
@@ -241,16 +216,14 @@ public class PostQueryRepository {
 		BooleanExpression userLikedPost = JPAExpressions
 			.selectOne()
 			.from(likePost)
-			.where(likePost.post.eq(post), likePost.user.id.eq(userId))
+			.where(likePost.post.eq(post), likePost.user.id.eq(readContext.viewerId()))
 			.exists();
 
 		BooleanExpression[] conditions = new BooleanExpression[] {
-			inBoards(post, accessibleBoardIds),
 			userLikedPost, // 좋아요 누른 글만 조회
 			cursorCondition
 		};
 
-		PostReadQueryContext readContext = createAccessibleBoardReadContext(userId, blockedUserIds);
 		return getPostCursorResults(size, post, writer, readContext, conditions);
 	}
 
@@ -270,10 +243,6 @@ public class PostQueryRepository {
 		return cursorCondition;
 	}
 
-	private static boolean hasNoAccessibleBoards(List<String> boardIds) {
-		return boardIds == null || boardIds.isEmpty();
-	}
-
 	private static boolean hasEmptyBoardFilter(List<String> boardIds) {
 		return boardIds != null && boardIds.isEmpty();
 	}
@@ -284,17 +253,6 @@ public class PostQueryRepository {
 
 	private static BooleanExpression inBoards(QPost post, List<String> boardIds) {
 		return boardIds == null ? NO_CONDITION : post.board.id.in(boardIds);
-	}
-
-	private static PostReadQueryContext createAccessibleBoardReadContext(
-		String userId,
-		Set<String> blockedUserIds) {
-
-		return new PostReadQueryContext(
-			userId,
-			false,
-			Set.of(BoardReadScope.values()),
-			blockedUserIds);
 	}
 
 	/**

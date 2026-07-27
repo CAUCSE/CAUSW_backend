@@ -22,7 +22,6 @@ import net.causw.app.main.domain.community.board.service.implementation.BoardRea
 import net.causw.app.main.domain.community.common.service.CommunityPermissionPolicy;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.query.PostCursorResult;
-import net.causw.app.main.domain.community.post.repository.query.PostReadQueryContext;
 import net.causw.app.main.domain.community.post.service.dto.PostCreateCommand;
 import net.causw.app.main.domain.community.post.service.dto.PostCreateResult;
 import net.causw.app.main.domain.community.post.service.dto.PostDetailQuery;
@@ -195,12 +194,12 @@ public class PostService {
 
 		// 뷰어가 차단한 사용자 조회
 		Set<String> blockedUserIds = userBlockReader.findBlockeeUserIdsByBlocker(viewer);
-		PostReadQueryContext readContext = PostReadQueryContext.from(viewer, blockedUserIds);
 
 		// 게시글 조회 (Slice 사용)
 		Slice<PostCursorResult> slice = postReader.findPostsWithCursor(
 			boardIds,
-			readContext,
+			viewer,
+			blockedUserIds,
 			parsedCursor.createdAt(),
 			parsedCursor.postId(),
 			size,
@@ -337,20 +336,13 @@ public class PostService {
 	 */
 	public PostListResult getPostsCommentedByUser(User user, String cursor, Integer size) {
 		CommunityPermissionPolicy.validateActiveUser(user);
-		List<String> accessibleBoardIds = boardConfigReader.getAccessibleBoardIdsByAcademicStatus(
-			user.getAcademicStatus());
-		if (hasNoAccessibleBoards(accessibleBoardIds)) {
-			return PostListResult.of(List.of(), null);
-		}
-
 		Set<String> blockedUserIds = userBlockReader.findBlockeeUserIdsByBlocker(user);
 		int pageSize = size != null ? size : StaticValue.DEFAULT_POST_PAGE_SIZE;
 		PostCursorManager.ParsedCursor parsedCursor = PostCursorManager.parseCursor(cursor);
 
 		Slice<PostCursorResult> slice = postReader.findPostsCommentedByUserWithCursor(
-			user.getId(),
+			user,
 			blockedUserIds,
-			accessibleBoardIds,
 			parsedCursor.createdAt(),
 			parsedCursor.postId(),
 			pageSize);
@@ -368,18 +360,13 @@ public class PostService {
 	 */
 	public PostListResult getPostsWrittenByUser(User user, String cursor, Integer size) {
 		CommunityPermissionPolicy.validateActiveUser(user);
-		List<String> accessibleBoardIds = boardConfigReader.getAccessibleBoardIdsByAcademicStatus(
-			user.getAcademicStatus());
-		if (hasNoAccessibleBoards(accessibleBoardIds)) {
-			return PostListResult.of(List.of(), null);
-		}
-
+		Set<String> blockedUserIds = userBlockReader.findBlockeeUserIdsByBlocker(user);
 		int pageSize = size != null ? size : StaticValue.DEFAULT_POST_PAGE_SIZE;
 		PostCursorManager.ParsedCursor parsedCursor = PostCursorManager.parseCursor(cursor);
 
 		Slice<PostCursorResult> slice = postReader.findPostsWrittenByUserWithCursor(
-			user.getId(),
-			accessibleBoardIds,
+			user,
+			blockedUserIds,
 			parsedCursor.createdAt(),
 			parsedCursor.postId(),
 			pageSize);
@@ -396,20 +383,13 @@ public class PostService {
 	 */
 	public PostListResult getPostsLikedByUser(User user, String cursor, Integer size) {
 		CommunityPermissionPolicy.validateActiveUser(user);
-		List<String> accessibleBoardIds = boardConfigReader.getAccessibleBoardIdsByAcademicStatus(
-			user.getAcademicStatus());
-		if (hasNoAccessibleBoards(accessibleBoardIds)) {
-			return PostListResult.of(List.of(), null);
-		}
-
 		Set<String> blockedUserIds = userBlockReader.findBlockeeUserIdsByBlocker(user);
 		int pageSize = size != null ? size : StaticValue.DEFAULT_POST_PAGE_SIZE;
 		PostCursorManager.ParsedCursor parsedCursor = PostCursorManager.parseCursor(cursor);
 
 		Slice<PostCursorResult> slice = postReader.findPostsLikedByUserWithCursor(
-			user.getId(),
+			user,
 			blockedUserIds,
-			accessibleBoardIds,
 			parsedCursor.createdAt(),
 			parsedCursor.postId(),
 			pageSize);
@@ -452,10 +432,6 @@ public class PostService {
 		}
 
 		return PostListResult.of(postItems, nextCursor);
-	}
-
-	private static boolean hasNoAccessibleBoards(List<String> accessibleBoardIds) {
-		return accessibleBoardIds == null || accessibleBoardIds.isEmpty();
 	}
 
 	/**
