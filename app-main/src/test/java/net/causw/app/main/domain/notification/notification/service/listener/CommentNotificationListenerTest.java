@@ -94,8 +94,7 @@ class CommentNotificationListenerTest {
 			PushNotificationData expectedData = new PushNotificationData(
 				NoticeType.COMMUNITY,
 				"postId",
-				"boardId"
-			);
+				"boardId");
 			verify(notificationPushSender).sendToUser(any(), any(), any(), eq(expectedData));
 			verify(notificationWriter).saveLog(any(), any());
 		}
@@ -234,8 +233,7 @@ class CommentNotificationListenerTest {
 			PushNotificationData expectedData = new PushNotificationData(
 				NoticeType.COMMUNITY,
 				"postId",
-				"boardId"
-			);
+				"boardId");
 			verify(notificationPushSender).sendToUser(any(), any(), any(), eq(expectedData));
 			verify(notificationWriter).saveLog(any(), any());
 		}

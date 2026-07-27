@@ -157,7 +157,7 @@ class OfficialPostNotificationListenerTest {
 			verify(notificationWriter).save(any());
 
 			PushNotificationData expectedData = new PushNotificationData(NoticeType.OFFICIAL, "postId", "boardId");
-			verify(notificationPushSender).sendToUsers(eq(List.of()), any(), any(),eq(expectedData));
+			verify(notificationPushSender).sendToUsers(eq(List.of()), any(), any(), eq(expectedData));
 		}
 
 		@Test
