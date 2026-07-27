@@ -13,6 +13,7 @@ import net.causw.app.main.core.datasourceProxy.QueryContext.QueryInfo;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.servlet.HandlerMapping;
 
 @Aspect
 @Component
@@ -33,7 +34,14 @@ public class ApiQueryLoggingAspect {
 		if (attributes != null) {
 			HttpServletRequest request = attributes.getRequest();
 			method = request.getMethod();
-			path = request.getRequestURI();
+
+			// 정규화된 URI 형태로 가공
+			Object matchedPattern =
+					request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
+
+			path = matchedPattern != null
+					? matchedPattern.toString()
+					: request.getRequestURI();
 		}
 
 		if (!path.startsWith("/api/v2")) {
