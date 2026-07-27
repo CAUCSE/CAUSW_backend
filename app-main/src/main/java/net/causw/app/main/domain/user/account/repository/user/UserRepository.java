@@ -106,7 +106,7 @@ public interface UserRepository extends JpaRepository<User, String> {
 		FROM User u
 		WHERE u.deletedAt IS NOT NULL
 		  AND u.deletedAt < :deletedAt
-		  AND u.email NOT LIKE 'deleted_%'
+		  AND u.email NOT LIKE 'deleted\\_%' ESCAPE '\\'
 		ORDER BY u.deletedAt ASC
 		""")
 	List<User> findCleanupTargets(
