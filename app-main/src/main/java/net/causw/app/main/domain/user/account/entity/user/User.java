@@ -163,6 +163,12 @@ public class User extends BaseEntity {
 		this.graduationType = null;
 	}
 
+	public boolean isAnonymized() {
+		return isInactive() &&
+			this.email != null &&
+			this.email.startsWith("deleted_");
+	}
+
 	/**
 	 * deletedAt 존재 여부로 탈퇴 상태를 판정하던 메서드입니다.
 	 * @deprecated 탈퇴 상태 판정은 {@link #isInactive()} 사용을 권장합니다.

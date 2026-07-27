@@ -113,7 +113,7 @@ public class UserWriter {
 			.collect(Collectors.groupingBy(sa -> sa.getUser().getId()));
 
 		for (User user : users) {
-			if (isAlreadyAnonymized(user)) {
+			if (user.isAnonymized()) {
 				continue;
 			}
 
@@ -132,11 +132,5 @@ public class UserWriter {
 		}
 
 		userRepository.saveAll(users);
-	}
-
-	private boolean isAlreadyAnonymized(User user) {
-		return user.isInactive() &&
-			user.getEmail() != null &&
-			user.getEmail().startsWith("deleted_");
 	}
 }
