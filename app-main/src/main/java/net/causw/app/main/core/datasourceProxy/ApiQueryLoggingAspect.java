@@ -8,12 +8,12 @@ import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.servlet.HandlerMapping;
 
 import net.causw.app.main.core.datasourceProxy.QueryContext.QueryInfo;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.servlet.HandlerMapping;
 
 @Aspect
 @Component
@@ -36,12 +36,11 @@ public class ApiQueryLoggingAspect {
 			method = request.getMethod();
 
 			// 정규화된 URI 형태로 가공
-			Object matchedPattern =
-					request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
+			Object matchedPattern = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
 
 			path = matchedPattern != null
-					? matchedPattern.toString()
-					: request.getRequestURI();
+				? matchedPattern.toString()
+				: request.getRequestURI();
 		}
 
 		if (!path.startsWith("/api/v2")) {
