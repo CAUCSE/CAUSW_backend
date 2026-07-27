@@ -84,7 +84,7 @@ public class CeremonyNotificationListener {
 	 * 관리자가 경조사를 승인하면 신청자에게 승인 결과 알림을 발송합니다.
 	 * <ul>
 	 *   <li>대상: 경조사 신청자 본인</li>
-	 *   <li>필터: 서비스 공지 알림 설정 ON ({@link UserNotificationSettingKey#SERVICE_NOTICE_ENABLED})</li>
+	 *   <li>필터: 경조사 알림 설정 ON ({@link UserNotificationSettingKey#CEREMONY_NOTIFICATION_ENABLED})</li>
 	 * </ul>
 	 *
 	 * @param event 경조사 승인 이벤트
@@ -98,7 +98,7 @@ public class CeremonyNotificationListener {
 		User applicant = ceremony.getUser();
 
 		UserNotificationSettingMap settingMap = notificationSettingReader.findSettingMap(applicant.getId());
-		if (!settingMap.get(UserNotificationSettingKey.SERVICE_NOTICE_ENABLED)) {
+		if (!settingMap.get(UserNotificationSettingKey.CEREMONY_NOTIFICATION_ENABLED)) {
 			return;
 		}
 
@@ -107,7 +107,7 @@ public class CeremonyNotificationListener {
 		String serviceTitle = "경조사 신청이 승인되었습니다.";
 
 		Notification notification = notificationWriter.save(
-			Notification.of(applicant, serviceTitle, body, NoticeType.SYSTEM, ceremony.getId(), null));
+			Notification.of(applicant, serviceTitle, body, NoticeType.CEREMONY_V2, ceremony.getId(), null));
 
 		notificationPushSender.sendToUser(applicant, pushTitle, body);
 		notificationWriter.saveLog(applicant, notification);
@@ -119,7 +119,7 @@ public class CeremonyNotificationListener {
 	 * 관리자가 경조사를 거절하면 신청자에게 거절 사유와 함께 알림을 발송합니다.
 	 * <ul>
 	 *   <li>대상: 경조사 신청자 본인</li>
-	 *   <li>필터: 서비스 공지 알림 설정 ON ({@link UserNotificationSettingKey#SERVICE_NOTICE_ENABLED})</li>
+	 *   <li>필터: 경조사 알림 설정 ON ({@link UserNotificationSettingKey#CEREMONY_NOTIFICATION_ENABLED})</li>
 	 * </ul>
 	 *
 	 * @param event 경조사 거절 이벤트 (거절 사유 포함)
@@ -133,7 +133,7 @@ public class CeremonyNotificationListener {
 		User applicant = ceremony.getUser();
 
 		UserNotificationSettingMap settingMap = notificationSettingReader.findSettingMap(applicant.getId());
-		if (!settingMap.get(UserNotificationSettingKey.SERVICE_NOTICE_ENABLED)) {
+		if (!settingMap.get(UserNotificationSettingKey.CEREMONY_NOTIFICATION_ENABLED)) {
 			return;
 		}
 
@@ -142,7 +142,7 @@ public class CeremonyNotificationListener {
 		String serviceTitle = String.format("경조사 신청이 거절되었습니다. 사유: %s", event.rejectReason());
 
 		Notification notification = notificationWriter.save(
-			Notification.of(applicant, serviceTitle, body, NoticeType.SYSTEM, ceremony.getId(), null));
+			Notification.of(applicant, serviceTitle, body, NoticeType.CEREMONY_V2, ceremony.getId(), null));
 
 		notificationPushSender.sendToUser(applicant, pushTitle, body);
 		notificationWriter.saveLog(applicant, notification);

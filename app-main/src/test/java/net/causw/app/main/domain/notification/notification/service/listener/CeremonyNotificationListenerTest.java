@@ -163,8 +163,8 @@ class CeremonyNotificationListenerTest {
 	class HandleApprovedTest {
 
 		@Test
-		@DisplayName("성공: SERVICE_NOTICE_ENABLED ON이면 신청자에게 푸시 + 서비스 알림 발송")
-		void givenServiceNoticeOn_whenHandleApproved_thenSendToApplicant() {
+		@DisplayName("성공: CEREMONY_NOTIFICATION_ENABLED ON이면 신청자에게 푸시 + 서비스 알림 발송")
+		void givenCeremonyNotificationOn_whenHandleApproved_thenSendToApplicant() {
 			// given
 			User applicant = mock(User.class);
 			given(applicant.getId()).willReturn("userId");
@@ -175,7 +175,7 @@ class CeremonyNotificationListenerTest {
 
 			given(ceremonyReader.findById("ceremonyId")).willReturn(Optional.of(ceremony));
 			given(notificationSettingReader.findSettingMap("userId"))
-				.willReturn(serviceNoticeOn());
+				.willReturn(ceremonyNotificationOn());
 			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
 
 			// when
@@ -187,8 +187,8 @@ class CeremonyNotificationListenerTest {
 		}
 
 		@Test
-		@DisplayName("스킵: SERVICE_NOTICE_ENABLED OFF이면 알림 발송하지 않음")
-		void givenServiceNoticeOff_whenHandleApproved_thenSkip() {
+		@DisplayName("스킵: CEREMONY_NOTIFICATION_ENABLED OFF이면 알림 발송하지 않음")
+		void givenCeremonyNotificationOff_whenHandleApproved_thenSkip() {
 			// given
 			User applicant = mock(User.class);
 			given(applicant.getId()).willReturn("userId");
@@ -198,7 +198,7 @@ class CeremonyNotificationListenerTest {
 
 			given(ceremonyReader.findById("ceremonyId")).willReturn(Optional.of(ceremony));
 			given(notificationSettingReader.findSettingMap("userId"))
-				.willReturn(serviceNoticeOff());
+				.willReturn(ceremonyNotificationOff());
 
 			// when
 			handler.handleApproved(new CeremonyApprovedEvent("ceremonyId"));
@@ -215,8 +215,8 @@ class CeremonyNotificationListenerTest {
 	class HandleRejectedTest {
 
 		@Test
-		@DisplayName("성공: SERVICE_NOTICE_ENABLED ON이면 신청자에게 푸시 발송하고 서비스 알림 제목에 거절 사유 포함")
-		void givenServiceNoticeOn_whenHandleRejected_thenSendToApplicantAndIncludeRejectReason() {
+		@DisplayName("성공: CEREMONY_NOTIFICATION_ENABLED ON이면 신청자에게 푸시 발송하고 서비스 알림 제목에 거절 사유 포함")
+		void givenCeremonyNotificationOn_whenHandleRejected_thenSendToApplicantAndIncludeRejectReason() {
 			// given
 			User applicant = mock(User.class);
 			given(applicant.getId()).willReturn("userId");
@@ -227,7 +227,7 @@ class CeremonyNotificationListenerTest {
 
 			given(ceremonyReader.findById("ceremonyId")).willReturn(Optional.of(ceremony));
 			given(notificationSettingReader.findSettingMap("userId"))
-				.willReturn(serviceNoticeOn());
+				.willReturn(ceremonyNotificationOn());
 			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
 
 			// when
@@ -240,8 +240,8 @@ class CeremonyNotificationListenerTest {
 		}
 
 		@Test
-		@DisplayName("스킵: SERVICE_NOTICE_ENABLED OFF이면 알림 발송하지 않음")
-		void givenServiceNoticeOff_whenHandleRejected_thenSkip() {
+		@DisplayName("스킵: CEREMONY_NOTIFICATION_ENABLED OFF이면 알림 발송하지 않음")
+		void givenCeremonyNotificationOff_whenHandleRejected_thenSkip() {
 			// given
 			User applicant = mock(User.class);
 			given(applicant.getId()).willReturn("userId");
@@ -251,7 +251,7 @@ class CeremonyNotificationListenerTest {
 
 			given(ceremonyReader.findById("ceremonyId")).willReturn(Optional.of(ceremony));
 			given(notificationSettingReader.findSettingMap("userId"))
-				.willReturn(serviceNoticeOff());
+				.willReturn(ceremonyNotificationOff());
 
 			// when
 			handler.handleRejected(new CeremonyRejectedEvent("ceremonyId", "사유"));
@@ -293,14 +293,14 @@ class CeremonyNotificationListenerTest {
 		return ceremony;
 	}
 
-	private UserNotificationSettingMap serviceNoticeOn() {
+	private UserNotificationSettingMap ceremonyNotificationOn() {
 		return UserNotificationSettingMap.ofFull(
-			Map.of(UserNotificationSettingKey.SERVICE_NOTICE_ENABLED, true));
+			Map.of(UserNotificationSettingKey.CEREMONY_NOTIFICATION_ENABLED, true));
 	}
 
-	private UserNotificationSettingMap serviceNoticeOff() {
+	private UserNotificationSettingMap ceremonyNotificationOff() {
 		return UserNotificationSettingMap.ofFull(
-			Map.of(UserNotificationSettingKey.SERVICE_NOTICE_ENABLED, false));
+			Map.of(UserNotificationSettingKey.CEREMONY_NOTIFICATION_ENABLED, false));
 	}
 
 	/** 조사(CONDOLENCE, FUNERAL), isSetAll=true */
