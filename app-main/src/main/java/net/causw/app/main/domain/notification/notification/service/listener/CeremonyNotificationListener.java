@@ -108,10 +108,12 @@ public class CeremonyNotificationListener {
 		String body = "경조사 신청이 승인되었습니다.";
 		String serviceTitle = "경조사 신청이 승인되었습니다.";
 
+		PushNotificationData data = new PushNotificationData(NoticeType.CEREMONY_V2, ceremony.getId(), null);
+
 		Notification notification = notificationWriter.save(
 			Notification.of(applicant, serviceTitle, body, NoticeType.CEREMONY_V2, ceremony.getId(), null));
 
-		notificationPushSender.sendToUser(applicant, pushTitle, body);
+		notificationPushSender.sendToUser(applicant, pushTitle, body, data);
 		notificationWriter.saveLog(applicant, notification);
 	}
 
@@ -143,10 +145,12 @@ public class CeremonyNotificationListener {
 		String body = "경조사 신청이 거절되었습니다.";
 		String serviceTitle = String.format("경조사 신청이 거절되었습니다. 사유: %s", event.rejectReason());
 
+		PushNotificationData data = new PushNotificationData(NoticeType.CEREMONY_V2, ceremony.getId(), null);
+
 		Notification notification = notificationWriter.save(
 			Notification.of(applicant, serviceTitle, body, NoticeType.CEREMONY_V2, ceremony.getId(), null));
 
-		notificationPushSender.sendToUser(applicant, pushTitle, body);
+		notificationPushSender.sendToUser(applicant, pushTitle, body, data);
 		notificationWriter.saveLog(applicant, notification);
 	}
 
