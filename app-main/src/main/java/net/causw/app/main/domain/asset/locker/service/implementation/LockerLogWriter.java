@@ -50,7 +50,7 @@ public class LockerLogWriter {
 
 	public void logAdminRelease(Locker locker, User admin, String userEmail, String userName) {
 		save(locker, admin.getEmail(), admin.getName(), LockerLogAction.ADMIN_RELEASE,
-			"관리자 사물함 회수" + userName + "(" + userEmail + ")");
+			"관리자 사물함 회수 " + userName + "(" + userEmail + ")");
 	}
 
 	private void save(Locker locker, String userEmail, String userName, LockerLogAction action, String message) {

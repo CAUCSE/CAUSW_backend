@@ -33,6 +33,8 @@ public record PostListResponse(
 		@Schema(description = "게시판 이름") String boardName,
 		@Schema(description = "좋아요 여부") boolean isPostLike,
 		@Schema(description = "작성자 여부") boolean isOwner,
+		@Schema(description = "수정 가능 여부") boolean updatable,
+		@Schema(description = "삭제 가능 여부") boolean deletable,
 		@Schema(description = "작성자 공식계정 여부") boolean isOfficial) {
 	}
 }

@@ -1,0 +1,208 @@
+name: CD - Production (Docker/ECR)
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  AWS_REGION: ap-northeast-2
+  ECR_REPOSITORY: ccssaa/ccssaa-backend-prod
+
+jobs:
+  # ─────────────────────────────────────────
+  # 1. Docker 이미지 빌드 & ECR push
+  # ─────────────────────────────────────────
+  build-and-push:
+    name: Build & Push Docker Image to ECR
+    runs-on: ubuntu-22.04
+    outputs:
+      image: ${{ steps.build-image.outputs.image }}
+      migration_image: ${{ steps.build-image.outputs.migration_image }}
+      migration_changed: ${{ steps.filter.outputs.migration }}
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Detect migration changes
+        id: filter
+        if: ${{ github.event_name == 'push' }}
+        uses: dorny/paths-filter@v3
+        with:
+          base: ${{ github.event.before }}
+          filters: |
+            migration:
+              - 'app-main/src/main/resources/db/migration/**'
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN_PROD }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Ensure ECR repository exists
+        run: |
+          aws ecr describe-repositories \
+            --repository-names "$ECR_REPOSITORY" \
+            --region "$AWS_REGION" \
+          || aws ecr create-repository \
+            --repository-name "$ECR_REPOSITORY" \
+            --region "$AWS_REGION"
+
+      - name: Build and push image
+        id: build-image
+        env:
+          REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          IMAGE="$REGISTRY/$ECR_REPOSITORY"
+          MIGRATION_IMAGE="$IMAGE:prod-$IMAGE_TAG-migration"
+          docker build \
+            --target migration \
+            --build-arg FLYWAY_CONFIG_FILE=flyway-prod.conf \
+            -t "$MIGRATION_IMAGE" \
+            .
+          docker build -t "$IMAGE:prod-$IMAGE_TAG" -t "$IMAGE:prod-latest" .
+          docker push "$MIGRATION_IMAGE"
+          docker push "$IMAGE:prod-$IMAGE_TAG"
+          docker push "$IMAGE:prod-latest"
+          echo "image=$IMAGE:prod-$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+          echo "migration_image=$MIGRATION_IMAGE" >> "$GITHUB_OUTPUT"
+
+  # ─────────────────────────────────────────
+  # 2. DB 마이그레이션 (EC2에서 실행 - Private RDS 접근)
+  # ─────────────────────────────────────────
+  flyway-migrate:
+    name: Flyway Migration
+    needs: build-and-push
+    if: ${{ github.event_name == 'workflow_dispatch' || needs.build-and-push.outputs.migration_changed == 'true' }}
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Write .env to EC2
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          ENV_CONTENT: ${{ secrets.ENV_PROD }}
+        with:
+          key: ${{ secrets.EC2_KEY_PROD }}
+          host: ${{ secrets.EC2_HOST_PROD }}
+          username: ${{ secrets.EC2_USER_PROD }}
+          envs: ENV_CONTENT
+          script: |
+            mkdir -p /home/ubuntu/app/app-main
+            printf '%s' "$ENV_CONTENT" > /home/ubuntu/app/app-main/.env
+
+      - name: Run Flyway on EC2
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          MIGRATION_IMAGE: ${{ needs.build-and-push.outputs.migration_image }}
+          AWS_REGION: ${{ env.AWS_REGION }}
+        with:
+          key: ${{ secrets.EC2_KEY_PROD }}
+          host: ${{ secrets.EC2_HOST_PROD }}
+          username: ${{ secrets.EC2_USER_PROD }}
+          envs: MIGRATION_IMAGE,AWS_REGION
+          script: |
+            set -euo pipefail
+
+            : "${MIGRATION_IMAGE:?MIGRATION_IMAGE variable is required}"
+
+            aws ecr get-login-password --region "$AWS_REGION" \
+              | docker login --username AWS --password-stdin "${MIGRATION_IMAGE%%/*}"
+
+            docker pull "$MIGRATION_IMAGE"
+
+            docker run --rm \
+              --env-file /home/ubuntu/app/app-main/.env \
+              --add-host=host.docker.internal:host-gateway \
+              "$MIGRATION_IMAGE" \
+              migrate
+
+  # ─────────────────────────────────────────
+  # 3. EC2 배포
+  # ─────────────────────────────────────────
+  deploy:
+    name: Deploy to EC2 via SSH
+    needs: [ build-and-push, flyway-migrate ]
+    if: ${{ always() && needs.build-and-push.result == 'success' && (needs.flyway-migrate.result == 'success' || needs.flyway-migrate.result == 'skipped') }}
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      - name: Start redis-server
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          key: ${{ secrets.EC2_KEY_PROD }}
+          host: ${{ secrets.EC2_HOST_PROD }}
+          username: ${{ secrets.EC2_USER_PROD }}
+          script: |
+            sudo systemctl start redis-server
+
+      - name: Restart container with new image
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          IMAGE: ${{ needs.build-and-push.outputs.image }}
+          MIGRATION_IMAGE: ${{ needs.build-and-push.outputs.migration_image }}
+          APP_CONTAINER_NAME: ${{ vars.APP_CONTAINER_NAME }}
+          AWS_REGION: ${{ env.AWS_REGION }}
+        with:
+          key: ${{ secrets.EC2_KEY_PROD }}
+          host: ${{ secrets.EC2_HOST_PROD }}
+          username: ${{ secrets.EC2_USER_PROD }}
+          envs: IMAGE,MIGRATION_IMAGE,APP_CONTAINER_NAME,AWS_REGION
+          script_path: .github/scripts/restart-container.sh
+
+  # ─────────────────────────────────────────
+  # 4. Discord 배포 결과 알림
+  # ─────────────────────────────────────────
+  notify:
+    name: Discord Notify
+    needs: [ deploy ]
+    runs-on: ubuntu-22.04
+    if: always()
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Notify Success
+        if: needs.deploy.result == 'success'
+        uses: ./.github/actions/discord-notify
+        with:
+          repository: ${{ github.repository }}
+          status: success
+          branch: ${{ github.ref_name }}
+          sha: ${{ github.sha }}
+          actor: ${{ github.actor }}
+          run_id: ${{ github.run_id }}
+          webhook: ${{ secrets.DISCORD_DEPLOY_WEBHOOK_URL_MAIN }}
+          role_id: ${{ secrets.DISCORD_BACKEND_ROLE_ID }}
+
+      - name: Notify Failure
+        if: needs.deploy.result != 'success'
+        uses: ./.github/actions/discord-notify
+        with:
+          repository: ${{ github.repository }}
+          status: failure
+          branch: ${{ github.ref_name }}
+          sha: ${{ github.sha }}
+          actor: ${{ github.actor }}
+          run_id: ${{ github.run_id }}
+          webhook: ${{ secrets.DISCORD_DEPLOY_WEBHOOK_URL_MAIN }}
+          role_id: ${{ secrets.DISCORD_BACKEND_ROLE_ID }}

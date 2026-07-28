@@ -16,6 +16,7 @@ import net.causw.app.main.domain.notification.notification.enums.NoticeType;
 import net.causw.app.main.domain.notification.notification.enums.UserNotificationSettingKey;
 import net.causw.app.main.domain.notification.notification.event.CommentChildCommentCreatedEvent;
 import net.causw.app.main.domain.notification.notification.event.PostCommentCreatedEvent;
+import net.causw.app.main.domain.notification.notification.service.dto.PushNotificationData;
 import net.causw.app.main.domain.notification.notification.service.dto.UserNotificationSettingMap;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationPushSender;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationSettingReader;
@@ -82,6 +83,8 @@ public class CommentNotificationListener {
 		String pushTitle = "내 글에 댓글";
 		String pushBody = NotificationTextUtil.ellipsis(displayName + "님이 댓글을 남겼어요",
 			NotificationTextUtil.PUSH_BODY_MAX_LENGTH);
+		PushNotificationData pushData = new PushNotificationData(NoticeType.COMMUNITY, post.getId(),
+			post.getBoard().getId());
 
 		String servicePrefix = displayName + "님이 댓글을 남겼어요. ";
 		int contentSlot = NotificationTextUtil.SERVICE_TITLE_MAX_LENGTH - servicePrefix.length() - 2;
@@ -92,7 +95,7 @@ public class CommentNotificationListener {
 			Notification.of(commentWriter, serviceTitle, pushBody, NoticeType.COMMUNITY, post.getId(),
 				post.getBoard().getId()));
 
-		notificationPushSender.sendToUser(postWriter, pushTitle, pushBody);
+		notificationPushSender.sendToUser(postWriter, pushTitle, pushBody, pushData);
 		notificationWriter.saveLog(postWriter, notification);
 	}
 
@@ -142,6 +145,8 @@ public class CommentNotificationListener {
 		String pushTitle = "내 댓글에 답글";
 		String pushBody = NotificationTextUtil.ellipsis(displayName + "님이 답글을 남겼어요",
 			NotificationTextUtil.PUSH_BODY_MAX_LENGTH);
+		PushNotificationData pushData = new PushNotificationData(NoticeType.COMMUNITY, post.getId(),
+			post.getBoard().getId());
 
 		String servicePrefix = displayName + "님이 답글을 남겼어요: ";
 		int contentSlot = NotificationTextUtil.SERVICE_TITLE_MAX_LENGTH - servicePrefix.length() - 2;
@@ -152,7 +157,7 @@ public class CommentNotificationListener {
 			Notification.of(childCommentWriter, serviceTitle, pushBody, NoticeType.COMMUNITY, post.getId(),
 				post.getBoard().getId()));
 
-		notificationPushSender.sendToUser(commentWriter, pushTitle, pushBody);
+		notificationPushSender.sendToUser(commentWriter, pushTitle, pushBody, pushData);
 		notificationWriter.saveLog(commentWriter, notification);
 	}
 

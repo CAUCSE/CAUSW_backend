@@ -19,6 +19,9 @@ import org.springframework.stereotype.Repository;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.QPostAttachImage;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.QUserProfileImage;
 import net.causw.app.main.domain.asset.file.enums.FileExtensionType;
+import net.causw.app.main.domain.community.board.entity.BoardVisibility;
+import net.causw.app.main.domain.community.board.entity.QBoardAdmin;
+import net.causw.app.main.domain.community.board.entity.QBoardConfig;
 import net.causw.app.main.domain.community.comment.entity.QComment;
 import net.causw.app.main.domain.community.post.entity.QPost;
 import net.causw.app.main.domain.community.reaction.entity.QLikePost;
@@ -84,24 +87,24 @@ public class PostQueryRepository {
 	 * 커서 기반 페이징으로 게시글 목록을 조회합니다. (V2용 - title 없음)
 	 *
 	 * @param boardIds 게시판 ID 목록 (null이면 전체 게시판, 빈 리스트면 조회 안함)
+	 * @param readContext 조회자의 읽기 범위·관리자 여부·차단 관계 컨텍스트
 	 * @param cursorCreatedAt 커서 (마지막 게시글의 createdAt)
 	 * @param cursorId 커서 (마지막 게시글의 ID, createdAt이 같을 때 사용)
-	 * @param blockedUserIds 차단한 사용자 ID 목록 (해당 사용자 게시글 제외)
 	 * @param size 조회할 개수
 	 * @param keyword 검색 키워드 (content 기준)
 	 * @return 게시글 목록 Slice
 	 */
 	public Slice<PostCursorResult> findPostsWithCursor(
 		List<String> boardIds,
-		Set<String> blockedUserIds,
+		PostReadQueryContext readContext,
 		String cursorCreatedAt,
 		String cursorId,
 		int size,
 		String keyword) {
 		// 빈 리스트가 전달된 경우 "조회 가능한 게시판이 한 개도 없음"을 의미하므로 즉시 빈 결과 반환.
 		// (null은 docstring 계약상 "전체 게시판"이므로 별도 처리하지 않음)
-		if (boardIds != null && boardIds.isEmpty()) {
-			return new SliceImpl<>(List.of(), Pageable.ofSize(size), false);
+		if (hasEmptyBoardFilter(boardIds)) {
+			return emptySlice(size);
 		}
 
 		QPost post = QPost.post;
@@ -111,38 +114,31 @@ public class PostQueryRepository {
 		BooleanExpression cursorCondition = createCursorCondition(cursorCreatedAt, cursorId, post);
 
 		// 게시판 조건
-		BooleanExpression boardCondition = NO_CONDITION;
-		if (boardIds != null && !boardIds.isEmpty()) {
-			boardCondition = post.board.id.in(boardIds);
-		}
+		BooleanExpression boardCondition = inBoards(post, boardIds);
 
 		// 게시글 조회 조건
 		BooleanExpression[] conditions = new BooleanExpression[] {
 			boardCondition,
-			post.isDeleted.eq(false),
-			notInBlockedUsers(writer, blockedUserIds),
 			containsKeywordInContent(post, keyword),
 			cursorCondition
 		};
 
 		// 게시글 조회 (size + 1개 조회하여 hasNext 판단)
-		return getPostCursorResults(size, post, writer, conditions);
+		return getPostCursorResults(size, post, writer, readContext, conditions);
 	}
 
 	/**
 	 * 특정 사용자가 댓글을 작성한 게시글을 커서 기반 페이징으로 조회합니다.
 	 * findPostsWithCursor와 동일하게 PostCursorResult를 반환하여 재사용합니다.
 	 *
-	 * @param userId         댓글 작성자 ID
-	 * @param blockedUserIds 차단한 사용자 ID 목록 (해당 사용자 게시글 제외)
+	 * @param readContext 조회자의 읽기 범위·관리자 여부·차단 관계 컨텍스트
 	 * @param cursorCreatedAt 커서 (마지막 게시글의 createdAt)
 	 * @param cursorId       커서 (마지막 게시글의 ID)
 	 * @param size           조회할 개수
 	 * @return 게시글 목록 Slice
 	 */
 	public Slice<PostCursorResult> findPostsCommentedByUserWithCursor(
-		String userId,
-		Set<String> blockedUserIds,
+		PostReadQueryContext readContext,
 		String cursorCreatedAt,
 		String cursorId,
 		int size) {
@@ -159,31 +155,29 @@ public class PostQueryRepository {
 			.from(comment)
 			.where(
 				comment.post.eq(post),
-				comment.writer.id.eq(userId),
+				comment.writer.id.eq(readContext.viewerId()),
 				comment.isDeleted.isFalse())
 			.exists();
 
 		BooleanExpression[] conditions = new BooleanExpression[] {
 			userCommentedPost, // 댓글 단 글만 조회
-			writer.id.ne(userId), // 자신이 쓴 글은 제외
-			post.isDeleted.eq(false), // 삭제된 글 제외
-			notInBlockedUsers(writer, blockedUserIds), // 차단한 사용자 글 제외
+			writer.id.ne(readContext.viewerId()), // 자신이 쓴 글은 제외
 			cursorCondition // 커서 조건
 		};
 
-		return getPostCursorResults(size, post, writer, conditions);
+		return getPostCursorResults(size, post, writer, readContext, conditions);
 	}
 
 	/**
 	 * 특정 사용자가 작성한 게시글을 커서 기반 페이징으로 조회합니다.
-	 * @param userId 작성자 ID
+	 * @param readContext 조회자의 읽기 범위·관리자 여부·차단 관계 컨텍스트
 	 * @param cursorCreatedAt 커서 (마지막 게시글의 createdAt)
 	 * @param cursorId 커서 (마지막 게시글의 ID)
 	 * @param size 조회할 개수
 	 * @return
 	 */
 	public Slice<PostCursorResult> findPostsWrittenByUserWithCursor(
-		String userId,
+		PostReadQueryContext readContext,
 		String cursorCreatedAt,
 		String cursorId,
 		int size) {
@@ -193,26 +187,23 @@ public class PostQueryRepository {
 		BooleanExpression cursorCondition = createCursorCondition(cursorCreatedAt, cursorId, post);
 
 		BooleanExpression[] conditions = new BooleanExpression[] {
-			post.writer.id.eq(userId), // 자신이 쓴 글만 조회
-			post.isDeleted.eq(false), // 삭제된 글 제외
+			post.writer.id.eq(readContext.viewerId()), // 자신이 쓴 글만 조회
 			cursorCondition // 커서 조건
 		};
 
-		return getPostCursorResults(size, post, writer, conditions);
+		return getPostCursorResults(size, post, writer, readContext, conditions);
 	}
 
 	/**
 	 * 특정 사용자가 좋아요를 누른 게시글을 커서 기반 페이징으로 조회합니다.
-	 * @param userId 좋아요 누른 사용자 ID
-	 * @param blockedUserIds 차단한 사용자 ID 목록 (해당 사용자 게시글 제외)
+	 * @param readContext 조회자의 읽기 범위·관리자 여부·차단 관계 컨텍스트
 	 * @param cursorCreatedAt 커서 (마지막 게시글의 createdAt)
 	 * @param cursorId 커서 (마지막 게시글의 ID)
 	 * @param size 조회할 개수
 	 * @return 게시글 목록 Slice
 	 */
 	public Slice<PostCursorResult> findPostsLikedByUserWithCursor(
-		String userId,
-		Set<String> blockedUserIds,
+		PostReadQueryContext readContext,
 		String cursorCreatedAt,
 		String cursorId,
 		int size) {
@@ -225,17 +216,15 @@ public class PostQueryRepository {
 		BooleanExpression userLikedPost = JPAExpressions
 			.selectOne()
 			.from(likePost)
-			.where(likePost.post.eq(post), likePost.user.id.eq(userId))
+			.where(likePost.post.eq(post), likePost.user.id.eq(readContext.viewerId()))
 			.exists();
 
 		BooleanExpression[] conditions = new BooleanExpression[] {
 			userLikedPost, // 좋아요 누른 글만 조회
-			post.isDeleted.eq(false), // 삭제된 글 제외
-			notInBlockedUsers(writer, blockedUserIds), // 차단한 사용자 글 제외
 			cursorCondition
 		};
 
-		return getPostCursorResults(size, post, writer, conditions);
+		return getPostCursorResults(size, post, writer, readContext, conditions);
 	}
 
 	/**
@@ -254,6 +243,18 @@ public class PostQueryRepository {
 		return cursorCondition;
 	}
 
+	private static boolean hasEmptyBoardFilter(List<String> boardIds) {
+		return boardIds != null && boardIds.isEmpty();
+	}
+
+	private static Slice<PostCursorResult> emptySlice(int size) {
+		return new SliceImpl<>(List.of(), Pageable.ofSize(size), false);
+	}
+
+	private static BooleanExpression inBoards(QPost post, List<String> boardIds) {
+		return boardIds == null ? NO_CONDITION : post.board.id.in(boardIds);
+	}
+
 	/**
 	 * 주어진 조건으로 게시글을 조회하여 PostCursorResult 리스트를 반환합니다. (커서 기반 페이징용)
 	 * @param size 조회할 개수 (hasNext 판단 위해 실제 조회는 size + 1)
@@ -266,11 +267,15 @@ public class PostQueryRepository {
 		int size,
 		QPost post,
 		QUser writer,
+		PostReadQueryContext readContext,
 		BooleanExpression[] conditions) {
+		QBoardConfig boardConfig = QBoardConfig.boardConfig;
 		List<PostCursorResult> results = jpaQueryFactory
 			.select(toPostCursorResult(post, writer))
 			.from(post)
 			.leftJoin(post.writer, writer)
+			.innerJoin(boardConfig).on(boardConfig.boardId.eq(post.board.id))
+			.where(canReadPost(post, writer, boardConfig, readContext))
 			.where(conditions)
 			.orderBy(post.createdAt.desc(), post.id.desc())
 			.limit(size + 1)
@@ -279,6 +284,37 @@ public class PostQueryRepository {
 		boolean hasNext = results.size() > size;
 		List<PostCursorResult> content = hasNext ? results.subList(0, size) : results;
 		return new SliceImpl<>(content, Pageable.ofSize(size), hasNext);
+	}
+
+	private BooleanExpression canReadPost(
+		QPost post,
+		QUser writer,
+		QBoardConfig boardConfig,
+		PostReadQueryContext context) {
+
+		BooleanExpression alive = post.isDeleted.isFalse()
+			.and(post.board.isDeleted.isFalse());
+		if (context.systemAdmin()) {
+			return alive;
+		}
+
+		QBoardAdmin boardAdmin = new QBoardAdmin("readBoardAdmin");
+		BooleanExpression isBoardAdmin = JPAExpressions
+			.selectOne()
+			.from(boardAdmin)
+			.where(
+				boardAdmin.boardId.eq(post.board.id),
+				boardAdmin.userId.eq(context.viewerId()))
+			.exists();
+
+		BooleanExpression normalRead = boardConfig.visibility.eq(BoardVisibility.VISIBLE)
+			.and(boardConfig.readScope.in(context.readableScopes()));
+		if (!context.blockedWriterIds().isEmpty()) {
+			normalRead = normalRead.and(
+				writer.id.isNull().or(writer.id.notIn(context.blockedWriterIds())));
+		}
+
+		return alive.and(isBoardAdmin.or(normalRead));
 	}
 
 	/**

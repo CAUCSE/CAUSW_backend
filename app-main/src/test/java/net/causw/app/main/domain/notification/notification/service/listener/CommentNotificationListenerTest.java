@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.notification.notification.service.listener;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.never;
 import static org.mockito.BDDMockito.verify;
@@ -22,9 +22,11 @@ import net.causw.app.main.domain.community.comment.service.implementation.Commen
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.implementation.PostReader;
 import net.causw.app.main.domain.notification.notification.entity.Notification;
+import net.causw.app.main.domain.notification.notification.enums.NoticeType;
 import net.causw.app.main.domain.notification.notification.enums.UserNotificationSettingKey;
 import net.causw.app.main.domain.notification.notification.event.CommentChildCommentCreatedEvent;
 import net.causw.app.main.domain.notification.notification.event.PostCommentCreatedEvent;
+import net.causw.app.main.domain.notification.notification.service.dto.PushNotificationData;
 import net.causw.app.main.domain.notification.notification.service.dto.UserNotificationSettingMap;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationPushSender;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationSettingReader;
@@ -88,7 +90,12 @@ class CommentNotificationListenerTest {
 
 			// then
 			verify(notificationWriter).save(any());
-			verify(notificationPushSender).sendToUser(any(), any(), any());
+
+			PushNotificationData expectedData = new PushNotificationData(
+				NoticeType.COMMUNITY,
+				"postId",
+				"boardId");
+			verify(notificationPushSender).sendToUser(any(), any(), any(), eq(expectedData));
 			verify(notificationWriter).saveLog(any(), any());
 		}
 
@@ -108,7 +115,7 @@ class CommentNotificationListenerTest {
 
 			// then
 			verify(notificationWriter, never()).save(any());
-			verify(notificationPushSender, never()).sendToUser(any(), any(), any());
+			verify(notificationPushSender, never()).sendToUser(any(), any(), any(), any());
 		}
 
 		@Test
@@ -222,7 +229,12 @@ class CommentNotificationListenerTest {
 
 			// then
 			verify(notificationWriter).save(any());
-			verify(notificationPushSender).sendToUser(any(), any(), any());
+
+			PushNotificationData expectedData = new PushNotificationData(
+				NoticeType.COMMUNITY,
+				"postId",
+				"boardId");
+			verify(notificationPushSender).sendToUser(any(), any(), any(), eq(expectedData));
 			verify(notificationWriter).saveLog(any(), any());
 		}
 

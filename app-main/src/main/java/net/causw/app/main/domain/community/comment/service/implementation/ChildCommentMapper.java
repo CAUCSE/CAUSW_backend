@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
+import net.causw.app.main.domain.community.board.entity.BoardConfig;
 import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.community.comment.service.dto.ChildCommentMeta;
 import net.causw.app.main.domain.community.comment.service.dto.CommentAuthorInfo;
@@ -32,28 +33,29 @@ public class ChildCommentMapper {
 	 * @param profileImageMap 호출자가 일괄 조회한 유저 ID → 프로필 이미지 맵
 	 * @return 변환된 {@code CommentResult}
 	 */
-	public CommentResult toResult(Comment childComment, User user, ChildCommentMeta data,
+	public CommentResult toResult(Comment childComment, User user, BoardConfig boardConfig, ChildCommentMeta data,
 		Map<String, UserProfileImage> profileImageMap) {
 
+		boolean isDeleted = Boolean.TRUE.equals(childComment.getIsDeleted());
 		// 삭제된 대댓글이면 익명처리
-		Boolean isAnonymous = childComment.getIsDeleted() ? Boolean.TRUE : childComment.getIsAnonymous();
+		Boolean isAnonymous = isDeleted ? Boolean.TRUE : childComment.getIsAnonymous();
 
 		UserProfileImage writerProfileImage = (childComment.getWriter() != null)
 			? profileImageMap.get(childComment.getWriter().getId())
 			: null;
 		CommentAuthorInfo authorInfo = CommentAuthorInfo.of(
-			childComment.getWriter(), writerProfileImage, isAnonymous, user,
+			childComment, writerProfileImage, isAnonymous, user, boardConfig,
 			data.boardAdminIds(), data.isBlocked());
 
 		// 차단 대댓글이거나 삭제된 대댓글의 경우 content를 null로 처리
-		String content = (data.isBlocked() || childComment.getIsDeleted()) ? null : childComment.getContent();
+		String content = (data.isBlocked() || isDeleted) ? null : childComment.getContent();
 
 		return new CommentResult(
 			childComment.getId(),
 			content,
 			childComment.getCreatedAt(),
 			childComment.getUpdatedAt(),
-			childComment.getIsDeleted(),
+			isDeleted,
 			childComment.getPost().getId(),
 			authorInfo,
 			data.isLiked(),
@@ -77,9 +79,10 @@ public class ChildCommentMapper {
 	 * @return 변환된 {@code CommentResult}
 	 */
 	public CommentResult toResult(Comment childComment, User user,
-		List<String> boardAdminIds, long numLike, boolean isLiked, boolean isBlocked,
+		BoardConfig boardConfig, List<String> boardAdminIds, long numLike, boolean isLiked, boolean isBlocked,
 		Map<String, UserProfileImage> profileImageMap) {
-		return toResult(childComment, user, new ChildCommentMeta(boardAdminIds, numLike, isLiked, isBlocked),
+		return toResult(childComment, user, boardConfig,
+			new ChildCommentMeta(boardAdminIds, numLike, isLiked, isBlocked),
 			profileImageMap);
 	}
 

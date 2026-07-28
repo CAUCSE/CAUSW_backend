@@ -35,8 +35,8 @@ public interface UserInfoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "email", source = "userInfo.user.email")
 	@Mapping(target = "socialLinks", source = "userInfo.socialLinks", qualifiedByName = "sortSocialLinksByDomain")
 	@Mapping(target = "userTechStack", source = "userInfo.userTechStack", qualifiedByName = "sortStringsAsc")
-	@Mapping(target = "userCareer", source = "userInfo.userCareer")
-	@Mapping(target = "userProject", source = "userInfo.userProject")
+	@Mapping(target = "userCareer", source = "userInfo.userCareer", qualifiedByName = "sortUserCareer")
+	@Mapping(target = "userProject", source = "userInfo.userProject", qualifiedByName = "sortUserProject")
 	@Mapping(target = "userInterestTech", source = "userInfo.userInterestTech", qualifiedByName = "sortStringsAsc")
 	@Mapping(target = "userInterestDomain", source = "userInfo.userInterestDomain", qualifiedByName = "sortStringsAsc")
 	UserInfoDetailResult toDetailResult(UserInfo userInfo, UserProfileImage userProfileImage);
@@ -53,8 +53,8 @@ public interface UserInfoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "isPhoneNumberVisible", source = "userInfo.phoneNumberVisible")
 	@Mapping(target = "socialLinks", source = "userInfo.socialLinks", qualifiedByName = "sortSocialLinksByDomain")
 	@Mapping(target = "userTechStack", source = "userInfo.userTechStack", qualifiedByName = "sortStringsAsc")
-	@Mapping(target = "userCareer", source = "userInfo.userCareer")
-	@Mapping(target = "userProject", source = "userInfo.userProject")
+	@Mapping(target = "userCareer", source = "userInfo.userCareer", qualifiedByName = "sortUserCareer")
+	@Mapping(target = "userProject", source = "userInfo.userProject", qualifiedByName = "sortUserProject")
 	@Mapping(target = "userInterestTech", source = "userInfo.userInterestTech", qualifiedByName = "sortStringsAsc")
 	@Mapping(target = "userInterestDomain", source = "userInfo.userInterestDomain", qualifiedByName = "sortStringsAsc")
 	UserInfoDetailResult toMyDetailResult(UserInfo userInfo, UserProfileImage userProfileImage);

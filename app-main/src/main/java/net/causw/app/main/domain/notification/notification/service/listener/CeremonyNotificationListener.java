@@ -19,7 +19,11 @@ import net.causw.app.main.domain.community.ceremony.service.implementation.Cerem
 import net.causw.app.main.domain.notification.notification.entity.Notification;
 import net.causw.app.main.domain.notification.notification.enums.NoticeType;
 import net.causw.app.main.domain.notification.notification.enums.UserNotificationSettingKey;
+import net.causw.app.main.domain.notification.notification.event.CeremonyApprovedEvent;
 import net.causw.app.main.domain.notification.notification.event.CeremonyNotificationEvent;
+import net.causw.app.main.domain.notification.notification.event.CeremonyRejectedEvent;
+import net.causw.app.main.domain.notification.notification.service.dto.PushNotificationData;
+import net.causw.app.main.domain.notification.notification.service.dto.UserNotificationSettingMap;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationPushSender;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationSettingReader;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationWriter;
@@ -67,12 +71,87 @@ public class CeremonyNotificationListener {
 		String pushTitle = buildPushTitle(ceremony);
 		String pushBody = buildPushBody(ceremony);
 		String serviceTitle = buildServiceTitle(ceremony);
+		PushNotificationData pushData = new PushNotificationData(NoticeType.CEREMONY_V2, ceremony.getId(), null);
 
 		Notification notification = notificationWriter.save(
 			Notification.of(ceremonyUser, serviceTitle, pushBody, NoticeType.CEREMONY_V2, ceremony.getId(), null));
 
-		notificationPushSender.sendToUsers(targets, pushTitle, pushBody);
+		notificationPushSender.sendToUsers(targets, pushTitle, pushBody, pushData);
 		notificationWriter.saveLogs(targets, notification);
+	}
+
+	/**
+	 * 경조사 승인 알림 이벤트 핸들러.
+	 * <p>
+	 * 관리자가 경조사를 승인하면 신청자에게 승인 결과 알림을 발송합니다.
+	 * <ul>
+	 *   <li>대상: 경조사 신청자 본인</li>
+	 *   <li>필터: 경조사 알림 설정 ON ({@link UserNotificationSettingKey#CEREMONY_NOTIFICATION_ENABLED})</li>
+	 * </ul>
+	 *
+	 * @param event 경조사 승인 이벤트
+	 */
+	@Async("asyncExecutor")
+	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	public void handleApproved(CeremonyApprovedEvent event) {
+		Ceremony ceremony = ceremonyReader.findById(event.ceremonyId())
+			.orElseThrow(CeremonyErrorCode.CEREMONY_NOT_FOUND::toBaseException);
+		User applicant = ceremony.getUser();
+
+		UserNotificationSettingMap settingMap = notificationSettingReader.findSettingMap(applicant.getId());
+		if (!settingMap.get(UserNotificationSettingKey.CEREMONY_NOTIFICATION_ENABLED)) {
+			return;
+		}
+
+		String pushTitle = "경조사 신청 승인";
+		String body = "경조사 신청이 승인되었습니다.";
+		String serviceTitle = "경조사 신청이 승인되었습니다.";
+
+		PushNotificationData data = new PushNotificationData(NoticeType.CEREMONY_V2, ceremony.getId(), null);
+
+		Notification notification = notificationWriter.save(
+			Notification.of(applicant, serviceTitle, body, NoticeType.CEREMONY_V2, ceremony.getId(), null));
+
+		notificationPushSender.sendToUser(applicant, pushTitle, body, data);
+		notificationWriter.saveLog(applicant, notification);
+	}
+
+	/**
+	 * 경조사 거절 알림 이벤트 핸들러.
+	 * <p>
+	 * 관리자가 경조사를 거절하면 신청자에게 거절 사유와 함께 알림을 발송합니다.
+	 * <ul>
+	 *   <li>대상: 경조사 신청자 본인</li>
+	 *   <li>필터: 경조사 알림 설정 ON ({@link UserNotificationSettingKey#CEREMONY_NOTIFICATION_ENABLED})</li>
+	 * </ul>
+	 *
+	 * @param event 경조사 거절 이벤트 (거절 사유 포함)
+	 */
+	@Async("asyncExecutor")
+	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	public void handleRejected(CeremonyRejectedEvent event) {
+		Ceremony ceremony = ceremonyReader.findById(event.ceremonyId())
+			.orElseThrow(CeremonyErrorCode.CEREMONY_NOT_FOUND::toBaseException);
+		User applicant = ceremony.getUser();
+
+		UserNotificationSettingMap settingMap = notificationSettingReader.findSettingMap(applicant.getId());
+		if (!settingMap.get(UserNotificationSettingKey.CEREMONY_NOTIFICATION_ENABLED)) {
+			return;
+		}
+
+		String pushTitle = "경조사 신청 거절";
+		String body = "경조사 신청이 거절되었습니다.";
+		String serviceTitle = String.format("경조사 신청이 거절되었습니다. 사유: %s", event.rejectReason());
+
+		PushNotificationData data = new PushNotificationData(NoticeType.CEREMONY_V2, ceremony.getId(), null);
+
+		Notification notification = notificationWriter.save(
+			Notification.of(applicant, serviceTitle, body, NoticeType.CEREMONY_V2, ceremony.getId(), null));
+
+		notificationPushSender.sendToUser(applicant, pushTitle, body, data);
+		notificationWriter.saveLog(applicant, notification);
 	}
 
 	/**

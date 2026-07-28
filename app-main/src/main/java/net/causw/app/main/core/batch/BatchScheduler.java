@@ -3,10 +3,6 @@ package net.causw.app.main.core.batch;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.springframework.batch.core.job.Job;
-import org.springframework.batch.core.job.parameters.JobParameters;
-import org.springframework.batch.core.job.parameters.JobParametersBuilder;
-import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
@@ -27,7 +23,6 @@ import net.causw.global.constant.StaticValue;
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.InternalServerException;
 
-import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,7 +31,6 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class BatchScheduler {
 
-	private final JobLauncher jobLauncher;
 	private final UserReader userReader;
 	private final PageableFactory pageableFactory;
 	private final UserInfoWriter userInfoWriter;
@@ -45,24 +39,6 @@ public class BatchScheduler {
 	private final UserWriter userWriter;
 	private final AdmissionWriter admissionWriter;
 	private final UserProfileImageService userProfileImageService;
-
-	@Resource(name = "cleanUpUnusedFilesJob")
-	private Job cleanUpUnusedFilesJob;
-
-	@Scheduled(cron = "0 0 3 1 * ?") // 매달 1일 오전 3시에 실행
-	public void scheduleCleanUpJob() {
-		try {
-			JobParameters jobParameters = new JobParametersBuilder()
-				.addLong("timestamp", System.currentTimeMillis())
-				.addLocalDateTime("dateTime", LocalDateTime.now())
-				.toJobParameters();
-
-			jobLauncher.run(cleanUpUnusedFilesJob, jobParameters);
-		} catch (Exception e) {
-			log.error("Batch job failed: {}", e.getMessage()); // 예외 로깅 추가
-			throw new InternalServerException(ErrorCode.INTERNAL_SERVER, MessageUtil.BATCH_FAIL + e.getMessage());
-		}
-	}
 
 	@Scheduled(cron = "0 10 3 * * ?") // 매일 새벽 3시 10분
 	public void scheduleCleanupDeactivatedUsers() {

@@ -16,6 +16,7 @@ import net.causw.app.main.domain.notification.notification.enums.UserNotificatio
 import net.causw.app.main.domain.notification.notification.event.AdmissionAcceptedEvent;
 import net.causw.app.main.domain.notification.notification.event.AdmissionRejectedEvent;
 import net.causw.app.main.domain.notification.notification.event.AdmissionRequestedEvent;
+import net.causw.app.main.domain.notification.notification.service.dto.PushNotificationData;
 import net.causw.app.main.domain.notification.notification.service.dto.UserNotificationSettingMap;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationPushSender;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationSettingReader;
@@ -71,6 +72,7 @@ public class AdmissionNotificationListener {
 
 		String pushBody = message;
 		String serviceTitle = message;
+		PushNotificationData pushData = new PushNotificationData(NoticeType.SYSTEM, null, null);
 
 		// 알림 엔티티 저장 (발송자: 요청자)
 		Notification notification = notificationWriter.save(
@@ -80,7 +82,7 @@ public class AdmissionNotificationListener {
 		admins.stream()
 			.filter(admin -> settingMaps.get(admin.getId()).get(UserNotificationSettingKey.SERVICE_NOTICE_ENABLED))
 			.forEach(admin -> {
-				notificationPushSender.sendToUser(admin, pushTitle, pushBody);
+				notificationPushSender.sendToUser(admin, pushTitle, pushBody, pushData);
 				notificationWriter.saveLog(admin, notification);
 			});
 	}
@@ -111,11 +113,12 @@ public class AdmissionNotificationListener {
 
 		String title = "재학정보 인증 완료";
 		String body = "재학정보 인증이 완료되었습니다.";
+		PushNotificationData data = new PushNotificationData(NoticeType.SYSTEM, null, null);
 
 		Notification notification = notificationWriter.save(
 			Notification.of(admin, title, body, NoticeType.SYSTEM, null, null));
 
-		notificationPushSender.sendToUser(targetUser, title, body);
+		notificationPushSender.sendToUser(targetUser, title, body, data);
 		notificationWriter.saveLog(targetUser, notification);
 	}
 
@@ -146,11 +149,12 @@ public class AdmissionNotificationListener {
 
 		String title = "재학정보 인증 반려";
 		String body = String.format("재학정보 인증이 반려되었습니다. 사유: %s", event.rejectMessage());
+		PushNotificationData data = new PushNotificationData(NoticeType.SYSTEM, null, null);
 
 		Notification notification = notificationWriter.save(
 			Notification.of(admin, title, body, NoticeType.SYSTEM, null, null));
 
-		notificationPushSender.sendToUser(targetUser, title, body);
+		notificationPushSender.sendToUser(targetUser, title, body, data);
 		notificationWriter.saveLog(targetUser, notification);
 	}
 }

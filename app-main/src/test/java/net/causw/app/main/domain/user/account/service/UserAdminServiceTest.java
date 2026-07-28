@@ -291,6 +291,7 @@ class UserAdminServiceTest {
 
 			// then
 			verify(userWriter).restore(user);
+			verify(droppedUserIdentifierWriter).deleteDroppedIdentifiers(user);
 			verify(userAdminActionLogWriter).logRestore(any(), any(), any(), any());
 		}
 

@@ -1,10 +1,12 @@
 package net.causw.app.main.domain.community.comment.service.implementation;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -25,6 +27,8 @@ import net.causw.app.main.domain.community.comment.repository.CommentQueryReposi
 import net.causw.app.main.domain.community.comment.repository.CommentRepository;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
+import net.causw.app.main.shared.exception.errorcode.CommentErrorCode;
 import net.causw.app.main.util.ObjectFixtures;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,6 +42,33 @@ class CommentReaderTest {
 
 	@Mock
 	private CommentQueryRepository commentQueryRepository;
+
+	@Nested
+	@DisplayName("댓글 단건 조회")
+	class GetComment {
+
+		@Test
+		@DisplayName("레거시 null 삭제 상태는 미삭제 댓글로 조회한다")
+		void givenNullDeletedState_whenGetComment_thenReturnComment() {
+			Comment comment = Comment.of("댓글", null, false, ObjectFixtures.getUser(),
+				ObjectFixtures.getPost(ObjectFixtures.getUser(), ObjectFixtures.getBoard()));
+			given(commentRepository.findById("comment-id")).willReturn(Optional.of(comment));
+
+			assertThat(commentReader.getComment("comment-id")).isSameAs(comment);
+		}
+
+		@Test
+		@DisplayName("삭제된 댓글은 찾을 수 없다")
+		void givenDeletedComment_whenGetComment_thenThrowNotFound() {
+			Comment comment = Comment.of("댓글", true, false, ObjectFixtures.getUser(),
+				ObjectFixtures.getPost(ObjectFixtures.getUser(), ObjectFixtures.getBoard()));
+			given(commentRepository.findById("comment-id")).willReturn(Optional.of(comment));
+
+			assertThatThrownBy(() -> commentReader.getComment("comment-id"))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasFieldOrPropertyWithValue("errorCode", CommentErrorCode.COMMENT_NOT_FOUND);
+		}
+	}
 
 	@Nested
 	@DisplayName("댓글 목록 조회")

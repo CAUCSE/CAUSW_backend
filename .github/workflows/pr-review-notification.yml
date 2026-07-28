@@ -1,0 +1,81 @@
+name: 디스코드 PR 리뷰 승인 및 변경 요청에 대한 알림
+
+on:
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  notify:
+    # 봇이 작성한 리뷰와 일반 코멘트 리뷰는 알림 제외
+    if: >-
+      github.event.review.user.type != 'Bot' &&
+      (github.event.review.state == 'approved' ||
+      github.event.review.state == 'changes_requested')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Discord Notification
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_BACKEND_PR_WEBHOOK_URL }}
+          DISCORD_BACKEND_ROLE_ID: ${{ vars.DISCORD_BACKEND_ROLE_ID }}
+          REVIEW_STATE: ${{ github.event.review.state }}
+          REVIEW_BODY: ${{ github.event.review.body }}
+          REVIEW_AUTHOR: ${{ github.event.review.user.login }}
+          REVIEW_URL: ${{ github.event.review.html_url }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: |
+          # 리뷰 상태에 따른 메시지 및 색상 설정
+          case "$REVIEW_STATE" in
+            "approved")
+              REVIEW_TYPE="✅ 승인"
+              EMBED_COLOR=3066993
+              MESSAGE="<@&${DISCORD_BACKEND_ROLE_ID}> **${PR_AUTHOR}**님의 PR이 승인되었습니다!"
+              ;;
+            "changes_requested")
+              REVIEW_TYPE="🔄 변경 요청"
+              EMBED_COLOR=15158332
+              MESSAGE="<@&${DISCORD_BACKEND_ROLE_ID}> **${PR_AUTHOR}**님에게 변경 요청이 있습니다!"
+              ;;
+          esac
+
+          # 리뷰 내용 처리 (비어있을 수 있음)
+          if [ -n "$REVIEW_BODY" ]; then
+            REVIEW_PREVIEW=$(echo "$REVIEW_BODY" | head -c 500)
+            if [ ${#REVIEW_BODY} -gt 500 ]; then
+              REVIEW_PREVIEW="${REVIEW_PREVIEW}..."
+            fi
+            REVIEW_PREVIEW=$(echo "$REVIEW_PREVIEW" | jq -Rs .)
+            DESCRIPTION="**리뷰어**: ${REVIEW_AUTHOR}\n**상태**: ${REVIEW_TYPE}\n\n> ${REVIEW_PREVIEW}"
+          else
+            DESCRIPTION="**리뷰어**: ${REVIEW_AUTHOR}\n**상태**: ${REVIEW_TYPE}\n\n_코멘트 없음_"
+          fi
+
+          # JSON escape
+          PR_TITLE_ESCAPED=$(echo "$PR_TITLE" | jq -Rs .)
+          DESCRIPTION_ESCAPED=$(echo "$DESCRIPTION" | jq -Rs .)
+
+          # Discord webhook 전송
+          curl -X POST -H "Content-Type: application/json" -d '{
+            "content": "'"$MESSAGE"'",
+            "embeds": [
+              {
+                "title": '"$PR_TITLE_ESCAPED"',
+                "url": "'"$PR_URL"'",
+                "description": '"$DESCRIPTION_ESCAPED"',
+                "color": '"$EMBED_COLOR"',
+                "fields": [
+                  {
+                    "name": "PR 작성자",
+                    "value": "'"$PR_AUTHOR"'",
+                    "inline": true
+                  },
+                  {
+                    "name": "링크",
+                    "value": "[리뷰 바로가기]('"$REVIEW_URL"')",
+                    "inline": true
+                  }
+                ]
+              }
+            ]
+          }' "$DISCORD_WEBHOOK_URL"
