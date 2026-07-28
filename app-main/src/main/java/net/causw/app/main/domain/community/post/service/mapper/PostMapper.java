@@ -64,7 +64,8 @@ public class PostMapper {
 	 * PostCursorResult를 PostListResult.PostItem으로 변환합니다.
 	 */
 	public static PostListResult.PostItem toPostListItem(PostCursorResult result, List<String> imageUrls,
-		boolean isPostLike, boolean isOwner, boolean isNotice, boolean isOfficial, String officialNickname,
+		boolean isPostLike, boolean isOwner, boolean updatable, boolean deletable,
+		boolean isNotice, boolean isOfficial, String officialNickname,
 		String officialImageUrl) {
 		// 닉네임 마스킹
 		String writerNickname;
@@ -110,6 +111,8 @@ public class PostMapper {
 			result.boardName(),
 			isPostLike,
 			isOwner,
+			updatable,
+			deletable,
 			isOfficial);
 	}
 

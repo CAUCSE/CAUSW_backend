@@ -40,6 +40,7 @@ import net.causw.app.main.domain.community.board.service.implementation.BoardCon
 import net.causw.app.main.domain.community.board.service.implementation.BoardReader;
 import net.causw.app.main.domain.community.board.service.implementation.BoardWriter;
 import net.causw.app.main.domain.community.board.util.BoardValidator;
+import net.causw.app.main.domain.community.post.service.implementation.PostWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
@@ -72,6 +73,8 @@ class BoardServiceTest {
 	private BoardConfigPartMapper boardConfigPartMapper;
 	@Mock
 	private BoardValidator boardValidator;
+	@Mock
+	private PostWriter postWriter;
 
 	@Nested
 	@DisplayName("getAllBoardList")
@@ -279,8 +282,8 @@ class BoardServiceTest {
 	class DeleteBoardTest {
 
 		@Test
-		@DisplayName("게시판 조회 후 isDeleted를 true로 설정하고 저장한다")
-		void givenBoardId_whenDeleteBoard_thenSoftDeletesBoard() {
+		@DisplayName("게시판과 소속 게시글을 함께 소프트 삭제한다")
+		void givenBoardId_whenDeleteBoard_thenSoftDeletesBoardAndPosts() {
 			// given
 			String boardId = "board-1";
 			Board board = ObjectFixtures.getBoardWithId(boardId);
@@ -294,6 +297,7 @@ class BoardServiceTest {
 			then(boardReader).should().getById(boardId);
 			assertThat(board.getIsDeleted()).isTrue();
 			then(boardWriter).should().save(board);
+			then(postWriter).should().deleteAllByBoardId(boardId);
 		}
 	}
 

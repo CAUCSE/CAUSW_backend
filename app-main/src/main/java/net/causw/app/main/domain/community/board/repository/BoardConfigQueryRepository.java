@@ -26,6 +26,15 @@ import lombok.RequiredArgsConstructor;
 public class BoardConfigQueryRepository {
 	private final JPAQueryFactory jpaQueryFactory;
 
+	public List<BoardConfig> findAllOrderByDisplayOrder() {
+		QBoardConfig boardConfig = QBoardConfig.boardConfig;
+
+		return jpaQueryFactory
+			.selectFrom(boardConfig)
+			.orderBy(boardConfig.displayOrder.asc())
+			.fetch();
+	}
+
 	public List<BoardConfig> findByBoardIdsIn(List<String> boardIds) {
 
 		QBoardConfig boardConfig = QBoardConfig.boardConfig;

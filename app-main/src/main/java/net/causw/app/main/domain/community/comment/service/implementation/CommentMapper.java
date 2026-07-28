@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
+import net.causw.app.main.domain.community.board.entity.BoardConfig;
 import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.community.comment.service.dto.CommentAuthorInfo;
 import net.causw.app.main.domain.community.comment.service.dto.CommentMeta;
@@ -40,36 +41,38 @@ public class CommentMapper {
 	 * @param profileImageMap 호출자가 일괄 조회한 유저 ID → 프로필 이미지 맵
 	 * @return 변환된 {@code CommentResult}
 	 */
-	public CommentResult toResult(Comment comment, User user, List<String> boardAdminIds, CommentMeta meta,
+	public CommentResult toResult(Comment comment, User user, BoardConfig boardConfig,
+		List<String> boardAdminIds, CommentMeta meta,
 		Map<String, UserProfileImage> profileImageMap) {
 		List<CommentResult> childResults = comment.getChildCommentList().stream()
 			.map(child -> childCommentMapper.toResult(child, user,
-				boardAdminIds,
+				boardConfig, boardAdminIds,
 				meta.childLikeCounts().getOrDefault(child.getId(), 0L),
 				meta.likedChildIds().contains(child.getId()),
 				meta.blockedChildIds().contains(child.getId()),
 				profileImageMap))
 			.toList();
 
+		boolean isDeleted = Boolean.TRUE.equals(comment.getIsDeleted());
 		// 삭제된 댓글이면 익명처리
-		Boolean isAnonymous = comment.getIsDeleted() ? Boolean.TRUE : comment.getIsAnonymous();
+		Boolean isAnonymous = isDeleted ? Boolean.TRUE : comment.getIsAnonymous();
 
 		UserProfileImage writerProfileImage = (comment.getWriter() != null)
 			? profileImageMap.get(comment.getWriter().getId())
 			: null;
 		CommentAuthorInfo authorInfo = CommentAuthorInfo.of(
-			comment.getWriter(), writerProfileImage, isAnonymous, user,
+			comment, writerProfileImage, isAnonymous, user, boardConfig,
 			boardAdminIds, meta.isBlocked());
 
 		// 차단 댓글이거나 삭제된 댓글의 경우 content를 null로 처리
-		String content = (meta.isBlocked() || comment.getIsDeleted()) ? null : comment.getContent();
+		String content = (meta.isBlocked() || isDeleted) ? null : comment.getContent();
 
 		return new CommentResult(
 			comment.getId(),
 			content,
 			comment.getCreatedAt(),
 			comment.getUpdatedAt(),
-			comment.getIsDeleted(),
+			isDeleted,
 			comment.getPost().getId(),
 			authorInfo,
 			meta.isLiked(),

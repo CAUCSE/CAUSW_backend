@@ -37,7 +37,8 @@ public class CommentReader {
 	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception 댓글이 존재하지 않는 경우
 	 */
 	public Comment getComment(String commentId) {
-		return commentRepository.findByIdAndIsDeletedFalse(commentId)
+		return commentRepository.findById(commentId)
+			.filter(comment -> !Boolean.TRUE.equals(comment.getIsDeleted()))
 			.orElseThrow(CommentErrorCode.COMMENT_NOT_FOUND::toBaseException);
 	}
 
