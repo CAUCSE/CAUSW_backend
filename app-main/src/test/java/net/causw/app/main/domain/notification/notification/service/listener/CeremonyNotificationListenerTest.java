@@ -241,7 +241,8 @@ class CeremonyNotificationListenerTest {
 
 			// then
 			PushNotificationData expectedData = new PushNotificationData(NoticeType.CEREMONY_V2, "ceremonyId", null);
-			verify(notificationPushSender).sendToUser(eq(applicant), eq("경조사 신청 거절"), eq("경조사 신청이 거절되었습니다."), eq(expectedData));
+			verify(notificationPushSender).sendToUser(eq(applicant), eq("경조사 신청 거절"), eq("경조사 신청이 거절되었습니다."),
+				eq(expectedData));
 			verify(notificationWriter).save(argThat(n -> n.getTitle().contains("요건에 부합하지 않습니다.")));
 			verify(notificationWriter).saveLog(eq(applicant), any());
 		}
