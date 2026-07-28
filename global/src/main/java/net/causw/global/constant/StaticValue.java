@@ -88,10 +88,6 @@ public class StaticValue {
 	public static final String USER_APPLIED = "[사용자 신청]";
 	public static final String USER_CLOSED = "인증 서류 재제출로 인한 신청 서류 종료";
 
-	// CleanUnusedUuidFile
-	public static final Integer SELECT_UNUSED_UUID_FILE_PAGE_SIZE = 10000;
-	public static final Long CLEAN_UNUSED_UUID_FILE_REDIS_EXPIRED_TIME = 1000L * 60 * 60;   // 1hour
-
 	// Crawling
 	public static final String CrawlingBoard = "소프트웨어학부";
 	public static final String ORIGINAL_NOTICE_SITE_NAME = "중앙대학교 소프트웨어학부 공지사항";

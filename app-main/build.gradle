@@ -96,10 +96,6 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-batch'
     implementation 'org.springframework.batch:spring-batch-core'
 
-    // Retry 관련
-    // https://mvnrepository.com/artifact/org.springframework.retry/spring-retry
-    implementation 'org.springframework.retry:spring-retry:2.0.13'
-
     // FCM
     implementation 'com.google.firebase:firebase-admin:9.9.0'
 
@@ -119,10 +115,6 @@ dependencies {
 
     // Datasource-Proxy
     implementation 'com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:2.0.1'
-
-    // spring dotenv
-    developmentOnly(platform("me.paulschwarz:spring-dotenv-bom:5.1.0"))
-    developmentOnly("me.paulschwarz:springboot4-dotenv")
 
 }
 

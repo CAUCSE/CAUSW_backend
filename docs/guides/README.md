@@ -41,11 +41,6 @@ CAUSW Backend (중앙대학교 소프트웨어학부 동문네트워크 백엔�
 - [외부 인프라 (Redis / S3 / Mail / FCM)](./cross-cutting/infrastructure.md)
 - [배치와 스케줄링](./cross-cutting/batch-and-scheduling.md)
 
-### Domains
-
-- [Community 현재 권한 정책 및 변경 내역](./domains/community-permission-policy.md)
-- [Community 권한 정책 통일 전 점검 문서](./domains/community-permission-audit.md)
-
 ## 문서 작성 규칙
 
 - 모든 가이드는 한국어로 작성합니다.

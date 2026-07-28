@@ -1,0 +1,16 @@
+addReviewers: true
+addAssignees: false
+reviewers:
+  - riadan710
+  - bingle625
+  - kyeoungwoon
+  - glucosei
+  - KEEKE132
+  - chaeyeonlee898
+  - wldy4627
+  - yvngyeong
+  - sopp1313
+numberOfReviewers: 1
+useReviewGroups: false
+skipKeywords:
+  - hotfix

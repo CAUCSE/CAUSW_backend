@@ -109,14 +109,15 @@
 
 새로 도입할 때는 무한 재시도 / 결제처럼 부작용이 있는 호출 / 재시도 가능 예외 분류를 함께 설계해야 합니다.
 
-## 7. spring-dotenv
+## 7. `.env` 로딩
 
-라이브러리: `me.paulschwarz:spring-dotenv`
+방식: Spring Boot 기본 `spring.config.import`
 
-용도: `.env` 파일을 Spring `Environment` 로 자동 로딩
+설정 위치: `app-main/src/main/resources/application-local.yml`
 
-- 로컬 실행 시 루트 `.env` 자동 적용
-- application.yml 의 `${VAR}` placeholder 가 `.env` 값으로 채워짐
+- 현재 작업 디렉터리와 상위 디렉터리의 `.env`를 optional properties 파일로 조회
+- 로컬 실행 시 루트 `.env`가 Spring `Environment`에 적용
+- `application.yml`의 `${VAR}` placeholder가 `.env` 값으로 채워짐
 
 환경변수 운영 흐름: [../../env_guide.md](../../env_guide.md)
 

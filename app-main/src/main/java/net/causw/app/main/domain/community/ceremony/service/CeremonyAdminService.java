@@ -14,7 +14,9 @@ import net.causw.app.main.domain.community.ceremony.service.implementation.Cerem
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyWriter;
 import net.causw.app.main.domain.community.ceremony.service.mapper.CeremonyMapper;
 import net.causw.app.main.domain.community.ceremony.util.CeremonyValidator;
+import net.causw.app.main.domain.notification.notification.event.CeremonyApprovedEvent;
 import net.causw.app.main.domain.notification.notification.event.CeremonyNotificationEvent;
+import net.causw.app.main.domain.notification.notification.event.CeremonyRejectedEvent;
 import net.causw.app.main.shared.exception.errorcode.CeremonyErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -54,9 +56,10 @@ public class CeremonyAdminService {
 		ceremonyValidator.validateAwaiting(ceremony);
 		ceremonyWriter.approve(ceremony);
 
-		// 승인 시 알림 발송
+		// 대상 학번 유저들에게 경조사 공지 알림
 		eventPublisher.publishEvent(new CeremonyNotificationEvent(ceremonyId));
-
+		// 신청자에게 승인 결과 알림
+		eventPublisher.publishEvent(new CeremonyApprovedEvent(ceremonyId));
 	}
 
 	@Transactional
@@ -66,5 +69,8 @@ public class CeremonyAdminService {
 
 		ceremonyValidator.validateAwaiting(ceremony);
 		ceremonyWriter.reject(ceremony, rejectReason);
+
+		// 신청자에게 거절 결과 알림
+		eventPublisher.publishEvent(new CeremonyRejectedEvent(ceremonyId, rejectReason));
 	}
 }
