@@ -15,11 +15,11 @@ import org.springframework.scheduling.annotation.Scheduled;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
-import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.app.main.domain.user.account.service.UserProfileImageService;
 import net.causw.app.main.domain.user.account.service.implementation.AdmissionWriter;
 import net.causw.app.main.domain.user.account.service.implementation.SocialAccountWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserInfoWriter;
+import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.shared.pageable.PageableFactory;
 import net.causw.global.constant.MessageUtil;
@@ -37,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 public class BatchScheduler {
 
 	private final JobLauncher jobLauncher;
-	private final UserRepository userRepository;
+	private final UserReader userReader;
 	private final PageableFactory pageableFactory;
 	private final UserInfoWriter userInfoWriter;
 	private final CeremonyWriter ceremonyWriter;
@@ -73,7 +73,7 @@ public class BatchScheduler {
 
 			boolean hasNext;
 			do {
-				Page<User> userPage = userRepository.findAllByDeletedAtIsNotNullAndDeletedAtBefore(
+				Page<User> userPage = userReader.findUsersDeletedBefore(
 					dueDate,
 					pageableFactory.create(0, StaticValue.BATCH_USER_LIST_SIZE));
 
@@ -112,7 +112,7 @@ public class BatchScheduler {
 
 			boolean hasNext;
 			do {
-				Slice<User> userSlice = userRepository.findAllByStateAndUpdatedAtBeforeAndDeletedAtIsNull(
+				Slice<User> userSlice = userReader.findUsersByStateAndUpdatedAtBefore(
 					UserState.GUEST,
 					dueDate,
 					pageableFactory.create(0, StaticValue.BATCH_USER_LIST_SIZE));
@@ -126,7 +126,7 @@ public class BatchScheduler {
 				// FK 참조 데이터를 먼저 정리한 뒤 User를 하드 삭제한다. (FcmToken은 cascade로 함께 삭제됨)
 				userProfileImageService.cleanupProfileImagesForBatch(staleGuests);
 				socialAccountWriter.deleteSocialAccountsByUsers(staleGuests);
-				userWriter.deleteGuestUsers(staleGuests);
+				userWriter.hardDeleteUsers(staleGuests);
 
 				hasNext = userSlice.hasNext();
 				log.info("[GUEST 정리 배치] {}명 삭제 완료", staleGuests.size());

@@ -23,11 +23,11 @@ import net.causw.app.main.core.batch.BatchScheduler;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
-import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.app.main.domain.user.account.service.UserProfileImageService;
 import net.causw.app.main.domain.user.account.service.implementation.AdmissionWriter;
 import net.causw.app.main.domain.user.account.service.implementation.SocialAccountWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserInfoWriter;
+import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.shared.pageable.PageableFactory;
 
@@ -40,7 +40,7 @@ public class BatchSchedulerTest {
 	@Mock
 	private JobLauncher jobLauncher;
 	@Mock
-	private UserRepository userRepository;
+	private UserReader userReader;
 	@Mock
 	private PageableFactory pageableFactory;
 	@Mock
@@ -69,14 +69,14 @@ public class BatchSchedulerTest {
 		when(pageableFactory.create(anyInt(), anyInt())).thenReturn(PageRequest.of(0, 10));
 
 		when(
-			userRepository.findAllByDeletedAtIsNotNullAndDeletedAtBefore(any(LocalDateTime.class), any(Pageable.class)))
+			userReader.findUsersDeletedBefore(any(LocalDateTime.class), any(Pageable.class)))
 			.thenReturn(new PageImpl<>(withdrawnUsers), Page.empty());
 
 		// when
 		batchScheduler.scheduleCleanupDeactivatedUsers();
 
 		// then
-		verify(userRepository).findAllByDeletedAtIsNotNullAndDeletedAtBefore(
+		verify(userReader).findUsersDeletedBefore(
 			any(LocalDateTime.class),
 			any(Pageable.class));
 		verify(userProfileImageService, times(1)).cleanupProfileImagesForBatch(anyList());
@@ -94,14 +94,14 @@ public class BatchSchedulerTest {
 		when(pageableFactory.create(anyInt(), anyInt())).thenReturn(PageRequest.of(0, 10));
 
 		when(
-			userRepository.findAllByDeletedAtIsNotNullAndDeletedAtBefore(any(LocalDateTime.class), any(Pageable.class)))
+			userReader.findUsersDeletedBefore(any(LocalDateTime.class), any(Pageable.class)))
 			.thenReturn(Page.empty());
 
 		// when
 		batchScheduler.scheduleCleanupDeactivatedUsers();
 
 		// then
-		verify(userRepository).findAllByDeletedAtIsNotNullAndDeletedAtBefore(any(LocalDateTime.class),
+		verify(userReader).findUsersDeletedBefore(any(LocalDateTime.class),
 			any(Pageable.class));
 		verifyNoInteractions(userInfoWriter, ceremonyWriter, socialAccountWriter, userAdmissionWriter, userWriter);
 	}
@@ -115,7 +115,7 @@ public class BatchSchedulerTest {
 		List<User> staleGuests = List.of(guest1, guest2);
 
 		when(pageableFactory.create(anyInt(), anyInt())).thenReturn(PageRequest.of(0, 10));
-		when(userRepository.findAllByStateAndUpdatedAtBeforeAndDeletedAtIsNull(
+		when(userReader.findUsersByStateAndUpdatedAtBefore(
 			eq(UserState.GUEST), any(LocalDateTime.class), any(Pageable.class)))
 			.thenReturn(new SliceImpl<>(staleGuests, PageRequest.of(0, 10), false));
 
@@ -123,11 +123,11 @@ public class BatchSchedulerTest {
 		batchScheduler.scheduleCleanupStaleGuestUsers();
 
 		// then
-		verify(userRepository).findAllByStateAndUpdatedAtBeforeAndDeletedAtIsNull(
+		verify(userReader).findUsersByStateAndUpdatedAtBefore(
 			eq(UserState.GUEST), any(LocalDateTime.class), any(Pageable.class));
 		verify(userProfileImageService).cleanupProfileImagesForBatch(staleGuests);
 		verify(socialAccountWriter).deleteSocialAccountsByUsers(staleGuests);
-		verify(userWriter).deleteGuestUsers(staleGuests);
+		verify(userWriter).hardDeleteUsers(staleGuests);
 	}
 
 	@Test
@@ -135,7 +135,7 @@ public class BatchSchedulerTest {
 	void givenNoStaleGuestUsers_whenScheduleCleanup_thenDoesNothing() {
 		// given
 		when(pageableFactory.create(anyInt(), anyInt())).thenReturn(PageRequest.of(0, 10));
-		when(userRepository.findAllByStateAndUpdatedAtBeforeAndDeletedAtIsNull(
+		when(userReader.findUsersByStateAndUpdatedAtBefore(
 			eq(UserState.GUEST), any(LocalDateTime.class), any(Pageable.class)))
 			.thenReturn(new SliceImpl<>(List.of(), PageRequest.of(0, 10), false));
 
@@ -143,7 +143,7 @@ public class BatchSchedulerTest {
 		batchScheduler.scheduleCleanupStaleGuestUsers();
 
 		// then
-		verify(userRepository).findAllByStateAndUpdatedAtBeforeAndDeletedAtIsNull(
+		verify(userReader).findUsersByStateAndUpdatedAtBefore(
 			eq(UserState.GUEST), any(LocalDateTime.class), any(Pageable.class));
 		verifyNoInteractions(userProfileImageService, socialAccountWriter, userWriter);
 	}
