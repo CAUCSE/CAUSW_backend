@@ -107,14 +107,17 @@ public class PostService {
 	public void deletePost(User deleter, String postId) {
 		CommunityPermissionPolicy.validateActiveUser(deleter);
 		Post post = postReader.findById(postId);
-		// 삭제 API는 멱등하게 처리합니다.
-		if (Boolean.TRUE.equals(post.getIsDeleted())) {
-			return;
-		}
 		String boardId = post.getBoard().getId();
 		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(boardId);
 		BoardConfig boardConfig = boardConfigReader.getByBoardId(boardId);
 		validateBlockedWriterAccess(deleter, post, boardAdminIds);
+		if (Boolean.TRUE.equals(post.getIsDeleted())) {
+			if (!CommunityPermissionPolicy.canDeletePostIgnoringTargetDeletion(
+				deleter, post, boardConfig, boardAdminIds)) {
+				throw PostErrorCode.POST_FORBIDDEN.toBaseException();
+			}
+			return;
+		}
 		PostValidator.validateDelete(deleter, post, boardAdminIds, boardConfig);
 
 		// 소프트 삭제 처리

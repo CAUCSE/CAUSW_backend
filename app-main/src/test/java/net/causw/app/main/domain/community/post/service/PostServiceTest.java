@@ -71,6 +71,7 @@ import net.causw.app.main.domain.community.vote.service.implementation.VoteWrite
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.ProfileImageType;
+import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.relation.service.implementation.BlockReader;
@@ -378,6 +379,60 @@ public class PostServiceTest {
 
 			// then
 			assertThat(post.getIsDeleted()).isTrue();
+		}
+
+		@DisplayName("작성자가 이미 삭제된 게시글을 다시 삭제하면 멱등하게 성공")
+		@Test
+		void deletePost_shouldSucceed_whenAlreadyDeletedByWriter() {
+			// given
+			post.setIsDeleted(true);
+			given(postReader.findById(postId)).willReturn(post);
+			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(List.of());
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
+
+			// when
+			postService.deletePost(deleter, postId);
+
+			// then
+			assertThat(post.getIsDeleted()).isTrue();
+			verify(boardConfigReader).getByBoardId(boardId);
+			verify(blockReader).existsByBlockerAndBlocked(deleter, deleter);
+		}
+
+		@DisplayName("권한 없는 사용자가 이미 삭제된 게시글을 삭제하면 실패")
+		@Test
+		void deletePost_shouldFail_whenAlreadyDeletedByUnauthorizedUser() {
+			// given
+			User unauthorizedUser = ObjectFixtures.getCertifiedUserWithId("unauthorized-id");
+			post.setIsDeleted(true);
+			given(postReader.findById(postId)).willReturn(post);
+			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(List.of());
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
+
+			// when & then
+			assertThatThrownBy(() -> postService.deletePost(unauthorizedUser, postId))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.satisfies(ex -> assertThat(((BaseRunTimeV2Exception)ex).getErrorCode())
+					.isEqualTo(PostErrorCode.POST_FORBIDDEN));
+		}
+
+		@DisplayName("차단 우회 권한이 없는 임원은 삭제된 게시글도 삭제할 수 없음")
+		@Test
+		void deletePost_shouldFail_whenAlreadyDeletedWriterIsBlockedByExecutive() {
+			// given
+			User president = ObjectFixtures.getCertifiedUserWithId("president-id");
+			president.setRoles(Set.of(Role.PRESIDENT));
+			post.setIsDeleted(true);
+			given(postReader.findById(postId)).willReturn(post);
+			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(List.of());
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
+			given(blockReader.existsByBlockerAndBlocked(president, deleter)).willReturn(true);
+
+			// when & then
+			assertThatThrownBy(() -> postService.deletePost(president, postId))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.satisfies(ex -> assertThat(((BaseRunTimeV2Exception)ex).getErrorCode())
+					.isEqualTo(PostErrorCode.BLOCKED_USER_CONTENT));
 		}
 	}
 

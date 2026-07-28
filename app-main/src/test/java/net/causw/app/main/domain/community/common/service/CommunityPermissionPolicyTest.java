@@ -291,6 +291,37 @@ class CommunityPermissionPolicyTest {
 		}
 	}
 
+	@ParameterizedTest(name = "{0}: deleted post delete authority={1}")
+	@CsvSource({
+		"OWNER, true",
+		"BOARD_ADMIN, true",
+		"SYSTEM_ADMIN, true",
+		"PRESIDENT, true",
+		"VICE_PRESIDENT, true",
+		"COMMON, false"
+	})
+	@DisplayName("삭제된 게시글의 멱등 삭제 권한은 기존 삭제 주체 매트릭스를 유지한다")
+	void deletedPostIdempotentDeleteAuthorityFollowsActorMatrix(Actor actor, boolean deletable) {
+		post.setIsDeleted(true);
+		User actorUser = actorUser(actor, AcademicStatus.ENROLLED);
+
+		assertThat(CommunityPermissionPolicy.canDeletePostIgnoringTargetDeletion(
+			actorUser, post, visibleAllUserBoardConfig, BOARD_ADMIN_IDS)).isEqualTo(deletable);
+	}
+
+	@Test
+	@DisplayName("게시판이 삭제되면 게시글 멱등 삭제 권한도 사라진다")
+	void deletedBoardRemovesIdempotentPostDeleteAuthority() {
+		post.setIsDeleted(true);
+		board.setIsDeleted(true);
+
+		for (Actor actor : Actor.values()) {
+			User user = actorUser(actor, AcademicStatus.ENROLLED);
+			assertThat(CommunityPermissionPolicy.canDeletePostIgnoringTargetDeletion(
+				user, post, visibleAllUserBoardConfig, BOARD_ADMIN_IDS)).isFalse();
+		}
+	}
+
 	@Test
 	@DisplayName("삭제된 댓글은 누구도 읽거나 수정하거나 삭제할 수 없다")
 	void deletedCommentHasNoPermissions() {
