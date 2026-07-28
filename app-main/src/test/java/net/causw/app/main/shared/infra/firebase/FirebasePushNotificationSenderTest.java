@@ -13,6 +13,9 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedStatic;
 import org.springframework.mock.env.MockEnvironment;
 
+import net.causw.app.main.domain.notification.notification.enums.NoticeType;
+import net.causw.app.main.domain.notification.notification.service.dto.PushNotificationData;
+
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.Message;
 
@@ -26,10 +29,11 @@ class FirebasePushNotificationSenderTest {
 		MockEnvironment environment = new MockEnvironment();
 		environment.setActiveProfiles("local");
 		FirebasePushNotificationSender sender = new FirebasePushNotificationSender(environment);
+		PushNotificationData dummyData = new PushNotificationData(NoticeType.SYSTEM, null, null);
 
 		try (MockedStatic<FirebaseMessaging> firebaseMessaging = mockStatic(FirebaseMessaging.class)) {
 			// when
-			sender.send("token", "title", "body");
+			sender.send("token", "title", "body", dummyData);
 
 			// then
 			firebaseMessaging.verifyNoInteractions();
@@ -45,13 +49,14 @@ class FirebasePushNotificationSenderTest {
 		environment.setActiveProfiles(profile);
 		FirebasePushNotificationSender sender = new FirebasePushNotificationSender(environment);
 		FirebaseMessaging messaging = mock(FirebaseMessaging.class);
+		PushNotificationData dummyData = new PushNotificationData(NoticeType.SYSTEM, null, null);
 
 		try (MockedStatic<FirebaseMessaging> firebaseMessaging = mockStatic(FirebaseMessaging.class)) {
 			firebaseMessaging.when(FirebaseMessaging::getInstance).thenReturn(messaging);
 			when(messaging.send(any(Message.class))).thenReturn("message-id");
 
 			// when
-			sender.send("token", "title", "body");
+			sender.send("token", "title", "body", dummyData);
 
 			// then
 			verify(messaging).send(any(Message.class));

@@ -13,6 +13,7 @@ import net.causw.app.main.domain.asset.locker.service.implementation.LockerReade
 import net.causw.app.main.domain.notification.notification.entity.Notification;
 import net.causw.app.main.domain.notification.notification.enums.NoticeType;
 import net.causw.app.main.domain.notification.notification.event.LockerExpiredEvent;
+import net.causw.app.main.domain.notification.notification.service.dto.PushNotificationData;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationPushSender;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
@@ -50,11 +51,14 @@ public class LockerExpiredEventListener {
 
 		String description = String.format("이용기간이 만료되어 사물함(%s %d번)이 자동으로 반납되었습니다.", location.getDescription(),
 			locker.getLockerNumber());
+		PushNotificationData pushData = new PushNotificationData(NoticeType.LOCKER, locker.getId(),
+			location.getId());
+
 		Notification notification = notificationWriter
 			.save(Notification.of(user, description, description, NoticeType.LOCKER, locker.getId(),
 				location.getId()));
 
-		notificationPushSender.sendToUser(user, description, description);
+		notificationPushSender.sendToUser(user, description, description, pushData);
 		notificationWriter.saveLog(user, notification);
 	}
 }
