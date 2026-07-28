@@ -54,7 +54,7 @@ public class CommentValidator {
 	/**
 	 * 댓글 수정 시 필요한 모든 검증 로직을 수행합니다.
 	 */
-	public void validateForUpdate(User updater, Post post, Comment comment, BoardConfig boardConfig,
+	public void validateForUpdate(User updater, Comment comment, BoardConfig boardConfig,
 		List<String> boardAdminIds) {
 		CommunityPermissionPolicy.validateActiveUser(updater);
 		validateCommentAlive(comment);
@@ -66,7 +66,7 @@ public class CommentValidator {
 	/**
 	 * 댓글 삭제 시 필요한 검증 로직을 수행합니다.
 	 */
-	public void validateForDelete(User deleter, Post post, Comment comment, BoardConfig boardConfig,
+	public void validateForDelete(User deleter, Comment comment, BoardConfig boardConfig,
 		List<String> boardAdminIds) {
 		CommunityPermissionPolicy.validateActiveUser(deleter);
 		validateCommentAlive(comment);

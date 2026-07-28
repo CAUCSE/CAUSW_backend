@@ -280,7 +280,7 @@ public class CommentServiceTest {
 
 			// then
 			assertThat(result).isNotNull();
-			verify(commentValidator, times(1)).validateForUpdate(eq(updater), eq(post), eq(comment),
+			verify(commentValidator, times(1)).validateForUpdate(eq(updater), eq(comment),
 				any(BoardConfig.class), anyList());
 			verify(comment, times(1)).update("수정된 댓글 내용");
 			verify(commentWriter, times(1)).save(comment);
@@ -340,7 +340,7 @@ public class CommentServiceTest {
 
 			// then
 			assertThat(result).isNotNull();
-			verify(commentValidator, times(1)).validateForDelete(eq(deleter), eq(post), eq(comment),
+			verify(commentValidator, times(1)).validateForDelete(eq(deleter), eq(comment),
 				any(BoardConfig.class), anyList());
 			verify(comment, times(1)).delete();
 			verify(commentWriter, times(1)).save(comment);
