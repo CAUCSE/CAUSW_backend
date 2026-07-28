@@ -2,6 +2,7 @@ package net.causw.app.main.domain.community.form.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
 import java.util.Properties;
 
 import javax.sql.DataSource;
@@ -24,6 +25,9 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.domain.community.form.entity.Form;
+
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 
 @ExtendWith(SpringExtension.class)
@@ -34,10 +38,26 @@ class FormRepositoryTest {
 	@Autowired
 	private FormRepository formRepository;
 
+	@Autowired
+	private EntityManager entityManager;
+
 	@Test
-	@DisplayName("게시판별 연결 폼 소프트 삭제 JPQL을 실행할 수 있다")
-	void softDeleteAllByBoardId_shouldExecuteValidUpdateQuery() {
+	@DisplayName("게시판별 연결 폼 소프트 삭제 후 영속성 컨텍스트를 초기화한다")
+	void softDeleteAllByBoardId_shouldClearPersistenceContext() {
+		Form form = Form.createPostForm(
+			"테스트 폼",
+			false,
+			List.of(),
+			false,
+			false,
+			List.of(),
+			false,
+			List.of());
+		formRepository.saveAndFlush(form);
+		assertThat(entityManager.contains(form)).isTrue();
+
 		assertThat(formRepository.softDeleteAllByBoardId("missing-board-id")).isZero();
+		assertThat(entityManager.contains(form)).isFalse();
 	}
 
 	@Configuration

@@ -14,7 +14,7 @@ import net.causw.app.main.domain.community.form.entity.Form;
 public interface FormRepository extends JpaRepository<Form, String> {
 	Optional<Form> findByIdAndIsDeleted(String id, Boolean isDeleted);
 
-	@Modifying(flushAutomatically = true)
+	@Modifying(flushAutomatically = true, clearAutomatically = true)
 	@Query("""
 		UPDATE Form f
 		SET f.isDeleted = true
