@@ -3,6 +3,9 @@ package net.causw.app.main.domain.community.comment.service.dto;
 import java.util.List;
 
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
+import net.causw.app.main.domain.community.board.entity.BoardConfig;
+import net.causw.app.main.domain.community.comment.entity.Comment;
+import net.causw.app.main.domain.community.common.service.CommunityPermissionPolicy;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.shared.dto.ProfileImageDto;
@@ -41,7 +44,7 @@ public record CommentAuthorInfo(
 	/**
 	 * 댓글 작성자 정보와 현재 조회 유저의 권한을 조합해 {@code CommentAuthorInfo}를 생성합니다.
 	 *
-	 * <p>수정·삭제 권한({@code updatable}/{@code deletable})은 작성자 본인이거나 게시판 관리자인 경우 부여됩니다.
+	 * <p>수정 권한은 작성자에게만 부여하며, 삭제 권한은 작성자와 정책상 moderation 주체에게 부여합니다.
 	 * 탈퇴(INACTIVE) 또는 DROP 유저의 닉네임은 고정값으로 치환됩니다.</p>
 	 *
 	 * @param writer       댓글 작성자 엔티티 (삭제된 경우 {@code null} 가능)
@@ -52,10 +55,15 @@ public record CommentAuthorInfo(
 	 * @return 조합된 {@code CommentAuthorInfo}
 	 */
 	public static CommentAuthorInfo of(
-		User writer, UserProfileImage writerProfileImageEntity, Boolean isAnonymous, User currentUser,
+		Comment comment, UserProfileImage writerProfileImageEntity, Boolean isAnonymous, User currentUser,
+		BoardConfig boardConfig,
 		List<String> boardAdminIds, boolean isBlocked) {
+		User writer = comment.getWriter();
 		boolean isOwner = writer != null && writer.getId().equals(currentUser.getId());
-		boolean canEdit = isOwner || boardAdminIds.contains(currentUser.getId());
+		boolean canEdit = CommunityPermissionPolicy.canUpdateComment(
+			currentUser, comment, boardConfig, boardAdminIds);
+		boolean canDelete = CommunityPermissionPolicy.canDeleteComment(
+			currentUser, comment, boardConfig, boardAdminIds);
 
 		boolean isInactiveUser = writer != null && (writer.isInactive() || writer.getState() == UserState.DROP);
 		String displayWriterNickname;
@@ -91,6 +99,6 @@ public record CommentAuthorInfo(
 		return new CommentAuthorInfo(
 			writerName, writerNickname, displayWriterNickname,
 			writerAdmissionYear, writerProfileImage,
-			canEdit, canEdit, isBlocked, isAnonymous, isOwner);
+			canEdit, canDelete, isBlocked, isAnonymous, isOwner);
 	}
 }
