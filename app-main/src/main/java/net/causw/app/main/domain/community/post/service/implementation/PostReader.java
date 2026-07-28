@@ -97,8 +97,7 @@ public class PostReader {
 	/**
 	 * 커서 기반 페이징으로 특정 유저가 댓글을 단 게시글 목록을 조회합니다. (V2용)
 	 * @param userId 댓글을 단 유저 ID
-	 * @param blockedUserIds 차단된 유저 ID 목록 (null이면 차단된 유저 없음)
-	 * @param accessibleBoardIds 접근 가능한 게시판 ID 목록
+	 * @param readContext 조회자의 읽기 범위·관리자 여부·차단 관계 컨텍스트
 	 * @param cursorCreatedAt 커서 (마지막 게시글의 createdAt)
 	 * @param cursorId 커서 (마지막 게시글의 ID)
 	 * @param size 조회할 개수
@@ -106,13 +105,12 @@ public class PostReader {
 	 */
 	public Slice<PostCursorResult> findPostsCommentedByUserWithCursor(
 		String userId,
-		Set<String> blockedUserIds,
-		List<String> accessibleBoardIds,
+		PostReadQueryContext readContext,
 		String cursorCreatedAt,
 		String cursorId,
 		int size) {
 		return postQueryRepository.findPostsCommentedByUserWithCursor(
-			userId, blockedUserIds, accessibleBoardIds, cursorCreatedAt, cursorId, size);
+			userId, readContext, cursorCreatedAt, cursorId, size);
 	}
 
 	/**
@@ -120,12 +118,12 @@ public class PostReader {
 	 */
 	public Slice<PostCursorResult> findPostsWrittenByUserWithCursor(
 		String userId,
-		List<String> accessibleBoardIds,
+		PostReadQueryContext readContext,
 		String cursorCreatedAt,
 		String cursorId,
 		int size) {
 		return postQueryRepository.findPostsWrittenByUserWithCursor(
-			userId, accessibleBoardIds, cursorCreatedAt, cursorId, size);
+			userId, readContext, cursorCreatedAt, cursorId, size);
 	}
 
 	/**
@@ -133,13 +131,12 @@ public class PostReader {
 	 */
 	public Slice<PostCursorResult> findPostsLikedByUserWithCursor(
 		String userId,
-		Set<String> blockedUserIds,
-		List<String> accessibleBoardIds,
+		PostReadQueryContext readContext,
 		String cursorCreatedAt,
 		String cursorId,
 		int size) {
 		return postQueryRepository.findPostsLikedByUserWithCursor(
-			userId, blockedUserIds, accessibleBoardIds, cursorCreatedAt, cursorId, size);
+			userId, readContext, cursorCreatedAt, cursorId, size);
 	}
 
 	/**

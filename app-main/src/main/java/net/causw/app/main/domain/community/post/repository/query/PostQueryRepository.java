@@ -19,7 +19,6 @@ import org.springframework.stereotype.Repository;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.QPostAttachImage;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.QUserProfileImage;
 import net.causw.app.main.domain.asset.file.enums.FileExtensionType;
-import net.causw.app.main.domain.community.board.entity.BoardReadScope;
 import net.causw.app.main.domain.community.board.entity.BoardVisibility;
 import net.causw.app.main.domain.community.board.entity.QBoardAdmin;
 import net.causw.app.main.domain.community.board.entity.QBoardConfig;
@@ -141,15 +140,10 @@ public class PostQueryRepository {
 	 */
 	public Slice<PostCursorResult> findPostsCommentedByUserWithCursor(
 		String userId,
-		Set<String> blockedUserIds,
-		List<String> accessibleBoardIds,
+		PostReadQueryContext readContext,
 		String cursorCreatedAt,
 		String cursorId,
 		int size) {
-		if (hasNoAccessibleBoards(accessibleBoardIds)) {
-			return emptySlice(size);
-		}
-
 		QPost post = QPost.post;
 		QUser writer = new QUser("writer");
 		QComment comment = QComment.comment;
@@ -168,13 +162,11 @@ public class PostQueryRepository {
 			.exists();
 
 		BooleanExpression[] conditions = new BooleanExpression[] {
-			inBoards(post, accessibleBoardIds),
 			userCommentedPost, // 댓글 단 글만 조회
 			writer.id.ne(userId), // 자신이 쓴 글은 제외
 			cursorCondition // 커서 조건
 		};
 
-		PostReadQueryContext readContext = createAccessibleBoardReadContext(userId, blockedUserIds);
 		return getPostCursorResults(size, post, writer, readContext, conditions);
 	}
 
@@ -189,26 +181,20 @@ public class PostQueryRepository {
 	 */
 	public Slice<PostCursorResult> findPostsWrittenByUserWithCursor(
 		String userId,
-		List<String> accessibleBoardIds,
+		PostReadQueryContext readContext,
 		String cursorCreatedAt,
 		String cursorId,
 		int size) {
-		if (hasNoAccessibleBoards(accessibleBoardIds)) {
-			return emptySlice(size);
-		}
-
 		QPost post = QPost.post;
 		QUser writer = new QUser("writer");
 
 		BooleanExpression cursorCondition = createCursorCondition(cursorCreatedAt, cursorId, post);
 
 		BooleanExpression[] conditions = new BooleanExpression[] {
-			inBoards(post, accessibleBoardIds),
 			post.writer.id.eq(userId), // 자신이 쓴 글만 조회
 			cursorCondition // 커서 조건
 		};
 
-		PostReadQueryContext readContext = createAccessibleBoardReadContext(userId, Set.of());
 		return getPostCursorResults(size, post, writer, readContext, conditions);
 	}
 
@@ -223,15 +209,10 @@ public class PostQueryRepository {
 	 */
 	public Slice<PostCursorResult> findPostsLikedByUserWithCursor(
 		String userId,
-		Set<String> blockedUserIds,
-		List<String> accessibleBoardIds,
+		PostReadQueryContext readContext,
 		String cursorCreatedAt,
 		String cursorId,
 		int size) {
-		if (hasNoAccessibleBoards(accessibleBoardIds)) {
-			return emptySlice(size);
-		}
-
 		QPost post = QPost.post;
 		QUser writer = new QUser("writer");
 		QLikePost likePost = QLikePost.likePost;
@@ -245,12 +226,10 @@ public class PostQueryRepository {
 			.exists();
 
 		BooleanExpression[] conditions = new BooleanExpression[] {
-			inBoards(post, accessibleBoardIds),
 			userLikedPost, // 좋아요 누른 글만 조회
 			cursorCondition
 		};
 
-		PostReadQueryContext readContext = createAccessibleBoardReadContext(userId, blockedUserIds);
 		return getPostCursorResults(size, post, writer, readContext, conditions);
 	}
 
@@ -270,10 +249,6 @@ public class PostQueryRepository {
 		return cursorCondition;
 	}
 
-	private static boolean hasNoAccessibleBoards(List<String> boardIds) {
-		return boardIds == null || boardIds.isEmpty();
-	}
-
 	private static boolean hasEmptyBoardFilter(List<String> boardIds) {
 		return boardIds != null && boardIds.isEmpty();
 	}
@@ -284,17 +259,6 @@ public class PostQueryRepository {
 
 	private static BooleanExpression inBoards(QPost post, List<String> boardIds) {
 		return boardIds == null ? NO_CONDITION : post.board.id.in(boardIds);
-	}
-
-	private static PostReadQueryContext createAccessibleBoardReadContext(
-		String userId,
-		Set<String> blockedUserIds) {
-
-		return new PostReadQueryContext(
-			userId,
-			false,
-			Set.of(BoardReadScope.values()),
-			blockedUserIds);
 	}
 
 	/**

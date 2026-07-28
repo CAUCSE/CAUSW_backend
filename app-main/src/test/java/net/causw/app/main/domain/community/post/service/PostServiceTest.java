@@ -4,10 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.BDDMockito.given;
@@ -1296,14 +1295,61 @@ public class PostServiceTest {
 			pageSize = 20;
 		}
 
-		@DisplayName("접근 가능한 게시판이 없으면 내가 댓글 단 글 조회는 빈 결과를 반환한다")
+		@DisplayName("개인 목록은 시스템 관리자와 차단 정보를 포함한 공통 읽기 컨텍스트를 전달한다")
 		@Test
-		void getPostsCommentedByUser_shouldReturnEmpty_whenNoAccessibleBoards() {
+		void myPostLists_shouldPassCommonReadContext_forSystemAdmin() {
 			// given
-			List<String> accessibleBoardIds = List.of();
+			viewer.setRoles(Set.of(Role.ADMIN));
+			Set<String> blockedWriterIds = Set.of("blocked-writer-id");
+			Slice<PostCursorResult> emptySlice = new SliceImpl<>(List.of(), PageRequest.of(0, pageSize), false);
+			given(blockReader.findBlockeeUserIdsByBlocker(viewer)).willReturn(blockedWriterIds);
+			given(postReader.findPostsCommentedByUserWithCursor(
+				eq(viewer.getId()), any(PostReadQueryContext.class), eq(null), eq(null), eq(pageSize)))
+				.willReturn(emptySlice);
+			given(postReader.findPostsWrittenByUserWithCursor(
+				eq(viewer.getId()), any(PostReadQueryContext.class), eq(null), eq(null), eq(pageSize)))
+				.willReturn(emptySlice);
+			given(postReader.findPostsLikedByUserWithCursor(
+				eq(viewer.getId()), any(PostReadQueryContext.class), eq(null), eq(null), eq(pageSize)))
+				.willReturn(emptySlice);
 
-			given(boardConfigReader.getAccessibleBoardIdsByAcademicStatus(AcademicStatus.ENROLLED))
-				.willReturn(accessibleBoardIds);
+			// when
+			PostListResult commented = postService.getPostsCommentedByUser(viewer, null, pageSize);
+			PostListResult written = postService.getPostsWrittenByUser(viewer, null, pageSize);
+			PostListResult liked = postService.getPostsLikedByUser(viewer, null, pageSize);
+
+			// then
+			assertAll(
+				() -> assertThat(commented.posts()).isEmpty(),
+				() -> assertThat(written.posts()).isEmpty(),
+				() -> assertThat(liked.posts()).isEmpty());
+			verify(postReader).findPostsCommentedByUserWithCursor(
+				eq(viewer.getId()),
+				argThat(context -> context.systemAdmin()
+					&& context.blockedWriterIds().equals(blockedWriterIds)),
+				eq(null), eq(null), eq(pageSize));
+			verify(postReader).findPostsWrittenByUserWithCursor(
+				eq(viewer.getId()),
+				argThat(context -> context.systemAdmin() && context.blockedWriterIds().isEmpty()),
+				eq(null), eq(null), eq(pageSize));
+			verify(postReader).findPostsLikedByUserWithCursor(
+				eq(viewer.getId()),
+				argThat(context -> context.systemAdmin()
+					&& context.blockedWriterIds().equals(blockedWriterIds)),
+				eq(null), eq(null), eq(pageSize));
+			verify(boardConfigReader, never()).getAccessibleBoardIdsByAcademicStatus(any());
+		}
+
+		@DisplayName("일반 사용자의 개인 목록에는 학적 범위와 차단 정보가 전달된다")
+		@Test
+		void getPostsCommentedByUser_shouldPassAcademicScopesAndBlockedWriters() {
+			// given
+			Set<String> blockedWriterIds = Set.of("blocked-writer-id");
+			Slice<PostCursorResult> emptySlice = new SliceImpl<>(List.of(), PageRequest.of(0, pageSize), false);
+			given(blockReader.findBlockeeUserIdsByBlocker(viewer)).willReturn(blockedWriterIds);
+			given(postReader.findPostsCommentedByUserWithCursor(
+				eq(viewer.getId()), any(PostReadQueryContext.class), eq(null), eq(null), eq(pageSize)))
+				.willReturn(emptySlice);
 
 			// when
 			PostListResult result = postService.getPostsCommentedByUser(viewer, null, pageSize);
@@ -1312,50 +1358,12 @@ public class PostServiceTest {
 			assertAll(
 				() -> assertThat(result.posts()).isEmpty(),
 				() -> assertThat(result.nextCursor()).isNull());
-			verify(blockReader, never()).findBlockeeUserIdsByBlocker(any(User.class));
-			verify(postReader, never()).findPostsCommentedByUserWithCursor(
-				anyString(), anySet(), anyList(), any(), any(), anyInt());
-		}
-
-		@DisplayName("접근 가능한 게시판이 없으면 내가 작성한 글 조회는 빈 결과를 반환한다")
-		@Test
-		void getPostsWrittenByUser_shouldReturnEmpty_whenNoAccessibleBoards() {
-			// given
-			List<String> accessibleBoardIds = List.of();
-
-			given(boardConfigReader.getAccessibleBoardIdsByAcademicStatus(AcademicStatus.ENROLLED))
-				.willReturn(accessibleBoardIds);
-
-			// when
-			PostListResult result = postService.getPostsWrittenByUser(viewer, null, pageSize);
-
-			// then
-			assertAll(
-				() -> assertThat(result.posts()).isEmpty(),
-				() -> assertThat(result.nextCursor()).isNull());
-			verify(postReader, never()).findPostsWrittenByUserWithCursor(anyString(), anyList(), any(), any(),
-				anyInt());
-		}
-
-		@DisplayName("접근 가능한 게시판이 없으면 내가 좋아요한 글 조회는 빈 결과를 반환한다")
-		@Test
-		void getPostsLikedByUser_shouldReturnEmpty_whenNoAccessibleBoards() {
-			// given
-			List<String> accessibleBoardIds = List.of();
-
-			given(boardConfigReader.getAccessibleBoardIdsByAcademicStatus(AcademicStatus.ENROLLED))
-				.willReturn(accessibleBoardIds);
-
-			// when
-			PostListResult result = postService.getPostsLikedByUser(viewer, null, pageSize);
-
-			// then
-			assertAll(
-				() -> assertThat(result.posts()).isEmpty(),
-				() -> assertThat(result.nextCursor()).isNull());
-			verify(blockReader, never()).findBlockeeUserIdsByBlocker(any(User.class));
-			verify(postReader, never()).findPostsLikedByUserWithCursor(
-				anyString(), anySet(), anyList(), any(), any(), anyInt());
+			verify(postReader).findPostsCommentedByUserWithCursor(
+				eq(viewer.getId()),
+				argThat(context -> !context.systemAdmin()
+					&& context.readableScopes().equals(Set.of(BoardReadScope.BOTH, BoardReadScope.ENROLLED))
+					&& context.blockedWriterIds().equals(blockedWriterIds)),
+				eq(null), eq(null), eq(pageSize));
 		}
 	}
 
