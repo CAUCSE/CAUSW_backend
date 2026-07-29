@@ -2,15 +2,14 @@ package net.causw.app.main.shared.infra.firebase;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.MockedStatic;
 import org.springframework.mock.env.MockEnvironment;
 
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -25,15 +24,14 @@ class FirebasePushNotificationSenderTest {
 		// given
 		MockEnvironment environment = new MockEnvironment();
 		environment.setActiveProfiles("local");
-		FirebasePushNotificationSender sender = new FirebasePushNotificationSender(environment);
+		FirebaseMessaging firebaseMessaging = mock(FirebaseMessaging.class);
+		FirebasePushNotificationSender sender = new FirebasePushNotificationSender(environment, firebaseMessaging);
 
-		try (MockedStatic<FirebaseMessaging> firebaseMessaging = mockStatic(FirebaseMessaging.class)) {
-			// when
-			sender.send("token", "title", "body");
+		// when
+		sender.send("token", "title", "body");
 
-			// then
-			firebaseMessaging.verifyNoInteractions();
-		}
+		// then
+		verifyNoInteractions(firebaseMessaging);
 	}
 
 	@ParameterizedTest
@@ -43,18 +41,14 @@ class FirebasePushNotificationSenderTest {
 		// given
 		MockEnvironment environment = new MockEnvironment();
 		environment.setActiveProfiles(profile);
-		FirebasePushNotificationSender sender = new FirebasePushNotificationSender(environment);
 		FirebaseMessaging messaging = mock(FirebaseMessaging.class);
+		FirebasePushNotificationSender sender = new FirebasePushNotificationSender(environment, messaging);
+		when(messaging.send(any(Message.class))).thenReturn("message-id");
 
-		try (MockedStatic<FirebaseMessaging> firebaseMessaging = mockStatic(FirebaseMessaging.class)) {
-			firebaseMessaging.when(FirebaseMessaging::getInstance).thenReturn(messaging);
-			when(messaging.send(any(Message.class))).thenReturn("message-id");
+		// when
+		sender.send("token", "title", "body");
 
-			// when
-			sender.send("token", "title", "body");
-
-			// then
-			verify(messaging).send(any(Message.class));
-		}
+		// then
+		verify(messaging).send(any(Message.class));
 	}
 }
