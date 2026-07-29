@@ -30,7 +30,9 @@ import net.causw.app.main.domain.community.ceremony.service.implementation.Cerem
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyWriter;
 import net.causw.app.main.domain.community.ceremony.service.mapper.CeremonyMapper;
 import net.causw.app.main.domain.community.ceremony.util.CeremonyValidator;
+import net.causw.app.main.domain.notification.notification.event.CeremonyApprovedEvent;
 import net.causw.app.main.domain.notification.notification.event.CeremonyNotificationEvent;
+import net.causw.app.main.domain.notification.notification.event.CeremonyRejectedEvent;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.CeremonyErrorCode;
 
@@ -189,6 +191,7 @@ class CeremonyAdminServiceTest {
 			then(ceremonyWriter).should(times(1)).approve(ceremony);
 
 			verify(eventPublisher).publishEvent(any(CeremonyNotificationEvent.class));
+			verify(eventPublisher).publishEvent(any(CeremonyApprovedEvent.class));
 		}
 
 		@Test
@@ -243,6 +246,8 @@ class CeremonyAdminServiceTest {
 			// then
 			then(ceremonyValidator).should(times(1)).validateAwaiting(ceremony);
 			then(ceremonyWriter).should(times(1)).reject(ceremony, "요건에 부합하지 않습니다.");
+
+			verify(eventPublisher).publishEvent(any(CeremonyRejectedEvent.class));
 		}
 
 		@Test

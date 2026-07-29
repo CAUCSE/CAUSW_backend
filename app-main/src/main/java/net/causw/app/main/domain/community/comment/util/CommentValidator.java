@@ -1,15 +1,15 @@
 package net.causw.app.main.domain.community.comment.util;
 
-import java.util.EnumSet;
+import java.util.List;
 
 import org.springframework.stereotype.Component;
 
+import net.causw.app.main.domain.community.board.entity.BoardConfig;
 import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.community.comment.service.implementation.LikeCommentReader;
+import net.causw.app.main.domain.community.common.service.CommunityPermissionPolicy;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.enums.user.Role;
-import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import net.causw.app.main.shared.exception.errorcode.BoardErrorCode;
 import net.causw.app.main.shared.exception.errorcode.CommentErrorCode;
@@ -26,8 +26,12 @@ public class CommentValidator {
 	/**
 	 * 댓글 생성 시 필요한 모든 검증 로직을 수행합니다.
 	 */
-	public void validateForCreate(User creator, Post post) {
-		this.validateCreatorAndPostStatus(creator, post);
+	public void validateForCreate(User creator, Post post, BoardConfig boardConfig, List<String> boardAdminIds) {
+		validateForFind(creator, post, boardConfig, boardAdminIds);
+		if (!CommunityPermissionPolicy.canWriteBoard(
+			creator, post.getBoard(), boardConfig, boardAdminIds)) {
+			throw BoardErrorCode.BOARD_FORBIDDEN.toBaseException();
+		}
 	}
 
 	public void validateChildCommentDepth(Comment parentComment) {
@@ -39,23 +43,22 @@ public class CommentValidator {
 	/**
 	 * 댓글 리스트 조회 시 필요한 모든 검증 로직을 수행합니다.
 	 */
-	public void validateForFind(User creator, Post post) {
-		this.validateCreatorAndPostStatus(creator, post);
+	public void validateForFind(User viewer, Post post, BoardConfig boardConfig, List<String> boardAdminIds) {
+		CommunityPermissionPolicy.validateActiveUser(viewer);
+		validatePostAlive(post);
+		if (!CommunityPermissionPolicy.canReadPost(viewer, post, boardConfig, boardAdminIds)) {
+			throw BoardErrorCode.BOARD_FORBIDDEN.toBaseException();
+		}
 	}
 
 	/**
 	 * 댓글 수정 시 필요한 모든 검증 로직을 수행합니다.
 	 */
-	public void validateForUpdate(User updater, Post post, Comment comment) {
-		this.validateCreatorAndPostStatus(updater, post);
-
-		if (comment.getIsDeleted()) {
-			throw CommentErrorCode.COMMENT_NOT_FOUND.toBaseException();
-		}
-
-		if (!updater.getId().equals(comment.getWriter().getId())
-			&& updater.getRoles().stream()
-				.noneMatch(role -> EnumSet.of(Role.ADMIN, Role.PRESIDENT, Role.VICE_PRESIDENT).contains(role))) {
+	public void validateForUpdate(User updater, Post post, Comment comment, BoardConfig boardConfig,
+		List<String> boardAdminIds) {
+		CommunityPermissionPolicy.validateActiveUser(updater);
+		validateCommentAlive(comment);
+		if (!CommunityPermissionPolicy.canUpdateComment(updater, comment, boardConfig, boardAdminIds)) {
 			throw AuthErrorCode.NO_PERMISSION_FOR_RESOURCE.toBaseException();
 		}
 	}
@@ -63,21 +66,26 @@ public class CommentValidator {
 	/**
 	 * 댓글 삭제 시 필요한 검증 로직을 수행합니다.
 	 */
-	public void validateForDelete(User deleter, Post post, Comment comment) {
-		this.validateCreatorAndPostStatus(deleter, post);
-
-		if (comment.getIsDeleted()) {
-			throw CommentErrorCode.COMMENT_NOT_FOUND.toBaseException();
+	public void validateForDelete(User deleter, Post post, Comment comment, BoardConfig boardConfig,
+		List<String> boardAdminIds) {
+		CommunityPermissionPolicy.validateActiveUser(deleter);
+		validateCommentAlive(comment);
+		if (!CommunityPermissionPolicy.canDeleteComment(deleter, comment, boardConfig, boardAdminIds)) {
+			throw AuthErrorCode.NO_PERMISSION_FOR_RESOURCE.toBaseException();
 		}
 	}
 
 	public void validateForLike(User user, Comment comment) {
+		CommunityPermissionPolicy.validateActiveUser(user);
+		validateCommentAlive(comment);
 		if (likeCommentReader.isCommentLiked(user, comment.getId())) {
 			throw CommentErrorCode.COMMENT_ALREADY_LIKED.toBaseException();
 		}
 	}
 
 	public void validateForCancelLike(User user, Comment comment) {
+		CommunityPermissionPolicy.validateActiveUser(user);
+		validateCommentAlive(comment);
 		if (!likeCommentReader.isCommentLiked(user, comment.getId())) {
 			throw CommentErrorCode.COMMENT_NOT_LIKE.toBaseException();
 		}
@@ -86,20 +94,17 @@ public class CommentValidator {
 	/**
 	 * 작성자의 권한/상태 및 상위 게시글/게시판의 삭제 여부를 확인합니다.
 	 */
-	private void validateCreatorAndPostStatus(User user, Post post) {
-		UserState userState = user.getState();
-		if (userState == UserState.DROP)
-			throw AuthErrorCode.DROPPED_USER.toBaseException();
-		if (user.isInactive())
-			throw AuthErrorCode.INACTIVE_USER.toBaseException();
-
-		if (user.getRoles().contains(Role.NONE))
-			throw AuthErrorCode.USER_ROLE_NONE.toBaseException();
-
+	private void validatePostAlive(Post post) {
 		if (post.getBoard().getIsDeleted())
 			throw BoardErrorCode.BOARD_DELETED.toBaseException();
 		if (post.getIsDeleted())
 			throw PostErrorCode.POST_NOT_FOUND.toBaseException();
+	}
+
+	private void validateCommentAlive(Comment comment) {
+		if (!CommunityPermissionPolicy.isAlive(comment)) {
+			throw CommentErrorCode.COMMENT_NOT_FOUND.toBaseException();
+		}
 	}
 
 }

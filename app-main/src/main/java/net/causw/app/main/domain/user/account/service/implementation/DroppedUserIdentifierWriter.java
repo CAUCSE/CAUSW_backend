@@ -26,6 +26,11 @@ public class DroppedUserIdentifierWriter {
 		save(user.getId(), DroppedIdentifierType.STUDENT_ID, user.getStudentId(), user.getRejectionOrDropReason());
 	}
 
+	@Transactional
+	public void deleteDroppedIdentifiers(User user) {
+		droppedUserIdentifierRepository.deleteAllByUserId(user.getId());
+	}
+
 	private void save(String userId, DroppedIdentifierType type, String raw, String reason) {
 		if (raw == null || raw.isBlank()) {
 			return;

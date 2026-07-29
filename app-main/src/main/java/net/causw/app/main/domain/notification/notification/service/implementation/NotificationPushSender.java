@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.springframework.stereotype.Component;
 
+import net.causw.app.main.domain.notification.notification.service.dto.PushNotificationData;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.infra.push.PushNotificationSender;
 
@@ -29,10 +30,11 @@ public class NotificationPushSender {
 	 * @param user  알림을 받을 유저
 	 * @param title 알림 제목
 	 * @param body  알림 내용
+	 * @param data data 필드에 들어갈 내용(noticeType, targetId, targetParentId)
 	 */
-	public void sendToUser(User user, String title, String body) {
+	public void sendToUser(User user, String title, String body, PushNotificationData data) {
 		log.debug("단일 유저 푸시알림 전송 요청: userId={}", user.getId());
-		send(user, title, body);
+		send(user, title, body, data);
 	}
 
 	/**
@@ -41,10 +43,11 @@ public class NotificationPushSender {
 	 * @param users 알림을 받을 유저 목록
 	 * @param title 알림 제목
 	 * @param body  알림 내용
+	 * @param data data 필드에 들어갈 내용(noticeType, targetId, targetParentId)
 	 */
-	public void sendToUsers(List<User> users, String title, String body) {
+	public void sendToUsers(List<User> users, String title, String body, PushNotificationData data) {
 		log.debug("다중 유저 푸시알림 전송 요청: userCount={}", users.size());
-		users.forEach(user -> send(user, title, body));
+		users.forEach(user -> send(user, title, body, data));
 	}
 
 	/**
@@ -52,8 +55,9 @@ public class NotificationPushSender {
 	 * @param user 유저
 	 * @param title 제목
 	 * @param body body값
+	 * @param data data 필드에 들어갈 내용(noticeType, targetId, targetParentId)
 	 */
-	private void send(User user, String title, String body) {
+	private void send(User user, String title, String body, PushNotificationData data) {
 		if (user.getFcmTokens() == null) {
 			log.debug("푸시알림 전송 생략: userId={}, reason=fcm_tokens_null", user.getId());
 			return;
@@ -67,7 +71,7 @@ public class NotificationPushSender {
 
 		log.debug("푸시알림 전송 시작: userId={}, tokenCount={}, titleLength={}, bodyLength={}", user.getId(),
 			tokens.size(), title == null ? 0 : title.length(), body == null ? 0 : body.length());
-		tokens.forEach(token -> trySend(user, token, title, body));
+		tokens.forEach(token -> trySend(user, token, title, body, data));
 	}
 
 	/**
@@ -77,11 +81,12 @@ public class NotificationPushSender {
 	 * @param token fcm 토큰
 	 * @param title 제목
 	 * @param body  내용
+	 * @param data data 필드에 들어갈 내용(noticeType, targetId, targetParentId)
 	 */
-	private void trySend(User user, String token, String title, String body) {
+	private void trySend(User user, String token, String title, String body, PushNotificationData data) {
 		try {
 			log.debug("푸시알림 토큰별 전송 시도: userId={}", user.getId());
-			pushNotificationSender.send(token, title, body);
+			pushNotificationSender.send(token, title, body, data);
 			log.debug("푸시알림 토큰별 전송 성공: userId={}", user.getId());
 		} catch (FirebaseMessagingException e) {
 			log.error("푸시알림 전송 실패: {}, 이유: {}", token, e.getMessage());
