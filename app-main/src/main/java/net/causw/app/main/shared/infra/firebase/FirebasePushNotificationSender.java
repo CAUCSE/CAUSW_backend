@@ -14,18 +14,22 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class FirebasePushNotificationSender implements PushNotificationSender {
 
 	private static final String PROD_PROFILE = "prod";
 	private static final String DEV_PROFILE = "dev";
 
 	private final Environment environment;
+	private final FirebaseMessaging firebaseMessaging;
+
+	public FirebasePushNotificationSender(Environment environment, FirebaseMessaging firebaseMessaging) {
+		this.environment = environment;
+		this.firebaseMessaging = firebaseMessaging;
+	}
 
 	@Override
 	public void send(String token, String title, String body, PushNotificationData pushNotificationData)
@@ -57,7 +61,7 @@ public class FirebasePushNotificationSender implements PushNotificationSender {
 			.setNotification(notification)
 			.build();
 
-		String response = FirebaseMessaging.getInstance().send(message);
+		String response = firebaseMessaging.send(message);
 		log.info("FCM 메시지 발송 성공: response={}", response);
 	}
 
