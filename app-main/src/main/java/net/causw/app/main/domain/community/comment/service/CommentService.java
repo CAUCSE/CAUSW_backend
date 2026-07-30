@@ -80,7 +80,7 @@ public class CommentService {
 		User creator = userReader.findUserByIdNotDeleted(command.creatorId());
 		Comment parentComment = command.parentCommentId() == null
 			? null
-			: commentReader.getComment(command.parentCommentId());
+			: commentReader.getReplyParent(command.parentCommentId());
 		Post post = parentComment == null
 			? postReader.findByIdAndNotDeleted(command.postId())
 			: postReader.findByIdAndNotDeleted(parentComment.getPost().getId());
@@ -192,7 +192,7 @@ public class CommentService {
 		BoardConfig boardConfig = boardConfigReader.getByBoardId(post.getBoard().getId());
 		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
 
-		commentValidator.validateForUpdate(updater, post, comment, boardConfig, boardAdminIds);
+		commentValidator.validateForUpdate(updater, comment, boardConfig, boardAdminIds);
 		validatePostWriterBlockAccess(updater, post, boardAdminIds);
 		comment.update(command.content());
 		commentWriter.save(comment);
@@ -230,7 +230,7 @@ public class CommentService {
 		BoardConfig boardConfig = boardConfigReader.getByBoardId(post.getBoard().getId());
 		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
 
-		commentValidator.validateForDelete(deleter, post, comment, boardConfig, boardAdminIds);
+		commentValidator.validateForDelete(deleter, comment, boardConfig, boardAdminIds);
 		validatePostWriterBlockAccess(deleter, post, boardAdminIds);
 		comment.delete();
 		commentWriter.save(comment);

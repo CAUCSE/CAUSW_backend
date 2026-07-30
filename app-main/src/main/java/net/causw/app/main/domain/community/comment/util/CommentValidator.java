@@ -54,7 +54,7 @@ public class CommentValidator {
 	/**
 	 * 댓글 수정 시 필요한 모든 검증 로직을 수행합니다.
 	 */
-	public void validateForUpdate(User updater, Post post, Comment comment, BoardConfig boardConfig,
+	public void validateForUpdate(User updater, Comment comment, BoardConfig boardConfig,
 		List<String> boardAdminIds) {
 		CommunityPermissionPolicy.validateActiveUser(updater);
 		validateCommentAlive(comment);
@@ -66,7 +66,7 @@ public class CommentValidator {
 	/**
 	 * 댓글 삭제 시 필요한 검증 로직을 수행합니다.
 	 */
-	public void validateForDelete(User deleter, Post post, Comment comment, BoardConfig boardConfig,
+	public void validateForDelete(User deleter, Comment comment, BoardConfig boardConfig,
 		List<String> boardAdminIds) {
 		CommunityPermissionPolicy.validateActiveUser(deleter);
 		validateCommentAlive(comment);
@@ -95,9 +95,9 @@ public class CommentValidator {
 	 * 작성자의 권한/상태 및 상위 게시글/게시판의 삭제 여부를 확인합니다.
 	 */
 	private void validatePostAlive(Post post) {
-		if (post.getBoard().getIsDeleted())
+		if (!CommunityPermissionPolicy.isAlive(post.getBoard()))
 			throw BoardErrorCode.BOARD_DELETED.toBaseException();
-		if (post.getIsDeleted())
+		if (!CommunityPermissionPolicy.isAlive(post))
 			throw PostErrorCode.POST_NOT_FOUND.toBaseException();
 	}
 

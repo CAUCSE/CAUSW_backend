@@ -11,8 +11,6 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.domain.community.board.entity.BoardReadScope;
-import net.causw.app.main.domain.community.common.service.CommunityPermissionPolicy;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.community.post.repository.query.PostCursorResult;
@@ -20,7 +18,6 @@ import net.causw.app.main.domain.community.post.repository.query.PostQueryReposi
 import net.causw.app.main.domain.community.post.repository.query.PostReadQueryContext;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledPostImage;
 import net.causw.app.main.domain.integration.crawled.repository.CrawledPostImageRepository;
-import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -79,7 +76,6 @@ public class PostReader {
 	 * 커서 기반 페이징으로 게시글 목록을 조회합니다. (V2용)
 	 *
 	 * @param boardIds 게시판 ID 목록 (null이면 전체 게시판)
-	 * @param viewer 조회 요청 사용자
 	 * @param blockedUserIds 차단된 유저 ID 목록 (null이면 차단된 유저 없음)
 	 * @param cursorCreatedAt 커서 (마지막 게시글의 createdAt)
 	 * @param cursorId 커서 (마지막 게시글의 ID)
@@ -89,67 +85,58 @@ public class PostReader {
 	 */
 	public Slice<PostCursorResult> findPostsWithCursor(
 		List<String> boardIds,
-		User viewer,
-		Set<String> blockedUserIds,
+		PostReadQueryContext readContext,
 		String cursorCreatedAt,
 		String cursorId,
 		int size,
 		String keyword) {
 		return postQueryRepository.findPostsWithCursor(
-			boardIds, createReadContext(viewer, blockedUserIds), cursorCreatedAt, cursorId, size, keyword);
+			boardIds, readContext, cursorCreatedAt, cursorId, size, keyword);
 	}
 
 	/**
 	 * 커서 기반 페이징으로 특정 유저가 댓글을 단 게시글 목록을 조회합니다. (V2용)
-	 * @param viewer 조회 요청 사용자이자 댓글 작성자
-	 * @param blockedUserIds 차단된 유저 ID 목록 (null이면 차단된 유저 없음)
+	 * @param userId 댓글을 단 유저 ID
+	 * @param readContext 조회자의 읽기 범위·관리자 여부·차단 관계 컨텍스트
 	 * @param cursorCreatedAt 커서 (마지막 게시글의 createdAt)
 	 * @param cursorId 커서 (마지막 게시글의 ID)
 	 * @param size 조회할 개수
 	 * @return 게시글 목록 Slice
 	 */
 	public Slice<PostCursorResult> findPostsCommentedByUserWithCursor(
-		User viewer,
-		Set<String> blockedUserIds,
+		String userId,
+		PostReadQueryContext readContext,
 		String cursorCreatedAt,
 		String cursorId,
 		int size) {
 		return postQueryRepository.findPostsCommentedByUserWithCursor(
-			createReadContext(viewer, blockedUserIds), cursorCreatedAt, cursorId, size);
+			userId, readContext, cursorCreatedAt, cursorId, size);
 	}
 
 	/**
 	 * 특정 사용자가 작성한 게시글을 커서 기반 페이징으로 조회합니다.
 	 */
 	public Slice<PostCursorResult> findPostsWrittenByUserWithCursor(
-		User viewer,
-		Set<String> blockedUserIds,
+		String userId,
+		PostReadQueryContext readContext,
 		String cursorCreatedAt,
 		String cursorId,
 		int size) {
 		return postQueryRepository.findPostsWrittenByUserWithCursor(
-			createReadContext(viewer, blockedUserIds), cursorCreatedAt, cursorId, size);
+			userId, readContext, cursorCreatedAt, cursorId, size);
 	}
 
 	/**
 	 * 특정 사용자가 좋아요를 누른 게시글을 커서 기반 페이징으로 조회합니다.
 	 */
 	public Slice<PostCursorResult> findPostsLikedByUserWithCursor(
-		User viewer,
-		Set<String> blockedUserIds,
+		String userId,
+		PostReadQueryContext readContext,
 		String cursorCreatedAt,
 		String cursorId,
 		int size) {
 		return postQueryRepository.findPostsLikedByUserWithCursor(
-			createReadContext(viewer, blockedUserIds), cursorCreatedAt, cursorId, size);
-	}
-
-	private static PostReadQueryContext createReadContext(User viewer, Set<String> blockedUserIds) {
-		return new PostReadQueryContext(
-			viewer.getId(),
-			CommunityPermissionPolicy.isSystemAdmin(viewer),
-			Set.copyOf(BoardReadScope.fromAcademicStatus(viewer.getAcademicStatus())),
-			blockedUserIds);
+			userId, readContext, cursorCreatedAt, cursorId, size);
 	}
 
 	/**

@@ -5,8 +5,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.BDDMockito.given;
@@ -51,6 +51,7 @@ import net.causw.app.main.domain.community.board.service.implementation.BoardCon
 import net.causw.app.main.domain.community.board.service.implementation.BoardReader;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.query.PostCursorResult;
+import net.causw.app.main.domain.community.post.repository.query.PostReadQueryContext;
 import net.causw.app.main.domain.community.post.service.dto.ImageCreateMeta;
 import net.causw.app.main.domain.community.post.service.dto.ImageUpdateMeta;
 import net.causw.app.main.domain.community.post.service.dto.PostCreateCommand;
@@ -379,15 +380,13 @@ public class PostServiceTest {
 			assertThat(post.getIsDeleted()).isTrue();
 		}
 
-		@DisplayName("삭제 권한이 있는 작성자의 재삭제 요청은 성공")
+		@DisplayName("작성자가 이미 삭제된 게시글을 다시 삭제하면 멱등하게 성공")
 		@Test
-		void deletePost_shouldSucceed_whenWriterRequestsDeletedPost() {
+		void deletePost_shouldSucceed_whenAlreadyDeletedByWriter() {
 			// given
 			post.setIsDeleted(true);
-			List<String> boardAdminIds = List.of("admin-id");
-
 			given(postReader.findById(postId)).willReturn(post);
-			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(List.of());
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 
 			// when
@@ -395,20 +394,18 @@ public class PostServiceTest {
 
 			// then
 			assertThat(post.getIsDeleted()).isTrue();
-			verify(boardConfigReader, times(1)).getAdminIdsByBoardId(boardId);
-			verify(boardConfigReader, times(1)).getByBoardId(boardId);
+			verify(boardConfigReader).getByBoardId(boardId);
+			verify(blockReader).existsByBlockerAndBlocked(deleter, deleter);
 		}
 
-		@DisplayName("삭제 권한이 없는 사용자의 재삭제 요청은 실패")
+		@DisplayName("권한 없는 사용자가 이미 삭제된 게시글을 삭제하면 실패")
 		@Test
-		void deletePost_shouldFail_whenUnauthorizedUserRequestsDeletedPost() {
+		void deletePost_shouldFail_whenAlreadyDeletedByUnauthorizedUser() {
 			// given
+			User unauthorizedUser = ObjectFixtures.getCertifiedUserWithId("unauthorized-id");
 			post.setIsDeleted(true);
-			User unauthorizedUser = ObjectFixtures.getCertifiedUserWithId("unauthorized-user-id");
-			List<String> boardAdminIds = List.of("admin-id");
-
 			given(postReader.findById(postId)).willReturn(post);
-			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(List.of());
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 
 			// when & then
@@ -418,17 +415,15 @@ public class PostServiceTest {
 					.isEqualTo(PostErrorCode.POST_FORBIDDEN));
 		}
 
-		@DisplayName("삭제 권한이 있어도 차단한 작성자의 삭제된 게시글은 재삭제할 수 없음")
+		@DisplayName("차단 우회 권한이 없는 임원은 삭제된 게시글도 삭제할 수 없음")
 		@Test
-		void deletePost_shouldFail_whenExecutiveBlockedWriterOfDeletedPost() {
+		void deletePost_shouldFail_whenAlreadyDeletedWriterIsBlockedByExecutive() {
 			// given
-			post.setIsDeleted(true);
 			User president = ObjectFixtures.getCertifiedUserWithId("president-id");
 			president.setRoles(Set.of(Role.PRESIDENT));
-			List<String> boardAdminIds = List.of("admin-id");
-
+			post.setIsDeleted(true);
 			given(postReader.findById(postId)).willReturn(post);
-			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(List.of());
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(blockReader.existsByBlockerAndBlocked(president, deleter)).willReturn(true);
 
@@ -437,26 +432,6 @@ public class PostServiceTest {
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.satisfies(ex -> assertThat(((BaseRunTimeV2Exception)ex).getErrorCode())
 					.isEqualTo(PostErrorCode.BLOCKED_USER_CONTENT));
-		}
-
-		@DisplayName("게시판 관리자는 차단한 작성자의 삭제된 게시글도 재삭제 요청 가능")
-		@Test
-		void deletePost_shouldSucceed_whenBoardAdminRequestsBlockedDeletedPost() {
-			// given
-			post.setIsDeleted(true);
-			User boardAdmin = ObjectFixtures.getCertifiedUserWithId("admin-id");
-			List<String> boardAdminIds = List.of("admin-id");
-
-			given(postReader.findById(postId)).willReturn(post);
-			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
-			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
-
-			// when
-			postService.deletePost(boardAdmin, postId);
-
-			// then
-			assertThat(post.getIsDeleted()).isTrue();
-			verify(blockReader, never()).existsByBlockerAndBlocked(any(), any());
 		}
 	}
 
@@ -672,7 +647,7 @@ public class PostServiceTest {
 			given(blockReader.findBlockeeUserIdsByBlocker(viewer)).willReturn(blockedUserIds);
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
-			given(postReader.findPostsWithCursor(anyList(), any(User.class), anySet(), eq(null), eq(null), eq(20),
+			given(postReader.findPostsWithCursor(anyList(), any(PostReadQueryContext.class), eq(null), eq(null), eq(20),
 				eq(null)))
 				.willReturn(new SliceImpl<>(List.of(), PageRequest.of(0, 20), false));
 
@@ -682,7 +657,7 @@ public class PostServiceTest {
 			// then
 			verify(blockReader, times(1)).findBlockeeUserIdsByBlocker(viewer);
 			verify(postReader, times(1)).findPostsWithCursor(
-				anyList(), any(User.class), anySet(), eq(null), eq(null), eq(20), eq(null));
+				anyList(), any(PostReadQueryContext.class), eq(null), eq(null), eq(20), eq(null));
 		}
 
 		@DisplayName("특정 게시판의 게시글 목록 조회 성공")
@@ -722,7 +697,7 @@ public class PostServiceTest {
 
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
-			given(postReader.findPostsWithCursor(anyList(), any(User.class), anySet(), eq(null), eq(null), eq(20),
+			given(postReader.findPostsWithCursor(anyList(), any(PostReadQueryContext.class), eq(null), eq(null), eq(20),
 				eq(null)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
@@ -743,7 +718,7 @@ public class PostServiceTest {
 				() -> assertThat(result.posts().get(0).deletable()).isTrue(),
 				() -> assertThat(result.nextCursor()).isNull());
 
-			verify(postReader, times(1)).findPostsWithCursor(anyList(), any(User.class), anySet(), eq(null),
+			verify(postReader, times(1)).findPostsWithCursor(anyList(), any(PostReadQueryContext.class), eq(null),
 				eq(null), eq(20), eq(null));
 		}
 
@@ -777,7 +752,7 @@ public class PostServiceTest {
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(List.of());
 			given(postReader.findPostsWithCursor(
-				anyList(), any(User.class), anySet(), eq(null), eq(null), eq(20), eq(null)))
+				anyList(), any(PostReadQueryContext.class), eq(null), eq(null), eq(20), eq(null)))
 				.willReturn(new SliceImpl<>(List.of(deletedPostResult), PageRequest.of(0, 20), false));
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
 			given(likePostReader.getLikedPostIds(anyString(), anyList())).willReturn(Set.of());
@@ -871,7 +846,7 @@ public class PostServiceTest {
 				.willReturn(Map.of(boardId, boardConfig, boardId2, boardConfig2));
 			given(boardConfigReader.getAdminIdSetMapByBoardIds(anyList()))
 				.willReturn(Map.of(boardId, Set.of("viewer-id"), boardId2, Set.of("admin-id")));
-			given(postReader.findPostsWithCursor(anyList(), any(User.class), anySet(), eq(null), eq(null), eq(20),
+			given(postReader.findPostsWithCursor(anyList(), any(PostReadQueryContext.class), eq(null), eq(null), eq(20),
 				eq(null)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
@@ -898,7 +873,7 @@ public class PostServiceTest {
 
 			verify(boardConfigReader, times(1)).getByBoardId(boardId);
 			verify(boardConfigReader, times(1)).getByBoardId(boardId2);
-			verify(postReader, times(1)).findPostsWithCursor(anyList(), any(User.class), anySet(), eq(null),
+			verify(postReader, times(1)).findPostsWithCursor(anyList(), any(PostReadQueryContext.class), eq(null),
 				eq(null), eq(20), eq(null));
 		}
 
@@ -942,8 +917,7 @@ public class PostServiceTest {
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
 			given(postReader.findPostsWithCursor(
 				anyList(),
-				any(User.class),
-				anySet(),
+				any(PostReadQueryContext.class),
 				eq("2024-01-01T12:00:00"),
 				eq("post-id-1"),
 				eq(20),
@@ -964,8 +938,7 @@ public class PostServiceTest {
 
 			verify(postReader, times(1)).findPostsWithCursor(
 				anyList(),
-				any(User.class),
-				anySet(),
+				any(PostReadQueryContext.class),
 				eq("2024-01-01T12:00:00"),
 				eq("post-id-1"),
 				eq(20),
@@ -1010,7 +983,7 @@ public class PostServiceTest {
 
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
-			given(postReader.findPostsWithCursor(anyList(), any(User.class), anySet(), eq(null), eq(null), eq(20),
+			given(postReader.findPostsWithCursor(anyList(), any(PostReadQueryContext.class), eq(null), eq(null), eq(20),
 				eq(keyword)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
@@ -1025,7 +998,7 @@ public class PostServiceTest {
 				() -> assertThat(result.posts()).hasSize(1),
 				() -> assertThat(result.posts().get(0).content()).contains("검색어"));
 
-			verify(postReader, times(1)).findPostsWithCursor(anyList(), any(User.class), anySet(), eq(null),
+			verify(postReader, times(1)).findPostsWithCursor(anyList(), any(PostReadQueryContext.class), eq(null),
 				eq(null), eq(20),
 				eq(keyword));
 		}
@@ -1064,7 +1037,7 @@ public class PostServiceTest {
 				false);
 
 			given(
-				postReader.findPostsWithCursor(isNull(), any(User.class), anySet(), eq(null), eq(null), eq(20),
+				postReader.findPostsWithCursor(isNull(), any(PostReadQueryContext.class), eq(null), eq(null), eq(20),
 					eq(null)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
@@ -1079,7 +1052,7 @@ public class PostServiceTest {
 				() -> assertThat(result.posts()).hasSize(1));
 
 			verify(postReader, times(1))
-				.findPostsWithCursor(isNull(), any(User.class), anySet(), eq(null), eq(null), eq(20), eq(null));
+				.findPostsWithCursor(isNull(), any(PostReadQueryContext.class), eq(null), eq(null), eq(20), eq(null));
 		}
 
 		@DisplayName("전체 목록에서 조회 가능한 게시글이 없으면 빈 결과 반환")
@@ -1092,7 +1065,7 @@ public class PostServiceTest {
 				PageRequest.of(0, 20),
 				false);
 			given(postReader.findPostsWithCursor(
-				isNull(), any(User.class), anySet(), eq(null), eq(null), eq(20), eq(null)))
+				isNull(), any(PostReadQueryContext.class), eq(null), eq(null), eq(20), eq(null)))
 				.willReturn(emptySlice);
 
 			// when
@@ -1105,7 +1078,7 @@ public class PostServiceTest {
 				() -> assertThat(result.nextCursor()).isNull());
 
 			verify(postReader, times(1))
-				.findPostsWithCursor(isNull(), any(User.class), anySet(), eq(null), eq(null), eq(20), eq(null));
+				.findPostsWithCursor(isNull(), any(PostReadQueryContext.class), eq(null), eq(null), eq(20), eq(null));
 		}
 
 		@DisplayName("숨겨진 게시판은 관리자만 조회 가능")
@@ -1149,7 +1122,7 @@ public class PostServiceTest {
 
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
-			given(postReader.findPostsWithCursor(anyList(), any(User.class), anySet(), eq(null), eq(null), eq(20),
+			given(postReader.findPostsWithCursor(anyList(), any(PostReadQueryContext.class), eq(null), eq(null), eq(20),
 				eq(null)))
 				.willReturn(emptySlice);
 
@@ -1199,7 +1172,7 @@ public class PostServiceTest {
 
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
-			given(postReader.findPostsWithCursor(anyList(), any(User.class), anySet(), eq(null), eq(null), eq(20),
+			given(postReader.findPostsWithCursor(anyList(), any(PostReadQueryContext.class), eq(null), eq(null), eq(20),
 				eq(null)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
@@ -1218,7 +1191,7 @@ public class PostServiceTest {
 					.isEqualTo(ProfileImageType.GHOST),
 				() -> assertThat(result.posts().get(0).writerProfileImage().profileImageUrl()).isNull());
 
-			verify(postReader, times(1)).findPostsWithCursor(anyList(), any(User.class), anySet(), eq(null),
+			verify(postReader, times(1)).findPostsWithCursor(anyList(), any(PostReadQueryContext.class), eq(null),
 				eq(null), eq(20), eq(null));
 		}
 
@@ -1280,7 +1253,7 @@ public class PostServiceTest {
 
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
-			given(postReader.findPostsWithCursor(anyList(), any(User.class), anySet(), eq(null), eq(null), eq(20),
+			given(postReader.findPostsWithCursor(anyList(), any(PostReadQueryContext.class), eq(null), eq(null), eq(20),
 				eq(null)))
 				.willReturn(slice);
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
@@ -1304,7 +1277,7 @@ public class PostServiceTest {
 				() -> assertThat(result.posts().get(1).writerProfileImage().profileImageType())
 					.isEqualTo(ProfileImageType.GHOST),
 				() -> assertThat(result.posts().get(1).writerProfileImage().profileImageUrl()).isNull());
-			verify(postReader, times(1)).findPostsWithCursor(anyList(), any(User.class), anySet(), eq(null),
+			verify(postReader, times(1)).findPostsWithCursor(anyList(), any(PostReadQueryContext.class), eq(null),
 				eq(null), eq(20), eq(null));
 		}
 	}
@@ -1322,17 +1295,60 @@ public class PostServiceTest {
 			pageSize = 20;
 		}
 
-		@DisplayName("댓글 단 글은 게시판 ID 선필터 없이 공통 읽기 컨텍스트로 조회")
+		@DisplayName("개인 목록은 시스템 관리자와 차단 정보를 포함한 공통 읽기 컨텍스트를 전달한다")
 		@Test
-		void getPostsCommentedByUser_shouldDelegateWithViewerAndBlockedUsers() {
+		void myPostLists_shouldPassCommonReadContext_forSystemAdmin() {
 			// given
-			Set<String> blockedUserIds = Set.of("blocked-user-id");
-			Slice<PostCursorResult> emptySlice = new SliceImpl<>(
-				List.of(), PageRequest.of(0, pageSize), false);
-
-			given(blockReader.findBlockeeUserIdsByBlocker(viewer)).willReturn(blockedUserIds);
+			viewer.setRoles(Set.of(Role.ADMIN));
+			Set<String> blockedWriterIds = Set.of("blocked-writer-id");
+			Slice<PostCursorResult> emptySlice = new SliceImpl<>(List.of(), PageRequest.of(0, pageSize), false);
+			given(blockReader.findBlockeeUserIdsByBlocker(viewer)).willReturn(blockedWriterIds);
 			given(postReader.findPostsCommentedByUserWithCursor(
-				viewer, blockedUserIds, null, null, pageSize))
+				eq(viewer.getId()), any(PostReadQueryContext.class), eq(null), eq(null), eq(pageSize)))
+				.willReturn(emptySlice);
+			given(postReader.findPostsWrittenByUserWithCursor(
+				eq(viewer.getId()), any(PostReadQueryContext.class), eq(null), eq(null), eq(pageSize)))
+				.willReturn(emptySlice);
+			given(postReader.findPostsLikedByUserWithCursor(
+				eq(viewer.getId()), any(PostReadQueryContext.class), eq(null), eq(null), eq(pageSize)))
+				.willReturn(emptySlice);
+
+			// when
+			PostListResult commented = postService.getPostsCommentedByUser(viewer, null, pageSize);
+			PostListResult written = postService.getPostsWrittenByUser(viewer, null, pageSize);
+			PostListResult liked = postService.getPostsLikedByUser(viewer, null, pageSize);
+
+			// then
+			assertAll(
+				() -> assertThat(commented.posts()).isEmpty(),
+				() -> assertThat(written.posts()).isEmpty(),
+				() -> assertThat(liked.posts()).isEmpty());
+			verify(postReader).findPostsCommentedByUserWithCursor(
+				eq(viewer.getId()),
+				argThat(context -> context.systemAdmin()
+					&& context.blockedWriterIds().equals(blockedWriterIds)),
+				eq(null), eq(null), eq(pageSize));
+			verify(postReader).findPostsWrittenByUserWithCursor(
+				eq(viewer.getId()),
+				argThat(context -> context.systemAdmin() && context.blockedWriterIds().isEmpty()),
+				eq(null), eq(null), eq(pageSize));
+			verify(postReader).findPostsLikedByUserWithCursor(
+				eq(viewer.getId()),
+				argThat(context -> context.systemAdmin()
+					&& context.blockedWriterIds().equals(blockedWriterIds)),
+				eq(null), eq(null), eq(pageSize));
+			verify(boardConfigReader, never()).getAccessibleBoardIdsByAcademicStatus(any());
+		}
+
+		@DisplayName("일반 사용자의 개인 목록에는 학적 범위와 차단 정보가 전달된다")
+		@Test
+		void getPostsCommentedByUser_shouldPassAcademicScopesAndBlockedWriters() {
+			// given
+			Set<String> blockedWriterIds = Set.of("blocked-writer-id");
+			Slice<PostCursorResult> emptySlice = new SliceImpl<>(List.of(), PageRequest.of(0, pageSize), false);
+			given(blockReader.findBlockeeUserIdsByBlocker(viewer)).willReturn(blockedWriterIds);
+			given(postReader.findPostsCommentedByUserWithCursor(
+				eq(viewer.getId()), any(PostReadQueryContext.class), eq(null), eq(null), eq(pageSize)))
 				.willReturn(emptySlice);
 
 			// when
@@ -1342,62 +1358,12 @@ public class PostServiceTest {
 			assertAll(
 				() -> assertThat(result.posts()).isEmpty(),
 				() -> assertThat(result.nextCursor()).isNull());
-			verify(blockReader).findBlockeeUserIdsByBlocker(viewer);
 			verify(postReader).findPostsCommentedByUserWithCursor(
-				viewer, blockedUserIds, null, null, pageSize);
-			verify(boardConfigReader, never()).getAccessibleBoardIdsByAcademicStatus(any());
-		}
-
-		@DisplayName("작성한 글도 차단 목록을 포함한 공통 읽기 컨텍스트로 조회")
-		@Test
-		void getPostsWrittenByUser_shouldDelegateWithViewerAndBlockedUsers() {
-			// given
-			Set<String> blockedUserIds = Set.of("blocked-user-id");
-			Slice<PostCursorResult> emptySlice = new SliceImpl<>(
-				List.of(), PageRequest.of(0, pageSize), false);
-
-			given(blockReader.findBlockeeUserIdsByBlocker(viewer)).willReturn(blockedUserIds);
-			given(postReader.findPostsWrittenByUserWithCursor(
-				viewer, blockedUserIds, null, null, pageSize))
-				.willReturn(emptySlice);
-
-			// when
-			PostListResult result = postService.getPostsWrittenByUser(viewer, null, pageSize);
-
-			// then
-			assertAll(
-				() -> assertThat(result.posts()).isEmpty(),
-				() -> assertThat(result.nextCursor()).isNull());
-			verify(blockReader).findBlockeeUserIdsByBlocker(viewer);
-			verify(postReader).findPostsWrittenByUserWithCursor(
-				viewer, blockedUserIds, null, null, pageSize);
-			verify(boardConfigReader, never()).getAccessibleBoardIdsByAcademicStatus(any());
-		}
-
-		@DisplayName("좋아요한 글은 게시판 ID 선필터 없이 공통 읽기 컨텍스트로 조회")
-		@Test
-		void getPostsLikedByUser_shouldDelegateWithViewerAndBlockedUsers() {
-			// given
-			Set<String> blockedUserIds = Set.of("blocked-user-id");
-			Slice<PostCursorResult> emptySlice = new SliceImpl<>(
-				List.of(), PageRequest.of(0, pageSize), false);
-
-			given(blockReader.findBlockeeUserIdsByBlocker(viewer)).willReturn(blockedUserIds);
-			given(postReader.findPostsLikedByUserWithCursor(
-				viewer, blockedUserIds, null, null, pageSize))
-				.willReturn(emptySlice);
-
-			// when
-			PostListResult result = postService.getPostsLikedByUser(viewer, null, pageSize);
-
-			// then
-			assertAll(
-				() -> assertThat(result.posts()).isEmpty(),
-				() -> assertThat(result.nextCursor()).isNull());
-			verify(blockReader).findBlockeeUserIdsByBlocker(viewer);
-			verify(postReader).findPostsLikedByUserWithCursor(
-				viewer, blockedUserIds, null, null, pageSize);
-			verify(boardConfigReader, never()).getAccessibleBoardIdsByAcademicStatus(any());
+				eq(viewer.getId()),
+				argThat(context -> !context.systemAdmin()
+					&& context.readableScopes().equals(Set.of(BoardReadScope.BOTH, BoardReadScope.ENROLLED))
+					&& context.blockedWriterIds().equals(blockedWriterIds)),
+				eq(null), eq(null), eq(pageSize));
 		}
 	}
 

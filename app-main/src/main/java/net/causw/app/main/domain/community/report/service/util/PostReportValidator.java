@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.community.report.service.util;
 
+import net.causw.app.main.domain.community.common.service.CommunityPermissionPolicy;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.relation.service.util.UserStateValidator;
@@ -15,7 +16,7 @@ public final class PostReportValidator {
 	public static void validateCreate(User reporter, Post post, boolean alreadyReported) {
 		UserStateValidator.validateUserIsActiveWithValidRole(reporter);
 
-		if (post.getIsDeleted()) {
+		if (!CommunityPermissionPolicy.isAlive(post)) {
 			throw PostErrorCode.POST_NOT_FOUND.toBaseException();
 		}
 
