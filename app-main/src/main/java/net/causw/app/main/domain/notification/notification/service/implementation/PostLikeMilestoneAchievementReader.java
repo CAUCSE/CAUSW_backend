@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.notification.notification.entity.PostLikeMilestoneAchievement;
 import net.causw.app.main.domain.notification.notification.repository.PostLikeMilestoneAchievementRepository;
+import net.causw.app.main.shared.exception.errorcode.PostLikeMilestoneAchievementErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -17,7 +18,7 @@ public class PostLikeMilestoneAchievementReader {
 
 	public PostLikeMilestoneAchievement findById(String achievementId) {
 		return achievementRepository.findById(achievementId)
-			.orElseThrow(() -> new IllegalStateException(
-				"게시글 좋아요 마일스톤 이력을 찾을 수 없습니다: " + achievementId));
+			.orElseThrow(
+				PostLikeMilestoneAchievementErrorCode.POST_LIKE_MILESTONE_ACHIEVEMENT_NOT_FOUND::toBaseException);
 	}
 }
