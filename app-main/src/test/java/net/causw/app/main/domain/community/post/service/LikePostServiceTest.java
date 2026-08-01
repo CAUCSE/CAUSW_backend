@@ -11,6 +11,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -88,11 +90,12 @@ public class LikePostServiceTest {
 			given(boardConfigReader.getAdminIdsByBoardId("board-id")).willReturn(List.of("admin-id"));
 		}
 
-		@DisplayName("게시글 좋아요 성공")
-		@Test
-		void likePost_shouldSucceed() {
+		@DisplayName("좋아요 수가 1~5이면 매번 알림 전용 이벤트를 발행함")
+		@ParameterizedTest(name = "좋아요 {0}개")
+		@ValueSource(longs = {1, 2, 3, 4, 5})
+		void likePost_shouldPublishEvent_whenLikeCountIsBetweenOneAndFive(long likeCount) {
 			// given
-			given(likePostReader.countByPostId("post-id")).willReturn(5L);
+			given(likePostReader.countByPostId("post-id")).willReturn(likeCount);
 
 			// when
 			likePostService.likePost("user-id", "post-id");
@@ -100,7 +103,8 @@ public class LikePostServiceTest {
 			// then
 			verify(likePostValidator, times(1)).validateForLike("user-id", "post-id");
 			verify(likePostWriter, times(1)).saveLikePost("user-id", post);
-			verify(eventPublisher).publishEvent(new PostLikeMilestoneReachedEvent("post-id", "user-id", 5L));
+			verify(eventPublisher)
+				.publishEvent(new PostLikeMilestoneReachedEvent("post-id", "user-id", likeCount));
 		}
 
 		@DisplayName("마일스톤이 아닌 좋아요 수에서는 알림 전용 이벤트를 발행하지 않음")
