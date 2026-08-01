@@ -2,8 +2,8 @@ package net.causw.app.main.domain.notification.notification.service.listener;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.never;
 import static org.mockito.BDDMockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import java.lang.reflect.Method;
 import java.util.Optional;
@@ -51,7 +51,7 @@ class PostLikeMilestoneReachedListenerTest {
 
 		listener.handle(event);
 
-		verify(notificationProcessor, never()).process("achievementId");
+		verifyNoInteractions(notificationProcessor);
 	}
 
 	@Test
