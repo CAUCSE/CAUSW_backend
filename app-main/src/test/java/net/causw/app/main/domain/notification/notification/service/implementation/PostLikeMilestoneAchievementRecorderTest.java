@@ -1,10 +1,10 @@
-package net.causw.app.main.domain.notification.notification.service.listener;
+package net.causw.app.main.domain.notification.notification.service.implementation;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.verify;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyNoInteractions;
 
+import java.lang.reflect.Method;
 import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
@@ -13,22 +13,21 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.implementation.PostReader;
 import net.causw.app.main.domain.notification.notification.entity.PostLikeMilestoneAchievement;
-import net.causw.app.main.domain.notification.notification.event.PostLikeMilestoneNotificationEvent;
 import net.causw.app.main.domain.notification.notification.event.PostLikeMilestoneReachedEvent;
-import net.causw.app.main.domain.notification.notification.service.implementation.PostLikeMilestoneAchievementWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 
 @ExtendWith(MockitoExtension.class)
-class PostLikeMilestoneAchievementListenerTest {
+class PostLikeMilestoneAchievementRecorderTest {
 
 	@InjectMocks
-	private PostLikeMilestoneAchievementListener listener;
+	private PostLikeMilestoneAchievementRecorder recorder;
 
 	@Mock
 	private PostReader postReader;
@@ -36,12 +35,10 @@ class PostLikeMilestoneAchievementListenerTest {
 	private UserReader userReader;
 	@Mock
 	private PostLikeMilestoneAchievementWriter achievementWriter;
-	@Mock
-	private ApplicationEventPublisher eventPublisher;
 
 	@Test
-	@DisplayName("신규 마일스톤 이력이 저장되면 이력 ID로 알림 이벤트를 발행한다")
-	void givenNewMilestone_whenHandle_thenPublishNotificationEvent() {
+	@DisplayName("신규 마일스톤 이력을 저장하고 이력 ID를 반환한다")
+	void givenNewMilestone_whenRecord_thenReturnAchievementId() {
 		Post post = mock(Post.class);
 		User liker = mock(User.class);
 		PostLikeMilestoneAchievement achievement = mock(PostLikeMilestoneAchievement.class);
@@ -51,22 +48,36 @@ class PostLikeMilestoneAchievementListenerTest {
 		given(achievementWriter.savePendingIfAbsent(post, liker, 100L))
 			.willReturn(Optional.of(achievement));
 
-		listener.handle(new PostLikeMilestoneReachedEvent("postId", "likerId", 100L));
+		Optional<String> result = recorder.record(
+			new PostLikeMilestoneReachedEvent("postId", "likerId", 100L));
 
-		verify(eventPublisher).publishEvent(new PostLikeMilestoneNotificationEvent("achievementId"));
+		assertThat(result).contains("achievementId");
 	}
 
 	@Test
-	@DisplayName("이미 소비한 마일스톤이면 알림 이벤트를 발행하지 않는다")
-	void givenConsumedMilestone_whenHandle_thenDoNotPublishNotificationEvent() {
+	@DisplayName("이미 소비한 마일스톤이면 빈 결과를 반환한다")
+	void givenConsumedMilestone_whenRecord_thenReturnEmpty() {
 		Post post = mock(Post.class);
 		User liker = mock(User.class);
 		given(postReader.findById("postId")).willReturn(post);
 		given(userReader.findUserById("likerId")).willReturn(liker);
 		given(achievementWriter.savePendingIfAbsent(post, liker, 100L)).willReturn(Optional.empty());
 
-		listener.handle(new PostLikeMilestoneReachedEvent("postId", "likerId", 100L));
+		Optional<String> result = recorder.record(
+			new PostLikeMilestoneReachedEvent("postId", "likerId", 100L));
 
-		verifyNoInteractions(eventPublisher);
+		assertThat(result).isEmpty();
+	}
+
+	@Test
+	@DisplayName("이력 기록은 독립 트랜잭션에서 실행된다")
+	void record_shouldUseRequiresNewTransaction() throws NoSuchMethodException {
+		Method recordMethod = PostLikeMilestoneAchievementRecorder.class
+			.getMethod("record", PostLikeMilestoneReachedEvent.class);
+
+		Transactional annotation = recordMethod.getAnnotation(Transactional.class);
+
+		assertThat(annotation).isNotNull();
+		assertThat(annotation.propagation()).isEqualTo(Propagation.REQUIRES_NEW);
 	}
 }
