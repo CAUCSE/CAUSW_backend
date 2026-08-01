@@ -19,6 +19,7 @@ import net.causw.app.main.domain.notification.notification.service.dto.UserNotif
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationPushSender;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationSettingReader;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationWriter;
+import net.causw.app.main.domain.notification.notification.service.policy.LikePostNotificationPolicy;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.relation.service.implementation.BlockReader;
@@ -72,7 +73,7 @@ public class LikePostNotificationListener {
 
 		// 좋아요 수가 특정 마일스톤에 도달했는지 확인
 		long likeCount = likePostReader.countByPostId(post.getId());
-		if (!isLikeCountMilestone(likeCount)) {
+		if (!LikePostNotificationPolicy.isMilestone(likeCount)) {
 			return;
 		}
 
@@ -91,16 +92,5 @@ public class LikePostNotificationListener {
 		// 작성자에게 푸시 알림 발송 및 알림 로그 저장
 		notificationPushSender.sendToUser(postWriter, pushTitle, serviceBody, pushData);
 		notificationWriter.saveLog(postWriter, notification);
-	}
-
-	/**
-	 *
-	 * @param count 좋아요 수가 특정 마일스톤(5, 10, 50, 100, 500, 1000의 배수)에 도달했는지 확인하는 메서드
-	 * @return 좋아요 수가 마일스톤에 도달했으면 true, 그렇지 않으면 false
-	 */
-	private boolean isLikeCountMilestone(long count) {
-		if (count == 5 || count == 10 || count == 50 || count == 100 || count == 500)
-			return true;
-		return count >= 1000 && count % 1000 == 0;
 	}
 }
