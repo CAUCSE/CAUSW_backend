@@ -37,13 +37,19 @@ WHERE NOT EXISTS (
 
 -- 2. 크롤링 시스템 계정 권한 부여
 INSERT INTO user_roles (user_id, role)
-SELECT 'system-crawler-id', 'ADMIN'
-WHERE NOT EXISTS (
-    SELECT 1 FROM user_roles WHERE user_id = 'system-crawler-id' AND role = 'ADMIN'
-);
+SELECT u.id, 'ADMIN'
+FROM tb_user u
+WHERE u.email = 'SYSTEM_CRAWLER_ACCOUNT'
+    AND NOT EXISTS (
+        SELECT 1
+        FROM user_roles ur
+        WHERE ur.user_id = u.id AND ur.role = 'ADMIN'
+    );
 
 
 -- 3. 기존 크롤링 게시물의 작성자 변경
 UPDATE tb_post
-SET user_id = 'system-crawler-id'
+SET user_id = (
+    SELECT id FROM tb_user WHERE email = 'SYSTEM_CRAWLER_ACCOUNT'
+    )
 WHERE is_crawled = true;
