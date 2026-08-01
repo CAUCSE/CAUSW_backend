@@ -164,10 +164,32 @@ class PostLikeMilestoneNotificationProcessorTest {
 		}
 
 		@Test
-		@DisplayName("탈퇴한 작성자는 TARGET_UNAVAILABLE로 소비한다")
-		void givenInactiveWriter_whenProcess_thenSuppressAsTargetUnavailable() {
+		@DisplayName("좋아요 사용자가 없으면 TARGET_UNAVAILABLE로 소비한다")
+		void givenMissingLiker_whenProcess_thenSuppressAsTargetUnavailable() {
 			User postWriter = mock(User.class);
-			given(postWriter.isInactive()).willReturn(true);
+			Post post = mock(Post.class);
+			given(post.getWriter()).willReturn(postWriter);
+			PostLikeMilestoneAchievement achievement = pendingAchievement(post, null);
+			given(achievementReader.findById("achievementId")).willReturn(achievement);
+
+			processor.process("achievementId");
+
+			verify(achievementWriter).suppress(
+				achievement,
+				PostLikeMilestoneSuppressionReason.TARGET_UNAVAILABLE);
+			verifyNoInteractions(notificationWriter, notificationSettingReader, blockReader, eventPublisher);
+		}
+
+		@ParameterizedTest(name = "작성자 상태: {0}")
+		@ValueSource(strings = {"inactive", "dropped"})
+		@DisplayName("탈퇴 또는 추방된 작성자는 TARGET_UNAVAILABLE로 소비한다")
+		void givenUnavailableWriter_whenProcess_thenSuppressAsTargetUnavailable(String writerState) {
+			User postWriter = mock(User.class);
+			if ("inactive".equals(writerState)) {
+				given(postWriter.isInactive()).willReturn(true);
+			} else {
+				given(postWriter.isDropped()).willReturn(true);
+			}
 			User liker = mock(User.class);
 			Post post = alivePostWithWriter(postWriter);
 			PostLikeMilestoneAchievement achievement = pendingAchievement(post, liker);
