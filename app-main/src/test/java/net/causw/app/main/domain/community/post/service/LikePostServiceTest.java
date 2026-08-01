@@ -25,8 +25,9 @@ import net.causw.app.main.domain.community.board.service.implementation.BoardCon
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.implementation.PostReader;
 import net.causw.app.main.domain.community.post.service.util.LikePostValidator;
+import net.causw.app.main.domain.community.reaction.service.implementation.LikePostReader;
 import net.causw.app.main.domain.community.reaction.service.implementation.LikePostWriter;
-import net.causw.app.main.domain.notification.notification.event.PostLikedEvent;
+import net.causw.app.main.domain.notification.notification.event.PostLikeMilestoneReachedEvent;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
@@ -42,6 +43,9 @@ public class LikePostServiceTest {
 
 	@Mock
 	PostReader postReader;
+
+	@Mock
+	LikePostReader likePostReader;
 
 	@Mock
 	LikePostWriter likePostWriter;
@@ -87,13 +91,30 @@ public class LikePostServiceTest {
 		@DisplayName("게시글 좋아요 성공")
 		@Test
 		void likePost_shouldSucceed() {
+			// given
+			given(likePostReader.countByPostId("post-id")).willReturn(5L);
+
 			// when
 			likePostService.likePost("user-id", "post-id");
 
 			// then
 			verify(likePostValidator, times(1)).validateForLike("user-id", "post-id");
 			verify(likePostWriter, times(1)).saveLikePost("user-id", post);
-			verify(eventPublisher, times(1)).publishEvent(any(PostLikedEvent.class));
+			verify(eventPublisher).publishEvent(new PostLikeMilestoneReachedEvent("post-id", "user-id", 5L));
+		}
+
+		@DisplayName("마일스톤이 아닌 좋아요 수에서는 알림 전용 이벤트를 발행하지 않음")
+		@Test
+		void likePost_shouldNotPublishEvent_whenLikeCountIsNotMilestone() {
+			// given
+			given(likePostReader.countByPostId("post-id")).willReturn(6L);
+
+			// when
+			likePostService.likePost("user-id", "post-id");
+
+			// then
+			verify(likePostWriter).saveLikePost("user-id", post);
+			verify(eventPublisher, never()).publishEvent(any());
 		}
 
 		@DisplayName("게시판 읽기 권한이 없으면 게시글 좋아요 실패")
