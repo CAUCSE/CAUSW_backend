@@ -12,6 +12,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.mock.env.MockEnvironment;
 
+import net.causw.app.main.domain.notification.notification.enums.NoticeType;
+import net.causw.app.main.domain.notification.notification.service.dto.PushNotificationData;
+
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.Message;
 
@@ -26,9 +29,10 @@ class FirebasePushNotificationSenderTest {
 		environment.setActiveProfiles("local");
 		FirebaseMessaging firebaseMessaging = mock(FirebaseMessaging.class);
 		FirebasePushNotificationSender sender = new FirebasePushNotificationSender(environment, firebaseMessaging);
+		PushNotificationData dummyData = new PushNotificationData(NoticeType.SYSTEM, null, null);
 
 		// when
-		sender.send("token", "title", "body");
+		sender.send("token", "title", "body", dummyData);
 
 		// then
 		verifyNoInteractions(firebaseMessaging);
@@ -43,10 +47,11 @@ class FirebasePushNotificationSenderTest {
 		environment.setActiveProfiles(profile);
 		FirebaseMessaging messaging = mock(FirebaseMessaging.class);
 		FirebasePushNotificationSender sender = new FirebasePushNotificationSender(environment, messaging);
+		PushNotificationData dummyData = new PushNotificationData(NoticeType.SYSTEM, null, null);
 		when(messaging.send(any(Message.class))).thenReturn("message-id");
 
 		// when
-		sender.send("token", "title", "body");
+		sender.send("token", "title", "body", dummyData);
 
 		// then
 		verify(messaging).send(any(Message.class));

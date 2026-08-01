@@ -11,6 +11,7 @@ CAUSW Backend (중앙대학교 소프트웨어학부 동문네트워크 백엔�
 | [architecture.md](./architecture.md) | 모듈 구성, 패키지 레이어, 의존성 흐름 등 전반적인 아키텍처 |
 | [conventions/](./conventions/) | API, 서비스, 영속화, 예외, 코드 스타일 등 코드 컨벤션 |
 | [cross-cutting/](./cross-cutting/) | 보안, 관측성, 외부 인프라, 배치 등 횡단 관심사 |
+| [domains/](./domains/) | 도메인별 정책, 점검 결과 및 변경 내역 |
 
 ## 빠른 시작
 

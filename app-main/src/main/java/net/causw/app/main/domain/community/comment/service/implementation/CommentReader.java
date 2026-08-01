@@ -37,7 +37,22 @@ public class CommentReader {
 	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception 댓글이 존재하지 않는 경우
 	 */
 	public Comment getComment(String commentId) {
-		return commentRepository.findByIdAndIsDeletedFalse(commentId)
+		return commentRepository.findById(commentId)
+			.filter(comment -> !Boolean.TRUE.equals(comment.getIsDeleted()))
+			.orElseThrow(CommentErrorCode.COMMENT_NOT_FOUND::toBaseException);
+	}
+
+	/**
+	 * 삭제 여부와 관계없이 답글의 부모 댓글을 조회합니다.
+	 *
+	 * <p>삭제된 루트 댓글에도 답글을 작성할 수 있도록 생성 경로에서만 사용합니다.
+	 * 댓글 깊이와 상위 게시글·게시판 상태는 서비스 검증에서 별도로 확인합니다.</p>
+	 *
+	 * @param commentId 부모 댓글 ID
+	 * @return 부모 댓글 엔티티
+	 */
+	public Comment getReplyParent(String commentId) {
+		return commentRepository.findById(commentId)
 			.orElseThrow(CommentErrorCode.COMMENT_NOT_FOUND::toBaseException);
 	}
 

@@ -1,6 +1,7 @@
 package net.causw.app.main.domain.community.report.service.util;
 
 import net.causw.app.main.domain.community.comment.entity.Comment;
+import net.causw.app.main.domain.community.common.service.CommunityPermissionPolicy;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.relation.service.util.UserStateValidator;
 import net.causw.app.main.shared.exception.errorcode.CommentErrorCode;
@@ -15,7 +16,7 @@ public class CommentReportValidator {
 	public static void validateCreate(User reporter, Comment comment, boolean alreadyReported) {
 		validateUserState(reporter);
 
-		if (comment.getIsDeleted()) {
+		if (!CommunityPermissionPolicy.isAlive(comment)) {
 			throw CommentErrorCode.COMMENT_NOT_FOUND.toBaseException();
 		}
 

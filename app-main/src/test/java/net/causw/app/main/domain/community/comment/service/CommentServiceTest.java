@@ -29,6 +29,7 @@ import org.springframework.data.domain.PageRequest;
 
 import net.causw.app.main.domain.asset.file.service.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.community.board.entity.Board;
+import net.causw.app.main.domain.community.board.entity.BoardConfig;
 import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
 import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.community.comment.entity.LikeComment;
@@ -90,16 +91,19 @@ public class CommentServiceTest {
 		User creator;
 		Post post;
 		Board board;
+		BoardConfig boardConfig;
 
 		@BeforeEach
 		void setUp() {
 			creator = mock(User.class);
 			post = mock(Post.class);
 			board = mock(Board.class);
+			boardConfig = mock(BoardConfig.class);
 
 			given(post.getBoard()).willReturn(board);
 			given(board.getId()).willReturn("board-id");
 			given(creator.getId()).willReturn("creator-id");
+			given(boardConfigReader.getByBoardId("board-id")).willReturn(boardConfig);
 		}
 
 		@DisplayName("댓글 생성 성공")
@@ -110,9 +114,10 @@ public class CommentServiceTest {
 			CommentResult expectedResult = mock(CommentResult.class);
 
 			given(userReader.findUserByIdNotDeleted("creator-id")).willReturn(creator);
-			given(postReader.findById("post-id")).willReturn(post);
+			given(postReader.findByIdAndNotDeleted("post-id")).willReturn(post);
 			given(boardConfigReader.getAdminIdsByBoardId("board-id")).willReturn(List.of("admin-id"));
-			given(commentMapper.toResult(any(Comment.class), eq(creator), anyList(), any(CommentMeta.class), anyMap()))
+			given(commentMapper.toResult(any(Comment.class), eq(creator), any(BoardConfig.class), anyList(),
+				any(CommentMeta.class), anyMap()))
 				.willReturn(expectedResult);
 
 			// when
@@ -120,14 +125,15 @@ public class CommentServiceTest {
 
 			// then
 			assertThat(result).isNotNull();
-			verify(commentValidator, times(1)).validateForCreate(eq(creator), eq(post));
+			verify(commentValidator, times(1)).validateForCreate(eq(creator), eq(post), any(BoardConfig.class),
+				anyList());
 			verify(commentWriter, times(1)).save(any(Comment.class));
 			verify(eventPublisher, times(1)).publishEvent(any(PostCommentCreatedEvent.class));
 		}
 
-		@DisplayName("답글 생성 성공")
+		@DisplayName("삭제된 루트 댓글에도 답글 생성 성공")
 		@Test
-		void createChildComment_shouldSucceed() {
+		void createChildComment_shouldSucceed_whenRootCommentIsDeleted() {
 			// given
 			CommentCreateCommand command = new CommentCreateCommand(
 				"답글 내용", null, "parent-comment-id", false, "creator-id");
@@ -135,13 +141,14 @@ public class CommentServiceTest {
 			CommentResult expectedResult = mock(CommentResult.class);
 
 			given(userReader.findUserByIdNotDeleted("creator-id")).willReturn(creator);
-			given(commentReader.getComment("parent-comment-id")).willReturn(parentComment);
+			given(commentReader.getReplyParent("parent-comment-id")).willReturn(parentComment);
 			given(parentComment.getPost()).willReturn(post);
 			given(parentComment.getId()).willReturn("parent-comment-id");
 			given(post.getId()).willReturn("post-id");
-			given(postReader.findById("post-id")).willReturn(post);
+			given(postReader.findByIdAndNotDeleted("post-id")).willReturn(post);
 			given(boardConfigReader.getAdminIdsByBoardId("board-id")).willReturn(List.of("admin-id"));
-			given(commentMapper.toResult(any(Comment.class), eq(creator), anyList(), any(CommentMeta.class), anyMap()))
+			given(commentMapper.toResult(any(Comment.class), eq(creator), any(BoardConfig.class), anyList(),
+				any(CommentMeta.class), anyMap()))
 				.willReturn(expectedResult);
 
 			// when
@@ -149,7 +156,8 @@ public class CommentServiceTest {
 
 			// then
 			assertThat(result).isNotNull();
-			verify(commentValidator, times(1)).validateForCreate(eq(creator), eq(post));
+			verify(commentValidator, times(1)).validateForCreate(eq(creator), eq(post), any(BoardConfig.class),
+				anyList());
 			verify(commentValidator, times(1)).validateChildCommentDepth(parentComment);
 			verify(commentWriter, times(1)).save(any(Comment.class));
 			verify(eventPublisher, times(1)).publishEvent(any(CommentChildCommentCreatedEvent.class));
@@ -163,12 +171,18 @@ public class CommentServiceTest {
 		User viewer;
 		Post post;
 		Board board;
+		BoardConfig boardConfig;
 
 		@BeforeEach
 		void setUp() {
 			viewer = mock(User.class);
 			post = mock(Post.class);
 			board = mock(Board.class);
+			boardConfig = mock(BoardConfig.class);
+			given(post.getBoard()).willReturn(board);
+			given(board.getId()).willReturn("board-id");
+			given(boardConfigReader.getByBoardId("board-id")).willReturn(boardConfig);
+			given(boardConfigReader.getAdminIdsByBoardId("board-id")).willReturn(List.of("admin-id"));
 		}
 
 		@DisplayName("댓글 목록 조회 성공 (대댓글 포함)")
@@ -176,9 +190,6 @@ public class CommentServiceTest {
 		void findAllComments_shouldSucceed() {
 			// given
 			given(viewer.getId()).willReturn("user-id");
-			given(post.getBoard()).willReturn(board);
-			given(board.getId()).willReturn("board-id");
-
 			PageRequest pageable = PageRequest.of(0, 10);
 			Comment comment = mock(Comment.class);
 			CommentResult commentResult = mock(CommentResult.class);
@@ -189,13 +200,13 @@ public class CommentServiceTest {
 			CommentListQuery query = new CommentListQuery("viewer-id", "post-id", pageable);
 
 			given(userReader.findUserByIdNotDeleted("viewer-id")).willReturn(viewer);
-			given(postReader.findById("post-id")).willReturn(post);
-			given(boardConfigReader.getAdminIdsByBoardId("board-id")).willReturn(List.of("admin-id"));
+			given(postReader.findByIdAndNotDeleted("post-id")).willReturn(post);
 			given(blockReader.findBlockeeUserIdsByBlocker(viewer)).willReturn(Collections.emptySet());
 			given(commentReader.getComments("post-id", pageable)).willReturn(commentsPage);
 			given(commentMetaReader.fetch(eq("user-id"), any(Set.class), anyList()))
 				.willReturn(Map.of("comment-id", mock(CommentMeta.class)));
-			given(commentMapper.toResult(eq(comment), eq(viewer), anyList(), any(CommentMeta.class), anyMap()))
+			given(commentMapper.toResult(eq(comment), eq(viewer), any(BoardConfig.class), anyList(),
+				any(CommentMeta.class), anyMap()))
 				.willReturn(commentResult);
 
 			// when
@@ -206,7 +217,8 @@ public class CommentServiceTest {
 				() -> assertThat(result).isNotNull(),
 				() -> assertThat(result.getContent()).hasSize(1));
 
-			verify(commentValidator, times(1)).validateForFind(viewer, post);
+			verify(commentValidator, times(1)).validateForFind(eq(viewer), eq(post), any(BoardConfig.class),
+				anyList());
 			verify(commentMetaReader, times(1)).fetch(eq("user-id"), any(Set.class), anyList());
 		}
 
@@ -219,7 +231,7 @@ public class CommentServiceTest {
 			CommentListQuery query = new CommentListQuery("viewer-id", "post-id", pageable);
 
 			given(userReader.findUserByIdNotDeleted("viewer-id")).willReturn(viewer);
-			given(postReader.findById("post-id")).willReturn(post);
+			given(postReader.findByIdAndNotDeleted("post-id")).willReturn(post);
 			given(commentReader.getComments("post-id", pageable)).willReturn(emptyPage);
 
 			// when
@@ -243,6 +255,7 @@ public class CommentServiceTest {
 			User updater = mock(User.class);
 			Post post = mock(Post.class);
 			Board board = mock(Board.class);
+			BoardConfig boardConfig = mock(BoardConfig.class);
 			Comment comment = mock(Comment.class);
 			CommentUpdateCommand command = new CommentUpdateCommand("comment-id", "수정된 댓글 내용", "updater-id");
 			CommentResult expectedResult = mock(CommentResult.class);
@@ -251,13 +264,15 @@ public class CommentServiceTest {
 			given(commentReader.getComment("comment-id")).willReturn(comment);
 			given(comment.getPost()).willReturn(post);
 			given(post.getId()).willReturn("post-id");
-			given(postReader.findById("post-id")).willReturn(post);
+			given(postReader.findByIdAndNotDeleted("post-id")).willReturn(post);
 			given(post.getBoard()).willReturn(board);
 			given(board.getId()).willReturn("board-id");
+			given(boardConfigReader.getByBoardId("board-id")).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId("board-id")).willReturn(List.of("admin-id"));
 			given(commentMetaReader.fetchForComment(eq(updater), eq(comment), eq(Set.of())))
 				.willReturn(mock(CommentMeta.class));
-			given(commentMapper.toResult(eq(comment), eq(updater), anyList(), any(CommentMeta.class), anyMap()))
+			given(commentMapper.toResult(eq(comment), eq(updater), any(BoardConfig.class), anyList(),
+				any(CommentMeta.class), anyMap()))
 				.willReturn(expectedResult);
 
 			// when
@@ -265,7 +280,8 @@ public class CommentServiceTest {
 
 			// then
 			assertThat(result).isNotNull();
-			verify(commentValidator, times(1)).validateForUpdate(updater, post, comment);
+			verify(commentValidator, times(1)).validateForUpdate(eq(updater), eq(comment),
+				any(BoardConfig.class), anyList());
 			verify(comment, times(1)).update("수정된 댓글 내용");
 			verify(commentWriter, times(1)).save(comment);
 		}
@@ -300,6 +316,7 @@ public class CommentServiceTest {
 			User deleter = mock(User.class);
 			Post post = mock(Post.class);
 			Board board = mock(Board.class);
+			BoardConfig boardConfig = mock(BoardConfig.class);
 			Comment comment = mock(Comment.class);
 			CommentResult expectedResult = mock(CommentResult.class);
 
@@ -307,13 +324,15 @@ public class CommentServiceTest {
 			given(commentReader.getComment("comment-id")).willReturn(comment);
 			given(comment.getPost()).willReturn(post);
 			given(post.getId()).willReturn("post-id");
-			given(postReader.findById("post-id")).willReturn(post);
+			given(postReader.findByIdAndNotDeleted("post-id")).willReturn(post);
 			given(post.getBoard()).willReturn(board);
 			given(board.getId()).willReturn("board-id");
+			given(boardConfigReader.getByBoardId("board-id")).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId("board-id")).willReturn(List.of("admin-id"));
 			given(commentMetaReader.fetchForComment(eq(deleter), eq(comment), eq(Set.of())))
 				.willReturn(mock(CommentMeta.class));
-			given(commentMapper.toResult(eq(comment), eq(deleter), anyList(), any(CommentMeta.class), anyMap()))
+			given(commentMapper.toResult(eq(comment), eq(deleter), any(BoardConfig.class), anyList(),
+				any(CommentMeta.class), anyMap()))
 				.willReturn(expectedResult);
 
 			// when
@@ -321,7 +340,8 @@ public class CommentServiceTest {
 
 			// then
 			assertThat(result).isNotNull();
-			verify(commentValidator, times(1)).validateForDelete(deleter, post, comment);
+			verify(commentValidator, times(1)).validateForDelete(eq(deleter), eq(comment),
+				any(BoardConfig.class), anyList());
 			verify(comment, times(1)).delete();
 			verify(commentWriter, times(1)).save(comment);
 		}
@@ -350,13 +370,26 @@ public class CommentServiceTest {
 	class LikeCommentTest {
 		User user;
 		Comment comment;
+		Post post;
+		Board board;
+		BoardConfig boardConfig;
 
 		@BeforeEach
 		void setUp() {
 			user = mock(User.class);
 			comment = mock(Comment.class);
+			post = mock(Post.class);
+			board = mock(Board.class);
+			boardConfig = mock(BoardConfig.class);
 			lenient().when(userReader.findUserByIdNotDeleted("user-id")).thenReturn(user);
 			lenient().when(commentReader.getComment("comment-id")).thenReturn(comment);
+			lenient().when(comment.getPost()).thenReturn(post);
+			lenient().when(post.getId()).thenReturn("post-id");
+			lenient().when(post.getBoard()).thenReturn(board);
+			lenient().when(board.getId()).thenReturn("board-id");
+			lenient().when(postReader.findByIdAndNotDeleted("post-id")).thenReturn(post);
+			lenient().when(boardConfigReader.getByBoardId("board-id")).thenReturn(boardConfig);
+			lenient().when(boardConfigReader.getAdminIdsByBoardId("board-id")).thenReturn(List.of("admin-id"));
 		}
 
 		@DisplayName("댓글 좋아요 성공")
@@ -366,6 +399,7 @@ public class CommentServiceTest {
 			commentService.likeComment("user-id", "comment-id");
 
 			// then
+			verify(commentValidator, times(1)).validateForFind(user, post, boardConfig, List.of("admin-id"));
 			verify(commentValidator, times(1)).validateForLike(user, comment);
 			verify(likeCommentWriter, times(1)).save(any(LikeComment.class));
 		}
@@ -430,6 +464,8 @@ public class CommentServiceTest {
 			// then
 			verify(commentValidator, times(1)).validateForCancelLike(user, comment);
 			verify(likeCommentWriter, times(1)).delete("comment-id", "user-id");
+			verify(commentValidator, never()).validateForFind(any(), any(), any(), anyList());
+			verify(postReader, never()).findByIdAndNotDeleted(anyString());
 		}
 
 		@DisplayName("좋아요를 누르지 않은 상태에서 취소 시 예외 발생")

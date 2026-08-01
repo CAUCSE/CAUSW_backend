@@ -131,7 +131,6 @@ net.causw.app.main/
 | Batch / Migration | `spring-boot-starter-batch`, `flyway-core`, `flyway-mysql` |
 | API Doc / Mapper | `springdoc-openapi-starter-webmvc-ui`, MapStruct |
 | 모니터링 | `spring-boot-starter-actuator`, `micrometer-registry-prometheus` |
-| 환경변수 | `spring-dotenv` (`.env` 파일 로딩) |
 
 일부 의존성은 다소 오래된 메이저 버전(`spring-cloud-aws` 2.x, `jjwt` 0.9.x, MapStruct 1.4.x) 이라 신규 API 도입 전 호환성 점검 필요.
 

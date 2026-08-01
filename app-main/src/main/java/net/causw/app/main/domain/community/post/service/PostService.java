@@ -19,8 +19,10 @@ import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
 import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
 import net.causw.app.main.domain.community.board.service.implementation.BoardReader;
+import net.causw.app.main.domain.community.common.service.CommunityPermissionPolicy;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.query.PostCursorResult;
+import net.causw.app.main.domain.community.post.repository.query.PostReadQueryContext;
 import net.causw.app.main.domain.community.post.service.dto.PostCreateCommand;
 import net.causw.app.main.domain.community.post.service.dto.PostCreateResult;
 import net.causw.app.main.domain.community.post.service.dto.PostDetailQuery;
@@ -103,10 +105,20 @@ public class PostService {
 
 	@Transactional
 	public void deletePost(User deleter, String postId) {
+		CommunityPermissionPolicy.validateActiveUser(deleter);
 		Post post = postReader.findById(postId);
 		String boardId = post.getBoard().getId();
 		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(boardId);
-		PostValidator.validateDelete(deleter, post, boardAdminIds);
+		BoardConfig boardConfig = boardConfigReader.getByBoardId(boardId);
+		validateBlockedWriterAccess(deleter, post, boardAdminIds);
+		if (Boolean.TRUE.equals(post.getIsDeleted())) {
+			if (!CommunityPermissionPolicy.canDeletePostIgnoringTargetDeletion(
+				deleter, post, boardConfig, boardAdminIds)) {
+				throw PostErrorCode.POST_FORBIDDEN.toBaseException();
+			}
+			return;
+		}
+		PostValidator.validateDelete(deleter, post, boardAdminIds, boardConfig);
 
 		// 소프트 삭제 처리
 		post.setIsDeleted(true);
@@ -125,7 +137,7 @@ public class PostService {
 	@Transactional
 	public PostUpdateResult update(PostUpdateCommand command) {
 		User updater = command.updater();
-		Post post = postReader.findById(command.postId());
+		Post post = postReader.findByIdAndNotDeleted(command.postId());
 		BoardConfig boardConfig = boardConfigReader.getByBoardId(post.getBoard().getId());
 		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
 
@@ -159,6 +171,7 @@ public class PostService {
 	 */
 	public PostListResult getPosts(PostListQuery query) {
 		User viewer = query.viewer();
+		CommunityPermissionPolicy.validateActiveUser(viewer);
 		List<String> requestedBoardIds = query.boardIds();
 		String cursor = query.cursor();
 		int size = query.size() != null ? query.size() : StaticValue.DEFAULT_POST_PAGE_SIZE; // 기본값 20
@@ -167,36 +180,29 @@ public class PostService {
 		// 커서 파싱
 		PostCursorManager.ParsedCursor parsedCursor = PostCursorManager.parseCursor(cursor);
 
-		List<String> boardIds;
+		List<String> boardIds = null;
 		// 게시판 ID 목록이 지정된 경우
 		if (requestedBoardIds != null && !requestedBoardIds.isEmpty()) {
 			// 각 게시판에 대한 읽기 권한 검증
 			for (String boardId : requestedBoardIds) {
+				Board board = boardReader.getById(boardId);
 				BoardConfig boardConfig = boardConfigReader.getByBoardId(boardId);
 				List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(boardId);
 
-				// ReadScope 검증
-				PostValidator.validateRead(viewer, boardConfig, boardAdminIds);
+				PostValidator.validateRead(viewer, board, boardConfig, boardAdminIds);
 			}
 
 			boardIds = requestedBoardIds;
-		} else {
-			// 게시판 ID가 지정되지 않은 경우 - 사용자의 AcademicStatus에 따라 접근 가능한 게시판 조회
-			boardIds = boardConfigReader.getAccessibleBoardIdsByAcademicStatus(viewer.getAcademicStatus());
-		}
-
-		// 접근 가능한 게시판이 없으면 게시글 조회를 건너뛰고 빈 결과를 반환
-		if (boardIds.isEmpty()) {
-			return PostListResult.of(List.of(), null);
 		}
 
 		// 뷰어가 차단한 사용자 조회
 		Set<String> blockedUserIds = userBlockReader.findBlockeeUserIdsByBlocker(viewer);
+		PostReadQueryContext readContext = PostReadQueryContext.from(viewer, blockedUserIds);
 
 		// 게시글 조회 (Slice 사용)
 		Slice<PostCursorResult> slice = postReader.findPostsWithCursor(
 			boardIds,
-			blockedUserIds,
+			readContext,
 			parsedCursor.createdAt(),
 			parsedCursor.postId(),
 			size,
@@ -228,6 +234,7 @@ public class PostService {
 		List<String> uniqueBoardIds = posts.stream().map(PostCursorResult::boardId).filter(Objects::nonNull)
 			.distinct().toList();
 		Map<String, BoardConfig> boardConfigMap = boardConfigReader.getBoardConfigMapByBoardIds(uniqueBoardIds);
+		Map<String, Set<String>> boardAdminIdMap = boardConfigReader.getAdminIdSetMapByBoardIds(uniqueBoardIds);
 
 		// 작성자 중 Role이 ADMIN인 사용자 ID 조회 (시스템 관리자 판별용)
 		List<String> writerIds = posts.stream()
@@ -239,7 +246,7 @@ public class PostService {
 
 		// PostListResult로 변환 (PostMapper 사용)
 		List<PostListResult.PostItem> postItems = buildPostItems(posts, postImagesMap, likedPostIds, viewer,
-			boardConfigMap, adminWriterIds);
+			boardConfigMap, boardAdminIdMap, adminWriterIds);
 
 		return PostListResult.of(postItems, nextCursor);
 	}
@@ -254,7 +261,7 @@ public class PostService {
 		String postId = query.postId();
 
 		// 게시글 조회
-		Post post = postReader.findById(postId);
+		Post post = postReader.findByIdAndNotDeleted(postId);
 		Board board = post.getBoard();
 		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(board.getId());
 
@@ -262,14 +269,10 @@ public class PostService {
 		BoardConfig boardConfig = boardConfigReader.getByBoardId(board.getId());
 
 		// ReadScope 검증
-		PostValidator.validateRead(viewer, boardConfig, boardAdminIds);
+		PostValidator.validateRead(viewer, post, boardConfig, boardAdminIds);
 
 		// 차단한 사용자가 작성한 게시글은 조회 불가
-		User writer = post.getWriter();
-		if (writer != null && !writer.getId().equals(viewer.getId()) && !boardAdminIds.contains(viewer.getId())
-			&& userBlockReader.existsByBlockerAndBlocked(viewer, writer)) {
-			throw PostErrorCode.BLOCKED_USER_CONTENT.toBaseException();
-		}
+		validateBlockedWriterAccess(viewer, post, boardAdminIds);
 
 		// 게시글 이미지 조회
 		List<String> imageUrls = postReader.findPostImages(postId);
@@ -284,9 +287,9 @@ public class PostService {
 		// 게시글 작성자 여부
 		boolean isOwner = post.getWriter().getId().equals(viewer.getId());
 
-		// 수정/삭제 가능 여부 (수정은 작성자만, 삭제는 작성자 + 게시판 관리자 + 시스템 관리자)
-		boolean updatable = isOwner;
-		boolean deletable = isOwner || boardAdminIds.contains(viewer.getId()) || viewer.getRoles().contains(Role.ADMIN);
+		// 수정/삭제 가능 여부 (공통 정책에서 목록 응답과 같은 기준으로 계산)
+		boolean updatable = CommunityPermissionPolicy.canUpdatePost(viewer, post, boardConfig, boardAdminIds);
+		boolean deletable = CommunityPermissionPolicy.canDeletePost(viewer, post, boardConfig, boardAdminIds);
 
 		// 닉네임 마스킹 및 공식 배지 여부 판단
 		boolean isNotice = boardConfig.isNotice() || post.getIsCrawled();
@@ -335,20 +338,15 @@ public class PostService {
 	 * @return 게시글 목록 결과
 	 */
 	public PostListResult getPostsCommentedByUser(User user, String cursor, Integer size) {
-		List<String> accessibleBoardIds = boardConfigReader.getAccessibleBoardIdsByAcademicStatus(
-			user.getAcademicStatus());
-		if (hasNoAccessibleBoards(accessibleBoardIds)) {
-			return PostListResult.of(List.of(), null);
-		}
-
+		CommunityPermissionPolicy.validateActiveUser(user);
 		Set<String> blockedUserIds = userBlockReader.findBlockeeUserIdsByBlocker(user);
+		PostReadQueryContext readContext = PostReadQueryContext.from(user, blockedUserIds);
 		int pageSize = size != null ? size : StaticValue.DEFAULT_POST_PAGE_SIZE;
 		PostCursorManager.ParsedCursor parsedCursor = PostCursorManager.parseCursor(cursor);
 
 		Slice<PostCursorResult> slice = postReader.findPostsCommentedByUserWithCursor(
 			user.getId(),
-			blockedUserIds,
-			accessibleBoardIds,
+			readContext,
 			parsedCursor.createdAt(),
 			parsedCursor.postId(),
 			pageSize);
@@ -365,18 +363,14 @@ public class PostService {
 	 * @return 게시글 목록 결과
 	 */
 	public PostListResult getPostsWrittenByUser(User user, String cursor, Integer size) {
-		List<String> accessibleBoardIds = boardConfigReader.getAccessibleBoardIdsByAcademicStatus(
-			user.getAcademicStatus());
-		if (hasNoAccessibleBoards(accessibleBoardIds)) {
-			return PostListResult.of(List.of(), null);
-		}
-
+		CommunityPermissionPolicy.validateActiveUser(user);
+		PostReadQueryContext readContext = PostReadQueryContext.from(user, Set.of());
 		int pageSize = size != null ? size : StaticValue.DEFAULT_POST_PAGE_SIZE;
 		PostCursorManager.ParsedCursor parsedCursor = PostCursorManager.parseCursor(cursor);
 
 		Slice<PostCursorResult> slice = postReader.findPostsWrittenByUserWithCursor(
 			user.getId(),
-			accessibleBoardIds,
+			readContext,
 			parsedCursor.createdAt(),
 			parsedCursor.postId(),
 			pageSize);
@@ -392,20 +386,15 @@ public class PostService {
 	 * @return 게시글 목록 결과
 	 */
 	public PostListResult getPostsLikedByUser(User user, String cursor, Integer size) {
-		List<String> accessibleBoardIds = boardConfigReader.getAccessibleBoardIdsByAcademicStatus(
-			user.getAcademicStatus());
-		if (hasNoAccessibleBoards(accessibleBoardIds)) {
-			return PostListResult.of(List.of(), null);
-		}
-
+		CommunityPermissionPolicy.validateActiveUser(user);
 		Set<String> blockedUserIds = userBlockReader.findBlockeeUserIdsByBlocker(user);
+		PostReadQueryContext readContext = PostReadQueryContext.from(user, blockedUserIds);
 		int pageSize = size != null ? size : StaticValue.DEFAULT_POST_PAGE_SIZE;
 		PostCursorManager.ParsedCursor parsedCursor = PostCursorManager.parseCursor(cursor);
 
 		Slice<PostCursorResult> slice = postReader.findPostsLikedByUserWithCursor(
 			user.getId(),
-			blockedUserIds,
-			accessibleBoardIds,
+			readContext,
 			parsedCursor.createdAt(),
 			parsedCursor.postId(),
 			pageSize);
@@ -428,6 +417,7 @@ public class PostService {
 		List<String> uniqueBoardIds = posts.stream().map(PostCursorResult::boardId).filter(Objects::nonNull)
 			.distinct().toList();
 		Map<String, BoardConfig> boardConfigMap = boardConfigReader.getBoardConfigMapByBoardIds(uniqueBoardIds);
+		Map<String, Set<String>> boardAdminIdMap = boardConfigReader.getAdminIdSetMapByBoardIds(uniqueBoardIds);
 
 		// 작성자 중 Role이 ADMIN인 사용자 ID 조회 (시스템 관리자 판별용)
 		List<String> writerIds = posts.stream()
@@ -438,7 +428,7 @@ public class PostService {
 		Set<String> adminWriterIds = postReader.findAdminUserIds(writerIds);
 
 		List<PostListResult.PostItem> postItems = buildPostItems(posts, postImagesMap, likedPostIds, viewer,
-			boardConfigMap, adminWriterIds);
+			boardConfigMap, boardAdminIdMap, adminWriterIds);
 
 		String nextCursor = null;
 		if (slice.hasNext()) {
@@ -447,10 +437,6 @@ public class PostService {
 		}
 
 		return PostListResult.of(postItems, nextCursor);
-	}
-
-	private static boolean hasNoAccessibleBoards(List<String> accessibleBoardIds) {
-		return accessibleBoardIds == null || accessibleBoardIds.isEmpty();
 	}
 
 	/**
@@ -470,6 +456,7 @@ public class PostService {
 		Set<String> likedPostIds,
 		User viewer,
 		Map<String, BoardConfig> boardConfigMap,
+		Map<String, Set<String>> boardAdminIdMap,
 		Set<String> adminWriterIds) {
 
 		return posts.stream()
@@ -477,6 +464,12 @@ public class PostService {
 				List<String> imageUrls = postImagesMap.getOrDefault(result.postId(), List.of());
 				boolean isPostLike = likedPostIds.contains(result.postId());
 				boolean isOwner = result.writerId() != null && result.writerId().equals(viewer.getId());
+				Set<String> boardAdminIds = boardAdminIdMap.getOrDefault(result.boardId(), Set.of());
+				boolean updatable = !result.isDeleted()
+					&& CommunityPermissionPolicy.canUpdateReadableContent(viewer, result.writerId());
+				boolean deletable = !result.isDeleted()
+					&& CommunityPermissionPolicy.canDeleteReadableContent(
+						viewer, result.writerId(), boardAdminIds);
 
 				BoardConfig boardConfig = boardConfigMap.get(result.boardId());
 
@@ -494,10 +487,22 @@ public class PostService {
 					}
 				}
 
-				return PostMapper.toPostListItem(result, imageUrls, isPostLike, isOwner, isNotice, isOfficial,
+				return PostMapper.toPostListItem(
+					result, imageUrls, isPostLike, isOwner, updatable, deletable, isNotice, isOfficial,
 					officialNickname,
 					officialImageUrl);
 			})
 			.toList();
+	}
+
+	private void validateBlockedWriterAccess(User viewer, Post post, List<String> boardAdminIds) {
+		User writer = post.getWriter();
+		if (writer == null
+			|| CommunityPermissionPolicy.isModerator(viewer, boardAdminIds)) {
+			return;
+		}
+		if (userBlockReader.existsByBlockerAndBlocked(viewer, writer)) {
+			throw PostErrorCode.BLOCKED_USER_CONTENT.toBaseException();
+		}
 	}
 }

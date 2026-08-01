@@ -12,4 +12,6 @@ public interface DroppedUserIdentifierRepository extends JpaRepository<DroppedUs
 	boolean existsByIdentifierTypeAndIdentifierHash(DroppedIdentifierType identifierType, String identifierHash);
 
 	List<DroppedUserIdentifier> findAllByUserId(String userId);
+
+	void deleteAllByUserId(String userId);
 }

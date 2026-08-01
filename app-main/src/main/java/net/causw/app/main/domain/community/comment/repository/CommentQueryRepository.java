@@ -11,7 +11,6 @@ import org.springframework.stereotype.Repository;
 
 import net.causw.app.main.domain.community.comment.entity.Comment;
 
-import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
@@ -35,8 +34,7 @@ public class CommentQueryRepository {
 			.leftJoin(comment.writer).fetchJoin()
 			.where(
 				comment.post.id.eq(postId),
-				comment.parentComment.isNull(),
-				isNotDeleted())
+				comment.parentComment.isNull())
 			.orderBy(comment.createdAt.asc())
 			.offset(pageable.getOffset())
 			.limit(pageable.getPageSize())
@@ -47,8 +45,7 @@ public class CommentQueryRepository {
 			.from(comment)
 			.where(
 				comment.post.id.eq(postId),
-				comment.parentComment.isNull(),
-				isNotDeleted());
+				comment.parentComment.isNull());
 
 		return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
 	}
@@ -69,13 +66,9 @@ public class CommentQueryRepository {
 			.leftJoin(comment.parentComment).fetchJoin()
 			.leftJoin(comment.post).fetchJoin()
 			.where(
-				comment.parentComment.id.in(parentCommentIds),
-				isNotDeleted())
+				comment.parentComment.id.in(parentCommentIds))
 			.orderBy(comment.createdAt.asc())
 			.fetch();
 	}
 
-	private BooleanExpression isNotDeleted() {
-		return comment.isDeleted.isFalse().or(comment.isDeleted.isNull());
-	}
 }

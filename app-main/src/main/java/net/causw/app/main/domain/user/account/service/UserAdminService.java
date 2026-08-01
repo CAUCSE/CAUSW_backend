@@ -101,6 +101,7 @@ public class UserAdminService {
 		Set<Role> beforeRoles = new HashSet<>(targetUser.getRoles());
 
 		User restoredUser = userWriter.restore(targetUser);
+		droppedUserIdentifierWriter.deleteDroppedIdentifiers(restoredUser);
 		userAdminActionLogWriter.logRestore(adminUser, restoredUser, beforeState, beforeRoles);
 		return UserRestoreResult.from(restoredUser);
 	}

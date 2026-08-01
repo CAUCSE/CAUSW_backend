@@ -1,0 +1,44 @@
+name: 디스코드 PR 생성 알림
+
+on:
+  pull_request:
+    types: [opened, reopened]
+
+jobs:
+  notify:
+    if: >-
+      github.event.pull_request.draft == false &&
+      github.event.pull_request.head.ref != 'dev' &&
+      github.event.pull_request.head.ref != 'main' &&
+      !startsWith(github.event.pull_request.head.ref, 'chore') &&
+      !startsWith(github.event.pull_request.head.ref, 'hotfix')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Discord Notification
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_BACKEND_PR_WEBHOOK_URL }}
+          DISCORD_BACKEND_ROLE_ID: ${{ vars.DISCORD_BACKEND_ROLE_ID }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          jq -n \
+            --arg role_id "$DISCORD_BACKEND_ROLE_ID" \
+            --arg title "$PR_TITLE" \
+            --arg pr_url "$PR_URL" \
+            --arg pr_author "$PR_AUTHOR" \
+            --arg pr_body "$PR_BODY" \
+            '{
+              content: ("<@&" + $role_id + "> **" + $pr_author + "**님의 새로운 PR이 생성되었습니다! 리뷰 부탁드립니다."),
+              embeds: [{
+                title: $title,
+                url: $pr_url,
+                description: ("작성자: **" + $pr_author + "**\n\n" + ($pr_body | .[0:500]) + (if ($pr_body | length) > 500 then "..." else "" end))
+              }]
+            }' > payload.json
+
+          curl --fail-with-body \
+            -H "Content-Type: application/json" \
+            -d @payload.json \
+            "$DISCORD_WEBHOOK_URL"

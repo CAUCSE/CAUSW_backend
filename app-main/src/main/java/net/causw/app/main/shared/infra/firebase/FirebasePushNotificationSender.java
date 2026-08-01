@@ -1,10 +1,13 @@
 package net.causw.app.main.shared.infra.firebase;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
+import net.causw.app.main.domain.notification.notification.service.dto.PushNotificationData;
 import net.causw.app.main.shared.infra.push.PushNotificationSender;
 
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -29,10 +32,22 @@ public class FirebasePushNotificationSender implements PushNotificationSender {
 	}
 
 	@Override
-	public void send(String token, String title, String body) throws Exception {
+	public void send(String token, String title, String body, PushNotificationData pushNotificationData)
+		throws Exception {
 		if (!isPushEnabledProfile()) {
 			log.debug("FCM 메시지 발송 생략: activeProfiles={}", Arrays.toString(environment.getActiveProfiles()));
 			return;
+		}
+
+		Map<String, String> data = new HashMap<>();
+		data.put("noticeType", pushNotificationData.noticeType().name());
+
+		if (pushNotificationData.targetId() != null) {
+			data.put("targetId", pushNotificationData.targetId());
+		}
+
+		if (pushNotificationData.targetParentId() != null) {
+			data.put("targetParentId", pushNotificationData.targetParentId());
 		}
 
 		Notification notification = Notification.builder()
@@ -41,6 +56,7 @@ public class FirebasePushNotificationSender implements PushNotificationSender {
 			.build();
 
 		Message message = Message.builder()
+			.putAllData(data)
 			.setToken(token)
 			.setNotification(notification)
 			.build();
