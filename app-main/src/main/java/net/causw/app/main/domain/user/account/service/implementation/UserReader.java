@@ -188,6 +188,17 @@ public class UserReader {
 	}
 
 	/**
+	 * 탈퇴 후 유예기간이 지난 개인정보 정리 대상 유저를 조회합니다.
+	 *
+	 * @param deletedAt 조회 기준 시각 (이 시각 이전에 탈퇴한 유저)
+	 * @param pageable 배치 처리용 조회 범위
+	 * @return 개인정보 정리 대상 유저 목록
+	 */
+	public List<User> findCleanupTargets(LocalDateTime deletedAt, Pageable pageable) {
+		return userRepository.findCleanupTargets(deletedAt, pageable);
+	}
+
+	/**
 	 * 특정 상태이면서 updatedAt이 기준 시각 이전인 유저 목록을 조회합니다. (배치용)
 	 * @param state 조회할 유저 상태
 	 * @param dueDate updatedAt 기준 시각
@@ -196,16 +207,6 @@ public class UserReader {
 	 */
 	public Slice<User> findUsersByStateAndUpdatedAtBefore(UserState state, LocalDateTime dueDate, Pageable pageable) {
 		return userRepository.findAllByStateAndUpdatedAtBeforeAndDeletedAtIsNull(state, dueDate, pageable);
-	}
-
-	/**
-	 * deletedAt이 기준 시각 이전인 소프트 삭제된 유저 목록을 조회합니다. (배치용)
-	 * @param dueDate deletedAt 기준 시각
-	 * @param pageable 페이지네이션 정보
-	 * @return 조건에 해당하는 유저 페이지
-	 */
-	public Page<User> findUsersDeletedBefore(LocalDateTime dueDate, Pageable pageable) {
-		return userRepository.findAllByDeletedAtIsNotNullAndDeletedAtBefore(dueDate, pageable);
 	}
 
 	public Long getTotalUserCount() {
