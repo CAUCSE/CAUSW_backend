@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.asset.file.service.implementation.UserProfileImageReader;
+import net.causw.app.main.domain.community.board.entity.BoardConfig;
 import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
 import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.community.comment.entity.LikeComment;
@@ -27,6 +28,7 @@ import net.causw.app.main.domain.community.comment.service.implementation.Commen
 import net.causw.app.main.domain.community.comment.service.implementation.CommentWriter;
 import net.causw.app.main.domain.community.comment.service.implementation.LikeCommentWriter;
 import net.causw.app.main.domain.community.comment.util.CommentValidator;
+import net.causw.app.main.domain.community.common.service.CommunityPermissionPolicy;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.implementation.PostReader;
 import net.causw.app.main.domain.notification.notification.event.CommentChildCommentCreatedEvent;
@@ -35,6 +37,7 @@ import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.relation.service.implementation.BlockReader;
 import net.causw.app.main.shared.exception.errorcode.ChildCommentErrorCode;
+import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -77,23 +80,28 @@ public class CommentService {
 		User creator = userReader.findUserByIdNotDeleted(command.creatorId());
 		Comment parentComment = command.parentCommentId() == null
 			? null
-			: commentReader.getComment(command.parentCommentId());
+			: commentReader.getReplyParent(command.parentCommentId());
 		Post post = parentComment == null
-			? postReader.findById(command.postId())
-			: postReader.findById(parentComment.getPost().getId());
+			? postReader.findByIdAndNotDeleted(command.postId())
+			: postReader.findByIdAndNotDeleted(parentComment.getPost().getId());
+		BoardConfig boardConfig = boardConfigReader.getByBoardId(post.getBoard().getId());
+		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
+
+		commentValidator.validateForCreate(creator, post, boardConfig, boardAdminIds);
+		validatePostWriterBlockAccess(creator, post, boardAdminIds);
+		commentValidator.validateChildCommentDepth(parentComment);
+
 		Comment comment = parentComment == null
 			? Comment.ofRoot(command.content(), command.isAnonymous(), creator, post)
 			: Comment.ofChildComment(command.content(), command.isAnonymous(), creator, parentComment);
 
-		commentValidator.validateForCreate(creator, post);
-		commentValidator.validateChildCommentDepth(parentComment);
 		commentWriter.save(comment);
 
 		// 신규 댓글: 좋아요 0, 대댓글 없음
-		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
 		Map<String, UserProfileImage> profileImageMap = userProfileImageReader.findMapByUserIds(
 			List.of(creator.getId()));
-		CommentResult result = commentMapper.toResult(comment, creator, boardAdminIds, CommentMeta.forNew(),
+		CommentResult result = commentMapper.toResult(
+			comment, creator, boardConfig, boardAdminIds, CommentMeta.forNew(),
 			profileImageMap);
 
 		if (parentComment == null) {
@@ -117,17 +125,21 @@ public class CommentService {
 	 */
 	public Page<CommentResult> findAllComments(CommentListQuery query) {
 		User viewer = userReader.findUserByIdNotDeleted(query.viewerId());
-		Post post = postReader.findById(query.postId());
+		Post post = postReader.findByIdAndNotDeleted(query.postId());
+		BoardConfig boardConfig = boardConfigReader.getByBoardId(post.getBoard().getId());
+		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
 
-		commentValidator.validateForFind(viewer, post);
+		commentValidator.validateForFind(viewer, post, boardConfig, boardAdminIds);
+		validatePostWriterBlockAccess(viewer, post, boardAdminIds);
 
 		Page<Comment> comments = commentReader.getComments(query.postId(), query.pageable());
 		if (comments.getContent().isEmpty())
 			return Page.empty(query.pageable());
 
 		// 게시판 권한 및 차단 정보 조회
-		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
-		Set<String> blockedUserIds = blockReader.findBlockeeUserIdsByBlocker(viewer);
+		Set<String> blockedUserIds = CommunityPermissionPolicy.isModerator(viewer, boardAdminIds)
+			? Set.of()
+			: blockReader.findBlockeeUserIdsByBlocker(viewer);
 
 		// 댓글·대댓글 집계 데이터 배치 조회
 		Map<String, CommentMeta> metaMap = commentMetaReader.fetch(viewer.getId(), blockedUserIds,
@@ -149,7 +161,8 @@ public class CommentService {
 			.collect(Collectors.toList());
 		Map<String, UserProfileImage> profileImageMap = userProfileImageReader.findMapByUserIds(writerIds);
 
-		return comments.map(c -> commentMapper.toResult(c, viewer, boardAdminIds, metaMap.get(c.getId()),
+		return comments.map(c -> commentMapper.toResult(
+			c, viewer, boardConfig, boardAdminIds, metaMap.get(c.getId()),
 			profileImageMap));
 	}
 
@@ -175,17 +188,19 @@ public class CommentService {
 	}
 
 	private CommentResult updateComment(CommentUpdateCommand command, User updater, Comment comment) {
-		Post post = postReader.findById(comment.getPost().getId());
+		Post post = postReader.findByIdAndNotDeleted(comment.getPost().getId());
+		BoardConfig boardConfig = boardConfigReader.getByBoardId(post.getBoard().getId());
+		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
 
-		commentValidator.validateForUpdate(updater, post, comment);
+		commentValidator.validateForUpdate(updater, comment, boardConfig, boardAdminIds);
+		validatePostWriterBlockAccess(updater, post, boardAdminIds);
 		comment.update(command.content());
 		commentWriter.save(comment);
 
-		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
 		CommentMeta meta = commentMetaReader.fetchForComment(updater, comment, Set.of());
 		Map<String, UserProfileImage> profileImageMap = userProfileImageReader.findMapByUserIds(
 			collectCommentWriterIds(comment));
-		return commentMapper.toResult(comment, updater, boardAdminIds, meta, profileImageMap);
+		return commentMapper.toResult(comment, updater, boardConfig, boardAdminIds, meta, profileImageMap);
 	}
 
 	/**
@@ -211,17 +226,19 @@ public class CommentService {
 	}
 
 	private CommentResult deleteComment(User deleter, Comment comment) {
-		Post post = postReader.findById(comment.getPost().getId());
+		Post post = postReader.findByIdAndNotDeleted(comment.getPost().getId());
+		BoardConfig boardConfig = boardConfigReader.getByBoardId(post.getBoard().getId());
+		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
 
-		commentValidator.validateForDelete(deleter, post, comment);
+		commentValidator.validateForDelete(deleter, comment, boardConfig, boardAdminIds);
+		validatePostWriterBlockAccess(deleter, post, boardAdminIds);
 		comment.delete();
 		commentWriter.save(comment);
 
-		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
 		CommentMeta meta = commentMetaReader.fetchForComment(deleter, comment, Set.of());
 		Map<String, UserProfileImage> profileImageMap = userProfileImageReader.findMapByUserIds(
 			collectCommentWriterIds(comment));
-		return commentMapper.toResult(comment, deleter, boardAdminIds, meta, profileImageMap);
+		return commentMapper.toResult(comment, deleter, boardConfig, boardAdminIds, meta, profileImageMap);
 	}
 
 	/**
@@ -246,6 +263,12 @@ public class CommentService {
 	}
 
 	private void likeComment(User user, Comment comment) {
+		Post post = postReader.findByIdAndNotDeleted(comment.getPost().getId());
+		BoardConfig boardConfig = boardConfigReader.getByBoardId(post.getBoard().getId());
+		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
+		commentValidator.validateForFind(user, post, boardConfig, boardAdminIds);
+		validatePostWriterBlockAccess(user, post, boardAdminIds);
+		validateCommentWriterBlockAccess(user, comment, boardAdminIds);
 		commentValidator.validateForLike(user, comment);
 
 		LikeComment likeComment = LikeComment.of(comment, user);
@@ -295,6 +318,28 @@ public class CommentService {
 				ids.add(child.getWriter().getId());
 		});
 		return ids.stream().distinct().collect(Collectors.toList());
+	}
+
+	private void validatePostWriterBlockAccess(User viewer, Post post, List<String> boardAdminIds) {
+		User writer = post.getWriter();
+		if (writer == null
+			|| CommunityPermissionPolicy.isModerator(viewer, boardAdminIds)) {
+			return;
+		}
+		if (blockReader.existsByBlockerAndBlocked(viewer, writer)) {
+			throw PostErrorCode.BLOCKED_USER_CONTENT.toBaseException();
+		}
+	}
+
+	private void validateCommentWriterBlockAccess(User viewer, Comment comment, List<String> boardAdminIds) {
+		User writer = comment.getWriter();
+		if (writer == null
+			|| CommunityPermissionPolicy.isModerator(viewer, boardAdminIds)) {
+			return;
+		}
+		if (blockReader.existsByBlockerAndBlocked(viewer, writer)) {
+			throw PostErrorCode.BLOCKED_USER_CONTENT.toBaseException();
+		}
 	}
 
 }

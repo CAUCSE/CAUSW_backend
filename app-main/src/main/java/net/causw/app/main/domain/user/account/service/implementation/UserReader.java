@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
@@ -195,6 +196,17 @@ public class UserReader {
 	 */
 	public List<User> findCleanupTargets(LocalDateTime deletedAt, Pageable pageable) {
 		return userRepository.findCleanupTargets(deletedAt, pageable);
+	}
+
+	/**
+	 * 특정 상태이면서 updatedAt이 기준 시각 이전인 유저 목록을 조회합니다. (배치용)
+	 * @param state 조회할 유저 상태
+	 * @param dueDate updatedAt 기준 시각
+	 * @param pageable 페이지네이션 정보
+	 * @return 조건에 해당하는 유저 Slice
+	 */
+	public Slice<User> findUsersByStateAndUpdatedAtBefore(UserState state, LocalDateTime dueDate, Pageable pageable) {
+		return userRepository.findAllByStateAndUpdatedAtBeforeAndDeletedAtIsNull(state, dueDate, pageable);
 	}
 
 	public Long getTotalUserCount() {

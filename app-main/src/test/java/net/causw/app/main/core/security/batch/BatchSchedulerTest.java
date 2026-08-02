@@ -13,10 +13,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.SliceImpl;
 
 import net.causw.app.main.core.batch.BatchScheduler;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.UserProfileImageService;
 import net.causw.app.main.domain.user.account.service.implementation.AdmissionWriter;
 import net.causw.app.main.domain.user.account.service.implementation.SocialAccountWriter;
@@ -99,5 +101,47 @@ public class BatchSchedulerTest {
 			any(LocalDateTime.class),
 			any(Pageable.class));
 		verifyNoInteractions(userInfoWriter, ceremonyWriter, socialAccountWriter, userAdmissionWriter, userWriter);
+	}
+
+	@Test
+	@DisplayName("방치된 GUEST 유저가 있으면 프로필·소셜·User를 순서대로 정리한다")
+	void givenStaleGuestUsers_whenScheduleCleanup_thenCleansUpInOrder() {
+		// given
+		User guest1 = mock(User.class);
+		User guest2 = mock(User.class);
+		List<User> staleGuests = List.of(guest1, guest2);
+
+		when(pageableFactory.create(anyInt(), anyInt())).thenReturn(PageRequest.of(0, 10));
+		when(userReader.findUsersByStateAndUpdatedAtBefore(
+			eq(UserState.GUEST), any(LocalDateTime.class), any(Pageable.class)))
+			.thenReturn(new SliceImpl<>(staleGuests, PageRequest.of(0, 10), false));
+
+		// when
+		batchScheduler.scheduleCleanupStaleGuestUsers();
+
+		// then
+		verify(userReader).findUsersByStateAndUpdatedAtBefore(
+			eq(UserState.GUEST), any(LocalDateTime.class), any(Pageable.class));
+		verify(userProfileImageService).cleanupProfileImagesForBatch(staleGuests);
+		verify(socialAccountWriter).deleteSocialAccountsByUsers(staleGuests);
+		verify(userWriter).hardDeleteUsers(staleGuests);
+	}
+
+	@Test
+	@DisplayName("방치된 GUEST 유저가 없으면 정리 로직을 호출하지 않는다")
+	void givenNoStaleGuestUsers_whenScheduleCleanup_thenDoesNothing() {
+		// given
+		when(pageableFactory.create(anyInt(), anyInt())).thenReturn(PageRequest.of(0, 10));
+		when(userReader.findUsersByStateAndUpdatedAtBefore(
+			eq(UserState.GUEST), any(LocalDateTime.class), any(Pageable.class)))
+			.thenReturn(new SliceImpl<>(List.of(), PageRequest.of(0, 10), false));
+
+		// when
+		batchScheduler.scheduleCleanupStaleGuestUsers();
+
+		// then
+		verify(userReader).findUsersByStateAndUpdatedAtBefore(
+			eq(UserState.GUEST), any(LocalDateTime.class), any(Pageable.class));
+		verifyNoInteractions(userProfileImageService, socialAccountWriter, userWriter);
 	}
 }

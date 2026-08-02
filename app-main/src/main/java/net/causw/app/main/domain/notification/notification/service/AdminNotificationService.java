@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.notification.notification.entity.Notification;
 import net.causw.app.main.domain.notification.notification.enums.NoticeType;
+import net.causw.app.main.domain.notification.notification.service.dto.PushNotificationData;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationPushSender;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
@@ -24,7 +25,8 @@ public class AdminNotificationService {
 	public void sendPushToUser(User admin, String targetUserId, String title, String body, boolean saveNotification) {
 		User targetUser = userReader.findUserById(targetUserId);
 
-		notificationPushSender.sendToUser(targetUser, title, body);
+		PushNotificationData data = new PushNotificationData(NoticeType.SYSTEM, null, null);
+		notificationPushSender.sendToUser(targetUser, title, body, data);
 
 		if (saveNotification) {
 			Notification notification = notificationWriter.save(

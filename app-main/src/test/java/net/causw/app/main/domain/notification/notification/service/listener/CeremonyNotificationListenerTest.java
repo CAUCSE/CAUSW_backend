@@ -30,10 +30,12 @@ import net.causw.app.main.domain.community.ceremony.enums.CeremonyType;
 import net.causw.app.main.domain.community.ceremony.enums.RelationType;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyReader;
 import net.causw.app.main.domain.notification.notification.entity.Notification;
+import net.causw.app.main.domain.notification.notification.enums.NoticeType;
 import net.causw.app.main.domain.notification.notification.enums.UserNotificationSettingKey;
 import net.causw.app.main.domain.notification.notification.event.CeremonyApprovedEvent;
 import net.causw.app.main.domain.notification.notification.event.CeremonyNotificationEvent;
 import net.causw.app.main.domain.notification.notification.event.CeremonyRejectedEvent;
+import net.causw.app.main.domain.notification.notification.service.dto.PushNotificationData;
 import net.causw.app.main.domain.notification.notification.service.dto.UserNotificationSettingMap;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationPushSender;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationSettingReader;
@@ -79,8 +81,9 @@ class CeremonyNotificationListenerTest {
 			handler.handle(new CeremonyNotificationEvent("ceremonyId"));
 
 			// then
+			PushNotificationData expectedData = new PushNotificationData(NoticeType.CEREMONY_V2, "ceremonyId", null);
 			verify(notificationWriter).save(any());
-			verify(notificationPushSender).sendToUsers(any(), any(), any());
+			verify(notificationPushSender).sendToUsers(any(), any(), any(), eq(expectedData));
 			verify(notificationWriter).saveLogs(any(), any());
 		}
 
@@ -102,7 +105,8 @@ class CeremonyNotificationListenerTest {
 			handler.handle(new CeremonyNotificationEvent("ceremonyId"));
 
 			// then
-			verify(notificationPushSender).sendToUsers(any(), any(), any());
+			PushNotificationData expectedData = new PushNotificationData(NoticeType.CEREMONY_V2, "ceremonyId", null);
+			verify(notificationPushSender).sendToUsers(any(), any(), any(), eq(expectedData));
 		}
 
 		@Test
@@ -154,7 +158,8 @@ class CeremonyNotificationListenerTest {
 			handler.handle(new CeremonyNotificationEvent("ceremonyId"));
 
 			// then
-			verify(notificationPushSender).sendToUsers(any(), eq("조사 소식"), any());
+			PushNotificationData expectedData = new PushNotificationData(NoticeType.CEREMONY_V2, "ceremonyId", null);
+			verify(notificationPushSender).sendToUsers(any(), eq("조사 소식"), any(), eq(expectedData));
 		}
 	}
 
@@ -182,7 +187,8 @@ class CeremonyNotificationListenerTest {
 			handler.handleApproved(new CeremonyApprovedEvent("ceremonyId"));
 
 			// then
-			verify(notificationPushSender).sendToUser(eq(applicant), eq("경조사 신청 승인"), any());
+			PushNotificationData expectedData = new PushNotificationData(NoticeType.CEREMONY_V2, "ceremonyId", null);
+			verify(notificationPushSender).sendToUser(eq(applicant), eq("경조사 신청 승인"), any(), eq(expectedData));
 			verify(notificationWriter).saveLog(eq(applicant), any());
 		}
 
@@ -204,7 +210,7 @@ class CeremonyNotificationListenerTest {
 			handler.handleApproved(new CeremonyApprovedEvent("ceremonyId"));
 
 			// then
-			verify(notificationPushSender, never()).sendToUser(any(), any(), any());
+			verify(notificationPushSender, never()).sendToUser(any(), any(), any(), any());
 			verify(notificationWriter, never()).saveLog(any(), any());
 		}
 
@@ -234,7 +240,9 @@ class CeremonyNotificationListenerTest {
 			handler.handleRejected(new CeremonyRejectedEvent("ceremonyId", "요건에 부합하지 않습니다."));
 
 			// then
-			verify(notificationPushSender).sendToUser(eq(applicant), eq("경조사 신청 거절"), eq("경조사 신청이 거절되었습니다."));
+			PushNotificationData expectedData = new PushNotificationData(NoticeType.CEREMONY_V2, "ceremonyId", null);
+			verify(notificationPushSender).sendToUser(eq(applicant), eq("경조사 신청 거절"), eq("경조사 신청이 거절되었습니다."),
+				eq(expectedData));
 			verify(notificationWriter).save(argThat(n -> n.getTitle().contains("요건에 부합하지 않습니다.")));
 			verify(notificationWriter).saveLog(eq(applicant), any());
 		}
@@ -257,7 +265,7 @@ class CeremonyNotificationListenerTest {
 			handler.handleRejected(new CeremonyRejectedEvent("ceremonyId", "사유"));
 
 			// then
-			verify(notificationPushSender, never()).sendToUser(any(), any(), any());
+			verify(notificationPushSender, never()).sendToUser(any(), any(), any(), any());
 			verify(notificationWriter, never()).saveLog(any(), any());
 		}
 

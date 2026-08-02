@@ -16,6 +16,7 @@ import net.causw.app.main.domain.notification.notification.entity.Notification;
 import net.causw.app.main.domain.notification.notification.enums.NoticeType;
 import net.causw.app.main.domain.notification.notification.enums.UserNotificationSettingKey;
 import net.causw.app.main.domain.notification.notification.event.CeremonyAdminNotificationEvent;
+import net.causw.app.main.domain.notification.notification.service.dto.PushNotificationData;
 import net.causw.app.main.domain.notification.notification.service.dto.UserNotificationSettingMap;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationPushSender;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationSettingReader;
@@ -77,6 +78,7 @@ public class CeremonyAdminNotificationListener {
 
 		String title = "경조사 신청";
 		String body = String.format("%s님이 경조사를 신청했습니다.", ceremony.getUser().getName());
+		PushNotificationData data = new PushNotificationData(NoticeType.SYSTEM, ceremony.getId(), null);
 
 		// 서비스 알림함 저장용 Notification 엔티티 생성
 		// UI에서 정보를 표시할 때 body 대신 title을 사용하므로, 바디와 같은 내용을 title에 저장
@@ -84,7 +86,7 @@ public class CeremonyAdminNotificationListener {
 			Notification.of(ceremony.getUser(), body, body, NoticeType.SYSTEM, ceremony.getId(), null));
 
 		// 필터링된 관리자 대상에게 발송
-		notificationPushSender.sendToUsers(adminTargets, title, body);
+		notificationPushSender.sendToUsers(adminTargets, title, body, data);
 		notificationWriter.saveLogs(adminTargets, notification);
 	}
 }

@@ -3,6 +3,9 @@ package net.causw.app.main.domain.community.comment.service.dto;
 import java.util.List;
 
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
+import net.causw.app.main.domain.community.board.entity.BoardConfig;
+import net.causw.app.main.domain.community.comment.entity.Comment;
+import net.causw.app.main.domain.community.common.service.CommunityPermissionPolicy;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.shared.dto.ProfileImageDto;
@@ -19,7 +22,7 @@ import net.causw.global.constant.StaticValue;
  * @param writerNickname        작성자 닉네임 (익명 댓글이면 {@code null})
  * @param displayWriterNickname 화면에 표시되는 닉네임 (익명·탈퇴 시 고정 문자열로 치환)
  * @param writerAdmissionYear   작성자 입학연도 (익명 댓글이면 {@code null})
-	 * @param writerProfileImage    작성자 프로필 이미지 정보 (익명/차단/추방/탈퇴 시 GHOST)
+ * @param writerProfileImage    작성자 프로필 이미지 정보 (익명/차단/추방/탈퇴 시 GHOST)
  * @param updatable             현재 조회 유저가 이 댓글을 수정할 수 있는지 여부
  * @param deletable             현재 조회 유저가 이 댓글을 삭제할 수 있는지 여부
  * @param isBlocked             작성자가 현재 조회 유저에 의해 차단됐는지 여부
@@ -41,21 +44,28 @@ public record CommentAuthorInfo(
 	/**
 	 * 댓글 작성자 정보와 현재 조회 유저의 권한을 조합해 {@code CommentAuthorInfo}를 생성합니다.
 	 *
-	 * <p>수정·삭제 권한({@code updatable}/{@code deletable})은 작성자 본인이거나 게시판 관리자인 경우 부여됩니다.
+	 * <p>수정 권한은 작성자에게만 부여하며, 삭제 권한은 작성자와 정책상 moderation 주체에게 부여합니다.
 	 * 탈퇴(INACTIVE) 또는 DROP 유저의 닉네임은 고정값으로 치환됩니다.</p>
 	 *
-	 * @param writer       댓글 작성자 엔티티 (삭제된 경우 {@code null} 가능)
-	 * @param isAnonymous  익명 댓글 여부
-	 * @param currentUser  현재 조회 유저
-	 * @param boardAdminIds 게시판 관리자 ID 목록
-	 * @param isBlocked    작성자가 현재 유저에 의해 차단됐는지 여부
+	 * @param comment                  댓글 엔티티
+	 * @param writerProfileImageEntity 댓글 작성자 프로필 이미지 엔티티
+	 * @param isAnonymous              익명 댓글 여부
+	 * @param currentUser              현재 조회 유저
+	 * @param boardConfig              게시판 설정
+	 * @param boardAdminIds            게시판 관리자 ID 목록
+	 * @param isBlocked                작성자가 현재 유저에 의해 차단됐는지 여부
 	 * @return 조합된 {@code CommentAuthorInfo}
 	 */
 	public static CommentAuthorInfo of(
-		User writer, UserProfileImage writerProfileImageEntity, Boolean isAnonymous, User currentUser,
+		Comment comment, UserProfileImage writerProfileImageEntity, Boolean isAnonymous, User currentUser,
+		BoardConfig boardConfig,
 		List<String> boardAdminIds, boolean isBlocked) {
+		User writer = comment.getWriter();
 		boolean isOwner = writer != null && writer.getId().equals(currentUser.getId());
-		boolean canEdit = isOwner || boardAdminIds.contains(currentUser.getId());
+		boolean canEdit = CommunityPermissionPolicy.canUpdateComment(
+			currentUser, comment, boardConfig, boardAdminIds);
+		boolean canDelete = CommunityPermissionPolicy.canDeleteComment(
+			currentUser, comment, boardConfig, boardAdminIds);
 
 		boolean isInactiveUser = writer != null && (writer.isInactive() || writer.getState() == UserState.DROP);
 		String displayWriterNickname;
@@ -91,6 +101,6 @@ public record CommentAuthorInfo(
 		return new CommentAuthorInfo(
 			writerName, writerNickname, displayWriterNickname,
 			writerAdmissionYear, writerProfileImage,
-			canEdit, canEdit, isBlocked, isAnonymous, isOwner);
+			canEdit, canDelete, isBlocked, isAnonymous, isOwner);
 	}
 }

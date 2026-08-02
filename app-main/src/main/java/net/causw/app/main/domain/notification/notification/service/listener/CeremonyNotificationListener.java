@@ -22,6 +22,7 @@ import net.causw.app.main.domain.notification.notification.enums.UserNotificatio
 import net.causw.app.main.domain.notification.notification.event.CeremonyApprovedEvent;
 import net.causw.app.main.domain.notification.notification.event.CeremonyNotificationEvent;
 import net.causw.app.main.domain.notification.notification.event.CeremonyRejectedEvent;
+import net.causw.app.main.domain.notification.notification.service.dto.PushNotificationData;
 import net.causw.app.main.domain.notification.notification.service.dto.UserNotificationSettingMap;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationPushSender;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationSettingReader;
@@ -70,11 +71,12 @@ public class CeremonyNotificationListener {
 		String pushTitle = buildPushTitle(ceremony);
 		String pushBody = buildPushBody(ceremony);
 		String serviceTitle = buildServiceTitle(ceremony);
+		PushNotificationData pushData = new PushNotificationData(NoticeType.CEREMONY_V2, ceremony.getId(), null);
 
 		Notification notification = notificationWriter.save(
 			Notification.of(ceremonyUser, serviceTitle, pushBody, NoticeType.CEREMONY_V2, ceremony.getId(), null));
 
-		notificationPushSender.sendToUsers(targets, pushTitle, pushBody);
+		notificationPushSender.sendToUsers(targets, pushTitle, pushBody, pushData);
 		notificationWriter.saveLogs(targets, notification);
 	}
 
@@ -106,10 +108,12 @@ public class CeremonyNotificationListener {
 		String body = "경조사 신청이 승인되었습니다.";
 		String serviceTitle = "경조사 신청이 승인되었습니다.";
 
+		PushNotificationData data = new PushNotificationData(NoticeType.CEREMONY_V2, ceremony.getId(), null);
+
 		Notification notification = notificationWriter.save(
 			Notification.of(applicant, serviceTitle, body, NoticeType.CEREMONY_V2, ceremony.getId(), null));
 
-		notificationPushSender.sendToUser(applicant, pushTitle, body);
+		notificationPushSender.sendToUser(applicant, pushTitle, body, data);
 		notificationWriter.saveLog(applicant, notification);
 	}
 
@@ -141,10 +145,12 @@ public class CeremonyNotificationListener {
 		String body = "경조사 신청이 거절되었습니다.";
 		String serviceTitle = String.format("경조사 신청이 거절되었습니다. 사유: %s", event.rejectReason());
 
+		PushNotificationData data = new PushNotificationData(NoticeType.CEREMONY_V2, ceremony.getId(), null);
+
 		Notification notification = notificationWriter.save(
 			Notification.of(applicant, serviceTitle, body, NoticeType.CEREMONY_V2, ceremony.getId(), null));
 
-		notificationPushSender.sendToUser(applicant, pushTitle, body);
+		notificationPushSender.sendToUser(applicant, pushTitle, body, data);
 		notificationWriter.saveLog(applicant, notification);
 	}
 

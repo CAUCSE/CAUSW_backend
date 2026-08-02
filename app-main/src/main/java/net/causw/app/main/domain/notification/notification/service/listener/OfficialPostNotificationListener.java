@@ -21,6 +21,7 @@ import net.causw.app.main.domain.community.post.service.implementation.PostReade
 import net.causw.app.main.domain.notification.notification.entity.Notification;
 import net.causw.app.main.domain.notification.notification.enums.NoticeType;
 import net.causw.app.main.domain.notification.notification.event.OfficialPostEvent;
+import net.causw.app.main.domain.notification.notification.service.dto.PushNotificationData;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationPushSender;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationWriter;
 import net.causw.app.main.domain.notification.notification.service.implementation.UserBoardSubscribeReader;
@@ -83,12 +84,13 @@ public class OfficialPostNotificationListener {
 		}
 
 		String pushBody = NotificationTextUtil.ellipsis(rawPushBody, NotificationTextUtil.PUSH_BODY_MAX_LENGTH);
+		PushNotificationData pushData = new PushNotificationData(NoticeType.OFFICIAL, post.getId(), board.getId());
 
 		// 알림 발송자를 게시글 작성자로 설정하여 알림 저장
 		Notification notification = notificationWriter.save(
 			Notification.of(writer, serviceTitle, pushBody, NoticeType.OFFICIAL, post.getId(), board.getId()));
 
-		notificationPushSender.sendToUsers(targets, pushTitle, pushBody);
+		notificationPushSender.sendToUsers(targets, pushTitle, pushBody, pushData);
 		notificationWriter.saveLogs(targets, notification);
 	}
 }

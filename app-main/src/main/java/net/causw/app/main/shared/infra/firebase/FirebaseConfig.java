@@ -5,14 +5,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Base64;
 
-import javax.annotation.PostConstruct;
-
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,28 +23,42 @@ public class FirebaseConfig {
 	@Value("${fcm.firebase-key-base64}")
 	private String firebaseKeyBase64;
 
-	@PostConstruct
-	public void initialize() {
+	@Bean
+	public FirebaseApp firebaseApp() {
 		try {
-			if (FirebaseApp.getApps().isEmpty()) {
-				if (firebaseKeyBase64 == null || firebaseKeyBase64.isBlank()) {
-					throw new RuntimeException("Firebase 초기화 실패: FCM_FIREBASE_KEY_BASE64 환경변수가 없습니다.");
-				}
-				byte[] decodedKey = Base64.getMimeDecoder().decode(firebaseKeyBase64.trim());
+			FirebaseApp firebaseApp = FirebaseApp.getInstance();
+			log.info("기본 FirebaseApp이 이미 초기화되어 있습니다.");
+			return firebaseApp;
+		} catch (IllegalStateException e) {
+			return initializeDefaultFirebaseApp();
+		}
+	}
 
-				// 디코딩된 키를 InputStream으로 변환하여 Firebase에 주입
-				try (InputStream credentialStream = new ByteArrayInputStream(decodedKey)) {
-					FirebaseOptions options = FirebaseOptions.builder()
-						.setCredentials(GoogleCredentials.fromStream(credentialStream))
-						.build();
+	@Bean
+	public FirebaseMessaging firebaseMessaging(FirebaseApp firebaseApp) {
+		return FirebaseMessaging.getInstance(firebaseApp);
+	}
 
-					FirebaseApp.initializeApp(options);
-					log.info("Firebase가 성공적으로 초기화되었습니다.");
-				}
+	private FirebaseApp initializeDefaultFirebaseApp() {
+		if (firebaseKeyBase64 == null || firebaseKeyBase64.isBlank()) {
+			throw new IllegalStateException("Firebase 초기화 실패: FCM_FIREBASE_KEY_BASE64 환경변수가 없습니다.");
+		}
+
+		try {
+			byte[] decodedKey = Base64.getMimeDecoder().decode(firebaseKeyBase64.trim());
+
+			try (InputStream credentialStream = new ByteArrayInputStream(decodedKey)) {
+				FirebaseOptions options = FirebaseOptions.builder()
+					.setCredentials(GoogleCredentials.fromStream(credentialStream))
+					.build();
+
+				FirebaseApp firebaseApp = FirebaseApp.initializeApp(options);
+				log.info("기본 FirebaseApp이 성공적으로 초기화되었습니다.");
+				return firebaseApp;
 			}
 		} catch (IOException | IllegalArgumentException e) {
 			log.error("Firebase 초기화 중 에러 발생", e);
-			throw new RuntimeException("Firebase 초기화 실패", e);
+			throw new IllegalStateException("Firebase 초기화 실패", e);
 		}
 	}
 }
