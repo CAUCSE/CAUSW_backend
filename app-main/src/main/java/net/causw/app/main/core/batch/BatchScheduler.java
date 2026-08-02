@@ -8,11 +8,11 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.app.main.domain.user.account.service.UserProfileImageService;
 import net.causw.app.main.domain.user.account.service.implementation.AdmissionWriter;
 import net.causw.app.main.domain.user.account.service.implementation.SocialAccountWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserInfoWriter;
+import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.shared.pageable.PageableFactory;
 import net.causw.global.constant.MessageUtil;
@@ -28,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class BatchScheduler {
 
-	private final UserRepository userRepository;
+	private final UserReader userReader;
 	private final PageableFactory pageableFactory;
 	private final UserInfoWriter userInfoWriter;
 	private final CeremonyWriter ceremonyWriter;
@@ -45,7 +45,7 @@ public class BatchScheduler {
 			LocalDateTime dueDate = LocalDateTime.now().minusDays(30);
 
 			while (true) {
-				List<User> withdrawnUsers = userRepository.findCleanupTargets(
+				List<User> withdrawnUsers = userReader.findCleanupTargets(
 					dueDate,
 					pageableFactory.create(0, StaticValue.BATCH_USER_LIST_SIZE));
 

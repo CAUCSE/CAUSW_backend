@@ -186,6 +186,17 @@ public class UserReader {
 		return userRepository.countByCreatedAtBetween(start, end);
 	}
 
+	/**
+	 * 탈퇴 후 유예기간이 지난 개인정보 정리 대상 유저를 조회합니다.
+	 *
+	 * @param deletedAt 조회 기준 시각 (이 시각 이전에 탈퇴한 유저)
+	 * @param pageable 배치 처리용 조회 범위
+	 * @return 개인정보 정리 대상 유저 목록
+	 */
+	public List<User> findCleanupTargets(LocalDateTime deletedAt, Pageable pageable) {
+		return userRepository.findCleanupTargets(deletedAt, pageable);
+	}
+
 	public Long getTotalUserCount() {
 		return userQueryRepository.countTotalUsers();
 	}

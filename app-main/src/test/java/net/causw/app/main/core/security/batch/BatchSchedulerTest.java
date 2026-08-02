@@ -17,11 +17,11 @@ import org.springframework.data.domain.Pageable;
 import net.causw.app.main.core.batch.BatchScheduler;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.repository.user.UserRepository;
 import net.causw.app.main.domain.user.account.service.UserProfileImageService;
 import net.causw.app.main.domain.user.account.service.implementation.AdmissionWriter;
 import net.causw.app.main.domain.user.account.service.implementation.SocialAccountWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserInfoWriter;
+import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.shared.pageable.PageableFactory;
 
@@ -32,7 +32,7 @@ public class BatchSchedulerTest {
 	private BatchScheduler batchScheduler;
 
 	@Mock
-	private UserRepository userRepository;
+	private UserReader userReader;
 	@Mock
 	private PageableFactory pageableFactory;
 	@Mock
@@ -59,7 +59,7 @@ public class BatchSchedulerTest {
 		when(pageableFactory.create(anyInt(), anyInt())).thenReturn(PageRequest.of(0, 10));
 
 		when(
-			userRepository.findCleanupTargets(
+			userReader.findCleanupTargets(
 				any(LocalDateTime.class),
 				any(Pageable.class)))
 			.thenReturn(withdrawnUsers, List.of());
@@ -68,7 +68,7 @@ public class BatchSchedulerTest {
 		batchScheduler.scheduleCleanupDeactivatedUsers();
 
 		// then
-		verify(userRepository, times(2)).findCleanupTargets(
+		verify(userReader, times(2)).findCleanupTargets(
 			any(LocalDateTime.class),
 			any(Pageable.class));
 		verify(userProfileImageService, times(1)).cleanupProfileImagesForBatch(anyList());
@@ -86,7 +86,7 @@ public class BatchSchedulerTest {
 		when(pageableFactory.create(anyInt(), anyInt())).thenReturn(PageRequest.of(0, 10));
 
 		when(
-			userRepository.findCleanupTargets(
+			userReader.findCleanupTargets(
 				any(LocalDateTime.class),
 				any(Pageable.class)))
 			.thenReturn(List.of());
@@ -95,7 +95,7 @@ public class BatchSchedulerTest {
 		batchScheduler.scheduleCleanupDeactivatedUsers();
 
 		// then
-		verify(userRepository).findCleanupTargets(
+		verify(userReader).findCleanupTargets(
 			any(LocalDateTime.class),
 			any(Pageable.class));
 		verifyNoInteractions(userInfoWriter, ceremonyWriter, socialAccountWriter, userAdmissionWriter, userWriter);
