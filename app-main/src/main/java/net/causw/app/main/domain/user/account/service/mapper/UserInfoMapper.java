@@ -6,7 +6,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
-import net.causw.app.main.domain.user.account.enums.user.Department;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -15,6 +14,7 @@ import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserCareer;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserProject;
+import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.account.service.dto.result.UserCareerResult;
 import net.causw.app.main.domain.user.account.service.dto.result.UserInfoDetailResult;
 import net.causw.app.main.domain.user.account.service.dto.result.UserInfoSummaryResult;

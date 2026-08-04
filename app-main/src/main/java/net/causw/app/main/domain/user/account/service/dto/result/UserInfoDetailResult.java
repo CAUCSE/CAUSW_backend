@@ -22,6 +22,5 @@ public record UserInfoDetailResult(
 	List<String> userInterestTech,
 	List<String> userInterestDomain,
 	boolean isCoffeeChatAvailable,
-	Department department
-) {
+	Department department) {
 }
