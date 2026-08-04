@@ -5,7 +5,7 @@ ALTER TABLE tb_user_info
     ADD COLUMN is_coffe_chat_available boolean not null default false;
 
 -- 기존 전화번호 공개 null 값 default false로 변경
-UPDATE 테이블명
+UPDATE tb_user_info
 SET is_phone_number_visible = b'0'
 WHERE is_phone_number_visible IS NULL;
 
