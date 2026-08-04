@@ -36,6 +36,19 @@ public class UserInfoQueryRepository {
 
 	private final JPAQueryFactory jpaQueryFactory;
 
+	/**
+	 * 검색 조건과 커서 위치를 기준으로 특정 동문 섹션을 조회한다.
+	 * @param listCondition 검색 및 필터 조건
+	 * @param positionId 마지막으로 조회한 동문 프로필 ID
+	 * @param section 조회할 동문 섹션
+	 * @param cursorSortType 커서에 저장된 정렬 기준
+	 * @param updatedAt 마지막으로 조회한 프로필의 수정 일시
+	 * @param admissionYear 마지막으로 조회한 사용자의 입학 연도
+	 * @param name 마지막으로 조회한 사용자의 이름
+	 * @param excludeUserId 조회 결과에서 제외할 사용자 ID
+	 * @param size 조회할 최대 항목 수
+	 * @return 다음 페이지 존재 여부를 포함한 동문 프로필 slice
+	 */
 	public Slice<UserInfo> findAllWithFilter(
 		UserInfoListCondition listCondition,
 		String positionId,

@@ -26,6 +26,11 @@ public interface UserInfoDtoMapper {
 
 	UserInfoSummaryResponse toSummaryResponse(UserInfoSummaryResult result);
 
+	/**
+	 * 학과 enum을 API 응답 객체로 변환한다.
+	 * @param department 학과 enum
+	 * @return 학과 코드와 이름을 포함한 응답, 학과가 없으면 {@code null}
+	 */
 	default DepartmentResponse toDepartmentResponse(Department department) {
 		if (department == null) {
 			return null;
@@ -33,8 +38,18 @@ public interface UserInfoDtoMapper {
 		return new DepartmentResponse(department.name(), department.getName());
 	}
 
+	/**
+	 * 동문 섹션 조회 결과를 API 응답으로 변환한다.
+	 * @param result 동문 섹션 조회 결과
+	 * @return 동문 섹션 응답
+	 */
 	UserInfoSectionResponse toSectionResponse(UserInfoSectionResult result);
 
+	/**
+	 * 동문 목록 조회 결과를 API 응답으로 변환한다.
+	 * @param result 동문 목록 조회 결과
+	 * @return 동문 목록 응답
+	 */
 	UserInfoDirectoryResponse toDirectoryResponse(UserInfoDirectoryResult result);
 
 	UserInfoUpdateCommand toUpdateCommand(UserInfoUpdateRequest request);

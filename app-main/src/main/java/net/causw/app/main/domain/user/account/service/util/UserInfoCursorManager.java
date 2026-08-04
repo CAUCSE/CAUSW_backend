@@ -30,6 +30,14 @@ public class UserInfoCursorManager {
 
 	private final JsonMapper jsonMapper;
 
+	/**
+	 * 조회 결과의 마지막 항목을 기준으로 다음 페이지 커서를 생성한다.
+	 * @param slice 현재 조회 결과
+	 * @param section 현재 조회한 섹션
+	 * @param sortType 정렬 기준
+	 * @param filterHash 조회 조건 식별 hash
+	 * @return 다음 페이지 커서, 다음 페이지가 없으면 {@code null}
+	 */
 	public UserInfoCursor nextCursor(
 		Slice<UserInfo> slice,
 		UserInfoSectionType section,
@@ -51,6 +59,13 @@ public class UserInfoCursorManager {
 			filterHash);
 	}
 
+	/**
+	 * 검색 조건과 사용자별 제외 조건을 정규화하여 SHA-256 hash를 생성한다.
+	 * @param condition 검색 및 필터 조건
+	 * @param sortType 적용할 정렬 기준
+	 * @param excludeUserId 조회 결과에서 제외할 사용자 ID
+	 * @return 정규화된 조회 조건의 SHA-256 hash
+	 */
 	public String createFilterHash(
 		UserInfoListCondition condition,
 		SortType sortType,
@@ -72,6 +87,14 @@ public class UserInfoCursorManager {
 		}
 	}
 
+	/**
+	 * 커서 발급 당시의 조회 조건과 현재 요청의 조회 조건이 같은지 검증한다.
+	 * @param cursor 검증할 커서
+	 * @param condition 현재 요청의 검색 및 필터 조건
+	 * @param sortType 현재 요청에 적용할 정렬 기준
+	 * @param excludeUserId 조회 결과에서 제외할 사용자 ID
+	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception 조회 조건이 다르면 발생
+	 */
 	public void validateFilterHash(
 		UserInfoCursor cursor,
 		UserInfoListCondition condition,
@@ -85,6 +108,12 @@ public class UserInfoCursorManager {
 		}
 	}
 
+	/**
+	 * Base64 URL-safe 문자열을 동문 목록 커서로 변환하고 필수 값을 검증한다.
+	 * @param cursor 인코딩된 커서 문자열
+	 * @return 디코딩된 동문 목록 커서
+	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception 커서 형식이 올바르지 않으면 발생
+	 */
 	public UserInfoCursor decode(String cursor) {
 		try {
 			byte[] json = Base64.getUrlDecoder()
@@ -99,6 +128,11 @@ public class UserInfoCursorManager {
 		}
 	}
 
+	/**
+	 * 동문 목록 커서를 Base64 URL-safe 문자열로 변환한다.
+	 * @param cursor 인코딩할 동문 목록 커서
+	 * @return 인코딩된 커서 문자열
+	 */
 	public String encode(UserInfoCursor cursor) {
 		try {
 			validate(cursor);
