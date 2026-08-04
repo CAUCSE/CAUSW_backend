@@ -1,5 +1,8 @@
 package net.causw.app.main.shared.infra.redis;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -21,6 +24,7 @@ public class RedisUtils {
 	// 사용자별 refresh token 목록 key prefix
 	private static final String USER_REFRESH_TOKENS_PREFIX = "UserRefreshTokens:";
 	private static final String REFRESH_TOKEN_USER_INDEX_MIGRATION_KEY = "Migration:RefreshTokenUserIndex:v1";
+	private static final String COLLIDED_REFRESH_TOKEN_CLEANUP_KEY = "Migration:CollidedRefreshTokenCleanup:v1";
 	private static final String BLACKLIST_PREFIX = "Blacklist";
 
 	private final RedisTemplate<String, Object> redisTemplate;
@@ -138,6 +142,71 @@ public class RedisUtils {
 			}
 		}
 		return migratedCount;
+	}
+
+	/**
+	 * 서로 다른 사용자에게 중복 발급된 refresh token을 찾아 폐기합니다.
+	 * <p>
+	 * jti 도입 이전에는 같은 초에 발급된 token 문자열이 동일해 {@code RefreshToken:{refreshToken} -> userId}
+	 * 매핑이 덮어써졌습니다. {@code UserRefreshTokens:{userId}}는 Set이라 충돌한 token이 양쪽 인덱스에
+	 * 남아 있으므로, 2명 이상에게 매핑된 token만 선별 폐기합니다.
+	 *
+	 * @return 폐기된 refresh token 개수
+	 */
+	public int purgeCollidedRefreshTokens() {
+		if (redisTemplate.hasKey(COLLIDED_REFRESH_TOKEN_CLEANUP_KEY)) {
+			return 0;
+		}
+
+		int purgedCount = scanUserIndexAndPurgeCollidedTokens();
+		redisTemplate.opsForValue().set(COLLIDED_REFRESH_TOKEN_CLEANUP_KEY, "DONE");
+		return purgedCount;
+	}
+
+	private int scanUserIndexAndPurgeCollidedTokens() {
+		int purgedCount = 0;
+
+		for (Map.Entry<String, Set<String>> entry : collectUserIdsByRefreshToken().entrySet()) {
+			Set<String> userIds = entry.getValue();
+			if (userIds.size() < 2) {
+				continue;
+			}
+
+			String refreshToken = entry.getKey();
+			redisTemplate.delete(REFRESH_TOKEN_PREFIX + refreshToken);
+			userIds.forEach(
+				userId -> redisTemplate.opsForSet().remove(USER_REFRESH_TOKENS_PREFIX + userId, refreshToken));
+			purgedCount++;
+		}
+
+		return purgedCount;
+	}
+
+	private Map<String, Set<String>> collectUserIdsByRefreshToken() {
+		ScanOptions scanOptions = ScanOptions.scanOptions()
+			.match(USER_REFRESH_TOKENS_PREFIX + "*")
+			.count(1000)
+			.build();
+
+		Map<String, Set<String>> userIdsByRefreshToken = new HashMap<>();
+		try (Cursor<String> cursor = redisTemplate.scan(scanOptions)) {
+			while (cursor.hasNext()) {
+				String userRefreshTokensKey = cursor.next();
+				String userId = userRefreshTokensKey.substring(USER_REFRESH_TOKENS_PREFIX.length());
+
+				Set<Object> refreshTokens = redisTemplate.opsForSet().members(userRefreshTokensKey);
+				if (refreshTokens == null) {
+					continue;
+				}
+
+				for (Object refreshToken : refreshTokens) {
+					if (refreshToken instanceof String refreshTokenValue) {
+						userIdsByRefreshToken.computeIfAbsent(refreshTokenValue, key -> new HashSet<>()).add(userId);
+					}
+				}
+			}
+		}
+		return userIdsByRefreshToken;
 	}
 
 	private void syncUserRefreshTokenIndexTtl(String refreshTokenKey, String userRefreshTokensKey) {

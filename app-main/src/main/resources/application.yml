@@ -6,3 +6,5 @@ redis:
   migration:
     refresh-token-user-index:
       enabled: false
+    collided-refresh-token-cleanup:
+      enabled: false
