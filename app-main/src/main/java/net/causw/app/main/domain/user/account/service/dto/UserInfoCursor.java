@@ -11,9 +11,13 @@ public record UserInfoCursor(
 	LocalDateTime updatedAt,
 	Integer admissionYear,
 	String name,
-	String userInfoId) {
+	String userInfoId,
+	String filterHash) {
 
-	public static UserInfoCursor sectionStartCursor(UserInfoSectionType section, SortType sortType) {
-		return new UserInfoCursor(section, sortType, null, null, null, null);
+	public static UserInfoCursor sectionStartCursor(
+		UserInfoSectionType section,
+		SortType sortType,
+		String filterHash) {
+		return new UserInfoCursor(section, sortType, null, null, null, null, filterHash);
 	}
 }

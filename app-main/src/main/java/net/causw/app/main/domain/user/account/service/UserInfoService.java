@@ -148,10 +148,15 @@ public class UserInfoService {
 
 		int pageSize = StaticValue.USER_LIST_PAGE_SIZE;
 		SortType sortType = resolveSortType(condition);
+		String filterHash = userInfoCursorManager.createFilterHash(condition, sortType, userId);
 
 		UserInfoCursor nextCursor = isInitialCursor
-			? UserInfoCursor.sectionStartCursor(UserInfoSectionType.COFFEE_CHAT_AVAILABLE, sortType)
+			? UserInfoCursor.sectionStartCursor(
+				UserInfoSectionType.COFFEE_CHAT_AVAILABLE,
+				sortType,
+				filterHash)
 			: userInfoCursorManager.decode(cursor);
+		userInfoCursorManager.validateFilterHash(nextCursor, condition, sortType, userId);
 
 		// 조회를 통해 얻은 section의 개수가 목표개수보다 작다면, 다음 커서를 불러와서 조회 (반복)
 		Map<UserInfoSectionType, UserInfoSectionResult> sections = new EnumMap<>(UserInfoSectionType.class);
@@ -175,14 +180,18 @@ public class UserInfoService {
 
 			// 해당 slice next가 있다면 조회 완료된것이므로 pass
 			if (currentSlice.hasNext()) {
-				nextCursor = userInfoCursorManager.nextCursor(currentSlice, currentSectionType, sortType);
+				nextCursor = userInfoCursorManager.nextCursor(
+					currentSlice,
+					currentSectionType,
+					sortType,
+					filterHash);
 				break;
 			}
 
 			// 현재 sectionType 조회완료했는데도 목표 개수 못채웠다면 nextCursor
 			currentSectionType = currentSectionType.next();
 			if (currentSectionType != null) {
-				nextCursor = UserInfoCursor.sectionStartCursor(currentSectionType, sortType);
+				nextCursor = UserInfoCursor.sectionStartCursor(currentSectionType, sortType, filterHash);
 			} else {
 				nextCursor = null;
 			}
