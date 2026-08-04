@@ -5,10 +5,12 @@ import org.mapstruct.Mapping;
 
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserInfoListRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserInfoUpdateRequest;
+import net.causw.app.main.domain.user.account.api.v2.dto.response.DepartmentResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoDetailResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoDirectoryResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoSectionResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoSummaryResponse;
+import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.account.service.dto.request.UserInfoListCondition;
 import net.causw.app.main.domain.user.account.service.dto.request.UserInfoUpdateCommand;
 import net.causw.app.main.domain.user.account.service.dto.result.UserInfoDetailResult;
@@ -23,6 +25,13 @@ public interface UserInfoDtoMapper {
 	UserInfoDetailResponse toDetailResponse(UserInfoDetailResult result);
 
 	UserInfoSummaryResponse toSummaryResponse(UserInfoSummaryResult result);
+
+	default DepartmentResponse toDepartmentResponse(Department department) {
+		if (department == null) {
+			return null;
+		}
+		return new DepartmentResponse(department.name(), department.getName());
+	}
 
 	UserInfoSectionResponse toSectionResponse(UserInfoSectionResult result);
 

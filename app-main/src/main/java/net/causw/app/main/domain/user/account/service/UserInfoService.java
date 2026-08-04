@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.user.account.service;
 
-import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -154,18 +154,23 @@ public class UserInfoService {
 			: userInfoCursorManager.decode(cursor);
 
 		// 조회를 통해 얻은 section의 개수가 목표개수보다 작다면, 다음 커서를 불러와서 조회 (반복)
-		List<UserInfoSectionResult> result = new ArrayList<>();
+		Map<UserInfoSectionType, UserInfoSectionResult> sections = new EnumMap<>(UserInfoSectionType.class);
+		for (UserInfoSectionType sectionType : UserInfoSectionType.values()) {
+			sections.put(sectionType, new UserInfoSectionResult(sectionType, List.of(), false));
+		}
 		UserInfoSectionType currentSectionType = nextCursor.section();
 		int remainingSize = pageSize;
 
 		while (remainingSize > 0 && currentSectionType != null) {
 			Slice<UserInfo> currentSlice = userInfoReader.readCursor(
-					condition,
-					nextCursor,
-					userId,
-					remainingSize);
+				condition,
+				nextCursor,
+				userId,
+				remainingSize);
 			List<UserInfoSummaryResult> summaryResults = toSummaryResults(currentSlice.getContent());
-			result.add(new UserInfoSectionResult(currentSectionType, summaryResults, currentSlice.hasNext()));
+			sections.put(
+				currentSectionType,
+				new UserInfoSectionResult(currentSectionType, summaryResults, currentSlice.hasNext()));
 			remainingSize -= currentSlice.getContent().size();
 
 			// 해당 slice next가 있다면 조회 완료된것이므로 pass
@@ -178,18 +183,24 @@ public class UserInfoService {
 			currentSectionType = currentSectionType.next();
 			if (currentSectionType != null) {
 				nextCursor = UserInfoCursor.sectionStartCursor(currentSectionType, sortType);
-			}else{
+			} else {
 				nextCursor = null;
 			}
 
 		}
 
-		return new UserInfoDirectoryResult(myProfile, result, nextCursor != null ? userInfoCursorManager.encode(nextCursor): null);
+		List<UserInfoSectionResult> result = List.of(
+			sections.get(UserInfoSectionType.COFFEE_CHAT_AVAILABLE),
+			sections.get(UserInfoSectionType.ALL_MEMBERS));
+		return new UserInfoDirectoryResult(
+			myProfile,
+			result,
+			nextCursor != null ? userInfoCursorManager.encode(nextCursor) : null);
 	}
 
 	private UserInfoSummaryResult getUserInfoSummaryResultByUserId(String userId) {
 		UserInfo userInfo = userInfoReader.findByUserId(userId)
-				.orElseThrow(UserInfoErrorCode.USERINFO_NOT_FOUND::toBaseException);
+			.orElseThrow(UserInfoErrorCode.USERINFO_NOT_FOUND::toBaseException);
 		UserProfileImage profileImage = userProfileImageReader.findByUserIdOrNull(userId);
 
 		return userInfoMapper.toSummaryResult(userInfo, profileImage);

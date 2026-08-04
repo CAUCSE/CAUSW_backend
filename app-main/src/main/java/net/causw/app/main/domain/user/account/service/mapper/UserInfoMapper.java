@@ -70,7 +70,9 @@ public interface UserInfoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "name", source = "userInfo.user.name")
 	@Mapping(target = "admissionYear", source = "userInfo", qualifiedByName = "mapAdmissionYear")
 	@Mapping(target = "academicStatus", source = "userInfo", qualifiedByName = "mapAcademicStatus")
+	@Mapping(target = "department", source = "userInfo.user.department")
 	@Mapping(target = "description", source = "userInfo.description")
+	@Mapping(target = "isCoffeeChatAvailable", source = "userInfo.coffeeChatAvailable")
 	UserInfoSummaryResult toSummaryResult(UserInfo userInfo, UserProfileImage userProfileImage);
 
 	@Named("mapAdmissionYear")
