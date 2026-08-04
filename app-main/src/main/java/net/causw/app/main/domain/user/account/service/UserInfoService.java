@@ -63,7 +63,7 @@ public class UserInfoService {
 
 		UserInfo updated = userInfoWriter.save(userInfo);
 		UserProfileImage profileImage = userProfileImageReader.findByUserIdOrNull(user.getId());
-		return userInfoMapper.toDetailResult(updated, profileImage);
+		return userInfoMapper.toDetailResult(updated, profileImage, user.getDepartment());
 	}
 
 	/**
@@ -75,10 +75,11 @@ public class UserInfoService {
 	public UserInfoDetailResult getDetailUserInfo(String userInfoId) {
 		UserInfo userInfo = userInfoReader.findById(userInfoId)
 			.orElseThrow(UserInfoErrorCode.USERINFO_NOT_FOUND::toBaseException);
+		User user = userInfo.getUser();
 
 		UserProfileImage profileImage = userProfileImageReader.findByUserIdOrNull(
 			userInfo.getUser().getId());
-		return userInfoMapper.toDetailResult(userInfo, profileImage);
+		return userInfoMapper.toDetailResult(userInfo, profileImage, user.getDepartment());
 	}
 
 	/**
@@ -93,7 +94,7 @@ public class UserInfoService {
 			.orElseGet(() -> userInfoCreator.createAndSave(user));
 
 		UserProfileImage profileImage = userProfileImageReader.findByUserIdOrNull(user.getId());
-		return userInfoMapper.toMyDetailResult(userInfo, profileImage);
+		return userInfoMapper.toMyDetailResult(userInfo, profileImage, user.getDepartment());
 	}
 
 	/**

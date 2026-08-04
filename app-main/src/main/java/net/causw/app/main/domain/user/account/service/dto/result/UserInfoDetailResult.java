@@ -2,6 +2,7 @@ package net.causw.app.main.domain.user.account.service.dto.result;
 
 import java.util.List;
 
+import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.shared.dto.ProfileImageDto;
 
 public record UserInfoDetailResult(
@@ -20,6 +21,7 @@ public record UserInfoDetailResult(
 	List<UserProjectResult> userProject,
 	List<String> userInterestTech,
 	List<String> userInterestDomain,
-	boolean isCoffeeChatAvailable
+	boolean isCoffeeChatAvailable,
+	Department department
 ) {
 }

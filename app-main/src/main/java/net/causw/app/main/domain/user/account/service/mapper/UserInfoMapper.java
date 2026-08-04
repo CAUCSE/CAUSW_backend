@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
+import net.causw.app.main.domain.user.account.enums.user.Department;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -40,7 +41,8 @@ public interface UserInfoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "userInterestTech", source = "userInfo.userInterestTech", qualifiedByName = "sortStringsAsc")
 	@Mapping(target = "userInterestDomain", source = "userInfo.userInterestDomain", qualifiedByName = "sortStringsAsc")
 	@Mapping(target = "isCoffeeChatAvailable", source = "userInfo.coffeeChatAvailable")
-	UserInfoDetailResult toDetailResult(UserInfo userInfo, UserProfileImage userProfileImage);
+	@Mapping(target = "department", source = "department")
+	UserInfoDetailResult toDetailResult(UserInfo userInfo, UserProfileImage userProfileImage, Department department);
 
 	// 내 동문 수첩 프로필 상세 조회 (전화번호 직접 노출)
 	@Mapping(target = "id", source = "userInfo.id")
@@ -59,7 +61,8 @@ public interface UserInfoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "userInterestTech", source = "userInfo.userInterestTech", qualifiedByName = "sortStringsAsc")
 	@Mapping(target = "userInterestDomain", source = "userInfo.userInterestDomain", qualifiedByName = "sortStringsAsc")
 	@Mapping(target = "isCoffeeChatAvailable", source = "userInfo.coffeeChatAvailable")
-	UserInfoDetailResult toMyDetailResult(UserInfo userInfo, UserProfileImage userProfileImage);
+	@Mapping(target = "department", source = "department")
+	UserInfoDetailResult toMyDetailResult(UserInfo userInfo, UserProfileImage userProfileImage, Department department);
 
 	// 동문 수첩 프로필 리스트 조회
 	@Mapping(target = "id", source = "userInfo.id")

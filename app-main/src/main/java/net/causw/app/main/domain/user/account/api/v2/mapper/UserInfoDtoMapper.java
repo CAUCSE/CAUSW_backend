@@ -10,10 +10,12 @@ import net.causw.app.main.domain.user.account.service.dto.request.UserInfoListCo
 import net.causw.app.main.domain.user.account.service.dto.request.UserInfoUpdateCommand;
 import net.causw.app.main.domain.user.account.service.dto.result.UserInfoDetailResult;
 import net.causw.app.main.domain.user.account.service.dto.result.UserInfoSummaryResult;
+import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface UserInfoDtoMapper {
 
+	@Mapping(target = "departmentDescription", source = "result.department.name", defaultValue = "학과 미기입")
 	UserInfoDetailResponse toDetailResponse(UserInfoDetailResult result);
 
 	UserInfoSummaryResponse toSummaryResponse(UserInfoSummaryResult result);

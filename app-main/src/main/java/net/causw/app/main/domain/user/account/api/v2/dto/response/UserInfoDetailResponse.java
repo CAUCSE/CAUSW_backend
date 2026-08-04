@@ -15,6 +15,8 @@ public record UserInfoDetailResponse(
 
 	@Schema(description = "사용자 학번", example = "18학번") String admissionYear,
 
+	@Schema(description = "사용자 학과", example = "소프트웨어학부/미기입") String departmentDescription,
+
 	@Schema(description = "사용자 학적 상태", example = "졸업생") String academicStatus,
 
 	@Schema(description = "동문 수첩 프로필 소개글", example = "동문 수첩 프로필 소개글입니다.") String description,
