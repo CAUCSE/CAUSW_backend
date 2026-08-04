@@ -52,7 +52,7 @@ public class UserInfoReader {
 	 * @param listCondition 검색 조건
 	 * @return
 	 */
-	public Slice<UserInfo> findUserInfoWithFilterByCursor(
+	public Slice<UserInfo> readCursor(
 		UserInfoListCondition listCondition,
 		UserInfoCursor cursor,
 		String excludeUserId,

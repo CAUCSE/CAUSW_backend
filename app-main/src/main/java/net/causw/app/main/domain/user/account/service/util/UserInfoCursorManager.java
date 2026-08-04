@@ -2,6 +2,11 @@ package net.causw.app.main.domain.user.account.service.util;
 
 import java.util.Base64;
 
+import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
+import net.causw.app.main.domain.user.account.enums.userinfo.SortType;
+import net.causw.app.main.domain.user.account.enums.userinfo.UserInfoSectionType;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.user.account.service.dto.UserInfoCursor;
@@ -12,9 +17,25 @@ import tools.jackson.databind.json.JsonMapper;
 
 @Component
 @RequiredArgsConstructor
-public class UserInfoCursorParser {
+public class UserInfoCursorManager {
 
 	private final JsonMapper jsonMapper;
+
+	public UserInfoCursor nextCursor(Slice<UserInfo>slice, UserInfoSectionType section, SortType sortType) {
+		if (!slice.hasNext() || slice.getContent().isEmpty()) {
+			return null;
+		}
+
+		UserInfo lastUserInfo = slice.getContent().getLast();
+		User lastUser = lastUserInfo.getUser();
+		return new UserInfoCursor(
+				section,
+				sortType,
+				lastUserInfo.getUpdatedAt(),
+				lastUser.getAdmissionYear(),
+				lastUser.getName(),
+				lastUserInfo.getId());
+	}
 
 	public UserInfoCursor decode(String cursor) {
 		try {

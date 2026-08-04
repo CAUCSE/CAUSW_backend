@@ -12,4 +12,8 @@ public record UserInfoCursor(
 	Integer admissionYear,
 	String name,
 	String userInfoId) {
+
+	public static UserInfoCursor sectionStartCursor(UserInfoSectionType section, SortType sortType) {
+		return new UserInfoCursor(section, sortType, null, null, null, null);
+	}
 }

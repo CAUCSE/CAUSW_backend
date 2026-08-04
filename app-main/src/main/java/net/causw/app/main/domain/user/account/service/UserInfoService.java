@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.user.account.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -27,7 +28,7 @@ import net.causw.app.main.domain.user.account.service.implementation.UserInfoCre
 import net.causw.app.main.domain.user.account.service.implementation.UserInfoReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserInfoWriter;
 import net.causw.app.main.domain.user.account.service.mapper.UserInfoMapper;
-import net.causw.app.main.domain.user.account.service.util.UserInfoCursorParser;
+import net.causw.app.main.domain.user.account.service.util.UserInfoCursorManager;
 import net.causw.app.main.shared.exception.errorcode.UserInfoErrorCode;
 import net.causw.app.main.shared.pageable.PageableFactory;
 import net.causw.global.constant.StaticValue;
@@ -44,7 +45,7 @@ public class UserInfoService {
 	private final PageableFactory pageableFactory;
 	private final UserInfoWriter userInfoWriter;
 	private final UserProfileImageReader userProfileImageReader;
-	private final UserInfoCursorParser userInfoCursorParser;
+	private final UserInfoCursorManager userInfoCursorManager;
 
 	/**
 	 * 내 동문 수첩 프로필 수정
@@ -129,65 +130,69 @@ public class UserInfoService {
 			profileImageMap.get(ui.getUser().getId())));
 	}
 
+	/**
+	 * 동문 수첩 프로필 리스트 조회 및 검색
+	 * @param condition 조회 조건
+	 * @param userId 조회 user id
+	 * @param cursor 커서
+	 * @return 동문수첩 리스트
+	 */
 	@Transactional(readOnly = true)
 	public UserInfoDirectoryResult getUserInfoByCursor(
-		UserInfoListCondition listCondition,
+		UserInfoListCondition condition,
 		String userId,
 		String cursor) {
+
 		boolean isInitialCursor = cursor == null || cursor.isBlank();
-		UserInfoSummaryResult myProfile = isInitialCursor ? getMySummaryResult(userId) : null;
-		int size = StaticValue.USER_LIST_PAGE_SIZE;
-		UserInfoCursor currentCursor = isInitialCursor
-			? sectionStartCursor(UserInfoSectionType.COFFEE_CHAT_AVAILABLE, resolveSortType(listCondition))
-			: userInfoCursorParser.decode(cursor);
+		UserInfoSummaryResult myProfile = isInitialCursor ? getUserInfoSummaryResultByUserId(userId) : null;
 
-		Slice<UserInfo> currentSlice = userInfoReader.findUserInfoWithFilterByCursor(
-			listCondition,
-			currentCursor,
-			userId,
-			size);
+		int pageSize = StaticValue.USER_LIST_PAGE_SIZE;
+		SortType sortType = resolveSortType(condition);
 
-		if (currentCursor.section() == UserInfoSectionType.ALL_MEMBERS) {
-			List<UserInfoSummaryResult> allMemberItems = toSummaryResults(currentSlice.getContent());
-			return new UserInfoDirectoryResult(
-				myProfile,
-				List.of(sectionResult(UserInfoSectionType.ALL_MEMBERS, allMemberItems, currentSlice.hasNext())),
-				nextCursor(currentSlice, UserInfoSectionType.ALL_MEMBERS, currentCursor.sortType()));
+		UserInfoCursor nextCursor = isInitialCursor
+			? UserInfoCursor.sectionStartCursor(UserInfoSectionType.COFFEE_CHAT_AVAILABLE, sortType)
+			: userInfoCursorManager.decode(cursor);
+
+		// 조회를 통해 얻은 section의 개수가 목표개수보다 작다면, 다음 커서를 불러와서 조회 (반복)
+		List<UserInfoSectionResult> result = new ArrayList<>();
+		UserInfoSectionType currentSectionType = nextCursor.section();
+		int remainingSize = pageSize;
+
+		while (remainingSize > 0 && currentSectionType != null) {
+			Slice<UserInfo> currentSlice = userInfoReader.readCursor(
+					condition,
+					nextCursor,
+					userId,
+					remainingSize);
+			List<UserInfoSummaryResult> summaryResults = toSummaryResults(currentSlice.getContent());
+			result.add(new UserInfoSectionResult(currentSectionType, summaryResults, currentSlice.hasNext()));
+			remainingSize -= currentSlice.getContent().size();
+
+			// 해당 slice next가 있다면 조회 완료된것이므로 pass
+			if (currentSlice.hasNext()) {
+				nextCursor = userInfoCursorManager.nextCursor(currentSlice, currentSectionType, sortType);
+				break;
+			}
+
+			// 현재 sectionType 조회완료했는데도 목표 개수 못채웠다면 nextCursor
+			currentSectionType = currentSectionType.next();
+			if (currentSectionType != null) {
+				nextCursor = UserInfoCursor.sectionStartCursor(currentSectionType, sortType);
+			}else{
+				nextCursor = null;
+			}
+
 		}
 
-		List<UserInfo> coffeeChatUserInfos = currentSlice.getContent();
-		int remainingSize = size - coffeeChatUserInfos.size();
-		Slice<UserInfo> allMemberSlice = null;
+		return new UserInfoDirectoryResult(myProfile, result, nextCursor != null ? userInfoCursorManager.encode(nextCursor): null);
+	}
 
-		if (!currentSlice.hasNext() && remainingSize > 0) {
-			UserInfoCursor allMemberCursor = sectionStartCursor(
-				UserInfoSectionType.ALL_MEMBERS,
-				currentCursor.sortType());
-			allMemberSlice = userInfoReader.findUserInfoWithFilterByCursor(
-				listCondition,
-				allMemberCursor,
-				userId,
-				remainingSize);
-		}
+	private UserInfoSummaryResult getUserInfoSummaryResultByUserId(String userId) {
+		UserInfo userInfo = userInfoReader.findByUserId(userId)
+				.orElseThrow(UserInfoErrorCode.USERINFO_NOT_FOUND::toBaseException);
+		UserProfileImage profileImage = userProfileImageReader.findByUserIdOrNull(userId);
 
-		List<UserInfoSectionResult> sections = new java.util.ArrayList<>();
-		sections.add(sectionResult(
-			UserInfoSectionType.COFFEE_CHAT_AVAILABLE,
-			toSummaryResults(coffeeChatUserInfos),
-			currentSlice.hasNext()));
-
-		if (allMemberSlice != null) {
-			sections.add(sectionResult(
-				UserInfoSectionType.ALL_MEMBERS,
-				toSummaryResults(allMemberSlice.getContent()),
-				allMemberSlice.hasNext()));
-		}
-
-		String nextCursor = currentSlice.hasNext()
-			? nextCursor(currentSlice, UserInfoSectionType.COFFEE_CHAT_AVAILABLE, currentCursor.sortType())
-			: nextAllMemberCursor(allMemberSlice, remainingSize, currentCursor.sortType());
-
-		return new UserInfoDirectoryResult(myProfile, sections, nextCursor);
+		return userInfoMapper.toSummaryResult(userInfo, profileImage);
 	}
 
 	private List<UserInfoSummaryResult> toSummaryResults(List<UserInfo> userInfos) {
@@ -203,55 +208,10 @@ public class UserInfoService {
 			.toList();
 	}
 
-	private UserInfoSectionResult sectionResult(
-		UserInfoSectionType type,
-		List<UserInfoSummaryResult> items,
-		boolean hasNext) {
-		return new UserInfoSectionResult(type, items, hasNext);
-	}
-
-	private String nextAllMemberCursor(Slice<UserInfo> allMemberSlice, int remainingSize, SortType sortType) {
-		if (allMemberSlice != null) {
-			return nextCursor(allMemberSlice, UserInfoSectionType.ALL_MEMBERS, sortType);
-		}
-		if (remainingSize == 0) {
-			return userInfoCursorParser.encode(sectionStartCursor(UserInfoSectionType.ALL_MEMBERS, sortType));
-		}
-		return null;
-	}
-
-	private String nextCursor(Slice<UserInfo> slice, UserInfoSectionType section, SortType sortType) {
-		if (!slice.hasNext() || slice.getContent().isEmpty()) {
-			return null;
-		}
-
-		UserInfo lastUserInfo = slice.getContent().getLast();
-		User lastUser = lastUserInfo.getUser();
-		return userInfoCursorParser.encode(new UserInfoCursor(
-			section,
-			sortType,
-			lastUserInfo.getUpdatedAt(),
-			lastUser.getAdmissionYear(),
-			lastUser.getName(),
-			lastUserInfo.getId()));
-	}
-
-	private UserInfoCursor sectionStartCursor(UserInfoSectionType section, SortType sortType) {
-		return new UserInfoCursor(section, sortType, null, null, null, null);
-	}
-
 	private SortType resolveSortType(UserInfoListCondition condition) {
 		if (condition.sortType() == null || condition.sortType().isBlank()) {
 			return SortType.UPDATED_AT_DESC;
 		}
 		return SortType.fromString(condition.sortType());
-	}
-
-	private UserInfoSummaryResult getMySummaryResult(String userId) {
-		UserInfoSummaryResult myUserInfoSummaryResult;
-		UserInfo userInfo = userInfoReader.findByUserId(userId)
-			.orElseThrow(UserInfoErrorCode.USERINFO_NOT_FOUND::toBaseException);
-		UserProfileImage profileImage = userProfileImageReader.findByUserIdOrNull(userId);
-		return userInfoMapper.toSummaryResult(userInfo, profileImage);
 	}
 }
