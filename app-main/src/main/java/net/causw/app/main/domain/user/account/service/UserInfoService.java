@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import net.causw.app.main.domain.user.account.service.dto.UserInfoCursor;
+import net.causw.app.main.domain.user.account.service.util.UserInfoCursorParser;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -37,6 +39,7 @@ public class UserInfoService {
 	private final PageableFactory pageableFactory;
 	private final UserInfoWriter userInfoWriter;
 	private final UserProfileImageReader userProfileImageReader;
+	private final UserInfoCursorParser userInfoCursorParser;
 
 	/**
 	 * 내 동문 수첩 프로필 수정
@@ -120,4 +123,9 @@ public class UserInfoService {
 			profileImageMap.get(ui.getUser().getId())));
 	}
 
+    public List<UserInfoSummaryResult> getUserInfoByCursor(UserInfoListCondition listCondition, String userId, String cursor) {
+		UserInfoCursor userInfoCursor = userInfoCursorParser.decode(cursor);
+
+        return null;
+    }
 }
