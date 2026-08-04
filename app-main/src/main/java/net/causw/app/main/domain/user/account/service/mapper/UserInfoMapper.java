@@ -14,6 +14,7 @@ import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserCareer;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserProject;
+import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.account.service.dto.result.UserCareerResult;
 import net.causw.app.main.domain.user.account.service.dto.result.UserInfoDetailResult;
 import net.causw.app.main.domain.user.account.service.dto.result.UserInfoSummaryResult;
@@ -39,7 +40,9 @@ public interface UserInfoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "userProject", source = "userInfo.userProject", qualifiedByName = "sortUserProject")
 	@Mapping(target = "userInterestTech", source = "userInfo.userInterestTech", qualifiedByName = "sortStringsAsc")
 	@Mapping(target = "userInterestDomain", source = "userInfo.userInterestDomain", qualifiedByName = "sortStringsAsc")
-	UserInfoDetailResult toDetailResult(UserInfo userInfo, UserProfileImage userProfileImage);
+	@Mapping(target = "isCoffeeChatAvailable", source = "userInfo.coffeeChatAvailable")
+	@Mapping(target = "department", source = "department")
+	UserInfoDetailResult toDetailResult(UserInfo userInfo, UserProfileImage userProfileImage, Department department);
 
 	// 내 동문 수첩 프로필 상세 조회 (전화번호 직접 노출)
 	@Mapping(target = "id", source = "userInfo.id")
@@ -57,7 +60,9 @@ public interface UserInfoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "userProject", source = "userInfo.userProject", qualifiedByName = "sortUserProject")
 	@Mapping(target = "userInterestTech", source = "userInfo.userInterestTech", qualifiedByName = "sortStringsAsc")
 	@Mapping(target = "userInterestDomain", source = "userInfo.userInterestDomain", qualifiedByName = "sortStringsAsc")
-	UserInfoDetailResult toMyDetailResult(UserInfo userInfo, UserProfileImage userProfileImage);
+	@Mapping(target = "isCoffeeChatAvailable", source = "userInfo.coffeeChatAvailable")
+	@Mapping(target = "department", source = "department")
+	UserInfoDetailResult toMyDetailResult(UserInfo userInfo, UserProfileImage userProfileImage, Department department);
 
 	// 동문 수첩 프로필 리스트 조회
 	@Mapping(target = "id", source = "userInfo.id")
@@ -65,7 +70,9 @@ public interface UserInfoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "name", source = "userInfo.user.name")
 	@Mapping(target = "admissionYear", source = "userInfo", qualifiedByName = "mapAdmissionYear")
 	@Mapping(target = "academicStatus", source = "userInfo", qualifiedByName = "mapAcademicStatus")
+	@Mapping(target = "department", source = "userInfo.user.department")
 	@Mapping(target = "description", source = "userInfo.description")
+	@Mapping(target = "isCoffeeChatAvailable", source = "userInfo.coffeeChatAvailable")
 	UserInfoSummaryResult toSummaryResult(UserInfo userInfo, UserProfileImage userProfileImage);
 
 	@Named("mapAdmissionYear")

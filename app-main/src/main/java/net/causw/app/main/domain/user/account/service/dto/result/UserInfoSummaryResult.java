@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.user.account.service.dto.result;
 
+import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.shared.dto.ProfileImageDto;
 
 public record UserInfoSummaryResult(
@@ -8,5 +9,7 @@ public record UserInfoSummaryResult(
 	String name,
 	String admissionYear,
 	String academicStatus,
-	String description) {
+	Department department,
+	String description,
+	boolean isCoffeeChatAvailable) {
 }

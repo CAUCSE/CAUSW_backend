@@ -15,5 +15,9 @@ public record UserInfoSummaryResponse(
 
 	@Schema(description = "사용자 학적 상태", example = "졸업생") String academicStatus,
 
-	@Schema(description = "동문 수첩 프로필 설명", example = "동문 수첩 프로필 설명입니다.") String description) {
+	@Schema(description = "사용자 학과") DepartmentResponse department,
+
+	@Schema(description = "동문 수첩 프로필 설명", example = "동문 수첩 프로필 설명입니다.") String description,
+
+	@Schema(description = "커피챗 가능 여부", example = "false") boolean isCoffeeChatAvailable) {
 }
