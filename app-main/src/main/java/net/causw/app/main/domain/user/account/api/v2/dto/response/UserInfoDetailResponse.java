@@ -35,5 +35,9 @@ public record UserInfoDetailResponse(
 
 	@Schema(description = "사용자 관심 기술", example = "[\"Tech0\", \"Tech1\"]") List<String> userInterestTech,
 
-	@Schema(description = "사용자 관심 도메인", example = "[\"Domain0\", \"Domain1\"]") List<String> userInterestDomain) {
+	@Schema(description = "사용자 관심 도메인", example = "[\"Domain0\", \"Domain1\"]") List<String> userInterestDomain,
+
+	@Schema(description = "커피챗 가능 여부", example = "false") boolean isCoffeeChatAvailable
+
+) {
 }

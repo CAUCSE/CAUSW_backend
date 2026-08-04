@@ -84,7 +84,8 @@ public class UserInfo extends BaseEntity {
 	@Builder.Default
 	private Set<String> userInterestDomain = new HashSet<>();
 
-	@Column(name="is_coffe_chat_available", nullable = false)
+	@Column(name="is_coffee_chat_available", nullable = false)
+	@Builder.Default
 	private boolean isCoffeeChatAvailable = false;
 
 	public static UserInfo of(User user) {

@@ -12,12 +12,14 @@ public record UserInfoDetailResult(
 	String academicStatus,
 	String description,
 	String phoneNumber,
-	Boolean isPhoneNumberVisible,
+	boolean isPhoneNumberVisible,
 	String email,
 	List<String> socialLinks,
 	List<String> userTechStack,
 	List<UserCareerResult> userCareer,
 	List<UserProjectResult> userProject,
 	List<String> userInterestTech,
-	List<String> userInterestDomain) {
+	List<String> userInterestDomain,
+	boolean isCoffeeChatAvailable
+) {
 }

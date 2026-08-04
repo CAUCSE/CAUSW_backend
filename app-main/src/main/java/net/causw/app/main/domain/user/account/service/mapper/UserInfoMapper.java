@@ -39,6 +39,7 @@ public interface UserInfoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "userProject", source = "userInfo.userProject", qualifiedByName = "sortUserProject")
 	@Mapping(target = "userInterestTech", source = "userInfo.userInterestTech", qualifiedByName = "sortStringsAsc")
 	@Mapping(target = "userInterestDomain", source = "userInfo.userInterestDomain", qualifiedByName = "sortStringsAsc")
+	@Mapping(target = "isCoffeeChatAvailable", source = "userInfo.coffeeChatAvailable")
 	UserInfoDetailResult toDetailResult(UserInfo userInfo, UserProfileImage userProfileImage);
 
 	// 내 동문 수첩 프로필 상세 조회 (전화번호 직접 노출)
@@ -57,6 +58,7 @@ public interface UserInfoMapper extends UuidFileToUrlDtoMapper {
 	@Mapping(target = "userProject", source = "userInfo.userProject", qualifiedByName = "sortUserProject")
 	@Mapping(target = "userInterestTech", source = "userInfo.userInterestTech", qualifiedByName = "sortStringsAsc")
 	@Mapping(target = "userInterestDomain", source = "userInfo.userInterestDomain", qualifiedByName = "sortStringsAsc")
+	@Mapping(target = "isCoffeeChatAvailable", source = "userInfo.coffeeChatAvailable")
 	UserInfoDetailResult toMyDetailResult(UserInfo userInfo, UserProfileImage userProfileImage);
 
 	// 동문 수첩 프로필 리스트 조회
