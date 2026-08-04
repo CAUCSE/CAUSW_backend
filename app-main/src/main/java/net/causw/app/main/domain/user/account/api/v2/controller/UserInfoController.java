@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.user.account.api.v2.controller;
 
+import net.causw.app.main.domain.user.account.service.dto.request.UserInfoListCondition;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -100,8 +101,8 @@ public class UserInfoController {
 		@ModelAttribute @Valid UserInfoListRequest request,
 		@RequestParam(name = "pageNum", required = false, defaultValue = "0") Integer pageNum,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		Page<UserInfoSummaryResult> result = userInfoService.getUserInfoPage(userInfoDtoMapper.toListCondition(request),
-			pageNum, userDetails.getUserId());
+		UserInfoListCondition listCondition = userInfoDtoMapper.toListCondition(request);
+		Page<UserInfoSummaryResult> result = userInfoService.getUserInfoPage(listCondition, pageNum, userDetails.getUserId());
 		Page<UserInfoSummaryResponse> response = result.map(userInfoDtoMapper::toSummaryResponse);
 		return ApiResponse.success(PageResponse.from(response));
 	}
