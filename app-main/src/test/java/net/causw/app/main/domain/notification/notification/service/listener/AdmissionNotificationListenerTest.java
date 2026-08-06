@@ -81,7 +81,7 @@ class AdmissionNotificationListenerTest {
 			// then
 			verify(notificationWriter).save(any());
 
-			PushNotificationData expectedData = new PushNotificationData(NoticeType.SYSTEM, null, null);
+			PushNotificationData expectedData = new PushNotificationData(NoticeType.ADMIN, null, null);
 			verify(notificationPushSender).sendToUser(eq(admin1), any(), any(), eq(expectedData));
 			verify(notificationPushSender).sendToUser(eq(admin2), any(), any(), eq(expectedData));
 		}
@@ -124,7 +124,7 @@ class AdmissionNotificationListenerTest {
 			handler.handleRequest(new AdmissionRequestedEvent("requesterId", AcademicStatus.ENROLLED, "20191234"));
 
 			// then
-			PushNotificationData expectedData = new PushNotificationData(NoticeType.SYSTEM, null, null);
+			PushNotificationData expectedData = new PushNotificationData(NoticeType.ADMIN, null, null);
 			verify(notificationPushSender).sendToUser(eq(adminOn), any(), any(), eq(expectedData));
 			verify(notificationPushSender, never()).sendToUser(eq(adminOff), any(), any(), any());
 		}

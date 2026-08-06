@@ -94,10 +94,10 @@ class CeremonyAdminNotificationListenerTest {
 			ArgumentCaptor<Notification> notificationCaptor = ArgumentCaptor.forClass(Notification.class);
 			verify(notificationWriter).save(notificationCaptor.capture());
 			Notification captured = notificationCaptor.getValue();
-			assertThat(captured.getNoticeType()).isEqualTo(NoticeType.SYSTEM);
+			assertThat(captured.getNoticeType()).isEqualTo(NoticeType.ADMIN);
 			assertThat(captured.getTargetId()).isEqualTo("ceremonyId");
 
-			PushNotificationData expectedData = new PushNotificationData(NoticeType.SYSTEM, "ceremonyId", null);
+			PushNotificationData expectedData = new PushNotificationData(NoticeType.ADMIN, "ceremonyId", null);
 			verify(notificationPushSender).sendToUsers(
 				eq(List.of(admin1, admin2)),
 				eq("경조사 신청"),
@@ -157,7 +157,7 @@ class CeremonyAdminNotificationListenerTest {
 			handler.handle(new CeremonyAdminNotificationEvent("ceremonyId"));
 
 			// then
-			PushNotificationData expectedData = new PushNotificationData(NoticeType.SYSTEM, "ceremonyId", null);
+			PushNotificationData expectedData = new PushNotificationData(NoticeType.ADMIN, "ceremonyId", null);
 			verify(notificationPushSender).sendToUsers(eq(List.of(adminOn)), any(), any(), eq(expectedData));
 			verify(notificationWriter).saveLogs(eq(List.of(adminOn)), eq(savedNotification));
 		}
