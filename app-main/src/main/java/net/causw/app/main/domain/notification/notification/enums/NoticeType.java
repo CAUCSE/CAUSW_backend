@@ -21,7 +21,8 @@ public enum NoticeType {
 	SYSTEM("시스템 알림", "시스템 알림 - v2"),
 	OFFICIAL("공식계정 글 알림", "공식 알림 - v2"),
 	CEREMONY_V2("경조사 알림", "경조사 알림 - v2"),
-	LOCKER("사물함 알림", "사물함 알림");
+	LOCKER("사물함 알림", "사물함 알림"),
+	ADMIN("관리자 알림", "관리자 알림");
 
 	private final String title;
 	private final String type;
