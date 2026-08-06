@@ -46,12 +46,12 @@ public class CrawledToPostTransferService {
 	@Transactional
 	public void transferToPosts() {
 		Board board = getBoard();
-		User adminUser = getAdminUser();
+		User systemUser = getSystemUser();
 		List<CrawledNotice> updatedNotices = getUpdatedNotices();
 
 		int savedCount = 0;
 		for (CrawledNotice notice : updatedNotices) {
-			if (processUpdatedNotice(notice, board, adminUser)) {
+			if (processUpdatedNotice(notice, board, systemUser)) {
 				notice.setIsUpdated(false);
 				crawledNoticeRepository.save(notice);
 				savedCount++;
@@ -67,8 +67,8 @@ public class CrawledToPostTransferService {
 	}
 
 	//관리자 조회
-	private User getAdminUser() {
-		return userRepository.findByStudentId(StaticValue.ADMIN_STUDENT_ID)
+	private User getSystemUser() {
+		return userRepository.findByEmail(StaticValue.SYSTEM_CRAWLER_ACCOUNT)
 			.orElseThrow(() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND));
 	}

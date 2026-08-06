@@ -69,7 +69,7 @@ public class CrawledToPostTransferServiceTest {
 
 		given(boardRepository.findByName(StaticValue.CrawlingBoard))
 			.willReturn(Optional.of(mockBoard));
-		given(userRepository.findByStudentId(StaticValue.ADMIN_STUDENT_ID))
+		given(userRepository.findByEmail(StaticValue.SYSTEM_CRAWLER_ACCOUNT))
 			.willReturn(Optional.of(mockUser));
 		given(crawledNoticeRepository.findTop30ByIsUpdatedTrueOrderByLastModifiedDesc())
 			.willReturn(List.of(newNotice));
@@ -97,7 +97,7 @@ public class CrawledToPostTransferServiceTest {
 
 		given(boardRepository.findByName(StaticValue.CrawlingBoard))
 			.willReturn(Optional.of(mockBoard));
-		given(userRepository.findByStudentId(StaticValue.ADMIN_STUDENT_ID))
+		given(userRepository.findByEmail(StaticValue.SYSTEM_CRAWLER_ACCOUNT))
 			.willReturn(Optional.of(mockUser));
 		given(crawledNoticeRepository.findTop30ByIsUpdatedTrueOrderByLastModifiedDesc())
 			.willReturn(List.of(updatedNotice));
@@ -121,7 +121,7 @@ public class CrawledToPostTransferServiceTest {
 
 		given(boardRepository.findByName(StaticValue.CrawlingBoard))
 			.willReturn(Optional.of(mockBoard));
-		given(userRepository.findByStudentId(StaticValue.ADMIN_STUDENT_ID))
+		given(userRepository.findByEmail(StaticValue.SYSTEM_CRAWLER_ACCOUNT))
 			.willReturn(Optional.of(mockUser));
 		given(crawledNoticeRepository.findTop30ByIsUpdatedTrueOrderByLastModifiedDesc())
 			.willReturn(Collections.emptyList());
@@ -141,7 +141,7 @@ public class CrawledToPostTransferServiceTest {
 
 	private User createMockUser() {
 		User user = mock(User.class);
-		when(user.getStudentId()).thenReturn(StaticValue.ADMIN_STUDENT_ID);
+		when(user.getEmail()).thenReturn(StaticValue.SYSTEM_CRAWLER_ACCOUNT);
 		return user;
 	}
 

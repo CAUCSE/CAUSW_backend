@@ -113,10 +113,6 @@ public class UserWriter {
 			.collect(Collectors.groupingBy(sa -> sa.getUser().getId()));
 
 		for (User user : users) {
-			if (isAlreadyAnonymized(user)) {
-				continue;
-			}
-
 			List<SocialAccount> socialAccounts = socialAccountMap.getOrDefault(user.getId(), List.of());
 
 			for (SocialAccount socialAccount : socialAccounts) {
@@ -132,12 +128,6 @@ public class UserWriter {
 		}
 
 		userRepository.saveAll(users);
-	}
-
-	private boolean isAlreadyAnonymized(User user) {
-		return user.isInactive() &&
-			user.getEmail() != null &&
-			user.getEmail().startsWith("deleted_");
 	}
 
 	/**

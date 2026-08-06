@@ -18,10 +18,13 @@ import org.springframework.web.bind.annotation.RestController;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserInfoListRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.UserInfoUpdateRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoDetailResponse;
+import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoDirectoryResponse;
 import net.causw.app.main.domain.user.account.api.v2.dto.response.UserInfoSummaryResponse;
 import net.causw.app.main.domain.user.account.api.v2.mapper.UserInfoDtoMapper;
 import net.causw.app.main.domain.user.account.service.UserInfoService;
+import net.causw.app.main.domain.user.account.service.dto.request.UserInfoListCondition;
 import net.causw.app.main.domain.user.account.service.dto.result.UserInfoDetailResult;
+import net.causw.app.main.domain.user.account.service.dto.result.UserInfoDirectoryResult;
 import net.causw.app.main.domain.user.account.service.dto.result.UserInfoSummaryResult;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
@@ -100,9 +103,34 @@ public class UserInfoController {
 		@ModelAttribute @Valid UserInfoListRequest request,
 		@RequestParam(name = "pageNum", required = false, defaultValue = "0") Integer pageNum,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		Page<UserInfoSummaryResult> result = userInfoService.getUserInfoPage(userInfoDtoMapper.toListCondition(request),
-			pageNum, userDetails.getUserId());
+
+		UserInfoListCondition listCondition = userInfoDtoMapper.toListCondition(request);
+		Page<UserInfoSummaryResult> result = userInfoService.getUserInfoPage(listCondition, pageNum,
+			userDetails.getUserId());
 		Page<UserInfoSummaryResponse> response = result.map(userInfoDtoMapper::toSummaryResponse);
+
 		return ApiResponse.success(PageResponse.from(response));
+	}
+
+	/**
+	 * 동문 수첩 프로필 리스트 조회 및 검색
+	 * @param request 동문 수첩 프로필 리스트 조회 요청 DTO
+	 * @param pageNum 페이징
+	 * @return 조회된 동문 수첩 프로필 리스트
+	 */
+	@GetMapping(value = "/list")
+	@ResponseStatus(HttpStatus.OK)
+	@Operation(summary = "동문 수첩 프로필 리스트 조회 및 검색 (커서기반)", description = "검색어 또는 필터를 포함해 동문 수첩 프로필 리스트를 조회합니다.(본인 프로필 포함)")
+	public ApiResponse<UserInfoDirectoryResponse> getUserInfoList(
+		@ModelAttribute @Valid UserInfoListRequest request,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
+
+		UserInfoListCondition listCondition = userInfoDtoMapper.toListCondition(request);
+		UserInfoDirectoryResult result = userInfoService.getUserInfoByCursor(
+			listCondition,
+			userDetails.getUserId(),
+			request.cursor());
+
+		return ApiResponse.success(userInfoDtoMapper.toDirectoryResponse(result));
 	}
 }

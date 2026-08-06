@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +16,7 @@ import net.causw.app.main.domain.user.account.repository.userInfo.UserCareerRepo
 import net.causw.app.main.domain.user.account.repository.userInfo.UserInfoQueryRepository;
 import net.causw.app.main.domain.user.account.repository.userInfo.UserInfoRepository;
 import net.causw.app.main.domain.user.account.repository.userInfo.UserProjectRepository;
+import net.causw.app.main.domain.user.account.service.dto.UserInfoCursor;
 import net.causw.app.main.domain.user.account.service.dto.request.UserInfoListCondition;
 import net.causw.app.main.shared.entity.BaseEntity;
 import net.causw.app.main.shared.exception.errorcode.UserInfoErrorCode;
@@ -43,6 +45,28 @@ public class UserInfoReader {
 	public Page<UserInfo> findUserInfoWithFilter(UserInfoListCondition condition, Pageable pageable,
 		String excludeUserId) {
 		return userInfoQueryRepository.findAllWithFilter(condition, pageable, excludeUserId);
+	}
+
+	/**
+	 * 조건 및 커서로 동문수첩 리스트 조회
+	 * @param listCondition 검색 조건
+	 * @return
+	 */
+	public Slice<UserInfo> readCursor(
+		UserInfoListCondition listCondition,
+		UserInfoCursor cursor,
+		String excludeUserId,
+		int size) {
+		return userInfoQueryRepository.findAllWithFilter(
+			listCondition,
+			cursor.userInfoId(),
+			cursor.section(),
+			cursor.sortType(),
+			cursor.updatedAt(),
+			cursor.admissionYear(),
+			cursor.name(),
+			excludeUserId,
+			size);
 	}
 
 	/**

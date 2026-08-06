@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
 import org.springframework.scheduling.annotation.Scheduled;
 
@@ -47,13 +46,10 @@ public class BatchScheduler {
 
 			LocalDateTime dueDate = LocalDateTime.now().minusDays(30);
 
-			boolean hasNext;
-			do {
-				Page<User> userPage = userReader.findUsersDeletedBefore(
+			while (true) {
+				List<User> withdrawnUsers = userReader.findCleanupTargets(
 					dueDate,
 					pageableFactory.create(0, StaticValue.BATCH_USER_LIST_SIZE));
-
-				List<User> withdrawnUsers = userPage.getContent();
 
 				if (withdrawnUsers.isEmpty()) {
 					break;
@@ -66,10 +62,9 @@ public class BatchScheduler {
 				admissionWriter.deleteAdmissionByUsers(withdrawnUsers);
 				userWriter.cleanupWithdrawnUsers(withdrawnUsers);
 
-				hasNext = userPage.hasNext();
 				log.info("[유저 정리 배치] {}명 처리 완료", withdrawnUsers.size());
+			}
 
-			} while (hasNext);
 			log.info("[유저 정리 배치] 탈퇴 유저 후처리 완료");
 		} catch (Exception e) {
 			log.error("유저 정리 배치 실패: {}", e.getMessage(), e);
