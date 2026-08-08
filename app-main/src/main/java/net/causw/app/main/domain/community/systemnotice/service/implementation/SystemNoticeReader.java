@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.community.systemnotice.service.implementation;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Component;
@@ -48,7 +49,11 @@ public class SystemNoticeReader {
 	}
 
 	private Optional<BoardConfig> findSystemNoticeConfig() {
-		return boardConfigRepository.findByIsSystemNoticeTrue();
+		List<BoardConfig> systemNoticeConfigs = boardConfigRepository.findByIsSystemNoticeTrue();
+		if (systemNoticeConfigs.size() > 1) {
+			throw BoardErrorCode.BOARD_SYSTEM_NOTICE_NOT_UNIQUE.toBaseException();
+		}
+		return systemNoticeConfigs.stream().findFirst();
 	}
 
 	private boolean isSystemNoticePost(Post post) {

@@ -1,6 +1,6 @@
 package net.causw.app.main.domain.community.board.repository;
 
-import java.util.Optional;
+import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -11,5 +11,5 @@ import net.causw.app.main.domain.community.board.entity.BoardConfig;
 public interface BoardConfigRepository extends JpaRepository<BoardConfig, Long> {
 	boolean existsByBoardIdAndIsNoticeTrue(String boardId);
 
-	Optional<BoardConfig> findByIsSystemNoticeTrue();
+	List<BoardConfig> findByIsSystemNoticeTrue();
 }
