@@ -30,6 +30,10 @@ public class UserSystemNoticeRead extends AuditableEntity {
 	@JoinColumn(name = "last_read_post_id")
 	private Post lastReadPost;
 
+	public static UserSystemNoticeRead of(String userId) {
+		return new UserSystemNoticeRead(userId, null);
+	}
+
 	public void updateLastReadPost(Post post) {
 		this.lastReadPost = post;
 	}

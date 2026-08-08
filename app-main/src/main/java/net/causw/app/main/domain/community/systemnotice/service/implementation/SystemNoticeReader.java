@@ -1,0 +1,53 @@
+package net.causw.app.main.domain.community.systemnotice.service.implementation;
+
+import java.util.Optional;
+
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import net.causw.app.main.domain.community.board.entity.BoardConfig;
+import net.causw.app.main.domain.community.board.repository.BoardConfigRepository;
+import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.repository.PostRepository;
+import net.causw.app.main.domain.community.systemnotice.entity.UserSystemNoticeRead;
+import net.causw.app.main.domain.community.systemnotice.repository.UserSystemNoticeReadRepository;
+import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
+
+import lombok.RequiredArgsConstructor;
+
+@Component
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class SystemNoticeReader {
+
+	private final BoardConfigRepository boardConfigRepository;
+	private final PostRepository postRepository;
+	private final UserSystemNoticeReadRepository userSystemNoticeReadRepository;
+
+	public Optional<Post> findLatestPost() {
+		return findSystemNoticeConfig()
+			.flatMap(config -> postRepository
+				.findTop1ByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(config.getBoardId()));
+	}
+
+	public Optional<UserSystemNoticeRead> findReadByUserId(String userId) {
+		return userSystemNoticeReadRepository.findByUserId(userId);
+	}
+
+	public Post getSystemNoticePost(String postId) {
+		return postRepository.findById(postId)
+			.filter(this::isSystemNoticePost)
+			.orElseThrow(PostErrorCode.POST_NOT_FOUND::toBaseException);
+	}
+
+	private Optional<BoardConfig> findSystemNoticeConfig() {
+		return boardConfigRepository.findByIsSystemNoticeTrue();
+	}
+
+	private boolean isSystemNoticePost(Post post) {
+		return findSystemNoticeConfig()
+			.map(BoardConfig::getBoardId)
+			.filter(post.getBoard().getId()::equals)
+			.isPresent();
+	}
+}
