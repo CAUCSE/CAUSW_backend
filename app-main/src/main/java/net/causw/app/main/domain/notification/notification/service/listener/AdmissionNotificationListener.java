@@ -72,11 +72,11 @@ public class AdmissionNotificationListener {
 
 		String pushBody = message;
 		String serviceTitle = message;
-		PushNotificationData pushData = new PushNotificationData(NoticeType.SYSTEM, null, null);
+		PushNotificationData pushData = new PushNotificationData(NoticeType.ADMIN, null, null);
 
 		// 알림 엔티티 저장 (발송자: 요청자)
 		Notification notification = notificationWriter.save(
-			Notification.of(requester, serviceTitle, serviceTitle, NoticeType.SYSTEM, null, null));
+			Notification.of(requester, serviceTitle, serviceTitle, NoticeType.ADMIN, null, null));
 
 		// 서비스 알림이 활성화된 관리자에게만 발송
 		admins.stream()
