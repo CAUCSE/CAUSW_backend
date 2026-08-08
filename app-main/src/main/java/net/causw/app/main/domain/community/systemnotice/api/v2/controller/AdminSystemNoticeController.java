@@ -21,6 +21,8 @@ import net.causw.app.main.domain.community.systemnotice.service.dto.SystemNotice
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -28,6 +30,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/admin/system-notices")
 @PreAuthorize("@security.hasRole(@Role.ADMIN)")
+@Tag(name = "System Notice Admin v2", description = "관리자 시스템 공지 관리 API")
 public class AdminSystemNoticeController {
 
 	private final SystemNoticeService systemNoticeService;
@@ -35,6 +38,7 @@ public class AdminSystemNoticeController {
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
+	@Operation(summary = "시스템 공지 작성", description = "새로운 시스템 공지를 작성합니다.")
 	public ApiResponse<SystemNoticeCreateResponse> create(
 		@Valid @RequestBody SystemNoticeCreateRequest request,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -44,6 +48,7 @@ public class AdminSystemNoticeController {
 	}
 
 	@PutMapping("/{id}")
+	@Operation(summary = "시스템 공지 수정", description = "기존 시스템 공지의 내용을 수정합니다.")
 	public ApiResponse<Void> update(
 		@PathVariable String id,
 		@Valid @RequestBody SystemNoticeUpdateRequest request,
@@ -55,6 +60,7 @@ public class AdminSystemNoticeController {
 
 	@DeleteMapping("/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(summary = "시스템 공지 삭제", description = "기존 시스템 공지를 삭제합니다.")
 	public ApiResponse<Void> delete(
 		@PathVariable String id,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
