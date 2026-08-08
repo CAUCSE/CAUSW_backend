@@ -18,7 +18,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
@@ -107,9 +106,7 @@ class AcademicRecordUserServiceTest {
 		User user = ObjectFixtures.getCertifiedUserWithId("user-2");
 		user.setAcademicStatus(AcademicStatus.GRADUATED);
 
-		EnrollmentApplicationRequest request = new EnrollmentApplicationRequest("복학 신청");
-		MockMultipartFile image = new MockMultipartFile("imageFileList", "proof.png", "image/png",
-			new byte[] {1, 2, 3});
+		EnrollmentApplicationRequest request = new EnrollmentApplicationRequest("복학 신청", List.of("uuid-1"));
 
 		UuidFile uuidFile = UuidFile.of(
 			"uuid-1",
@@ -130,15 +127,14 @@ class AcademicRecordUserServiceTest {
 		ReflectionTestUtils.setField(application, "createdAt", LocalDateTime.of(2026, 3, 1, 10, 0));
 
 		when(userReader.findUserById(user.getId())).thenReturn(user);
-		when(fileWriter.uploadAndSaveList(List.of(image), FilePath.USER_ACADEMIC_RECORD_APPLICATION))
+		when(fileWriter.confirmFiles(List.of("uuid-1"), FilePath.USER_ACADEMIC_RECORD_APPLICATION))
 			.thenReturn(List.of(uuidFile));
 		when(applicationWriter.createEnrollmentApplication(user, "복학 신청", List.of(uuidFile)))
 			.thenReturn(application);
 
 		AcademicStatusResponse<EnrollmentDetailsResponse> response = academicRecordUserService.updateStatusToEnrolled(
 			user,
-			request,
-			List.of(image));
+			request);
 
 		assertThat(response.requestedStatus()).isEqualTo(AcademicStatus.ENROLLED);
 		assertThat(response.updatedStatus()).isEqualTo(AcademicStatus.GRADUATED);
@@ -146,7 +142,7 @@ class AcademicRecordUserServiceTest {
 		assertThat(response.recordDetails().requestStatus()).isEqualTo(AcademicRecordRequestStatus.AWAIT);
 		assertThat(response.recordDetails().requestedAt()).isEqualTo(LocalDateTime.of(2026, 3, 1, 10, 0));
 
-		verify(fileWriter).uploadAndSaveList(List.of(image), FilePath.USER_ACADEMIC_RECORD_APPLICATION);
+		verify(fileWriter).confirmFiles(List.of("uuid-1"), FilePath.USER_ACADEMIC_RECORD_APPLICATION);
 		verify(applicationWriter).createEnrollmentApplication(user, "복학 신청", List.of(uuidFile));
 		verify(logCreator, never()).createFromApplication(any(), any());
 		verify(userWriter, never()).save(any(User.class));
@@ -157,29 +153,26 @@ class AcademicRecordUserServiceTest {
 	@DisplayName("졸업 상태가 아닌 사용자가 재학 변경 요청하면 예외가 발생한다")
 	void updateStatusToEnrolled_invalidTransition() {
 		User user = ObjectFixtures.getCertifiedUserWithId("user-3");
-		EnrollmentApplicationRequest request = new EnrollmentApplicationRequest("복학 신청");
-		MockMultipartFile image = new MockMultipartFile("imageFileList", "proof.png", "image/png", new byte[] {1});
+		EnrollmentApplicationRequest request = new EnrollmentApplicationRequest("복학 신청", List.of("uuid-1"));
 
 		when(userReader.findUserById(user.getId())).thenReturn(user);
 
-		assertThatThrownBy(() -> academicRecordUserService.updateStatusToEnrolled(user, request, List.of(image)))
+		assertThatThrownBy(() -> academicRecordUserService.updateStatusToEnrolled(user, request))
 			.isInstanceOf(BaseRunTimeV2Exception.class);
 
 		verifyNoInteractions(fileWriter, applicationWriter, logCreator, userWriter);
 	}
 
 	@Test
-	@DisplayName("재학 변경 요청 시 빈 이미지 파트만 전달되면 예외가 발생한다")
-	void updateStatusToEnrolled_emptyImagePart_throwsException() {
+	@DisplayName("재학 변경 요청 시 imageUuids가 비어있으면 예외가 발생한다")
+	void updateStatusToEnrolled_emptyImageUuids_throwsException() {
 		User user = ObjectFixtures.getCertifiedUserWithId("user-4");
 		user.setAcademicStatus(AcademicStatus.GRADUATED);
-		EnrollmentApplicationRequest request = new EnrollmentApplicationRequest("복학 신청");
-		MockMultipartFile emptyImage = new MockMultipartFile("imageFileList", "", "application/octet-stream",
-			new byte[0]);
+		EnrollmentApplicationRequest request = new EnrollmentApplicationRequest("복학 신청", List.of());
 
 		when(userReader.findUserById(user.getId())).thenReturn(user);
 
-		assertThatThrownBy(() -> academicRecordUserService.updateStatusToEnrolled(user, request, List.of(emptyImage)))
+		assertThatThrownBy(() -> academicRecordUserService.updateStatusToEnrolled(user, request))
 			.isInstanceOf(BaseRunTimeV2Exception.class);
 
 		verifyNoInteractions(fileWriter, applicationWriter, logCreator, userWriter, eventPublisher);
