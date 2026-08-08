@@ -77,10 +77,7 @@ public class SystemNoticeService {
 			.orElseThrow(PostErrorCode.POST_NOT_FOUND::toBaseException);
 		validateReadAccess(viewer, post);
 
-		UserSystemNoticeRead read = systemNoticeReader.findReadByUserId(viewer.getId())
-			.orElseGet(() -> UserSystemNoticeRead.of(viewer.getId()));
-		read.updateLastReadPost(post);
-		systemNoticeWriter.save(read);
+		systemNoticeWriter.upsertLastReadPost(viewer.getId(), post.getId());
 	}
 
 	private void validateReadAccess(User viewer, Post post) {

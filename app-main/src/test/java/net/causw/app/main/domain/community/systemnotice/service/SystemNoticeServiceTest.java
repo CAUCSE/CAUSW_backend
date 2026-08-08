@@ -27,7 +27,6 @@ import net.causw.app.main.domain.community.post.service.PostService;
 import net.causw.app.main.domain.community.post.service.dto.PostCreateCommand;
 import net.causw.app.main.domain.community.post.service.dto.PostCreateResult;
 import net.causw.app.main.domain.community.post.service.dto.PostUpdateCommand;
-import net.causw.app.main.domain.community.systemnotice.entity.UserSystemNoticeRead;
 import net.causw.app.main.domain.community.systemnotice.service.dto.SystemNoticeCreateCommand;
 import net.causw.app.main.domain.community.systemnotice.service.dto.SystemNoticeCreateResult;
 import net.causw.app.main.domain.community.systemnotice.service.dto.SystemNoticeResult;
@@ -143,12 +142,10 @@ class SystemNoticeServiceTest {
 		given(latestPost.getId()).willReturn("latest-post-id");
 		given(systemNoticeReader.findLatestPost()).willReturn(Optional.of(latestPost));
 		givenReadableSystemNotice(latestPost);
-		given(systemNoticeReader.findReadByUserId("user-id")).willReturn(Optional.empty());
 
 		systemNoticeService.markAsRead(viewer, "latest-post-id");
 
-		verify(systemNoticeWriter).save(org.mockito.ArgumentMatchers.argThat(read ->
-			read.getUserId().equals("user-id") && read.getLastReadPost() == latestPost));
+		verify(systemNoticeWriter).upsertLastReadPost("user-id", "latest-post-id");
 	}
 
 	@Test
@@ -158,22 +155,15 @@ class SystemNoticeServiceTest {
 		given(latestPost.getId()).willReturn("latest-post-id");
 		given(systemNoticeReader.findLatestPost()).willReturn(Optional.of(latestPost));
 		givenReadableSystemNotice(latestPost);
-		given(systemNoticeReader.findReadByUserId("user-id")).willReturn(Optional.empty());
 
 		systemNoticeService.markAsRead(viewer, "latest-post-id");
-
-		org.mockito.ArgumentCaptor<UserSystemNoticeRead> captor =
-			org.mockito.ArgumentCaptor.forClass(UserSystemNoticeRead.class);
-		verify(systemNoticeWriter).save(captor.capture());
-		UserSystemNoticeRead read = captor.getValue();
 
 		assertThatThrownBy(() -> systemNoticeService.markAsRead(viewer, "old-post-id"))
 			.isInstanceOf(BaseRunTimeV2Exception.class)
 			.extracting("errorCode")
 			.isEqualTo(PostErrorCode.POST_NOT_FOUND);
 
-		assertThat(read.getLastReadPost()).isSameAs(latestPost);
-		verify(systemNoticeWriter).save(org.mockito.ArgumentMatchers.any(UserSystemNoticeRead.class));
+		verify(systemNoticeWriter).upsertLastReadPost("user-id", "latest-post-id");
 	}
 
 	@Test
@@ -187,7 +177,8 @@ class SystemNoticeServiceTest {
 			.isEqualTo(PostErrorCode.POST_NOT_FOUND);
 
 		verify(systemNoticeReader, never()).findReadByUserId("user-id");
-		verify(systemNoticeWriter, never()).save(org.mockito.ArgumentMatchers.any(UserSystemNoticeRead.class));
+		verify(systemNoticeWriter, never()).upsertLastReadPost(
+			org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.anyString());
 	}
 
 	@Test
@@ -223,7 +214,8 @@ class SystemNoticeServiceTest {
 			.extracting("errorCode")
 			.isEqualTo(BoardErrorCode.BOARD_FORBIDDEN);
 
-		verify(systemNoticeWriter, never()).save(org.mockito.ArgumentMatchers.any(UserSystemNoticeRead.class));
+		verify(systemNoticeWriter, never()).upsertLastReadPost(
+			org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.anyString());
 	}
 
 	private void givenActiveViewer() {

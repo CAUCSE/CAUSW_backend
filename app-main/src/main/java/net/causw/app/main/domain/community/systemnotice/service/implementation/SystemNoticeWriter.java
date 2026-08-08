@@ -18,4 +18,8 @@ public class SystemNoticeWriter {
 	public UserSystemNoticeRead save(UserSystemNoticeRead read) {
 		return userSystemNoticeReadRepository.save(read);
 	}
+
+	public void upsertLastReadPost(String userId, String postId) {
+		userSystemNoticeReadRepository.upsertLastReadPost(userId, postId);
+	}
 }
