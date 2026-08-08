@@ -242,6 +242,10 @@ class BoardServiceTest {
 		@DisplayName("이름 중복이면 BoardValidator가 예외를 던진다")
 		void givenDuplicateBoardName_whenUpdateBoard_thenThrowsException() {
 			// given
+			Board board = ObjectFixtures.getBoardWithId(BOARD_ID);
+			BoardConfig boardConfig = org.mockito.Mockito.mock(BoardConfig.class);
+			given(boardReader.getById(BOARD_ID)).willReturn(board);
+			given(boardConfigReader.getByBoardId(BOARD_ID)).willReturn(boardConfig);
 			org.mockito.Mockito.doThrow(new BaseRunTimeV2Exception(BoardErrorCode.BOARD_NAME_DUPLICATE))
 				.when(boardValidator)
 				.validateForUpdate(BOARD_PART.name(), BOARD_ID, CONFIG_PART.isNotice(), CONFIG_PART.isAnonymous());
@@ -275,6 +279,29 @@ class BoardServiceTest {
 			then(boardConfigWriter).should().updateBoardConfig(boardConfig, CONFIG_PART);
 			then(boardConfigWriter).should().replaceAdmins(BOARD_ID, java.util.Set.of("user-1", "user-2"));
 		}
+
+		@Test
+		void givenSystemNoticeBoard_whenUpdateBoard_thenThrowsException() {
+			Board board = ObjectFixtures.getBoardWithId(BOARD_ID);
+			BoardConfig boardConfig = org.mockito.Mockito.mock(BoardConfig.class);
+			given(boardReader.getById(BOARD_ID)).willReturn(board);
+			given(boardConfigReader.getByBoardId(BOARD_ID)).willReturn(boardConfig);
+			given(boardConfig.isSystemNotice()).willReturn(true);
+
+			assertThatThrownBy(() -> boardService.updateBoard(BOARD_ID, BOARD_PART, CONFIG_PART, ADMIN_IDS))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasFieldOrPropertyWithValue("errorCode", BoardErrorCode.BOARD_SYSTEM_NOTICE_NOT_MODIFIABLE);
+
+			then(boardValidator).should(never()).validateForUpdate(
+				org.mockito.ArgumentMatchers.anyString(),
+				org.mockito.ArgumentMatchers.anyString(),
+				org.mockito.ArgumentMatchers.anyBoolean(),
+				org.mockito.ArgumentMatchers.anyBoolean());
+			then(boardWriter).should(never()).updateBoard(any(Board.class), any(BoardPart.class));
+			then(boardConfigWriter).should(never()).updateBoardConfig(any(BoardConfig.class), any(BoardConfigPart.class));
+			then(boardConfigWriter).should(never()).replaceAdmins(
+				org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.anySet());
+		}
 	}
 
 	@Nested
@@ -287,7 +314,9 @@ class BoardServiceTest {
 			// given
 			String boardId = "board-1";
 			Board board = ObjectFixtures.getBoardWithId(boardId);
+			BoardConfig boardConfig = org.mockito.Mockito.mock(BoardConfig.class);
 			given(boardReader.getById(boardId)).willReturn(board);
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 			given(boardWriter.save(board)).willReturn(board);
 
 			// when
@@ -298,6 +327,24 @@ class BoardServiceTest {
 			assertThat(board.getIsDeleted()).isTrue();
 			then(boardWriter).should().save(board);
 			then(postWriter).should().deleteAllByBoardId(boardId);
+		}
+
+		@Test
+		void givenSystemNoticeBoard_whenDeleteBoard_thenThrowsException() {
+			String boardId = "system-notice-board";
+			Board board = ObjectFixtures.getBoardWithId(boardId);
+			BoardConfig boardConfig = org.mockito.Mockito.mock(BoardConfig.class);
+			given(boardReader.getById(boardId)).willReturn(board);
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
+			given(boardConfig.isSystemNotice()).willReturn(true);
+
+			assertThatThrownBy(() -> boardService.deleteBoard(boardId))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasFieldOrPropertyWithValue("errorCode", BoardErrorCode.BOARD_SYSTEM_NOTICE_NOT_MODIFIABLE);
+
+			assertThat(board.getIsDeleted()).isFalse();
+			then(boardWriter).should(never()).save(any(Board.class));
+			then(postWriter).should(never()).deleteAllByBoardId(boardId);
 		}
 	}
 
@@ -318,6 +365,23 @@ class BoardServiceTest {
 
 			// then
 			then(boardConfigWriter).should().updateDisplayOrders(command.boardIds());
+		}
+
+		@Test
+		void givenSystemNoticeBoardInOrderCommand_whenUpdateBoardOrder_thenThrowsException() {
+			BoardOrderUpdateCommand command = BoardOrderUpdateCommand.builder()
+				.boardIds(List.of("board-1", "system-notice-board"))
+				.build();
+			BoardConfig systemNoticeConfig = org.mockito.Mockito.mock(BoardConfig.class);
+			given(systemNoticeConfig.isSystemNotice()).willReturn(true);
+			given(boardConfigReader.getAllBoardConfigInBoardIds(command.boardIds()))
+				.willReturn(List.of(systemNoticeConfig));
+
+			assertThatThrownBy(() -> boardService.updateBoardOrder(command))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasFieldOrPropertyWithValue("errorCode", BoardErrorCode.BOARD_SYSTEM_NOTICE_NOT_MODIFIABLE);
+
+			then(boardConfigWriter).should(never()).updateDisplayOrders(command.boardIds());
 		}
 	}
 }
