@@ -19,6 +19,7 @@ import net.causw.app.main.domain.community.systemnotice.service.dto.SystemNotice
 import net.causw.app.main.domain.community.systemnotice.service.implementation.SystemNoticeReader;
 import net.causw.app.main.domain.community.systemnotice.service.implementation.SystemNoticeWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -61,7 +62,9 @@ public class SystemNoticeService {
 
 	@Transactional
 	public void markAsRead(User viewer, String postId) {
-		Post post = systemNoticeReader.getSystemNoticePost(postId);
+		Post post = systemNoticeReader.findLatestPost()
+			.filter(latestPost -> latestPost.getId().equals(postId))
+			.orElseThrow(PostErrorCode.POST_NOT_FOUND::toBaseException);
 
 		UserSystemNoticeRead read = systemNoticeReader.findReadByUserId(viewer.getId())
 			.orElseGet(() -> UserSystemNoticeRead.of(viewer.getId()));
