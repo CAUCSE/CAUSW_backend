@@ -6,11 +6,15 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.domain.community.board.entity.BoardConfig;
+import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
+import net.causw.app.main.domain.community.common.service.CommunityPermissionPolicy;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.PostService;
 import net.causw.app.main.domain.community.post.service.dto.PostCreateCommand;
 import net.causw.app.main.domain.community.post.service.dto.PostCreateResult;
 import net.causw.app.main.domain.community.post.service.dto.PostUpdateCommand;
+import net.causw.app.main.domain.community.post.service.util.PostValidator;
 import net.causw.app.main.domain.community.systemnotice.entity.UserSystemNoticeRead;
 import net.causw.app.main.domain.community.systemnotice.service.dto.SystemNoticeCreateCommand;
 import net.causw.app.main.domain.community.systemnotice.service.dto.SystemNoticeCreateResult;
@@ -31,6 +35,7 @@ public class SystemNoticeService {
 	private final SystemNoticeReader systemNoticeReader;
 	private final SystemNoticeWriter systemNoticeWriter;
 	private final PostService postService;
+	private final BoardConfigReader boardConfigReader;
 
 	@Transactional
 	public SystemNoticeCreateResult create(SystemNoticeCreateCommand command) {
@@ -56,20 +61,33 @@ public class SystemNoticeService {
 	}
 
 	public Optional<SystemNoticeResult> getLatest(User viewer) {
+		CommunityPermissionPolicy.validateActiveUser(viewer);
 		return systemNoticeReader.findLatestPost()
-			.map(latestPost -> toResult(latestPost, viewer));
+			.map(latestPost -> {
+				validateReadAccess(viewer, latestPost);
+				return toResult(latestPost, viewer);
+			});
 	}
 
 	@Transactional
 	public void markAsRead(User viewer, String postId) {
+		CommunityPermissionPolicy.validateActiveUser(viewer);
 		Post post = systemNoticeReader.findLatestPost()
 			.filter(latestPost -> latestPost.getId().equals(postId))
 			.orElseThrow(PostErrorCode.POST_NOT_FOUND::toBaseException);
+		validateReadAccess(viewer, post);
 
 		UserSystemNoticeRead read = systemNoticeReader.findReadByUserId(viewer.getId())
 			.orElseGet(() -> UserSystemNoticeRead.of(viewer.getId()));
 		read.updateLastReadPost(post);
 		systemNoticeWriter.save(read);
+	}
+
+	private void validateReadAccess(User viewer, Post post) {
+		String boardId = post.getBoard().getId();
+		BoardConfig boardConfig = boardConfigReader.getByBoardId(boardId);
+		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(boardId);
+		PostValidator.validateRead(viewer, post, boardConfig, boardAdminIds);
 	}
 
 	private SystemNoticeResult toResult(Post post, User viewer) {
