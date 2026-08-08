@@ -3,6 +3,8 @@ package net.causw.app.main.domain.asset.file.service.implementation;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.causw.global.constant.MessageUtil;
+import net.causw.global.exception.ErrorCode;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,8 +18,6 @@ import net.causw.app.main.domain.asset.file.service.util.FileValidator;
 import net.causw.app.main.shared.storage.StorageClient;
 import net.causw.app.main.shared.storage.dto.FileMetadata;
 import net.causw.app.main.shared.storage.dto.StorageResult;
-import net.causw.global.constant.MessageUtil;
-import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.InternalServerException;
 
 import jakarta.validation.constraints.NotNull;
@@ -270,6 +270,40 @@ public class FileWriter {
 		log.debug("File entity saved to database. FileId: {}, FileKey: {}", saved.getId(), result.fileKey());
 
 		return saved;
+	}
+
+	/**
+	 * PENDING 상태의 UuidFile을 DB에 저장 (isUsed=false)
+	 * Presigned URL 발급 시 호출
+	 *
+	 * @param metadata 파일 메타데이터
+	 * @param fileUrl  S3에 업로드 완료 후 접근할 최종 URL
+	 * @return 저장된 파일 엔티티 (isUsed=false)
+	 */
+	@Transactional
+	public UuidFile savePending(@NotNull FileMetadata metadata, @NotNull String fileUrl) {
+		UuidFile uuidFile = UuidFile.of(
+			metadata.uuid(),
+			metadata.fileKey(),
+			fileUrl,
+			metadata.rawFileName(),
+			metadata.extension(),
+			metadata.filePath());
+		uuidFile.setIsUsed(false);
+		UuidFile saved = uuidFileRepository.save(uuidFile);
+		log.debug("Pending file saved. UUID: {}, FileKey: {}", saved.getUuid(), saved.getFileKey());
+		return saved;
+	}
+
+	/**
+	 * 파일 목록을 사용 완료(isUsed=true)로 표시
+	 *
+	 * @param files 상태를 변경할 파일 목록
+	 */
+	@Transactional
+	public void markAsUsed(@NotNull List<UuidFile> files) {
+		files.forEach(file -> file.setIsUsed(true));
+		log.info("Files marked as used. Count: {}", files.size());
 	}
 
 	private void rollbackUploadedFiles(List<String> fileKeys) {

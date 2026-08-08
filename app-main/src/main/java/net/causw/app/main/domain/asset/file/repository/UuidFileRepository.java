@@ -1,8 +1,13 @@
 package net.causw.app.main.domain.asset.file.repository;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
@@ -11,5 +16,13 @@ import net.causw.app.main.domain.asset.file.entity.UuidFile;
 public interface UuidFileRepository extends JpaRepository<UuidFile, String> {
 
 	Optional<UuidFile> findByFileUrl(String fileUrl);
+
+	Optional<UuidFile> findByUuid(String uuid);
+
+	List<UuidFile> findAllByUuidIn(List<String> uuids);
+
+	@Modifying
+	@Query("DELETE FROM UuidFile f WHERE f.isUsed = false AND f.createdAt < :cutoff")
+	void deleteAllPendingBefore(@Param("cutoff") LocalDateTime cutoff);
 
 }

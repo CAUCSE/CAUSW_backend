@@ -7,6 +7,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.domain.asset.file.enums.FileExtensionType;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
+import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
+import net.causw.app.main.shared.exception.errorcode.FileErrorCode;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
@@ -37,6 +39,42 @@ public final class FileValidator {
 
 		validateFileSize(file.getSize(), filePath);
 		validateExtension(extension, filePath);
+	}
+
+	/**
+	 * 파일명 + 크기 기반 메타데이터 검증 (Presigned URL 발급 시 사용)
+	 *
+	 * @param fileName 원본 파일명
+	 * @param fileSize 파일 크기 (bytes)
+	 * @param filePath 파일 경로 타입
+	 * @throws BadRequestException 검증 실패 시
+	 */
+	public static void validateFileMetadata(String fileName, long fileSize, @NotNull FilePath filePath) {
+		String extension = extractAndValidateExtension(fileName);
+		validateFileSize(fileSize, filePath);
+		validateExtension(extension, filePath);
+	}
+
+	/**
+	 * 파일 메타데이터 목록 검증 (다중 Presigned URL 발급 시 사용)
+	 *
+	 * @param fileNames 원본 파일명 목록
+	 * @param fileSizes 파일 크기 목록 (bytes)
+	 * @param filePath  파일 경로 타입
+	 * @throws BaseRunTimeV2Exception 파일 목록이 비어있을 경우 (FILE_LIST_EMPTY)
+	 * @throws BadRequestException 확장자·크기·개수 검증 실패 시
+	 */
+	public static void validateFileMetadataList(
+		@NotNull List<String> fileNames,
+		@NotNull List<Long> fileSizes,
+		@NotNull FilePath filePath) {
+		if (fileNames.isEmpty()) {
+			throw FileErrorCode.FILE_LIST_EMPTY.toBaseException();
+		}
+		validateFileCount(fileNames.size(), filePath);
+		for (int i = 0; i < fileNames.size(); i++) {
+			validateFileMetadata(fileNames.get(i), fileSizes.get(i), filePath);
+		}
 	}
 
 	/**

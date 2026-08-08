@@ -25,6 +25,25 @@ import lombok.extern.slf4j.Slf4j;
 public final class FileMetadataManager {
 
 	/**
+	 * 파일명 문자열로부터 FileMetadata 생성 (Presigned URL 발급 시 사용)
+	 *
+	 * @param fileName 원본 파일명
+	 * @param filePath 파일 경로 타입
+	 * @return 파일 메타데이터
+	 */
+	public static FileMetadata createMetadataFromFileName(@NotBlank String fileName, @NotNull FilePath filePath) {
+		String uuid = generateUuid();
+		String rawFileName = extractRawFileName(fileName);
+		String extension = extractExtension(fileName);
+		String fileKey = buildFileKey(uuid, rawFileName, extension, filePath);
+
+		log.debug("Created file metadata from name. UUID: {}, FileName: {}, Extension: {}, FileKey: {}",
+			uuid, rawFileName, extension, fileKey);
+
+		return FileMetadata.of(uuid, rawFileName, extension, fileName, filePath, fileKey);
+	}
+
+	/**
 	 * MultipartFile로부터 FileMetadata 생성
 	 *
 	 * @param file     업로드된 파일
