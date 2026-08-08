@@ -58,5 +58,7 @@ public record CeremonyCreateRequest(
 
 	@NotNull(message = "전체 알림 전송 여부는 필수 입력 값입니다.") @Schema(description = "모든 학번에게 알림 전송 여부", example = "true") Boolean isSetAll,
 
-	@Schema(description = "알림 대상 학번 (4자리 입학년도)", example = "[2019, 2021, 2022]") List<@Min(value = 1000, message = "입학년도는 4자리 연도여야 합니다.") @Max(value = 9999, message = "입학년도는 4자리 연도여야 합니다.") Integer> targetAdmissionYears) {
+	@Schema(description = "알림 대상 학번 (4자리 입학년도)", example = "[2019, 2021, 2022]") List<@Min(value = 1000, message = "입학년도는 4자리 연도여야 합니다.") @Max(value = 9999, message = "입학년도는 4자리 연도여야 합니다.") Integer> targetAdmissionYears,
+
+	@Schema(description = "첨부 이미지 UUID 목록 (presigned URL 업로드 완료 후의 uuid)", example = "[\"uuid1\", \"uuid2\"]") List<String> imageUuids) {
 }

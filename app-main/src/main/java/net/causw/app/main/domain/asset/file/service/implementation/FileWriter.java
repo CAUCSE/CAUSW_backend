@@ -3,8 +3,6 @@ package net.causw.app.main.domain.asset.file.service.implementation;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.causw.global.constant.MessageUtil;
-import net.causw.global.exception.ErrorCode;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,9 +13,13 @@ import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.asset.file.repository.UuidFileRepository;
 import net.causw.app.main.domain.asset.file.service.util.FileMetadataManager;
 import net.causw.app.main.domain.asset.file.service.util.FileValidator;
+import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
+import net.causw.app.main.shared.exception.errorcode.FileErrorCode;
 import net.causw.app.main.shared.storage.StorageClient;
 import net.causw.app.main.shared.storage.dto.FileMetadata;
 import net.causw.app.main.shared.storage.dto.StorageResult;
+import net.causw.global.constant.MessageUtil;
+import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.InternalServerException;
 
 import jakarta.validation.constraints.NotNull;
@@ -296,14 +298,44 @@ public class FileWriter {
 	}
 
 	/**
-	 * 파일 목록을 사용 완료(isUsed=true)로 표시
+	 * UUID 목록으로 PENDING 파일을 검증하고 CONFIRMED(isUsed=true)로 전환
 	 *
-	 * @param files 상태를 변경할 파일 목록
+	 * @param uuids            비즈니스 UUID 목록 (presigned URL 발급 응답의 uuid 값)
+	 * @param expectedFilePath 해당 도메인에서 허용하는 파일 경로 타입
+	 * @return 확인된 UuidFile 목록
+	 * @throws BaseRunTimeV2Exception UUID 미존재, 경로 불일치, 이미 확정된 파일, S3 미업로드 시
 	 */
 	@Transactional
-	public void markAsUsed(@NotNull List<UuidFile> files) {
-		files.forEach(file -> file.setIsUsed(true));
-		log.info("Files marked as used. Count: {}", files.size());
+	public List<UuidFile> confirmFiles(@NotNull List<String> uuids, @NotNull FilePath expectedFilePath) {
+		if (uuids.isEmpty()) {
+			return List.of();
+		}
+
+		List<UuidFile> files = uuidFileRepository.findAllByUuidIn(uuids);
+		if (files.size() != uuids.size()) {
+			log.warn("Some UUIDs not found. Requested: {}, Found: {}", uuids.size(), files.size());
+			throw FileErrorCode.FILE_NOT_FOUND.toBaseException();
+		}
+
+		for (UuidFile file : files) {
+			if (file.getFilePath() != expectedFilePath) {
+				log.warn("FilePath mismatch. Expected: {}, Actual: {}, UUID: {}",
+					expectedFilePath, file.getFilePath(), file.getUuid());
+				throw FileErrorCode.INVALID_FILE_PATH.toBaseException();
+			}
+			if (Boolean.TRUE.equals(file.getIsUsed())) {
+				log.warn("File already confirmed. UUID: {}", file.getUuid());
+				throw FileErrorCode.FILE_ALREADY_USED.toBaseException();
+			}
+			if (!storageClient.exists(file.getFileKey())) {
+				log.warn("File not found in storage. FileKey: {}", file.getFileKey());
+				throw FileErrorCode.FILE_NOT_UPLOADED.toBaseException();
+			}
+			file.setIsUsed(true);
+		}
+
+		log.info("Files confirmed. Count: {}, FilePath: {}", files.size(), expectedFilePath);
+		return files;
 	}
 
 	private void rollbackUploadedFiles(List<String> fileKeys) {
