@@ -7,10 +7,21 @@ import org.springframework.web.multipart.MultipartFile;
 import net.causw.app.main.domain.user.account.entity.user.User;
 
 public record PostCreateCommand(
+	String title,
 	String content,
 	String boardId,
 	Boolean isAnonymous,
 	User writer,
 	List<MultipartFile> imageFiles,
 	List<ImageCreateMeta> imageMetas) {
+
+	public PostCreateCommand(
+		String content,
+		String boardId,
+		Boolean isAnonymous,
+		User writer,
+		List<MultipartFile> imageFiles,
+		List<ImageCreateMeta> imageMetas) {
+		this(null, content, boardId, isAnonymous, writer, imageFiles, imageMetas);
+	}
 }

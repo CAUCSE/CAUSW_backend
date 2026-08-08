@@ -6,11 +6,13 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.never;
 import static org.mockito.BDDMockito.verify;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -22,7 +24,14 @@ import net.causw.app.main.domain.community.board.entity.BoardVisibility;
 import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.PostService;
+import net.causw.app.main.domain.community.post.service.dto.PostCreateCommand;
+import net.causw.app.main.domain.community.post.service.dto.PostCreateResult;
+import net.causw.app.main.domain.community.post.service.dto.PostUpdateCommand;
 import net.causw.app.main.domain.community.systemnotice.entity.UserSystemNoticeRead;
+import net.causw.app.main.domain.community.systemnotice.service.dto.SystemNoticeCreateCommand;
+import net.causw.app.main.domain.community.systemnotice.service.dto.SystemNoticeCreateResult;
+import net.causw.app.main.domain.community.systemnotice.service.dto.SystemNoticeResult;
+import net.causw.app.main.domain.community.systemnotice.service.dto.SystemNoticeUpdateCommand;
 import net.causw.app.main.domain.community.systemnotice.service.implementation.SystemNoticeReader;
 import net.causw.app.main.domain.community.systemnotice.service.implementation.SystemNoticeWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
@@ -62,6 +71,59 @@ class SystemNoticeServiceTest {
 
 	@Mock
 	private BoardConfig systemNoticeBoardConfig;
+
+	@Test
+	void createPassesTitleToPostCommandAndReturnsIt() {
+		User writer = org.mockito.Mockito.mock(User.class);
+		LocalDateTime createdAt = LocalDateTime.of(2026, 8, 9, 12, 0);
+		PostCreateResult postResult = PostCreateResult.builder()
+			.id("post-id")
+			.content("content")
+			.createdAt(createdAt)
+			.build();
+		given(systemNoticeReader.getSystemNoticeBoardId()).willReturn("system-notice-board-id");
+		given(writer.getNickname()).willReturn("admin");
+		given(postService.create(org.mockito.ArgumentMatchers.any(PostCreateCommand.class))).willReturn(postResult);
+
+		SystemNoticeCreateResult result = systemNoticeService.create(
+			new SystemNoticeCreateCommand("title", "content", writer));
+
+		ArgumentCaptor<PostCreateCommand> captor = ArgumentCaptor.forClass(PostCreateCommand.class);
+		verify(postService).create(captor.capture());
+		assertThat(captor.getValue().title()).isEqualTo("title");
+		assertThat(result.title()).isEqualTo("title");
+	}
+
+	@Test
+	void updatePassesTitleToPostCommand() {
+		User updater = org.mockito.Mockito.mock(User.class);
+		given(systemNoticeReader.getSystemNoticePost("post-id")).willReturn(latestPost);
+
+		systemNoticeService.update("post-id", new SystemNoticeUpdateCommand("updated title", "content", updater));
+
+		ArgumentCaptor<PostUpdateCommand> captor = ArgumentCaptor.forClass(PostUpdateCommand.class);
+		verify(postService).update(captor.capture());
+		assertThat(captor.getValue().title()).isEqualTo("updated title");
+	}
+
+	@Test
+	void getLatestReturnsPostTitle() {
+		User writer = org.mockito.Mockito.mock(User.class);
+		givenActiveViewer();
+		given(viewer.getId()).willReturn("user-id");
+		given(systemNoticeReader.findLatestPost()).willReturn(Optional.of(latestPost));
+		givenReadableSystemNotice(latestPost);
+		given(systemNoticeReader.findReadByUserId("user-id")).willReturn(Optional.empty());
+		given(latestPost.getId()).willReturn("post-id");
+		given(latestPost.getTitle()).willReturn("title");
+		given(latestPost.getContent()).willReturn("content");
+		given(latestPost.getWriter()).willReturn(writer);
+		given(writer.getNickname()).willReturn("admin");
+
+		SystemNoticeResult result = systemNoticeService.getLatest(viewer).orElseThrow();
+
+		assertThat(result.title()).isEqualTo("title");
+	}
 
 	@Test
 	void markAsReadUpdatesPointerWhenRequestedPostIsLatest() {

@@ -8,9 +8,20 @@ import net.causw.app.main.domain.user.account.entity.user.User;
 
 public record PostUpdateCommand(
 	String postId,
+	String title,
 	String content,
 	Boolean isAnonymous,
 	User updater,
 	List<MultipartFile> newImageFiles,
 	List<ImageUpdateMeta> imageMetas) {
+
+	public PostUpdateCommand(
+		String postId,
+		String content,
+		Boolean isAnonymous,
+		User updater,
+		List<MultipartFile> newImageFiles,
+		List<ImageUpdateMeta> imageMetas) {
+		this(postId, null, content, isAnonymous, updater, newImageFiles, imageMetas);
+	}
 }

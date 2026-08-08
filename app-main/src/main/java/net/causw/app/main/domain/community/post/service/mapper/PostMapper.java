@@ -26,7 +26,8 @@ public class PostMapper {
 
 	public static Post fromCreateCommand(PostCreateCommand command, User writer, Board board,
 		List<UuidFile> images) {
-		return Post.of(null,
+		// Post.title is deprecated for regular posts, but system notices intentionally reuse the column.
+		return Post.of(command.title(),
 			command.content(),
 			writer,
 			command.isAnonymous(),

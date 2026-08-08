@@ -166,6 +166,13 @@ public class Post extends BaseEntity {
 		this.postAttachImageList.addAll(postAttachImageList);
 	}
 
+	/**
+	 * Post.title is deprecated for regular posts. System notices intentionally reuse the nullable column.
+	 */
+	public void updateSystemNoticeTitle(String title) {
+		this.title = title;
+	}
+
 	public void setIsDeleted(Boolean isDeleted) {
 		this.isDeleted = Boolean.TRUE.equals(isDeleted);
 		if (form != null) {
