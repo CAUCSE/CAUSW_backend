@@ -71,11 +71,21 @@ public class PostService {
 	 */
 	@Transactional
 	public PostCreateResult create(PostCreateCommand command) {
+		return create(command, false);
+	}
+
+	@Transactional
+	public PostCreateResult createSystemNotice(PostCreateCommand command) {
+		return create(command, true);
+	}
+
+	private PostCreateResult create(PostCreateCommand command, boolean systemNoticeApi) {
 		User writer = command.writer();
 
 		Board board = boardReader.getById(command.boardId());
 		BoardConfig boardConfig = boardConfigReader.getByBoardId(command.boardId());
 		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(command.boardId());
+		validateSystemNoticeCudAccess(boardConfig, systemNoticeApi);
 
 		PostValidator.validateCreate(writer, board, boardConfig, boardAdminIds, command.isAnonymous());
 
@@ -105,11 +115,21 @@ public class PostService {
 
 	@Transactional
 	public void deletePost(User deleter, String postId) {
+		deletePost(deleter, postId, false);
+	}
+
+	@Transactional
+	public void deleteSystemNotice(User deleter, String postId) {
+		deletePost(deleter, postId, true);
+	}
+
+	private void deletePost(User deleter, String postId, boolean systemNoticeApi) {
 		CommunityPermissionPolicy.validateActiveUser(deleter);
 		Post post = postReader.findById(postId);
 		String boardId = post.getBoard().getId();
 		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(boardId);
 		BoardConfig boardConfig = boardConfigReader.getByBoardId(boardId);
+		validateSystemNoticeCudAccess(boardConfig, systemNoticeApi);
 		validateBlockedWriterAccess(deleter, post, boardAdminIds);
 		if (Boolean.TRUE.equals(post.getIsDeleted())) {
 			if (!CommunityPermissionPolicy.canDeletePostIgnoringTargetDeletion(
@@ -136,10 +156,20 @@ public class PostService {
 	 */
 	@Transactional
 	public PostUpdateResult update(PostUpdateCommand command) {
+		return update(command, false);
+	}
+
+	@Transactional
+	public PostUpdateResult updateSystemNotice(PostUpdateCommand command) {
+		return update(command, true);
+	}
+
+	private PostUpdateResult update(PostUpdateCommand command, boolean systemNoticeApi) {
 		User updater = command.updater();
 		Post post = postReader.findByIdAndNotDeleted(command.postId());
 		BoardConfig boardConfig = boardConfigReader.getByBoardId(post.getBoard().getId());
 		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
+		validateSystemNoticeCudAccess(boardConfig, systemNoticeApi);
 
 		PostValidator.validateUpdate(updater, post, boardAdminIds, boardConfig, command.isAnonymous());
 
@@ -165,6 +195,12 @@ public class PostService {
 		postImageManager.deleteOrphanedFiles(imageResult.deletedFileIds());
 
 		return result;
+	}
+
+	private void validateSystemNoticeCudAccess(BoardConfig boardConfig, boolean systemNoticeApi) {
+		if (boardConfig.isSystemNotice() && !systemNoticeApi) {
+			throw PostErrorCode.POST_SYSTEM_NOTICE_CUD_ONLY_VIA_DEDICATED_API.toBaseException();
+		}
 	}
 
 	/**

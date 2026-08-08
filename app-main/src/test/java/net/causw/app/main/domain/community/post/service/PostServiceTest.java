@@ -117,6 +117,69 @@ public class PostServiceTest {
 	@Mock
 	UserProfileImageReader userProfileImageReader;
 
+	@Test
+	void createRejectsSystemNoticeThroughGeneralPostFlow() {
+		String boardId = "system-notice-board-id";
+		Board board = mock(Board.class);
+		BoardConfig boardConfig = mock(BoardConfig.class);
+		User writer = mock(User.class);
+		PostCreateCommand command = new PostCreateCommand(
+			"content", boardId, false, writer, List.of(), List.of());
+		given(boardReader.getById(boardId)).willReturn(board);
+		given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
+		given(boardConfig.isSystemNotice()).willReturn(true);
+
+		assertThatThrownBy(() -> postService.create(command))
+			.isInstanceOf(BaseRunTimeV2Exception.class)
+			.extracting("errorCode")
+			.isEqualTo(PostErrorCode.POST_SYSTEM_NOTICE_CUD_ONLY_VIA_DEDICATED_API);
+		verify(postWriter, never()).save(any(Post.class));
+	}
+
+	@Test
+	void updateRejectsSystemNoticeThroughGeneralPostFlow() {
+		String postId = "post-id";
+		String boardId = "system-notice-board-id";
+		Post post = mock(Post.class);
+		Board board = mock(Board.class);
+		BoardConfig boardConfig = mock(BoardConfig.class);
+		User updater = mock(User.class);
+		PostUpdateCommand command = new PostUpdateCommand(
+			postId, "content", false, updater, List.of(), List.of());
+		given(postReader.findByIdAndNotDeleted(postId)).willReturn(post);
+		given(post.getBoard()).willReturn(board);
+		given(board.getId()).willReturn(boardId);
+		given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
+		given(boardConfig.isSystemNotice()).willReturn(true);
+
+		assertThatThrownBy(() -> postService.update(command))
+			.isInstanceOf(BaseRunTimeV2Exception.class)
+			.extracting("errorCode")
+			.isEqualTo(PostErrorCode.POST_SYSTEM_NOTICE_CUD_ONLY_VIA_DEDICATED_API);
+		verify(postWriter, never()).updateContentAndImages(any(), anyString(), any(), anyList());
+	}
+
+	@Test
+	void deleteRejectsSystemNoticeThroughGeneralPostFlow() {
+		String postId = "post-id";
+		String boardId = "system-notice-board-id";
+		User deleter = ObjectFixtures.getCertifiedUserWithId("user-id");
+		Post post = mock(Post.class);
+		Board board = mock(Board.class);
+		BoardConfig boardConfig = mock(BoardConfig.class);
+		given(postReader.findById(postId)).willReturn(post);
+		given(post.getBoard()).willReturn(board);
+		given(board.getId()).willReturn(boardId);
+		given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
+		given(boardConfig.isSystemNotice()).willReturn(true);
+
+		assertThatThrownBy(() -> postService.deletePost(deleter, postId))
+			.isInstanceOf(BaseRunTimeV2Exception.class)
+			.extracting("errorCode")
+			.isEqualTo(PostErrorCode.POST_SYSTEM_NOTICE_CUD_ONLY_VIA_DEDICATED_API);
+		verify(post, never()).setIsDeleted(true);
+	}
+
 	@Nested
 	@DisplayName("게시글 생성 테스트")
 	class CreatePostTest {

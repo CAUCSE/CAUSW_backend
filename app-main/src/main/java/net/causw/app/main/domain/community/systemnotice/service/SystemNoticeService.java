@@ -40,7 +40,7 @@ public class SystemNoticeService {
 	@Transactional
 	public SystemNoticeCreateResult create(SystemNoticeCreateCommand command) {
 		String boardId = systemNoticeReader.getSystemNoticeBoardId();
-		PostCreateResult result = postService.create(new PostCreateCommand(
+		PostCreateResult result = postService.createSystemNotice(new PostCreateCommand(
 			command.title(), command.content(), boardId, false, command.writer(), List.of(), List.of()));
 
 		return new SystemNoticeCreateResult(
@@ -50,14 +50,14 @@ public class SystemNoticeService {
 	@Transactional
 	public void update(String postId, SystemNoticeUpdateCommand command) {
 		systemNoticeReader.getSystemNoticePost(postId);
-		postService.update(new PostUpdateCommand(
+		postService.updateSystemNotice(new PostUpdateCommand(
 			postId, command.title(), command.content(), false, command.updater(), List.of(), List.of()));
 	}
 
 	@Transactional
 	public void delete(String postId, User updater) {
 		systemNoticeReader.getSystemNoticePost(postId);
-		postService.deletePost(updater, postId);
+		postService.deleteSystemNotice(updater, postId);
 	}
 
 	public Optional<SystemNoticeResult> getLatest(User viewer) {

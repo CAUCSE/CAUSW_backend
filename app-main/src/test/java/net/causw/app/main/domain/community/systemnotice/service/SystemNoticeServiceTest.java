@@ -83,13 +83,14 @@ class SystemNoticeServiceTest {
 			.build();
 		given(systemNoticeReader.getSystemNoticeBoardId()).willReturn("system-notice-board-id");
 		given(writer.getNickname()).willReturn("admin");
-		given(postService.create(org.mockito.ArgumentMatchers.any(PostCreateCommand.class))).willReturn(postResult);
+		given(postService.createSystemNotice(org.mockito.ArgumentMatchers.any(PostCreateCommand.class)))
+			.willReturn(postResult);
 
 		SystemNoticeCreateResult result = systemNoticeService.create(
 			new SystemNoticeCreateCommand("title", "content", writer));
 
 		ArgumentCaptor<PostCreateCommand> captor = ArgumentCaptor.forClass(PostCreateCommand.class);
-		verify(postService).create(captor.capture());
+		verify(postService).createSystemNotice(captor.capture());
 		assertThat(captor.getValue().title()).isEqualTo("title");
 		assertThat(result.title()).isEqualTo("title");
 	}
@@ -102,8 +103,18 @@ class SystemNoticeServiceTest {
 		systemNoticeService.update("post-id", new SystemNoticeUpdateCommand("updated title", "content", updater));
 
 		ArgumentCaptor<PostUpdateCommand> captor = ArgumentCaptor.forClass(PostUpdateCommand.class);
-		verify(postService).update(captor.capture());
+		verify(postService).updateSystemNotice(captor.capture());
 		assertThat(captor.getValue().title()).isEqualTo("updated title");
+	}
+
+	@Test
+	void deleteUsesDedicatedSystemNoticePostFlow() {
+		User updater = org.mockito.Mockito.mock(User.class);
+		given(systemNoticeReader.getSystemNoticePost("post-id")).willReturn(latestPost);
+
+		systemNoticeService.delete("post-id", updater);
+
+		verify(postService).deleteSystemNotice(updater, "post-id");
 	}
 
 	@Test
