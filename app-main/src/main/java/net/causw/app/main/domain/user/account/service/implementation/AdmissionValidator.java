@@ -3,7 +3,6 @@ package net.causw.app.main.domain.user.account.service.implementation;
 import java.util.List;
 
 import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
@@ -34,12 +33,12 @@ public class AdmissionValidator {
 	 */
 	public void validateAdmissionCreate(User user, String requestedStudentId,
 		AcademicStatus requestedAcademicStatus, Integer graduationYear,
-		List<MultipartFile> attachImages) {
+		List<String> attachImageUuids) {
 		validateStudentIdRequired(requestedStudentId, requestedAcademicStatus);
 		validateBlockedStudentId(requestedStudentId);
 		validateUserStateForAdmission(user);
 		validateNoExistingAdmission(user);
-		validateAttachImages(attachImages);
+		validateAttachImages(attachImageUuids);
 		validateStudentIdNotDuplicated(requestedStudentId);
 		validateGraduationYear(requestedAcademicStatus, graduationYear);
 	}
@@ -77,8 +76,8 @@ public class AdmissionValidator {
 	/**
 	 * 첨부 이미지가 1개 이상 존재하는지 검증합니다.
 	 */
-	public void validateAttachImages(List<MultipartFile> attachImages) {
-		if (attachImages == null || attachImages.isEmpty()) {
+	public void validateAttachImages(List<String> attachImageUuids) {
+		if (attachImageUuids == null || attachImageUuids.isEmpty()) {
 			throw UserErrorCode.ADMISSION_IMAGE_REQUIRED.toBaseException();
 		}
 	}

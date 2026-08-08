@@ -1,5 +1,7 @@
 package net.causw.app.main.domain.user.account.api.v2.dto.request;
 
+import java.util.List;
+
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.enums.user.Department;
 
@@ -7,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -26,5 +29,7 @@ public record AdmissionCreateRequest(
 
 	@Schema(description = "졸업연도", example = "2025") @Min(value = 1950, message = "올바른 네 자리 연도를 입력해 주세요.") @Max(value = 2200, message = "올바른 네 자리 연도를 입력해 주세요.") Integer graduationYear,
 
-	@Schema(description = "증빙설명", example = "재학증명서입니다.") @Size(max = 500, message = "증빙설명은 500자 이하여야 합니다.") String description) {
+	@Schema(description = "증빙설명", example = "재학증명서입니다.") @Size(max = 500, message = "증빙설명은 500자 이하여야 합니다.") String description,
+
+	@NotEmpty(message = "증빙 이미지는 1개 이상 첨부해야 합니다.") @Schema(description = "증빙 이미지 UUID 목록 (presigned URL 업로드 완료 후의 uuid)", requiredMode = Schema.RequiredMode.REQUIRED) List<String> attachImageUuids) {
 }
