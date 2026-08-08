@@ -11,6 +11,7 @@ import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.community.systemnotice.entity.UserSystemNoticeRead;
 import net.causw.app.main.domain.community.systemnotice.repository.UserSystemNoticeReadRepository;
+import net.causw.app.main.shared.exception.errorcode.BoardErrorCode;
 import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -38,6 +39,12 @@ public class SystemNoticeReader {
 		return postRepository.findById(postId)
 			.filter(this::isSystemNoticePost)
 			.orElseThrow(PostErrorCode.POST_NOT_FOUND::toBaseException);
+	}
+
+	public String getSystemNoticeBoardId() {
+		return findSystemNoticeConfig()
+			.map(BoardConfig::getBoardId)
+			.orElseThrow(BoardErrorCode.BOARD_NOT_FOUND::toBaseException);
 	}
 
 	private Optional<BoardConfig> findSystemNoticeConfig() {
