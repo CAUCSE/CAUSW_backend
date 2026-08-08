@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.time.Instant;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.shared.storage.dto.FileMetadata;
+import net.causw.app.main.shared.storage.dto.PresignedUploadResult;
 import net.causw.app.main.shared.storage.dto.StorageResult;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.ErrorCode;
@@ -88,5 +90,19 @@ public class LocalStorageClient implements StorageClient {
 				ErrorCode.FILE_DELETE_FAIL,
 				MessageUtil.FILE_DELETE_FAIL + e.getMessage());
 		}
+	}
+
+	@Override
+	public PresignedUploadResult generatePresignedUploadUrl(FileMetadata metadata, Duration expiry) {
+		// 로컬 환경에서는 presigned URL 미지원 — 개발 편의용 더미 URL 반환
+		String fileUrl = "file://" + Paths.get(baseDirectory, metadata.fileKey()).toAbsolutePath();
+		return PresignedUploadResult.of("local://presigned-not-supported", fileUrl,
+			Instant.now().plus(expiry));
+	}
+
+	@Override
+	public boolean exists(String fileKey) {
+		// 로컬 환경에서는 S3 HeadObject 대신 파일 존재 여부를 확인하지 않고 항상 존재로 간주
+		return true;
 	}
 }

@@ -3,6 +3,7 @@ package net.causw.app.main.shared.storage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.Instant;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -13,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.shared.storage.dto.FileMetadata;
+import net.causw.app.main.shared.storage.dto.PresignedUploadResult;
 import net.causw.app.main.shared.storage.dto.StorageResult;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.ErrorCode;
@@ -24,8 +26,13 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetUrlRequest;
+import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.ObjectCannedACL;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
 /**
  * AWS S3 스토리지 업로더 구현체
@@ -38,6 +45,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 public class S3StorageClient implements StorageClient {
 
 	private final S3Client s3Client;
+	private final S3Presigner s3Presigner;
 
 	@Value("${spring.cloud.aws.s3.bucket}")
 	private String bucketName;
@@ -89,6 +97,45 @@ public class S3StorageClient implements StorageClient {
 			throw new InternalServerException(
 				ErrorCode.FILE_DELETE_FAIL,
 				MessageUtil.FILE_DELETE_FAIL + e.getMessage());
+		}
+	}
+
+	@Override
+	public PresignedUploadResult generatePresignedUploadUrl(FileMetadata metadata, Duration expiry) {
+		String fileKey = metadata.fileKey();
+
+		PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
+			.signatureDuration(expiry)
+			.putObjectRequest(PutObjectRequest.builder()
+				.bucket(bucketName)
+				.key(fileKey)
+				.acl(ObjectCannedACL.PUBLIC_READ)
+				.build())
+			.build();
+
+		PresignedPutObjectRequest presigned = s3Presigner.presignPutObject(presignRequest);
+
+		String fileUrl = s3Client.utilities()
+			.getUrl(GetUrlRequest.builder().bucket(bucketName).key(fileKey).build())
+			.toString()
+			.trim();
+
+		log.debug("Generated presigned upload URL. FileKey: {}, ExpiresAt: {}", fileKey, presigned.expiration());
+
+		return PresignedUploadResult.of(presigned.url().toString(), fileUrl, presigned.expiration());
+	}
+
+	@Override
+	public boolean exists(String fileKey) {
+		try {
+			s3Client.headObject(HeadObjectRequest.builder()
+				.bucket(bucketName)
+				.key(fileKey)
+				.build());
+			return true;
+		} catch (NoSuchKeyException e) {
+			log.debug("File does not exist in S3. FileKey: {}", fileKey);
+			return false;
 		}
 	}
 
