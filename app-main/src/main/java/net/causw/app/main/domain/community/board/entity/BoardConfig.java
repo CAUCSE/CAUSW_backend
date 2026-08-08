@@ -46,6 +46,9 @@ public class BoardConfig extends AuditableEntity {
 	@Column(name = "is_notice", nullable = false)
 	private boolean isNotice;
 
+	@Column(name = "is_system_notice", nullable = false)
+	private boolean isSystemNotice;
+
 	@Column(name = "visibility", nullable = false)
 	@Enumerated(EnumType.STRING)
 	private BoardVisibility visibility;
