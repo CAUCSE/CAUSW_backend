@@ -62,6 +62,14 @@ public class SwaggerConfig {
 	}
 
 	@Bean
+	public GroupedOpenApi v3Api() {
+		return GroupedOpenApi.builder()
+			.group("v3")
+			.pathsToMatch("/api/v3/**")
+			.build();
+	}
+
+	@Bean
 	public OpenAPI customOpenAPI() {
 		return new OpenAPI()
 			.components(new Components()
