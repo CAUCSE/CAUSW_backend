@@ -267,6 +267,7 @@ public class FileWriter {
 			metadata.rawFileName(),
 			metadata.extension(),
 			metadata.filePath());
+		uuidFile.setIsUploaded(true);
 
 		UuidFile saved = uuidFileRepository.save(uuidFile);
 		log.debug("File entity saved to database. FileId: {}, FileKey: {}", saved.getId(), result.fileKey());
@@ -275,12 +276,12 @@ public class FileWriter {
 	}
 
 	/**
-	 * PENDING 상태의 UuidFile을 DB에 저장 (isUsed=false)
+	 * PENDING 상태의 UuidFile을 DB에 저장 (isUploaded=false)
 	 * Presigned URL 발급 시 호출
 	 *
 	 * @param metadata 파일 메타데이터
 	 * @param fileUrl  S3에 업로드 완료 후 접근할 최종 URL
-	 * @return 저장된 파일 엔티티 (isUsed=false)
+	 * @return 저장된 파일 엔티티 (isUploaded=false)
 	 */
 	@Transactional
 	public UuidFile savePending(@NotNull FileMetadata metadata, @NotNull String fileUrl) {
@@ -298,7 +299,7 @@ public class FileWriter {
 	}
 
 	/**
-	 * UUID 목록으로 PENDING 파일을 검증하고 CONFIRMED(isUsed=true)로 전환
+	 * UUID 목록으로 PENDING 파일을 검증하고 CONFIRMED(isUploaded=true)로 전환
 	 *
 	 * @param uuids            비즈니스 UUID 목록 (presigned URL 발급 응답의 uuid 값)
 	 * @param expectedFilePath 해당 도메인에서 허용하는 파일 경로 타입
@@ -323,7 +324,7 @@ public class FileWriter {
 					expectedFilePath, file.getFilePath(), file.getUuid());
 				throw FileErrorCode.INVALID_FILE_PATH.toBaseException();
 			}
-			if (Boolean.TRUE.equals(file.getIsUsed())) {
+			if (Boolean.TRUE.equals(file.getIsUploaded())) {
 				log.warn("File already confirmed. UUID: {}", file.getUuid());
 				throw FileErrorCode.FILE_ALREADY_USED.toBaseException();
 			}
@@ -332,6 +333,7 @@ public class FileWriter {
 				throw FileErrorCode.FILE_NOT_UPLOADED.toBaseException();
 			}
 			file.setIsUsed(true);
+			file.setIsUploaded(true);
 		}
 
 		log.info("Files confirmed. Count: {}, FilePath: {}", files.size(), expectedFilePath);

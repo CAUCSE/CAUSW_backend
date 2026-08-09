@@ -108,12 +108,12 @@ public class FileReader {
 	}
 
 	/**
-	 * cutoff 이전에 생성된 PENDING(isUsed=false) 파일 목록 조회
+	 * cutoff 이전에 생성된 PENDING(isUploaded=false) 파일 목록 조회
 	 *
 	 * @param cutoff 기준 시각
 	 * @return PENDING 파일 엔티티 목록
 	 */
 	public List<UuidFile> findAllPendingBefore(LocalDateTime cutoff) {
-		return uuidFileRepository.findAllByIsUsedFalseAndCreatedAtBefore(cutoff);
+		return uuidFileRepository.findAllByIsUploadedFalseAndCreatedAtBefore(cutoff);
 	}
 }

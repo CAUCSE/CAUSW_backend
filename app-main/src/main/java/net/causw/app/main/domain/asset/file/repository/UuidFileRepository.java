@@ -18,6 +18,6 @@ public interface UuidFileRepository extends JpaRepository<UuidFile, String> {
 
 	List<UuidFile> findAllByUuidIn(List<String> uuids);
 
-	List<UuidFile> findAllByIsUsedFalseAndCreatedAtBefore(LocalDateTime cutoff);
+	List<UuidFile> findAllByIsUploadedFalseAndCreatedAtBefore(LocalDateTime cutoff);
 
 }
