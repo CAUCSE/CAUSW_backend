@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.asset.file.service.implementation.FileWriter;
@@ -82,18 +84,20 @@ public class AcademicRecordUserService {
 	 * 재학 상태 변경 신청을 접수한다.
 	 *
 	 * @param requester 요청 사용자
-	 * @param request 재학 변경 신청 정보 (imageUuids 포함)
+	 * @param request 재학 변경 신청 정보
+	 * @param imageFileList 재학 증빙 이미지 파일 목록
 	 * @return 학적 상태 변경 신청 결과
 	 */
 	@Transactional
 	public AcademicStatusResponse<EnrollmentDetailsResponse> updateStatusToEnrolled(
 		User requester,
-		EnrollmentApplicationRequest request) {
+		EnrollmentApplicationRequest request,
+		List<MultipartFile> imageFileList) {
 		User user = userReader.findUserById(requester.getId());
-		validateEnrollmentTransition(user, request.imageUuids());
+		List<MultipartFile> uploadedImageFileList = extractUploadedImageFiles(imageFileList);
+		validateEnrollmentTransition(user, uploadedImageFileList);
 
-		List<UuidFile> savedFiles = fileWriter.confirmFiles(
-			request.imageUuids(),
+		List<UuidFile> savedFiles = fileWriter.uploadAndSaveList(uploadedImageFileList,
 			FilePath.USER_ACADEMIC_RECORD_APPLICATION);
 
 		UserAcademicRecordApplication application = applicationWriter.createEnrollmentApplication(
@@ -118,13 +122,23 @@ public class AcademicRecordUserService {
 		}
 	}
 
-	private void validateEnrollmentTransition(User user, List<String> imageUuids) {
+	private void validateEnrollmentTransition(User user, List<MultipartFile> imageFileList) {
 		if (user.getAcademicStatus() != AcademicStatus.GRADUATED) {
 			throw AcademicRecordApplicationErrorCode.ACADEMIC_RECORD_INVALID_STATUS_TRANSITION.toBaseException();
 		}
 
-		if (imageUuids == null || imageUuids.isEmpty()) {
+		if (imageFileList.isEmpty()) {
 			throw AcademicRecordApplicationErrorCode.ACADEMIC_RECORD_ENROLLMENT_IMAGE_REQUIRED.toBaseException();
 		}
+	}
+
+	private List<MultipartFile> extractUploadedImageFiles(List<MultipartFile> imageFileList) {
+		if (imageFileList == null) {
+			return List.of();
+		}
+
+		return imageFileList.stream()
+			.filter(file -> file != null && !file.isEmpty())
+			.toList();
 	}
 }
