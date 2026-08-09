@@ -11,6 +11,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.multipart.MultipartFile;
+
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.asset.file.service.implementation.FileWriter;
@@ -50,16 +52,17 @@ public class CeremonyService {
 	@Transactional
 	public CeremonyDetailResult createCeremony(
 		User user,
-		@Valid CeremonyCreateCommand command) {
+		@Valid CeremonyCreateCommand command,
+		List<MultipartFile> imageFileList) {
 		ceremonyValidator.validateForCreate(command);
 
 		List<Integer> targetAdmissionYears = command.isSetAll()
 			? new ArrayList<>()
 			: command.targetAdmissionYears();
 
-		List<UuidFile> uuidFileList = fileWriter.confirmFiles(
-			command.imageUuids() == null ? List.of() : command.imageUuids(),
-			FilePath.CEREMONY);
+		List<UuidFile> uuidFileList = (imageFileList == null || imageFileList.isEmpty())
+			? List.of()
+			: fileWriter.uploadAndSaveList(imageFileList, FilePath.CEREMONY);
 
 		Ceremony ceremony = ceremonyCreateMapper.toCeremony(user, command, targetAdmissionYears,
 			uuidFileList);

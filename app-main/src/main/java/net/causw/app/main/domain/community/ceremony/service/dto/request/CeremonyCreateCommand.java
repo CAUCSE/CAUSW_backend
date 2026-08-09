@@ -28,6 +28,5 @@ public record CeremonyCreateCommand(
 	String contact,
 	String link,
 	Boolean isSetAll,
-	List<Integer> targetAdmissionYears,
-	List<String> imageUuids) {
+	List<Integer> targetAdmissionYears) {
 }

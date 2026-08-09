@@ -18,6 +18,7 @@ import net.causw.app.main.domain.asset.file.service.implementation.FileReader;
 import net.causw.app.main.domain.asset.file.service.implementation.FileWriter;
 import net.causw.app.main.domain.asset.file.service.util.FileMetadataManager;
 import net.causw.app.main.domain.asset.file.service.util.FileValidator;
+import net.causw.app.main.shared.exception.errorcode.FileErrorCode;
 import net.causw.app.main.shared.storage.StorageClient;
 import net.causw.app.main.shared.storage.dto.FileMetadata;
 import net.causw.app.main.shared.storage.dto.PresignedUploadResult;
@@ -91,6 +92,47 @@ public class UuidFileService {
 
 		log.info("Multiple presigned URLs issued. Count: {}, FilePath: {}", responses.size(), request.filePath());
 		return MultiplePresignedUrlResponse.of(responses);
+	}
+
+	/**
+	 * UUID 목록으로 PENDING 파일을 검증하고 CONFIRMED(isUsed=true)로 전환
+	 * 도메인 생성 시 호출하여 presigned URL로 업로드된 파일들을 확정
+	 *
+	 * @param uuids            비즈니스 UUID 목록 (presigned URL 발급 응답의 uuid 값)
+	 * @param expectedFilePath 해당 도메인에서 허용하는 파일 경로 타입
+	 * @return 확인된 UuidFile 목록
+	 */
+	@Transactional
+	public List<UuidFile> confirmFiles(@NotNull List<String> uuids, @NotNull FilePath expectedFilePath) {
+		if (uuids.isEmpty()) {
+			return List.of();
+		}
+
+		List<UuidFile> files = fileReader.findAllByUuids(uuids);
+		if (files.size() != uuids.size()) {
+			log.warn("Some UUIDs not found. Requested: {}, Found: {}", uuids.size(), files.size());
+			throw FileErrorCode.FILE_NOT_FOUND.toBaseException();
+		}
+
+		for (UuidFile file : files) {
+			if (file.getFilePath() != expectedFilePath) {
+				log.warn("FilePath mismatch. Expected: {}, Actual: {}, UUID: {}",
+					expectedFilePath, file.getFilePath(), file.getUuid());
+				throw FileErrorCode.INVALID_FILE_PATH.toBaseException();
+			}
+			if (Boolean.TRUE.equals(file.getIsUsed())) {
+				log.warn("File already used. UUID: {}", file.getUuid());
+				throw FileErrorCode.FILE_ALREADY_USED.toBaseException();
+			}
+			if (!storageClient.exists(file.getFileKey())) {
+				log.warn("File not found in storage. FileKey: {}", file.getFileKey());
+				throw FileErrorCode.FILE_NOT_UPLOADED.toBaseException();
+			}
+		}
+
+		fileWriter.markAsUsed(files);
+		log.info("Files confirmed. Count: {}, FilePath: {}", files.size(), expectedFilePath);
+		return files;
 	}
 
 	/**

@@ -3,6 +3,8 @@ package net.causw.app.main.domain.asset.file.service.implementation;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.causw.global.constant.MessageUtil;
+import net.causw.global.exception.ErrorCode;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,13 +15,9 @@ import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.asset.file.repository.UuidFileRepository;
 import net.causw.app.main.domain.asset.file.service.util.FileMetadataManager;
 import net.causw.app.main.domain.asset.file.service.util.FileValidator;
-import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
-import net.causw.app.main.shared.exception.errorcode.FileErrorCode;
 import net.causw.app.main.shared.storage.StorageClient;
 import net.causw.app.main.shared.storage.dto.FileMetadata;
 import net.causw.app.main.shared.storage.dto.StorageResult;
-import net.causw.global.constant.MessageUtil;
-import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.InternalServerException;
 
 import jakarta.validation.constraints.NotNull;
@@ -301,10 +299,7 @@ public class FileWriter {
 	/**
 	 * UUID 목록으로 PENDING 파일을 검증하고 CONFIRMED(isUploaded=true)로 전환
 	 *
-	 * @param uuids            비즈니스 UUID 목록 (presigned URL 발급 응답의 uuid 값)
-	 * @param expectedFilePath 해당 도메인에서 허용하는 파일 경로 타입
-	 * @return 확인된 UuidFile 목록
-	 * @throws BaseRunTimeV2Exception UUID 미존재, 경로 불일치, 이미 확정된 파일, S3 미업로드 시
+	 * @param files 상태를 변경할 파일 목록
 	 */
 	@Transactional
 	public List<UuidFile> confirmFiles(@NotNull List<String> uuids, @NotNull FilePath expectedFilePath) {
