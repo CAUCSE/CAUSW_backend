@@ -15,6 +15,7 @@ import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.asset.file.repository.UuidFileRepository;
 import net.causw.app.main.domain.asset.file.service.util.FileMetadataManager;
 import net.causw.app.main.domain.asset.file.service.util.FileValidator;
+import net.causw.app.main.shared.exception.errorcode.FileErrorCode;
 import net.causw.app.main.shared.storage.StorageClient;
 import net.causw.app.main.shared.storage.dto.FileMetadata;
 import net.causw.app.main.shared.storage.dto.StorageResult;
@@ -298,8 +299,6 @@ public class FileWriter {
 
 	/**
 	 * UUID 목록으로 PENDING 파일을 검증하고 CONFIRMED(isUploaded=true)로 전환
-	 *
-	 * @param files 상태를 변경할 파일 목록
 	 */
 	@Transactional
 	public List<UuidFile> confirmFiles(@NotNull List<String> uuids, @NotNull FilePath expectedFilePath) {
