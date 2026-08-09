@@ -8,7 +8,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
@@ -125,8 +127,16 @@ public class ObjectFixtures {
 			"20231234",
 			2023,
 			Department.SCHOOL_OF_SW,
-			null,
-			List.of("attach-uuid-1"));
+			null);
+	}
+
+	public static List<MultipartFile> getMockAttachImages() {
+		MockMultipartFile image = new MockMultipartFile(
+			"attachImages",
+			"test-image.png",
+			"image/png",
+			"image-content".getBytes());
+		return List.of(image);
 	}
 
 	public static UuidFile getUuidFile() {

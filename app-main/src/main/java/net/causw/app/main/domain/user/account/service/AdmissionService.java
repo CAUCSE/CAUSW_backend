@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.asset.file.service.implementation.FileWriter;
@@ -45,13 +47,14 @@ public class AdmissionService {
 	@Transactional
 	public AdmissionResult createAdmission(
 		User user,
-		AdmissionCreateCommand dto) {
+		AdmissionCreateCommand dto,
+		List<MultipartFile> attachImages) {
 		// 인증 신청 생성 검증
 		admissionValidator.validateAdmissionCreate(user, dto.requestedStudentId(),
-			dto.requestedAcademicStatus(), dto.graduationYear(), dto.attachImageUuids());
+			dto.requestedAcademicStatus(), dto.graduationYear(), attachImages);
 
-		// 업로드된 이미지 파일 확정
-		List<UuidFile> uuidFiles = fileWriter.confirmFiles(dto.attachImageUuids(), FilePath.USER_ADMISSION);
+		// 이미지 파일 업로드
+		List<UuidFile> uuidFiles = fileWriter.uploadAndSaveList(attachImages, FilePath.USER_ADMISSION);
 
 		// 사용자 상태를 AWAIT으로 설정 (REJECT에서 재신청 시)
 		userWriter.updateStateToAwait(user);

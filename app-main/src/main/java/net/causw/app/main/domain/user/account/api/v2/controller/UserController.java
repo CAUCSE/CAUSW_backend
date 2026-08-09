@@ -1,5 +1,7 @@
 package net.causw.app.main.domain.user.account.api.v2.controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -103,15 +105,17 @@ public class UserController {
 	@Operation(summary = "재학정보 인증 신청 V2", description = "회원가입 후 재학정보 인증을 신청합니다. "
 		+ "이름, 학과, 입학년도, 학번, 재학분류와 증빙서류 이미지를 제출합니다. "
 		+ "관리자 승인 후 서비스 이용이 가능합니다.")
-	@PostMapping(value = "/me/admission", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(value = "/me/admission", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.CREATED)
 	public ApiResponse<AdmissionResponse> createAdmission(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
-		@RequestBody @Valid AdmissionCreateRequest request) {
+		@RequestPart(value = "request") @Valid AdmissionCreateRequest request,
+		@RequestPart(value = "attachImages") List<MultipartFile> attachImages) {
 
 		AdmissionResult result = admissionService.createAdmission(
 			userDetails.getUser(),
-			admissionDtoMapper.toCreateCommand(request));
+			admissionDtoMapper.toCreateCommand(request),
+			attachImages);
 
 		return ApiResponse.success(admissionDtoMapper.toResponse(result));
 	}

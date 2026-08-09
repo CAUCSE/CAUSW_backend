@@ -17,6 +17,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.multipart.MultipartFile;
+
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
@@ -53,7 +55,7 @@ class AdmissionValidatorTest {
 		void givenValidInput_whenValidate_thenSuccess() {
 			// given
 			User user = ObjectFixtures.getUserWithId("user-1");
-			List<String> attachImageUuids = List.of("attach-uuid-1");
+			List<MultipartFile> attachImages = ObjectFixtures.getMockAttachImages();
 
 			when(admissionReader.existsByUserId(user.getId())).thenReturn(false);
 			when(userRepository.findByStudentId("20231234")).thenReturn(Optional.empty());
@@ -64,7 +66,7 @@ class AdmissionValidatorTest {
 				"20231234",
 				AcademicStatus.ENROLLED,
 				null,
-				attachImageUuids)).doesNotThrowAnyException();
+				attachImages)).doesNotThrowAnyException();
 		}
 	}
 

@@ -21,6 +21,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
@@ -79,10 +80,11 @@ class AdmissionServiceTest {
 			// given
 			User user = ObjectFixtures.getUserWithId("user-1");
 			AdmissionCreateCommand command = ObjectFixtures.getAdmissionCreateCommand();
+			List<MultipartFile> attachImages = ObjectFixtures.getMockAttachImages();
 			List<UuidFile> uuidFiles = List.of(ObjectFixtures.getUuidFile());
 			UserAdmission admission = ObjectFixtures.getUserAdmissionWithId("admission-1", user);
 
-			when(fileWriter.confirmFiles(anyList(), any(FilePath.class))).thenReturn(uuidFiles);
+			when(fileWriter.uploadAndSaveList(anyList(), any(FilePath.class))).thenReturn(uuidFiles);
 			when(userWriter.updateStateToAwait(user)).thenReturn(user);
 			when(admissionWriter.create(
 				eq(user), eq(uuidFiles), eq(command.description()),
@@ -92,7 +94,7 @@ class AdmissionServiceTest {
 				.thenReturn(admission);
 
 			// when
-			AdmissionResult result = admissionService.createAdmission(user, command);
+			AdmissionResult result = admissionService.createAdmission(user, command, attachImages);
 
 			// then
 			assertThat(result).isNotNull();
@@ -106,8 +108,8 @@ class AdmissionServiceTest {
 			assertThat(result.description()).isEqualTo("재학증명서 첨부합니다");
 
 			verify(admissionValidator).validateAdmissionCreate(user, command.requestedStudentId(),
-				command.requestedAcademicStatus(), command.graduationYear(), command.attachImageUuids());
-			verify(fileWriter).confirmFiles(anyList(), eq(FilePath.USER_ADMISSION));
+				command.requestedAcademicStatus(), command.graduationYear(), attachImages);
+			verify(fileWriter).uploadAndSaveList(anyList(), eq(FilePath.USER_ADMISSION));
 			verify(userWriter).updateStateToAwait(user);
 			verify(admissionWriter).create(
 				eq(user), eq(uuidFiles), eq(command.description()),
@@ -123,10 +125,11 @@ class AdmissionServiceTest {
 			// given
 			User user = ObjectFixtures.getRejectUserWithId("user-2");
 			AdmissionCreateCommand command = ObjectFixtures.getAdmissionCreateCommand();
+			List<MultipartFile> attachImages = ObjectFixtures.getMockAttachImages();
 			List<UuidFile> uuidFiles = List.of(ObjectFixtures.getUuidFile());
 			UserAdmission admission = ObjectFixtures.getUserAdmissionWithId("admission-1", user);
 
-			when(fileWriter.confirmFiles(anyList(), any(FilePath.class))).thenReturn(uuidFiles);
+			when(fileWriter.uploadAndSaveList(anyList(), any(FilePath.class))).thenReturn(uuidFiles);
 			when(userWriter.updateStateToAwait(user)).thenReturn(user);
 			when(admissionWriter.create(
 				eq(user), eq(uuidFiles), eq(command.description()),
@@ -136,7 +139,7 @@ class AdmissionServiceTest {
 				.thenReturn(admission);
 
 			// when
-			AdmissionResult result = admissionService.createAdmission(user, command);
+			AdmissionResult result = admissionService.createAdmission(user, command, attachImages);
 
 			// then
 			assertThat(result).isNotNull();
@@ -157,19 +160,20 @@ class AdmissionServiceTest {
 			// given
 			User user = ObjectFixtures.getCertifiedUserWithId("user-3");
 			AdmissionCreateCommand command = ObjectFixtures.getAdmissionCreateCommand();
+			List<MultipartFile> attachImages = ObjectFixtures.getMockAttachImages();
 
 			doThrow(UserErrorCode.INVALID_USER_STATE_FOR_ADMISSION.toBaseException())
 				.when(admissionValidator)
-				.validateAdmissionCreate(eq(user), anyString(), any(), any(), anyList());
+				.validateAdmissionCreate(eq(user), anyString(), any(), any(), eq(attachImages));
 
 			// when & then
-			assertThatThrownBy(() -> admissionService.createAdmission(user, command))
+			assertThatThrownBy(() -> admissionService.createAdmission(user, command, attachImages))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
 				.isEqualTo(UserErrorCode.INVALID_USER_STATE_FOR_ADMISSION);
 
-			verify(admissionValidator).validateAdmissionCreate(eq(user), anyString(), any(), any(), anyList());
-			verify(fileWriter, never()).confirmFiles(anyList(), any(FilePath.class));
+			verify(admissionValidator).validateAdmissionCreate(eq(user), anyString(), any(), any(), eq(attachImages));
+			verify(fileWriter, never()).uploadAndSaveList(anyList(), any(FilePath.class));
 			verify(admissionWriter, never()).create(any(), any(), any(), any(), any(), any(), any(), any());
 			verify(eventPublisher, never()).publishEvent(any());
 		}
@@ -180,19 +184,20 @@ class AdmissionServiceTest {
 			// given
 			User user = ObjectFixtures.getUserWithId("user-4");
 			AdmissionCreateCommand command = ObjectFixtures.getAdmissionCreateCommand();
+			List<MultipartFile> attachImages = ObjectFixtures.getMockAttachImages();
 
 			doThrow(UserErrorCode.ADMISSION_ALREADY_EXISTS.toBaseException())
 				.when(admissionValidator)
-				.validateAdmissionCreate(eq(user), anyString(), any(), any(), anyList());
+				.validateAdmissionCreate(eq(user), anyString(), any(), any(), eq(attachImages));
 
 			// when & then
-			assertThatThrownBy(() -> admissionService.createAdmission(user, command))
+			assertThatThrownBy(() -> admissionService.createAdmission(user, command, attachImages))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
 				.isEqualTo(UserErrorCode.ADMISSION_ALREADY_EXISTS);
 
-			verify(admissionValidator).validateAdmissionCreate(eq(user), anyString(), any(), any(), anyList());
-			verify(fileWriter, never()).confirmFiles(anyList(), any(FilePath.class));
+			verify(admissionValidator).validateAdmissionCreate(eq(user), anyString(), any(), any(), eq(attachImages));
+			verify(fileWriter, never()).uploadAndSaveList(anyList(), any(FilePath.class));
 			verify(admissionWriter, never()).create(any(), any(), any(), any(), any(), any(), any(), any());
 			verify(eventPublisher, never()).publishEvent(any());
 		}
@@ -203,19 +208,20 @@ class AdmissionServiceTest {
 			// given
 			User user = ObjectFixtures.getUserWithId("user-6");
 			AdmissionCreateCommand command = ObjectFixtures.getAdmissionCreateCommand();
+			List<MultipartFile> attachImages = ObjectFixtures.getMockAttachImages();
 
 			doThrow(UserErrorCode.STUDENT_ID_ALREADY_EXIST.toBaseException())
 				.when(admissionValidator)
-				.validateAdmissionCreate(eq(user), anyString(), any(), any(), anyList());
+				.validateAdmissionCreate(eq(user), anyString(), any(), any(), eq(attachImages));
 
 			// when & then
-			assertThatThrownBy(() -> admissionService.createAdmission(user, command))
+			assertThatThrownBy(() -> admissionService.createAdmission(user, command, attachImages))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
 				.isEqualTo(UserErrorCode.STUDENT_ID_ALREADY_EXIST);
 
-			verify(admissionValidator).validateAdmissionCreate(eq(user), anyString(), any(), any(), anyList());
-			verify(fileWriter, never()).confirmFiles(anyList(), any(FilePath.class));
+			verify(admissionValidator).validateAdmissionCreate(eq(user), anyString(), any(), any(), eq(attachImages));
+			verify(fileWriter, never()).uploadAndSaveList(anyList(), any(FilePath.class));
 			verify(admissionWriter, never()).create(any(), any(), any(), any(), any(), any(), any(), any());
 			verify(eventPublisher, never()).publishEvent(any());
 		}
@@ -226,18 +232,19 @@ class AdmissionServiceTest {
 			// given
 			User user = ObjectFixtures.getUserWithId("user-5");
 			AdmissionCreateCommand command = ObjectFixtures.getAdmissionCreateCommand();
+			List<MultipartFile> emptyImages = List.of();
 
 			doThrow(UserErrorCode.ADMISSION_IMAGE_REQUIRED.toBaseException())
-				.when(admissionValidator).validateAdmissionCreate(eq(user), anyString(), any(), any(), anyList());
+				.when(admissionValidator).validateAdmissionCreate(eq(user), anyString(), any(), any(), eq(emptyImages));
 
 			// when & then
-			assertThatThrownBy(() -> admissionService.createAdmission(user, command))
+			assertThatThrownBy(() -> admissionService.createAdmission(user, command, emptyImages))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
 				.isEqualTo(UserErrorCode.ADMISSION_IMAGE_REQUIRED);
 
-			verify(admissionValidator).validateAdmissionCreate(eq(user), anyString(), any(), any(), anyList());
-			verify(fileWriter, never()).confirmFiles(anyList(), any(FilePath.class));
+			verify(admissionValidator).validateAdmissionCreate(eq(user), anyString(), any(), any(), eq(emptyImages));
+			verify(fileWriter, never()).uploadAndSaveList(anyList(), any(FilePath.class));
 			verify(admissionWriter, never()).create(any(), any(), any(), any(), any(), any(), any(), any());
 			verify(eventPublisher, never()).publishEvent(any());
 		}
