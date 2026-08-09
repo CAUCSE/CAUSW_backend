@@ -72,7 +72,7 @@ class SystemNoticeServiceTest {
 	private BoardConfig systemNoticeBoardConfig;
 
 	@Test
-	void createPassesTitleToPostCommandAndReturnsIt() {
+	void createPassesContentToDedicatedPostCommandAndReturnsIt() {
 		User writer = org.mockito.Mockito.mock(User.class);
 		LocalDateTime createdAt = LocalDateTime.of(2026, 8, 9, 12, 0);
 		PostCreateResult postResult = PostCreateResult.builder()
@@ -86,24 +86,24 @@ class SystemNoticeServiceTest {
 			.willReturn(postResult);
 
 		SystemNoticeCreateResult result = systemNoticeService.create(
-			new SystemNoticeCreateCommand("title", "content", writer));
+			new SystemNoticeCreateCommand("content", writer));
 
 		ArgumentCaptor<PostCreateCommand> captor = ArgumentCaptor.forClass(PostCreateCommand.class);
 		verify(postService).createSystemNotice(captor.capture());
-		assertThat(captor.getValue().title()).isEqualTo("title");
-		assertThat(result.title()).isEqualTo("title");
+		assertThat(captor.getValue().content()).isEqualTo("content");
+		assertThat(result.content()).isEqualTo("content");
 	}
 
 	@Test
-	void updatePassesTitleToPostCommand() {
+	void updatePassesContentToDedicatedPostCommand() {
 		User updater = org.mockito.Mockito.mock(User.class);
 		given(systemNoticeReader.getSystemNoticePost("post-id")).willReturn(latestPost);
 
-		systemNoticeService.update("post-id", new SystemNoticeUpdateCommand("updated title", "content", updater));
+		systemNoticeService.update("post-id", new SystemNoticeUpdateCommand("updated content", updater));
 
 		ArgumentCaptor<PostUpdateCommand> captor = ArgumentCaptor.forClass(PostUpdateCommand.class);
 		verify(postService).updateSystemNotice(captor.capture());
-		assertThat(captor.getValue().title()).isEqualTo("updated title");
+		assertThat(captor.getValue().content()).isEqualTo("updated content");
 	}
 
 	@Test
@@ -117,7 +117,7 @@ class SystemNoticeServiceTest {
 	}
 
 	@Test
-	void getLatestReturnsPostTitle() {
+	void getLatestReturnsPostContent() {
 		User writer = org.mockito.Mockito.mock(User.class);
 		givenActiveViewer();
 		given(viewer.getId()).willReturn("user-id");
@@ -125,14 +125,13 @@ class SystemNoticeServiceTest {
 		givenReadableSystemNotice(latestPost);
 		given(systemNoticeReader.findReadByUserId("user-id")).willReturn(Optional.empty());
 		given(latestPost.getId()).willReturn("post-id");
-		given(latestPost.getTitle()).willReturn("title");
 		given(latestPost.getContent()).willReturn("content");
 		given(latestPost.getWriter()).willReturn(writer);
 		given(writer.getNickname()).willReturn("admin");
 
 		SystemNoticeResult result = systemNoticeService.getLatest(viewer).orElseThrow();
 
-		assertThat(result.title()).isEqualTo("title");
+		assertThat(result.content()).isEqualTo("content");
 	}
 
 	@Test

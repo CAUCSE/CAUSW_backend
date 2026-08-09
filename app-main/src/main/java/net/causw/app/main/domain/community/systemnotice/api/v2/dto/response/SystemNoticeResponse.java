@@ -6,7 +6,6 @@ import net.causw.app.main.domain.community.systemnotice.service.dto.SystemNotice
 
 public record SystemNoticeResponse(
 	String id,
-	String title,
 	String content,
 	String authorName,
 	LocalDateTime createdAt,
@@ -15,7 +14,6 @@ public record SystemNoticeResponse(
 	public static SystemNoticeResponse from(SystemNoticeResult result) {
 		return new SystemNoticeResponse(
 			result.id(),
-			result.title(),
 			result.content(),
 			result.authorName(),
 			result.createdAt(),

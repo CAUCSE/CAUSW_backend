@@ -180,10 +180,6 @@ public class PostService {
 		// 게시글 업데이트
 		Post updatedPost = postWriter.updateContentAndImages(
 			post, command.content(), command.isAnonymous(), imageResult.finalImages());
-		if (command.title() != null) {
-			// Post.title is deprecated for regular posts; only system-notice commands provide it.
-			updatedPost.updateSystemNoticeTitle(command.title());
-		}
 
 		List<String> imageUrls = imageResult.finalImages().stream()
 			.map(img -> img.getUuidFile().getFileUrl())

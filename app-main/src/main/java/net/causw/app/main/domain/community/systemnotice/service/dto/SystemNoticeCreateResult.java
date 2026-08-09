@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 
 public record SystemNoticeCreateResult(
 	String id,
-	String title,
 	String content,
 	String authorName,
 	LocalDateTime createdAt) {
