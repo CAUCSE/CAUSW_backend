@@ -7,6 +7,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Slice;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import net.causw.app.main.domain.asset.file.entity.UuidFile;
+import net.causw.app.main.domain.asset.file.service.implementation.FileReader;
+import net.causw.app.main.domain.asset.file.service.implementation.FileWriter;
+import net.causw.app.main.shared.storage.StorageClient;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
@@ -30,6 +34,9 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class BatchScheduler {
 
+	private final FileReader fileReader;
+	private final FileWriter fileWriter;
+	private final StorageClient storageClient;
 	private final UserReader userReader;
 	private final PageableFactory pageableFactory;
 	private final UserInfoWriter userInfoWriter;
@@ -38,6 +45,35 @@ public class BatchScheduler {
 	private final UserWriter userWriter;
 	private final AdmissionWriter admissionWriter;
 	private final UserProfileImageService userProfileImageService;
+
+	@Scheduled(cron = "0 0 * * * ?") // 매시 정각
+	public void scheduleCleanupPendingFiles() {
+		log.info("[PENDING 파일 정리 배치] 시작");
+		LocalDateTime cutoff = LocalDateTime.now().minusHours(1);
+
+		List<UuidFile> pendingFiles = fileReader.findAllPendingBefore(cutoff);
+		if (pendingFiles.isEmpty()) {
+			log.info("[PENDING 파일 정리 배치] 정리 대상 없음");
+			return;
+		}
+
+		int cleanedCount = 0;
+		int s3FailCount = 0;
+		for (UuidFile file : pendingFiles) {
+			try {
+				storageClient.delete(file.getFileKey());
+			} catch (Exception e) {
+				s3FailCount++;
+				log.warn("[PENDING 파일 정리 배치] S3 삭제 실패. 재시도 예정. FileKey: {}", file.getFileKey(), e);
+				continue;
+			}
+			fileWriter.deleteFromDb(file.getId());
+			cleanedCount++;
+		}
+
+		log.info("[PENDING 파일 정리 배치] 완료. 총: {}, 정리: {}, S3 실패(재시도 예정): {}",
+			pendingFiles.size(), cleanedCount, s3FailCount);
+	}
 
 	@Scheduled(cron = "0 10 3 * * ?") // 매일 새벽 3시 10분
 	public void scheduleCleanupDeactivatedUsers() {

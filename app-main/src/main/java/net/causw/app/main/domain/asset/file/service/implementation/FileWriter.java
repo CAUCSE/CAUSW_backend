@@ -338,6 +338,17 @@ public class FileWriter {
 		return files;
 	}
 
+	/**
+	 * DB에서만 파일 삭제 (S3는 건드리지 않음)
+	 * S3 삭제 완료 후 DB 레코드 정리 시 사용
+	 *
+	 * @param id 삭제할 파일 엔티티 ID
+	 */
+	@Transactional
+	public void deleteFromDb(@NotNull String id) {
+		uuidFileRepository.deleteById(id);
+	}
+
 	private void rollbackUploadedFiles(List<String> fileKeys) {
 		for (String fileKey : fileKeys) {
 			try {
