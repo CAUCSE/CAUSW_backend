@@ -63,7 +63,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController("UserControllerV2")
 @RequiredArgsConstructor
-@RequestMapping("/api/v2/users")
+@RequestMapping("/api")
 @Tag(name = "User Public v2", description = "일반 사용자를 위한 사용자 정보 조회 및 수정 API")
 public class UserController {
 
@@ -80,7 +80,7 @@ public class UserController {
 
 	// ── 내 정보 ──
 
-	@GetMapping("/me")
+	@GetMapping("/v2/users/me")
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "내 정보 조회 V2", description = "현재 로그인한 사용자의 기본 정보를 조회합니다. 내정보 메인페이지 진입 시 호출합니다.")
 	public ApiResponse<UserMeResponse> getMyProfile(
@@ -90,7 +90,7 @@ public class UserController {
 				userAccountService.getMyProfile(userDetails.getUserId())));
 	}
 
-	@GetMapping("/me/account")
+	@GetMapping("/v2/users/me/account")
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "계정정보 관리 조회 V2", description = "계정정보 관리 페이지 진입 시 호출합니다. 기본 정보 + 전화번호/학번/전공/학과를 반환합니다.")
 	public ApiResponse<UserMeAccountResponse> getMyAccountProfile(
@@ -105,14 +105,14 @@ public class UserController {
 	@Operation(summary = "재학정보 인증 신청 V2", description = "회원가입 후 재학정보 인증을 신청합니다. "
 		+ "이름, 학과, 입학년도, 학번, 재학분류와 증빙서류 이미지를 제출합니다. "
 		+ "관리자 승인 후 서비스 이용이 가능합니다.")
-	@PostMapping(value = "/me/admission", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(value = "/v2/users/me/admission", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.CREATED)
-	public ApiResponse<AdmissionResponse> createAdmission(
+	public ApiResponse<AdmissionResponse> createAdmissionV2(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestPart(value = "request") @Valid AdmissionCreateRequest request,
 		@RequestPart(value = "attachImages") List<MultipartFile> attachImages) {
 
-		AdmissionResult result = admissionService.createAdmission(
+		AdmissionResult result = admissionService.createAdmissionV2(
 			userDetails.getUser(),
 			admissionDtoMapper.toCreateCommand(request),
 			attachImages);
@@ -120,9 +120,23 @@ public class UserController {
 		return ApiResponse.success(admissionDtoMapper.toResponse(result));
 	}
 
+	@Operation(summary = "재학정보 인증 신청 V3", description = "presigned URL로 업로드한 이미지 UUID를 전달하여 재학정보 인증을 신청합니다.")
+	@PostMapping("/v3/users/me/admission")
+	@ResponseStatus(HttpStatus.CREATED)
+	public ApiResponse<AdmissionResponse> createAdmission(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestBody @Valid AdmissionCreateRequest request) {
+
+		AdmissionResult result = admissionService.createAdmission(
+			userDetails.getUser(),
+			admissionDtoMapper.toCreateCommand(request));
+
+		return ApiResponse.success(admissionDtoMapper.toResponse(result));
+	}
+
 	@Operation(summary = "내 인증 신청 상태 조회 V2", description = "현재 로그인한 사용자의 재학정보 인증 신청 상태를 조회합니다. "
 		+ "(AWAIT: 승인 대기, ACTIVE: 승인 완료, REJECT: 거부)")
-	@GetMapping("/me/admission/state")
+	@GetMapping("/v2/users/me/admission/state")
 	public ApiResponse<AdmissionStateResponse> getMyAdmissionState(
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
@@ -133,7 +147,7 @@ public class UserController {
 
 	// ── FCM ──
 
-	@PostMapping("/fcm")
+	@PostMapping("/v2/users/fcm")
 	@Operation(summary = "fcm 토큰 등록 API", description = "유저와 fcm 토큰을 기기 단위로 매핑한다.")
 	public ApiResponse<UserFcmTokenResponse> createFcmToken(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
@@ -142,13 +156,13 @@ public class UserController {
 			.success(userNotificationService.createFcmToken(userDetails.getUserId(), body.fcmToken()));
 	}
 
-	@GetMapping("/fcm")
+	@GetMapping("/v2/users/fcm")
 	@Operation(summary = "fcm 토큰 조회 API", description = "유저에게 등록된 fcm 토큰을 조회한다.")
 	public ApiResponse<UserFcmTokenResponse> findFcmToken(@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return ApiResponse.success(userNotificationService.findFcmTokenByUser(userDetails.getUserId()));
 	}
 
-	@PatchMapping("/me/registration")
+	@PatchMapping("/v2/users/me/registration")
 	@Operation(summary = "소셜로그인 이후 사용자 정보 및 약관 동의 입력 API", description = "GUEST 상태의 유저에게 가입에 필요한 정보와 필수 약관 동의를 받고 AWAIT 상태로 변경한다.", security = {
 		@SecurityRequirement(name = "refreshBearerAuth")
 	})
@@ -162,7 +176,7 @@ public class UserController {
 		return ApiResponse.success(authDtoMapper.toAuthResponse(dto));
 	}
 
-	@PutMapping("/me/nickname")
+	@PutMapping("/v2/users/me/nickname")
 	@Operation(summary = "닉네임 변경 API", description = "현재 로그인한 사용자의 닉네임을 변경합니다. 현재 닉네임과 동일하거나 중복된 닉네임은 변경할 수 없습니다.")
 	public ApiResponse<Void> updateNickname(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
@@ -171,7 +185,7 @@ public class UserController {
 		return ApiResponse.success();
 	}
 
-	@GetMapping("/check-nickname")
+	@GetMapping("/v2/users/check-nickname")
 	@Operation(summary = "닉네임 중복 체크 API", description = "닉네임이 중복인지 확인합니다.")
 	public ApiResponse<Void> checkNicknameDuplication(
 		@RequestParam String nickname) {
@@ -179,7 +193,7 @@ public class UserController {
 		return ApiResponse.success();
 	}
 
-	@GetMapping("/check-phone")
+	@GetMapping("/v2/users/check-phone")
 	@Operation(summary = "전화번호 중복 체크 API", description = "전화번호가 중복인지 확인합니다.")
 	public ApiResponse<Void> checkPhoneNumDuplication(
 		@RequestParam String phoneNumber) {
@@ -187,7 +201,7 @@ public class UserController {
 		return ApiResponse.success();
 	}
 
-	@PostMapping("/password-change")
+	@PostMapping("/v2/users/password-change")
 	@Operation(summary = "비밀번호 재설정 API", description = "이메일과 현재 비밀번호를 확인하고 새 비밀번호로 변경합니다. "
 		+ "비밀번호 찾기 후 임시 비밀번호로 로그인하기 전에도 호출할 수 있습니다.")
 	public ApiResponse<Void> updatePassword(
@@ -198,7 +212,7 @@ public class UserController {
 
 	// ── 프로필 이미지 ──
 
-	@PatchMapping("/me/profile-image/default")
+	@PatchMapping("/v2/users/me/profile-image/default")
 	@Operation(summary = "기본 프로필 이미지 변경 API", description = "프로필 이미지를 기본 이미지(MALE_1, MALE_2, FEMALE_1, FEMALE_2)로 변경합니다. "
 		+ "기존 커스텀 이미지가 있는 경우 해당 이미지는 삭제됩니다.")
 	public ApiResponse<ProfileImageResponse> updateProfileImageToDefault(
@@ -208,7 +222,7 @@ public class UserController {
 			userProfileImageService.updateToDefaultProfileImage(userDetails.getUserId(), request.profileImageType()));
 	}
 
-	@PatchMapping(value = "/me/profile-image/custom", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	@PatchMapping(value = "/v2/users/me/profile-image/custom", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@Operation(summary = "커스텀 프로필 이미지 변경 API", description = "프로필 이미지를 업로드한 커스텀 이미지로 변경합니다. "
 		+ "커스텀 이미지는 1개만 유지되며, 새 이미지로 변경하면 기존 커스텀 이미지는 삭제됩니다.")
 	public ApiResponse<ProfileImageResponse> updateProfileImageToCustom(
@@ -219,7 +233,7 @@ public class UserController {
 	}
 
 	// ── 회원 탈퇴 ──
-	@DeleteMapping("/me")
+	@DeleteMapping("/v2/users/me")
 	@Operation(summary = "회원 탈퇴 API", description = "현재 로그인한 사용자를 탈퇴 처리합니다. (Soft Delete)", security = {
 		@SecurityRequirement(name = "bearerAuth"),
 		@SecurityRequirement(name = "refreshBearerAuth")
@@ -241,7 +255,7 @@ public class UserController {
 	}
 	// ── 소셜 계정 연동 ──
 
-	@GetMapping("/me/social-accounts")
+	@GetMapping("/v2/users/me/social-accounts")
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "소셜 계정 연동 현황 조회 V2", description = "현재 로그인한 사용자의 소셜 계정(Google, Kakao, Apple) 연동 여부를 조회합니다.")
 	public ApiResponse<SocialAccountsResponse> getSocialAccounts(
@@ -251,7 +265,7 @@ public class UserController {
 				socialLinkService.getSocialAccounts(userDetails.getUserId())));
 	}
 
-	@PostMapping("/me/social-accounts/native")
+	@PostMapping("/v2/users/me/social-accounts/native")
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "소셜 계정 연동 (Native)", description = "provider 토큰을 검증하여 현재 로그인한 사용자에게 소셜 계정을 연동합니다. "
 		+ "카카오는 accessToken, 구글/애플은 idToken을 전달합니다. (네이티브 앱 전용)")
@@ -263,7 +277,7 @@ public class UserController {
 		return ApiResponse.success();
 	}
 
-	@PostMapping("/me/social-accounts/{provider}/oauth")
+	@PostMapping("/v2/users/me/social-accounts/{provider}/oauth")
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "소셜 계정 연동 초기화 (OAuth)", description = "웹 브라우저에서 OAuth 방식으로 소셜 계정을 연동하기 위한 초기화 API입니다. "
 		+ "연동 가능 여부를 사전 검증하고 1회용 링크 토큰을 발급합니다. "
@@ -276,7 +290,7 @@ public class UserController {
 		return ApiResponse.success(new OAuthLinkTokenResponse(linkToken));
 	}
 
-	@DeleteMapping("/me/social-accounts/{provider}")
+	@DeleteMapping("/v2/users/me/social-accounts/{provider}")
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "소셜 계정 연동 해제", description = "현재 로그인한 사용자의 소셜 계정 연동을 해제합니다. "
 		+ "비밀번호 없는 계정의 마지막 소셜 계정은 해제할 수 없습니다.")
