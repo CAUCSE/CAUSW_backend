@@ -1,6 +1,7 @@
 ALTER TABLE tb_crawled_notice
     ADD COLUMN post_id VARCHAR(255) NULL;
 
+-- 제목 기준으로 공지와 활성 크롤링 Post가 각각 하나씩만 존재하는 경우 기존 연결을 백필한다.
 UPDATE tb_crawled_notice notice
 JOIN (
     SELECT MIN(crawled.id) AS notice_id,

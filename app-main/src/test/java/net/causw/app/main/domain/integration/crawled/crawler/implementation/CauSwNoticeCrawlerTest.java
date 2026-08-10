@@ -57,10 +57,12 @@ class CauSwNoticeCrawlerTest {
 			ArticleUrl articleUrl = new ArticleUrl(
 				"https://cse.cau.ac.kr/notice?uid=10", "https://cse.cau.ac.kr/notice?uid=10", "NEW 공지");
 			String html = """
+				<section id='content'>
 				<div class='header'><h3>제목</h3><div>
 				<span>2026-08-10</span><span>라벨</span><span>관리자</span><span>라벨2</span>
 				</div></div>
 				<div class='fr-view'><p>본문</p><a href='/download.php?id=1'>자료.pdf</a></div>
+				</section>
 				""";
 			given(crawlHttpClient.fetch(articleUrl.url(), context.siteConfig())).willReturn(html);
 
