@@ -168,6 +168,8 @@ fcm:
   project-id: ${FCM_PROJECT_ID}
 
 app:
+  crawl:
+    local-run-on-start: true
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS}
   auth:

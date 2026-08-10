@@ -26,8 +26,9 @@ import net.causw.app.main.domain.community.board.repository.BoardRepository;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
-import net.causw.app.main.domain.integration.crawled.repository.CrawledNoticeRepository;
 import net.causw.app.main.domain.integration.crawled.repository.CrawledPostImageRepository;
+import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeReader;
+import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeWriter;
 import net.causw.app.main.domain.notification.notification.event.OfficialPostEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
@@ -42,7 +43,10 @@ public class CrawledToPostTransferServiceTest {
 	private CrawledToPostTransferService crawledToPostTransferService;
 
 	@Mock
-	private CrawledNoticeRepository crawledNoticeRepository;
+	private CrawledNoticeReader crawledNoticeReader;
+
+	@Mock
+	private CrawledNoticeWriter crawledNoticeWriter;
 
 	@Mock
 	private PostRepository postRepository;
@@ -71,7 +75,7 @@ public class CrawledToPostTransferServiceTest {
 			.willReturn(Optional.of(mockBoard));
 		given(userRepository.findByEmail(StaticValue.SYSTEM_CRAWLER_ACCOUNT))
 			.willReturn(Optional.of(mockUser));
-		given(crawledNoticeRepository.findTop30ByIsUpdatedTrueOrderByLastModifiedDesc())
+		given(crawledNoticeReader.findPendingNotices())
 			.willReturn(List.of(newNotice));
 		given(postRepository.findAllByBoardAndIsDeletedIsFalse(mockBoard))
 			.willReturn(Collections.emptyList());
@@ -81,7 +85,7 @@ public class CrawledToPostTransferServiceTest {
 
 		// then
 		verify(postRepository).save(any(Post.class));
-		verify(crawledNoticeRepository).save(newNotice);
+		verify(crawledNoticeWriter).markTransferred(org.mockito.ArgumentMatchers.eq(newNotice), any(Post.class));
 
 		verify(applicationEventPublisher).publishEvent(any(OfficialPostEvent.class));
 	}
@@ -99,7 +103,7 @@ public class CrawledToPostTransferServiceTest {
 			.willReturn(Optional.of(mockBoard));
 		given(userRepository.findByEmail(StaticValue.SYSTEM_CRAWLER_ACCOUNT))
 			.willReturn(Optional.of(mockUser));
-		given(crawledNoticeRepository.findTop30ByIsUpdatedTrueOrderByLastModifiedDesc())
+		given(crawledNoticeReader.findPendingNotices())
 			.willReturn(List.of(updatedNotice));
 		given(postRepository.findAllByBoardAndIsDeletedIsFalse(mockBoard))
 			.willReturn(List.of(existingPost));
@@ -109,7 +113,7 @@ public class CrawledToPostTransferServiceTest {
 
 		// then
 		verify(postRepository).save(existingPost);
-		verify(crawledNoticeRepository).save(updatedNotice);
+		verify(crawledNoticeWriter).markTransferred(updatedNotice, existingPost);
 	}
 
 	@Test
@@ -123,7 +127,7 @@ public class CrawledToPostTransferServiceTest {
 			.willReturn(Optional.of(mockBoard));
 		given(userRepository.findByEmail(StaticValue.SYSTEM_CRAWLER_ACCOUNT))
 			.willReturn(Optional.of(mockUser));
-		given(crawledNoticeRepository.findTop30ByIsUpdatedTrueOrderByLastModifiedDesc())
+		given(crawledNoticeReader.findPendingNotices())
 			.willReturn(Collections.emptyList());
 
 		// when

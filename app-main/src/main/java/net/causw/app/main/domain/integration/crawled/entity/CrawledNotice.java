@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.shared.entity.BaseEntity;
 import net.causw.global.util.HashUtil;
 
@@ -15,6 +16,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -29,6 +31,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_crawled_notice")
 public class CrawledNotice extends BaseEntity {
+	@Column(name = "site_id", nullable = false, length = 100)
+	private String siteId;
+
+	@Column(name = "external_id", nullable = false)
+	private String externalId;
+
 	@Column(name = "type", nullable = false)
 	private String type;
 
@@ -64,6 +72,39 @@ public class CrawledNotice extends BaseEntity {
 	@Column(name = "is_updated", nullable = false)
 	private Boolean isUpdated;
 
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "post_id", unique = true)
+	private Post post;
+
+	public static CrawledNotice of(
+		String siteId,
+		String externalId,
+		String type,
+		String title,
+		String content,
+		String link,
+		String author,
+		LocalDate announceDate,
+		String imageLink,
+		List<CrawledFileLink> crawledFileLinks,
+		String contentHash) {
+		return CrawledNotice.builder()
+			.siteId(siteId)
+			.externalId(externalId)
+			.type(type)
+			.title(title)
+			.content(content)
+			.link(link)
+			.author(author)
+			.announceDate(announceDate)
+			.imageLink(imageLink)
+			.crawledFileLinks(crawledFileLinks == null ? new ArrayList<>() : crawledFileLinks)
+			.contentHash(contentHash)
+			.lastModified(LocalDateTime.now())
+			.isUpdated(false)
+			.build();
+	}
+
 	public static CrawledNotice of(
 		String type,
 		String title,
@@ -83,19 +124,18 @@ public class CrawledNotice extends BaseEntity {
 		// 본문 내용의 해시값 생성
 		String contentHash = generateContentHash(title, content, imageLink, crawledFileLinks);
 
-		return CrawledNotice.builder()
-			.type(type)
-			.title(title)
-			.content(content)
-			.link(link)
-			.author(author)
-			.announceDate(parsedDate)
-			.imageLink(imageLink)
-			.crawledFileLinks(crawledFileLinks)
-			.contentHash(contentHash)
-			.lastModified(LocalDateTime.now())
-			.isUpdated(false)
-			.build();
+		return of(
+			"cau-sw-notice",
+			link,
+			type,
+			title,
+			content,
+			link,
+			author,
+			parsedDate,
+			imageLink,
+			crawledFileLinks,
+			contentHash);
 	}
 
 	//제목, 본문, 내용, 첨부파일로 해시 값 생성
@@ -122,6 +162,34 @@ public class CrawledNotice extends BaseEntity {
 		this.contentHash = newContentHash;
 		this.lastModified = LocalDateTime.now();
 		this.isUpdated = true;
+	}
+
+	public void updateFrom(
+		String type,
+		String title,
+		String content,
+		String link,
+		String author,
+		LocalDate announceDate,
+		String imageLink,
+		List<CrawledFileLink> crawledFileLinks,
+		String contentHash) {
+		this.type = type;
+		this.title = title;
+		this.content = content;
+		this.link = link;
+		this.author = author;
+		this.announceDate = announceDate;
+		this.imageLink = imageLink;
+		this.crawledFileLinks.clear();
+		this.crawledFileLinks.addAll(crawledFileLinks);
+		this.contentHash = contentHash;
+		this.lastModified = LocalDateTime.now();
+		this.isUpdated = true;
+	}
+
+	public void linkPost(Post post) {
+		this.post = post;
 	}
 
 	public void setIsUpdated(boolean isUpdated) {

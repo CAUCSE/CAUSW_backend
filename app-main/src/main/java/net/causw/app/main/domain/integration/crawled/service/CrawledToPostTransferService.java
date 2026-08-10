@@ -17,8 +17,9 @@ import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledFileLink;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledPostImage;
-import net.causw.app.main.domain.integration.crawled.repository.CrawledNoticeRepository;
 import net.causw.app.main.domain.integration.crawled.repository.CrawledPostImageRepository;
+import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeReader;
+import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeWriter;
 import net.causw.app.main.domain.notification.notification.event.OfficialPostEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.repository.user.UserRepository;
@@ -34,7 +35,8 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 public class CrawledToPostTransferService {
-	private final CrawledNoticeRepository crawledNoticeRepository;
+	private final CrawledNoticeReader crawledNoticeReader;
+	private final CrawledNoticeWriter crawledNoticeWriter;
 	private final PostRepository postRepository;
 	private final UserRepository userRepository;
 	private final BoardRepository boardRepository;
@@ -51,12 +53,11 @@ public class CrawledToPostTransferService {
 
 		int savedCount = 0;
 		for (CrawledNotice notice : updatedNotices) {
-			if (processUpdatedNotice(notice, board, systemUser)) {
-				notice.setIsUpdated(false);
-				crawledNoticeRepository.save(notice);
-				savedCount++;
-			}
+			Post post = processUpdatedNotice(notice, board, systemUser);
+			crawledNoticeWriter.markTransferred(notice, post);
+			savedCount++;
 		}
+		log.info("[Crawl] Transferred notices to posts. count={}", savedCount);
 	}
 
 	//게시판 조회
@@ -75,11 +76,11 @@ public class CrawledToPostTransferService {
 
 	//업데이트된 공지 목록 조회
 	private List<CrawledNotice> getUpdatedNotices() {
-		return crawledNoticeRepository.findTop30ByIsUpdatedTrueOrderByLastModifiedDesc();
+		return crawledNoticeReader.findPendingNotices();
 	}
 
 	//업데이트된 공지 처리
-	private boolean processUpdatedNotice(CrawledNotice notice, Board board, User adminUser) {
+	private Post processUpdatedNotice(CrawledNotice notice, Board board, User adminUser) {
 		String title = (notice.getTitle() == null || notice.getTitle().isBlank())
 			? "제목 없음" : notice.getTitle();
 
@@ -90,7 +91,7 @@ public class CrawledToPostTransferService {
 		List<String> imageUrls = extractImageUrls(notice.getContent(), notice.getLink());
 
 		// 제목으로 기존 게시글 조회
-		Post existingPost = findExistingPostByTitle(board, title);
+		Post existingPost = findExistingPost(notice, board, title);
 
 		if (existingPost != null) {
 			// 기존 Post 업데이트
@@ -100,6 +101,7 @@ public class CrawledToPostTransferService {
 			// 기존 크롤링 이미지 교체
 			crawledPostImageRepository.deleteAllByPostId(existingPost.getId());
 			savePostImages(existingPost, imageUrls);
+			return existingPost;
 		} else {
 			// 새 Post 생성 (크롤링 게시판은 익명 게시판이 아니므로 isAnonymous=false)
 			Post newPost = Post.of(
@@ -120,8 +122,8 @@ public class CrawledToPostTransferService {
 			// 새 게시글인 경우에만 알림 전송
 			//			boardNotificationService.sendByBoardIsSubscribed(board, newPost);
 			applicationEventPublisher.publishEvent(new OfficialPostEvent(board.getId(), newPost.getId(), title));
+			return newPost;
 		}
-		return true;
 	}
 
 	//크롤링 이미지 URL 목록을 CrawledPostImage 엔티티로 저장
@@ -218,7 +220,12 @@ public class CrawledToPostTransferService {
 	}
 
 	//제목으로 기존 게시글 조회
-	private Post findExistingPostByTitle(Board board, String title) {
+	private Post findExistingPost(CrawledNotice notice, Board board, String title) {
+		if (notice.getPost() != null && !Boolean.TRUE.equals(notice.getPost().getIsDeleted())) {
+			return notice.getPost();
+		}
+
+		// 기존 데이터가 최초로 새 식별 구조를 사용할 때만 제목으로 연결한다.
 		List<Post> existingPosts = postRepository.findAllByBoardAndIsDeletedIsFalse(board);
 
 		for (Post post : existingPosts) {
