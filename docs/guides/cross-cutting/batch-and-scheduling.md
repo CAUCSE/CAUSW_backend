@@ -80,14 +80,14 @@ public class CleanUnusedUuidFilesBatchConfig {
 @RequiredArgsConstructor
 public class CrawlScheduler {
 
-	private final CrawlPipeline crawlPipeline;
+	private final CrawlService crawlService;
 	private final CrawledToPostTransferService crawledToPostTransferService;
 
 	@Scheduled(
 		cron = "${app.crawl.sites.cau-sw-notice.cron:0 0 * * * *}",
 		zone = "${app.crawl.zone:Asia/Seoul}")
 	public void runCauSwNoticeCrawl() {
-		crawlPipeline.run("cau-sw-notice");
+		crawlService.crawl("cau-sw-notice");
 		crawledToPostTransferService.transferToPosts();
 	}
 }
