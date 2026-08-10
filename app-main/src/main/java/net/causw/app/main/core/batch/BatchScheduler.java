@@ -7,6 +7,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Slice;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import net.causw.app.main.domain.asset.locker.service.LockerExpirationService;
+import net.causw.app.main.domain.asset.locker.service.dto.result.LockerExpirationResult;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
@@ -16,6 +18,7 @@ import net.causw.app.main.domain.user.account.service.implementation.SocialAccou
 import net.causw.app.main.domain.user.account.service.implementation.UserInfoWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
+import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 import net.causw.app.main.shared.pageable.PageableFactory;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.constant.StaticValue;
@@ -38,6 +41,7 @@ public class BatchScheduler {
 	private final UserWriter userWriter;
 	private final AdmissionWriter admissionWriter;
 	private final UserProfileImageService userProfileImageService;
+	private final LockerExpirationService lockerExpirationService;
 
 	@Scheduled(cron = "0 10 3 * * ?") // 매일 새벽 3시 10분
 	public void scheduleCleanupDeactivatedUsers() {
@@ -106,6 +110,26 @@ public class BatchScheduler {
 			log.info("[GUEST 정리 배치] 소셜로그인 대기 방치 유저 정리 완료");
 		} catch (Exception e) {
 			log.error("GUEST 정리 배치 실패: {}", e.getMessage(), e);
+			throw new InternalServerException(
+				ErrorCode.INTERNAL_SERVER,
+				MessageUtil.BATCH_FAIL + e.getMessage());
+		}
+	}
+
+	@Scheduled(cron = "0 30 3 * * ?") // 매일 새벽 3시 30분 (다른 배치와 시각 충돌 방지)
+	public void scheduleReleaseExpiredLockers() {
+		try {
+			log.info("[사물함 만료 배치] 만료 사물함 자동 반납 시작");
+
+			User systemUser = userReader.findByEmail(StaticValue.SYSTEM_BATCH_ACCOUNT)
+				.orElseThrow(UserErrorCode.USER_NOT_FOUND::toBaseException);
+
+			LockerExpirationResult result = lockerExpirationService.releaseExpiredLockers(systemUser);
+
+			log.info("[사물함 만료 배치] 만료 사물함 자동 반납 완료 - 반납 {}건, 스킵 {}건, 실패 {}건",
+				result.releasedCount(), result.skippedCount(), result.failedCount());
+		} catch (Exception e) {
+			log.error("사물함 만료 배치 실패: {}", e.getMessage(), e);
 			throw new InternalServerException(
 				ErrorCode.INTERNAL_SERVER,
 				MessageUtil.BATCH_FAIL + e.getMessage());
