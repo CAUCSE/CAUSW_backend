@@ -103,7 +103,7 @@ public class CrawledNotice extends BaseEntity {
 			.author(author)
 			.announceDate(announceDate)
 			.imageLink(imageLink)
-			.crawledFileLinks(crawledFileLinks == null ? new ArrayList<>() : crawledFileLinks)
+			.crawledFileLinks(crawledFileLinks == null ? new ArrayList<>() : new ArrayList<>(crawledFileLinks))
 			.contentHash(contentHash)
 			.lastModified(LocalDateTime.now())
 			.isUpdated(false)
