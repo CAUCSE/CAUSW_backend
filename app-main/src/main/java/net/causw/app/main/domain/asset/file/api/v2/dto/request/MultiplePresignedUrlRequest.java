@@ -11,21 +11,14 @@ import jakarta.validation.constraints.NotNull;
 
 @Schema(description = "Presigned URL 발급 요청 (다중 파일)")
 public record MultiplePresignedUrlRequest(
-	@NotEmpty(message = "파일 목록을 입력해 주세요.")
-	@Valid
-	@Schema(description = "업로드할 파일 목록")
-	List<FileEntry> files,
+	@NotEmpty(message = "파일 목록을 입력해 주세요.") @Valid @Schema(description = "업로드할 파일 목록") List<FileEntry> files,
 
-	@NotNull(message = "파일 경로 타입을 선택해 주세요.")
-	@Schema(description = "파일 경로 타입", example = "POST")
-	FilePath filePath) {
+	@NotNull(message = "파일 경로 타입을 선택해 주세요.") @Schema(description = "파일 경로 타입", example = "POST") FilePath filePath) {
 
 	@Schema(description = "개별 파일 정보")
 	public record FileEntry(
-		@Schema(description = "파일명 (확장자 포함)", example = "image.jpg")
-		String fileName,
+		@Schema(description = "파일명 (확장자 포함)", example = "image.jpg") String fileName,
 
-		@Schema(description = "파일 크기 (bytes)", example = "1048576")
-		Long fileSize) {
+		@Schema(description = "파일 크기 (bytes)", example = "1048576") Long fileSize) {
 	}
 }

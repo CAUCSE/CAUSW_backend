@@ -10,7 +10,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.service.implementation.FileReader;
 import net.causw.app.main.domain.asset.file.service.implementation.FileWriter;
-import net.causw.app.main.shared.storage.StorageClient;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
@@ -21,6 +20,7 @@ import net.causw.app.main.domain.user.account.service.implementation.UserInfoWri
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.shared.pageable.PageableFactory;
+import net.causw.app.main.shared.storage.StorageClient;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.constant.StaticValue;
 import net.causw.global.exception.ErrorCode;

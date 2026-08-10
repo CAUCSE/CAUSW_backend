@@ -55,7 +55,8 @@ public class UuidFileService {
 		FileValidator.validateFileMetadata(request.fileName(), request.fileSize(), request.filePath());
 		FileMetadata metadata = FileMetadataManager.createMetadataFromFileName(request.fileName(), request.filePath());
 
-		PresignedUploadResult presignedResult = storageClient.generatePresignedUploadUrl(metadata, PRESIGNED_URL_EXPIRY);
+		PresignedUploadResult presignedResult = storageClient.generatePresignedUploadUrl(metadata,
+			PRESIGNED_URL_EXPIRY);
 
 		UuidFile pending = fileWriter.savePending(metadata, presignedResult.fileUrl());
 		log.info("Presigned URL issued. UUID: {}, FilePath: {}", pending.getUuid(), request.filePath());
