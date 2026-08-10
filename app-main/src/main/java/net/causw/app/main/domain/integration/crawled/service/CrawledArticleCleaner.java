@@ -61,7 +61,8 @@ public class CrawledArticleCleaner {
 				attachments,
 				contentHash);
 		} catch (RuntimeException e) {
-			log.error(e.toString());
+			log.error("[크롤링] 공지 정제 실패. siteId={}, externalId={}",
+				rawArticle.siteId(), rawArticle.externalId(), e);
 			throw IntegrationErrorCode.CRAWL_PARSE_FAILED.toBaseException();
 		}
 	}

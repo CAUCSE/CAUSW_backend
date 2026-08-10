@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.integration.crawled.core;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -21,8 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @ConditionalOnProperty(prefix = "app.crawl", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class CrawlScheduler {
-	private static final String CAU_SW_NOTICE_SITE_ID = "cau-sw-notice";
-
 	private final CrawlService crawlService;
 	private final CrawledToPostTransferService crawledToPostTransferService;
 	private final AtomicBoolean running = new AtomicBoolean(false);
@@ -33,28 +32,33 @@ public class CrawlScheduler {
 	@EventListener(ApplicationReadyEvent.class)
 	public void onApplicationStart() {
 		if (runOnStart) {
-			runCauSwNoticeCrawl();
+			runAllSites();
 		}
 	}
 
-	@Scheduled(cron = "${app.crawl.sites.cau-sw-notice.cron:0 0 * * * *}", zone = "${app.crawl.zone:Asia/Seoul}")
-	public void runCauSwNoticeCrawl() {
+	@Scheduled(cron = "${app.crawl.cron:0 0 * * * *}", zone = "${app.crawl.zone:Asia/Seoul}")
+	public void runAllSites() {
 		if (!running.compareAndSet(false, true)) {
-			log.warn("[Crawl] Skip overlapping execution. siteId={}", CAU_SW_NOTICE_SITE_ID);
+			log.warn("[크롤링] 중복 실행이 감지되어 이번 실행을 건너뜁니다.");
 			return;
 		}
 
 		try {
-			CrawlResult result = crawlService.crawl(CAU_SW_NOTICE_SITE_ID);
+			List<CrawlResult> results = crawlService.crawlAllEnabled();
 			crawledToPostTransferService.transferToPosts();
-			log.info(
-				"[Crawl] Completed. siteId={}, discovered={}, created={}, updated={}, unchanged={}, failed={}",
-				result.siteId(), result.discoveredCount(), result.createdCount(), result.updatedCount(),
-				result.unchangedCount(), result.failedCount());
+			results.forEach(this::logResult);
+			log.info("[크롤링] 활성 사이트 크롤링 완료. 성공 사이트 수={}", results.size());
 		} catch (RuntimeException e) {
-			log.error("[Crawl] Site execution failed. siteId={}", CAU_SW_NOTICE_SITE_ID, e);
+			log.error("[크롤링] 스케줄 실행 실패.", e);
 		} finally {
 			running.set(false);
 		}
+	}
+
+	private void logResult(CrawlResult result) {
+		log.info(
+			"[크롤링] 사이트 크롤링 완료. siteId={}, 발견={}, 생성={}, 수정={}, 변경 없음={}, 실패={}",
+			result.siteId(), result.discoveredCount(), result.createdCount(), result.updatedCount(),
+			result.unchangedCount(), result.failedCount());
 	}
 }

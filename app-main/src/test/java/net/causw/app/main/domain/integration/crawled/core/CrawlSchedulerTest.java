@@ -29,17 +29,17 @@ class CrawlSchedulerTest {
 	private CrawledToPostTransferService crawledToPostTransferService;
 
 	@Test
-	@DisplayName("수집이 종료된 후 Post 변환을 실행한다")
-	void runCauSwNoticeCrawl_shouldTransferAfterPipeline() {
+	@DisplayName("활성 사이트 수집이 종료된 후 Post 변환을 실행한다")
+	void runAllSites_shouldTransferAfterCrawling() {
 		// given
-		given(crawlService.crawl("cau-sw-notice"))
-			.willReturn(new CrawlResult("cau-sw-notice", 1, 1, 0, 0, List.of()));
+		given(crawlService.crawlAllEnabled())
+			.willReturn(List.of(new CrawlResult("cau-sw-notice", 1, 1, 0, 0, List.of())));
 
 		// when
-		scheduler.runCauSwNoticeCrawl();
+		scheduler.runAllSites();
 
 		// then
-		verify(crawlService).crawl("cau-sw-notice");
+		verify(crawlService).crawlAllEnabled();
 		verify(crawledToPostTransferService).transferToPosts();
 	}
 }

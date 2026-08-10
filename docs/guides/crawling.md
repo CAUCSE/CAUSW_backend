@@ -7,8 +7,8 @@ CAUSW 크롤링 시스템은 사이트별 HTML 파싱과 공통 수집·정제·
 ```text
 CrawlScheduler
   → CrawlService
-    → SiteConfigReader.getEnabledBySiteId()
-      → DB SiteConfig → CrawlContext
+    → SiteConfigReader.findAllEnabled()
+      → 활성 DB SiteConfig별 CrawlContext
     → SiteCrawler.fetchList(context)
       → CrawlHttpClient.fetch(listUrl)
       → List<ArticleUrl>
@@ -52,7 +52,7 @@ domain/integration/crawled/
 4. `getCrawlerType()`이 DB의 `crawler_type`과 일치하도록 설정한다. 크롤러는 `SiteConfig`를 직접 생성하지 않는다.
 5. `fetchList(context)`는 URL과 사이트 내 외부 식별자를 담은 `ArticleUrl`을 반환한다.
 6. `fetchArticle(context, ...)`는 공통 HTTP 클라이언트로 상세 HTML을 요청하고, 주입된 selector로 사이트 구조를 해석하여 `RawArticle`을 반환한다. 날짜 변환, HTML sanitize, URL 정규화, 해시 생성은 Cleaner에 맡긴다.
-7. 사이트별 cron을 `app.crawl.sites` 설정에 추가하고 Scheduler에 트리거를 추가한다.
+7. 활성화된 설정은 공통 `app.crawl.cron` 주기에 자동으로 수집되므로 사이트별 Scheduler 트리거는 추가하지 않는다.
 
 `SiteCrawlerRegistry`는 Spring이 발견한 모든 `SiteCrawler`를 `CrawlerType`으로 등록한다. Pipeline은 `siteId`로 DB 설정을 읽고, 설정의 `crawlerType`에 맞는 구현체를 선택한다.
 
@@ -92,9 +92,7 @@ app:
     enabled: true
     local-run-on-start: false
     zone: Asia/Seoul
-    sites:
-      cau-sw-notice:
-        cron: "0 0 * * * *"
+    cron: "0 0 * * * *"
 ```
 
 `application-local.yml`은 `local-run-on-start=true`로 오버라이드한다. 새 환경 변수는 추가되지 않았으므로 `.env.example` 수정은 필요 없다.

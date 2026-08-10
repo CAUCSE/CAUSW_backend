@@ -72,6 +72,29 @@ class CrawlServiceTest {
 		assertThat(result.failedUrls()).containsExactly(failed.url());
 	}
 
+	@Test
+	@DisplayName("한 사이트가 실패해도 다음 활성 사이트를 계속 수집한다")
+	void crawlAllEnabled_shouldContinue_whenOneSiteFails() {
+		// given
+		SiteConfig failedConfig = SiteConfigFixture.create("failed-site");
+		SiteConfig succeededConfig = SiteConfigFixture.create("succeeded-site");
+		CrawlContext failedContext = new CrawlContext(failedConfig);
+		CrawlContext succeededContext = new CrawlContext(succeededConfig);
+
+		given(siteConfigReader.findAllEnabled()).willReturn(List.of(failedConfig, succeededConfig));
+		given(registry.get(failedConfig.getCrawlerType())).willReturn(crawler);
+		given(crawler.fetchList(failedContext)).willThrow(new IllegalStateException("failed"));
+		given(crawler.fetchList(succeededContext)).willReturn(List.of());
+
+		// when
+		List<CrawlResult> results = crawlService.crawlAllEnabled();
+
+		// then
+		assertThat(results).singleElement()
+			.extracting(CrawlResult::siteId)
+			.isEqualTo("succeeded-site");
+	}
+
 	private SiteConfig config() {
 		return SiteConfigFixture.create();
 	}

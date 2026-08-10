@@ -32,7 +32,22 @@ public class CrawlService {
 	private final CrawledNoticeWriter crawledNoticeWriter;
 
 	public CrawlResult crawl(String siteId) {
-		SiteConfig siteConfig = siteConfigReader.getEnabledBySiteId(siteId);
+		return crawl(siteConfigReader.getEnabledBySiteId(siteId));
+	}
+
+	public List<CrawlResult> crawlAllEnabled() {
+		List<CrawlResult> results = new ArrayList<>();
+		for (SiteConfig siteConfig : siteConfigReader.findAllEnabled()) {
+			try {
+				results.add(crawl(siteConfig));
+			} catch (RuntimeException e) {
+				log.error("[크롤링] 사이트 수집 실패. siteId={}", siteConfig.getSiteId(), e);
+			}
+		}
+		return List.copyOf(results);
+	}
+
+	private CrawlResult crawl(SiteConfig siteConfig) {
 		CrawlContext context = new CrawlContext(siteConfig);
 
 		return crawl(context, siteCrawlerRegistry.get(siteConfig.getCrawlerType()));
@@ -60,7 +75,7 @@ public class CrawlService {
 				}
 			} catch (RuntimeException e) {
 				failedUrls.add(articleUrl.url());
-				log.error("[Crawl] Article processing failed. siteId={}, url={}",
+				log.error("[크롤링] 공지 처리 실패. siteId={}, url={}",
 					siteConfig.getSiteId(), articleUrl.url(), e);
 			}
 		}

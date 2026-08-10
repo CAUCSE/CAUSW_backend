@@ -26,7 +26,7 @@ public class JsoupCrawlHttpClient implements CrawlHttpClient {
 				delay(siteConfig.getRequestDelay().toMillis());
 				return html;
 			} catch (IOException e) {
-				log.warn("[Crawl] Request failed. siteId={}, url={}, attempt={}/{}",
+				log.warn("[크롤링] HTTP 요청 실패. siteId={}, url={}, 시도={}/{}",
 					siteConfig.getSiteId(), url, attempt, siteConfig.getMaxRetries(), e);
 				if (attempt < siteConfig.getMaxRetries()) {
 					delay(siteConfig.getRequestDelay().toMillis() * attempt);

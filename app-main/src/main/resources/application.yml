@@ -14,6 +14,4 @@ app:
     enabled: true
     local-run-on-start: false
     zone: Asia/Seoul
-    sites:
-      cau-sw-notice:
-        cron: "0 0 * * * *"
+    cron: "0 0 * * * *"

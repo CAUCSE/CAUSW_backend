@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
@@ -53,5 +54,21 @@ class SiteConfigReaderTest {
 			.isInstanceOf(BaseRunTimeV2Exception.class)
 			.extracting(error -> ((BaseRunTimeV2Exception)error).getErrorCode())
 			.isEqualTo(IntegrationErrorCode.CRAWL_SITE_CONFIG_NOT_FOUND);
+	}
+
+	@Test
+	@DisplayName("활성화된 사이트 설정을 사이트 ID 순서로 조회한다")
+	void findAllEnabled_shouldReturnConfigs() {
+		// given
+		List<SiteConfig> configs = List.of(
+			SiteConfigFixture.create("first-site"),
+			SiteConfigFixture.create("second-site"));
+		given(repository.findAllByIsEnabledTrueOrderBySiteIdAsc()).willReturn(configs);
+
+		// when
+		List<SiteConfig> result = reader.findAllEnabled();
+
+		// then
+		assertThat(result).containsExactlyElementsOf(configs);
 	}
 }

@@ -12,8 +12,12 @@ public final class SiteConfigFixture {
 	private SiteConfigFixture() {}
 
 	public static SiteConfig create() {
+		return create("site");
+	}
+
+	public static SiteConfig create(String siteId) {
 		return SiteConfig.of(
-			"site",
+			siteId,
 			"target-board-id",
 			CrawlerType.CAU_SW_NOTICE,
 			"https://example.com/list?page=",

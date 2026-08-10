@@ -17,7 +17,7 @@
 |------|--------|------|------|
 | `cleanUpUnusedFilesJob` | cron `0 0 3 1 * ?` (매달 1일 03:00) — `BatchScheduler.scheduleCleanUpJob` 이 `JobLauncher` 로 기동 | `core/batch/BatchScheduler`, Job 정의: `core/config/batch/CleanUnusedUuidFilesBatchConfig` | 미사용 UUID 첨부파일 정리. init → 게시글/학적증명/입회신청/입회로그/프로필이미지 사용여부 체크 5단계 → 미사용 파일 삭제, 총 7-Step Job |
 | 탈퇴 유저 후처리 | cron `0 10 3 * * ?` (매일 03:10) | `core/batch/BatchScheduler#scheduleCleanupDeactivatedUsers` | Spring Batch Job 아님(일반 `@Scheduled`). `deletedAt` 30일 경과 탈퇴/추방 유저를 페이지 단위로 조회 후 프로필이미지/유저정보/세레모니/소셜계정/입회정보 삭제 및 유저 cleanup |
-| 크롤링·게시글 반영 | `${app.crawl.sites.cau-sw-notice.cron}` (기본 매시 정각), zone `${app.crawl.zone}` | `domain/integration/crawled/core/CrawlScheduler#runCauSwNoticeCrawl` | 외부 수집·정제·저장이 끝난 후 바로 내부 Post에 반영 |
+| 크롤링·게시글 반영 | `${app.crawl.cron}` (기본 매시 정각), zone `${app.crawl.zone}` | `domain/integration/crawled/core/CrawlScheduler#runAllSites` | 활성 SiteConfig 전체의 수집·정제·저장이 끝난 후 내부 Post에 반영 |
 | 크롤링 즉시 실행 | `ApplicationReadyEvent`, `app.crawl.local-run-on-start=true` | `CrawlScheduler#onApplicationStart` | 로컬 기동 즉시 수집→변환 1회 수행 |
 | 공휴일 동기화(월간) | cron `0 0 0 1 * *`, zone `Asia/Seoul` (매달 1일 00:00) | `domain/campus/schedule/service/HolidayScheduleSyncService#syncMonthly` | 공공 API에서 올해/내년 공휴일을 조회해 `Schedule`(HOLIDAY) 로 upsert (중복/기존 존재 시 skip) |
 | 공휴일 동기화(기동 시) | `ApplicationReadyEvent`, `@Order(1)` | `HolidayScheduleSyncService#syncOnApplicationReady` | 앱 기동 직후 공휴일 동기화 1회 수행 (월간 cron 도달 전 공백 방지) |
@@ -83,11 +83,9 @@ public class CrawlScheduler {
 	private final CrawlService crawlService;
 	private final CrawledToPostTransferService crawledToPostTransferService;
 
-	@Scheduled(
-		cron = "${app.crawl.sites.cau-sw-notice.cron:0 0 * * * *}",
-		zone = "${app.crawl.zone:Asia/Seoul}")
-	public void runCauSwNoticeCrawl() {
-		crawlService.crawl("cau-sw-notice");
+	@Scheduled(cron = "${app.crawl.cron:0 0 * * * *}", zone = "${app.crawl.zone:Asia/Seoul}")
+	public void runAllSites() {
+		crawlService.crawlAllEnabled();
 		crawledToPostTransferService.transferToPosts();
 	}
 }

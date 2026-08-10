@@ -60,7 +60,7 @@ public class CrawledToPostTransferService {
 			crawledNoticeWriter.markTransferred(notice, post);
 			savedCount++;
 		}
-		log.info("[Crawl] Transferred notices to posts. count={}", savedCount);
+		log.info("[크롤링] 공지 Post 변환 완료. 변환 수={}", savedCount);
 	}
 
 	//관리자 조회
