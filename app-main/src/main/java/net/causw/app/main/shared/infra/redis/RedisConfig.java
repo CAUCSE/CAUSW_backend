@@ -16,11 +16,23 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
 public class RedisConfig {
+	/**
+	 * Redis 값과 캐시 값을 JSON으로 직렬화할 공통 직렬화기를 생성합니다.
+	 *
+	 * @return Spring Boot 4 기본 JSON 직렬화기
+	 */
 	@Bean
 	public RedisSerializer<Object> redisValueSerializer() {
 		return RedisSerializer.json();
 	}
 
+	/**
+	 * 문자열 키와 JSON 값을 사용하는 RedisTemplate을 생성합니다.
+	 *
+	 * @param connectionFactory 자동 구성된 Redis 연결 팩토리
+	 * @param redisValueSerializer 값 직렬화에 사용할 JSON 직렬화기
+	 * @return Redis 작업에 사용할 템플릿
+	 */
 	@Bean
 	public RedisTemplate<String, Object> redisTemplate(
 		RedisConnectionFactory connectionFactory,
@@ -42,7 +54,13 @@ public class RedisConfig {
 		return redisTemplate;
 	}
 
-	// CacheManager 설정
+	/**
+	 * 문자열 키와 JSON 값, 기본 TTL 1시간을 사용하는 캐시 관리자를 생성합니다.
+	 *
+	 * @param connectionFactory 자동 구성된 Redis 연결 팩토리
+	 * @param redisValueSerializer 캐시 값 직렬화에 사용할 JSON 직렬화기
+	 * @return Redis 기반 캐시 관리자
+	 */
 	@Bean
 	public CacheManager cacheManager(
 		RedisConnectionFactory connectionFactory,

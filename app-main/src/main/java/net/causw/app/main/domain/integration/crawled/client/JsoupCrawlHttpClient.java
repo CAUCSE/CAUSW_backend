@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class JsoupCrawlHttpClient implements CrawlHttpClient {
 
+	/** {@inheritDoc} */
 	@Override
 	public String fetch(String url, SiteConfig siteConfig) {
 		for (int attempt = 1; attempt <= siteConfig.getMaxRetries(); attempt++) {
@@ -36,6 +37,11 @@ public class JsoupCrawlHttpClient implements CrawlHttpClient {
 		throw IntegrationErrorCode.CRAWL_FETCH_FAILED.toBaseException();
 	}
 
+	/**
+	 * 현재 스레드를 지정 시간 동안 대기시키고 인터럽트 상태를 보존합니다.
+	 *
+	 * @param milliseconds 대기할 밀리초
+	 */
 	private void delay(long milliseconds) {
 		if (milliseconds <= 0) {
 			return;

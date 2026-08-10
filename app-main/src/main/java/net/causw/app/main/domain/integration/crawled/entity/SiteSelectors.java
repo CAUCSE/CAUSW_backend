@@ -44,6 +44,21 @@ public class SiteSelectors {
 	@Column(name = "next_page_selector")
 	private String nextPage;
 
+	/**
+	 * 사이트의 목록 및 본문 파싱에 사용할 CSS 셀렉터를 생성합니다.
+	 *
+	 * @param articleRow 목록의 공지 행 셀렉터
+	 * @param articleLink 공지 링크 셀렉터
+	 * @param articleCategory 공지 카테고리 셀렉터
+	 * @param title 제목 셀렉터
+	 * @param body 본문 셀렉터
+	 * @param date 공지일 셀렉터
+	 * @param author 작성자 셀렉터
+	 * @param representativeImage 대표 이미지 셀렉터
+	 * @param dateFormat 공지일 파싱 형식
+	 * @param nextPage 다음 페이지 셀렉터
+	 * @return 사이트 셀렉터 설정
+	 */
 	public static SiteSelectors of(
 		String articleRow,
 		String articleLink,

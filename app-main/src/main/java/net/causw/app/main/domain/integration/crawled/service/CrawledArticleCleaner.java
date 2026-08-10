@@ -33,6 +33,13 @@ public class CrawledArticleCleaner {
 		.addAttributes(":all", "class", "style")
 		.addAttributes("img", "src", "alt", "title", "width", "height");
 
+	/**
+	 * 파싱된 원문 공지를 정규화하고 저장 가능한 데이터로 변환합니다.
+	 *
+	 * @param rawArticle 사이트에서 파싱한 원문 공지
+	 * @param siteConfig 날짜 형식과 기본 URL을 포함한 사이트 설정
+	 * @return 정제된 공지
+	 */
 	public CleanArticle clean(RawArticle rawArticle, SiteConfig siteConfig) {
 		try {
 			String sourceUrl = normalizeUrl(rawArticle.sourceUrl(), siteConfig.getBaseUrl());
@@ -67,6 +74,13 @@ public class CrawledArticleCleaner {
 		}
 	}
 
+	/**
+	 * 본문 HTML의 이미지 URL을 정규화하고 허용되지 않은 요소와 속성을 제거합니다.
+	 *
+	 * @param html 정제할 본문 HTML
+	 * @param baseUrl 상대 URL 해석에 사용할 URL
+	 * @return 정제된 본문 HTML
+	 */
 	private String cleanContent(String html, String baseUrl) {
 		Document document = Jsoup.parseBodyFragment(html == null ? "" : html, baseUrl);
 		for (Element image : document.select("img")) {
@@ -80,6 +94,13 @@ public class CrawledArticleCleaner {
 		return Jsoup.clean(document.body().html(), baseUrl, CONTENT_SAFELIST, outputSettings).trim();
 	}
 
+	/**
+	 * 첨부파일명을 정리하고 URL을 정규화한 뒤 중복을 제거합니다.
+	 *
+	 * @param rawAttachments 원문 첨부파일 목록
+	 * @param baseUrl 상대 URL 해석에 사용할 URL
+	 * @return URL 순으로 정렬된 첨부파일 목록
+	 */
 	private List<CleanAttachment> cleanAttachments(List<RawAttachment> rawAttachments, String baseUrl) {
 		Map<String, CleanAttachment> attachmentsByUrl = new LinkedHashMap<>();
 		if (rawAttachments != null) {
@@ -97,6 +118,17 @@ public class CrawledArticleCleaner {
 			.toList();
 	}
 
+	/**
+	 * 저장 대상 필드와 첨부파일을 조합해 변경 감지용 해시를 생성합니다.
+	 *
+	 * @param title 공지 제목
+	 * @param content 정제된 본문 HTML
+	 * @param author 작성자
+	 * @param announceDate 공지일
+	 * @param imageUrl 대표 이미지 URL
+	 * @param attachments 정제된 첨부파일 목록
+	 * @return SHA-256 콘텐츠 해시
+	 */
 	private String generateContentHash(
 		String title,
 		String content,
@@ -115,16 +147,36 @@ public class CrawledArticleCleaner {
 		return HashUtil.generateSHA256(value.toString());
 	}
 
+	/**
+	 * 선택적 URL 값이 존재하면 절대 URL로 정규화합니다.
+	 *
+	 * @param url 정규화할 URL
+	 * @param baseUrl 상대 URL 해석에 사용할 URL
+	 * @return 정규화된 URL 또는 {@code null}
+	 */
 	private String normalizeNullableUrl(String url, String baseUrl) {
 		return url == null || url.isBlank() ? null : normalizeUrl(url, baseUrl);
 	}
 
+	/**
+	 * 상대 URL을 절대 URL로 변환하고 HTTP 스킴을 HTTPS로 통일합니다.
+	 *
+	 * @param url 정규화할 URL
+	 * @param baseUrl 상대 URL 해석에 사용할 URL
+	 * @return 정규화된 절대 URL
+	 */
 	private String normalizeUrl(String url, String baseUrl) {
 		URI normalized = URI.create(baseUrl).resolve(url.trim()).normalize();
 		String result = normalized.toString();
 		return result.startsWith("http://") ? "https://" + result.substring("http://".length()) : result;
 	}
 
+	/**
+	 * 필수 문자열이 비어 있지 않은지 확인하고 바깥 공백을 제거합니다.
+	 *
+	 * @param value 확인할 문자열
+	 * @return 공백을 제거한 문자열
+	 */
 	private String requireText(String value) {
 		if (value == null || value.isBlank()) {
 			throw IntegrationErrorCode.CRAWL_PARSE_FAILED.toBaseException();

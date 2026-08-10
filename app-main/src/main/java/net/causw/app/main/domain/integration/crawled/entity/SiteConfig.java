@@ -82,6 +82,28 @@ public class SiteConfig extends BaseEntity {
 	@Column(name = "is_enabled", nullable = false)
 	private Boolean isEnabled;
 
+	/**
+	 * 사이트 크롤링에 필요한 설정을 생성합니다.
+	 *
+	 * @param siteId 사이트 식별자
+	 * @param targetBoardId 저장 대상 게시판 식별자
+	 * @param crawlerType 사용할 크롤러 유형
+	 * @param listUrl 공지 목록 URL
+	 * @param baseUrl 상대 URL 해석에 사용할 기본 URL
+	 * @param requestHeaders HTTP 요청 헤더
+	 * @param requestDelay 요청 간 지연 시간
+	 * @param timeout HTTP 요청 제한 시간
+	 * @param maxRetries 최대 요청 시도 횟수
+	 * @param maxArticles 한 번에 수집할 최대 공지 수
+	 * @param paginationType 페이지네이션 유형
+	 * @param pageParam 페이지 파라미터명
+	 * @param maxPages 탐색할 최대 페이지 수
+	 * @param selectors 사이트별 CSS 셀렉터
+	 * @param requiresJsRendering JavaScript 렌더링 필요 여부
+	 * @param requiresLogin 로그인 필요 여부
+	 * @param isEnabled 활성화 여부
+	 * @return 사이트 설정
+	 */
 	public static SiteConfig of(
 		String siteId,
 		String targetBoardId,
@@ -121,10 +143,20 @@ public class SiteConfig extends BaseEntity {
 			.build();
 	}
 
+	/**
+	 * 밀리초로 저장된 요청 지연 시간을 반환합니다.
+	 *
+	 * @return 요청 간 지연 시간
+	 */
 	public Duration getRequestDelay() {
 		return Duration.ofMillis(requestDelayMs);
 	}
 
+	/**
+	 * 밀리초로 저장된 요청 제한 시간을 반환합니다.
+	 *
+	 * @return HTTP 요청 제한 시간
+	 */
 	public Duration getTimeout() {
 		return Duration.ofMillis(timeoutMs);
 	}

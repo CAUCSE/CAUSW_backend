@@ -79,6 +79,23 @@ public class CrawledNotice extends BaseEntity {
 	@JoinColumn(name = "post_id", unique = true)
 	private Post post;
 
+	/**
+	 * 정제된 크롤링 결과로 공지 엔티티를 생성합니다.
+	 *
+	 * @param siteId 출처 사이트 식별자
+	 * @param externalId 사이트 내부 공지 식별자
+	 * @param targetBoardId 공지를 저장할 게시판 식별자
+	 * @param type 공지 카테고리
+	 * @param title 공지 제목
+	 * @param content 정제된 본문 HTML
+	 * @param link 원문 URL
+	 * @param author 작성자
+	 * @param announceDate 공지일
+	 * @param imageLink 대표 이미지 URL
+	 * @param crawledFileLinks 첨부파일 목록
+	 * @param contentHash 변경 감지용 콘텐츠 해시
+	 * @return 새 크롤링 공지
+	 */
 	public static CrawledNotice of(
 		String siteId,
 		String externalId,
@@ -110,6 +127,20 @@ public class CrawledNotice extends BaseEntity {
 			.build();
 	}
 
+	/**
+	 * 레거시 중앙대 SW 공지 입력으로 공지 엔티티를 생성합니다.
+	 *
+	 * @param targetBoardId 공지를 저장할 게시판 식별자
+	 * @param type 공지 카테고리
+	 * @param title 공지 제목
+	 * @param content 본문 HTML
+	 * @param link 원문 URL이자 외부 식별자
+	 * @param author 작성자
+	 * @param announceDate ISO 형식 공지일
+	 * @param imageLink 대표 이미지 URL
+	 * @param crawledFileLinks 첨부파일 목록
+	 * @return 새 크롤링 공지
+	 */
 	public static CrawledNotice of(
 		String targetBoardId,
 		String type,
@@ -171,6 +202,20 @@ public class CrawledNotice extends BaseEntity {
 		this.isUpdated = true;
 	}
 
+	/**
+	 * 저장된 공지를 최신 크롤링 결과로 갱신하고 전송 대기 상태로 변경합니다.
+	 *
+	 * @param targetBoardId 공지를 저장할 게시판 식별자
+	 * @param type 공지 카테고리
+	 * @param title 공지 제목
+	 * @param content 정제된 본문 HTML
+	 * @param link 원문 URL
+	 * @param author 작성자
+	 * @param announceDate 공지일
+	 * @param imageLink 대표 이미지 URL
+	 * @param crawledFileLinks 교체할 첨부파일 목록
+	 * @param contentHash 최신 콘텐츠 해시
+	 */
 	public void updateFrom(
 		String targetBoardId,
 		String type,
@@ -197,6 +242,11 @@ public class CrawledNotice extends BaseEntity {
 		this.isUpdated = true;
 	}
 
+	/**
+	 * 이 공지로 생성하거나 갱신한 Post를 연결합니다.
+	 *
+	 * @param post 연결할 Post
+	 */
 	public void linkPost(Post post) {
 		this.post = post;
 	}

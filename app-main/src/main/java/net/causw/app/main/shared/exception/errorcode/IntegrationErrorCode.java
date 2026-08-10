@@ -20,16 +20,19 @@ public enum IntegrationErrorCode implements BaseResponseCode {
 	private final String code;
 	private final String message;
 
+	/** {@inheritDoc} */
 	@Override
 	public String getCode() {
 		return code;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String getMessage() {
 		return message;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public HttpStatus getStatus() {
 		return status;

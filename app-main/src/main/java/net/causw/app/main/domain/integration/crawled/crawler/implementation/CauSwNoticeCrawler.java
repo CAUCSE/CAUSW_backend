@@ -35,11 +35,13 @@ public class CauSwNoticeCrawler implements SiteCrawler {
 
 	private final CrawlHttpClient crawlHttpClient;
 
+	/** {@inheritDoc} */
 	@Override
 	public CrawlerType getCrawlerType() {
 		return CrawlerType.CAU_SW_NOTICE;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public List<ArticleUrl> fetchList(CrawlContext context) {
 		SiteConfig siteConfig = context.siteConfig();
@@ -75,6 +77,7 @@ public class CauSwNoticeCrawler implements SiteCrawler {
 		return articleUrls.stream().distinct().toList();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public RawArticle fetchArticle(CrawlContext context, ArticleUrl articleUrl) {
 		try {
@@ -102,6 +105,13 @@ public class CauSwNoticeCrawler implements SiteCrawler {
 		}
 	}
 
+	/**
+	 * 문서에서 필수 셀렉터의 텍스트를 추출합니다.
+	 *
+	 * @param document 파싱된 HTML 문서
+	 * @param selector 텍스트를 찾을 CSS 셀렉터
+	 * @return 공백을 제외한 요소 텍스트
+	 */
 	private String requiredText(Document document, String selector) {
 		Element element = document.selectFirst(selector);
 		if (element == null || element.text().isBlank()) {
@@ -110,6 +120,12 @@ public class CauSwNoticeCrawler implements SiteCrawler {
 		return element.text();
 	}
 
+	/**
+	 * 공지 문서에 포함된 스크립트형 및 링크형 첨부파일을 추출합니다.
+	 *
+	 * @param document 파싱된 공지 문서
+	 * @return URL 기준으로 중복 제거된 첨부파일 목록
+	 */
 	private List<RawAttachment> extractAttachments(Document document) {
 		Map<String, RawAttachment> attachments = new LinkedHashMap<>();
 		extractScriptAttachments(document.select("div.files span"), attachments);
@@ -118,6 +134,12 @@ public class CauSwNoticeCrawler implements SiteCrawler {
 		return List.copyOf(attachments.values());
 	}
 
+	/**
+	 * 다운로드 스크립트가 포함된 요소에서 첨부파일을 추출합니다.
+	 *
+	 * @param elements 다운로드 스크립트 후보 요소
+	 * @param attachments 추출 결과를 누적할 URL별 첨부파일 맵
+	 */
 	private void extractScriptAttachments(Elements elements, Map<String, RawAttachment> attachments) {
 		for (Element element : elements) {
 			Matcher matcher = SCRIPT_DOWNLOAD_PATTERN.matcher(element.outerHtml());
@@ -132,6 +154,12 @@ public class CauSwNoticeCrawler implements SiteCrawler {
 		}
 	}
 
+	/**
+	 * 다운로드 링크 요소에서 첨부파일을 추출합니다.
+	 *
+	 * @param elements 다운로드 링크 후보 요소
+	 * @param attachments 추출 결과를 누적할 URL별 첨부파일 맵
+	 */
 	private void extractLinkAttachments(Elements elements, Map<String, RawAttachment> attachments) {
 		for (Element element : elements) {
 			String fileName = element.text().trim();
@@ -142,10 +170,22 @@ public class CauSwNoticeCrawler implements SiteCrawler {
 		}
 	}
 
+	/**
+	 * 추출된 첨부파일명이 저장 가능한 값인지 확인합니다.
+	 *
+	 * @param fileName 확인할 첨부파일명
+	 * @return 유효한 첨부파일명이면 {@code true}
+	 */
 	private boolean isValidFileName(String fileName) {
 		return fileName != null && !fileName.isBlank() && !fileName.equals("첨부파일") && !fileName.equals("파일");
 	}
 
+	/**
+	 * 카테고리 문자열에 포함된 신규 공지 배지를 제거합니다.
+	 *
+	 * @param category 원본 카테고리
+	 * @return 신규 배지와 바깥 공백을 제거한 카테고리
+	 */
 	private String removeNewBadge(String category) {
 		return category == null ? "" : category.replace("NEW", "").trim();
 	}

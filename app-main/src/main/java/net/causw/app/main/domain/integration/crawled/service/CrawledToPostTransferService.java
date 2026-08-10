@@ -46,7 +46,9 @@ public class CrawledToPostTransferService {
 
 	private final ApplicationEventPublisher applicationEventPublisher;
 
-	//크롤링 된 공지를 게시글로 반환
+	/**
+	 * 전송 대기 중인 크롤링 공지를 대상 게시판의 Post로 생성하거나 갱신합니다.
+	 */
 	@Transactional
 	public void transferToPosts() {
 		User systemUser = getSystemUser();
@@ -70,12 +72,23 @@ public class CrawledToPostTransferService {
 				ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND));
 	}
 
-	//업데이트된 공지 목록 조회
+	/**
+	 * Post 전송을 기다리는 최근 공지를 조회합니다.
+	 *
+	 * @return 전송 대기 공지 목록
+	 */
 	private List<CrawledNotice> getUpdatedNotices() {
 		return crawledNoticeReader.findPendingNotices();
 	}
 
-	//업데이트된 공지 처리
+	/**
+	 * 크롤링 공지를 지정 게시판의 Post로 변환하거나 기존 Post에 반영합니다.
+	 *
+	 * @param notice 변환할 크롤링 공지
+	 * @param board 저장 대상 게시판
+	 * @param adminUser Post 작성자로 사용할 시스템 사용자
+	 * @return 생성하거나 갱신한 Post
+	 */
 	private Post processUpdatedNotice(CrawledNotice notice, Board board, User adminUser) {
 		String title = (notice.getTitle() == null || notice.getTitle().isBlank())
 			? "제목 없음" : notice.getTitle();
@@ -215,7 +228,14 @@ public class CrawledToPostTransferService {
 		return contentBuilder.toString();
 	}
 
-	//제목으로 기존 게시글 조회
+	/**
+	 * 공지에 연결된 유효한 Post를 우선 조회하고, 연결이 없으면 제목으로 기존 Post를 찾습니다.
+	 *
+	 * @param notice 원본 크롤링 공지
+	 * @param board 저장 대상 게시판
+	 * @param title 조회할 Post 제목
+	 * @return 기존 Post 또는 일치하는 Post가 없으면 {@code null}
+	 */
 	private Post findExistingPost(CrawledNotice notice, Board board, String title) {
 		if (notice.getPost() != null
 			&& !Boolean.TRUE.equals(notice.getPost().getIsDeleted())
