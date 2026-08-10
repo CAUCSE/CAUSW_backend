@@ -35,14 +35,15 @@ class SystemNoticeControllerTest {
 	private User viewer;
 
 	@Test
-	void getLatestReturnsNoContentWhenThereIsNoSystemNotice() {
+	void getLatestReturnsOkWithNullDataWhenThereIsNoSystemNotice() {
 		given(userDetails.getUser()).willReturn(viewer);
 		given(systemNoticeService.getLatest(viewer)).willReturn(Optional.empty());
 
 		ResponseEntity<ApiResponse<SystemNoticeResponse>> response =
 			systemNoticeController.getLatest(userDetails);
 
-		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 		assertThat(response.getBody()).isNotNull();
+		assertThat(response.getBody().getData()).isNull();
 	}
 }

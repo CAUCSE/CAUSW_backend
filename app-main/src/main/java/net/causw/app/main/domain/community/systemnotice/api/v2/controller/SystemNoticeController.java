@@ -1,6 +1,5 @@
 package net.causw.app.main.domain.community.systemnotice.api.v2.controller;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,7 +28,7 @@ public class SystemNoticeController {
 		return systemNoticeService.getLatest(userDetails.getUser())
 			.map(SystemNoticeResponse::from)
 			.map(response -> ResponseEntity.ok(ApiResponse.success(response)))
-			.orElseGet(() -> ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponse.success()));
+			.orElseGet(() -> ResponseEntity.ok(ApiResponse.success()));
 	}
 
 	@PostMapping("/{postId}/read")

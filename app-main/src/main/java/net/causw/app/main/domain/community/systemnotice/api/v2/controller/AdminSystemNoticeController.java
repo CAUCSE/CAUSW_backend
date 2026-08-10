@@ -59,7 +59,6 @@ public class AdminSystemNoticeController {
 	}
 
 	@DeleteMapping("/{id}")
-	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@Operation(summary = "시스템 공지 삭제", description = "기존 시스템 공지를 삭제합니다.")
 	public ApiResponse<Void> delete(
 		@PathVariable String id,
