@@ -81,7 +81,37 @@ public class AcademicRecordUserService {
 	}
 
 	/**
-	 * 재학 상태 변경 신청을 접수한다.
+	 * 재학 상태 변경 신청을 접수한다. (v3 presigned URL)
+	 *
+	 * @param requester 요청 사용자
+	 * @param request 재학 변경 신청 정보 (imageUuids 포함)
+	 * @return 학적 상태 변경 신청 결과
+	 */
+	@Transactional
+	public AcademicStatusResponse<EnrollmentDetailsResponse> updateStatusToEnrolled(
+		User requester,
+		EnrollmentApplicationRequest request) {
+		User user = userReader.findUserById(requester.getId());
+		if (user.getAcademicStatus() != AcademicStatus.GRADUATED) {
+			throw AcademicRecordApplicationErrorCode.ACADEMIC_RECORD_INVALID_STATUS_TRANSITION.toBaseException();
+		}
+		if (request.imageUuids() == null || request.imageUuids().isEmpty()) {
+			throw AcademicRecordApplicationErrorCode.ACADEMIC_RECORD_ENROLLMENT_IMAGE_REQUIRED.toBaseException();
+		}
+
+		List<UuidFile> savedFiles = fileWriter.confirmFiles(request.imageUuids(),
+			FilePath.USER_ACADEMIC_RECORD_APPLICATION);
+
+		UserAcademicRecordApplication application = applicationWriter.createEnrollmentApplication(
+			user, request.note(), savedFiles);
+
+		EnrollmentDetailsResponse details = new EnrollmentDetailsResponse(
+			application.getId(), application.getAcademicRecordRequestStatus(), application.getCreatedAt());
+		return new AcademicStatusResponse<>(AcademicStatus.ENROLLED, user.getAcademicStatus(), details);
+	}
+
+	/**
+	 * 재학 상태 변경 신청을 접수한다.(v2)
 	 *
 	 * @param requester 요청 사용자
 	 * @param request 재학 변경 신청 정보
@@ -89,7 +119,7 @@ public class AcademicRecordUserService {
 	 * @return 학적 상태 변경 신청 결과
 	 */
 	@Transactional
-	public AcademicStatusResponse<EnrollmentDetailsResponse> updateStatusToEnrolled(
+	public AcademicStatusResponse<EnrollmentDetailsResponse> updateStatusToEnrolledV2(
 		User requester,
 		EnrollmentApplicationRequest request,
 		List<MultipartFile> imageFileList) {
