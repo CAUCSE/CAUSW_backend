@@ -3,6 +3,7 @@ CREATE TABLE tb_crawl_site_config (
     created_at DATETIME(6) NULL,
     updated_at DATETIME(6) NULL,
     site_id VARCHAR(100) NOT NULL,
+    target_board_id VARCHAR(255) NOT NULL,
     crawler_type VARCHAR(50) NOT NULL,
     list_url VARCHAR(1000) NOT NULL,
     base_url VARCHAR(1000) NOT NULL,
@@ -28,5 +29,7 @@ CREATE TABLE tb_crawl_site_config (
     requires_login BOOLEAN NOT NULL DEFAULT FALSE,
     is_enabled BOOLEAN NOT NULL DEFAULT TRUE,
     PRIMARY KEY (id),
-    CONSTRAINT uk_crawl_site_config_site_id UNIQUE (site_id)
+    CONSTRAINT uk_crawl_site_config_site_id UNIQUE (site_id),
+    CONSTRAINT fk_crawl_site_config_target_board
+        FOREIGN KEY (target_board_id) REFERENCES tb_board (id)
 );

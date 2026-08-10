@@ -58,7 +58,7 @@ domain/integration/crawled/
 
 ## SiteConfig 저장
 
-`SiteConfig`는 `tb_crawl_site_config`에 저장되는 JPA 엔티티다. `request_headers`는 JSON으로 변환되며 selector는 동일 테이블의 embedded column으로 저장된다. Pipeline은 실행 시점에 활성 설정을 조회하여 `CrawlContext` 하나를 생성하고, 해당 실행의 목록·상세·정제 단계에 같은 설정을 전달한다.
+`SiteConfig`는 `tb_crawl_site_config`에 저장되는 JPA 엔티티다. `target_board_id`로 수집 결과가 변환될 게시판을 지정하고, `request_headers`는 JSON으로 변환하며 selector는 동일 테이블의 embedded column으로 저장한다. Pipeline은 실행 시점에 활성 설정을 조회하여 `CrawlContext` 하나를 생성하고, 해당 실행의 목록·상세·정제 단계에 같은 설정을 전달한다.
 
 ## 식별과 변경 감지
 
@@ -74,7 +74,7 @@ domain/integration/crawled/
 
 ## Post 변환
 
-`CrawledNotice.post_id`는 원본 공지와 내부 Post를 직접 연결한다. 기존 데이터는 마이그레이션에서 제목이 유일하게 매칭되는 경우만 백필한다. 매핑되지 않은 기존 행은 첫 변환 시 제목으로 한 번 탐색한 후 `post_id`를 저장한다. 이후에는 제목이 바뀌어도 같은 Post를 수정한다.
+`CrawledNotice.target_board_id`는 수집 당시 `SiteConfig`의 저장 대상 게시판을 보존한다. Transfer는 게시판 이름을 사용하지 않고 이 ID로 Board를 조회한다. `post_id`는 원본 공지와 내부 Post를 직접 연결한다. 기존 데이터는 마이그레이션에서 제목이 유일하게 매칭되는 경우만 백필한다. 매핑되지 않은 기존 행은 첫 변환 시 제목으로 한 번 탐색한 후 `post_id`를 저장한다. 이후에는 제목이 바뀌어도 같은 Post를 수정한다.
 
 ## 실패 정책
 

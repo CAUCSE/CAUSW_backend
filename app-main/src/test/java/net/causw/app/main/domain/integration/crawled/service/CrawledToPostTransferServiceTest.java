@@ -22,7 +22,7 @@ import org.mockito.quality.Strictness;
 import org.springframework.context.ApplicationEventPublisher;
 
 import net.causw.app.main.domain.community.board.entity.Board;
-import net.causw.app.main.domain.community.board.repository.BoardRepository;
+import net.causw.app.main.domain.community.board.service.implementation.BoardReader;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
@@ -55,7 +55,7 @@ public class CrawledToPostTransferServiceTest {
 	private UserRepository userRepository;
 
 	@Mock
-	private BoardRepository boardRepository;
+	private BoardReader boardReader;
 
 	@Mock
 	private CrawledPostImageRepository crawledPostImageRepository;
@@ -71,8 +71,7 @@ public class CrawledToPostTransferServiceTest {
 		User mockUser = createMockUser();
 		CrawledNotice newNotice = CrawledNoticeFixture.newNotice();
 
-		given(boardRepository.findByName(StaticValue.CrawlingBoard))
-			.willReturn(Optional.of(mockBoard));
+		given(boardReader.getById(newNotice.getTargetBoardId())).willReturn(mockBoard);
 		given(userRepository.findByEmail(StaticValue.SYSTEM_CRAWLER_ACCOUNT))
 			.willReturn(Optional.of(mockUser));
 		given(crawledNoticeReader.findPendingNotices())
@@ -99,8 +98,7 @@ public class CrawledToPostTransferServiceTest {
 		CrawledNotice updatedNotice = CrawledNoticeFixture.updatedNotice();
 		Post existingPost = createMockPost("수정된 공지사항");
 
-		given(boardRepository.findByName(StaticValue.CrawlingBoard))
-			.willReturn(Optional.of(mockBoard));
+		given(boardReader.getById(updatedNotice.getTargetBoardId())).willReturn(mockBoard);
 		given(userRepository.findByEmail(StaticValue.SYSTEM_CRAWLER_ACCOUNT))
 			.willReturn(Optional.of(mockUser));
 		given(crawledNoticeReader.findPendingNotices())
@@ -120,11 +118,8 @@ public class CrawledToPostTransferServiceTest {
 	@DisplayName("업데이트된 공지사항이 없으면 아무것도 처리하지 않음")
 	void transferToPosts_shouldDoNothing_whenNoUpdatedNotices() {
 		// given
-		Board mockBoard = createMockBoard();
 		User mockUser = createMockUser();
 
-		given(boardRepository.findByName(StaticValue.CrawlingBoard))
-			.willReturn(Optional.of(mockBoard));
 		given(userRepository.findByEmail(StaticValue.SYSTEM_CRAWLER_ACCOUNT))
 			.willReturn(Optional.of(mockUser));
 		given(crawledNoticeReader.findPendingNotices())
@@ -139,6 +134,7 @@ public class CrawledToPostTransferServiceTest {
 
 	private Board createMockBoard() {
 		Board board = mock(Board.class);
+		when(board.getId()).thenReturn(CrawledNoticeFixture.TARGET_BOARD_ID);
 		when(board.getName()).thenReturn(StaticValue.CrawlingBoard);
 		return board;
 	}

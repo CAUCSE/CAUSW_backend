@@ -71,7 +71,8 @@ class JsoupCrawlHttpClientTest {
 	private SiteConfig config(int maxRetries) {
 		SiteConfig config = SiteConfigFixture.create();
 		return SiteConfig.of(
-			config.getSiteId(), config.getCrawlerType(), config.getListUrl(), config.getBaseUrl(),
+			config.getSiteId(), config.getTargetBoardId(), config.getCrawlerType(), config.getListUrl(),
+			config.getBaseUrl(),
 			config.getRequestHeaders(), config.getRequestDelay(), config.getTimeout(), maxRetries,
 			config.getMaxArticles(), config.getPaginationType(), config.getPageParam(), config.getMaxPages(),
 			config.getSelectors(), false, false, true);

@@ -49,6 +49,7 @@ public class CrawledArticleCleaner {
 
 			return new CleanArticle(
 				rawArticle.siteId(),
+				siteConfig.getTargetBoardId(),
 				requireText(rawArticle.externalId()),
 				sourceUrl,
 				category,

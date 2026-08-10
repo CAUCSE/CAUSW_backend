@@ -6,10 +6,12 @@ import java.util.Collections;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
 
 public class CrawledNoticeFixture {
+	public static final String TARGET_BOARD_ID = "target-board-id";
 
 	// 새 공지사항
 	public static CrawledNotice newNotice() {
 		CrawledNotice notice = CrawledNotice.of(
+			TARGET_BOARD_ID,
 			"공지사항",
 			"새 공지사항",
 			"새로운 내용입니다.",
@@ -25,6 +27,7 @@ public class CrawledNoticeFixture {
 	// 수정된 공지사항 (크롤링된 버전)
 	public static CrawledNotice updatedNotice() {
 		return CrawledNotice.of(
+			TARGET_BOARD_ID,
 			"공지사항",
 			"수정된 공지사항",
 			"수정된 내용입니다.",
@@ -38,6 +41,7 @@ public class CrawledNoticeFixture {
 	// 기존 공지사항 (DB에 저장된 버전)
 	public static CrawledNotice existingNotice() {
 		CrawledNotice notice = CrawledNotice.of(
+			TARGET_BOARD_ID,
 			"공지사항",
 			"기존 공지사항",
 			"기존 내용입니다.",

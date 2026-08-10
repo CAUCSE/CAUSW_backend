@@ -38,6 +38,7 @@ public class CrawledNoticeWriter {
 		CrawledNotice notice = CrawledNotice.of(
 			article.siteId(),
 			article.externalId(),
+			article.targetBoardId(),
 			article.category(),
 			article.title(),
 			article.contentHtml(),
@@ -53,10 +54,12 @@ public class CrawledNoticeWriter {
 	}
 
 	private CrawlSaveStatus updateIfChanged(CrawledNotice existing, CleanArticle article) {
-		if (existing.getContentHash().equals(article.contentHash())) {
+		if (existing.getContentHash().equals(article.contentHash())
+			&& existing.getTargetBoardId().equals(article.targetBoardId())) {
 			return CrawlSaveStatus.UNCHANGED;
 		}
 		existing.updateFrom(
+			article.targetBoardId(),
 			article.category(),
 			article.title(),
 			article.contentHtml(),

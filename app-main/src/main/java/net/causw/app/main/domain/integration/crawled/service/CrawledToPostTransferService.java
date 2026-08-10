@@ -1,7 +1,9 @@
 package net.causw.app.main.domain.integration.crawled.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -11,7 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.community.board.entity.Board;
-import net.causw.app.main.domain.community.board.repository.BoardRepository;
+import net.causw.app.main.domain.community.board.service.implementation.BoardReader;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledFileLink;
@@ -39,7 +41,7 @@ public class CrawledToPostTransferService {
 	private final CrawledNoticeWriter crawledNoticeWriter;
 	private final PostRepository postRepository;
 	private final UserRepository userRepository;
-	private final BoardRepository boardRepository;
+	private final BoardReader boardReader;
 	private final CrawledPostImageRepository crawledPostImageRepository;
 
 	private final ApplicationEventPublisher applicationEventPublisher;
@@ -47,24 +49,18 @@ public class CrawledToPostTransferService {
 	//크롤링 된 공지를 게시글로 반환
 	@Transactional
 	public void transferToPosts() {
-		Board board = getBoard();
 		User systemUser = getSystemUser();
 		List<CrawledNotice> updatedNotices = getUpdatedNotices();
+		Map<String, Board> boardCache = new HashMap<>();
 
 		int savedCount = 0;
 		for (CrawledNotice notice : updatedNotices) {
+			Board board = boardCache.computeIfAbsent(notice.getTargetBoardId(), boardReader::getById);
 			Post post = processUpdatedNotice(notice, board, systemUser);
 			crawledNoticeWriter.markTransferred(notice, post);
 			savedCount++;
 		}
 		log.info("[Crawl] Transferred notices to posts. count={}", savedCount);
-	}
-
-	//게시판 조회
-	private Board getBoard() {
-		return boardRepository.findByName(StaticValue.CrawlingBoard)
-			.orElseThrow(() -> new BadRequestException(
-				ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.BOARD_NOT_FOUND));
 	}
 
 	//관리자 조회
@@ -221,7 +217,10 @@ public class CrawledToPostTransferService {
 
 	//제목으로 기존 게시글 조회
 	private Post findExistingPost(CrawledNotice notice, Board board, String title) {
-		if (notice.getPost() != null && !Boolean.TRUE.equals(notice.getPost().getIsDeleted())) {
+		if (notice.getPost() != null
+			&& !Boolean.TRUE.equals(notice.getPost().getIsDeleted())
+			&& notice.getPost().getBoard() != null
+			&& notice.getTargetBoardId().equals(notice.getPost().getBoard().getId())) {
 			return notice.getPost();
 		}
 

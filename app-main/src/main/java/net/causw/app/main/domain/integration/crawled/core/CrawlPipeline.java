@@ -33,6 +33,7 @@ public class CrawlPipeline {
 	public CrawlResult run(String siteId) {
 		SiteConfig siteConfig = siteConfigReader.getEnabledBySiteId(siteId);
 		CrawlContext context = new CrawlContext(siteConfig);
+
 		return run(context, siteCrawlerRegistry.get(siteConfig.getCrawlerType()));
 	}
 

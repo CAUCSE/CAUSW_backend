@@ -34,6 +34,7 @@ class CrawledArticleCleanerTest {
 
 		// then
 		assertThat(result.title()).isEqualTo("제목");
+		assertThat(result.targetBoardId()).isEqualTo(config().getTargetBoardId());
 		assertThat(result.contentHtml()).contains("src=\"https://example.com/images/a.png\"");
 		assertThat(result.contentHtml()).doesNotContain("script", "onerror", "data-src");
 		assertThat(result.attachments()).singleElement()

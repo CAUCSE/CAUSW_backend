@@ -46,7 +46,9 @@ class CrawledNoticeWriterTest {
 		// then
 		assertThat(result).isEqualTo(CrawlSaveStatus.CREATED);
 		verify(repository).save(org.mockito.ArgumentMatchers
-			.argThat(notice -> notice.getSiteId().equals("site") && notice.getExternalId().equals("10")));
+			.argThat(notice -> notice.getSiteId().equals("site")
+				&& notice.getExternalId().equals("10")
+				&& notice.getTargetBoardId().equals("target-board-id")));
 	}
 
 	@Test
@@ -64,15 +66,35 @@ class CrawledNoticeWriterTest {
 		verify(repository, never()).save(existing);
 	}
 
+	@Test
+	@DisplayName("저장 대상 게시판이 바뀌면 같은 내용도 갱신한다")
+	void upsert_shouldUpdate_whenTargetBoardChanges() {
+		// given
+		CrawledNotice existing = existing("hash", "old-board-id");
+		given(reader.findBySource("site", "10")).willReturn(Optional.of(existing));
+
+		// when
+		CrawlSaveStatus result = writer.upsert(article("hash"));
+
+		// then
+		assertThat(result).isEqualTo(CrawlSaveStatus.UPDATED);
+		assertThat(existing.getTargetBoardId()).isEqualTo("target-board-id");
+		assertThat(existing.getIsUpdated()).isTrue();
+	}
+
 	private CleanArticle article(String hash) {
 		return new CleanArticle(
-			"site", "10", "https://example.com/10", "공지", "제목", "<p>본문</p>", "관리자",
+			"site", "target-board-id", "10", "https://example.com/10", "공지", "제목", "<p>본문</p>", "관리자",
 			LocalDate.of(2026, 8, 10), null, List.of(), hash);
 	}
 
 	private CrawledNotice existing(String hash) {
+		return existing(hash, "target-board-id");
+	}
+
+	private CrawledNotice existing(String hash, String targetBoardId) {
 		return CrawledNotice.of(
-			"site", "10", "공지", "제목", "<p>본문</p>", "https://example.com/10", "관리자",
+			"site", "10", targetBoardId, "공지", "제목", "<p>본문</p>", "https://example.com/10", "관리자",
 			LocalDate.of(2026, 8, 10), null, List.of(), hash);
 	}
 }

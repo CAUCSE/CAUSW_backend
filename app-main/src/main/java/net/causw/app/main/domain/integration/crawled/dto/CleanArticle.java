@@ -5,6 +5,7 @@ import java.util.List;
 
 public record CleanArticle(
 	String siteId,
+	String targetBoardId,
 	String externalId,
 	String sourceUrl,
 	String category,

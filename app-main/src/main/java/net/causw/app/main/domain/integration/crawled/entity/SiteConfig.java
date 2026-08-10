@@ -31,6 +31,9 @@ public class SiteConfig extends BaseEntity {
 	@Column(name = "site_id", nullable = false, unique = true, length = 100)
 	private String siteId;
 
+	@Column(name = "target_board_id", nullable = false)
+	private String targetBoardId;
+
 	@Enumerated(EnumType.STRING)
 	@Column(name = "crawler_type", nullable = false, length = 50)
 	private CrawlerType crawlerType;
@@ -81,6 +84,7 @@ public class SiteConfig extends BaseEntity {
 
 	public static SiteConfig of(
 		String siteId,
+		String targetBoardId,
 		CrawlerType crawlerType,
 		String listUrl,
 		String baseUrl,
@@ -98,6 +102,7 @@ public class SiteConfig extends BaseEntity {
 		boolean isEnabled) {
 		return SiteConfig.builder()
 			.siteId(siteId)
+			.targetBoardId(targetBoardId)
 			.crawlerType(crawlerType)
 			.listUrl(listUrl)
 			.baseUrl(baseUrl)

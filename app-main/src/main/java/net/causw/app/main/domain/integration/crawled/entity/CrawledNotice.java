@@ -37,6 +37,9 @@ public class CrawledNotice extends BaseEntity {
 	@Column(name = "external_id", nullable = false)
 	private String externalId;
 
+	@Column(name = "target_board_id", nullable = false)
+	private String targetBoardId;
+
 	@Column(name = "type", nullable = false)
 	private String type;
 
@@ -79,6 +82,7 @@ public class CrawledNotice extends BaseEntity {
 	public static CrawledNotice of(
 		String siteId,
 		String externalId,
+		String targetBoardId,
 		String type,
 		String title,
 		String content,
@@ -91,6 +95,7 @@ public class CrawledNotice extends BaseEntity {
 		return CrawledNotice.builder()
 			.siteId(siteId)
 			.externalId(externalId)
+			.targetBoardId(targetBoardId)
 			.type(type)
 			.title(title)
 			.content(content)
@@ -106,6 +111,7 @@ public class CrawledNotice extends BaseEntity {
 	}
 
 	public static CrawledNotice of(
+		String targetBoardId,
 		String type,
 		String title,
 		String content,
@@ -127,6 +133,7 @@ public class CrawledNotice extends BaseEntity {
 		return of(
 			"cau-sw-notice",
 			link,
+			targetBoardId,
 			type,
 			title,
 			content,
@@ -165,6 +172,7 @@ public class CrawledNotice extends BaseEntity {
 	}
 
 	public void updateFrom(
+		String targetBoardId,
 		String type,
 		String title,
 		String content,
@@ -174,6 +182,7 @@ public class CrawledNotice extends BaseEntity {
 		String imageLink,
 		List<CrawledFileLink> crawledFileLinks,
 		String contentHash) {
+		this.targetBoardId = targetBoardId;
 		this.type = type;
 		this.title = title;
 		this.content = content;

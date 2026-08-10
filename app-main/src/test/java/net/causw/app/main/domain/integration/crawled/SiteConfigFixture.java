@@ -14,6 +14,7 @@ public final class SiteConfigFixture {
 	public static SiteConfig create() {
 		return SiteConfig.of(
 			"site",
+			"target-board-id",
 			CrawlerType.CAU_SW_NOTICE,
 			"https://example.com/list?page=",
 			"https://example.com",
@@ -35,6 +36,7 @@ public final class SiteConfigFixture {
 	public static SiteConfig cauSwNotice() {
 		return SiteConfig.of(
 			"cau-sw-notice",
+			"target-board-id",
 			CrawlerType.CAU_SW_NOTICE,
 			"https://cse.cau.ac.kr/sub05/sub0501.php?offset=",
 			"https://cse.cau.ac.kr",

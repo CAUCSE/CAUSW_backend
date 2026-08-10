@@ -52,7 +52,7 @@ class CrawlPipelineTest {
 		CrawlContext context = new CrawlContext(config);
 		RawArticle raw = new RawArticle("site", "2", succeeded.url(), "공지", "제목", "본문", "관리자",
 			"2026-08-10", null, List.of());
-		CleanArticle clean = new CleanArticle("site", "2", succeeded.url(), "공지", "제목", "본문", "관리자",
+		CleanArticle clean = new CleanArticle("site", "target-board-id", "2", succeeded.url(), "공지", "제목", "본문", "관리자",
 			LocalDate.of(2026, 8, 10), null, List.of(), "hash");
 
 		given(siteConfigReader.getEnabledBySiteId("site")).willReturn(config);
