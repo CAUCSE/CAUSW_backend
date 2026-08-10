@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.integration.crawled.core;
+package net.causw.app.main.domain.integration.crawled.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
@@ -14,6 +14,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import net.causw.app.main.domain.integration.crawled.SiteConfigFixture;
+import net.causw.app.main.domain.integration.crawled.core.CrawlContext;
+import net.causw.app.main.domain.integration.crawled.core.SiteCrawlerRegistry;
 import net.causw.app.main.domain.integration.crawled.crawler.SiteCrawler;
 import net.causw.app.main.domain.integration.crawled.dto.ArticleUrl;
 import net.causw.app.main.domain.integration.crawled.dto.CleanArticle;
@@ -21,15 +23,14 @@ import net.causw.app.main.domain.integration.crawled.dto.CrawlResult;
 import net.causw.app.main.domain.integration.crawled.dto.CrawlSaveStatus;
 import net.causw.app.main.domain.integration.crawled.dto.RawArticle;
 import net.causw.app.main.domain.integration.crawled.entity.SiteConfig;
-import net.causw.app.main.domain.integration.crawled.service.CrawledArticleCleaner;
 import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeWriter;
 import net.causw.app.main.domain.integration.crawled.service.implementation.SiteConfigReader;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("CrawlPipeline 테스트")
-class CrawlPipelineTest {
+@DisplayName("CrawlService 테스트")
+class CrawlServiceTest {
 	@InjectMocks
-	private CrawlPipeline pipeline;
+	private CrawlService crawlService;
 
 	@Mock
 	private SiteCrawlerRegistry registry;
@@ -44,7 +45,7 @@ class CrawlPipelineTest {
 
 	@Test
 	@DisplayName("개별 공지 실패 후에도 다음 공지를 계속 처리한다")
-	void run_shouldContinue_whenOneArticleFails() {
+	void crawl_shouldContinue_whenOneArticleFails() {
 		// given
 		ArticleUrl failed = new ArticleUrl("https://example.com/1", "1", "공지");
 		ArticleUrl succeeded = new ArticleUrl("https://example.com/2", "2", "공지");
@@ -64,7 +65,7 @@ class CrawlPipelineTest {
 		given(writer.upsert(clean)).willReturn(CrawlSaveStatus.CREATED);
 
 		// when
-		CrawlResult result = pipeline.run("site");
+		CrawlResult result = crawlService.crawl("site");
 
 		// then
 		assertThat(result.createdCount()).isEqualTo(1);

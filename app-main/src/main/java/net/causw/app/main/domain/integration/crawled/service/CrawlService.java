@@ -1,12 +1,14 @@
-package net.causw.app.main.domain.integration.crawled.core;
+package net.causw.app.main.domain.integration.crawled.service;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
+import net.causw.app.main.domain.integration.crawled.core.CrawlContext;
+import net.causw.app.main.domain.integration.crawled.core.SiteCrawlerRegistry;
 import net.causw.app.main.domain.integration.crawled.crawler.SiteCrawler;
 import net.causw.app.main.domain.integration.crawled.dto.ArticleUrl;
 import net.causw.app.main.domain.integration.crawled.dto.CleanArticle;
@@ -14,7 +16,6 @@ import net.causw.app.main.domain.integration.crawled.dto.CrawlResult;
 import net.causw.app.main.domain.integration.crawled.dto.CrawlSaveStatus;
 import net.causw.app.main.domain.integration.crawled.dto.RawArticle;
 import net.causw.app.main.domain.integration.crawled.entity.SiteConfig;
-import net.causw.app.main.domain.integration.crawled.service.CrawledArticleCleaner;
 import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeWriter;
 import net.causw.app.main.domain.integration.crawled.service.implementation.SiteConfigReader;
 
@@ -22,22 +23,22 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Component
+@Service
 @RequiredArgsConstructor
-public class CrawlPipeline {
+public class CrawlService {
 	private final SiteCrawlerRegistry siteCrawlerRegistry;
 	private final SiteConfigReader siteConfigReader;
 	private final CrawledArticleCleaner crawledArticleCleaner;
 	private final CrawledNoticeWriter crawledNoticeWriter;
 
-	public CrawlResult run(String siteId) {
+	public CrawlResult crawl(String siteId) {
 		SiteConfig siteConfig = siteConfigReader.getEnabledBySiteId(siteId);
 		CrawlContext context = new CrawlContext(siteConfig);
 
-		return run(context, siteCrawlerRegistry.get(siteConfig.getCrawlerType()));
+		return crawl(context, siteCrawlerRegistry.get(siteConfig.getCrawlerType()));
 	}
 
-	public CrawlResult run(CrawlContext context, SiteCrawler crawler) {
+	private CrawlResult crawl(CrawlContext context, SiteCrawler crawler) {
 		SiteConfig siteConfig = context.siteConfig();
 		Map<String, ArticleUrl> uniqueArticles = new LinkedHashMap<>();
 		crawler.fetchList(context).forEach(article -> uniqueArticles.putIfAbsent(article.externalId(), article));

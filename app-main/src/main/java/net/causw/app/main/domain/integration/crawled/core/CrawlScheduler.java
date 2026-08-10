@@ -10,6 +10,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.integration.crawled.dto.CrawlResult;
+import net.causw.app.main.domain.integration.crawled.service.CrawlService;
 import net.causw.app.main.domain.integration.crawled.service.CrawledToPostTransferService;
 
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 public class CrawlScheduler {
 	private static final String CAU_SW_NOTICE_SITE_ID = "cau-sw-notice";
 
-	private final CrawlPipeline crawlPipeline;
+	private final CrawlService crawlService;
 	private final CrawledToPostTransferService crawledToPostTransferService;
 	private final AtomicBoolean running = new AtomicBoolean(false);
 
@@ -44,7 +45,7 @@ public class CrawlScheduler {
 		}
 
 		try {
-			CrawlResult result = crawlPipeline.run(CAU_SW_NOTICE_SITE_ID);
+			CrawlResult result = crawlService.crawl(CAU_SW_NOTICE_SITE_ID);
 			crawledToPostTransferService.transferToPosts();
 			log.info(
 				"[Crawl] Completed. siteId={}, discovered={}, created={}, updated={}, unchanged={}, failed={}",

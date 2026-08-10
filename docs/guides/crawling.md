@@ -6,7 +6,7 @@ CAUSW 크롤링 시스템은 사이트별 HTML 파싱과 공통 수집·정제·
 
 ```text
 CrawlScheduler
-  → CrawlPipeline
+  → CrawlService
     → SiteConfigReader.getEnabledBySiteId()
       → DB SiteConfig → CrawlContext
     → SiteCrawler.fetchList(context)

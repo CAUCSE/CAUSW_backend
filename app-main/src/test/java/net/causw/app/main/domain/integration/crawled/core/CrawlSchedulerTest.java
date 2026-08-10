@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import net.causw.app.main.domain.integration.crawled.dto.CrawlResult;
+import net.causw.app.main.domain.integration.crawled.service.CrawlService;
 import net.causw.app.main.domain.integration.crawled.service.CrawledToPostTransferService;
 
 @ExtendWith(MockitoExtension.class)
@@ -22,7 +23,7 @@ class CrawlSchedulerTest {
 	private CrawlScheduler scheduler;
 
 	@Mock
-	private CrawlPipeline crawlPipeline;
+	private CrawlService crawlService;
 
 	@Mock
 	private CrawledToPostTransferService crawledToPostTransferService;
@@ -31,14 +32,14 @@ class CrawlSchedulerTest {
 	@DisplayName("수집이 종료된 후 Post 변환을 실행한다")
 	void runCauSwNoticeCrawl_shouldTransferAfterPipeline() {
 		// given
-		given(crawlPipeline.run("cau-sw-notice"))
+		given(crawlService.crawl("cau-sw-notice"))
 			.willReturn(new CrawlResult("cau-sw-notice", 1, 1, 0, 0, List.of()));
 
 		// when
 		scheduler.runCauSwNoticeCrawl();
 
 		// then
-		verify(crawlPipeline).run("cau-sw-notice");
+		verify(crawlService).crawl("cau-sw-notice");
 		verify(crawledToPostTransferService).transferToPosts();
 	}
 }
