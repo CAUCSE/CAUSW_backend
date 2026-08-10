@@ -324,8 +324,10 @@ public class PostService {
 		boolean isOwner = post.getWriter().getId().equals(viewer.getId());
 
 		// 수정/삭제 가능 여부 (공통 정책에서 목록 응답과 같은 기준으로 계산)
-		boolean updatable = CommunityPermissionPolicy.canUpdatePost(viewer, post, boardConfig, boardAdminIds);
-		boolean deletable = CommunityPermissionPolicy.canDeletePost(viewer, post, boardConfig, boardAdminIds);
+		boolean updatable = !boardConfig.isSystemNotice()
+			&& CommunityPermissionPolicy.canUpdatePost(viewer, post, boardConfig, boardAdminIds);
+		boolean deletable = !boardConfig.isSystemNotice()
+			&& CommunityPermissionPolicy.canDeletePost(viewer, post, boardConfig, boardAdminIds);
 
 		// 닉네임 마스킹 및 공식 배지 여부 판단
 		boolean isNotice = boardConfig.isNotice() || post.getIsCrawled();
@@ -501,13 +503,13 @@ public class PostService {
 				boolean isPostLike = likedPostIds.contains(result.postId());
 				boolean isOwner = result.writerId() != null && result.writerId().equals(viewer.getId());
 				Set<String> boardAdminIds = boardAdminIdMap.getOrDefault(result.boardId(), Set.of());
-				boolean updatable = !result.isDeleted()
+				BoardConfig boardConfig = boardConfigMap.get(result.boardId());
+				boolean isSystemNotice = boardConfig != null && boardConfig.isSystemNotice();
+				boolean updatable = !isSystemNotice && !result.isDeleted()
 					&& CommunityPermissionPolicy.canUpdateReadableContent(viewer, result.writerId());
-				boolean deletable = !result.isDeleted()
+				boolean deletable = !isSystemNotice && !result.isDeleted()
 					&& CommunityPermissionPolicy.canDeleteReadableContent(
 						viewer, result.writerId(), boardAdminIds);
-
-				BoardConfig boardConfig = boardConfigMap.get(result.boardId());
 
 				// 마스킹 및 공식배지 판단
 				boolean isNotice = (boardConfig != null && boardConfig.isNotice()) || result.isCrawled();
