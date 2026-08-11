@@ -37,7 +37,7 @@ public class SystemNoticeReader {
 	}
 
 	public Post getSystemNoticePost(String postId) {
-		return postRepository.findById(postId)
+		return postRepository.findByIdAndIsDeletedFalse(postId)
 			.filter(this::isSystemNoticePost)
 			.orElseThrow(PostErrorCode.POST_NOT_FOUND::toBaseException);
 	}

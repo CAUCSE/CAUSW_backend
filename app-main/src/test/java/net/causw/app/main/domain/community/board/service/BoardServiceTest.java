@@ -298,7 +298,8 @@ class BoardServiceTest {
 				org.mockito.ArgumentMatchers.anyBoolean(),
 				org.mockito.ArgumentMatchers.anyBoolean());
 			then(boardWriter).should(never()).updateBoard(any(Board.class), any(BoardPart.class));
-			then(boardConfigWriter).should(never()).updateBoardConfig(any(BoardConfig.class), any(BoardConfigPart.class));
+			then(boardConfigWriter).should(never()).updateBoardConfig(any(BoardConfig.class),
+				any(BoardConfigPart.class));
 			then(boardConfigWriter).should(never()).replaceAdmins(
 				org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.anySet());
 		}
