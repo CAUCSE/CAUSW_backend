@@ -39,8 +39,7 @@ class SystemNoticeControllerTest {
 		given(userDetails.getUser()).willReturn(viewer);
 		given(systemNoticeService.getLatest(viewer)).willReturn(Optional.empty());
 
-		ResponseEntity<ApiResponse<SystemNoticeResponse>> response =
-			systemNoticeController.getLatest(userDetails);
+		ResponseEntity<ApiResponse<SystemNoticeResponse>> response = systemNoticeController.getLatest(userDetails);
 
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 		assertThat(response.getBody()).isNotNull();
