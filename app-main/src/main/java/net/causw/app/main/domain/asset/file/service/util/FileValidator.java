@@ -151,8 +151,8 @@ public final class FileValidator {
 	 * @throws BadRequestException 크기 초과 시
 	 */
 	public static void validateFileSize(long size, FilePath filePath) {
-		if (size > filePath.getMaxFileSize()) {
-			log.warn("File size exceeded. Size: {} bytes, Max: {} bytes", size, filePath.getMaxFileSize());
+		if (size <= 0 || size > filePath.getMaxFileSize()) {
+			log.warn("File size invalid. Size: {} bytes, Max: {} bytes", size, filePath.getMaxFileSize());
 			throw new BadRequestException(
 				ErrorCode.INVALID_PARAMETER,
 				MessageUtil.FILE_SIZE_EXCEEDED + " (크기: " + size + " bytes)");
