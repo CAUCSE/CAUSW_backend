@@ -27,6 +27,7 @@ public class StaticValue {
 	public final static Integer HOME_NOTIFICATION_PAGE_SIZE = 1;
 	public final static Integer MAX_NOTIFICATION_COUNT = 10;
 	public final static Integer BATCH_USER_LIST_SIZE = 500;
+	public final static Integer BATCH_PENDING_FILE_CHUNK_SIZE = 500;
 
 	// Event
 	public static final Integer MAX_NUM_EVENT = 10;

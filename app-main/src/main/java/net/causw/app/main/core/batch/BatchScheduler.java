@@ -2,6 +2,7 @@ package net.causw.app.main.core.batch;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Slice;
@@ -46,33 +47,51 @@ public class BatchScheduler {
 	private final AdmissionWriter admissionWriter;
 	private final UserProfileImageService userProfileImageService;
 
-	@Scheduled(cron = "0 0 * * * ?") // 매시 정각
+	@Scheduled(cron = "0 30 3 * * ?") // 매일 새벽 3시 30분
 	public void scheduleCleanupPendingFiles() {
 		log.info("[PENDING 파일 정리 배치] 시작");
-		LocalDateTime cutoff = LocalDateTime.now().minusHours(1);
+		LocalDateTime cutoff = LocalDateTime.now().minusHours(6);
 
-		List<UuidFile> pendingFiles = fileReader.findAllPendingBefore(cutoff);
-		if (pendingFiles.isEmpty()) {
-			log.info("[PENDING 파일 정리 배치] 정리 대상 없음");
-			return;
-		}
+		int totalCleaned = 0;
+		int totalFailed = 0;
 
-		int cleanedCount = 0;
-		int s3FailCount = 0;
-		for (UuidFile file : pendingFiles) {
-			try {
-				storageClient.delete(file.getFileKey());
-			} catch (Exception e) {
-				s3FailCount++;
-				log.warn("[PENDING 파일 정리 배치] S3 삭제 실패. 재시도 예정. FileKey: {}", file.getFileKey(), e);
-				continue;
+		while (true) {
+			List<UuidFile> chunk = fileReader.findPendingChunkBefore(
+				cutoff, StaticValue.BATCH_PENDING_FILE_CHUNK_SIZE);
+			if (chunk.isEmpty()) {
+				break;
 			}
-			fileWriter.deleteFromDb(file.getId());
-			cleanedCount++;
+
+			List<String> fileKeys = chunk.stream().map(UuidFile::getFileKey).toList();
+			List<String> succeededKeys;
+			try {
+				succeededKeys = storageClient.deleteAll(fileKeys);
+			} catch (Exception e) {
+				log.warn("[PENDING 파일 정리 배치] S3 요청 실패. 다음 배치에서 재시도.", e);
+				break;
+			}
+			Set<String> succeededKeySet = Set.copyOf(succeededKeys);
+
+			List<String> ids = chunk.stream()
+				.filter(f -> succeededKeySet.contains(f.getFileKey()))
+				.map(UuidFile::getId)
+				.toList();
+
+			if (!ids.isEmpty()) {
+				fileWriter.deleteAllFromDb(ids);
+				totalCleaned += ids.size();
+			}
+			int chunkFail = chunk.size() - ids.size();
+			totalFailed += chunkFail;
+
+			// 청크 내 모든 파일이 S3 삭제 실패 → 진행 불가, 다음 배치에서 재시도
+			if (ids.isEmpty()) {
+				log.warn("[PENDING 파일 정리 배치] 청크 전체 S3 삭제 실패. 다음 배치에서 재시도. 실패 수: {}", chunkFail);
+				break;
+			}
 		}
 
-		log.info("[PENDING 파일 정리 배치] 완료. 총: {}, 정리: {}, S3 실패(재시도 예정): {}",
-			pendingFiles.size(), cleanedCount, s3FailCount);
+		log.info("[PENDING 파일 정리 배치] 완료. 정리: {}, S3 실패(재시도 예정): {}", totalCleaned, totalFailed);
 	}
 
 	@Scheduled(cron = "0 10 3 * * ?") // 매일 새벽 3시 10분

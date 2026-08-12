@@ -7,6 +7,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
@@ -90,6 +92,20 @@ public class LocalStorageClient implements StorageClient {
 				ErrorCode.FILE_DELETE_FAIL,
 				MessageUtil.FILE_DELETE_FAIL + e.getMessage());
 		}
+	}
+
+	@Override
+	public List<String> deleteAll(List<String> fileKeys) {
+		List<String> succeededKeys = new ArrayList<>();
+		for (String fileKey : fileKeys) {
+			try {
+				delete(fileKey);
+				succeededKeys.add(fileKey);
+			} catch (Exception e) {
+				log.warn("로컬 파일 삭제 실패. FileKey: {}", fileKey, e);
+			}
+		}
+		return succeededKeys;
 	}
 
 	@Override

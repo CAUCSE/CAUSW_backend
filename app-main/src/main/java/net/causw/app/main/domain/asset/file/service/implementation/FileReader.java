@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -108,12 +109,15 @@ public class FileReader {
 	}
 
 	/**
-	 * cutoff 이전에 생성된 PENDING(isUploaded=false) 파일 목록 조회
+	 * cutoff 이전에 생성된 PENDING 파일을 최대 limit 개만 조회 (배치 청크 처리용)
 	 *
 	 * @param cutoff 기준 시각
+	 * @param limit  최대 조회 개수
 	 * @return PENDING 파일 엔티티 목록
 	 */
-	public List<UuidFile> findAllPendingBefore(LocalDateTime cutoff) {
-		return uuidFileRepository.findAllByIsUploadedFalseAndCreatedAtBefore(cutoff);
+	public List<UuidFile> findPendingChunkBefore(LocalDateTime cutoff, int limit) {
+		return uuidFileRepository
+			.findAllByIsUploadedFalseAndCreatedAtBefore(cutoff, PageRequest.of(0, limit))
+			.getContent();
 	}
 }

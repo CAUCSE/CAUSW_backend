@@ -1,6 +1,7 @@
 package net.causw.app.main.shared.storage;
 
 import java.time.Duration;
+import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,6 +29,14 @@ public interface StorageClient {
 	 * @param fileKey 삭제할 파일의 키
 	 */
 	void delete(String fileKey);
+
+	/**
+	 * 스토리지에서 파일 일괄 삭제
+	 *
+	 * @param fileKeys 삭제할 파일 키 목록
+	 * @return 삭제에 성공한 파일 키 목록
+	 */
+	List<String> deleteAll(List<String> fileKeys);
 
 	/**
 	 * 클라이언트 직접 업로드용 Presigned PUT URL 생성

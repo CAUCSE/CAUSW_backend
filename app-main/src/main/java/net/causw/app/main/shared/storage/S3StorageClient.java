@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
@@ -24,12 +25,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.Delete;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest;
+import software.amazon.awssdk.services.s3.model.DeleteObjectsResponse;
 import software.amazon.awssdk.services.s3.model.GetUrlRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.ObjectCannedACL;
+import software.amazon.awssdk.services.s3.model.ObjectIdentifier;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Error;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
@@ -123,6 +129,34 @@ public class S3StorageClient implements StorageClient {
 		log.debug("Generated presigned upload URL. FileKey: {}, ExpiresAt: {}", fileKey, presigned.expiration());
 
 		return PresignedUploadResult.of(presigned.url().toString(), fileUrl, presigned.expiration());
+	}
+
+	@Override
+	public List<String> deleteAll(List<String> fileKeys) {
+		if (fileKeys.isEmpty()) {
+			return List.of();
+		}
+
+		List<ObjectIdentifier> objects = fileKeys.stream()
+			.map(key -> ObjectIdentifier.builder().key(key).build())
+			.toList();
+
+		DeleteObjectsRequest request = DeleteObjectsRequest.builder()
+			.bucket(bucketName)
+			.delete(Delete.builder().objects(objects).quiet(false).build())
+			.build();
+
+		DeleteObjectsResponse response = s3Client.deleteObjects(request);
+
+		List<S3Error> errors = response.errors();
+		if (!errors.isEmpty()) {
+			errors.forEach(e ->
+				log.warn("[S3 Bulk Delete] 삭제 실패. key={}, code={}, message={}", e.key(), e.code(), e.message()));
+		}
+
+		return response.deleted().stream()
+			.map(deleted -> deleted.key())
+			.toList();
 	}
 
 	@Override

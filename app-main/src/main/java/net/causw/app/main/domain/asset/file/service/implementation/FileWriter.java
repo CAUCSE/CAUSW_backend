@@ -345,6 +345,17 @@ public class FileWriter {
 		uuidFileRepository.deleteById(id);
 	}
 
+	/**
+	 * DB에서 파일 목록 일괄 삭제 (S3는 건드리지 않음)
+	 * S3 bulk delete 완료 후 성공한 레코드 정리 시 사용
+	 *
+	 * @param ids 삭제할 파일 엔티티 ID 목록
+	 */
+	@Transactional
+	public void deleteAllFromDb(@NotNull List<String> ids) {
+		uuidFileRepository.deleteAllByIdInBatch(ids);
+	}
+
 	private void rollbackUploadedFiles(List<String> fileKeys) {
 		for (String fileKey : fileKeys) {
 			try {
