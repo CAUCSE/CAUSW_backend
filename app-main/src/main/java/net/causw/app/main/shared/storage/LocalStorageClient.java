@@ -110,15 +110,24 @@ public class LocalStorageClient implements StorageClient {
 
 	@Override
 	public PresignedUploadResult generatePresignedUploadUrl(FileMetadata metadata, Duration expiry) {
-		// 로컬 환경에서는 presigned URL 미지원 — 개발 편의용 더미 URL 반환
-		String fileUrl = "file://" + Paths.get(baseDirectory, metadata.fileKey()).toAbsolutePath();
-		return PresignedUploadResult.of("local://presigned-not-supported", fileUrl,
-			Instant.now().plus(expiry));
+		String fileKey = metadata.fileKey();
+		Path filePath = Paths.get(baseDirectory, fileKey);
+
+		try {
+			Files.createDirectories(filePath.getParent());
+			if (!Files.exists(filePath)) {
+				Files.createFile(filePath);
+			}
+		} catch (IOException e) {
+			log.warn("로컬 Presigned 스텁 파일 생성 실패. FileKey: {}", fileKey, e);
+		}
+
+		String fileUrl = "file://" + filePath.toAbsolutePath();
+		return PresignedUploadResult.of("local://presigned-stub", fileUrl, Instant.now().plus(expiry));
 	}
 
 	@Override
 	public boolean exists(String fileKey) {
-		// 로컬 환경에서는 S3 HeadObject 대신 파일 존재 여부를 확인하지 않고 항상 존재로 간주
-		return true;
+		return Files.isRegularFile(Paths.get(baseDirectory, fileKey));
 	}
 }
