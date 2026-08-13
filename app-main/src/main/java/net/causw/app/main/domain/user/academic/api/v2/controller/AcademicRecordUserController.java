@@ -27,23 +27,25 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api")
-@Tag(name = "AcademicRecord Public", description = "학적상태를 졸업 또는 재학으로 변경 신청합니다.")
+@RequestMapping("/api/v2/users/me/academic-record")
+@Tag(name = "AcademicRecord Public v2", description = "학적상태를 졸업 또는 재학으로 변경 신청합니다.")
 public class AcademicRecordUserController {
 
 	private final AcademicRecordUserService academicRecordUserService;
 
-	@PostMapping("/v2/users/me/academic-record/graduation")
+	@PostMapping("/graduation")
 	@Operation(summary = "학적상태변경(재학 -> 졸업) 요청", description = "유저의 학적 상태를 재학에서 졸업으로 변경합니다. 관리자의 승인 없이 학적 상태가 변경됩니다.")
 	public ApiResponse<AcademicStatusResponse<GraduationDetailsResponse>> updateStatusToGraduated(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestBody @Valid GraduationApplicationRequest req) {
 		return ApiResponse.success(
-			academicRecordUserService.updateStatusToGraduated(userDetails.getUser(), req));
+			academicRecordUserService.updateStatusToGraduated(
+				userDetails.getUser(),
+				req));
 	}
 
-	@PostMapping(value = "/v2/users/me/academic-record/return", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	@Operation(summary = "학적상태변경(졸업 -> 재학) 요청 (v2)", description = "이미지를 직접 첨부하여 재학 변경을 신청합니다.")
+	@PostMapping(value = "/return", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	@Operation(summary = "학적상태변경(졸업 -> 재학) 요청", description = "이미지를 직접 첨부(multipart/form-data)하거나, presigned URL로 업로드한 이미지 UUID(application/json)를 전달하여 재학 변경을 신청합니다.")
 	public ApiResponse<AcademicStatusResponse<EnrollmentDetailsResponse>> updateStatusToEnrolledV2(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestPart(value = "enrollmentApplicationRequest") @Valid EnrollmentApplicationRequest req,
@@ -52,8 +54,8 @@ public class AcademicRecordUserController {
 			academicRecordUserService.updateStatusToEnrolledV2(userDetails.getUser(), req, imageFileList));
 	}
 
-	@PostMapping("/v3/users/me/academic-record/return")
-	@Operation(summary = "학적상태변경(졸업 -> 재학) 요청 (v3)", description = "presigned URL로 업로드한 이미지 UUID를 전달하여 재학 변경을 신청합니다.")
+	@PostMapping(value = "/return", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(summary = "학적상태변경(졸업 -> 재학) 요청", description = "이미지를 직접 첨부(multipart/form-data)하거나, presigned URL로 업로드한 이미지 UUID(application/json)를 전달하여 재학 변경을 신청합니다.")
 	public ApiResponse<AcademicStatusResponse<EnrollmentDetailsResponse>> updateStatusToEnrolled(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestBody @Valid EnrollmentApplicationRequest req) {

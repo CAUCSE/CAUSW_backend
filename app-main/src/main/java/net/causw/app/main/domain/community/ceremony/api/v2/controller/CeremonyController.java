@@ -36,17 +36,17 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-@Tag(name = "Ceremony Public", description = "경조사 조회 및 생성 API")
+@Tag(name = "Ceremony Public v2", description = "경조사 조회 및 생성 API")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api")
+@RequestMapping("/api/v2/ceremonies")
 public class CeremonyController {
 	private final CeremonyDtoMapper ceremonyDtoMapper;
 	private final CeremonyService ceremonyService;
 
-	@PostMapping(value = "/v2/ceremonies", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(value = HttpStatus.CREATED)
-	@Operation(summary = "사용자 본인의 경조사 생성 (v2)", description = "이미지를 직접 첨부하여 경조사를 생성합니다.")
+	@Operation(summary = "사용자 본인의 경조사 생성", description = "이미지를 직접 첨부(multipart/form-data)하거나, presigned URL로 업로드한 이미지 UUID(application/json)를 전달하여 경조사를 생성합니다.")
 	public ApiResponse<CeremonyDetailResponse> createCeremonyV2(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestPart(value = "ceremonyCreateRequest") @Valid CeremonyCreateRequest request,
@@ -56,9 +56,9 @@ public class CeremonyController {
 		return ApiResponse.success(ceremonyDtoMapper.toDetailResponse(result));
 	}
 
-	@PostMapping("/v3/ceremonies")
+	@PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(value = HttpStatus.CREATED)
-	@Operation(summary = "사용자 본인의 경조사 생성 (v3)", description = "presigned URL로 업로드한 이미지 UUID를 전달하여 경조사를 생성합니다.")
+	@Operation(summary = "사용자 본인의 경조사 생성", description = "이미지를 직접 첨부(multipart/form-data)하거나, presigned URL로 업로드한 이미지 UUID(application/json)를 전달하여 경조사를 생성합니다.")
 	public ApiResponse<CeremonyDetailResponse> createCeremony(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestBody @Valid CeremonyCreateRequest request) {
@@ -67,7 +67,7 @@ public class CeremonyController {
 		return ApiResponse.success(ceremonyDtoMapper.toDetailResponse(result));
 	}
 
-	@GetMapping("/v2/ceremonies/{ceremonyId}")
+	@GetMapping("/{ceremonyId}")
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "경조사 상세 보기 API", description = "경조사 상세 정보를 조회합니다.</br>" +
 		"my : 내 경조사 상세 보기</br>" +
@@ -81,7 +81,7 @@ public class CeremonyController {
 		return ApiResponse.success(ceremonyDtoMapper.toDetailResponse(result));
 	}
 
-	@GetMapping("/v2/ceremonies/ongoing")
+	@GetMapping("/ongoing")
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "진행 중인 경조사 리스트 조회", description = "진행 중인 경조사 리스트를 조회합니다.")
 	public ApiResponse<PageResponse<CeremonySummaryResponse>> getOngoingCeremonyPage(
@@ -92,7 +92,7 @@ public class CeremonyController {
 		return ApiResponse.success(PageResponse.from(response));
 	}
 
-	@GetMapping("/v2/ceremonies/upcoming")
+	@GetMapping("/upcoming")
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "곧 다가올 경조사 리스트 조회", description = "곧 다가올 경조사 리스트를 조회합니다.")
 	public ApiResponse<PageResponse<CeremonySummaryResponse>> getUpcomingCeremonyPage(
@@ -103,7 +103,7 @@ public class CeremonyController {
 		return ApiResponse.success(PageResponse.from(response));
 	}
 
-	@GetMapping("/v2/ceremonies/past")
+	@GetMapping("/past")
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "지난 경조사 리스트 조회", description = "지난 경조사 리스트를 조회합니다.")
 	public ApiResponse<PageResponse<CeremonySummaryResponse>> getPastCeremonyPage(
@@ -114,7 +114,7 @@ public class CeremonyController {
 		return ApiResponse.success(PageResponse.from(response));
 	}
 
-	@GetMapping("/v2/ceremonies/my")
+	@GetMapping("/my")
 	@ResponseStatus(value = HttpStatus.OK)
 	@Operation(summary = "내 경조사 리스트 조회", description = "내 경조사 리스트를 조회합니다.")
 	public ApiResponse<PageResponse<CeremonySummaryResponse>> getMyCeremonyPage(
