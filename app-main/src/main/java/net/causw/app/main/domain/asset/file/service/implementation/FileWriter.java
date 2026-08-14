@@ -318,16 +318,16 @@ public class FileWriter {
 					expectedFilePath, file.getFilePath(), file.getUuid());
 				throw FileErrorCode.INVALID_FILE_PATH.toBaseException();
 			}
-			if (Boolean.TRUE.equals(file.getIsUploaded())) {
-				log.warn("File already confirmed. UUID: {}", file.getUuid());
-				throw FileErrorCode.FILE_ALREADY_USED.toBaseException();
-			}
 			if (!storageClient.exists(file.getFileKey())) {
 				log.warn("File not found in storage. FileKey: {}", file.getFileKey());
 				throw FileErrorCode.FILE_NOT_UPLOADED.toBaseException();
 			}
-			file.setIsUsed(true);
-			file.setIsUploaded(true);
+		}
+
+		int updated = uuidFileRepository.confirmByUuids(uuids);
+		if (updated != uuids.size()) {
+			log.warn("Some files already confirmed. Expected: {}, Updated: {}", uuids.size(), updated);
+			throw FileErrorCode.FILE_ALREADY_USED.toBaseException();
 		}
 
 		log.info("Files confirmed. Count: {}, FilePath: {}", files.size(), expectedFilePath);
