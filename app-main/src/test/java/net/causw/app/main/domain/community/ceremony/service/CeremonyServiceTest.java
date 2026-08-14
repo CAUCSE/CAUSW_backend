@@ -16,11 +16,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
-import net.causw.app.main.domain.asset.file.service.UuidFileService;
+import net.causw.app.main.domain.asset.file.enums.FilePath;
+import net.causw.app.main.domain.asset.file.service.implementation.FileWriter;
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.request.CeremonyCreateRequest;
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyContext;
@@ -45,7 +47,9 @@ public class CeremonyServiceTest {
 	CeremonyService ceremonyService;
 
 	@Mock
-	UuidFileService uuidFileService;
+	FileWriter fileWriter;
+	@Mock
+	ApplicationEventPublisher applicationEventPublisher;
 	@Mock
 	CeremonyCreator ceremonyCreator;
 	@Mock
@@ -85,7 +89,7 @@ public class CeremonyServiceTest {
 			assertThatThrownBy(() -> ceremonyService.createCeremony(user, command, null))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.CUSTOM_CATEGORY_REQUIRED);
-			then(uuidFileService).should(never()).saveFileList(any(), any());
+			then(fileWriter).should(never()).uploadAndSaveList(any(), any(FilePath.class));
 			then(ceremonyCreateMapper).should(never()).toCeremony(any(), any(), any(), any());
 			then(ceremonyCreator).should(never()).save(any());
 		}
@@ -100,7 +104,7 @@ public class CeremonyServiceTest {
 			assertThatThrownBy(() -> ceremonyService.createCeremony(user, command, null))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.FAMILY_RELATION_REQUIRED);
-			then(uuidFileService).should(never()).saveFileList(any(), any());
+			then(fileWriter).should(never()).uploadAndSaveList(any(), any(FilePath.class));
 			then(ceremonyCreateMapper).should(never()).toCeremony(any(), any(), any(), any());
 			then(ceremonyCreator).should(never()).save(any());
 		}
@@ -115,7 +119,7 @@ public class CeremonyServiceTest {
 			assertThatThrownBy(() -> ceremonyService.createCeremony(user, command, null))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.ALUMNI_NAME_REQUIRED);
-			then(uuidFileService).should(never()).saveFileList(any(), any());
+			then(fileWriter).should(never()).uploadAndSaveList(any(), any(FilePath.class));
 			then(ceremonyCreateMapper).should(never()).toCeremony(any(), any(), any(), any());
 			then(ceremonyCreator).should(never()).save(any());
 		}
@@ -130,7 +134,7 @@ public class CeremonyServiceTest {
 			assertThatThrownBy(() -> ceremonyService.createCeremony(user, command, null))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.ALUMNI_ADMISSION_YEAR_REQUIRED);
-			then(uuidFileService).should(never()).saveFileList(any(), any());
+			then(fileWriter).should(never()).uploadAndSaveList(any(), any(FilePath.class));
 			then(ceremonyCreateMapper).should(never()).toCeremony(any(), any(), any(), any());
 			then(ceremonyCreator).should(never()).save(any());
 		}
@@ -146,7 +150,7 @@ public class CeremonyServiceTest {
 			assertThatThrownBy(() -> ceremonyService.createCeremony(user, command, null))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.START_TIME_REQUIRED);
-			then(uuidFileService).should(never()).saveFileList(any(), any());
+			then(fileWriter).should(never()).uploadAndSaveList(any(), any(FilePath.class));
 			then(ceremonyCreateMapper).should(never()).toCeremony(any(), any(), any(), any());
 			then(ceremonyCreator).should(never()).save(any());
 		}
@@ -162,7 +166,7 @@ public class CeremonyServiceTest {
 			assertThatThrownBy(() -> ceremonyService.createCeremony(user, command, null))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.TARGET_ADMISSION_YEARS_REQUIRED);
-			then(uuidFileService).should(never()).saveFileList(any(), any());
+			then(fileWriter).should(never()).uploadAndSaveList(any(), any(FilePath.class));
 			then(ceremonyCreateMapper).should(never()).toCeremony(any(), any(), any(), any());
 			then(ceremonyCreator).should(never()).save(any());
 		}
