@@ -34,7 +34,8 @@ public final class FileMetadataManager {
 	public static FileMetadata createMetadataFromFileName(
 		@NotBlank String fileName,
 		@NotNull FilePath filePath,
-		@NotBlank String contentType) {
+		@NotBlank String contentType,
+		long fileSize) {
 		String uuid = generateUuid();
 		String rawFileName = extractRawFileName(fileName);
 		String extension = extractExtension(fileName);
@@ -43,7 +44,7 @@ public final class FileMetadataManager {
 		log.debug("Created file metadata from name. UUID: {}, FileName: {}, Extension: {}, FileKey: {}",
 			uuid, rawFileName, extension, fileKey);
 
-		return FileMetadata.of(uuid, rawFileName, extension, fileName, filePath, fileKey, contentType);
+		return FileMetadata.of(uuid, rawFileName, extension, fileName, filePath, fileKey, contentType, fileSize);
 	}
 
 	/**
@@ -73,7 +74,8 @@ public final class FileMetadataManager {
 			originalFileName,
 			filePath,
 			fileKey,
-			contentType);
+			contentType,
+			file.getSize());
 	}
 
 	/**

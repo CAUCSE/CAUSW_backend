@@ -52,8 +52,8 @@ public class UuidFileService {
 	 */
 	@Transactional
 	public PresignedUrlResponse issuePresignedUrl(@NotNull PresignedUrlRequest request) {
-		FileValidator.validateFileMetadata(request.fileName(), request.fileSize(), request.filePath());
-		FileMetadata metadata = FileMetadataManager.createMetadataFromFileName(request.fileName(), request.filePath(), request.contentType());
+		FileValidator.validateUploadRequest(request.fileName(), request.fileSize(), request.filePath(), request.contentType());
+		FileMetadata metadata = FileMetadataManager.createMetadataFromFileName(request.fileName(), request.filePath(), request.contentType(), request.fileSize());
 
 		PresignedUploadResult presignedResult = storageClient.generatePresignedUploadUrl(metadata,
 			PRESIGNED_URL_EXPIRY);
@@ -77,12 +77,15 @@ public class UuidFileService {
 		List<Long> fileSizes = request.files().stream()
 			.map(MultiplePresignedUrlRequest.FileEntry::fileSize)
 			.toList();
-		FileValidator.validateFileMetadataList(fileNames, fileSizes, request.filePath());
+		List<String> contentTypes = request.files().stream()
+			.map(MultiplePresignedUrlRequest.FileEntry::contentType)
+			.toList();
+		FileValidator.validateUploadRequests(fileNames, fileSizes, contentTypes, request.filePath());
 
 		List<PresignedUrlResponse> responses = request.files().stream()
 			.map(entry -> {
 				FileMetadata metadata = FileMetadataManager.createMetadataFromFileName(
-					entry.fileName(), request.filePath(), entry.contentType());
+					entry.fileName(), request.filePath(), entry.contentType(), entry.fileSize());
 				PresignedUploadResult presignedResult = storageClient.generatePresignedUploadUrl(
 					metadata, PRESIGNED_URL_EXPIRY);
 				UuidFile pending = fileWriter.savePending(metadata, presignedResult.fileUrl());

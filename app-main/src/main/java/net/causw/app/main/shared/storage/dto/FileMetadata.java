@@ -16,7 +16,8 @@ public record FileMetadata(
 	String originalFileName,
 	FilePath filePath,
 	String fileKey,
-	String contentType) {
+	String contentType,
+	long fileSize) {
 	public static FileMetadata of(
 		String uuid,
 		String rawFileName,
@@ -24,7 +25,8 @@ public record FileMetadata(
 		String originalFileName,
 		FilePath filePath,
 		String fileKey,
-		String contentType) {
+		String contentType,
+		long fileSize) {
 		return new FileMetadata(
 			uuid,
 			rawFileName,
@@ -32,6 +34,7 @@ public record FileMetadata(
 			originalFileName,
 			filePath,
 			fileKey,
-			contentType);
+			contentType,
+			fileSize);
 	}
 }

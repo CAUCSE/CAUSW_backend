@@ -2,6 +2,9 @@ package net.causw.app.main.domain.asset.file.service.util;
 
 import java.util.List;
 
+import org.springframework.http.InvalidMediaTypeException;
+import org.springframework.http.MediaType;
+import org.springframework.http.MediaTypeFactory;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -49,10 +52,12 @@ public final class FileValidator {
 	 * @param filePath 파일 경로 타입
 	 * @throws BadRequestException 검증 실패 시
 	 */
-	public static void validateFileMetadata(String fileName, long fileSize, @NotNull FilePath filePath) {
+	public static void validateUploadRequest(String fileName, long fileSize, @NotNull FilePath filePath,
+		String contentType) {
 		String extension = extractAndValidateExtension(fileName);
 		validateFileSize(fileSize, filePath);
 		validateExtension(extension, filePath);
+		validateContentType(extension, contentType);
 	}
 
 	/**
@@ -64,16 +69,17 @@ public final class FileValidator {
 	 * @throws BaseRunTimeV2Exception 파일 목록이 비어있을 경우 (FILE_LIST_EMPTY)
 	 * @throws BadRequestException 확장자·크기·개수 검증 실패 시
 	 */
-	public static void validateFileMetadataList(
+	public static void validateUploadRequests(
 		@NotNull List<String> fileNames,
 		@NotNull List<Long> fileSizes,
+		@NotNull List<String> contentTypes,
 		@NotNull FilePath filePath) {
 		if (fileNames.isEmpty()) {
 			throw FileErrorCode.FILE_LIST_EMPTY.toBaseException();
 		}
 		validateFileCount(fileNames.size(), filePath);
 		for (int i = 0; i < fileNames.size(); i++) {
-			validateFileMetadata(fileNames.get(i), fileSizes.get(i), filePath);
+			validateUploadRequest(fileNames.get(i), fileSizes.get(i), filePath, contentTypes.get(i));
 		}
 	}
 
@@ -92,6 +98,34 @@ public final class FileValidator {
 		for (MultipartFile file : fileList) {
 			validateFile(file, filePath);
 		}
+	}
+
+	/**
+	 * Content-Type과 확장자 일치 여부 검증
+	 * 1차 타입(image/video/application 등)이 일치하지 않으면 거부합니다.
+	 *
+	 * @param extension   파일 확장자 (소문자)
+	 * @param contentType 클라이언트 제공 MIME 타입
+	 * @throws BadRequestException Content-Type이 유효하지 않거나 확장자와 불일치할 경우
+	 */
+	public static void validateContentType(String extension, String contentType) {
+		MediaType provided;
+		try {
+			provided = MediaType.parseMediaType(contentType);
+		} catch (InvalidMediaTypeException e) {
+			log.warn("Invalid Content-Type format: {}", contentType);
+			throw new BadRequestException(ErrorCode.INVALID_PARAMETER,
+				"유효하지 않은 Content-Type입니다: " + contentType);
+		}
+
+		MediaTypeFactory.getMediaType("file." + extension).ifPresent(expected -> {
+			if (!provided.getType().equals(expected.getType())) {
+				log.warn("Content-Type mismatch. Extension: {}, Expected primary type: {}, Provided: {}",
+					extension, expected.getType(), contentType);
+				throw new BadRequestException(ErrorCode.INVALID_PARAMETER,
+					"Content-Type이 파일 형식과 일치하지 않습니다. 제공된 Content-Type: " + contentType);
+			}
+		});
 	}
 
 	/**

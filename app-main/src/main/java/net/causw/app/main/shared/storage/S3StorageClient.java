@@ -63,13 +63,14 @@ public class S3StorageClient implements StorageClient {
 		PutObjectRequest putObjectRequest = PutObjectRequest.builder()
 			.bucket(bucketName)
 			.key(fileKey)
-			.contentType(file.getContentType())
+			.contentType(metadata.contentType())
+			.contentLength(metadata.fileSize())
 			.contentDisposition(createContentDisposition(metadata))
 			.acl(ObjectCannedACL.PUBLIC_READ)
 			.build();
 
 		try (InputStream inputStream = file.getInputStream()) {
-			s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(inputStream, file.getSize()));
+			s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(inputStream, metadata.fileSize()));
 
 			String fileUrl = s3Client.utilities()
 				.getUrl(GetUrlRequest.builder().bucket(bucketName).key(fileKey).build())
@@ -81,7 +82,7 @@ public class S3StorageClient implements StorageClient {
 			return StorageResult.of(
 				fileKey,
 				fileUrl,
-				file.getSize(),
+				metadata.fileSize(),
 				Instant.now());
 
 		} catch (IOException e) {
@@ -116,6 +117,7 @@ public class S3StorageClient implements StorageClient {
 				.bucket(bucketName)
 				.key(fileKey)
 				.contentType(metadata.contentType())
+				.contentLength(metadata.fileSize())
 				.build())
 			.build();
 
