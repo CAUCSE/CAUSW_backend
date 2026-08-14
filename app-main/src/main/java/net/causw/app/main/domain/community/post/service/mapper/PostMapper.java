@@ -26,7 +26,8 @@ public class PostMapper {
 
 	public static Post fromCreateCommand(PostCreateCommand command, User writer, Board board,
 		List<UuidFile> images) {
-		return Post.of(null,
+		return Post.of(
+			command.title(),
 			command.content(),
 			writer,
 			command.isAnonymous(),
@@ -37,6 +38,7 @@ public class PostMapper {
 	public static PostCreateResult toCreateResult(Post post, List<String> images) {
 		return PostCreateResult.builder()
 			.id(post.getId())
+			.title(post.getTitle())
 			.content(post.getContent())
 			.isAnonymous(post.getIsAnonymous())
 			.fileUrlList(images)
@@ -50,6 +52,7 @@ public class PostMapper {
 	public static PostUpdateResult toUpdateResult(Post post, List<String> images) {
 		return PostUpdateResult.builder()
 			.id(post.getId())
+			.title(post.getTitle())
 			.content(post.getContent())
 			.isAnonymous(post.getIsAnonymous())
 			.fileUrlList(images)
@@ -95,6 +98,7 @@ public class PostMapper {
 
 		return PostListResult.PostItem.of(
 			result.postId(),
+			result.title(),
 			result.content(),
 			result.numComment(),
 			result.numLike(),
@@ -172,6 +176,7 @@ public class PostMapper {
 
 		return PostDetailResult.builder()
 			.id(post.getId())
+			.title(post.getTitle())
 			.content(post.getContent())
 			.isDeleted(post.getIsDeleted())
 			.displayWriterNickname(displayWriterNickname)

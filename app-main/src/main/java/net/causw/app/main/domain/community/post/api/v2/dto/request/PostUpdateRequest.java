@@ -11,6 +11,9 @@ import jakarta.validation.constraints.NotNull;
 
 @Schema(description = "게시글 수정 요청. multipart/form-data 형식으로 'request' 파트(JSON)와 'images' 파트(새 파일 배열)로 구성됩니다.")
 public record PostUpdateRequest(
+	@Schema(description = "게시글 제목. 선택 사항이며 입력하지 않을 경우 null로 처리됩니다.", example = "수정된 게시글 제목")
+	String title,
+
 	@NotNull(message = "익명글 여부를 선택해 주세요.") @Schema(description = "익명글 여부", example = "false") Boolean isAnonymous,
 
 	@NotBlank(message = "게시글 내용을 입력해 주세요.") @Schema(description = "게시글 내용", example = "수정된 게시글 내용입니다.") String content,
