@@ -115,7 +115,6 @@ public class S3StorageClient implements StorageClient {
 			.putObjectRequest(PutObjectRequest.builder()
 				.bucket(bucketName)
 				.key(fileKey)
-				.acl(ObjectCannedACL.PUBLIC_READ)
 				.build())
 			.build();
 
