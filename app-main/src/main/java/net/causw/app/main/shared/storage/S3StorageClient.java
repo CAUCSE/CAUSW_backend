@@ -115,6 +115,7 @@ public class S3StorageClient implements StorageClient {
 			.putObjectRequest(PutObjectRequest.builder()
 				.bucket(bucketName)
 				.key(fileKey)
+				.contentType(metadata.contentType())
 				.build())
 			.build();
 

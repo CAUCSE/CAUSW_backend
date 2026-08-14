@@ -13,5 +13,7 @@ public record PresignedUrlRequest(
 
 	@NotNull(message = "파일 크기를 입력해 주세요.") @Positive(message = "파일 크기는 0보다 커야 합니다.") @Schema(description = "파일 크기 (bytes)", example = "1048576") Long fileSize,
 
+	@NotBlank(message = "Content-Type을 입력해 주세요.") @Schema(description = "파일 MIME 타입", example = "image/jpeg") String contentType,
+
 	@NotNull(message = "파일 경로 타입을 선택해 주세요.") @Schema(description = "파일 경로 타입", example = "POST") FilePath filePath) {
 }

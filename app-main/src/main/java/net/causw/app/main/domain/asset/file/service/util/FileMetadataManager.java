@@ -31,7 +31,10 @@ public final class FileMetadataManager {
 	 * @param filePath 파일 경로 타입
 	 * @return 파일 메타데이터
 	 */
-	public static FileMetadata createMetadataFromFileName(@NotBlank String fileName, @NotNull FilePath filePath) {
+	public static FileMetadata createMetadataFromFileName(
+		@NotBlank String fileName,
+		@NotNull FilePath filePath,
+		@NotBlank String contentType) {
 		String uuid = generateUuid();
 		String rawFileName = extractRawFileName(fileName);
 		String extension = extractExtension(fileName);
@@ -40,7 +43,7 @@ public final class FileMetadataManager {
 		log.debug("Created file metadata from name. UUID: {}, FileName: {}, Extension: {}, FileKey: {}",
 			uuid, rawFileName, extension, fileKey);
 
-		return FileMetadata.of(uuid, rawFileName, extension, fileName, filePath, fileKey);
+		return FileMetadata.of(uuid, rawFileName, extension, fileName, filePath, fileKey, contentType);
 	}
 
 	/**
@@ -56,6 +59,9 @@ public final class FileMetadataManager {
 		String rawFileName = extractRawFileName(originalFileName);
 		String extension = extractExtension(originalFileName);
 		String fileKey = buildFileKey(uuid, rawFileName, extension, filePath);
+		String contentType = file.getContentType() != null
+			? file.getContentType()
+			: "application/octet-stream";
 
 		log.debug("Created file metadata. UUID: {}, FileName: {}, Extension: {}, FileKey: {}",
 			uuid, rawFileName, extension, fileKey);
@@ -66,7 +72,8 @@ public final class FileMetadataManager {
 			extension,
 			originalFileName,
 			filePath,
-			fileKey);
+			fileKey,
+			contentType);
 	}
 
 	/**
