@@ -71,7 +71,7 @@ public class CeremonyService {
 	}
 
 	@Transactional
-	public CeremonyDetailResult createCeremonyV2(
+	public CeremonyDetailResult createCeremony(
 		User user,
 		@Valid CeremonyCreateCommand command,
 		List<MultipartFile> imageFileList) {

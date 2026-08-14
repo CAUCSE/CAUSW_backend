@@ -94,7 +94,7 @@ class AdmissionServiceTest {
 				.thenReturn(admission);
 
 			// when
-			AdmissionResult result = admissionService.createAdmissionV2(user, command, attachImages);
+			AdmissionResult result = admissionService.createAdmission(user, command, attachImages);
 
 			// then
 			assertThat(result).isNotNull();
@@ -139,7 +139,7 @@ class AdmissionServiceTest {
 				.thenReturn(admission);
 
 			// when
-			AdmissionResult result = admissionService.createAdmissionV2(user, command, attachImages);
+			AdmissionResult result = admissionService.createAdmission(user, command, attachImages);
 
 			// then
 			assertThat(result).isNotNull();
@@ -167,7 +167,7 @@ class AdmissionServiceTest {
 				.validateAdmissionCreate(eq(user), anyString(), any(), any(), eq(attachImages));
 
 			// when & then
-			assertThatThrownBy(() -> admissionService.createAdmissionV2(user, command, attachImages))
+			assertThatThrownBy(() -> admissionService.createAdmission(user, command, attachImages))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
 				.isEqualTo(UserErrorCode.INVALID_USER_STATE_FOR_ADMISSION);
@@ -191,7 +191,7 @@ class AdmissionServiceTest {
 				.validateAdmissionCreate(eq(user), anyString(), any(), any(), eq(attachImages));
 
 			// when & then
-			assertThatThrownBy(() -> admissionService.createAdmissionV2(user, command, attachImages))
+			assertThatThrownBy(() -> admissionService.createAdmission(user, command, attachImages))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
 				.isEqualTo(UserErrorCode.ADMISSION_ALREADY_EXISTS);
@@ -215,7 +215,7 @@ class AdmissionServiceTest {
 				.validateAdmissionCreate(eq(user), anyString(), any(), any(), eq(attachImages));
 
 			// when & then
-			assertThatThrownBy(() -> admissionService.createAdmissionV2(user, command, attachImages))
+			assertThatThrownBy(() -> admissionService.createAdmission(user, command, attachImages))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
 				.isEqualTo(UserErrorCode.STUDENT_ID_ALREADY_EXIST);
@@ -238,7 +238,7 @@ class AdmissionServiceTest {
 				.when(admissionValidator).validateAdmissionCreate(eq(user), anyString(), any(), any(), eq(emptyImages));
 
 			// when & then
-			assertThatThrownBy(() -> admissionService.createAdmissionV2(user, command, emptyImages))
+			assertThatThrownBy(() -> admissionService.createAdmission(user, command, emptyImages))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
 				.isEqualTo(UserErrorCode.ADMISSION_IMAGE_REQUIRED);

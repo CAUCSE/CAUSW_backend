@@ -47,12 +47,12 @@ public class CeremonyController {
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(value = HttpStatus.CREATED)
 	@Operation(summary = "사용자 본인의 경조사 생성", description = "이미지를 직접 첨부(multipart/form-data)하거나, presigned URL로 업로드한 이미지 UUID(application/json)를 전달하여 경조사를 생성합니다.")
-	public ApiResponse<CeremonyDetailResponse> createCeremonyV2(
+	public ApiResponse<CeremonyDetailResponse> createCeremonyByMultipart(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestPart(value = "ceremonyCreateRequest") @Valid CeremonyCreateRequest request,
 		@RequestPart(value = "imageFileList", required = false) List<MultipartFile> imageFileList) {
 		CeremonyCreateCommand command = ceremonyDtoMapper.toCreateCommand(request);
-		CeremonyDetailResult result = ceremonyService.createCeremonyV2(userDetails.getUser(), command, imageFileList);
+		CeremonyDetailResult result = ceremonyService.createCeremony(userDetails.getUser(), command, imageFileList);
 		return ApiResponse.success(ceremonyDtoMapper.toDetailResponse(result));
 	}
 

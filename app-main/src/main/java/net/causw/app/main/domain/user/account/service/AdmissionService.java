@@ -82,7 +82,7 @@ public class AdmissionService {
 	 * - 요청 학번이 다른 ACTIVE/INACTIVE/DROP 사용자와 중복되지 않아야 함
 	 */
 	@Transactional
-	public AdmissionResult createAdmissionV2(
+	public AdmissionResult createAdmission(
 		User user,
 		AdmissionCreateCommand dto,
 		List<MultipartFile> attachImages) {

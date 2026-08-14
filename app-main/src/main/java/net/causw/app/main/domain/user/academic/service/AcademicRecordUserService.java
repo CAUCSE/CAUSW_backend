@@ -119,7 +119,7 @@ public class AcademicRecordUserService {
 	 * @return 학적 상태 변경 신청 결과
 	 */
 	@Transactional
-	public AcademicStatusResponse<EnrollmentDetailsResponse> updateStatusToEnrolledV2(
+	public AcademicStatusResponse<EnrollmentDetailsResponse> updateStatusToEnrolled(
 		User requester,
 		EnrollmentApplicationRequest request,
 		List<MultipartFile> imageFileList) {

@@ -135,7 +135,7 @@ class AcademicRecordUserServiceTest {
 		when(applicationWriter.createEnrollmentApplication(user, "복학 신청", List.of(uuidFile)))
 			.thenReturn(application);
 
-		AcademicStatusResponse<EnrollmentDetailsResponse> response = academicRecordUserService.updateStatusToEnrolledV2(
+		AcademicStatusResponse<EnrollmentDetailsResponse> response = academicRecordUserService.updateStatusToEnrolled(
 			user,
 			request,
 			List.of(image));
@@ -162,7 +162,7 @@ class AcademicRecordUserServiceTest {
 
 		when(userReader.findUserById(user.getId())).thenReturn(user);
 
-		assertThatThrownBy(() -> academicRecordUserService.updateStatusToEnrolledV2(user, request, List.of(image)))
+		assertThatThrownBy(() -> academicRecordUserService.updateStatusToEnrolled(user, request, List.of(image)))
 			.isInstanceOf(BaseRunTimeV2Exception.class);
 
 		verifyNoInteractions(fileWriter, applicationWriter, logCreator, userWriter);
@@ -179,7 +179,7 @@ class AcademicRecordUserServiceTest {
 
 		when(userReader.findUserById(user.getId())).thenReturn(user);
 
-		assertThatThrownBy(() -> academicRecordUserService.updateStatusToEnrolledV2(user, request, List.of(emptyImage)))
+		assertThatThrownBy(() -> academicRecordUserService.updateStatusToEnrolled(user, request, List.of(emptyImage)))
 			.isInstanceOf(BaseRunTimeV2Exception.class);
 
 		verifyNoInteractions(fileWriter, applicationWriter, logCreator, userWriter, eventPublisher);

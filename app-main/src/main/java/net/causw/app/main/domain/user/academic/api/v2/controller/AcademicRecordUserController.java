@@ -46,12 +46,12 @@ public class AcademicRecordUserController {
 
 	@PostMapping(value = "/return", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@Operation(summary = "학적상태변경(졸업 -> 재학) 요청", description = "이미지를 직접 첨부(multipart/form-data)하거나, presigned URL로 업로드한 이미지 UUID(application/json)를 전달하여 재학 변경을 신청합니다.")
-	public ApiResponse<AcademicStatusResponse<EnrollmentDetailsResponse>> updateStatusToEnrolledV2(
+	public ApiResponse<AcademicStatusResponse<EnrollmentDetailsResponse>> updateStatusToEnrolledByMultipart(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestPart(value = "enrollmentApplicationRequest") @Valid EnrollmentApplicationRequest req,
 		@RequestPart(value = "imageFileList", required = false) List<MultipartFile> imageFileList) {
 		return ApiResponse.success(
-			academicRecordUserService.updateStatusToEnrolledV2(userDetails.getUser(), req, imageFileList));
+			academicRecordUserService.updateStatusToEnrolled(userDetails.getUser(), req, imageFileList));
 	}
 
 	@PostMapping(value = "/return", consumes = MediaType.APPLICATION_JSON_VALUE)

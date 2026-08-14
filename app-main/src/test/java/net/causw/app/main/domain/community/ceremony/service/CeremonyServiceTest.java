@@ -82,7 +82,7 @@ public class CeremonyServiceTest {
 				.when(ceremonyValidator).validateForCreate(command);
 
 			// when & then
-			assertThatThrownBy(() -> ceremonyService.createCeremonyV2(user, command, null))
+			assertThatThrownBy(() -> ceremonyService.createCeremony(user, command, null))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.CUSTOM_CATEGORY_REQUIRED);
 			then(uuidFileService).should(never()).saveFileList(any(), any());
@@ -97,7 +97,7 @@ public class CeremonyServiceTest {
 			doThrow(CeremonyErrorCode.FAMILY_RELATION_REQUIRED.toBaseException())
 				.when(ceremonyValidator).validateForCreate(command);
 
-			assertThatThrownBy(() -> ceremonyService.createCeremonyV2(user, command, null))
+			assertThatThrownBy(() -> ceremonyService.createCeremony(user, command, null))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.FAMILY_RELATION_REQUIRED);
 			then(uuidFileService).should(never()).saveFileList(any(), any());
@@ -112,7 +112,7 @@ public class CeremonyServiceTest {
 			doThrow(CeremonyErrorCode.ALUMNI_NAME_REQUIRED.toBaseException())
 				.when(ceremonyValidator).validateForCreate(command);
 
-			assertThatThrownBy(() -> ceremonyService.createCeremonyV2(user, command, null))
+			assertThatThrownBy(() -> ceremonyService.createCeremony(user, command, null))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.ALUMNI_NAME_REQUIRED);
 			then(uuidFileService).should(never()).saveFileList(any(), any());
@@ -127,7 +127,7 @@ public class CeremonyServiceTest {
 			doThrow(CeremonyErrorCode.ALUMNI_ADMISSION_YEAR_REQUIRED.toBaseException())
 				.when(ceremonyValidator).validateForCreate(command);
 
-			assertThatThrownBy(() -> ceremonyService.createCeremonyV2(user, command, null))
+			assertThatThrownBy(() -> ceremonyService.createCeremony(user, command, null))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.ALUMNI_ADMISSION_YEAR_REQUIRED);
 			then(uuidFileService).should(never()).saveFileList(any(), any());
@@ -143,7 +143,7 @@ public class CeremonyServiceTest {
 				.when(ceremonyValidator).validateForCreate(command);
 
 			// when & then
-			assertThatThrownBy(() -> ceremonyService.createCeremonyV2(user, command, null))
+			assertThatThrownBy(() -> ceremonyService.createCeremony(user, command, null))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.START_TIME_REQUIRED);
 			then(uuidFileService).should(never()).saveFileList(any(), any());
@@ -159,7 +159,7 @@ public class CeremonyServiceTest {
 				.when(ceremonyValidator).validateForCreate(command);
 
 			// when & then
-			assertThatThrownBy(() -> ceremonyService.createCeremonyV2(user, command, null))
+			assertThatThrownBy(() -> ceremonyService.createCeremony(user, command, null))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.TARGET_ADMISSION_YEARS_REQUIRED);
 			then(uuidFileService).should(never()).saveFileList(any(), any());

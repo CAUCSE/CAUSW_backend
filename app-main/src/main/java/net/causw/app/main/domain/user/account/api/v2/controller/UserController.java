@@ -108,12 +108,12 @@ public class UserController {
 		+ "관리자 승인 후 서비스 이용이 가능합니다.")
 	@PostMapping(value = "/me/admission", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.CREATED)
-	public ApiResponse<AdmissionResponse> createAdmissionV2(
+	public ApiResponse<AdmissionResponse> createAdmissionByMultipart(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestPart(value = "request") @Valid AdmissionCreateRequest request,
 		@RequestPart(value = "attachImages") List<MultipartFile> attachImages) {
 
-		AdmissionResult result = admissionService.createAdmissionV2(
+		AdmissionResult result = admissionService.createAdmission(
 			userDetails.getUser(),
 			admissionDtoMapper.toCreateCommand(request),
 			attachImages);
