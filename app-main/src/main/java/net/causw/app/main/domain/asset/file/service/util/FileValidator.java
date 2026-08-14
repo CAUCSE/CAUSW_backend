@@ -45,12 +45,13 @@ public final class FileValidator {
 	}
 
 	/**
-	 * 파일명 + 크기 기반 메타데이터 검증 (Presigned URL 발급 시 사용)
+	 * 파일명·크기·Content-Type 기반 업로드 요청 검증 (Presigned URL 발급 시 사용)
 	 *
-	 * @param fileName 원본 파일명
-	 * @param fileSize 파일 크기 (bytes)
-	 * @param filePath 파일 경로 타입
-	 * @throws BadRequestException 검증 실패 시
+	 * @param fileName    원본 파일명
+	 * @param fileSize    파일 크기 (bytes)
+	 * @param filePath    파일 경로 타입
+	 * @param contentType 클라이언트 제공 MIME 타입
+	 * @throws BadRequestException 확장자·크기·Content-Type 검증 실패 시
 	 */
 	public static void validateUploadRequest(String fileName, long fileSize, @NotNull FilePath filePath,
 		String contentType) {
@@ -61,26 +62,18 @@ public final class FileValidator {
 	}
 
 	/**
-	 * 파일 메타데이터 목록 검증 (다중 Presigned URL 발급 시 사용)
+	 * 다중 파일 업로드 요청 목록 검증 (다중 Presigned URL 발급 시 사용)
 	 *
-	 * @param fileNames 원본 파일명 목록
-	 * @param fileSizes 파일 크기 목록 (bytes)
-	 * @param filePath  파일 경로 타입
+	 * @param count    파일 개수
+	 * @param filePath 파일 경로 타입
 	 * @throws BaseRunTimeV2Exception 파일 목록이 비어있을 경우 (FILE_LIST_EMPTY)
-	 * @throws BadRequestException 확장자·크기·개수 검증 실패 시
+	 * @throws BadRequestException 개수 초과 시
 	 */
-	public static void validateUploadRequests(
-		@NotNull List<String> fileNames,
-		@NotNull List<Long> fileSizes,
-		@NotNull List<String> contentTypes,
-		@NotNull FilePath filePath) {
-		if (fileNames.isEmpty()) {
+	public static void validateUploadRequestCount(int count, @NotNull FilePath filePath) {
+		if (count == 0) {
 			throw FileErrorCode.FILE_LIST_EMPTY.toBaseException();
 		}
-		validateFileCount(fileNames.size(), filePath);
-		for (int i = 0; i < fileNames.size(); i++) {
-			validateUploadRequest(fileNames.get(i), fileSizes.get(i), filePath, contentTypes.get(i));
-		}
+		validateFileCount(count, filePath);
 	}
 
 	/**

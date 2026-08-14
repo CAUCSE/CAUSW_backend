@@ -298,7 +298,12 @@ public class FileWriter {
 	}
 
 	/**
-	 * UUID 목록으로 PENDING 파일을 검증하고 CONFIRMED(isUploaded=true)로 전환
+	 * UUID 목록으로 PENDING 파일을 검증하고 CONFIRMED(isUploaded=true, isUsed=true)로 전환
+	 * 조건부 UPDATE로 이미 confirm된 파일이 있으면 예외를 던져 중복 confirm을 방지합니다.
+	 *
+	 * @param uuids            confirm할 파일 UUID 목록
+	 * @param expectedFilePath 파일이 등록된 경로 타입 (불일치 시 예외)
+	 * @return confirm된 파일 엔티티 목록
 	 */
 	@Transactional
 	public List<UuidFile> confirmFiles(@NotNull List<String> uuids, @NotNull FilePath expectedFilePath) {

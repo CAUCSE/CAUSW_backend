@@ -26,9 +26,12 @@ public final class FileMetadataManager {
 
 	/**
 	 * 파일명 문자열로부터 FileMetadata 생성 (Presigned URL 발급 시 사용)
+	 * contentType·fileSize는 클라이언트가 선언한 값을 그대로 사용합니다.
 	 *
-	 * @param fileName 원본 파일명
-	 * @param filePath 파일 경로 타입
+	 * @param fileName    원본 파일명 (확장자 포함)
+	 * @param filePath    파일 경로 타입
+	 * @param contentType 클라이언트 제공 MIME 타입
+	 * @param fileSize    클라이언트 제공 파일 크기 (bytes)
 	 * @return 파일 메타데이터
 	 */
 	public static FileMetadata createMetadataFromFileName(
