@@ -59,7 +59,8 @@ public class UuidFileService {
 		// presigned PUT URL 발급
 		FileMetadata metadata = FileMetadataManager.createMetadataFromFileName(
 			request.fileName(), request.filePath(), request.contentType(), request.fileSize());
-		PresignedUploadResult presignedResult = storageClient.generatePresignedUploadUrl(metadata, PRESIGNED_URL_EXPIRY);
+		PresignedUploadResult presignedResult = storageClient.generatePresignedUploadUrl(metadata,
+			PRESIGNED_URL_EXPIRY);
 
 		// 업로드 대기 상태로 DB 등록
 		UuidFile pending = fileWriter.savePending(metadata, presignedResult.fileUrl());
@@ -78,17 +79,16 @@ public class UuidFileService {
 	public MultiplePresignedUrlResponse issueMultiplePresignedUrls(@NotNull MultiplePresignedUrlRequest request) {
 		// 파일 개수 및 각 파일 확장자·크기·Content-Type 검증
 		FileValidator.validateUploadRequestCount(request.files().size(), request.filePath());
-		request.files().forEach(entry ->
-			FileValidator.validateUploadRequest(
-				entry.fileName(), entry.fileSize(), request.filePath(), entry.contentType()));
+		request.files().forEach(entry -> FileValidator.validateUploadRequest(
+			entry.fileName(), entry.fileSize(), request.filePath(), entry.contentType()));
 
 		// 파일별 presigned URL 발급 및 DB 등록
 		List<PresignedUrlResponse> responses = request.files().stream()
 			.map(entry -> {
 				FileMetadata metadata = FileMetadataManager.createMetadataFromFileName(
 					entry.fileName(), request.filePath(), entry.contentType(), entry.fileSize());
-				PresignedUploadResult presignedResult =
-					storageClient.generatePresignedUploadUrl(metadata, PRESIGNED_URL_EXPIRY);
+				PresignedUploadResult presignedResult = storageClient.generatePresignedUploadUrl(metadata,
+					PRESIGNED_URL_EXPIRY);
 				UuidFile pending = fileWriter.savePending(metadata, presignedResult.fileUrl());
 				return PresignedUrlResponse.of(pending, presignedResult);
 			})

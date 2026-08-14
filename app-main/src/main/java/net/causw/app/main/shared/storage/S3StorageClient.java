@@ -152,8 +152,8 @@ public class S3StorageClient implements StorageClient {
 
 		List<S3Error> errors = response.errors();
 		if (!errors.isEmpty()) {
-			errors.forEach(e ->
-				log.warn("[S3 Bulk Delete] 삭제 실패. key={}, code={}, message={}", e.key(), e.code(), e.message()));
+			errors.forEach(
+				e -> log.warn("[S3 Bulk Delete] 삭제 실패. key={}, code={}, message={}", e.key(), e.code(), e.message()));
 		}
 
 		return response.deleted().stream()
