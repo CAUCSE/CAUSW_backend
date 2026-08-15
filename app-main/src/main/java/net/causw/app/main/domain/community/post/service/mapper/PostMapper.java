@@ -26,8 +26,11 @@ public class PostMapper {
 
 	public static Post fromCreateCommand(PostCreateCommand command, User writer, Board board,
 		List<UuidFile> images) {
+
+		String title = command.title();
+
 		return Post.of(
-			command.title(),
+			title == null || title.isBlank() ? null : title,
 			command.content(),
 			writer,
 			command.isAnonymous(),

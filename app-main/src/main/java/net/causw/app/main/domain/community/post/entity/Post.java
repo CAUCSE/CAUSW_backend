@@ -151,7 +151,7 @@ public class Post extends BaseEntity {
 	}
 
 	public void update(String title, String content, Boolean isAnonymous, List<PostAttachImage> postAttachImageList) {
-		this.title = title;
+		this.title = title != null ? title : this.title;
 		this.content = content;
 		this.isAnonymous = (isAnonymous != null) ? isAnonymous : this.isAnonymous;
 		this.postAttachImageList.clear();

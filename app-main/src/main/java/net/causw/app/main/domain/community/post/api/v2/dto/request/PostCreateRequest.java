@@ -9,7 +9,7 @@ import jakarta.validation.constraints.NotNull;
 
 @Schema(description = "게시글 생성 요청. multipart/form-data 형식으로 'request' 파트(JSON)와 'images' 파트(파일 배열)로 구성됩니다.")
 public record PostCreateRequest(
-	@Schema(description = "게시글 제목. 선택 사항이며 입력하지 않을 경우 null로 저장됩니다.", example = "학생회 공지사항", nullable = true) String title,
+	@Schema(description = "게시글 제목. 선택 사항이며 생략하거나 null로 전달하면 제목 없이 게시글이 생성되며, 빈 문자열도 제목 없음으로 처리됩니다.", example = "학생회 공지사항", nullable = true) String title,
 
 	@NotBlank(message = "게시글 내용을 입력해 주세요.") @Schema(description = "게시글 내용", example = "안녕하세요. 학생회입니다. 공지사항입니다.") String content,
 
