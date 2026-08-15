@@ -112,9 +112,10 @@ public final class FileValidator {
 		}
 
 		MediaTypeFactory.getMediaType("file." + extension).ifPresent(expected -> {
-			if (!provided.getType().equals(expected.getType())) {
-				log.warn("Content-Type mismatch. Extension: {}, Expected primary type: {}, Provided: {}",
-					extension, expected.getType(), contentType);
+			if (!provided.getType().equals(expected.getType())
+				|| !provided.getSubtype().equals(expected.getSubtype())) {
+				log.warn("Content-Type mismatch. Extension: {}, Expected: {}, Provided: {}",
+					extension, expected, contentType);
 				throw new BadRequestException(ErrorCode.INVALID_PARAMETER,
 					"Content-Type이 파일 형식과 일치하지 않습니다. 제공된 Content-Type: " + contentType);
 			}
