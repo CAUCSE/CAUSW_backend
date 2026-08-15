@@ -25,7 +25,6 @@ import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.asset.file.service.implementation.FileWriter;
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.request.CeremonyCreateRequest;
-import net.causw.app.main.shared.exception.errorcode.FileErrorCode;
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyContext;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyState;
@@ -39,6 +38,7 @@ import net.causw.app.main.domain.community.ceremony.util.CeremonyValidator;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.CeremonyErrorCode;
+import net.causw.app.main.shared.exception.errorcode.FileErrorCode;
 import net.causw.app.main.shared.pageable.PageableFactory;
 import net.causw.global.constant.StaticValue;
 
@@ -211,7 +211,7 @@ public class CeremonyServiceTest {
 			then(ceremonyValidator).should(times(1)).validateForCreate(command);
 			then(fileWriter).should(times(1)).confirmFiles(uuids, FilePath.CEREMONY);
 			then(ceremonyCreator).should(times(1)).save(ceremony);
-			then(applicationEventPublisher).should(times(1)).publishEvent((Object) any());
+			then(applicationEventPublisher).should(times(1)).publishEvent((Object)any());
 		}
 
 		@Test

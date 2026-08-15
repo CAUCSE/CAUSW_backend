@@ -199,8 +199,8 @@ class AcademicRecordUserServiceTest {
 		when(fileWriter.confirmFiles(uuids, FilePath.USER_ACADEMIC_RECORD_APPLICATION)).thenReturn(confirmedFiles);
 		when(applicationWriter.createEnrollmentApplication(user, "복학 신청", confirmedFiles)).thenReturn(application);
 
-		AcademicStatusResponse<EnrollmentDetailsResponse> response =
-			academicRecordUserService.updateStatusToEnrolled(user, request);
+		AcademicStatusResponse<EnrollmentDetailsResponse> response = academicRecordUserService
+			.updateStatusToEnrolled(user, request);
 
 		assertThat(response.requestedStatus()).isEqualTo(AcademicStatus.ENROLLED);
 		assertThat(response.updatedStatus()).isEqualTo(AcademicStatus.GRADUATED);

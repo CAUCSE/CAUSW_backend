@@ -302,7 +302,7 @@ class AdmissionServiceTest {
 				eq(command.requestedAcademicStatus()), eq(command.requestedStudentId()),
 				eq(command.requestedAdmissionYear()), eq(command.requestedDepartment()),
 				eq(command.graduationYear()));
-			verify(eventPublisher).publishEvent((Object) any());
+			verify(eventPublisher).publishEvent((Object)any());
 		}
 
 		@Test
@@ -380,7 +380,7 @@ class AdmissionServiceTest {
 				.isEqualTo(FileErrorCode.FILE_NOT_UPLOADED);
 
 			verify(admissionWriter, never()).create(any(), any(), any(), any(), any(), any(), any(), any());
-			verify(eventPublisher, never()).publishEvent((Object) any());
+			verify(eventPublisher, never()).publishEvent((Object)any());
 		}
 	}
 
