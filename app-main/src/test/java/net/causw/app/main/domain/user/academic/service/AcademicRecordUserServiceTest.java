@@ -40,6 +40,8 @@ import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
+import net.causw.app.main.shared.exception.errorcode.AcademicRecordApplicationErrorCode;
+import net.causw.app.main.shared.exception.errorcode.FileErrorCode;
 import net.causw.app.main.util.ObjectFixtures;
 
 @ExtendWith(MockitoExtension.class)
@@ -166,6 +168,117 @@ class AcademicRecordUserServiceTest {
 			.isInstanceOf(BaseRunTimeV2Exception.class);
 
 		verifyNoInteractions(fileWriter, applicationWriter, logCreator, userWriter);
+	}
+
+	@Test
+	@DisplayName("(presigned) 졸업 사용자가 재학 변경 요청 시 imageUuids가 있으면 confirmFiles 호출 후 신청서를 생성한다")
+	void updateStatusToEnrolled_presigned_success() {
+		User user = ObjectFixtures.getCertifiedUserWithId("user-p1");
+		user.setAcademicStatus(AcademicStatus.GRADUATED);
+
+		List<String> uuids = List.of("uuid-1", "uuid-2");
+		EnrollmentApplicationRequest request = new EnrollmentApplicationRequest("복학 신청", uuids);
+
+		UuidFile uuidFile1 = UuidFile.of("uuid-1", "key-1", "https://example.com/1.png", "proof1", "png",
+			FilePath.USER_ACADEMIC_RECORD_APPLICATION);
+		UuidFile uuidFile2 = UuidFile.of("uuid-2", "key-2", "https://example.com/2.png", "proof2", "png",
+			FilePath.USER_ACADEMIC_RECORD_APPLICATION);
+		List<UuidFile> confirmedFiles = List.of(uuidFile1, uuidFile2);
+
+		UserAcademicRecordApplication application = UserAcademicRecordApplication.createWithImage(
+			user,
+			net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicRecordRequestStatus.AWAIT,
+			AcademicStatus.ENROLLED,
+			null,
+			"복학 신청",
+			confirmedFiles);
+		ReflectionTestUtils.setField(application, "id", "application-p1");
+		ReflectionTestUtils.setField(application, "createdAt", LocalDateTime.of(2026, 5, 1, 10, 0));
+
+		when(userReader.findUserById(user.getId())).thenReturn(user);
+		when(fileWriter.confirmFiles(uuids, FilePath.USER_ACADEMIC_RECORD_APPLICATION)).thenReturn(confirmedFiles);
+		when(applicationWriter.createEnrollmentApplication(user, "복학 신청", confirmedFiles)).thenReturn(application);
+
+		AcademicStatusResponse<EnrollmentDetailsResponse> response =
+			academicRecordUserService.updateStatusToEnrolled(user, request);
+
+		assertThat(response.requestedStatus()).isEqualTo(AcademicStatus.ENROLLED);
+		assertThat(response.updatedStatus()).isEqualTo(AcademicStatus.GRADUATED);
+		assertThat(response.recordDetails().applicationId()).isEqualTo("application-p1");
+
+		verify(fileWriter).confirmFiles(uuids, FilePath.USER_ACADEMIC_RECORD_APPLICATION);
+		verify(applicationWriter).createEnrollmentApplication(user, "복학 신청", confirmedFiles);
+		verifyNoInteractions(logCreator, userWriter, eventPublisher);
+	}
+
+	@Test
+	@DisplayName("(presigned) 졸업 상태가 아닌 사용자가 재학 변경 요청하면 예외가 발생한다")
+	void updateStatusToEnrolled_presigned_invalidTransition() {
+		User user = ObjectFixtures.getCertifiedUserWithId("user-p2");
+		// ENROLLED 상태 (기본값)
+		EnrollmentApplicationRequest request = new EnrollmentApplicationRequest("복학 신청", List.of("uuid-1"));
+
+		when(userReader.findUserById(user.getId())).thenReturn(user);
+
+		assertThatThrownBy(() -> academicRecordUserService.updateStatusToEnrolled(user, request))
+			.isInstanceOf(BaseRunTimeV2Exception.class)
+			.hasFieldOrPropertyWithValue("errorCode",
+				AcademicRecordApplicationErrorCode.ACADEMIC_RECORD_INVALID_STATUS_TRANSITION);
+
+		verifyNoInteractions(fileWriter, applicationWriter);
+	}
+
+	@Test
+	@DisplayName("(presigned) imageUuids가 null이면 예외가 발생한다")
+	void updateStatusToEnrolled_presigned_nullImageUuids() {
+		User user = ObjectFixtures.getCertifiedUserWithId("user-p3");
+		user.setAcademicStatus(AcademicStatus.GRADUATED);
+		EnrollmentApplicationRequest request = new EnrollmentApplicationRequest("복학 신청", null);
+
+		when(userReader.findUserById(user.getId())).thenReturn(user);
+
+		assertThatThrownBy(() -> academicRecordUserService.updateStatusToEnrolled(user, request))
+			.isInstanceOf(BaseRunTimeV2Exception.class)
+			.hasFieldOrPropertyWithValue("errorCode",
+				AcademicRecordApplicationErrorCode.ACADEMIC_RECORD_ENROLLMENT_IMAGE_REQUIRED);
+
+		verifyNoInteractions(fileWriter, applicationWriter);
+	}
+
+	@Test
+	@DisplayName("(presigned) imageUuids가 빈 리스트면 예외가 발생한다")
+	void updateStatusToEnrolled_presigned_emptyImageUuids() {
+		User user = ObjectFixtures.getCertifiedUserWithId("user-p4");
+		user.setAcademicStatus(AcademicStatus.GRADUATED);
+		EnrollmentApplicationRequest request = new EnrollmentApplicationRequest("복학 신청", List.of());
+
+		when(userReader.findUserById(user.getId())).thenReturn(user);
+
+		assertThatThrownBy(() -> academicRecordUserService.updateStatusToEnrolled(user, request))
+			.isInstanceOf(BaseRunTimeV2Exception.class)
+			.hasFieldOrPropertyWithValue("errorCode",
+				AcademicRecordApplicationErrorCode.ACADEMIC_RECORD_ENROLLMENT_IMAGE_REQUIRED);
+
+		verifyNoInteractions(fileWriter, applicationWriter);
+	}
+
+	@Test
+	@DisplayName("(presigned) confirmFiles가 FILE_NOT_UPLOADED 예외를 던지면 신청서를 생성하지 않는다")
+	void updateStatusToEnrolled_presigned_fileNotUploaded() {
+		User user = ObjectFixtures.getCertifiedUserWithId("user-p5");
+		user.setAcademicStatus(AcademicStatus.GRADUATED);
+		List<String> uuids = List.of("uuid-missing");
+		EnrollmentApplicationRequest request = new EnrollmentApplicationRequest("복학 신청", uuids);
+
+		when(userReader.findUserById(user.getId())).thenReturn(user);
+		when(fileWriter.confirmFiles(uuids, FilePath.USER_ACADEMIC_RECORD_APPLICATION))
+			.thenThrow(FileErrorCode.FILE_NOT_UPLOADED.toBaseException());
+
+		assertThatThrownBy(() -> academicRecordUserService.updateStatusToEnrolled(user, request))
+			.isInstanceOf(BaseRunTimeV2Exception.class)
+			.hasFieldOrPropertyWithValue("errorCode", FileErrorCode.FILE_NOT_UPLOADED);
+
+		verifyNoInteractions(applicationWriter);
 	}
 
 	@Test
