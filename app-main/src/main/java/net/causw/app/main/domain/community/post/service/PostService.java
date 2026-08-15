@@ -152,7 +152,7 @@ public class PostService {
 			post,
 			command.title(),
 			command.content(),
-			post.getForm(),
+			command.isAnonymous(),
 			imageResult.finalImages());
 
 		List<String> imageUrls = imageResult.finalImages().stream()

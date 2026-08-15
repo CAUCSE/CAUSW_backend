@@ -150,10 +150,10 @@ public class Post extends BaseEntity {
 		return post;
 	}
 
-	public void update(String title, String content, Form form, List<PostAttachImage> postAttachImageList) {
+	public void update(String title, String content, Boolean isAnonymous, List<PostAttachImage> postAttachImageList) {
 		this.title = title;
 		this.content = content;
-		this.form = form;
+		this.isAnonymous = (isAnonymous != null) ? isAnonymous : this.isAnonymous;
 		this.postAttachImageList.clear();
 		this.postAttachImageList.addAll(postAttachImageList);
 	}
