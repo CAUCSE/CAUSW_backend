@@ -358,6 +358,33 @@ class AdmissionServiceTest {
 		}
 
 		@Test
+		@DisplayName("imageUuids가 빈 목록이면 validator가 ADMISSION_IMAGE_REQUIRED를 던진다")
+		void givenEmptyImageUuids_whenCreateAdmissionPresigned_thenThrowsException() {
+			// given
+			User user = ObjectFixtures.getUserWithId("user-p5");
+			List<String> uuids = List.of();
+			AdmissionCreateCommand command = new AdmissionCreateCommand(
+				"설명",
+				net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus.ENROLLED,
+				"20231234", 2023,
+				net.causw.app.main.domain.user.account.enums.user.Department.SCHOOL_OF_SW,
+				null, uuids);
+
+			doThrow(UserErrorCode.ADMISSION_IMAGE_REQUIRED.toBaseException())
+				.when(admissionValidator)
+				.validateAdmissionCreateWithUuids(eq(user), anyString(), any(), any(), eq(uuids));
+
+			// when & then
+			assertThatThrownBy(() -> admissionService.createAdmission(user, command))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
+				.isEqualTo(UserErrorCode.ADMISSION_IMAGE_REQUIRED);
+
+			verify(fileWriter, never()).confirmFiles(any(), any());
+			verify(admissionWriter, never()).create(any(), any(), any(), any(), any(), any(), any(), any());
+		}
+
+		@Test
 		@DisplayName("confirmFiles가 FILE_NOT_UPLOADED를 던지면 신청서를 생성하지 않는다")
 		void givenFileNotUploaded_whenCreateAdmissionPresigned_thenThrowsException() {
 			// given

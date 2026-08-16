@@ -210,6 +210,7 @@ public class CeremonyServiceTest {
 			// then
 			then(ceremonyValidator).should(times(1)).validateForCreate(command);
 			then(fileWriter).should(times(1)).confirmFiles(uuids, FilePath.CEREMONY);
+			then(ceremonyCreateMapper).should().toCeremony(eq(user), eq(command), eq(List.of()), eq(confirmedFiles));
 			then(ceremonyCreator).should(times(1)).save(ceremony);
 			then(applicationEventPublisher).should(times(1)).publishEvent((Object)any());
 		}
@@ -234,6 +235,7 @@ public class CeremonyServiceTest {
 
 			// then
 			then(fileWriter).should(times(1)).confirmFiles(List.of(), FilePath.CEREMONY);
+			then(ceremonyCreateMapper).should().toCeremony(eq(user), eq(command), eq(List.of()), eq(List.of()));
 			then(ceremonyCreator).should(times(1)).save(ceremony);
 		}
 
