@@ -94,7 +94,8 @@ public class CrawledToPostTransferService {
 
 		if (existingPost != null) {
 			// 기존 Post 업데이트
-			existingPost.update(title, contentHtml, existingPost.getForm(), existingPost.getPostAttachImageList());
+			existingPost.update(title, contentHtml, existingPost.getIsAnonymous(),
+				existingPost.getPostAttachImageList());
 			postRepository.save(existingPost);
 
 			// 기존 크롤링 이미지 교체

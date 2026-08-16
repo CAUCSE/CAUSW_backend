@@ -42,7 +42,7 @@ import lombok.NoArgsConstructor;
 	@Index(name = "post_cursor_index", columnList = "created_at, id")
 })
 public class Post extends BaseEntity {
-	@Deprecated
+
 	@Column(name = "title", nullable = true)
 	private String title;
 
@@ -150,10 +150,10 @@ public class Post extends BaseEntity {
 		return post;
 	}
 
-	public void update(String title, String content, Form form, List<PostAttachImage> postAttachImageList) {
-		this.title = title;
+	public void update(String title, String content, Boolean isAnonymous, List<PostAttachImage> postAttachImageList) {
+		this.title = title != null ? title : this.title;
 		this.content = content;
-		this.form = form;
+		this.isAnonymous = (isAnonymous != null) ? isAnonymous : this.isAnonymous;
 		this.postAttachImageList.clear();
 		this.postAttachImageList.addAll(postAttachImageList);
 	}

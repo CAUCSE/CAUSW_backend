@@ -15,6 +15,7 @@ public record PostListResponse(
 	@Schema(description = "게시글 아이템")
 	public record PostItemResponse(
 		@Schema(description = "게시글 ID") String postId,
+		@Schema(description = "게시글 제목") String title,
 		@Schema(description = "내용") String content,
 		@Schema(description = "댓글 수") long numComment,
 		@Schema(description = "좋아요 수") long numLike,

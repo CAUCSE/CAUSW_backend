@@ -7,6 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 import net.causw.app.main.domain.user.account.entity.user.User;
 
 public record PostCreateCommand(
+	String title,
 	String content,
 	String boardId,
 	Boolean isAnonymous,
