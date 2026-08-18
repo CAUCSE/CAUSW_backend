@@ -53,8 +53,8 @@ class CommunityPermissionPolicyTest {
 			BoardVisibility.VISIBLE);
 		owner = activeUser(OWNER_ID, AcademicStatus.ENROLLED, Role.COMMON);
 		post = ObjectFixtures.getPost(owner, board);
-		rootComment = Comment.ofRoot("root comment", false, owner, post);
-		childComment = Comment.ofChildComment("child comment", false, owner, rootComment);
+		rootComment = Comment.ofRoot("root comment", false, null, owner, post);
+		childComment = Comment.ofChildComment("child comment", false, null, owner, rootComment);
 	}
 
 	@Test
