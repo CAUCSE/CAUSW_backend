@@ -71,7 +71,7 @@ public class CrawledNoticeTransferProcessor {
 		Post existingPost = findExistingPost(notice, board, title);
 
 		if (existingPost != null) {
-			existingPost.update(title, contentHtml, existingPost.getForm(), existingPost.getPostAttachImageList());
+			existingPost.update(title, contentHtml, existingPost.getIsAnonymous(), existingPost.getPostAttachImageList());
 			postWriter.save(existingPost);
 			crawledPostImageWriter.deleteAllByPostId(existingPost.getId());
 			savePostImages(existingPost, imageUrls);

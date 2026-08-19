@@ -39,6 +39,7 @@ public interface PostDtoMapper {
 				.toList();
 		}
 		return new PostCreateCommand(
+			request.title(),
 			request.content(),
 			request.boardId(),
 			request.isAnonymous(),
@@ -64,6 +65,7 @@ public interface PostDtoMapper {
 		}
 		return new PostUpdateCommand(
 			postId,
+			request.title(),
 			request.content(),
 			request.isAnonymous(),
 			user,

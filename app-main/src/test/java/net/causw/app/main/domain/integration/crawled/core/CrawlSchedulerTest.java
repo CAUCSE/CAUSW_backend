@@ -11,6 +11,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 
 import net.causw.app.main.domain.integration.crawled.dto.CrawlResult;
 import net.causw.app.main.domain.integration.crawled.service.CrawlService;
@@ -28,10 +30,18 @@ class CrawlSchedulerTest {
 	@Mock
 	private CrawledToPostTransferService crawledToPostTransferService;
 
+	@Mock
+	private RedissonClient redissonClient;
+
+	@Mock
+	private RLock lock;
+
 	@Test
 	@DisplayName("활성 사이트 수집이 종료된 후 Post 변환을 실행한다")
-	void runAllSites_shouldTransferAfterCrawling() {
+	void runAllSites_shouldTransferAfterCrawling() throws InterruptedException {
 		// given
+		given(redissonClient.getLock("crawling.all-sites")).willReturn(lock);
+		given(lock.tryLock(3, java.util.concurrent.TimeUnit.SECONDS)).willReturn(true);
 		given(crawlService.crawlAllEnabled())
 			.willReturn(List.of(new CrawlResult("cau-sw-notice", 1, 1, 0, 0, List.of())));
 
