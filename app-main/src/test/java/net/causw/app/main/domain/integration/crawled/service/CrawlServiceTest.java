@@ -23,7 +23,6 @@ import net.causw.app.main.domain.integration.crawled.dto.CrawlResult;
 import net.causw.app.main.domain.integration.crawled.dto.CrawlSaveStatus;
 import net.causw.app.main.domain.integration.crawled.dto.RawArticle;
 import net.causw.app.main.domain.integration.crawled.entity.SiteConfig;
-import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeWriter;
 import net.causw.app.main.domain.integration.crawled.service.implementation.SiteConfigReader;
 
 @ExtendWith(MockitoExtension.class)
@@ -39,7 +38,7 @@ class CrawlServiceTest {
 	@Mock
 	private CrawledArticleCleaner cleaner;
 	@Mock
-	private CrawledNoticeWriter writer;
+	private CrawledNoticeUpsertService crawledNoticeUpsertService;
 	@Mock
 	private SiteCrawler crawler;
 
@@ -62,7 +61,7 @@ class CrawlServiceTest {
 		given(crawler.fetchArticle(context, failed)).willThrow(new IllegalStateException("failed"));
 		given(crawler.fetchArticle(context, succeeded)).willReturn(raw);
 		given(cleaner.clean(raw, config)).willReturn(clean);
-		given(writer.upsert(clean)).willReturn(CrawlSaveStatus.CREATED);
+		given(crawledNoticeUpsertService.upsert(clean)).willReturn(CrawlSaveStatus.CREATED);
 
 		// when
 		CrawlResult result = crawlService.crawl("site");

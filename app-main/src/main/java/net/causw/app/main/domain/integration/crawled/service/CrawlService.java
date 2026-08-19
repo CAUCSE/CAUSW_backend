@@ -16,7 +16,6 @@ import net.causw.app.main.domain.integration.crawled.dto.CrawlResult;
 import net.causw.app.main.domain.integration.crawled.dto.CrawlSaveStatus;
 import net.causw.app.main.domain.integration.crawled.dto.RawArticle;
 import net.causw.app.main.domain.integration.crawled.entity.SiteConfig;
-import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeWriter;
 import net.causw.app.main.domain.integration.crawled.service.implementation.SiteConfigReader;
 
 import lombok.RequiredArgsConstructor;
@@ -29,7 +28,7 @@ public class CrawlService {
 	private final SiteCrawlerRegistry siteCrawlerRegistry;
 	private final SiteConfigReader siteConfigReader;
 	private final CrawledArticleCleaner crawledArticleCleaner;
-	private final CrawledNoticeWriter crawledNoticeWriter;
+	private final CrawledNoticeUpsertService crawledNoticeUpsertService;
 
 	/**
 	 * 지정한 활성 사이트의 공지를 수집하고 저장합니다.
@@ -91,7 +90,7 @@ public class CrawlService {
 			try {
 				RawArticle rawArticle = crawler.fetchArticle(context, articleUrl);
 				CleanArticle cleanArticle = crawledArticleCleaner.clean(rawArticle, siteConfig);
-				CrawlSaveStatus status = crawledNoticeWriter.upsert(cleanArticle);
+				CrawlSaveStatus status = crawledNoticeUpsertService.upsert(cleanArticle);
 				switch (status) {
 					case CREATED -> created++;
 					case UPDATED -> updated++;
