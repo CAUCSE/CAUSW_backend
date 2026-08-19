@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.service.implementation.BoardReader;
 import net.causw.app.main.domain.community.post.entity.Post;
-import net.causw.app.main.domain.community.post.service.implementation.PostReader;
 import net.causw.app.main.domain.community.post.service.implementation.PostWriter;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledFileLink;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
@@ -34,7 +33,6 @@ import lombok.RequiredArgsConstructor;
 public class CrawledNoticeTransferProcessor {
 	private final CrawledNoticeReader crawledNoticeReader;
 	private final CrawledNoticeWriter crawledNoticeWriter;
-	private final PostReader postReader;
 	private final PostWriter postWriter;
 	private final UserReader userReader;
 	private final BoardReader boardReader;
@@ -68,10 +66,11 @@ public class CrawledNoticeTransferProcessor {
 			? "제목 없음" : notice.getTitle();
 		String contentHtml = buildContentWithAttachmentsAndLink(notice, title);
 		List<String> imageUrls = extractImageUrls(notice.getContent(), notice.getLink());
-		Post existingPost = findExistingPost(notice, board, title);
+		Post existingPost = findExistingPost(notice);
 
 		if (existingPost != null) {
-			existingPost.update(title, contentHtml, existingPost.getIsAnonymous(), existingPost.getPostAttachImageList());
+			existingPost.update(title, contentHtml, existingPost.getIsAnonymous(),
+				existingPost.getPostAttachImageList());
 			postWriter.save(existingPost);
 			crawledPostImageWriter.deleteAllByPostId(existingPost.getId());
 			savePostImages(existingPost, imageUrls);
@@ -170,7 +169,7 @@ public class CrawledNoticeTransferProcessor {
 		return contentBuilder.toString();
 	}
 
-	private Post findExistingPost(CrawledNotice notice, Board board, String title) {
+	private Post findExistingPost(CrawledNotice notice) {
 		Post linkedPost = notice.getPost();
 		if (linkedPost != null && !Boolean.TRUE.equals(linkedPost.getIsDeleted())) {
 			if (linkedPost.getBoard() != null && notice.getTargetBoardId().equals(linkedPost.getBoard().getId())) {
@@ -180,12 +179,6 @@ public class CrawledNoticeTransferProcessor {
 			postWriter.save(linkedPost);
 		}
 
-		List<Post> existingPosts = postReader.findAllByBoardAndNotDeleted(board);
-		for (Post post : existingPosts) {
-			if (post.getTitle() != null && post.getTitle().equals(title)) {
-				return post;
-			}
-		}
 		return null;
 	}
 }
