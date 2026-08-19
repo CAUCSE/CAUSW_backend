@@ -11,6 +11,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.community.post.repository.query.PostCursorResult;
@@ -70,6 +71,10 @@ public class PostReader {
 	public Post findByIdAndNotDeleted(String postId) {
 		return postRepository.findByIdAndIsDeletedFalse(postId)
 			.orElseThrow(PostErrorCode.POST_NOT_FOUND::toBaseException);
+	}
+
+	public List<Post> findAllByBoardAndNotDeleted(Board board) {
+		return postRepository.findAllByBoardAndIsDeletedIsFalse(board);
 	}
 
 	/**

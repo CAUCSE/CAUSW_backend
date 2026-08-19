@@ -24,14 +24,15 @@ import org.springframework.context.ApplicationEventPublisher;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.service.implementation.BoardReader;
 import net.causw.app.main.domain.community.post.entity.Post;
-import net.causw.app.main.domain.community.post.repository.PostRepository;
+import net.causw.app.main.domain.community.post.service.implementation.PostReader;
+import net.causw.app.main.domain.community.post.service.implementation.PostWriter;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
-import net.causw.app.main.domain.integration.crawled.repository.CrawledPostImageRepository;
 import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeReader;
 import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeWriter;
+import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledPostImageWriter;
 import net.causw.app.main.domain.notification.notification.event.OfficialPostEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.repository.user.UserRepository;
+import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.global.constant.StaticValue;
 
 @ExtendWith(MockitoExtension.class)
@@ -49,16 +50,19 @@ public class CrawledToPostTransferServiceTest {
 	private CrawledNoticeWriter crawledNoticeWriter;
 
 	@Mock
-	private PostRepository postRepository;
+	private PostReader postReader;
 
 	@Mock
-	private UserRepository userRepository;
+	private PostWriter postWriter;
+
+	@Mock
+	private UserReader userReader;
 
 	@Mock
 	private BoardReader boardReader;
 
 	@Mock
-	private CrawledPostImageRepository crawledPostImageRepository;
+	private CrawledPostImageWriter crawledPostImageWriter;
 
 	@Mock
 	private ApplicationEventPublisher applicationEventPublisher;
@@ -72,18 +76,18 @@ public class CrawledToPostTransferServiceTest {
 		CrawledNotice newNotice = CrawledNoticeFixture.newNotice();
 
 		given(boardReader.getById(newNotice.getTargetBoardId())).willReturn(mockBoard);
-		given(userRepository.findByEmail(StaticValue.SYSTEM_CRAWLER_ACCOUNT))
+		given(userReader.findByEmail(StaticValue.SYSTEM_CRAWLER_ACCOUNT))
 			.willReturn(Optional.of(mockUser));
 		given(crawledNoticeReader.findPendingNotices())
 			.willReturn(List.of(newNotice));
-		given(postRepository.findAllByBoardAndIsDeletedIsFalse(mockBoard))
+		given(postReader.findAllByBoardAndNotDeleted(mockBoard))
 			.willReturn(Collections.emptyList());
 
 		// when
 		crawledToPostTransferService.transferToPosts();
 
 		// then
-		verify(postRepository).save(any(Post.class));
+		verify(postWriter).save(any(Post.class));
 		verify(crawledNoticeWriter).markTransferred(org.mockito.ArgumentMatchers.eq(newNotice), any(Post.class));
 
 		verify(applicationEventPublisher).publishEvent(any(OfficialPostEvent.class));
@@ -99,18 +103,18 @@ public class CrawledToPostTransferServiceTest {
 		Post existingPost = createMockPost("수정된 공지사항");
 
 		given(boardReader.getById(updatedNotice.getTargetBoardId())).willReturn(mockBoard);
-		given(userRepository.findByEmail(StaticValue.SYSTEM_CRAWLER_ACCOUNT))
+		given(userReader.findByEmail(StaticValue.SYSTEM_CRAWLER_ACCOUNT))
 			.willReturn(Optional.of(mockUser));
 		given(crawledNoticeReader.findPendingNotices())
 			.willReturn(List.of(updatedNotice));
-		given(postRepository.findAllByBoardAndIsDeletedIsFalse(mockBoard))
+		given(postReader.findAllByBoardAndNotDeleted(mockBoard))
 			.willReturn(List.of(existingPost));
 
 		// when
 		crawledToPostTransferService.transferToPosts();
 
 		// then
-		verify(postRepository).save(existingPost);
+		verify(postWriter).save(existingPost);
 		verify(crawledNoticeWriter).markTransferred(updatedNotice, existingPost);
 	}
 
@@ -120,7 +124,7 @@ public class CrawledToPostTransferServiceTest {
 		// given
 		User mockUser = createMockUser();
 
-		given(userRepository.findByEmail(StaticValue.SYSTEM_CRAWLER_ACCOUNT))
+		given(userReader.findByEmail(StaticValue.SYSTEM_CRAWLER_ACCOUNT))
 			.willReturn(Optional.of(mockUser));
 		given(crawledNoticeReader.findPendingNotices())
 			.willReturn(Collections.emptyList());
@@ -129,7 +133,7 @@ public class CrawledToPostTransferServiceTest {
 		crawledToPostTransferService.transferToPosts();
 
 		// then
-		verify(postRepository, never()).save(any(Post.class));
+		verify(postWriter, never()).save(any(Post.class));
 	}
 
 	private Board createMockBoard() {

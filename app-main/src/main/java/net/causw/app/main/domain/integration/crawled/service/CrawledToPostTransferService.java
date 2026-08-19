@@ -15,16 +15,17 @@ import org.springframework.transaction.annotation.Transactional;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.service.implementation.BoardReader;
 import net.causw.app.main.domain.community.post.entity.Post;
-import net.causw.app.main.domain.community.post.repository.PostRepository;
+import net.causw.app.main.domain.community.post.service.implementation.PostReader;
+import net.causw.app.main.domain.community.post.service.implementation.PostWriter;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledFileLink;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledPostImage;
-import net.causw.app.main.domain.integration.crawled.repository.CrawledPostImageRepository;
 import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeReader;
 import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeWriter;
+import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledPostImageWriter;
 import net.causw.app.main.domain.notification.notification.event.OfficialPostEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.repository.user.UserRepository;
+import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.constant.StaticValue;
 import net.causw.global.exception.BadRequestException;
@@ -39,10 +40,11 @@ import lombok.extern.slf4j.Slf4j;
 public class CrawledToPostTransferService {
 	private final CrawledNoticeReader crawledNoticeReader;
 	private final CrawledNoticeWriter crawledNoticeWriter;
-	private final PostRepository postRepository;
-	private final UserRepository userRepository;
+	private final PostReader postReader;
+	private final PostWriter postWriter;
+	private final UserReader userReader;
 	private final BoardReader boardReader;
-	private final CrawledPostImageRepository crawledPostImageRepository;
+	private final CrawledPostImageWriter crawledPostImageWriter;
 
 	private final ApplicationEventPublisher applicationEventPublisher;
 
@@ -67,7 +69,7 @@ public class CrawledToPostTransferService {
 
 	//관리자 조회
 	private User getSystemUser() {
-		return userRepository.findByEmail(StaticValue.SYSTEM_CRAWLER_ACCOUNT)
+		return userReader.findByEmail(StaticValue.SYSTEM_CRAWLER_ACCOUNT)
 			.orElseThrow(() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND));
 	}
@@ -105,10 +107,10 @@ public class CrawledToPostTransferService {
 		if (existingPost != null) {
 			// 기존 Post 업데이트
 			existingPost.update(title, contentHtml, existingPost.getForm(), existingPost.getPostAttachImageList());
-			postRepository.save(existingPost);
+			postWriter.save(existingPost);
 
 			// 기존 크롤링 이미지 교체
-			crawledPostImageRepository.deleteAllByPostId(existingPost.getId());
+			crawledPostImageWriter.deleteAllByPostId(existingPost.getId());
 			savePostImages(existingPost, imageUrls);
 			return existingPost;
 		} else {
@@ -123,7 +125,7 @@ public class CrawledToPostTransferService {
 				null,
 				new ArrayList<>());
 			newPost.setCrawled();
-			postRepository.save(newPost);
+			postWriter.save(newPost);
 
 			// 크롤링 이미지 저장
 			savePostImages(newPost, imageUrls);
@@ -144,7 +146,7 @@ public class CrawledToPostTransferService {
 		for (int i = 0; i < imageUrls.size(); i++) {
 			images.add(CrawledPostImage.of(post, imageUrls.get(i), i));
 		}
-		crawledPostImageRepository.saveAll(images);
+		crawledPostImageWriter.saveAll(images);
 	}
 
 	//HTML 본문에서 <img src="..."> URL 추출
@@ -245,7 +247,7 @@ public class CrawledToPostTransferService {
 		}
 
 		// 기존 데이터가 최초로 새 식별 구조를 사용할 때만 제목으로 연결한다.
-		List<Post> existingPosts = postRepository.findAllByBoardAndIsDeletedIsFalse(board);
+		List<Post> existingPosts = postReader.findAllByBoardAndNotDeleted(board);
 
 		for (Post post : existingPosts) {
 			if (post.getTitle() != null && post.getTitle().equals(title)) {
