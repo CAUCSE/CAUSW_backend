@@ -73,6 +73,7 @@ dependencies {
 
     // Redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation 'org.redisson:redisson-spring-boot-starter:4.6.1'
 
     // MapStruct
     implementation 'org.mapstruct:mapstruct:1.6.3'

@@ -13,4 +13,8 @@ public interface BaseResponseCode {
 	default BaseRunTimeV2Exception toBaseException() {
 		return new BaseRunTimeV2Exception(this);
 	}
+
+	default BaseRunTimeV2Exception toBaseException(String message, Throwable cause) {
+		return new BaseRunTimeV2Exception(this, message, cause);
+	}
 }
