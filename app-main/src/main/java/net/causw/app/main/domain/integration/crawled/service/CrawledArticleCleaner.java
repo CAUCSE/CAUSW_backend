@@ -167,6 +167,10 @@ public class CrawledArticleCleaner {
 	 */
 	private String normalizeUrl(String url, String baseUrl) {
 		URI normalized = URI.create(baseUrl).resolve(url.trim()).normalize();
+		String scheme = normalized.getScheme();
+		if (!"http".equalsIgnoreCase(scheme) && !"https".equalsIgnoreCase(scheme)) {
+			throw IntegrationErrorCode.CRAWL_PARSE_FAILED.toBaseException();
+		}
 		String result = normalized.toString();
 		return result.startsWith("http://") ? "https://" + result.substring("http://".length()) : result;
 	}

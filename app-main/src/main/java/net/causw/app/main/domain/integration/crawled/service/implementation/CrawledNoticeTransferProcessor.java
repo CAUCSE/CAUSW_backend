@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
@@ -124,49 +125,75 @@ public class CrawledNoticeTransferProcessor {
 	}
 
 	private String buildContentWithAttachmentsAndLink(CrawledNotice notice, String title) {
-		StringBuilder contentBuilder = new StringBuilder();
-		String safeTitle = Jsoup.clean(title, org.jsoup.safety.Safelist.none());
-		contentBuilder.append("<p style='margin-bottom: 20px;'><strong>")
-			.append(safeTitle)
-			.append("</strong></p>");
+		Document document = Jsoup.parseBodyFragment("");
+		Element body = document.body();
+		body.appendElement("p")
+			.attr("style", "margin-bottom: 20px;")
+			.appendElement("strong")
+			.text(title);
 
 		String originalContent = (notice.getContent() == null || notice.getContent().isBlank())
 			? "<p>내용 없음</p>" : cleanUpHtml(notice.getContent(), notice.getLink());
-		contentBuilder.append(originalContent);
+		body.append(originalContent);
 
 		if (notice.getCrawledFileLinks() != null && !notice.getCrawledFileLinks().isEmpty()) {
-			contentBuilder.append("<hr style='margin: 20px 0; border: 1px solid #eee;'>");
-			contentBuilder.append(
-				"<div style='margin-top: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 5px;'>");
-			contentBuilder.append("<h4 style='margin: 0 0 10px 0; color: #495057;'>📎 첨부파일</h4>");
-			contentBuilder.append("<ul style='margin: 0; padding-left: 20px;'>");
+			body.appendElement("hr").attr("style", "margin: 20px 0; border: 1px solid #eee;");
+			Element attachmentSection = body.appendElement("div")
+				.attr("style", "margin-top: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 5px;");
+			attachmentSection.appendElement("h4")
+				.attr("style", "margin: 0 0 10px 0; color: #495057;")
+				.text("📎 첨부파일");
+			Element attachmentList = attachmentSection.appendElement("ul")
+				.attr("style", "margin: 0; padding-left: 20px;");
 
 			for (CrawledFileLink fileLink : notice.getCrawledFileLinks()) {
-				contentBuilder.append("<li style='margin-bottom: 5px;'>");
-				contentBuilder.append("<a href='").append(fileLink.getFileLink()).append("' ");
-				contentBuilder.append("target='_blank' ");
-				contentBuilder.append("style='color: #007bff; text-decoration: none;'>");
-				contentBuilder.append("📄 ").append(fileLink.getFileName());
-				contentBuilder.append("</a>");
-				contentBuilder.append("</li>");
+				Element fileLinkElement = buildExternalLink(document, fileLink.getFileLink(),
+					"📄 " + fileLink.getFileName());
+				if (fileLinkElement != null) {
+					attachmentList.appendElement("li")
+						.attr("style", "margin-bottom: 5px;")
+						.appendChild(fileLinkElement);
+				}
 			}
-
-			contentBuilder.append("</ul>");
-			contentBuilder.append("</div>");
 		}
 
-		contentBuilder.append("<hr style='margin: 20px 0; border: 1px solid #eee;'>");
-		contentBuilder.append(
-			"<div style='margin-top: 15px; padding: 10px; background-color: #f1f3f4; border-radius: 5px; font-size: 14px; color: #666;'>");
-		contentBuilder.append("🔗 <strong>원본 공지사항:</strong> ");
-		contentBuilder.append("<a href='")
-			.append(notice.getLink())
-			.append("' target='_blank' style='color: #1a73e8; text-decoration: none;'>");
-		contentBuilder.append(StaticValue.ORIGINAL_NOTICE_SITE_NAME);
-		contentBuilder.append("</a>");
-		contentBuilder.append("</div>");
+		body.appendElement("hr").attr("style", "margin: 20px 0; border: 1px solid #eee;");
+		Element sourceInfo = body.appendElement("div")
+			.attr("style",
+				"margin-top: 15px; padding: 10px; background-color: #f1f3f4; border-radius: 5px; font-size: 14px; color: #666;");
+		sourceInfo.appendText("🔗 ");
+		sourceInfo.appendElement("strong").text("원본 공지사항:");
+		Element sourceLink = buildExternalLink(document, notice.getLink(), StaticValue.ORIGINAL_NOTICE_SITE_NAME);
+		if (sourceLink != null) {
+			sourceInfo.appendText(" ").appendChild(sourceLink)
+				.attr("style", "color: #1a73e8; text-decoration: none;");
+		}
 
-		return contentBuilder.toString();
+		return body.html();
+	}
+
+	private Element buildExternalLink(Document document, String url, String text) {
+		if (!isHttpOrHttpsUrl(url)) {
+			return null;
+		}
+		return document.createElement("a")
+			.attr("href", url.trim())
+			.attr("target", "_blank")
+			.attr("rel", "noopener noreferrer")
+			.attr("style", "color: #007bff; text-decoration: none;")
+			.text(text == null ? "" : text);
+	}
+
+	private boolean isHttpOrHttpsUrl(String url) {
+		if (url == null || url.isBlank()) {
+			return false;
+		}
+		try {
+			String scheme = java.net.URI.create(url.trim()).getScheme();
+			return "http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme);
+		} catch (IllegalArgumentException e) {
+			return false;
+		}
 	}
 
 	private Post findExistingPost(CrawledNotice notice) {
