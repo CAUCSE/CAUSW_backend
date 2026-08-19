@@ -42,6 +42,7 @@ class CrawlSchedulerTest {
 		// given
 		given(redissonClient.getLock("crawling.all-sites")).willReturn(lock);
 		given(lock.tryLock(3, java.util.concurrent.TimeUnit.SECONDS)).willReturn(true);
+		given(lock.isHeldByCurrentThread()).willReturn(true);
 		given(crawlService.crawlAllEnabled())
 			.willReturn(List.of(new CrawlResult("cau-sw-notice", 1, 1, 0, 0, List.of())));
 
@@ -51,5 +52,6 @@ class CrawlSchedulerTest {
 		// then
 		verify(crawlService).crawlAllEnabled();
 		verify(crawledToPostTransferService).transferToPosts();
+		verify(lock).unlock();
 	}
 }
