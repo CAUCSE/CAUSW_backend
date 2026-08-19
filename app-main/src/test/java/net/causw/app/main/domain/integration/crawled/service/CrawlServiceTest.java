@@ -6,7 +6,7 @@ import static org.mockito.BDDMockito.verify;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -72,7 +72,8 @@ class CrawlServiceTest {
 		given(crawler.fetchArticle(context, failed)).willThrow(new IllegalStateException("failed"));
 		given(crawler.fetchArticle(context, succeeded)).willReturn(raw);
 		given(cleaner.clean(raw, config)).willReturn(clean);
-		given(crawledNoticeWriter.upsert(clean)).willReturn(CrawlSaveStatus.CREATED);
+		given(crawledNoticeReader.findBySources("site", List.of("2"))).willReturn(Map.of());
+		given(crawledNoticeWriter.upsert(clean, null)).willReturn(CrawlSaveStatus.CREATED);
 
 		// when
 		CrawlResult result = crawlService.crawl("site");
@@ -105,8 +106,8 @@ class CrawlServiceTest {
 		given(crawler.fetchList(context)).willReturn(List.of(articleUrl));
 		given(crawler.fetchArticle(context, articleUrl)).willReturn(raw);
 		given(cleaner.clean(raw, config)).willReturn(article);
-		given(crawledNoticeReader.findBySource("site", "10")).willReturn(Optional.of(notice));
-		given(crawledNoticeWriter.upsert(article)).willReturn(CrawlSaveStatus.UPDATED);
+		given(crawledNoticeReader.findBySources("site", List.of("10"))).willReturn(Map.of("10", notice));
+		given(crawledNoticeWriter.upsert(article, notice)).willReturn(CrawlSaveStatus.UPDATED);
 
 		// when
 		CrawlResult result = crawlService.crawl("site");
@@ -115,7 +116,7 @@ class CrawlServiceTest {
 		assertThat(result.updatedCount()).isEqualTo(1);
 		verify(post).setIsDeleted(true);
 		verify(postWriter).save(post);
-		verify(crawledNoticeWriter).upsert(article);
+		verify(crawledNoticeWriter).upsert(article, notice);
 	}
 
 	@Test

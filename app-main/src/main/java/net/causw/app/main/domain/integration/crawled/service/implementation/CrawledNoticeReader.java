@@ -1,7 +1,9 @@
 package net.causw.app.main.domain.integration.crawled.service.implementation;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,14 +21,15 @@ public class CrawledNoticeReader {
 	private final CrawledNoticeRepository crawledNoticeRepository;
 
 	/**
-	 * 출처 사이트와 사이트 내부 식별자로 저장된 공지를 조회합니다.
+	 * 한 사이트의 외부 식별자 목록으로 저장된 공지를 일괄 조회합니다.
 	 *
 	 * @param siteId 출처 사이트 식별자
-	 * @param externalId 사이트 내부 공지 식별자
-	 * @return 저장된 공지
+	 * @param externalIds 사이트 내부 공지 식별자 목록
+	 * @return 외부 식별자를 키로 하는 저장된 공지 맵
 	 */
-	public Optional<CrawledNotice> findBySource(String siteId, String externalId) {
-		return crawledNoticeRepository.findBySiteIdAndExternalId(siteId, externalId);
+	public Map<String, CrawledNotice> findBySources(String siteId, List<String> externalIds) {
+		return crawledNoticeRepository.findBySiteIdAndExternalIdIn(siteId, externalIds).stream()
+			.collect(Collectors.toMap(CrawledNotice::getExternalId, Function.identity()));
 	}
 
 	public CrawledNotice findById(String noticeId) {

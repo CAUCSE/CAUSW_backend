@@ -1,13 +1,11 @@
 package net.causw.app.main.domain.integration.crawled.service.implementation;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.never;
 import static org.mockito.BDDMockito.verify;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,9 +26,6 @@ class CrawledNoticeWriterTest {
 	private CrawledNoticeWriter writer;
 
 	@Mock
-	private CrawledNoticeReader reader;
-
-	@Mock
 	private CrawledNoticeRepository repository;
 
 	@Test
@@ -38,10 +33,8 @@ class CrawledNoticeWriterTest {
 	void upsert_shouldCreate_whenSourceDoesNotExist() {
 		// given
 		CleanArticle article = article("hash");
-		given(reader.findBySource("site", "10")).willReturn(Optional.empty());
-
 		// when
-		CrawlSaveStatus result = writer.upsert(article);
+		CrawlSaveStatus result = writer.upsert(article, null);
 
 		// then
 		assertThat(result).isEqualTo(CrawlSaveStatus.CREATED);
@@ -56,10 +49,8 @@ class CrawledNoticeWriterTest {
 	void upsert_shouldSkip_whenHashIsSame() {
 		// given
 		CrawledNotice existing = existing("hash");
-		given(reader.findBySource("site", "10")).willReturn(Optional.of(existing));
-
 		// when
-		CrawlSaveStatus result = writer.upsert(article("hash"));
+		CrawlSaveStatus result = writer.upsert(article("hash"), existing);
 
 		// then
 		assertThat(result).isEqualTo(CrawlSaveStatus.UNCHANGED);
@@ -71,10 +62,8 @@ class CrawledNoticeWriterTest {
 	void upsert_shouldUpdate_whenTargetBoardChanges() {
 		// given
 		CrawledNotice existing = existing("hash", "old-board-id");
-		given(reader.findBySource("site", "10")).willReturn(Optional.of(existing));
-
 		// when
-		CrawlSaveStatus result = writer.upsert(article("hash"));
+		CrawlSaveStatus result = writer.upsert(article("hash"), existing);
 
 		// then
 		assertThat(result).isEqualTo(CrawlSaveStatus.UPDATED);

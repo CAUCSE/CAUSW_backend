@@ -19,19 +19,20 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Transactional
 public class CrawledNoticeWriter {
-	private final CrawledNoticeReader crawledNoticeReader;
 	private final CrawledNoticeRepository crawledNoticeRepository;
 
 	/**
 	 * 출처 식별자를 기준으로 공지를 생성하거나 변경된 내용을 갱신합니다.
 	 *
 	 * @param article 저장할 정제 공지
+	 * @param existing 출처 식별자로 미리 조회한 기존 공지. 없으면 새 공지를 생성한다.
 	 * @return 생성, 수정 또는 미변경 상태
 	 */
-	public CrawlSaveStatus upsert(CleanArticle article) {
-		return crawledNoticeReader.findBySource(article.siteId(), article.externalId())
-			.map(existing -> updateIfChanged(existing, article))
-			.orElseGet(() -> create(article));
+	public CrawlSaveStatus upsert(CleanArticle article, CrawledNotice existing) {
+		if (existing == null) {
+			return create(article);
+		}
+		return updateIfChanged(existing, article);
 	}
 
 	/**

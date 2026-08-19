@@ -92,21 +92,35 @@ public class CrawlService {
 		int updated = 0;
 		int unchanged = 0;
 		List<String> failedUrls = new ArrayList<>();
+		List<CleanArticle> cleanArticles = new ArrayList<>();
 
 		for (ArticleUrl articleUrl : uniqueArticles.values()) {
 			try {
 				RawArticle rawArticle = crawler.fetchArticle(context, articleUrl);
-				CleanArticle cleanArticle = crawledArticleCleaner.clean(rawArticle, siteConfig);
-				CrawlSaveStatus status = upsert(cleanArticle);
+				cleanArticles.add(crawledArticleCleaner.clean(rawArticle, siteConfig));
+			} catch (RuntimeException e) {
+				failedUrls.add(articleUrl.url());
+				log.error("[크롤링] 공지 처리 실패. siteId={}, url={}",
+					siteConfig.getSiteId(), articleUrl.url(), e);
+			}
+		}
+
+		Map<String, CrawledNotice> noticesByExternalId = cleanArticles.isEmpty()
+			? Map.of()
+			: crawledNoticeReader.findBySources(
+				siteConfig.getSiteId(), cleanArticles.stream().map(CleanArticle::externalId).toList());
+		for (CleanArticle cleanArticle : cleanArticles) {
+			try {
+				CrawlSaveStatus status = upsert(cleanArticle, noticesByExternalId.get(cleanArticle.externalId()));
 				switch (status) {
 					case CREATED -> created++;
 					case UPDATED -> updated++;
 					case UNCHANGED -> unchanged++;
 				}
 			} catch (RuntimeException e) {
-				failedUrls.add(articleUrl.url());
+				failedUrls.add(cleanArticle.sourceUrl());
 				log.error("[크롤링] 공지 처리 실패. siteId={}, url={}",
-					siteConfig.getSiteId(), articleUrl.url(), e);
+					siteConfig.getSiteId(), cleanArticle.sourceUrl(), e);
 			}
 		}
 
@@ -119,11 +133,11 @@ public class CrawlService {
 			List.copyOf(failedUrls));
 	}
 
-	private CrawlSaveStatus upsert(CleanArticle article) {
-		crawledNoticeReader.findBySource(article.siteId(), article.externalId())
-			.filter(notice -> !notice.getTargetBoardId().equals(article.targetBoardId()))
-			.ifPresent(this::softDeleteLinkedPost);
-		return crawledNoticeWriter.upsert(article);
+	private CrawlSaveStatus upsert(CleanArticle article, CrawledNotice existing) {
+		if (existing != null && !existing.getTargetBoardId().equals(article.targetBoardId())) {
+			softDeleteLinkedPost(existing);
+		}
+		return crawledNoticeWriter.upsert(article, existing);
 	}
 
 	private void softDeleteLinkedPost(CrawledNotice notice) {
