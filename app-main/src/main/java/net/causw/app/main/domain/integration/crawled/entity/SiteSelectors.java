@@ -14,31 +14,31 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class SiteSelectors {
-	@Column(name = "article_row_selector", nullable = false)
+	@Column(name = "article_row_selector", nullable = false, length = 255)
 	private String articleRow;
 
-	@Column(name = "article_link_selector", nullable = false)
+	@Column(name = "article_link_selector", nullable = false, length = 255)
 	private String articleLink;
 
-	@Column(name = "article_category_selector", nullable = false)
+	@Column(name = "article_category_selector", nullable = false, length = 255)
 	private String articleCategory;
 
-	@Column(name = "title_selector", nullable = false)
+	@Column(name = "title_selector", nullable = false, length = 255)
 	private String title;
 
-	@Column(name = "body_selector", nullable = false)
+	@Column(name = "body_selector", nullable = false, length = 255)
 	private String body;
 
-	@Column(name = "date_selector", nullable = false)
+	@Column(name = "date_selector", nullable = false, length = 255)
 	private String date;
 
-	@Column(name = "author_selector", nullable = false)
+	@Column(name = "author_selector", nullable = false, length = 255)
 	private String author;
 
-	@Column(name = "representative_image_selector", nullable = false)
+	@Column(name = "representative_image_selector", nullable = false, length = 255)
 	private String representativeImage;
 
-	@Column(name = "date_format", nullable = false)
+	@Column(name = "date_format", nullable = false, length = 100)
 	private String dateFormat;
 
 	@Column(name = "next_page_selector")
