@@ -8,18 +8,11 @@ UPDATE tb_crawled_notice
 SET site_id = 'cau-sw-notice',
     external_id = link;
 
--- 기존 크롤링 Post가 가장 많이 저장된 활성 게시판을 기존 공지의 저장 대상 게시판으로 백필한다.
+-- 기존 크롤링 공지의 저장 대상 게시판을 소프트웨어학부 게시판으로 백필한다.
 UPDATE tb_crawled_notice notice
-JOIN (
-    SELECT post.board_id
-    FROM tb_post post
-    WHERE post.is_crawled = 1
-      AND post.is_deleted = 0
-    GROUP BY post.board_id
-    ORDER BY COUNT(*) DESC, post.board_id
-    LIMIT 1
-) target_board ON 1 = 1
-SET notice.target_board_id = target_board.board_id;
+JOIN tb_board board
+    ON board.name = '소프트웨어학부'
+SET notice.target_board_id = board.id;
 
 ALTER TABLE tb_crawled_notice
     MODIFY COLUMN site_id VARCHAR(100) NOT NULL,
