@@ -70,7 +70,7 @@ public class UserBlock extends BaseEntity {
 	 */
 	@Lob
 	@Comment("차단 트리거가 된 게시글/댓글 내용 일부 스냅샷")
-	@Column(name = "content_snapshot")
+	@Column(name = "content_snapshot", columnDefinition = "LONGTEXT")
 	private String contentSnapshot;
 
 	/**
