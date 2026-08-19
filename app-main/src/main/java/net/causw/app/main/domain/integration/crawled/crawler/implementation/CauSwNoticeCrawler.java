@@ -114,7 +114,8 @@ public class CauSwNoticeCrawler implements SiteCrawler {
 				imageUrl,
 				extractAttachments(document));
 		} catch (RuntimeException e) {
-			log.error("[크롤링] 공지 파싱 실패. siteId={}, url={}", siteConfig.getSiteId(), articleUrl.url(), e);
+			log.error("[크롤링] 공지 파싱 실패. crawlerType={}, siteId={}, url={}",
+				CrawlerType.CAU_SW_NOTICE, siteConfig.getSiteId(), articleUrl.url(), e);
 			throw IntegrationErrorCode.CRAWL_PARSE_FAILED.toBaseException();
 		}
 	}

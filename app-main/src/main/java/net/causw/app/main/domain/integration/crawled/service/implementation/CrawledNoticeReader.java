@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
 import net.causw.app.main.domain.integration.crawled.repository.CrawledNoticeRepository;
+import net.causw.app.main.shared.exception.errorcode.IntegrationErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,6 +27,11 @@ public class CrawledNoticeReader {
 	 */
 	public Optional<CrawledNotice> findBySource(String siteId, String externalId) {
 		return crawledNoticeRepository.findBySiteIdAndExternalId(siteId, externalId);
+	}
+
+	public CrawledNotice findById(String noticeId) {
+		return crawledNoticeRepository.findById(noticeId)
+			.orElseThrow(IntegrationErrorCode.CRAWLING_ERROR::toBaseException);
 	}
 
 	/**
