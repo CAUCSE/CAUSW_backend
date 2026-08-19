@@ -35,14 +35,14 @@ class CommentAnonymousNicknameResolverTest {
 		// given
 		String postId = "post-1";
 		String userId = "user-1";
-		CommentAnonymousNickname mine = CommentAnonymousNickname.of(postId, userId, "다정함 42 튜링");
+		CommentAnonymousNickname mine = CommentAnonymousNickname.of(postId, userId, "다정한 튜링 42");
 		given(commentAnonymousNicknameRepository.findAllByPostId(postId)).willReturn(List.of(mine));
 
 		// when
 		String nickname = resolver.resolve(postId, userId);
 
 		// then
-		assertThat(nickname).isEqualTo("다정함 42 튜링");
+		assertThat(nickname).isEqualTo("다정한 튜링 42");
 		then(commentAnonymousNicknameRepository).should(never()).save(any());
 	}
 
@@ -52,14 +52,14 @@ class CommentAnonymousNicknameResolverTest {
 		// given
 		String postId = "post-1";
 		String userId = "user-2";
-		CommentAnonymousNickname other = CommentAnonymousNickname.of(postId, "user-1", "다정함 42 튜링");
+		CommentAnonymousNickname other = CommentAnonymousNickname.of(postId, "user-1", "다정한 튜링 42");
 		given(commentAnonymousNicknameRepository.findAllByPostId(postId)).willReturn(List.of(other));
 
 		// when
 		String nickname = resolver.resolve(postId, userId);
 
 		// then
-		assertThat(nickname).isNotEqualTo("다정함 42 튜링");
+		assertThat(nickname).isNotEqualTo("다정한 튜링 42");
 		ArgumentCaptor<CommentAnonymousNickname> captor = ArgumentCaptor.forClass(CommentAnonymousNickname.class);
 		then(commentAnonymousNicknameRepository).should().save(captor.capture());
 		assertThat(captor.getValue().getPostId()).isEqualTo(postId);
@@ -75,7 +75,7 @@ class CommentAnonymousNicknameResolverTest {
 		String userId = "user-2";
 		given(commentAnonymousNicknameRepository.findAllByPostId(postId))
 			.willReturn(List.of())
-			.willReturn(List.of(CommentAnonymousNickname.of(postId, userId, "성실함 7 호퍼")));
+			.willReturn(List.of(CommentAnonymousNickname.of(postId, userId, "성실한 호퍼 7")));
 		given(commentAnonymousNicknameRepository.save(any()))
 			.willThrow(new DataIntegrityViolationException("unique constraint violated"));
 
@@ -83,6 +83,6 @@ class CommentAnonymousNicknameResolverTest {
 		String nickname = resolver.resolve(postId, userId);
 
 		// then
-		assertThat(nickname).isEqualTo("성실함 7 호퍼");
+		assertThat(nickname).isEqualTo("성실한 호퍼 7");
 	}
 }

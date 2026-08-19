@@ -99,7 +99,8 @@ public class CommentService {
 
 		Comment comment = parentComment == null
 			? Comment.ofRoot(command.content(), command.isAnonymous(), anonymousNickname, creator, post)
-			: Comment.ofChildComment(command.content(), command.isAnonymous(), anonymousNickname, creator, parentComment);
+			: Comment.ofChildComment(command.content(), command.isAnonymous(), anonymousNickname, creator,
+				parentComment);
 
 		commentWriter.save(comment);
 
