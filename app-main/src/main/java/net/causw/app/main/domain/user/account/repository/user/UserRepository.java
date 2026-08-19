@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -101,5 +102,18 @@ public interface UserRepository extends JpaRepository<User, String> {
 
 	Long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 
-	Page<User> findAllByDeletedAtIsNotNullAndDeletedAtBefore(LocalDateTime deletedAt, Pageable pageable);
+	@Query("""
+		SELECT u
+		FROM User u
+		WHERE u.deletedAt IS NOT NULL
+		  AND u.deletedAt < :deletedAt
+		  AND u.email NOT LIKE 'deleted\\_%' ESCAPE '\\'
+		ORDER BY u.deletedAt ASC
+		""")
+	List<User> findCleanupTargets(
+		@Param("deletedAt") LocalDateTime deletedAt,
+		Pageable pageable);
+
+	Slice<User> findAllByStateAndUpdatedAtBeforeAndDeletedAtIsNull(UserState state, LocalDateTime updatedAt,
+		Pageable pageable);
 }

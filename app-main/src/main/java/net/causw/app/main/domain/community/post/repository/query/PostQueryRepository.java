@@ -131,6 +131,7 @@ public class PostQueryRepository {
 	 * 특정 사용자가 댓글을 작성한 게시글을 커서 기반 페이징으로 조회합니다.
 	 * findPostsWithCursor와 동일하게 PostCursorResult를 반환하여 재사용합니다.
 	 *
+	 * @param userId         댓글 작성자 ID
 	 * @param readContext 조회자의 읽기 범위·관리자 여부·차단 관계 컨텍스트
 	 * @param cursorCreatedAt 커서 (마지막 게시글의 createdAt)
 	 * @param cursorId       커서 (마지막 게시글의 ID)
@@ -138,6 +139,7 @@ public class PostQueryRepository {
 	 * @return 게시글 목록 Slice
 	 */
 	public Slice<PostCursorResult> findPostsCommentedByUserWithCursor(
+		String userId,
 		PostReadQueryContext readContext,
 		String cursorCreatedAt,
 		String cursorId,
@@ -155,13 +157,13 @@ public class PostQueryRepository {
 			.from(comment)
 			.where(
 				comment.post.eq(post),
-				comment.writer.id.eq(readContext.viewerId()),
+				comment.writer.id.eq(userId),
 				comment.isDeleted.isFalse())
 			.exists();
 
 		BooleanExpression[] conditions = new BooleanExpression[] {
 			userCommentedPost, // 댓글 단 글만 조회
-			writer.id.ne(readContext.viewerId()), // 자신이 쓴 글은 제외
+			writer.id.ne(userId), // 자신이 쓴 글은 제외
 			cursorCondition // 커서 조건
 		};
 
@@ -170,6 +172,7 @@ public class PostQueryRepository {
 
 	/**
 	 * 특정 사용자가 작성한 게시글을 커서 기반 페이징으로 조회합니다.
+	 * @param userId 작성자 ID
 	 * @param readContext 조회자의 읽기 범위·관리자 여부·차단 관계 컨텍스트
 	 * @param cursorCreatedAt 커서 (마지막 게시글의 createdAt)
 	 * @param cursorId 커서 (마지막 게시글의 ID)
@@ -177,6 +180,7 @@ public class PostQueryRepository {
 	 * @return
 	 */
 	public Slice<PostCursorResult> findPostsWrittenByUserWithCursor(
+		String userId,
 		PostReadQueryContext readContext,
 		String cursorCreatedAt,
 		String cursorId,
@@ -187,7 +191,7 @@ public class PostQueryRepository {
 		BooleanExpression cursorCondition = createCursorCondition(cursorCreatedAt, cursorId, post);
 
 		BooleanExpression[] conditions = new BooleanExpression[] {
-			post.writer.id.eq(readContext.viewerId()), // 자신이 쓴 글만 조회
+			post.writer.id.eq(userId), // 자신이 쓴 글만 조회
 			cursorCondition // 커서 조건
 		};
 
@@ -196,6 +200,7 @@ public class PostQueryRepository {
 
 	/**
 	 * 특정 사용자가 좋아요를 누른 게시글을 커서 기반 페이징으로 조회합니다.
+	 * @param userId 좋아요 누른 사용자 ID
 	 * @param readContext 조회자의 읽기 범위·관리자 여부·차단 관계 컨텍스트
 	 * @param cursorCreatedAt 커서 (마지막 게시글의 createdAt)
 	 * @param cursorId 커서 (마지막 게시글의 ID)
@@ -203,6 +208,7 @@ public class PostQueryRepository {
 	 * @return 게시글 목록 Slice
 	 */
 	public Slice<PostCursorResult> findPostsLikedByUserWithCursor(
+		String userId,
 		PostReadQueryContext readContext,
 		String cursorCreatedAt,
 		String cursorId,
@@ -216,7 +222,7 @@ public class PostQueryRepository {
 		BooleanExpression userLikedPost = JPAExpressions
 			.selectOne()
 			.from(likePost)
-			.where(likePost.post.eq(post), likePost.user.id.eq(readContext.viewerId()))
+			.where(likePost.post.eq(post), likePost.user.id.eq(userId))
 			.exists();
 
 		BooleanExpression[] conditions = new BooleanExpression[] {
@@ -443,7 +449,7 @@ public class PostQueryRepository {
 			.where(upi.user.id.eq(post.writer.id));
 
 		return new QPostCursorResult(
-			post.id, post.content,
+			post.id, post.title, post.content,
 			totalCommentCount, likeCount,
 			post.isAnonymous, post.vote.id, post.isDeleted,
 			post.isCrawled,

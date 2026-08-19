@@ -126,14 +126,14 @@ public final class CommunityPermissionPolicy {
 		Collection<String> boardAdminIds) {
 
 		return isAlive(post)
-			&& canRequestPostDeletion(deleter, post, boardConfig, boardAdminIds);
+			&& canDeletePostIgnoringTargetDeletion(deleter, post, boardConfig, boardAdminIds);
 	}
 
 	/**
-	 * 게시글의 현재 삭제 상태와 무관하게 삭제 요청을 보낼 수 있는 주체인지 판단합니다.
-	 * 이미 삭제된 게시글에 대한 멱등 요청에서도 게시판 읽기 권한과 삭제 주체 권한은 유지합니다.
+	 * 이미 삭제된 게시글의 멱등 삭제 요청에서 사용하는 권한입니다.
+	 * 게시글 자체의 삭제 상태만 무시하며, 상위 게시판의 생존·읽기 권한과 삭제 주체 권한은 그대로 검사합니다.
 	 */
-	public static boolean canRequestPostDeletion(
+	public static boolean canDeletePostIgnoringTargetDeletion(
 		User deleter,
 		Post post,
 		BoardConfig boardConfig,
@@ -209,8 +209,6 @@ public final class CommunityPermissionPolicy {
 	public static boolean isAlive(Comment comment) {
 		return comment != null
 			&& !Boolean.TRUE.equals(comment.getIsDeleted())
-			&& (!comment.isChildComment()
-				|| !Boolean.TRUE.equals(comment.getParentComment().getIsDeleted()))
 			&& isAlive(comment.getPost());
 	}
 

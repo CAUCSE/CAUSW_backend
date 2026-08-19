@@ -10,6 +10,8 @@ import lombok.Builder;
 public record PostCreateResponse(
 	@Schema(description = "게시글 id", example = "uuid 형식의 String 값입니다.") String id,
 
+	@Schema(description = "게시글 제목", example = "학생회 공지사항") String title,
+
 	@Schema(description = "게시글 내용", example = "안녕하세요. 학생회입니다. 공지사항입니다.") String content,
 
 	@Schema(description = "첨부파일", example = "첨부파일 url 작성") List<String> fileUrlList,

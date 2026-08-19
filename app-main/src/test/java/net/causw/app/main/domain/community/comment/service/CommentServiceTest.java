@@ -131,9 +131,9 @@ public class CommentServiceTest {
 			verify(eventPublisher, times(1)).publishEvent(any(PostCommentCreatedEvent.class));
 		}
 
-		@DisplayName("답글 생성 성공")
+		@DisplayName("삭제된 루트 댓글에도 답글 생성 성공")
 		@Test
-		void createChildComment_shouldSucceed() {
+		void createChildComment_shouldSucceed_whenRootCommentIsDeleted() {
 			// given
 			CommentCreateCommand command = new CommentCreateCommand(
 				"답글 내용", null, "parent-comment-id", false, "creator-id");
@@ -141,7 +141,7 @@ public class CommentServiceTest {
 			CommentResult expectedResult = mock(CommentResult.class);
 
 			given(userReader.findUserByIdNotDeleted("creator-id")).willReturn(creator);
-			given(commentReader.getComment("parent-comment-id")).willReturn(parentComment);
+			given(commentReader.getReplyParent("parent-comment-id")).willReturn(parentComment);
 			given(parentComment.getPost()).willReturn(post);
 			given(parentComment.getId()).willReturn("parent-comment-id");
 			given(post.getId()).willReturn("post-id");
@@ -280,7 +280,7 @@ public class CommentServiceTest {
 
 			// then
 			assertThat(result).isNotNull();
-			verify(commentValidator, times(1)).validateForUpdate(eq(updater), eq(post), eq(comment),
+			verify(commentValidator, times(1)).validateForUpdate(eq(updater), eq(comment),
 				any(BoardConfig.class), anyList());
 			verify(comment, times(1)).update("수정된 댓글 내용");
 			verify(commentWriter, times(1)).save(comment);
@@ -340,7 +340,7 @@ public class CommentServiceTest {
 
 			// then
 			assertThat(result).isNotNull();
-			verify(commentValidator, times(1)).validateForDelete(eq(deleter), eq(post), eq(comment),
+			verify(commentValidator, times(1)).validateForDelete(eq(deleter), eq(comment),
 				any(BoardConfig.class), anyList());
 			verify(comment, times(1)).delete();
 			verify(commentWriter, times(1)).save(comment);

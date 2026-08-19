@@ -43,6 +43,20 @@ public class CommentReader {
 	}
 
 	/**
+	 * 삭제 여부와 관계없이 답글의 부모 댓글을 조회합니다.
+	 *
+	 * <p>삭제된 루트 댓글에도 답글을 작성할 수 있도록 생성 경로에서만 사용합니다.
+	 * 댓글 깊이와 상위 게시글·게시판 상태는 서비스 검증에서 별도로 확인합니다.</p>
+	 *
+	 * @param commentId 부모 댓글 ID
+	 * @return 부모 댓글 엔티티
+	 */
+	public Comment getReplyParent(String commentId) {
+		return commentRepository.findById(commentId)
+			.orElseThrow(CommentErrorCode.COMMENT_NOT_FOUND::toBaseException);
+	}
+
+	/**
 	 * 게시글에 속한 댓글 목록을 페이지 단위로 조회합니다.
 	 *
 	 * <p>N+1 문제를 방지하기 위해 대댓글을 부모 댓글 ID 목록 기준으로 일괄(batch) 조회한 뒤,

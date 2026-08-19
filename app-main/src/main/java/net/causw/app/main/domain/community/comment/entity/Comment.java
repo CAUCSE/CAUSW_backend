@@ -32,9 +32,10 @@ public class Comment extends BaseEntity {
 	@Column(name = "content", nullable = false)
 	private String content;
 
-	@Column(name = "is_deleted")
+	@Column(name = "is_deleted", nullable = false)
+	@Builder.Default
 	@ColumnDefault("false")
-	private Boolean isDeleted;
+	private Boolean isDeleted = false;
 
 	@Column(name = "is_anonymous", nullable = false)
 	@ColumnDefault("false")
@@ -68,7 +69,7 @@ public class Comment extends BaseEntity {
 		Post post) {
 		return Comment.builder()
 			.content(content)
-			.isDeleted(isDeleted)
+			.isDeleted(Boolean.TRUE.equals(isDeleted))
 			.isAnonymous(isAnonymous)
 			.writer(writer)
 			.post(post)

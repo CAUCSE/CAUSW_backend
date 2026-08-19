@@ -113,10 +113,6 @@ public class UserWriter {
 			.collect(Collectors.groupingBy(sa -> sa.getUser().getId()));
 
 		for (User user : users) {
-			if (isAlreadyAnonymized(user)) {
-				continue;
-			}
-
 			List<SocialAccount> socialAccounts = socialAccountMap.getOrDefault(user.getId(), List.of());
 
 			for (SocialAccount socialAccount : socialAccounts) {
@@ -134,9 +130,21 @@ public class UserWriter {
 		userRepository.saveAll(users);
 	}
 
-	private boolean isAlreadyAnonymized(User user) {
-		return user.isInactive() &&
-			user.getEmail() != null &&
-			user.getEmail().startsWith("deleted_");
+	/**
+	 * 유저를 DB에서 영구 삭제합니다. (소프트 삭제가 아니며 복구할 수 없습니다)
+	 * <p>
+	 * SocialAccount는 User를 참조하는 FK(NOT NULL)이며 User 엔티티에 cascade 매핑이 없으므로,
+	 * 이 메서드 호출 전에 호출 측에서 먼저 삭제되어야 합니다.
+	 * FcmToken은 User의 cascade(ALL)/orphanRemoval 설정으로 함께 삭제됩니다.
+	 * </p>
+	 *
+	 * @param users 영구 삭제할 유저 엔티티 목록
+	 */
+	@Transactional
+	public void hardDeleteUsers(List<User> users) {
+		if (users.isEmpty()) {
+			return;
+		}
+		userRepository.deleteAll(users);
 	}
 }

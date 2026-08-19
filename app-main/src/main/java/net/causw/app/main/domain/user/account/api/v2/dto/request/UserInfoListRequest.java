@@ -15,5 +15,7 @@ public record UserInfoListRequest(
 
 	@Schema(description = "학적 상태", example = "[\"ENROLLED\", \"GRADUATED\"]") List<String> academicStatus,
 
-	@Schema(description = "정렬 기준", example = "UPDATED_AT_DESC") String sortType) {
+	@Schema(description = "정렬 기준", example = "UPDATED_AT_DESC") String sortType,
+
+	@Schema(description = "요청 커서(없으면 null)", example = "{랜덤 해시값}") String cursor) {
 }

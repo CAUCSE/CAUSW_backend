@@ -9,6 +9,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.servlet.HandlerMapping;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -73,16 +74,19 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
 			// MDC를 clear하지 않으면 스레드 풀 재사용 시 이전 요청 정보가 남아 오염됨
 			long duration = System.currentTimeMillis() - start;
 			int status = wrappedResponse.getStatus();
+			String normalizedPath = resolveNormalizedPath(request);
+			MDC.put("path", normalizedPath);
 			MDC.put("status", String.valueOf(status));
 			MDC.put("duration", String.valueOf(duration));
 
 			// 응답 상태 코드에 따라 로그 레벨 분기
 			if (status >= 500) {
-				log.error("Request processed [{} {}] status={} duration={}ms", method, requestURI, status, duration);
+				log.error("Request processed [{} {}] status={} duration={}ms", method, normalizedPath, status,
+					duration);
 			} else if (status >= 400) {
-				log.warn("Request processed [{} {}] status={} duration={}ms", method, requestURI, status, duration);
+				log.warn("Request processed [{} {}] status={} duration={}ms", method, normalizedPath, status, duration);
 			} else {
-				log.info("Request processed [{} {}] status={} duration={}ms", method, requestURI, status, duration);
+				log.info("Request processed [{} {}] status={} duration={}ms", method, normalizedPath, status, duration);
 			}
 
 			MDC.clear();
@@ -104,6 +108,11 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
 		}
 
 		return !uri.toLowerCase().startsWith("/api/v2");
+	}
+
+	private static String resolveNormalizedPath(HttpServletRequest request) {
+		Object matchedPattern = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
+		return matchedPattern != null ? matchedPattern.toString() : request.getRequestURI();
 	}
 
 	/**

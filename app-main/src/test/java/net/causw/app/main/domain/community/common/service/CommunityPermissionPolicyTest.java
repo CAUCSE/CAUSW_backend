@@ -245,8 +245,6 @@ class CommunityPermissionPolicyTest {
 			User executive = actorUser(actor, AcademicStatus.ENROLLED);
 			assertThat(CommunityPermissionPolicy.canDeletePost(
 				executive, post, hiddenConfig, BOARD_ADMIN_IDS)).isFalse();
-			assertThat(CommunityPermissionPolicy.canRequestPostDeletion(
-				executive, post, hiddenConfig, BOARD_ADMIN_IDS)).isFalse();
 			assertThat(CommunityPermissionPolicy.canDeleteComment(
 				executive, rootComment, hiddenConfig, BOARD_ADMIN_IDS)).isFalse();
 		}
@@ -267,8 +265,6 @@ class CommunityPermissionPolicyTest {
 			assertThat(CommunityPermissionPolicy.canUpdatePost(
 				moderator, post, hiddenConfig, BOARD_ADMIN_IDS)).isFalse();
 			assertThat(CommunityPermissionPolicy.canDeletePost(
-				moderator, post, hiddenConfig, BOARD_ADMIN_IDS)).isTrue();
-			assertThat(CommunityPermissionPolicy.canRequestPostDeletion(
 				moderator, post, hiddenConfig, BOARD_ADMIN_IDS)).isTrue();
 			assertThat(CommunityPermissionPolicy.canReadComment(
 				moderator, rootComment, hiddenConfig, BOARD_ADMIN_IDS)).isTrue();
@@ -295,7 +291,7 @@ class CommunityPermissionPolicyTest {
 		}
 	}
 
-	@ParameterizedTest(name = "삭제된 게시글 재삭제 요청: {0} -> {1}")
+	@ParameterizedTest(name = "{0}: deleted post delete authority={1}")
 	@CsvSource({
 		"OWNER, true",
 		"BOARD_ADMIN, true",
@@ -304,14 +300,26 @@ class CommunityPermissionPolicyTest {
 		"VICE_PRESIDENT, true",
 		"COMMON, false"
 	})
-	void deletedPostDeletionRequestFollowsActorMatrix(Actor actor, boolean expected) {
+	@DisplayName("삭제된 게시글의 멱등 삭제 권한은 기존 삭제 주체 매트릭스를 유지한다")
+	void deletedPostIdempotentDeleteAuthorityFollowsActorMatrix(Actor actor, boolean deletable) {
 		post.setIsDeleted(true);
+		User actorUser = actorUser(actor, AcademicStatus.ENROLLED);
 
-		assertThat(CommunityPermissionPolicy.canRequestPostDeletion(
-			actorUser(actor, AcademicStatus.ENROLLED),
-			post,
-			visibleAllUserBoardConfig,
-			BOARD_ADMIN_IDS)).isEqualTo(expected);
+		assertThat(CommunityPermissionPolicy.canDeletePostIgnoringTargetDeletion(
+			actorUser, post, visibleAllUserBoardConfig, BOARD_ADMIN_IDS)).isEqualTo(deletable);
+	}
+
+	@Test
+	@DisplayName("게시판이 삭제되면 게시글 멱등 삭제 권한도 사라진다")
+	void deletedBoardRemovesIdempotentPostDeleteAuthority() {
+		post.setIsDeleted(true);
+		board.setIsDeleted(true);
+
+		for (Actor actor : Actor.values()) {
+			User user = actorUser(actor, AcademicStatus.ENROLLED);
+			assertThat(CommunityPermissionPolicy.canDeletePostIgnoringTargetDeletion(
+				user, post, visibleAllUserBoardConfig, BOARD_ADMIN_IDS)).isFalse();
+		}
 	}
 
 	@Test
@@ -331,6 +339,19 @@ class CommunityPermissionPolicyTest {
 	}
 
 	@Test
+	@DisplayName("부모 댓글이 삭제되어도 미삭제 답글의 권한은 유지된다")
+	void deletedRootCommentDoesNotRemoveChildCommentPermissions() {
+		rootComment.delete();
+
+		assertThat(CommunityPermissionPolicy.canReadComment(
+			owner, childComment, visibleAllUserBoardConfig, BOARD_ADMIN_IDS)).isTrue();
+		assertThat(CommunityPermissionPolicy.canUpdateComment(
+			owner, childComment, visibleAllUserBoardConfig, BOARD_ADMIN_IDS)).isTrue();
+		assertThat(CommunityPermissionPolicy.canDeleteComment(
+			owner, childComment, visibleAllUserBoardConfig, BOARD_ADMIN_IDS)).isTrue();
+	}
+
+	@Test
 	@DisplayName("게시판이 삭제되면 하위 게시글과 댓글의 모든 권한도 사라진다")
 	void deletedBoardRemovesAllContentPermissions() {
 		board.setIsDeleted(true);
@@ -342,8 +363,6 @@ class CommunityPermissionPolicyTest {
 			assertThat(CommunityPermissionPolicy.canUpdatePost(
 				user, post, visibleAllUserBoardConfig, BOARD_ADMIN_IDS)).isFalse();
 			assertThat(CommunityPermissionPolicy.canDeletePost(
-				user, post, visibleAllUserBoardConfig, BOARD_ADMIN_IDS)).isFalse();
-			assertThat(CommunityPermissionPolicy.canRequestPostDeletion(
 				user, post, visibleAllUserBoardConfig, BOARD_ADMIN_IDS)).isFalse();
 			assertThat(CommunityPermissionPolicy.canReadComment(
 				user, rootComment, visibleAllUserBoardConfig, BOARD_ADMIN_IDS)).isFalse();
@@ -376,7 +395,7 @@ class CommunityPermissionPolicyTest {
 	}
 
 	@Test
-	@DisplayName("생존 판단은 상위 게시판·게시글·부모 댓글 삭제 상태를 모두 반영한다")
+	@DisplayName("답글 생존 판단은 게시판·게시글 상태만 상속하고 부모 댓글 삭제 상태는 상속하지 않는다")
 	void aliveChecksIncludeAncestorDeletion() {
 		assertThat(CommunityPermissionPolicy.isAlive(board)).isTrue();
 		assertThat(CommunityPermissionPolicy.isAlive(post)).isTrue();
@@ -386,7 +405,7 @@ class CommunityPermissionPolicyTest {
 		rootComment.delete();
 
 		assertThat(CommunityPermissionPolicy.isAlive(rootComment)).isFalse();
-		assertThat(CommunityPermissionPolicy.isAlive(childComment)).isFalse();
+		assertThat(CommunityPermissionPolicy.isAlive(childComment)).isTrue();
 	}
 
 	private static Board aliveBoard() {

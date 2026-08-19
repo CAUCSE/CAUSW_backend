@@ -15,6 +15,7 @@ public record PostListResult(
 
 	public record PostItem(
 		String postId,
+		String title,
 		String content,
 		long numComment,
 		long numLike,
@@ -36,6 +37,7 @@ public record PostListResult(
 		boolean isOfficial) {
 		public static PostItem of(
 			String postId,
+			String title,
 			String content,
 			long numComment,
 			long numLike,
@@ -56,7 +58,7 @@ public record PostListResult(
 			boolean deletable,
 			boolean isOfficial) {
 			return new PostItem(
-				postId, content, numComment, numLike,
+				postId, title, content, numComment, numLike,
 				isAnonymous, voteId, isDeleted, isCrawled,
 				writerNickname, writerProfileImage,
 				createdAt, updatedAt, postImageUrls,

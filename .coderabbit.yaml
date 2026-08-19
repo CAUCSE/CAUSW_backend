@@ -1,0 +1,129 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+
+language: "ko-KR"
+
+tone_instructions: |
+  리뷰는 한국어 존댓말로 작성합니다.
+  건설적이고 구체적인 피드백을 제공하며,
+  수정이 필요한 경우 올바른 패턴을 코드 예시와 함께 제시합니다.
+  보안(JWT·OAuth2·Spring Security), 트랜잭션 경계, N+1 쿼리,
+  소프트 삭제 누락, Flyway 마이그레이션 오류 등 운영 리스크가 높은 항목은
+  중요도를 명확히 표시합니다.
+
+early_access: false
+
+reviews:
+  profile: chill
+  request_changes_workflow: false
+  high_level_summary: true
+  high_level_summary_placeholder: "<!-- walkthrough -->"
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - dev
+      - main
+
+  path_filters:
+    - "!**/build/**"
+    - "!**/.gradle/**"
+    - "!**/generated/**"
+    - "!dump.rdb"
+    - "!**/*.class"
+    - "!.idea/**"
+    - "!img/**"
+    - "!gradle/wrapper/**"
+    - "!**/*.p12"
+
+  path_instructions:
+    - path: "app-main/src/main/java/**"
+      instructions: |
+        Spring Boot 애플리케이션 코드입니다. 프로젝트 아키텍처는 Controller → Service → Implementation → Repository 4계층 구조입니다. 다음 사항을 중점적으로 리뷰해주세요:
+        - 레이어 간 의존성 방향이 올바른지 확인합니다 (Controller → Service → Implementation → Repository).
+        - 트랜잭션 경계(@Transactional)가 Service 메서드 단위로 적절하게 설정되어 있는지 확인합니다. Controller나 Repository에 트랜잭션 경계를 두지 않습니다.
+        - N+1 쿼리 문제가 발생할 가능성이 있는지 확인합니다.
+        - 민감 정보(비밀번호, 토큰 등)가 로그에 노출되지 않는지 확인합니다.
+        - 예외는 프로젝트의 XxxErrorCode implements BaseResponseCode와 BaseException을 사용합니다. RuntimeException 등 범용 예외의 직접 사용은 금지합니다.
+        - 로깅은 SLF4J를 사용하고 System.out.println은 절대 사용하지 않습니다.
+        - shared/infra(mail, push, Firebase, S3 등) 외부 서비스 호출 시 타임아웃 설정과 실패 케이스 예외 처리가 있는지 확인합니다. 누락 시 스레드 고갈로 이어질 수 있습니다.
+        - core/batch의 Batch Job은 재시도·중복 실행 시에도 동일한 결과가 보장되는지(멱등성) 확인합니다.
+
+    - path: "app-main/src/main/java/**/controller/**"
+      instructions: |
+        Controller 레이어입니다. Controller는 요청/응답 변환과 라우팅만 담당하며 비즈니스 로직을 포함해서는 안 됩니다. 다음 사항을 확인해주세요:
+        - API 응답 형식이 일관성 있는지 확인합니다.
+        - 입력값 유효성 검사(@Valid, @Validated)가 적절히 적용되어 있는지 확인합니다. 단순 형식 검증은 DTO에서 처리합니다.
+        - HTTP 메서드와 URL 패턴이 RESTful 규칙을 따르는지 확인합니다.
+        - 엔티티를 API 응답으로 직접 노출하지 않고 DTO를 사용하는지 확인합니다.
+        - 신규 엔드포인트가 SecurityEndpoints 공개 경로에 포함되거나 @PreAuthorize로 인가가 설정되어 있는지 확인합니다. 누락 시 인증 없이 접근 가능합니다.
+        - 모든 응답이 공통 래퍼(ApiResponse)로 반환되는지 확인합니다. 일부 엔드포인트만 래핑이 누락되면 클라이언트 파싱 오류로 이어집니다.
+
+    - path: "app-main/src/main/java/**/service/**"
+      instructions: |
+        Service 레이어입니다. Service는 유즈케이스 단위 오케스트레이션(검증, 흐름 제어, 조합)을 담당합니다. 다음 사항을 확인해주세요:
+        - Service가 Repository를 직접 주입하지 않고, Implementation(Reader/Writer/Validator) 계층을 통해서만 영속화에 접근하는지 확인합니다. 직접 의존 시 레이어 책임 경계가 무너집니다.
+        - 다른 도메인의 데이터가 필요한 경우 해당 도메인의 Reader를 주입하고, Repository를 직접 의존하지 않는지 확인합니다.
+        - 트랜잭션 처리가 Service 메서드 단위로 적절한지 확인합니다.
+        - 비즈니스 로직이 명확하게 분리되어 있는지 확인합니다.
+        - 읽기 전용 메서드에 @Transactional(readOnly = true)가 적용되어 있는지 확인합니다.
+        - @Cacheable로 캐싱된 데이터를 변경하는 메서드에서 @CacheEvict 또는 @CachePut이 누락되지 않았는지 확인합니다. 누락 시 Redis와 DB 간 데이터 불일치가 발생합니다.
+
+    - path: "app-main/src/main/java/**/implementation/**"
+      instructions: |
+        Implementation 레이어입니다. Implementation은 단일 책임 로직을 수행하고 Repository/Shared에 의존합니다. 다음 사항을 확인해주세요:
+        - 클래스명이 역할이 드러나도록 작성되었는지 확인합니다. (예: Reader, Writer, Validator 등 프로젝트 컨벤션)
+        - Implementation 간 의존은 최소화하고 순환 의존이 발생하지 않는지 확인합니다.
+        - Implementation이 Service 계층을 참조하지 않는지 확인합니다. 레이어 역전은 금지합니다.
+
+    - path: "app-main/src/main/java/**/repository/**"
+      instructions: |
+        Repository 레이어입니다. 다음 사항을 확인해주세요:
+        - 동적 쿼리는 QueryDSL로 작성했는지 확인합니다. 문자열 결합으로 JPQL/SQL을 만드는 코드는 금지입니다.
+        - 불필요한 전체 조회 대신 필요한 필드만 조회하는지 확인합니다.
+        - 페이지네이션이 필요한 목록 조회에 Pageable이 적용되어 있는지 확인합니다.
+        - 소프트 삭제를 사용하는 엔티티의 커스텀 쿼리에서 `deletedAt IS NULL` 조건이 누락되지 않았는지 확인합니다. 누락 시 삭제된 데이터가 노출됩니다.
+        - 삭제된 데이터를 포함하는 특수 조회는 일반 조회와 명확히 구분되는 메서드명으로 제공하는지 확인합니다.
+
+    - path: "app-main/src/main/java/**/entity/**"
+      instructions: |
+        JPA 엔티티 클래스입니다. 다음 사항을 확인해주세요:
+        - 테이블명에 `tb_` 접두사가 사용되었는지 확인합니다. 예: `tb_user`, `tb_post`
+        - `@Builder`는 `@Builder(access = AccessLevel.PROTECTED)`로 제한되어 있는지 확인합니다.
+        - JPA 엔티티 연관관계 설정(FetchType, cascade 등)이 적절한지 확인합니다.
+        - 양방향 연관관계에서 편의 메서드가 올바르게 작성되어 있는지 확인합니다.
+        - cascade = CascadeType.REMOVE가 있는 자식 엔티티는 부모를 soft delete할 때 자식도 별도로 soft delete 처리가 되는지 확인합니다. cascade REMOVE는 soft delete를 전파하지 않습니다.
+        - @Column, @Table 등 DB 스키마에 영향을 주는 변경이 있을 때, PR에 대응하는 Flyway 마이그레이션 파일과 db-change 라벨이 포함되어 있는지 확인합니다.
+
+    - path: "app-main/src/test/**"
+      instructions: |
+        테스트 코드입니다. 다음 사항을 확인해주세요:
+        - 테스트 케이스가 충분한지 확인합니다 (성공/실패/경계 케이스).
+        - 테스트 이름이 의도를 명확히 드러내는지 확인합니다.
+        - 불필요한 mocking 없이 실제 동작을 검증하는지 확인합니다.
+        - @SpringBootTest 사용이 과도하지 않은지 확인합니다 (슬라이스 테스트 권장).
+
+    - path: "global/src/main/java/**"
+      instructions: |
+        공통 모듈 코드입니다. 변경 시 다른 모듈에 미치는 영향을 특히 주의 깊게 검토해주세요.
+        - 공통 예외, 응답 형식, 유틸리티 클래스의 변경은 하위 호환성을 고려해야 합니다.
+
+    - path: "app-main/src/main/resources/db/migration/**"
+      instructions: |
+        Flyway 마이그레이션 스크립트입니다. 다음 사항을 확인해주세요:
+        - 파일명 버전 순서가 올바른지 확인합니다 (V{버전}__{설명}.sql).
+        - 롤백 불가능한 DDL 변경(DROP, TRUNCATE)에 대해 주의를 요청합니다.
+        - 대용량 테이블 변경 시 잠금(Lock) 이슈가 발생할 수 있는지 확인합니다.
+        - NOT NULL 컬럼 추가 시 기존 데이터에 대한 처리가 포함되어 있는지 확인합니다.
+
+    - path: ".github/workflows/**"
+      instructions: |
+        GitHub Actions 워크플로우입니다. 다음 사항을 확인해주세요:
+        - 시크릿이 하드코딩되지 않았는지 확인합니다.
+        - 불필요한 권한(permissions)이 부여되지 않았는지 확인합니다.
+        - 워크플로우 트리거 조건이 의도대로 설정되어 있는지 확인합니다.
+
+chat:
+  auto_reply: true

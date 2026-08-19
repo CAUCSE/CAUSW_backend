@@ -22,6 +22,7 @@ import net.causw.app.main.domain.community.board.service.implementation.BoardRea
 import net.causw.app.main.domain.community.common.service.CommunityPermissionPolicy;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.query.PostCursorResult;
+import net.causw.app.main.domain.community.post.repository.query.PostReadQueryContext;
 import net.causw.app.main.domain.community.post.service.dto.PostCreateCommand;
 import net.causw.app.main.domain.community.post.service.dto.PostCreateResult;
 import net.causw.app.main.domain.community.post.service.dto.PostDetailQuery;
@@ -110,12 +111,14 @@ public class PostService {
 		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(boardId);
 		BoardConfig boardConfig = boardConfigReader.getByBoardId(boardId);
 		validateBlockedWriterAccess(deleter, post, boardAdminIds);
-		PostValidator.validateDelete(deleter, post, boardAdminIds, boardConfig);
-
-		// 권한 검증을 통과한 재삭제 요청은 멱등하게 처리합니다.
 		if (Boolean.TRUE.equals(post.getIsDeleted())) {
+			if (!CommunityPermissionPolicy.canDeletePostIgnoringTargetDeletion(
+				deleter, post, boardConfig, boardAdminIds)) {
+				throw PostErrorCode.POST_FORBIDDEN.toBaseException();
+			}
 			return;
 		}
+		PostValidator.validateDelete(deleter, post, boardAdminIds, boardConfig);
 
 		// 소프트 삭제 처리
 		post.setIsDeleted(true);
@@ -145,8 +148,12 @@ public class PostService {
 			post, command.newImageFiles(), command.imageMetas());
 
 		// 게시글 업데이트
-		Post updatedPost = postWriter.updateContentAndImages(
-			post, command.content(), command.isAnonymous(), imageResult.finalImages());
+		Post updatedPost = postWriter.update(
+			post,
+			command.title(),
+			command.content(),
+			command.isAnonymous(),
+			imageResult.finalImages());
 
 		List<String> imageUrls = imageResult.finalImages().stream()
 			.map(img -> img.getUuidFile().getFileUrl())
@@ -194,12 +201,12 @@ public class PostService {
 
 		// 뷰어가 차단한 사용자 조회
 		Set<String> blockedUserIds = userBlockReader.findBlockeeUserIdsByBlocker(viewer);
+		PostReadQueryContext readContext = PostReadQueryContext.from(viewer, blockedUserIds);
 
 		// 게시글 조회 (Slice 사용)
 		Slice<PostCursorResult> slice = postReader.findPostsWithCursor(
 			boardIds,
-			viewer,
-			blockedUserIds,
+			readContext,
 			parsedCursor.createdAt(),
 			parsedCursor.postId(),
 			size,
@@ -337,12 +344,13 @@ public class PostService {
 	public PostListResult getPostsCommentedByUser(User user, String cursor, Integer size) {
 		CommunityPermissionPolicy.validateActiveUser(user);
 		Set<String> blockedUserIds = userBlockReader.findBlockeeUserIdsByBlocker(user);
+		PostReadQueryContext readContext = PostReadQueryContext.from(user, blockedUserIds);
 		int pageSize = size != null ? size : StaticValue.DEFAULT_POST_PAGE_SIZE;
 		PostCursorManager.ParsedCursor parsedCursor = PostCursorManager.parseCursor(cursor);
 
 		Slice<PostCursorResult> slice = postReader.findPostsCommentedByUserWithCursor(
-			user,
-			blockedUserIds,
+			user.getId(),
+			readContext,
 			parsedCursor.createdAt(),
 			parsedCursor.postId(),
 			pageSize);
@@ -360,13 +368,13 @@ public class PostService {
 	 */
 	public PostListResult getPostsWrittenByUser(User user, String cursor, Integer size) {
 		CommunityPermissionPolicy.validateActiveUser(user);
-		Set<String> blockedUserIds = userBlockReader.findBlockeeUserIdsByBlocker(user);
+		PostReadQueryContext readContext = PostReadQueryContext.from(user, Set.of());
 		int pageSize = size != null ? size : StaticValue.DEFAULT_POST_PAGE_SIZE;
 		PostCursorManager.ParsedCursor parsedCursor = PostCursorManager.parseCursor(cursor);
 
 		Slice<PostCursorResult> slice = postReader.findPostsWrittenByUserWithCursor(
-			user,
-			blockedUserIds,
+			user.getId(),
+			readContext,
 			parsedCursor.createdAt(),
 			parsedCursor.postId(),
 			pageSize);
@@ -384,12 +392,13 @@ public class PostService {
 	public PostListResult getPostsLikedByUser(User user, String cursor, Integer size) {
 		CommunityPermissionPolicy.validateActiveUser(user);
 		Set<String> blockedUserIds = userBlockReader.findBlockeeUserIdsByBlocker(user);
+		PostReadQueryContext readContext = PostReadQueryContext.from(user, blockedUserIds);
 		int pageSize = size != null ? size : StaticValue.DEFAULT_POST_PAGE_SIZE;
 		PostCursorManager.ParsedCursor parsedCursor = PostCursorManager.parseCursor(cursor);
 
 		Slice<PostCursorResult> slice = postReader.findPostsLikedByUserWithCursor(
-			user,
-			blockedUserIds,
+			user.getId(),
+			readContext,
 			parsedCursor.createdAt(),
 			parsedCursor.postId(),
 			pageSize);

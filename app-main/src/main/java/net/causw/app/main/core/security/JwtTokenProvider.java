@@ -3,6 +3,7 @@ package net.causw.app.main.core.security;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.crypto.SecretKey;
@@ -65,6 +66,8 @@ public class JwtTokenProvider {
 		Date now = new Date();
 
 		return Jwts.builder()
+			.id(UUID.randomUUID().toString())
+			.issuedAt(now)
 			.expiration(new Date(now.getTime() + StaticValue.JWT_REFRESH_TOKEN_VALID_TIME))
 			.signWith(secretKey, Jwts.SIG.HS256)
 			.compact();

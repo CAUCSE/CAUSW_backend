@@ -68,7 +68,7 @@ public interface PostRepository extends JpaRepository<Post, String> {
 	// 게시판 삭제 시, 게시글도 함께 삭제
 	@Query("UPDATE Post p SET p.isDeleted = true " +
 		"WHERE p.board.id = :boardId AND p.isDeleted = false")
-	@Modifying
+	@Modifying(flushAutomatically = true, clearAutomatically = true)
 	int deleteAllPostsByBoardId(@Param("boardId") String boardId);
 
 	Optional<Post> findByIdAndIsDeletedFalse(String postId);

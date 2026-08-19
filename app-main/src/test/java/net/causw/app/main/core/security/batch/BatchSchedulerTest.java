@@ -11,21 +11,19 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.batch.core.job.Job;
-import org.springframework.batch.core.launch.JobLauncher;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.SliceImpl;
 
 import net.causw.app.main.core.batch.BatchScheduler;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.repository.user.UserRepository;
+import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.UserProfileImageService;
 import net.causw.app.main.domain.user.account.service.implementation.AdmissionWriter;
 import net.causw.app.main.domain.user.account.service.implementation.SocialAccountWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserInfoWriter;
+import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.shared.pageable.PageableFactory;
 
@@ -36,9 +34,7 @@ public class BatchSchedulerTest {
 	private BatchScheduler batchScheduler;
 
 	@Mock
-	private JobLauncher jobLauncher;
-	@Mock
-	private UserRepository userRepository;
+	private UserReader userReader;
 	@Mock
 	private PageableFactory pageableFactory;
 	@Mock
@@ -51,8 +47,6 @@ public class BatchSchedulerTest {
 	private AdmissionWriter userAdmissionWriter;
 	@Mock
 	private UserWriter userWriter;
-	@Mock
-	private Job cleanUpUnusedFilesJob;
 	@Mock
 	private UserProfileImageService userProfileImageService;
 
@@ -67,14 +61,16 @@ public class BatchSchedulerTest {
 		when(pageableFactory.create(anyInt(), anyInt())).thenReturn(PageRequest.of(0, 10));
 
 		when(
-			userRepository.findAllByDeletedAtIsNotNullAndDeletedAtBefore(any(LocalDateTime.class), any(Pageable.class)))
-			.thenReturn(new PageImpl<>(withdrawnUsers), Page.empty());
+			userReader.findCleanupTargets(
+				any(LocalDateTime.class),
+				any(Pageable.class)))
+			.thenReturn(withdrawnUsers, List.of());
 
 		// when
 		batchScheduler.scheduleCleanupDeactivatedUsers();
 
 		// then
-		verify(userRepository).findAllByDeletedAtIsNotNullAndDeletedAtBefore(
+		verify(userReader, times(2)).findCleanupTargets(
 			any(LocalDateTime.class),
 			any(Pageable.class));
 		verify(userProfileImageService, times(1)).cleanupProfileImagesForBatch(anyList());
@@ -92,15 +88,60 @@ public class BatchSchedulerTest {
 		when(pageableFactory.create(anyInt(), anyInt())).thenReturn(PageRequest.of(0, 10));
 
 		when(
-			userRepository.findAllByDeletedAtIsNotNullAndDeletedAtBefore(any(LocalDateTime.class), any(Pageable.class)))
-			.thenReturn(Page.empty());
+			userReader.findCleanupTargets(
+				any(LocalDateTime.class),
+				any(Pageable.class)))
+			.thenReturn(List.of());
 
 		// when
 		batchScheduler.scheduleCleanupDeactivatedUsers();
 
 		// then
-		verify(userRepository).findAllByDeletedAtIsNotNullAndDeletedAtBefore(any(LocalDateTime.class),
+		verify(userReader).findCleanupTargets(
+			any(LocalDateTime.class),
 			any(Pageable.class));
 		verifyNoInteractions(userInfoWriter, ceremonyWriter, socialAccountWriter, userAdmissionWriter, userWriter);
+	}
+
+	@Test
+	@DisplayName("방치된 GUEST 유저가 있으면 프로필·소셜·User를 순서대로 정리한다")
+	void givenStaleGuestUsers_whenScheduleCleanup_thenCleansUpInOrder() {
+		// given
+		User guest1 = mock(User.class);
+		User guest2 = mock(User.class);
+		List<User> staleGuests = List.of(guest1, guest2);
+
+		when(pageableFactory.create(anyInt(), anyInt())).thenReturn(PageRequest.of(0, 10));
+		when(userReader.findUsersByStateAndUpdatedAtBefore(
+			eq(UserState.GUEST), any(LocalDateTime.class), any(Pageable.class)))
+			.thenReturn(new SliceImpl<>(staleGuests, PageRequest.of(0, 10), false));
+
+		// when
+		batchScheduler.scheduleCleanupStaleGuestUsers();
+
+		// then
+		verify(userReader).findUsersByStateAndUpdatedAtBefore(
+			eq(UserState.GUEST), any(LocalDateTime.class), any(Pageable.class));
+		verify(userProfileImageService).cleanupProfileImagesForBatch(staleGuests);
+		verify(socialAccountWriter).deleteSocialAccountsByUsers(staleGuests);
+		verify(userWriter).hardDeleteUsers(staleGuests);
+	}
+
+	@Test
+	@DisplayName("방치된 GUEST 유저가 없으면 정리 로직을 호출하지 않는다")
+	void givenNoStaleGuestUsers_whenScheduleCleanup_thenDoesNothing() {
+		// given
+		when(pageableFactory.create(anyInt(), anyInt())).thenReturn(PageRequest.of(0, 10));
+		when(userReader.findUsersByStateAndUpdatedAtBefore(
+			eq(UserState.GUEST), any(LocalDateTime.class), any(Pageable.class)))
+			.thenReturn(new SliceImpl<>(List.of(), PageRequest.of(0, 10), false));
+
+		// when
+		batchScheduler.scheduleCleanupStaleGuestUsers();
+
+		// then
+		verify(userReader).findUsersByStateAndUpdatedAtBefore(
+			eq(UserState.GUEST), any(LocalDateTime.class), any(Pageable.class));
+		verifyNoInteractions(userProfileImageService, socialAccountWriter, userWriter);
 	}
 }

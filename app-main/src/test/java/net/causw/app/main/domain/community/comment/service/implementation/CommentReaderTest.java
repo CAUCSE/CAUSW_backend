@@ -71,6 +71,21 @@ class CommentReaderTest {
 	}
 
 	@Nested
+	@DisplayName("답글 부모 조회")
+	class GetReplyParent {
+
+		@Test
+		@DisplayName("삭제된 댓글도 답글 부모로 조회한다")
+		void givenDeletedComment_whenGetReplyParent_thenReturnComment() {
+			Comment comment = Comment.of("댓글", true, false, ObjectFixtures.getUser(),
+				ObjectFixtures.getPost(ObjectFixtures.getUser(), ObjectFixtures.getBoard()));
+			given(commentRepository.findById("comment-id")).willReturn(Optional.of(comment));
+
+			assertThat(commentReader.getReplyParent("comment-id")).isSameAs(comment);
+		}
+	}
+
+	@Nested
 	@DisplayName("댓글 목록 조회")
 	class GetComments {
 

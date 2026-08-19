@@ -149,7 +149,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 	/**
 	 * 인증 principal 타입에 맞춰 도메인 사용자 엔티티를 조회합니다.
 	 * <p>
-	 * Apple OIDC의 경우 email 우선 조회 후, email 누락 시 socialId(sub)로 fallback 조회합니다.
+	 * OIDC의 경우 {@link net.causw.app.main.domain.user.auth.service.CustomOAuth2UserService}의
+	 * 사용자 확정 정책과 동일하게 socialId(sub) 우선 조회 후, 미존재 시 email로 fallback 조회합니다.
 	 *
 	 * @param authentication 인증 컨텍스트
 	 * @return 로그인 대상 사용자 엔티티
@@ -162,10 +163,11 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 		}
 
 		if (principal instanceof OidcUser oidcUser) {
-			Optional<User> userByEmail = findByEmail(oidcUser.getEmail());
-			return userByEmail.orElseGet(
-				() -> userReader.findBySocialTypeAndSocialId(SocialType.APPLE, oidcUser.getSubject())
-					.orElseThrow(AuthErrorCode.INVALID_TOKEN::toBaseException));
+			SocialType socialType = SocialType.from(
+				((OAuth2AuthenticationToken)authentication).getAuthorizedClientRegistrationId());
+			return userReader.findBySocialTypeAndSocialId(socialType, oidcUser.getSubject())
+				.or(() -> findByEmail(oidcUser.getEmail()))
+				.orElseThrow(AuthErrorCode.INVALID_TOKEN::toBaseException);
 		}
 
 		if (principal instanceof OAuth2User oAuth2User) {
