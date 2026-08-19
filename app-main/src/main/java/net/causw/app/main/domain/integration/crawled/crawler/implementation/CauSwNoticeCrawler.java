@@ -32,6 +32,8 @@ import lombok.RequiredArgsConstructor;
 public class CauSwNoticeCrawler implements SiteCrawler {
 	private static final Pattern SCRIPT_DOWNLOAD_PATTERN = Pattern.compile(
 		"goLocation\\('/_module/bbs/download.php','(\\d+)','(\\w+)'\\).*?>(.*?)<");
+	private static final Pattern NOTICE_CODE_PATTERN = Pattern.compile("[?&]code=([^&]+)");
+	private static final Pattern NOTICE_UID_PATTERN = Pattern.compile("[?&]uid=(\\d+)");
 
 	private final CrawlHttpClient crawlHttpClient;
 
@@ -70,11 +72,20 @@ public class CauSwNoticeCrawler implements SiteCrawler {
 					continue;
 				}
 				String category = row.select(selectors.getArticleCategory()).text();
-				articleUrls.add(new ArticleUrl(url, url, category));
+				articleUrls.add(new ArticleUrl(url, extractNoticeId(url), category));
 			}
 		}
 
 		return articleUrls.stream().distinct().toList();
+	}
+
+	private String extractNoticeId(String url) {
+		Matcher codeMatcher = NOTICE_CODE_PATTERN.matcher(url);
+		Matcher uidMatcher = NOTICE_UID_PATTERN.matcher(url);
+		if (!codeMatcher.find() || !uidMatcher.find()) {
+			throw IntegrationErrorCode.CRAWL_PARSE_FAILED.toBaseException();
+		}
+		return codeMatcher.group(1) + ":" + uidMatcher.group(1);
 	}
 
 	/** {@inheritDoc} */

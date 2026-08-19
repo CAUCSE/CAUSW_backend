@@ -45,6 +45,26 @@ class CauSwNoticeCrawlerTest {
 			// then
 			assertThat(result).isEmpty();
 		}
+
+		@Test
+		@DisplayName("공지 URL의 code와 uid를 외부 식별자로 사용한다")
+		void shouldUseCodeAndUidAsExternalId_whenNoticeUrlIsFetched() {
+			// given
+			given(crawlHttpClient.fetch(any(), any())).willReturn("""
+				<table class='table-basic'><tbody>
+				<tr><td class='aleft'><a href='/sub05/sub0501.php?nmode=view&code=oktomato_bbs05&uid=3433'>공지</a></td>
+				<td><span class='tag'>학사</span></td></tr>
+				</tbody></table>
+				""");
+
+			// when
+			List<ArticleUrl> result = crawler.fetchList(context);
+
+			// then
+			assertThat(result).containsExactly(new ArticleUrl(
+				"https://cse.cau.ac.kr/sub05/sub0501.php?nmode=view&code=oktomato_bbs05&uid=3433",
+				"oktomato_bbs05:3433", "학사"));
+		}
 	}
 
 	@Nested
@@ -55,7 +75,7 @@ class CauSwNoticeCrawlerTest {
 		void shouldParseNoticeFields() {
 			// given
 			ArticleUrl articleUrl = new ArticleUrl(
-				"https://cse.cau.ac.kr/notice?uid=10", "https://cse.cau.ac.kr/notice?uid=10", "NEW 공지");
+				"https://cse.cau.ac.kr/notice?code=oktomato_bbs05&uid=10", "oktomato_bbs05:10", "NEW 공지");
 			String html = """
 				<section id='content'>
 				<div class='header'><h3>제목</h3><div>

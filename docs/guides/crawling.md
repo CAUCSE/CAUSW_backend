@@ -62,7 +62,7 @@ domain/integration/crawled/
 
 ## 식별과 변경 감지
 
-`tb_crawled_notice` 행은 `(site_id, external_id)`로 식별한다. 중앙대 SW 공지는 기존 데이터와의 호환을 위해 정규화된 원본 URL을 `external_id`로 사용한다.
+`tb_crawled_notice` 행은 `(site_id, external_id)`로 식별한다. 중앙대 SW 공지는 목록 URL의 `code`와 `uid`를 조합한 `code:uid`를 `external_id`로 사용한다.
 
 변경 해시에는 다음 값이 구분자와 함께 포함된다.
 
