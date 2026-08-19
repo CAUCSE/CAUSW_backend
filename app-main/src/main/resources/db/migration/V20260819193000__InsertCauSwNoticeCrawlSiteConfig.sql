@@ -28,12 +28,12 @@ INSERT INTO tb_crawl_site_config (
     requires_js_rendering,
     requires_login,
     is_enabled
-) VALUES (
+) SELECT
     'cau-sw-notice-site-config',
     CURRENT_TIMESTAMP(6),
     CURRENT_TIMESTAMP(6),
     'cau-sw-notice',
-    (SELECT id FROM tb_board WHERE name = '소프트웨어학부' LIMIT 1),
+    board.id,
     'CAU_SW_NOTICE',
     'https://cse.cau.ac.kr/sub05/sub0501.php?offset=',
     'https://cse.cau.ac.kr',
@@ -58,4 +58,5 @@ INSERT INTO tb_crawl_site_config (
     FALSE,
     FALSE,
     TRUE
-);
+FROM tb_board board
+WHERE board.name = '소프트웨어학부';
