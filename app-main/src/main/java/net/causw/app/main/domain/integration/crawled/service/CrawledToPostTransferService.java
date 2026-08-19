@@ -239,11 +239,13 @@ public class CrawledToPostTransferService {
 	 * @return 기존 Post 또는 일치하는 Post가 없으면 {@code null}
 	 */
 	private Post findExistingPost(CrawledNotice notice, Board board, String title) {
-		if (notice.getPost() != null
-			&& !Boolean.TRUE.equals(notice.getPost().getIsDeleted())
-			&& notice.getPost().getBoard() != null
-			&& notice.getTargetBoardId().equals(notice.getPost().getBoard().getId())) {
-			return notice.getPost();
+		Post linkedPost = notice.getPost();
+		if (linkedPost != null && !Boolean.TRUE.equals(linkedPost.getIsDeleted())) {
+			if (linkedPost.getBoard() != null && notice.getTargetBoardId().equals(linkedPost.getBoard().getId())) {
+				return linkedPost;
+			}
+			linkedPost.setIsDeleted(true);
+			postWriter.save(linkedPost);
 		}
 
 		// 기존 데이터가 최초로 새 식별 구조를 사용할 때만 제목으로 연결한다.

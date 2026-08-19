@@ -6,6 +6,7 @@ import static org.mockito.BDDMockito.mock;
 import static org.mockito.BDDMockito.never;
 import static org.mockito.BDDMockito.verify;
 import static org.mockito.BDDMockito.when;
+import static org.mockito.Mockito.times;
 
 import java.util.Collections;
 import java.util.List;
@@ -116,6 +117,34 @@ public class CrawledToPostTransferServiceTest {
 		// then
 		verify(postWriter).save(existingPost);
 		verify(crawledNoticeWriter).markTransferred(updatedNotice, existingPost);
+	}
+
+	@Test
+	@DisplayName("대상 게시판이 변경된 연결 Post는 삭제하고 새 게시판에 Post를 생성한다")
+	void transferToPosts_shouldSoftDeleteLinkedPost_whenTargetBoardChanges() {
+		// given
+		Board targetBoard = createMockBoard();
+		Board previousBoard = mock(Board.class);
+		User mockUser = createMockUser();
+		CrawledNotice updatedNotice = CrawledNoticeFixture.updatedNotice();
+		Post linkedPost = createMockPost("수정된 공지사항");
+		when(linkedPost.getBoard()).thenReturn(previousBoard);
+		when(previousBoard.getId()).thenReturn("previous-board-id");
+		updatedNotice.linkPost(linkedPost);
+
+		given(boardReader.getById(updatedNotice.getTargetBoardId())).willReturn(targetBoard);
+		given(userReader.findByEmail(StaticValue.SYSTEM_CRAWLER_ACCOUNT))
+			.willReturn(Optional.of(mockUser));
+		given(crawledNoticeReader.findPendingNotices()).willReturn(List.of(updatedNotice));
+		given(postReader.findAllByBoardAndNotDeleted(targetBoard)).willReturn(Collections.emptyList());
+
+		// when
+		crawledToPostTransferService.transferToPosts();
+
+		// then
+		verify(linkedPost).setIsDeleted(true);
+		verify(postWriter).save(linkedPost);
+		verify(postWriter, times(2)).save(any(Post.class));
 	}
 
 	@Test

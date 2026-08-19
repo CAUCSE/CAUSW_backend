@@ -16,6 +16,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.service.implementation.PostWriter;
 import net.causw.app.main.domain.integration.crawled.dto.CleanArticle;
 import net.causw.app.main.domain.integration.crawled.dto.CrawlSaveStatus;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
@@ -32,6 +34,9 @@ class CrawledNoticeWriterTest {
 
 	@Mock
 	private CrawledNoticeRepository repository;
+
+	@Mock
+	private PostWriter postWriter;
 
 	@Test
 	@DisplayName("새 외부 식별자를 저장한다")
@@ -71,6 +76,8 @@ class CrawledNoticeWriterTest {
 	void upsert_shouldUpdate_whenTargetBoardChanges() {
 		// given
 		CrawledNotice existing = existing("hash", "old-board-id");
+		Post linkedPost = org.mockito.Mockito.mock(Post.class);
+		existing.linkPost(linkedPost);
 		given(reader.findBySource("site", "10")).willReturn(Optional.of(existing));
 
 		// when
@@ -80,6 +87,8 @@ class CrawledNoticeWriterTest {
 		assertThat(result).isEqualTo(CrawlSaveStatus.UPDATED);
 		assertThat(existing.getTargetBoardId()).isEqualTo("target-board-id");
 		assertThat(existing.getIsUpdated()).isTrue();
+		verify(linkedPost).setIsDeleted(true);
+		verify(postWriter).save(linkedPost);
 	}
 
 	private CleanArticle article(String hash) {
