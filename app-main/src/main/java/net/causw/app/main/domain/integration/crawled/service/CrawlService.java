@@ -7,6 +7,8 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
+import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.service.implementation.PostWriter;
 import net.causw.app.main.domain.integration.crawled.core.CrawlContext;
 import net.causw.app.main.domain.integration.crawled.core.SiteCrawlerRegistry;
 import net.causw.app.main.domain.integration.crawled.crawler.SiteCrawler;
@@ -15,7 +17,10 @@ import net.causw.app.main.domain.integration.crawled.dto.CleanArticle;
 import net.causw.app.main.domain.integration.crawled.dto.CrawlResult;
 import net.causw.app.main.domain.integration.crawled.dto.CrawlSaveStatus;
 import net.causw.app.main.domain.integration.crawled.dto.RawArticle;
+import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
 import net.causw.app.main.domain.integration.crawled.entity.SiteConfig;
+import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeReader;
+import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeWriter;
 import net.causw.app.main.domain.integration.crawled.service.implementation.SiteConfigReader;
 
 import lombok.RequiredArgsConstructor;
@@ -28,7 +33,9 @@ public class CrawlService {
 	private final SiteCrawlerRegistry siteCrawlerRegistry;
 	private final SiteConfigReader siteConfigReader;
 	private final CrawledArticleCleaner crawledArticleCleaner;
-	private final CrawledNoticeUpsertService crawledNoticeUpsertService;
+	private final CrawledNoticeReader crawledNoticeReader;
+	private final CrawledNoticeWriter crawledNoticeWriter;
+	private final PostWriter postWriter;
 
 	/**
 	 * 지정한 활성 사이트의 공지를 수집하고 저장합니다.
@@ -90,7 +97,7 @@ public class CrawlService {
 			try {
 				RawArticle rawArticle = crawler.fetchArticle(context, articleUrl);
 				CleanArticle cleanArticle = crawledArticleCleaner.clean(rawArticle, siteConfig);
-				CrawlSaveStatus status = crawledNoticeUpsertService.upsert(cleanArticle);
+				CrawlSaveStatus status = upsert(cleanArticle);
 				switch (status) {
 					case CREATED -> created++;
 					case UPDATED -> updated++;
@@ -110,5 +117,20 @@ public class CrawlService {
 			updated,
 			unchanged,
 			List.copyOf(failedUrls));
+	}
+
+	private CrawlSaveStatus upsert(CleanArticle article) {
+		crawledNoticeReader.findBySource(article.siteId(), article.externalId())
+			.filter(notice -> !notice.getTargetBoardId().equals(article.targetBoardId()))
+			.ifPresent(this::softDeleteLinkedPost);
+		return crawledNoticeWriter.upsert(article);
+	}
+
+	private void softDeleteLinkedPost(CrawledNotice notice) {
+		Post post = notice.getPost();
+		if (post != null && !Boolean.TRUE.equals(post.getIsDeleted())) {
+			post.setIsDeleted(true);
+			postWriter.save(post);
+		}
 	}
 }
