@@ -26,9 +26,11 @@ import net.causw.app.main.shared.exception.errorcode.IntegrationErrorCode;
 import net.causw.global.constant.StaticValue;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class CauSwNoticeCrawler implements SiteCrawler {
 	private static final Pattern SCRIPT_DOWNLOAD_PATTERN = Pattern.compile(
 		"goLocation\\('/_module/bbs/download.php','(\\d+)','(\\w+)'\\).*?>(.*?)<");
@@ -91,9 +93,9 @@ public class CauSwNoticeCrawler implements SiteCrawler {
 	/** {@inheritDoc} */
 	@Override
 	public RawArticle fetchArticle(CrawlContext context, ArticleUrl articleUrl) {
+		SiteConfig siteConfig = context.siteConfig();
+		String html = crawlHttpClient.fetch(articleUrl.url(), siteConfig);
 		try {
-			SiteConfig siteConfig = context.siteConfig();
-			String html = crawlHttpClient.fetch(articleUrl.url(), siteConfig);
 			Document document = Jsoup.parse(html, articleUrl.url());
 			SiteSelectors selectors = siteConfig.getSelectors();
 			Element contentElement = document.selectFirst(selectors.getBody());
@@ -112,6 +114,7 @@ public class CauSwNoticeCrawler implements SiteCrawler {
 				imageUrl,
 				extractAttachments(document));
 		} catch (RuntimeException e) {
+			log.error("[크롤링] 공지 파싱 실패. siteId={}, url={}", siteConfig.getSiteId(), articleUrl.url(), e);
 			throw IntegrationErrorCode.CRAWL_PARSE_FAILED.toBaseException();
 		}
 	}
