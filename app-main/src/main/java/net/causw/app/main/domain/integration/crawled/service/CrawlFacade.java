@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 
 import org.springframework.stereotype.Service;
 
@@ -34,6 +35,8 @@ import lombok.extern.slf4j.Slf4j;
  * {@link CrawledNoticePersistenceService}에 위임합니다.</p>
  */
 public class CrawlFacade {
+	private static final int MAX_CONCURRENT_REQUESTS = 5;
+
 	private final SiteCrawlerRegistry siteCrawlerRegistry;
 	private final SiteConfigReader siteConfigReader;
 	private final CrawledArticleCleaner crawledArticleCleaner;
@@ -120,19 +123,34 @@ public class CrawlFacade {
 		SiteCrawler crawler,
 		Iterable<ArticleUrl> articleUrls) {
 		try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+			Semaphore semaphore = new Semaphore(MAX_CONCURRENT_REQUESTS);
 			List<CompletableFuture<ArticleCrawlOutcome>> futures = new ArrayList<>();
 			for (ArticleUrl articleUrl : articleUrls) {
-				futures.add(CompletableFuture.supplyAsync(() -> fetchAndClean(context, crawler, articleUrl), executor));
+				futures.add(CompletableFuture.supplyAsync(
+					() -> fetchAndCleanWithPermit(context, crawler, articleUrl, semaphore), executor));
 			}
 			return futures.stream().map(CompletableFuture::join).toList();
 		}
 	}
 
-	private ArticleCrawlOutcome fetchAndClean(CrawlContext context, SiteCrawler crawler, ArticleUrl articleUrl) {
+	private ArticleCrawlOutcome fetchAndCleanWithPermit(
+		CrawlContext context,
+		SiteCrawler crawler,
+		ArticleUrl articleUrl,
+		Semaphore semaphore) {
 		try {
-			RawArticle rawArticle = crawler.fetchArticle(context, articleUrl);
+			semaphore.acquire();
+			RawArticle rawArticle;
+			try {
+				rawArticle = crawler.fetchArticle(context, articleUrl);
+			} finally {
+				semaphore.release();
+			}
 			return ArticleCrawlOutcome.success(articleUrl,
 				crawledArticleCleaner.clean(rawArticle, context.siteConfig()));
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			return ArticleCrawlOutcome.failure(articleUrl, new IllegalStateException("공지 요청이 중단되었습니다.", e));
 		} catch (RuntimeException e) {
 			return ArticleCrawlOutcome.failure(articleUrl, e);
 		}
