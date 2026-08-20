@@ -1,6 +1,7 @@
 package net.causw.app.main.domain.community.comment.service.implementation;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -22,6 +23,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import net.causw.app.main.domain.community.comment.entity.CommentAnonymousNickname;
 import net.causw.app.main.domain.community.comment.repository.CommentAnonymousNicknameRepository;
 import net.causw.app.main.domain.community.comment.util.AnonymousNicknameGenerator;
+import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
+import net.causw.app.main.shared.exception.errorcode.CommentErrorCode;
 
 @ExtendWith(MockitoExtension.class)
 class CommentAnonymousNicknameResolverTest {
@@ -143,5 +146,26 @@ class CommentAnonymousNicknameResolverTest {
 		// then
 		assertThat(nickname).isEqualTo("행복한 잡스4");
 		then(commentAnonymousNicknameWriter).should(times(6)).save(any(), any(), any());
+	}
+
+	@Test
+	@DisplayName("랜덤/폴백 후보가 모두 소진되도록 계속 충돌하면 프로젝트 예외를 던진다")
+	void givenAllAttemptsCollide_whenResolve_thenThrowAnonymousNicknameIssueFailedException() {
+		// given
+		String postId = "post-1";
+		String userId = "user-2";
+		given(commentAnonymousNicknameRepository.findByPostIdAndUserId(postId, userId))
+			.willReturn(Optional.empty());
+		given(anonymousNicknameGenerator.generate()).willReturn("성실한 호퍼 7");
+		given(commentAnonymousNicknameRepository.countByPostId(postId)).willReturn(0L);
+		doThrow(new DataIntegrityViolationException("collision"))
+			.when(commentAnonymousNicknameWriter).save(eq(postId), eq(userId), any());
+
+		// when & then
+		assertThatThrownBy(() -> resolver.resolve(postId, userId))
+			.isInstanceOf(BaseRunTimeV2Exception.class)
+			.extracting("errorCode")
+			.isEqualTo(CommentErrorCode.ANONYMOUS_NICKNAME_ISSUE_FAILED);
+		then(commentAnonymousNicknameWriter).should(times(10)).save(any(), any(), any());
 	}
 }

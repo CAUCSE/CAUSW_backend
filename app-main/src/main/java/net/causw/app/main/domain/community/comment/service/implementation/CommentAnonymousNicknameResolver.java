@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import net.causw.app.main.domain.community.comment.entity.CommentAnonymousNickname;
 import net.causw.app.main.domain.community.comment.repository.CommentAnonymousNicknameRepository;
 import net.causw.app.main.domain.community.comment.util.AnonymousNicknameGenerator;
+import net.causw.app.main.shared.exception.errorcode.CommentErrorCode;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -55,9 +56,11 @@ public class CommentAnonymousNicknameResolver {
 	}
 
 	private String insertUnusedNickname(String postId, String userId) {
+		DataIntegrityViolationException[] lastFailure = new DataIntegrityViolationException[1];
+
 		for (int attempt = 0; attempt < MAX_RANDOM_ATTEMPTS; attempt++) {
 			String nickname = anonymousNicknameGenerator.generate();
-			Optional<String> saved = trySave(postId, userId, nickname, attempt);
+			Optional<String> saved = trySave(postId, userId, nickname, attempt, lastFailure);
 			if (saved.isPresent()) {
 				return saved.get();
 			}
@@ -65,23 +68,24 @@ public class CommentAnonymousNicknameResolver {
 
 		log.warn("랜덤 닉네임 후보가 {}회 연속 충돌해 결정적 폴백 닉네임으로 전환합니다. postId={}, userId={}",
 			MAX_RANDOM_ATTEMPTS, postId, userId);
-		return insertFallbackNickname(postId, userId);
+		return insertFallbackNickname(postId, userId, lastFailure);
 	}
 
-	private String insertFallbackNickname(String postId, String userId) {
+	private String insertFallbackNickname(
+		String postId, String userId, DataIntegrityViolationException[] lastFailure) {
 		long startingNumber = commentAnonymousNicknameRepository.countByPostId(postId) + 1;
 
 		for (int attempt = 0; attempt < MAX_FALLBACK_ATTEMPTS; attempt++) {
 			String nickname = FALLBACK_NICKNAME_PREFIX + (startingNumber + attempt);
-			Optional<String> saved = trySave(postId, userId, nickname, attempt);
+			Optional<String> saved = trySave(postId, userId, nickname, attempt, lastFailure);
 			if (saved.isPresent()) {
 				return saved.get();
 			}
 		}
 
-		log.error("폴백 닉네임 발급까지 반복적으로 실패했습니다. postId={}, userId={}", postId, userId);
-		throw new IllegalStateException(
-			"게시글의 익명 닉네임 발급에 반복적으로 실패했습니다. postId=" + postId + ", userId=" + userId);
+		String message = "게시글의 익명 닉네임 발급에 반복적으로 실패했습니다. postId=" + postId + ", userId=" + userId;
+		log.error(message);
+		throw CommentErrorCode.ANONYMOUS_NICKNAME_ISSUE_FAILED.toBaseException(message, lastFailure[0]);
 	}
 
 	/**
@@ -89,11 +93,13 @@ public class CommentAnonymousNicknameResolver {
 	 * 동시 요청으로 내 매핑이 이미 저장돼 있으면 그 닉네임을 반환하고,
 	 * 아니라면(다른 사용자와의 후보 중복) 빈 값을 반환해 호출부가 다음 후보로 재시도하게 한다.
 	 */
-	private Optional<String> trySave(String postId, String userId, String nickname, int attempt) {
+	private Optional<String> trySave(
+		String postId, String userId, String nickname, int attempt, DataIntegrityViolationException[] lastFailure) {
 		try {
 			commentAnonymousNicknameWriter.save(postId, userId, nickname);
 			return Optional.of(nickname);
 		} catch (DataIntegrityViolationException e) {
+			lastFailure[0] = e;
 			log.debug("익명 닉네임 후보가 충돌해 재시도합니다. postId={}, userId={}, attempt={}, candidate={}",
 				postId, userId, attempt, nickname, e);
 			return commentAnonymousNicknameRepository.findByPostIdAndUserId(postId, userId)
