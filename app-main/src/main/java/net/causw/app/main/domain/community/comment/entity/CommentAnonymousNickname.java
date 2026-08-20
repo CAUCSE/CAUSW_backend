@@ -24,7 +24,7 @@ import lombok.NoArgsConstructor;
 	@UniqueConstraint(name = "uq_comment_anonymous_nickname_post_nickname", columnNames = {"post_id", "nickname"})
 })
 @Getter
-@Builder(access = AccessLevel.PRIVATE)
+@Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class CommentAnonymousNickname extends BaseEntity {

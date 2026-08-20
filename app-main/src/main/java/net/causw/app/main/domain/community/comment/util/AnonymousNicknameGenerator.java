@@ -2,23 +2,22 @@ package net.causw.app.main.domain.community.comment.util;
 
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
+
+import org.springframework.stereotype.Component;
 
 /**
- * 익명 댓글에 부여할 "능력치 + 숫자 + 명사" 형태의 랜덤 닉네임을 생성한다.
+ * 익명 댓글에 부여할 "수식어 + 명사 + 숫자" 형태의 랜덤 닉네임을 생성한다.
  *
- * <p>후보 생성 및 중복 회피는 순수 메모리 연산(in-memory {@link Set} 대조)으로만 처리되므로,
- * 이미 사용 중인 닉네임 목록을 DB에서 한 번만 읽어오면 추가 쿼리 없이 여러 번 재시도할 수 있다.</p>
+ * <p>후보 하나를 무작위로 생성만 할 뿐 중복 여부는 판단하지 않는다. 실제 유일성은
+ * {@code CommentAnonymousNicknameResolver}가 DB 유니크 제약과 재시도로 보장한다.</p>
  */
+@Component
 public class AnonymousNicknameGenerator {
 
 	private static final Random RANDOM = new Random();
 
 	private static final int NUMBER_MIN = 1;
 	private static final int NUMBER_MAX = 100;
-
-	/** 최악의 경우를 대비한 재시도 상한. 조합 공간(약 41만 개) 대비 매우 넉넉한 값이다. */
-	private static final int MAX_ATTEMPTS = 30;
 
 	private static final List<String> TRAITS = List.of(
 		"명랑한", "쾌활한", "다정한", "온화한", "차분한", "신중한", "유쾌한", "듬직한", "성실한", "솔직한",
@@ -38,23 +37,7 @@ public class AnonymousNicknameGenerator {
 		"매카시", "노이스", "잡스", "워즈니악", "게이츠", "엘리슨", "베이조스", "머스크", "페이지",
 		"브린", "피차이", "나델라", "저커버그", "나카모토", "마윈");
 
-	private AnonymousNicknameGenerator() {}
-
-	/**
-	 * {@code used}에 포함되지 않은 닉네임을 생성한다.
-	 *
-	 * <p>DB를 조회하지 않고 in-memory 대조만 수행하며, {@link #MAX_ATTEMPTS}번 안에 미사용 닉네임을
-	 * 찾지 못하면 마지막으로 생성한 후보를 그대로 반환한다 (최종 유일성은 DB의 유니크 제약이 보장한다).</p>
-	 */
-	public static String generateUnused(Set<String> used) {
-		String candidate = generate();
-		for (int attempt = 1; attempt < MAX_ATTEMPTS && used.contains(candidate); attempt++) {
-			candidate = generate();
-		}
-		return candidate;
-	}
-
-	private static String generate() {
+	public String generate() {
 		String trait = TRAITS.get(RANDOM.nextInt(TRAITS.size()));
 		String noun = NOUNS.get(RANDOM.nextInt(NOUNS.size()));
 		int number = NUMBER_MIN + RANDOM.nextInt(NUMBER_MAX - NUMBER_MIN + 1);
