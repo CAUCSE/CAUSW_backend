@@ -13,7 +13,6 @@ CREATE TABLE tb_comment_anonymous_nickname (
     -- 게시글 안에서 닉네임 중복 방지 (동시성 최후 방어선)
     CONSTRAINT uq_comment_anonymous_nickname_post_nickname UNIQUE (post_id, nickname),
 
-    INDEX idx_comment_anonymous_nickname_post (post_id),
     INDEX idx_comment_anonymous_nickname_user (user_id),
 
     CONSTRAINT fk_comment_anonymous_nickname_post FOREIGN KEY (post_id) REFERENCES tb_post (id),

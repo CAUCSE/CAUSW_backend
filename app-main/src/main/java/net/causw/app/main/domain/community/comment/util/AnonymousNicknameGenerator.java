@@ -1,7 +1,7 @@
 package net.causw.app.main.domain.community.comment.util;
 
 import java.util.List;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.springframework.stereotype.Component;
 
@@ -13,8 +13,6 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class AnonymousNicknameGenerator {
-
-	private static final Random RANDOM = new Random();
 
 	private static final int NUMBER_MIN = 1;
 	private static final int NUMBER_MAX = 100;
@@ -38,9 +36,10 @@ public class AnonymousNicknameGenerator {
 		"브린", "피차이", "나델라", "저커버그", "나카모토", "마윈");
 
 	public String generate() {
-		String trait = TRAITS.get(RANDOM.nextInt(TRAITS.size()));
-		String noun = NOUNS.get(RANDOM.nextInt(NOUNS.size()));
-		int number = NUMBER_MIN + RANDOM.nextInt(NUMBER_MAX - NUMBER_MIN + 1);
+		ThreadLocalRandom random = ThreadLocalRandom.current();
+		String trait = TRAITS.get(random.nextInt(TRAITS.size()));
+		String noun = NOUNS.get(random.nextInt(NOUNS.size()));
+		int number = NUMBER_MIN + random.nextInt(NUMBER_MAX - NUMBER_MIN + 1);
 		return trait + " " + noun + " " + number;
 	}
 }

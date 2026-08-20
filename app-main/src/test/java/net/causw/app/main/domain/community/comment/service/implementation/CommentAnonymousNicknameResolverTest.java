@@ -2,8 +2,10 @@ package net.causw.app.main.domain.community.comment.service.implementation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 
@@ -12,7 +14,6 @@ import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -32,6 +33,9 @@ class CommentAnonymousNicknameResolverTest {
 	private CommentAnonymousNicknameRepository commentAnonymousNicknameRepository;
 
 	@Mock
+	private CommentAnonymousNicknameWriter commentAnonymousNicknameWriter;
+
+	@Mock
 	private AnonymousNicknameGenerator anonymousNicknameGenerator;
 
 	@Test
@@ -49,7 +53,7 @@ class CommentAnonymousNicknameResolverTest {
 
 		// then
 		assertThat(nickname).isEqualTo("다정한 튜링 42");
-		then(commentAnonymousNicknameRepository).should(never()).saveAndFlush(any());
+		then(commentAnonymousNicknameWriter).should(never()).save(any(), any(), any());
 	}
 
 	@Test
@@ -67,11 +71,7 @@ class CommentAnonymousNicknameResolverTest {
 
 		// then
 		assertThat(nickname).isEqualTo("성실한 호퍼 7");
-		ArgumentCaptor<CommentAnonymousNickname> captor = ArgumentCaptor.forClass(CommentAnonymousNickname.class);
-		then(commentAnonymousNicknameRepository).should().saveAndFlush(captor.capture());
-		assertThat(captor.getValue().getPostId()).isEqualTo(postId);
-		assertThat(captor.getValue().getUserId()).isEqualTo(userId);
-		assertThat(captor.getValue().getNickname()).isEqualTo("성실한 호퍼 7");
+		then(commentAnonymousNicknameWriter).should().save(postId, userId, "성실한 호퍼 7");
 	}
 
 	@Test
@@ -85,15 +85,15 @@ class CommentAnonymousNicknameResolverTest {
 			.willReturn(Optional.empty())
 			.willReturn(Optional.of(winning));
 		given(anonymousNicknameGenerator.generate()).willReturn("성실한 호퍼 7");
-		given(commentAnonymousNicknameRepository.saveAndFlush(any()))
-			.willThrow(new DataIntegrityViolationException("unique constraint violated (post_id, user_id)"));
+		doThrow(new DataIntegrityViolationException("unique constraint violated (post_id, user_id)"))
+			.when(commentAnonymousNicknameWriter).save(postId, userId, "성실한 호퍼 7");
 
 		// when
 		String nickname = resolver.resolve(postId, userId);
 
 		// then
 		assertThat(nickname).isEqualTo("성실한 호퍼 7");
-		then(commentAnonymousNicknameRepository).should(times(1)).saveAndFlush(any());
+		then(commentAnonymousNicknameWriter).should(times(1)).save(any(), any(), any());
 	}
 
 	@Test
@@ -107,15 +107,15 @@ class CommentAnonymousNicknameResolverTest {
 			.willReturn(Optional.empty());
 		given(anonymousNicknameGenerator.generate())
 			.willReturn("성실한 호퍼 7", "용감한 잡스 3");
-		given(commentAnonymousNicknameRepository.saveAndFlush(any()))
-			.willThrow(new DataIntegrityViolationException("unique constraint violated (post_id, nickname)"))
-			.willReturn(null);
+		doThrow(new DataIntegrityViolationException("unique constraint violated (post_id, nickname)"))
+			.doNothing()
+			.when(commentAnonymousNicknameWriter).save(eq(postId), eq(userId), any());
 
 		// when
 		String nickname = resolver.resolve(postId, userId);
 
 		// then
 		assertThat(nickname).isEqualTo("용감한 잡스 3");
-		then(commentAnonymousNicknameRepository).should(times(2)).saveAndFlush(any());
+		then(commentAnonymousNicknameWriter).should(times(2)).save(any(), any(), any());
 	}
 }
