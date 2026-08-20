@@ -50,7 +50,7 @@ public class BatchScheduler {
 	@Scheduled(cron = "0 30 3 * * ?") // 매일 새벽 3시 30분
 	public void scheduleCleanupPendingFiles() {
 		log.info("[PENDING 파일 정리 배치] 시작");
-		LocalDateTime cutoff = LocalDateTime.now().minusHours(6);
+		LocalDateTime cutoff = LocalDateTime.now().minusHours(StaticValue.PENDING_FILE_EXPIRY_HOURS);
 
 		int totalCleaned = 0;
 		int totalFailed = 0;

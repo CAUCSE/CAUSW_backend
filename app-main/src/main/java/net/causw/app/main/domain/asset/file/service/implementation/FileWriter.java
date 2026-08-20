@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.asset.file.service.implementation;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +19,7 @@ import net.causw.app.main.shared.storage.StorageClient;
 import net.causw.app.main.shared.storage.dto.FileMetadata;
 import net.causw.app.main.shared.storage.dto.StorageResult;
 import net.causw.global.constant.MessageUtil;
+import net.causw.global.constant.StaticValue;
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.InternalServerException;
 
@@ -317,7 +319,13 @@ public class FileWriter {
 			throw FileErrorCode.FILE_NOT_FOUND.toBaseException();
 		}
 
+		// 배치 cutoff(PENDING_FILE_EXPIRY_HOURS)보다 1시간 앞서 거부해 경계값에서의 경쟁 조건을 방지
+		LocalDateTime confirmDeadline = LocalDateTime.now().minusHours(StaticValue.PENDING_FILE_EXPIRY_HOURS - 1);
 		for (UuidFile file : files) {
+			if (file.getCreatedAt().isBefore(confirmDeadline)) {
+				log.warn("File expired. UUID: {}, CreatedAt: {}", file.getUuid(), file.getCreatedAt());
+				throw FileErrorCode.FILE_EXPIRED.toBaseException();
+			}
 			if (file.getFilePath() != expectedFilePath) {
 				log.warn("FilePath mismatch. Expected: {}, Actual: {}, UUID: {}",
 					expectedFilePath, file.getFilePath(), file.getUuid());
@@ -335,7 +343,6 @@ public class FileWriter {
 			throw FileErrorCode.FILE_ALREADY_USED.toBaseException();
 		}
 
-		log.info("Files confirmed. Count: {}, FilePath: {}", files.size(), expectedFilePath);
 		return files;
 	}
 
