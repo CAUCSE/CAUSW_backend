@@ -105,6 +105,7 @@ public class PostMapper {
 			result.content(),
 			result.numComment(),
 			result.numLike(),
+			result.viewCount(),
 			result.isAnonymous(),
 			result.voteId(),
 			result.isDeleted(),
@@ -187,6 +188,7 @@ public class PostMapper {
 			.fileUrlList(imageUrls)
 			.numComment(numComment)
 			.numLike(numLike)
+			.viewCount(post.getViewCount())
 			.voteId(voteId)
 			.isAnonymous(post.getIsAnonymous())
 			.isCrawled(post.getIsCrawled())

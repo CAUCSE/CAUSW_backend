@@ -266,6 +266,8 @@ public class PostService {
 
 		// 게시글 조회
 		Post post = postReader.findByIdAndNotDeleted(postId);
+		post.increaseViewCount();
+
 		Board board = post.getBoard();
 		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(board.getId());
 
