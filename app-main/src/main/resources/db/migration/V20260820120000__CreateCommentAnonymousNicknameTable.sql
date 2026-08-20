@@ -1,12 +1,14 @@
 -- Migration: CreateCommentAnonymousNicknameTable
 
 CREATE TABLE tb_comment_anonymous_nickname (
-    id VARCHAR(36) NOT NULL PRIMARY KEY,
+    id BIGINT NOT NULL AUTO_INCREMENT COMMENT 'PK',
     post_id VARCHAR(36) NOT NULL COMMENT '게시글 ID',
     user_id VARCHAR(36) NOT NULL COMMENT '익명 댓글 작성자 ID',
     nickname VARCHAR(30) NOT NULL COMMENT '게시글 내에서 부여된 랜덤 익명 닉네임',
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시',
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정일시',
+    created_at DATETIME(6) NOT NULL COMMENT '생성일시',
+    updated_at DATETIME(6) NOT NULL COMMENT '수정일시',
+
+    PRIMARY KEY (id),
 
     -- 게시글 안에서 사용자는 닉네임 하나만 가짐 (동일 사용자 재사용 보장)
     CONSTRAINT uq_comment_anonymous_nickname_post_user UNIQUE (post_id, user_id),

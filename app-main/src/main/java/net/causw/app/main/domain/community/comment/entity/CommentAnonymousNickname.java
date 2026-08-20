@@ -1,9 +1,12 @@
 package net.causw.app.main.domain.community.comment.entity;
 
-import net.causw.app.main.shared.entity.BaseEntity;
+import net.causw.app.main.shared.entity.AuditableEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
@@ -27,7 +30,12 @@ import lombok.NoArgsConstructor;
 @Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class CommentAnonymousNickname extends BaseEntity {
+public class CommentAnonymousNickname extends AuditableEntity {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id", nullable = false, unique = true)
+	private Long id;
 
 	@Column(name = "post_id", nullable = false, updatable = false)
 	private String postId;
