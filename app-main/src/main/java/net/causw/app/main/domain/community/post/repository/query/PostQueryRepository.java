@@ -451,6 +451,7 @@ public class PostQueryRepository {
 		return new QPostCursorResult(
 			post.id, post.title, post.content,
 			totalCommentCount, likeCount,
+			post.viewCount,
 			post.isAnonymous, post.vote.id, post.isDeleted,
 			post.isCrawled,
 			writer.isNotNull(), writer.id, writer.name, writer.nickname, writer.admissionYear, writer.state,
