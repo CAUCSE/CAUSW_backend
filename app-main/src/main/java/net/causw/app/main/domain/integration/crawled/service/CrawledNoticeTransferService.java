@@ -1,4 +1,4 @@
-package net.causw.app.main.domain.integration.crawled.service.implementation;
+package net.causw.app.main.domain.integration.crawled.service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +8,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +19,9 @@ import net.causw.app.main.domain.community.post.service.implementation.PostWrite
 import net.causw.app.main.domain.integration.crawled.entity.CrawledFileLink;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledPostImage;
+import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeReader;
+import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeWriter;
+import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledPostImageWriter;
 import net.causw.app.main.domain.notification.notification.event.OfficialPostEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
@@ -29,9 +32,15 @@ import net.causw.global.exception.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
-@Component
 @RequiredArgsConstructor
-public class CrawledNoticeTransferProcessor {
+/**
+ * 하나의 크롤링 공지를 대상 게시판의 Post로 영속화하는 서비스입니다.
+ *
+ * <p>기존 Post 갱신, 이미지 동기화, 원본 공지와 Post의 연결 및 전송 완료 처리를
+ * 하나의 독립 트랜잭션으로 수행합니다.</p>
+ */
+@Service
+public class CrawledNoticeTransferService {
 	private final CrawledNoticeReader crawledNoticeReader;
 	private final CrawledNoticeWriter crawledNoticeWriter;
 	private final PostWriter postWriter;

@@ -16,35 +16,34 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
 import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeReader;
-import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeTransferProcessor;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("CrawledToPostTransferService 테스트")
-class CrawledToPostTransferServiceTest {
+@DisplayName("CrawledToPostTransferFacade 테스트")
+class CrawledToPostTransferFacadeTest {
 
 	@InjectMocks
-	private CrawledToPostTransferService crawledToPostTransferService;
+	private CrawledToPostTransferFacade crawledToPostTransferFacade;
 
 	@Mock
 	private CrawledNoticeReader crawledNoticeReader;
 
 	@Mock
-	private CrawledNoticeTransferProcessor crawledNoticeTransferProcessor;
+	private CrawledNoticeTransferService crawledNoticeTransferService;
 
 	@Test
-	@DisplayName("전송 대기 공지를 Processor에 위임한다")
-	void transferToPosts_delegatesPendingNoticesToProcessor() {
+	@DisplayName("전송 대기 공지를 Service에 위임한다")
+	void transferToPosts_delegatesPendingNoticesToService() {
 		// given
 		CrawledNotice firstNotice = notice("notice-1");
 		CrawledNotice secondNotice = notice("notice-2");
 		given(crawledNoticeReader.findPendingNotices()).willReturn(List.of(firstNotice, secondNotice));
 
 		// when
-		crawledToPostTransferService.transferToPosts();
+		crawledToPostTransferFacade.transferToPosts();
 
 		// then
-		verify(crawledNoticeTransferProcessor).transfer("notice-1");
-		verify(crawledNoticeTransferProcessor).transfer("notice-2");
+		verify(crawledNoticeTransferService).transfer("notice-1");
+		verify(crawledNoticeTransferService).transfer("notice-2");
 	}
 
 	@Test
@@ -56,14 +55,14 @@ class CrawledToPostTransferServiceTest {
 		given(crawledNoticeReader.findPendingNotices()).willReturn(List.of(failedNotice, nextNotice));
 		given(failedNotice.getSiteId()).willReturn("site-id");
 		given(failedNotice.getExternalId()).willReturn("external-id");
-		doThrow(new IllegalStateException()).when(crawledNoticeTransferProcessor).transfer("notice-1");
+		doThrow(new IllegalStateException()).when(crawledNoticeTransferService).transfer("notice-1");
 
 		// when
-		crawledToPostTransferService.transferToPosts();
+		crawledToPostTransferFacade.transferToPosts();
 
 		// then
-		verify(crawledNoticeTransferProcessor).transfer("notice-1");
-		verify(crawledNoticeTransferProcessor).transfer("notice-2");
+		verify(crawledNoticeTransferService).transfer("notice-1");
+		verify(crawledNoticeTransferService).transfer("notice-2");
 	}
 
 	private CrawledNotice notice(String id) {
