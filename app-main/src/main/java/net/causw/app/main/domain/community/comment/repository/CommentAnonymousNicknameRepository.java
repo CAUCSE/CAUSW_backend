@@ -11,4 +11,6 @@ import net.causw.app.main.domain.community.comment.entity.CommentAnonymousNickna
 public interface CommentAnonymousNicknameRepository extends JpaRepository<CommentAnonymousNickname, String> {
 
 	Optional<CommentAnonymousNickname> findByPostIdAndUserId(String postId, String userId);
+
+	long countByPostId(String postId);
 }

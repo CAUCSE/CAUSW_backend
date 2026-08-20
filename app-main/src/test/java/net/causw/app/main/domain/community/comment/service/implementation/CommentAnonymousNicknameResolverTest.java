@@ -118,4 +118,30 @@ class CommentAnonymousNicknameResolverTest {
 		assertThat(nickname).isEqualTo("용감한 잡스 3");
 		then(commentAnonymousNicknameWriter).should(times(2)).save(any(), any(), any());
 	}
+
+	@Test
+	@DisplayName("랜덤 닉네임 후보가 연속으로 충돌하면 결정적 폴백 닉네임으로 전환한다")
+	void givenRepeatedRandomCollisions_whenResolve_thenFallBackToDeterministicNickname() {
+		// given
+		String postId = "post-1";
+		String userId = "user-2";
+		given(commentAnonymousNicknameRepository.findByPostIdAndUserId(postId, userId))
+			.willReturn(Optional.empty());
+		given(anonymousNicknameGenerator.generate()).willReturn("성실한 호퍼 7");
+		given(commentAnonymousNicknameRepository.countByPostId(postId)).willReturn(3L);
+		doThrow(new DataIntegrityViolationException("collision"))
+			.doThrow(new DataIntegrityViolationException("collision"))
+			.doThrow(new DataIntegrityViolationException("collision"))
+			.doThrow(new DataIntegrityViolationException("collision"))
+			.doThrow(new DataIntegrityViolationException("collision"))
+			.doNothing()
+			.when(commentAnonymousNicknameWriter).save(eq(postId), eq(userId), any());
+
+		// when
+		String nickname = resolver.resolve(postId, userId);
+
+		// then
+		assertThat(nickname).isEqualTo("행복한 잡스4");
+		then(commentAnonymousNicknameWriter).should(times(6)).save(any(), any(), any());
+	}
 }
