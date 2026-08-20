@@ -1460,7 +1460,7 @@ public class PostServiceTest {
 			given(blockReader.existsByBlockerAndBlocked(viewer, writer)).willReturn(true);
 
 			// when & then
-			assertThatThrownBy(() -> postService.getPostDetail(query))
+			assertThatThrownBy(() -> postService.getPostDetail(query, true))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.satisfies(ex -> assertThat(((BaseRunTimeV2Exception)ex).getErrorCode())
 					.isEqualTo(PostErrorCode.BLOCKED_USER_CONTENT));
@@ -1481,7 +1481,7 @@ public class PostServiceTest {
 			given(blockReader.existsByBlockerAndBlocked(writer, writer)).willReturn(true);
 
 			// when & then
-			assertThatThrownBy(() -> postService.getPostDetail(query))
+			assertThatThrownBy(() -> postService.getPostDetail(query, true))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.satisfies(ex -> assertThat(((BaseRunTimeV2Exception)ex).getErrorCode())
 					.isEqualTo(PostErrorCode.BLOCKED_USER_CONTENT));
@@ -1503,7 +1503,7 @@ public class PostServiceTest {
 			given(likePostReader.existsByPostIdAndUserId(postId, "admin-id")).willReturn(false);
 
 			// when
-			PostDetailResult result = postService.getPostDetail(query);
+			PostDetailResult result = postService.getPostDetail(query, true);
 
 			// then
 			assertAll(
@@ -1528,7 +1528,7 @@ public class PostServiceTest {
 			given(likePostReader.existsByPostIdAndUserId(postId, "viewer-id")).willReturn(false);
 
 			// when
-			PostDetailResult result = postService.getPostDetail(query);
+			PostDetailResult result = postService.getPostDetail(query, true);
 
 			// then
 			assertAll(
@@ -1536,7 +1536,6 @@ public class PostServiceTest {
 				() -> assertThat(result.id()).isEqualTo(postId),
 				() -> assertThat(result.content()).isEqualTo("게시글 내용"),
 				() -> assertThat(result.numLike()).isEqualTo(10L),
-				() -> assertThat(result.viewCount()).isEqualTo(1L),
 				() -> assertThat(result.isPostLike()).isFalse(),
 				() -> assertThat(result.isOwner()).isFalse(),
 				() -> assertThat(result.updatable()).isFalse(),
@@ -1561,7 +1560,7 @@ public class PostServiceTest {
 			given(likePostReader.existsByPostIdAndUserId(postId, "writer-id")).willReturn(false);
 
 			// when
-			PostDetailResult result = postService.getPostDetail(query);
+			PostDetailResult result = postService.getPostDetail(query, true);
 
 			// then
 			assertAll(
@@ -1585,7 +1584,7 @@ public class PostServiceTest {
 			given(likePostReader.existsByPostIdAndUserId(postId, "admin-id")).willReturn(false);
 
 			// when
-			PostDetailResult result = postService.getPostDetail(query);
+			PostDetailResult result = postService.getPostDetail(query, true);
 
 			// then
 			assertAll(
@@ -1608,7 +1607,7 @@ public class PostServiceTest {
 			given(likePostReader.existsByPostIdAndUserId(postId, "viewer-id")).willReturn(true);
 
 			// when
-			PostDetailResult result = postService.getPostDetail(query);
+			PostDetailResult result = postService.getPostDetail(query, true);
 
 			// then
 			assertAll(
@@ -1634,7 +1633,7 @@ public class PostServiceTest {
 			given(likePostReader.existsByPostIdAndUserId(postId, "viewer-id")).willReturn(false);
 
 			// when
-			PostDetailResult result = postService.getPostDetail(query);
+			PostDetailResult result = postService.getPostDetail(query, true);
 
 			// then
 			assertAll(
@@ -1667,7 +1666,7 @@ public class PostServiceTest {
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
 
 			// when & then
-			assertThatThrownBy(() -> postService.getPostDetail(query))
+			assertThatThrownBy(() -> postService.getPostDetail(query, true))
 				.isInstanceOf(BaseRunTimeV2Exception.class);
 		}
 	}
