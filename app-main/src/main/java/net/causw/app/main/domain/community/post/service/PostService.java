@@ -258,16 +258,21 @@ public class PostService {
 	/**
 	 * 게시글 단건 조회. 게시글 내용, 첨부 이미지 URL 목록, 좋아요/댓글 개수, 사용자의 좋아요 여부, 수정/삭제 가능 여부 등을 포함합니다.
 	 * @param query 조회 조건 (게시글 ID, 조회 요청 사용자)
+     * @param canIncrement 조회수 증가 여부 (쿠키 기반 중복 방지 결과)
 	 * @return 게시글 상세 정보 (게시글 ID, 내용, 첨부 이미지 URL 목록, 좋아요/댓글 개수, 사용자의 좋아요 여부, 수정/삭제 가능 여부 등)
 	 */
-	public PostDetailResult getPostDetail(PostDetailQuery query) {
+	@Transactional
+	public PostDetailResult getPostDetail(PostDetailQuery query, boolean canIncrement) {
 		User viewer = query.viewer();
 		String postId = query.postId();
 
+		// 조회수 증가 조건 만족 시 원자적 쿼리 실행
+		if (canIncrement) {
+			postWriter.incrementViewCount(postId);
+		}
+
 		// 게시글 조회
 		Post post = postReader.findByIdAndNotDeleted(postId);
-		post.increaseViewCount();
-
 		Board board = post.getBoard();
 		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(board.getId());
 

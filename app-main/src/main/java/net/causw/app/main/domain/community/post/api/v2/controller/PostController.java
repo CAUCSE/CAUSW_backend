@@ -34,11 +34,14 @@ import net.causw.app.main.domain.community.post.service.dto.PostDetailResult;
 import net.causw.app.main.domain.community.post.service.dto.PostListQuery;
 import net.causw.app.main.domain.community.post.service.dto.PostListResult;
 import net.causw.app.main.domain.community.post.service.dto.PostUpdateResult;
+import net.causw.app.main.domain.community.post.service.implementation.ViewCountManager;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -51,6 +54,7 @@ public class PostController {
 	private final PostService postService;
 	private final LikePostService likePostService;
 	private final PostDtoMapper postDtoMapper;
+	private final ViewCountManager viewCountManager;
 
 	@PostMapping(value = "/{id}/like")
 	@ResponseStatus(value = HttpStatus.CREATED)
@@ -139,9 +143,14 @@ public class PostController {
 	@Operation(summary = "게시글 단건 조회", description = "특정 게시글의 상세 정보를 조회합니다.")
 	public ApiResponse<PostResponse> getPost(
 		@PathVariable String postId,
+		HttpServletRequest request,
+		HttpServletResponse response,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
+		// 쿠키 기반 중복 조회 체크
+		boolean canIncrement = viewCountManager.isFirstView(request, response, postId);
+
 		PostDetailQuery query = postDtoMapper.toDetailQuery(postId, userDetails.getUser());
-		PostDetailResult result = postService.getPostDetail(query);
+		PostDetailResult result = postService.getPostDetail(query, canIncrement);
 		return ApiResponse.success(postDtoMapper.toDetailResponse(result));
 	}
 

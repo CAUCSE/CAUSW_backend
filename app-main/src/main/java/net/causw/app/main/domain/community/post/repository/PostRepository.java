@@ -72,4 +72,13 @@ public interface PostRepository extends JpaRepository<Post, String> {
 	int deleteAllPostsByBoardId(@Param("boardId") String boardId);
 
 	Optional<Post> findByIdAndIsDeletedFalse(String postId);
+
+	@Modifying(clearAutomatically = true)
+	@Query("""
+		update Post p
+		   set p.viewCount = p.viewCount + 1
+		 where p.id = :postId
+		   and p.isDeleted = false
+	""")
+	int incrementViewCount(@Param("postId") String postId);
 }
