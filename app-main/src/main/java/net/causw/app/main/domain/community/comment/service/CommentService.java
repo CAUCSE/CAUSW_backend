@@ -22,6 +22,7 @@ import net.causw.app.main.domain.community.comment.service.dto.CommentListQuery;
 import net.causw.app.main.domain.community.comment.service.dto.CommentMeta;
 import net.causw.app.main.domain.community.comment.service.dto.CommentResult;
 import net.causw.app.main.domain.community.comment.service.dto.CommentUpdateCommand;
+import net.causw.app.main.domain.community.comment.service.implementation.CommentAnonymousNicknameResolver;
 import net.causw.app.main.domain.community.comment.service.implementation.CommentMapper;
 import net.causw.app.main.domain.community.comment.service.implementation.CommentMetaReader;
 import net.causw.app.main.domain.community.comment.service.implementation.CommentReader;
@@ -56,6 +57,7 @@ public class CommentService {
 	private final PostReader postReader;
 	private final CommentReader commentReader;
 	private final CommentWriter commentWriter;
+	private final CommentAnonymousNicknameResolver commentAnonymousNicknameResolver;
 	private final LikeCommentWriter likeCommentWriter;
 	private final CommentValidator commentValidator;
 	private final ApplicationEventPublisher eventPublisher;
@@ -91,9 +93,14 @@ public class CommentService {
 		validatePostWriterBlockAccess(creator, post, boardAdminIds);
 		commentValidator.validateChildCommentDepth(parentComment);
 
+		String anonymousNickname = Boolean.TRUE.equals(command.isAnonymous())
+			? commentAnonymousNicknameResolver.resolve(post.getId(), creator.getId())
+			: null;
+
 		Comment comment = parentComment == null
-			? Comment.ofRoot(command.content(), command.isAnonymous(), creator, post)
-			: Comment.ofChildComment(command.content(), command.isAnonymous(), creator, parentComment);
+			? Comment.ofRoot(command.content(), command.isAnonymous(), anonymousNickname, creator, post)
+			: Comment.ofChildComment(command.content(), command.isAnonymous(), anonymousNickname, creator,
+				parentComment);
 
 		commentWriter.save(comment);
 

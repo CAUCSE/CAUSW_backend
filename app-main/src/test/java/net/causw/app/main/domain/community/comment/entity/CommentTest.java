@@ -26,7 +26,7 @@ class CommentTest {
 			Post post = ObjectFixtures.getPost(writer, board);
 
 			// when
-			Comment comment = Comment.ofRoot("댓글 내용", false, writer, post);
+			Comment comment = Comment.ofRoot("댓글 내용", false, null, writer, post);
 
 			// then
 			assertThat(comment.getContent()).isEqualTo("댓글 내용");
@@ -51,15 +51,16 @@ class CommentTest {
 			User childCommentWriter = ObjectFixtures.getCertifiedUser();
 			Board board = ObjectFixtures.getBoard();
 			Post post = ObjectFixtures.getPost(parentWriter, board);
-			Comment parent = Comment.ofRoot("부모 댓글", false, parentWriter, post);
+			Comment parent = Comment.ofRoot("부모 댓글", false, null, parentWriter, post);
 
 			// when
-			Comment childComment = Comment.ofChildComment("답글 내용", true, childCommentWriter, parent);
+			Comment childComment = Comment.ofChildComment("답글 내용", true, "다정한 튜링 42", childCommentWriter, parent);
 
 			// then
 			assertThat(childComment.getContent()).isEqualTo("답글 내용");
 			assertThat(childComment.getIsDeleted()).isFalse();
 			assertThat(childComment.getIsAnonymous()).isTrue();
+			assertThat(childComment.getAnonymousNickname()).isEqualTo("다정한 튜링 42");
 			assertThat(childComment.getWriter()).isEqualTo(childCommentWriter);
 			assertThat(childComment.getPost()).isEqualTo(post);
 			assertThat(childComment.getParentComment()).isEqualTo(parent);
