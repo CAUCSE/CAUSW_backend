@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.springframework.stereotype.Service;
 
@@ -73,17 +76,19 @@ public class CrawlFacade {
 		Map<String, ArticleUrl> uniqueArticles = new LinkedHashMap<>();
 		crawler.fetchList(context).forEach(article -> uniqueArticles.putIfAbsent(article.externalId(), article));
 
-		List<String> failedUrls = new ArrayList<>();
-		List<CleanArticle> cleanArticles = new ArrayList<>();
-		for (ArticleUrl articleUrl : uniqueArticles.values()) {
-			try {
-				RawArticle rawArticle = crawler.fetchArticle(context, articleUrl);
-				cleanArticles.add(crawledArticleCleaner.clean(rawArticle, siteConfig));
-			} catch (RuntimeException e) {
-				failedUrls.add(articleUrl.url());
-				log.error("[크롤링] 공지 처리 실패. siteId={}, url={}", siteConfig.getSiteId(), articleUrl.url(), e);
-			}
-		}
+		List<ArticleCrawlOutcome> outcomes = fetchAndCleanArticles(context, crawler, uniqueArticles.values());
+		List<String> failedUrls = outcomes.stream()
+			.filter(ArticleCrawlOutcome::isFailed)
+			.map(outcome -> outcome.articleUrl().url())
+			.toList();
+		outcomes.stream()
+			.filter(ArticleCrawlOutcome::isFailed)
+			.forEach(outcome -> log.error("[크롤링] 공지 처리 실패. siteId={}, url={}", siteConfig.getSiteId(),
+				outcome.articleUrl().url(), outcome.exception()));
+		List<CleanArticle> cleanArticles = outcomes.stream()
+			.map(ArticleCrawlOutcome::cleanArticle)
+			.filter(java.util.Objects::nonNull)
+			.toList();
 
 		Map<String, CrawlSaveStatus> saveStatuses = crawledNoticePersistenceService.persistAll(siteConfig.getSiteId(),
 			cleanArticles);
@@ -98,5 +103,52 @@ public class CrawlFacade {
 
 	private int countByStatus(Map<String, CrawlSaveStatus> saveStatuses, CrawlSaveStatus expectedStatus) {
 		return (int)saveStatuses.values().stream().filter(expectedStatus::equals).count();
+	}
+
+	/**
+	 * 공지 본문 요청과 정제를 virtual thread에서 병렬 수행합니다.
+	 *
+	 * <p>외부 I/O 작업만 병렬화하며, DB 반영은 호출 측에서 단일 트랜잭션으로 수행합니다.</p>
+	 *
+	 * @param context 사이트 설정을 포함한 실행 컨텍스트
+	 * @param crawler 본문을 요청할 크롤러
+	 * @param articleUrls 처리할 공지 URL 목록
+	 * @return URL 순서를 유지한 공지별 처리 결과
+	 */
+	private List<ArticleCrawlOutcome> fetchAndCleanArticles(
+		CrawlContext context,
+		SiteCrawler crawler,
+		Iterable<ArticleUrl> articleUrls) {
+		try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+			List<CompletableFuture<ArticleCrawlOutcome>> futures = new ArrayList<>();
+			for (ArticleUrl articleUrl : articleUrls) {
+				futures.add(CompletableFuture.supplyAsync(() -> fetchAndClean(context, crawler, articleUrl), executor));
+			}
+			return futures.stream().map(CompletableFuture::join).toList();
+		}
+	}
+
+	private ArticleCrawlOutcome fetchAndClean(CrawlContext context, SiteCrawler crawler, ArticleUrl articleUrl) {
+		try {
+			RawArticle rawArticle = crawler.fetchArticle(context, articleUrl);
+			return ArticleCrawlOutcome.success(articleUrl,
+				crawledArticleCleaner.clean(rawArticle, context.siteConfig()));
+		} catch (RuntimeException e) {
+			return ArticleCrawlOutcome.failure(articleUrl, e);
+		}
+	}
+
+	private record ArticleCrawlOutcome(ArticleUrl articleUrl, CleanArticle cleanArticle, RuntimeException exception) {
+		private static ArticleCrawlOutcome success(ArticleUrl articleUrl, CleanArticle cleanArticle) {
+			return new ArticleCrawlOutcome(articleUrl, cleanArticle, null);
+		}
+
+		private static ArticleCrawlOutcome failure(ArticleUrl articleUrl, RuntimeException exception) {
+			return new ArticleCrawlOutcome(articleUrl, null, exception);
+		}
+
+		private boolean isFailed() {
+			return exception != null;
+		}
 	}
 }
