@@ -266,11 +266,6 @@ public class PostService {
 		User viewer = query.viewer();
 		String postId = query.postId();
 
-		// 조회수 증가 조건 만족 시 원자적 쿼리 실행
-		if (canIncrement) {
-			postWriter.incrementViewCount(postId);
-		}
-
 		// 게시글 조회
 		Post post = postReader.findByIdAndNotDeleted(postId);
 		Board board = post.getBoard();
@@ -321,6 +316,11 @@ public class PostService {
 		UserProfileImage writerProfileImage = (!isNotice && post.getWriter() != null)
 			? userProfileImageReader.findByUserIdOrNull(post.getWriter().getId())
 			: null;
+
+		// 조회수 증가 조건 만족 시 원자적 쿼리 실행
+		if (canIncrement) {
+			postWriter.incrementViewCount(postId);
+		}
 
 		// PostMapper를 사용하여 PostDetailResult 생성
 		return PostMapper.toPostDetailResult(
