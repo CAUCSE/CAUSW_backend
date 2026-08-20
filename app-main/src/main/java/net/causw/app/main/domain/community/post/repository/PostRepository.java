@@ -75,10 +75,10 @@ public interface PostRepository extends JpaRepository<Post, String> {
 
 	@Modifying(clearAutomatically = true)
 	@Query("""
-		update Post p
-		   set p.viewCount = p.viewCount + 1
-		 where p.id = :postId
-		   and p.isDeleted = false
-	""")
+			update Post p
+			   set p.viewCount = p.viewCount + 1
+			 where p.id = :postId
+			   and p.isDeleted = false
+		""")
 	int incrementViewCount(@Param("postId") String postId);
 }
