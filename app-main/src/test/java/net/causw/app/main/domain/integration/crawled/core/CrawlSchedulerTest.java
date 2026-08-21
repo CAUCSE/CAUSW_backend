@@ -44,7 +44,7 @@ class CrawlSchedulerTest {
 		given(lock.tryLock(3, java.util.concurrent.TimeUnit.SECONDS)).willReturn(true);
 		given(lock.isHeldByCurrentThread()).willReturn(true);
 		given(noticeCrawlingFacade.crawlAllEnabled())
-			.willReturn(List.of(new CrawlResult("cau-sw-notice", 1, 1, 0, 0, List.of())));
+			.willReturn(List.of(new CrawlResult("cau-sw-notice", 1, 1, 0, 0, 0, List.of())));
 
 		// when
 		scheduler.runAllSites();

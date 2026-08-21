@@ -118,6 +118,7 @@ public class NoticeCrawlingFacade {
 			countByStatus(saveStatuses, CrawlSaveStatus.CREATED),
 			countByStatus(saveStatuses, CrawlSaveStatus.UPDATED),
 			countByStatus(saveStatuses, CrawlSaveStatus.UNCHANGED),
+			countByStatus(saveStatuses, CrawlSaveStatus.SKIPPED),
 			List.copyOf(failedUrls));
 	}
 
@@ -135,7 +136,7 @@ public class NoticeCrawlingFacade {
 	/**
 	 * 공지 본문 요청과 정제를 virtual thread에서 병렬 수행합니다.
 	 *
-	 * <p>외부 I/O 작업만 병렬화하며, DB 반영은 호출 측에서 단일 트랜잭션으로 수행합니다.</p>
+	 * <p>외부 I/O 작업만 병렬화하며, DB 반영은 호출 측에서 공지별 트랜잭션으로 수행합니다.</p>
 	 *
 	 * @param context 사이트 설정을 포함한 실행 컨텍스트
 	 * @param crawler 본문을 요청할 크롤러

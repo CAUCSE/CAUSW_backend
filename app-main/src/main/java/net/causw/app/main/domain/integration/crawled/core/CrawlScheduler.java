@@ -86,8 +86,8 @@ public class CrawlScheduler {
 	 */
 	private void logResult(CrawlResult result) {
 		log.info(
-			"[크롤링] 사이트 크롤링 완료. siteId={}, 발견={}, 생성={}, 수정={}, 변경 없음={}, 실패={}",
+			"[크롤링] 사이트 크롤링 완료. siteId={}, 발견={}, 생성={}, 수정={}, 변경 없음={}, 건너뜀={}, 실패={}",
 			result.siteId(), result.discoveredCount(), result.createdCount(), result.updatedCount(),
-			result.unchangedCount(), result.failedCount());
+			result.unchangedCount(), result.skippedCount(), result.failedCount());
 	}
 }

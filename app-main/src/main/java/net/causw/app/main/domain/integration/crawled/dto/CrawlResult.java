@@ -8,6 +8,7 @@ public record CrawlResult(
 	int createdCount,
 	int updatedCount,
 	int unchangedCount,
+	int skippedCount,
 	List<String> failedUrls) {
 
 	/**

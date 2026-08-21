@@ -70,6 +70,7 @@ class NoticeCrawlingFacadeTest {
 
 		// then
 		assertThat(result.createdCount()).isEqualTo(1);
+		assertThat(result.skippedCount()).isZero();
 		assertThat(result.failedUrls()).containsExactly(failed.url());
 	}
 
