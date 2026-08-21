@@ -19,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
  * <p>목록 조회와 항목별 실패 격리를 담당하며, 개별 공지의 Post 생성 또는 갱신은
  * {@link CrawledNoticeTransferService}에 위임합니다.</p>
  */
-public class CrawledToPostTransferFacade {
+public class CrawledNoticePublishFacade {
 	private final CrawledNoticeReader crawledNoticeReader;
 	private final CrawledNoticeTransferService crawledNoticeTransferService;
 
@@ -28,7 +28,7 @@ public class CrawledToPostTransferFacade {
 	 *
 	 * <p>한 공지의 전송이 실패해도 나머지 공지 전송을 계속 수행합니다.</p>
 	 */
-	public void transferToPosts() {
+	public void publishPendingNotices() {
 		List<CrawledNotice> updatedNotices = crawledNoticeReader.findPendingNotices();
 		int savedCount = 0;
 		for (CrawledNotice notice : updatedNotices) {

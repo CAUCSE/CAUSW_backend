@@ -27,10 +27,10 @@ import net.causw.app.main.domain.integration.crawled.entity.SiteConfig;
 import net.causw.app.main.domain.integration.crawled.service.implementation.SiteConfigReader;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("CrawlFacade 테스트")
-class CrawlFacadeTest {
+@DisplayName("NoticeCrawlingFacade 테스트")
+class NoticeCrawlingFacadeTest {
 	@InjectMocks
-	private CrawlFacade crawlFacade;
+	private NoticeCrawlingFacade noticeCrawlingFacade;
 
 	@Mock
 	private SiteCrawlerRegistry registry;
@@ -66,7 +66,7 @@ class CrawlFacadeTest {
 			.willReturn(Map.of("2", CrawlSaveStatus.CREATED));
 
 		// when
-		CrawlResult result = crawlFacade.crawl("site");
+		CrawlResult result = noticeCrawlingFacade.crawl("site");
 
 		// then
 		assertThat(result.createdCount()).isEqualTo(1);
@@ -89,7 +89,7 @@ class CrawlFacadeTest {
 		given(crawledNoticePersistenceService.persistAll("succeeded-site", List.of())).willReturn(Map.of());
 
 		// when
-		List<CrawlResult> results = crawlFacade.crawlAllEnabled();
+		List<CrawlResult> results = noticeCrawlingFacade.crawlAllEnabled();
 
 		// then
 		assertThat(results).singleElement()

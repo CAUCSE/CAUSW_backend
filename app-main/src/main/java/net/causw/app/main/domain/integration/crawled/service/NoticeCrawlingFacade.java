@@ -34,7 +34,7 @@ import lombok.extern.slf4j.Slf4j;
  * <p>외부 사이트 통신은 트랜잭션 밖에서 처리하고, 정제된 결과의 DB 반영은
  * {@link CrawledNoticePersistenceService}에 위임합니다.</p>
  */
-public class CrawlFacade {
+public class NoticeCrawlingFacade {
 	private static final int MAX_CONCURRENT_REQUESTS = 5;
 
 	private final SiteCrawlerRegistry siteCrawlerRegistry;
@@ -69,16 +69,31 @@ public class CrawlFacade {
 		return List.copyOf(results);
 	}
 
+	/**
+	 * 사이트 설정에 맞는 크롤러를 찾아 크롤링 컨텍스트와 함께 실행합니다.
+	 *
+	 * @param siteConfig 크롤링할 활성 사이트 설정
+	 * @return 사이트 크롤링 결과
+	 */
 	private CrawlResult crawl(SiteConfig siteConfig) {
 		CrawlContext context = new CrawlContext(siteConfig);
 		return crawl(context, siteCrawlerRegistry.get(siteConfig.getCrawlerType()));
 	}
 
+	/**
+	 * 사이트 공지 목록을 수집하고, 본문을 정제·저장한 뒤 결과를 집계합니다.
+	 *
+	 * @param context 사이트 설정을 포함한 실행 컨텍스트
+	 * @param crawler 사이트별 목록·본문을 파싱할 크롤러
+	 * @return 수집·저장·실패 건수가 포함된 크롤링 결과
+	 */
 	private CrawlResult crawl(CrawlContext context, SiteCrawler crawler) {
 		SiteConfig siteConfig = context.siteConfig();
+		// 목록에서 같은 외부 공지가 중복 노출되어도 한 번만 본문을 요청합니다.
 		Map<String, ArticleUrl> uniqueArticles = new LinkedHashMap<>();
 		crawler.fetchList(context).forEach(article -> uniqueArticles.putIfAbsent(article.externalId(), article));
 
+		// 각 공지의 본문 요청과 정제를 병렬로 수행하고, 실패한 공지는 결과에서 분리합니다.
 		List<ArticleCrawlOutcome> outcomes = fetchAndCleanArticles(context, crawler, uniqueArticles.values());
 		List<String> failedUrls = outcomes.stream()
 			.filter(ArticleCrawlOutcome::isFailed)
@@ -93,8 +108,10 @@ public class CrawlFacade {
 			.filter(java.util.Objects::nonNull)
 			.toList();
 
+		// 정제에 성공한 공지만 저장해 생성·갱신·미변경 상태를 집계합니다.
 		Map<String, CrawlSaveStatus> saveStatuses = crawledNoticePersistenceService.persistAll(siteConfig.getSiteId(),
 			cleanArticles);
+		// 목록 수, 저장 결과, 개별 본문 요청 실패 URL을 최종 결과로 반환합니다.
 		return new CrawlResult(
 			siteConfig.getSiteId(),
 			uniqueArticles.size(),
@@ -104,6 +121,13 @@ public class CrawlFacade {
 			List.copyOf(failedUrls));
 	}
 
+	/**
+	 * 저장 결과에서 지정한 상태의 공지 수를 계산합니다.
+	 *
+	 * @param saveStatuses 외부 공지 식별자별 저장 결과
+	 * @param expectedStatus 집계할 저장 상태
+	 * @return 지정 상태의 공지 수
+	 */
 	private int countByStatus(Map<String, CrawlSaveStatus> saveStatuses, CrawlSaveStatus expectedStatus) {
 		return (int)saveStatuses.values().stream().filter(expectedStatus::equals).count();
 	}
@@ -133,6 +157,15 @@ public class CrawlFacade {
 		}
 	}
 
+	/**
+	 * 동시 요청 제한을 적용해 공지 본문을 요청하고 정제합니다.
+	 *
+	 * @param context 사이트 설정을 포함한 실행 컨텍스트
+	 * @param crawler 본문을 요청할 크롤러
+	 * @param articleUrl 처리할 공지 URL
+	 * @param semaphore 동시 외부 요청 수를 제한하는 세마포어
+	 * @return 성공한 정제 공지 또는 실패 정보
+	 */
 	private ArticleCrawlOutcome fetchAndCleanWithPermit(
 		CrawlContext context,
 		SiteCrawler crawler,
@@ -157,14 +190,33 @@ public class CrawlFacade {
 	}
 
 	private record ArticleCrawlOutcome(ArticleUrl articleUrl, CleanArticle cleanArticle, RuntimeException exception) {
+		/**
+		 * 본문 요청과 정제가 성공한 결과를 생성합니다.
+		 *
+		 * @param articleUrl 처리한 공지 URL
+		 * @param cleanArticle 정제된 공지
+		 * @return 성공 결과
+		 */
 		private static ArticleCrawlOutcome success(ArticleUrl articleUrl, CleanArticle cleanArticle) {
 			return new ArticleCrawlOutcome(articleUrl, cleanArticle, null);
 		}
 
+		/**
+		 * 본문 요청 또는 정제가 실패한 결과를 생성합니다.
+		 *
+		 * @param articleUrl 처리 중 실패한 공지 URL
+		 * @param exception 발생한 예외
+		 * @return 실패 결과
+		 */
 		private static ArticleCrawlOutcome failure(ArticleUrl articleUrl, RuntimeException exception) {
 			return new ArticleCrawlOutcome(articleUrl, null, exception);
 		}
 
+		/**
+		 * 처리 중 예외가 발생했는지 확인합니다.
+		 *
+		 * @return 예외가 있으면 {@code true}
+		 */
 		private boolean isFailed() {
 			return exception != null;
 		}
