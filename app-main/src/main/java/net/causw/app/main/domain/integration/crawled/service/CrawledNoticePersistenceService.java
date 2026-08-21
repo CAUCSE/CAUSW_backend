@@ -1,8 +1,8 @@
 package net.causw.app.main.domain.integration.crawled.service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +12,8 @@ import net.causw.app.main.domain.community.post.service.implementation.PostWrite
 import net.causw.app.main.domain.integration.crawled.dto.CleanArticle;
 import net.causw.app.main.domain.integration.crawled.dto.CrawlSaveStatus;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
+import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeContentHashManager;
+import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeCreationPolicy;
 import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeReader;
 import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeWriter;
 
@@ -28,6 +30,8 @@ import lombok.RequiredArgsConstructor;
  */
 public class CrawledNoticePersistenceService {
 	private final CrawledNoticeReader crawledNoticeReader;
+	private final CrawledNoticeCreationPolicy crawledNoticeCreationPolicy;
+	private final CrawledNoticeContentHashManager crawledNoticeContentHashManager;
 	private final CrawledNoticeWriter crawledNoticeWriter;
 	private final PostWriter postWriter;
 
@@ -43,19 +47,41 @@ public class CrawledNoticePersistenceService {
 			return Map.of();
 		}
 
+		// 공지별 조회를 피하기 위해 이번 크롤링 대상의 기존 공지를 한 번에 조회합니다.
 		Map<String, CrawledNotice> noticesByExternalId = crawledNoticeReader.findBySources(
 			siteId, articles.stream().map(CleanArticle::externalId).toList());
-		return articles.stream().collect(Collectors.toMap(
-			CleanArticle::externalId,
-			article -> persist(article, noticesByExternalId.get(article.externalId())),
-			(existing, replacement) -> replacement));
+
+		Map<String, CrawlSaveStatus> saveStatuses = new HashMap<>();
+		// 동일한 externalId가 중복되면 마지막 처리 결과를 저장합니다.
+		for (CleanArticle article : articles) {
+			saveStatuses.put(article.externalId(), persist(article, noticesByExternalId.get(article.externalId())));
+		}
+		return saveStatuses;
 	}
 
 	private CrawlSaveStatus persist(CleanArticle article, CrawledNotice existing) {
-		if (existing != null && !existing.getTargetBoardId().equals(article.targetBoardId())) {
+		if (existing == null) {
+			// 신규 공지는 최근 공지만 저장해 오래된 공지의 Post 전송 대기를 만들지 않습니다.
+			if (!crawledNoticeCreationPolicy.isWithinCreationWindow(article.announceDate())) {
+				return CrawlSaveStatus.SKIPPED;
+			}
+			crawledNoticeWriter.save(article);
+			return CrawlSaveStatus.CREATED;
+		}
+
+		boolean targetBoardChanged = existing.isTargetBoardChanged(article.targetBoardId());
+		if (targetBoardChanged) {
+			// 게시판이 변경되면 이전 게시판에 연결된 Post를 더 이상 노출하지 않습니다.
 			softDeleteLinkedPost(existing);
 		}
-		return crawledNoticeWriter.upsert(article, existing);
+		if (!targetBoardChanged && !crawledNoticeContentHashManager.isChanged(existing, article.contentHash())) {
+			// 내용과 저장 대상이 모두 같으면 DB 변경 및 Post 재전송을 생략합니다.
+			return CrawlSaveStatus.UNCHANGED;
+		}
+
+		// 내용 또는 저장 대상이 변경된 공지는 다음 Post 전송 대상으로 표시합니다.
+		crawledNoticeWriter.update(existing, article);
+		return CrawlSaveStatus.UPDATED;
 	}
 
 	private void softDeleteLinkedPost(CrawledNotice notice) {

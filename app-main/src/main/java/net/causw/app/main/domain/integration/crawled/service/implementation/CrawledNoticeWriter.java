@@ -8,7 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.integration.crawled.dto.CleanArticle;
 import net.causw.app.main.domain.integration.crawled.dto.CleanAttachment;
-import net.causw.app.main.domain.integration.crawled.dto.CrawlSaveStatus;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledFileLink;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
 import net.causw.app.main.domain.integration.crawled.repository.CrawledNoticeRepository;
@@ -20,20 +19,6 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 public class CrawledNoticeWriter {
 	private final CrawledNoticeRepository crawledNoticeRepository;
-
-	/**
-	 * 출처 식별자를 기준으로 공지를 생성하거나 변경된 내용을 갱신합니다.
-	 *
-	 * @param article 저장할 정제 공지
-	 * @param existing 출처 식별자로 미리 조회한 기존 공지. 없으면 새 공지를 생성한다.
-	 * @return 생성, 수정 또는 미변경 상태
-	 */
-	public CrawlSaveStatus upsert(CleanArticle article, CrawledNotice existing) {
-		if (existing == null) {
-			return create(article);
-		}
-		return updateIfChanged(existing, article);
-	}
 
 	/**
 	 * 공지에 변환된 Post를 연결하고 전송 완료 상태로 저장합니다.
@@ -51,9 +36,8 @@ public class CrawledNoticeWriter {
 	 * 정제 공지를 새 엔티티로 저장하고 Post 전송 대기 상태로 표시합니다.
 	 *
 	 * @param article 저장할 정제 공지
-	 * @return 생성 상태
 	 */
-	private CrawlSaveStatus create(CleanArticle article) {
+	public void save(CleanArticle article) {
 		CrawledNotice notice = CrawledNotice.of(
 			article.siteId(),
 			article.externalId(),
@@ -69,21 +53,15 @@ public class CrawledNoticeWriter {
 			article.contentHash());
 		notice.setIsUpdated(true);
 		crawledNoticeRepository.save(notice);
-		return CrawlSaveStatus.CREATED;
 	}
 
 	/**
-	 * 콘텐츠 또는 저장 대상 게시판이 변경된 경우 기존 공지를 갱신합니다.
+	 * 기존 공지를 최신 정제 공지 내용으로 갱신합니다.
 	 *
 	 * @param existing 저장된 공지
 	 * @param article 최신 정제 공지
-	 * @return 수정 또는 미변경 상태
 	 */
-	private CrawlSaveStatus updateIfChanged(CrawledNotice existing, CleanArticle article) {
-		boolean targetBoardChanged = !existing.getTargetBoardId().equals(article.targetBoardId());
-		if (existing.getContentHash().equals(article.contentHash()) && !targetBoardChanged) {
-			return CrawlSaveStatus.UNCHANGED;
-		}
+	public void update(CrawledNotice existing, CleanArticle article) {
 		existing.updateFrom(
 			article.targetBoardId(),
 			article.category(),
@@ -95,7 +73,6 @@ public class CrawledNoticeWriter {
 			article.representativeImageUrl(),
 			toEntities(article.attachments()),
 			article.contentHash());
-		return CrawlSaveStatus.UPDATED;
 	}
 
 	/**

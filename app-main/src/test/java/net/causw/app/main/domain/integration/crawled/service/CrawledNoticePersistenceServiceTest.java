@@ -2,6 +2,7 @@ package net.causw.app.main.domain.integration.crawled.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.never;
 import static org.mockito.BDDMockito.verify;
 
 import java.time.LocalDate;
@@ -20,6 +21,8 @@ import net.causw.app.main.domain.community.post.service.implementation.PostWrite
 import net.causw.app.main.domain.integration.crawled.dto.CleanArticle;
 import net.causw.app.main.domain.integration.crawled.dto.CrawlSaveStatus;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
+import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeContentHashManager;
+import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeCreationPolicy;
 import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeReader;
 import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeWriter;
 
@@ -31,6 +34,10 @@ class CrawledNoticePersistenceServiceTest {
 
 	@Mock
 	private CrawledNoticeReader crawledNoticeReader;
+	@Mock
+	private CrawledNoticeCreationPolicy crawledNoticeCreationPolicy;
+	@Mock
+	private CrawledNoticeContentHashManager crawledNoticeContentHashManager;
 	@Mock
 	private CrawledNoticeWriter crawledNoticeWriter;
 	@Mock
@@ -45,14 +52,64 @@ class CrawledNoticePersistenceServiceTest {
 			"site", "10", "target-board-id", "공지", "제목", "본문", "https://example.com/10", "관리자",
 			LocalDate.of(2026, 8, 10), null, List.of(), "old-hash");
 		given(crawledNoticeReader.findBySources("site", List.of("10"))).willReturn(Map.of("10", notice));
-		given(crawledNoticeWriter.upsert(article, notice)).willReturn(CrawlSaveStatus.UPDATED);
-
+		given(crawledNoticeContentHashManager.isChanged(notice, article.contentHash())).willReturn(true);
 		// when
 		Map<String, CrawlSaveStatus> result = persistenceService.persistAll("site", List.of(article));
 
 		// then
 		assertThat(result).containsEntry("10", CrawlSaveStatus.UPDATED);
-		verify(crawledNoticeWriter).upsert(article, notice);
+		verify(crawledNoticeWriter).update(notice, article);
+	}
+
+	@Test
+	@DisplayName("저장 기간 밖의 신규 공지는 저장하지 않는다")
+	void persistAll_shouldSkipNewNotice_whenOutsideCreationWindow() {
+		// given
+		CleanArticle article = article(LocalDate.of(2026, 8, 10));
+		given(crawledNoticeReader.findBySources("site", List.of("10"))).willReturn(Map.of());
+		given(crawledNoticeCreationPolicy.isWithinCreationWindow(article.announceDate())).willReturn(false);
+
+		// when
+		Map<String, CrawlSaveStatus> result = persistenceService.persistAll("site", List.of(article));
+
+		// then
+		assertThat(result).containsEntry("10", CrawlSaveStatus.SKIPPED);
+		verify(crawledNoticeWriter, never()).save(article);
+	}
+
+	@Test
+	@DisplayName("저장 기간 안의 신규 공지는 저장한다")
+	void persistAll_shouldSaveNewNotice_whenWithinCreationWindow() {
+		// given
+		CleanArticle article = article();
+		given(crawledNoticeReader.findBySources("site", List.of("10"))).willReturn(Map.of());
+		given(crawledNoticeCreationPolicy.isWithinCreationWindow(article.announceDate())).willReturn(true);
+
+		// when
+		Map<String, CrawlSaveStatus> result = persistenceService.persistAll("site", List.of(article));
+
+		// then
+		assertThat(result).containsEntry("10", CrawlSaveStatus.CREATED);
+		verify(crawledNoticeWriter).save(article);
+	}
+
+	@Test
+	@DisplayName("콘텐츠와 대상 게시판이 같으면 저장하지 않는다")
+	void persistAll_shouldNotUpdate_whenContentAndTargetBoardAreUnchanged() {
+		// given
+		CleanArticle article = article();
+		CrawledNotice notice = CrawledNotice.of(
+			"site", "10", "target-board-id", "공지", "제목", "본문", "https://example.com/10", "관리자",
+			LocalDate.of(2026, 8, 10), null, List.of(), "hash");
+		given(crawledNoticeReader.findBySources("site", List.of("10"))).willReturn(Map.of("10", notice));
+		given(crawledNoticeContentHashManager.isChanged(notice, article.contentHash())).willReturn(false);
+
+		// when
+		Map<String, CrawlSaveStatus> result = persistenceService.persistAll("site", List.of(article));
+
+		// then
+		assertThat(result).containsEntry("10", CrawlSaveStatus.UNCHANGED);
+		verify(crawledNoticeWriter, never()).update(notice, article);
 	}
 
 	@Test
@@ -66,7 +123,6 @@ class CrawledNoticePersistenceServiceTest {
 		Post post = org.mockito.Mockito.mock(Post.class);
 		notice.linkPost(post);
 		given(crawledNoticeReader.findBySources("site", List.of("10"))).willReturn(Map.of("10", notice));
-		given(crawledNoticeWriter.upsert(article, notice)).willReturn(CrawlSaveStatus.UPDATED);
 
 		// when
 		persistenceService.persistAll("site", List.of(article));
@@ -74,11 +130,16 @@ class CrawledNoticePersistenceServiceTest {
 		// then
 		verify(post).setIsDeleted(true);
 		verify(postWriter).save(post);
+		verify(crawledNoticeWriter).update(notice, article);
 	}
 
 	private CleanArticle article() {
+		return article(LocalDate.of(2026, 8, 10));
+	}
+
+	private CleanArticle article(LocalDate announceDate) {
 		return new CleanArticle(
 			"site", "target-board-id", "10", "https://example.com/10", "공지", "제목", "본문", "관리자",
-			LocalDate.of(2026, 8, 10), null, List.of(), "hash");
+			announceDate, null, List.of(), "hash");
 	}
 }
