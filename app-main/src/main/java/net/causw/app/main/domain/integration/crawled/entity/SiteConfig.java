@@ -6,7 +6,7 @@ import java.util.Map;
 import net.causw.app.main.domain.integration.crawled.config.CrawlerType;
 import net.causw.app.main.domain.integration.crawled.config.PaginationType;
 import net.causw.app.main.domain.integration.crawled.config.StringMapJsonConverter;
-import net.causw.app.main.shared.entity.BaseEntity;
+import net.causw.app.main.shared.entity.AuditableEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
@@ -14,6 +14,7 @@ import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -27,8 +28,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_crawl_site_config")
-public class SiteConfig extends BaseEntity {
-	@Column(name = "site_id", nullable = false, unique = true, length = 100)
+public class SiteConfig extends AuditableEntity {
+	@Id
+	@Column(name = "site_id", nullable = false, length = 100)
 	private String siteId;
 
 	@Column(name = "target_board_id", nullable = false)
@@ -59,6 +61,9 @@ public class SiteConfig extends BaseEntity {
 
 	@Column(name = "max_articles", nullable = false)
 	private Integer maxArticles;
+
+	@Column(name = "max_scan_range_days", nullable = false)
+	private Integer maxScanRangeDays;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "pagination_type", nullable = false, length = 30)
@@ -95,6 +100,7 @@ public class SiteConfig extends BaseEntity {
 	 * @param timeout HTTP 요청 제한 시간
 	 * @param maxRetries 최대 요청 시도 횟수
 	 * @param maxArticles 한 번에 수집할 최대 공지 수
+	 * @param maxScanRangeDays 신규 공지를 저장할 최대 과거 일수
 	 * @param paginationType 페이지네이션 유형
 	 * @param pageParam 페이지 파라미터명
 	 * @param maxPages 탐색할 최대 페이지 수
@@ -115,6 +121,7 @@ public class SiteConfig extends BaseEntity {
 		Duration timeout,
 		int maxRetries,
 		int maxArticles,
+		int maxScanRangeDays,
 		PaginationType paginationType,
 		String pageParam,
 		int maxPages,
@@ -133,6 +140,7 @@ public class SiteConfig extends BaseEntity {
 			.timeoutMs(timeout.toMillis())
 			.maxRetries(maxRetries)
 			.maxArticles(maxArticles)
+			.maxScanRangeDays(maxScanRangeDays)
 			.paginationType(paginationType)
 			.pageParam(pageParam)
 			.maxPages(maxPages)

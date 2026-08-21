@@ -62,7 +62,7 @@ class NoticeCrawlingFacadeTest {
 		given(crawler.fetchArticle(context, failed)).willThrow(new IllegalStateException("failed"));
 		given(crawler.fetchArticle(context, succeeded)).willReturn(raw);
 		given(cleaner.clean(raw, config)).willReturn(clean);
-		given(crawledNoticePersistenceService.persistAll("site", List.of(clean)))
+		given(crawledNoticePersistenceService.persistAll(config, List.of(clean)))
 			.willReturn(Map.of("2", CrawlSaveStatus.CREATED));
 
 		// when
@@ -86,7 +86,7 @@ class NoticeCrawlingFacadeTest {
 		given(registry.get(failedConfig.getCrawlerType())).willReturn(crawler);
 		given(crawler.fetchList(failedContext)).willThrow(new IllegalStateException("failed"));
 		given(crawler.fetchList(succeededContext)).willReturn(List.of());
-		given(crawledNoticePersistenceService.persistAll("succeeded-site", List.of())).willReturn(Map.of());
+		given(crawledNoticePersistenceService.persistAll(succeededConfig, List.of())).willReturn(Map.of());
 
 		// when
 		List<CrawlResult> results = noticeCrawlingFacade.crawlAllEnabled();

@@ -109,7 +109,7 @@ public class NoticeCrawlingFacade {
 			.toList();
 
 		// 정제에 성공한 공지만 저장해 생성·갱신·미변경 상태를 집계합니다.
-		Map<String, CrawlSaveStatus> saveStatuses = crawledNoticePersistenceService.persistAll(siteConfig.getSiteId(),
+		Map<String, CrawlSaveStatus> saveStatuses = crawledNoticePersistenceService.persistAll(siteConfig,
 			cleanArticles);
 		// 목록 수, 저장 결과, 개별 본문 요청 실패 URL을 최종 결과로 반환합니다.
 		return new CrawlResult(
