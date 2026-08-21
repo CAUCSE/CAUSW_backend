@@ -1,7 +1,5 @@
 package net.causw.app.main.domain.integration.crawled.service;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,8 +41,6 @@ import lombok.RequiredArgsConstructor;
  */
 @Service
 public class CrawledNoticeTransferService {
-	private static final ZoneId KOREA_ZONE_ID = ZoneId.of("Asia/Seoul");
-
 	private final CrawledNoticeReader crawledNoticeReader;
 	private final CrawledNoticeWriter crawledNoticeWriter;
 	private final PostWriter postWriter;
@@ -64,11 +60,6 @@ public class CrawledNoticeTransferService {
 	public void transfer(String noticeId) {
 		CrawledNotice notice = crawledNoticeReader.findById(noticeId);
 		Post existingPost = findExistingPost(notice);
-		if (existingPost == null && !isWithinPostCreationWindow(notice)) {
-			crawledNoticeWriter.markTransferred(notice, null);
-			return;
-		}
-
 		User systemUser = getSystemUser();
 		Board board = boardReader.getById(notice.getTargetBoardId());
 		Post post = processUpdatedNotice(notice, board, systemUser, existingPost);
@@ -119,19 +110,6 @@ public class CrawledNoticeTransferService {
 		savePostImages(newPost, imageUrls);
 		applicationEventPublisher.publishEvent(new OfficialPostEvent(board.getId(), newPost.getId(), title));
 		return newPost;
-	}
-
-	/**
-	 * 신규 Post는 공지일이 한국 시간 기준 오늘 또는 전날인 경우에만 생성합니다.
-	 *
-	 * <p>크롤링 원본의 공지 시각은 일 단위로만 제공되므로, 24시간 정책은 해당 일자 범위로 적용합니다.
-	 * 이미 연결된 Post는 이 제한과 관계없이 갱신됩니다.</p>
-	 */
-	private boolean isWithinPostCreationWindow(CrawledNotice notice) {
-		LocalDate today = LocalDate.now(KOREA_ZONE_ID);
-		LocalDate oldestAllowedDate = today.minusDays(1);
-		return !notice.getAnnounceDate().isBefore(oldestAllowedDate)
-			&& !notice.getAnnounceDate().isAfter(today);
 	}
 
 	/**

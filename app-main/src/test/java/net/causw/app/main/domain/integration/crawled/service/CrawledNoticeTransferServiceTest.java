@@ -1,11 +1,9 @@
 package net.causw.app.main.domain.integration.crawled.service;
 
 import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.never;
 import static org.mockito.BDDMockito.verify;
 
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,8 +29,6 @@ import net.causw.global.constant.StaticValue;
 @ExtendWith(MockitoExtension.class)
 @DisplayName("CrawledNoticeTransferService 테스트")
 class CrawledNoticeTransferServiceTest {
-	private static final ZoneId KOREA_ZONE_ID = ZoneId.of("Asia/Seoul");
-
 	@InjectMocks
 	private CrawledNoticeTransferService transferService;
 
@@ -52,26 +48,10 @@ class CrawledNoticeTransferServiceTest {
 	private org.springframework.context.ApplicationEventPublisher applicationEventPublisher;
 
 	@Test
-	@DisplayName("연결된 Post가 없는 이틀 전 공지는 새 Post로 생성하지 않는다")
-	void transfer_shouldNotCreatePost_whenUnlinkedNoticeIsOlderThanOneDay() {
+	@DisplayName("연결된 Post가 없는 전송 대기 공지는 공지일과 관계없이 새 Post로 생성한다")
+	void transfer_shouldCreatePost_whenUnlinkedNoticeIsPending() {
 		// given
-		CrawledNotice notice = notice(LocalDate.now(KOREA_ZONE_ID).minusDays(2));
-		given(crawledNoticeReader.findById(notice.getId())).willReturn(notice);
-
-		// when
-		transferService.transfer(notice.getId());
-
-		// then
-		verify(postWriter, never()).save(org.mockito.ArgumentMatchers.any());
-		verify(crawledNoticeWriter).markTransferred(notice, null);
-		verify(userReader, never()).findByEmail(StaticValue.SYSTEM_CRAWLER_ACCOUNT);
-	}
-
-	@Test
-	@DisplayName("연결된 Post가 없는 오늘 공지는 새 Post로 생성한다")
-	void transfer_shouldCreatePost_whenUnlinkedNoticeIsWithinOneDay() {
-		// given
-		CrawledNotice notice = notice(LocalDate.now(KOREA_ZONE_ID));
+		CrawledNotice notice = notice(LocalDate.of(2026, 8, 10));
 		given(crawledNoticeReader.findById(notice.getId())).willReturn(notice);
 		given(userReader.findByEmail(StaticValue.SYSTEM_CRAWLER_ACCOUNT))
 			.willReturn(Optional.of(org.mockito.Mockito.mock(User.class)));
@@ -87,10 +67,10 @@ class CrawledNoticeTransferServiceTest {
 	}
 
 	@Test
-	@DisplayName("이틀 전 공지도 연결된 기존 Post는 갱신한다")
-	void transfer_shouldUpdatePost_whenLinkedNoticeIsOlderThanOneDay() {
+	@DisplayName("연결된 기존 Post는 공지일과 관계없이 갱신한다")
+	void transfer_shouldUpdatePost_whenLinkedNoticeExists() {
 		// given
-		CrawledNotice notice = notice(LocalDate.now(KOREA_ZONE_ID).minusDays(2));
+		CrawledNotice notice = notice(LocalDate.of(2026, 8, 10));
 		Post existingPost = org.mockito.Mockito.mock(Post.class);
 		Board board = org.mockito.Mockito.mock(Board.class);
 		notice.linkPost(existingPost);
