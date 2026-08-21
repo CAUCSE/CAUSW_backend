@@ -25,10 +25,8 @@ import net.causw.app.main.domain.integration.crawled.service.implementation.Craw
 import net.causw.app.main.domain.notification.notification.event.OfficialPostEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
-import net.causw.global.constant.MessageUtil;
+import net.causw.app.main.shared.exception.errorcode.IntegrationErrorCode;
 import net.causw.global.constant.StaticValue;
-import net.causw.global.exception.BadRequestException;
-import net.causw.global.exception.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -70,12 +68,11 @@ public class CrawledNoticeTransferService {
 	 * 크롤링 작업에 사용하는 시스템 계정을 조회합니다.
 	 *
 	 * @return 크롤링 시스템 계정
-	 * @throws BadRequestException 시스템 계정이 존재하지 않는 경우
+	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception 시스템 계정이 존재하지 않는 경우
 	 */
 	private User getSystemUser() {
 		return userReader.findByEmail(StaticValue.SYSTEM_CRAWLER_ACCOUNT)
-			.orElseThrow(() -> new BadRequestException(
-				ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND));
+			.orElseThrow(IntegrationErrorCode.CRAWL_SYSTEM_USER_NOT_FOUND::toBaseException);
 	}
 
 	/**

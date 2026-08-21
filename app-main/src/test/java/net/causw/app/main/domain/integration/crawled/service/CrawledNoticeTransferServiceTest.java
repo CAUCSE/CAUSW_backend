@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.integration.crawled.service;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.verify;
 
@@ -24,6 +25,8 @@ import net.causw.app.main.domain.integration.crawled.service.implementation.Craw
 import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledPostImageWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
+import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
+import net.causw.app.main.shared.exception.errorcode.IntegrationErrorCode;
 import net.causw.global.constant.StaticValue;
 
 @ExtendWith(MockitoExtension.class)
@@ -92,6 +95,21 @@ class CrawledNoticeTransferServiceTest {
 			org.mockito.ArgumentMatchers.eq(false), org.mockito.ArgumentMatchers.eq(List.of()));
 		verify(postWriter).save(existingPost);
 		verify(crawledNoticeWriter).markTransferred(notice, existingPost);
+	}
+
+	@Test
+	@DisplayName("크롤링 시스템 계정이 없으면 통합 오류 코드로 예외를 발생시킨다")
+	void transfer_shouldThrowIntegrationException_whenSystemUserDoesNotExist() {
+		// given
+		CrawledNotice notice = notice(LocalDate.of(2026, 8, 10));
+		given(crawledNoticeReader.findById(notice.getId())).willReturn(notice);
+		given(userReader.findByEmail(StaticValue.SYSTEM_CRAWLER_ACCOUNT)).willReturn(Optional.empty());
+
+		// when & then
+		assertThatThrownBy(() -> transferService.transfer(notice.getId()))
+			.isInstanceOf(BaseRunTimeV2Exception.class)
+			.extracting(exception -> ((BaseRunTimeV2Exception)exception).getErrorCode())
+			.isEqualTo(IntegrationErrorCode.CRAWL_SYSTEM_USER_NOT_FOUND);
 	}
 
 	private CrawledNotice notice(LocalDate announceDate) {

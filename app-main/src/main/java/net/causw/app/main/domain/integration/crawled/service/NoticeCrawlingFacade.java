@@ -21,6 +21,7 @@ import net.causw.app.main.domain.integration.crawled.dto.CrawlSaveStatus;
 import net.causw.app.main.domain.integration.crawled.dto.RawArticle;
 import net.causw.app.main.domain.integration.crawled.entity.SiteConfig;
 import net.causw.app.main.domain.integration.crawled.service.implementation.SiteConfigReader;
+import net.causw.app.main.shared.exception.errorcode.IntegrationErrorCode;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -184,7 +185,8 @@ public class NoticeCrawlingFacade {
 				crawledArticleCleaner.clean(rawArticle, context.siteConfig()));
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
-			return ArticleCrawlOutcome.failure(articleUrl, new IllegalStateException("공지 요청이 중단되었습니다.", e));
+			return ArticleCrawlOutcome.failure(articleUrl,
+				IntegrationErrorCode.CRAWL_INTERRUPTED.toBaseException("공지 요청이 중단되었습니다.", e));
 		} catch (RuntimeException e) {
 			return ArticleCrawlOutcome.failure(articleUrl, e);
 		}
