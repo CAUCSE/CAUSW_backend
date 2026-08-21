@@ -73,6 +73,7 @@ public class CrawledNoticeWriter {
 			article.representativeImageUrl(),
 			toEntities(article.attachments()),
 			article.contentHash());
+		crawledNoticeRepository.save(existing);
 	}
 
 	/**

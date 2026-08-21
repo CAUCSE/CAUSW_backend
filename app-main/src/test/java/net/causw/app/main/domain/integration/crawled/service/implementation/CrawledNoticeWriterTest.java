@@ -52,6 +52,7 @@ class CrawledNoticeWriterTest {
 		// then
 		assertThat(existing.getTargetBoardId()).isEqualTo("target-board-id");
 		assertThat(existing.getIsUpdated()).isTrue();
+		verify(repository).save(existing);
 	}
 
 	private CleanArticle article(String hash) {

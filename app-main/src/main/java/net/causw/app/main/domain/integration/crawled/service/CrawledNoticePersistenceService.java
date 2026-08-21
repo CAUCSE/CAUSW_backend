@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.implementation.PostWriter;
@@ -19,16 +21,14 @@ import net.causw.app.main.domain.integration.crawled.service.implementation.Craw
 import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeReader;
 import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeWriter;
 
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
-@RequiredArgsConstructor
-@Transactional
+@Slf4j
 /**
  * 정제된 크롤링 공지를 일괄적으로 영속화하는 서비스입니다.
  *
- * <p>기존 공지와 연관 첨부파일을 한 번에 조회한 뒤 같은 트랜잭션에서 생성 또는 갱신하여,
- * 지연 로딩 예외와 공지별 재조회에 따른 N+1 쿼리를 방지합니다.</p>
+ * <p>기존 공지와 연관 첨부파일을 한 번에 조회해 공지별 재조회에 따른 N+1 쿼리를 방지합니다.</p>
  */
 public class CrawledNoticePersistenceService {
 	private static final ZoneId KOREA_ZONE_ID = ZoneId.of("Asia/Seoul");
@@ -37,6 +37,21 @@ public class CrawledNoticePersistenceService {
 	private final CrawledNoticeContentHashManager crawledNoticeContentHashManager;
 	private final CrawledNoticeWriter crawledNoticeWriter;
 	private final PostWriter postWriter;
+	private final TransactionTemplate transactionTemplate;
+
+	public CrawledNoticePersistenceService(
+		CrawledNoticeReader crawledNoticeReader,
+		CrawledNoticeContentHashManager crawledNoticeContentHashManager,
+		CrawledNoticeWriter crawledNoticeWriter,
+		PostWriter postWriter,
+		PlatformTransactionManager transactionManager) {
+		this.crawledNoticeReader = crawledNoticeReader;
+		this.crawledNoticeContentHashManager = crawledNoticeContentHashManager;
+		this.crawledNoticeWriter = crawledNoticeWriter;
+		this.postWriter = postWriter;
+		this.transactionTemplate = new TransactionTemplate(transactionManager);
+		this.transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+	}
 
 	/**
 	 * 사이트 내 공지 목록을 일괄 생성 또는 갱신합니다.
@@ -53,12 +68,18 @@ public class CrawledNoticePersistenceService {
 		// 공지별 조회를 피하기 위해 이번 크롤링 대상의 기존 공지를 한 번에 조회합니다.
 		Map<String, CrawledNotice> noticesByExternalId = crawledNoticeReader.findBySources(
 			siteConfig.getSiteId(), articles.stream().map(CleanArticle::externalId).toList());
-
 		Map<String, CrawlSaveStatus> saveStatuses = new HashMap<>();
-		// 동일한 externalId가 중복되면 마지막 처리 결과를 저장합니다.
 		for (CleanArticle article : articles) {
-			saveStatuses.put(article.externalId(),
-				persist(article, noticesByExternalId.get(article.externalId()), siteConfig));
+			try {
+				// 공지 한 건마다 독립 트랜잭션을 열어, 저장 실패가 다음 공지 처리에 영향을 주지 않게 합니다.
+				CrawlSaveStatus saveStatus = transactionTemplate
+					.execute(status -> persist(article, noticesByExternalId.get(article.externalId()), siteConfig));
+				saveStatuses.put(article.externalId(), saveStatus);
+			} catch (RuntimeException e) {
+				// 저장 실패는 수집 실패 URL과 구분해 로그로만 남기고 다음 공지를 계속 처리합니다.
+				log.error("[크롤링] 공지 저장 실패. siteId={}, externalId={}, sourceUrl={}",
+					siteConfig.getSiteId(), article.externalId(), article.sourceUrl(), e);
+			}
 		}
 		return saveStatuses;
 	}
