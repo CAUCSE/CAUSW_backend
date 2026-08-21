@@ -1,5 +1,7 @@
 package net.causw.app.main.domain.integration.crawled.service;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,6 +43,8 @@ import lombok.RequiredArgsConstructor;
  */
 @Service
 public class CrawledNoticeTransferService {
+	private static final ZoneId KOREA_ZONE_ID = ZoneId.of("Asia/Seoul");
+
 	private final CrawledNoticeReader crawledNoticeReader;
 	private final CrawledNoticeWriter crawledNoticeWriter;
 	private final PostWriter postWriter;
@@ -59,25 +63,47 @@ public class CrawledNoticeTransferService {
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void transfer(String noticeId) {
 		CrawledNotice notice = crawledNoticeReader.findById(noticeId);
+		Post existingPost = findExistingPost(notice);
+		if (existingPost == null && !isWithinPostCreationWindow(notice)) {
+			crawledNoticeWriter.markTransferred(notice, null);
+			return;
+		}
+
 		User systemUser = getSystemUser();
 		Board board = boardReader.getById(notice.getTargetBoardId());
-		Post post = processUpdatedNotice(notice, board, systemUser);
+		Post post = processUpdatedNotice(notice, board, systemUser, existingPost);
 		crawledNoticeWriter.markTransferred(notice, post);
 	}
 
+	/**
+	 * 크롤링 작업에 사용하는 시스템 계정을 조회합니다.
+	 *
+	 * @return 크롤링 시스템 계정
+	 * @throws BadRequestException 시스템 계정이 존재하지 않는 경우
+	 */
 	private User getSystemUser() {
 		return userReader.findByEmail(StaticValue.SYSTEM_CRAWLER_ACCOUNT)
 			.orElseThrow(() -> new BadRequestException(
 				ErrorCode.ROW_DOES_NOT_EXIST, MessageUtil.USER_NOT_FOUND));
 	}
 
-	private Post processUpdatedNotice(CrawledNotice notice, Board board, User adminUser) {
+	/**
+	 * 기존 연결 Post를 갱신하거나 대상 게시판에 새 Post를 생성합니다.
+	 *
+	 * <p>이미지가 포함된 경우 이미지 연결 정보를 현재 크롤링 결과와 동기화하며,
+	 * 새 Post를 생성한 경우에만 공식 게시글 알림 이벤트를 발행합니다.</p>
+	 *
+	 * @param notice 전송할 크롤링 공지
+	 * @param board 게시글을 저장할 대상 게시판
+	 * @param adminUser 게시글 작성자로 사용할 시스템 계정
+	 * @param existingPost 기존에 연결된 Post. 없으면 새 Post를 생성합니다.
+	 * @return 생성하거나 갱신한 Post
+	 */
+	private Post processUpdatedNotice(CrawledNotice notice, Board board, User adminUser, Post existingPost) {
 		String title = (notice.getTitle() == null || notice.getTitle().isBlank())
 			? "제목 없음" : notice.getTitle();
 		String contentHtml = buildContentWithAttachmentsAndLink(notice, title);
 		List<String> imageUrls = extractImageUrls(notice.getContent(), notice.getLink());
-		Post existingPost = findExistingPost(notice);
-
 		if (existingPost != null) {
 			existingPost.update(title, contentHtml, existingPost.getIsAnonymous(),
 				existingPost.getPostAttachImageList());
@@ -95,6 +121,25 @@ public class CrawledNoticeTransferService {
 		return newPost;
 	}
 
+	/**
+	 * 신규 Post는 공지일이 한국 시간 기준 오늘 또는 전날인 경우에만 생성합니다.
+	 *
+	 * <p>크롤링 원본의 공지 시각은 일 단위로만 제공되므로, 24시간 정책은 해당 일자 범위로 적용합니다.
+	 * 이미 연결된 Post는 이 제한과 관계없이 갱신됩니다.</p>
+	 */
+	private boolean isWithinPostCreationWindow(CrawledNotice notice) {
+		LocalDate today = LocalDate.now(KOREA_ZONE_ID);
+		LocalDate oldestAllowedDate = today.minusDays(1);
+		return !notice.getAnnounceDate().isBefore(oldestAllowedDate)
+			&& !notice.getAnnounceDate().isAfter(today);
+	}
+
+	/**
+	 * 게시글에 연결할 크롤링 이미지 엔티티를 이미지 URL 순서대로 저장합니다.
+	 *
+	 * @param post 이미지를 연결할 게시글
+	 * @param imageUrls 저장할 이미지 URL 목록
+	 */
 	private void savePostImages(Post post, List<String> imageUrls) {
 		if (imageUrls.isEmpty()) {
 			return;
@@ -106,6 +151,13 @@ public class CrawledNoticeTransferService {
 		crawledPostImageWriter.saveAll(images);
 	}
 
+	/**
+	 * 공지 본문의 이미지 태그에서 절대 또는 원본 상대 경로의 이미지 URL을 추출합니다.
+	 *
+	 * @param html 원본 HTML
+	 * @param baseUri 상대 URL을 해석할 원본 공지 URL
+	 * @return 비어 있지 않은 이미지 URL 목록
+	 */
 	private List<String> extractImageUrls(String html, String baseUri) {
 		if (html == null || html.isBlank()) {
 			return List.of();
@@ -118,6 +170,13 @@ public class CrawledNoticeTransferService {
 			.toList();
 	}
 
+	/**
+	 * 본문에서 이미지와 빈 문단을 제거해 Post 본문에 사용할 HTML을 만듭니다.
+	 *
+	 * @param html 원본 HTML
+	 * @param baseUri 상대 URL을 해석할 원본 공지 URL
+	 * @return 정리된 HTML. 입력이 비어 있으면 입력값을 그대로 반환합니다.
+	 */
 	private String cleanUpHtml(String html, String baseUri) {
 		if (html == null || html.isBlank()) {
 			return html;
@@ -133,6 +192,13 @@ public class CrawledNoticeTransferService {
 		return doc.body().html();
 	}
 
+	/**
+	 * 공지 제목, 정리된 본문, 첨부파일 및 원본 공지 링크를 포함한 Post HTML을 구성합니다.
+	 *
+	 * @param notice 전송할 크롤링 공지
+	 * @param title Post에 표시할 제목
+	 * @return Post에 저장할 HTML 본문
+	 */
 	private String buildContentWithAttachmentsAndLink(CrawledNotice notice, String title) {
 		Document document = Jsoup.parseBodyFragment("");
 		Element body = document.body();
@@ -181,6 +247,14 @@ public class CrawledNoticeTransferService {
 		return body.html();
 	}
 
+	/**
+	 * HTTP(S) URL인 경우 새 탭으로 열리는 외부 링크 요소를 생성합니다.
+	 *
+	 * @param document 링크 요소를 생성할 문서
+	 * @param url 링크 대상 URL
+	 * @param text 링크 표시 문구
+	 * @return 생성한 링크 요소. URL이 유효하지 않으면 {@code null}
+	 */
 	private Element buildExternalLink(Document document, String url, String text) {
 		if (!isHttpOrHttpsUrl(url)) {
 			return null;
@@ -193,6 +267,12 @@ public class CrawledNoticeTransferService {
 			.text(text == null ? "" : text);
 	}
 
+	/**
+	 * URL이 HTTP 또는 HTTPS 스킴을 사용하는지 검증합니다.
+	 *
+	 * @param url 검증할 URL
+	 * @return HTTP(S) URL이면 {@code true}, 그렇지 않으면 {@code false}
+	 */
 	private boolean isHttpOrHttpsUrl(String url) {
 		if (url == null || url.isBlank()) {
 			return false;
@@ -205,6 +285,15 @@ public class CrawledNoticeTransferService {
 		}
 	}
 
+	/**
+	 * 공지에 연결된 Post가 현재 대상 게시판에서 유효한지 확인합니다.
+	 *
+	 * <p>연결된 Post가 삭제되었거나 대상 게시판이 변경되었으면 새 Post를 생성할 수 있도록
+	 * {@code null}을 반환합니다. 게시판이 변경된 경우 기존 Post는 삭제 처리합니다.</p>
+	 *
+	 * @param notice 기존 연결 Post를 확인할 크롤링 공지
+	 * @return 유효한 연결 Post. 없거나 유효하지 않으면 {@code null}
+	 */
 	private Post findExistingPost(CrawledNotice notice) {
 		Post linkedPost = notice.getPost();
 		if (linkedPost != null && !Boolean.TRUE.equals(linkedPost.getIsDeleted())) {
