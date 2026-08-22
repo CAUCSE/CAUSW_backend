@@ -6,6 +6,8 @@ import java.util.Set;
 import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.shared.entity.AuditableEntity;
 
+import org.hibernate.annotations.BatchSize;
+
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -71,6 +73,7 @@ public class BoardConfig extends AuditableEntity {
 	@Enumerated(EnumType.STRING)
 	@CollectionTable(name = "tb_board_config_department", joinColumns = @JoinColumn(name = "board_config_id"))
 	@Column(name = "department")
+	@BatchSize(size = 100)
 	@Builder.Default
 	private Set<Department> departments = new HashSet<>();
 
