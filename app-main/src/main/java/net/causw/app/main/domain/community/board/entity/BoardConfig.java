@@ -1,14 +1,22 @@
 package net.causw.app.main.domain.community.board.entity;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.shared.entity.AuditableEntity;
 
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -59,9 +67,23 @@ public class BoardConfig extends AuditableEntity {
 	@Column(name = "official_profile_image_id")
 	private String officialProfileImageId;
 
+	@ElementCollection(fetch = FetchType.LAZY)
+	@Enumerated(EnumType.STRING)
+	@CollectionTable(name = "tb_board_config_department", joinColumns = @JoinColumn(name = "board_config_id"))
+	@Column(name = "department")
+	@Builder.Default
+	private Set<Department> departments = new HashSet<>();
+
 	public static BoardConfig of(String boardId, boolean isAnonymous, BoardReadScope readScope,
 		BoardWriteScope writeScope, boolean isNotice, BoardVisibility visibility, int displayOrder,
 		String officialNickname, String officialProfileImageId) {
+		return of(boardId, isAnonymous, readScope, writeScope, isNotice, visibility, displayOrder,
+			officialNickname, officialProfileImageId, Set.of());
+	}
+
+	public static BoardConfig of(String boardId, boolean isAnonymous, BoardReadScope readScope,
+		BoardWriteScope writeScope, boolean isNotice, BoardVisibility visibility, int displayOrder,
+		String officialNickname, String officialProfileImageId, Set<Department> departments) {
 		return BoardConfig.builder()
 			.boardId(boardId)
 			.isAnonymous(isAnonymous)
@@ -72,11 +94,13 @@ public class BoardConfig extends AuditableEntity {
 			.displayOrder(displayOrder)
 			.officialNickname(officialNickname)
 			.officialProfileImageId(officialProfileImageId)
+			.departments(departments == null ? new HashSet<>() : new HashSet<>(departments))
 			.build();
 	}
 
 	public void update(boolean isAnonymous, BoardReadScope readScope, BoardWriteScope writeScope,
-		boolean isNotice, BoardVisibility visibility, String officialNickname, String officialProfileImageId) {
+		boolean isNotice, BoardVisibility visibility, String officialNickname, String officialProfileImageId,
+		Set<Department> departments) {
 		this.isAnonymous = isAnonymous;
 		this.readScope = readScope;
 		this.writeScope = writeScope;
@@ -84,6 +108,10 @@ public class BoardConfig extends AuditableEntity {
 		this.visibility = visibility;
 		this.officialNickname = officialNickname;
 		this.officialProfileImageId = officialProfileImageId;
+		this.departments.clear();
+		if (departments != null) {
+			this.departments.addAll(departments);
+		}
 	}
 
 	public void updateDisplayOrder(int displayOrder) {
