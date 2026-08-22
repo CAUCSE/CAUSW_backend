@@ -127,6 +127,7 @@ public class ObjectFixtures {
 			"20231234",
 			2023,
 			Department.SCHOOL_OF_SW,
+			null,
 			null);
 	}
 

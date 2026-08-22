@@ -2,11 +2,16 @@ package net.causw.app.main.domain.asset.file.service.util;
 
 import java.util.List;
 
+import org.springframework.http.InvalidMediaTypeException;
+import org.springframework.http.MediaType;
+import org.springframework.http.MediaTypeFactory;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.domain.asset.file.enums.FileExtensionType;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
+import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
+import net.causw.app.main.shared.exception.errorcode.FileErrorCode;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
@@ -40,6 +45,38 @@ public final class FileValidator {
 	}
 
 	/**
+	 * 파일명·크기·Content-Type 기반 업로드 요청 검증 (Presigned URL 발급 시 사용)
+	 *
+	 * @param fileName    원본 파일명
+	 * @param fileSize    파일 크기 (bytes)
+	 * @param filePath    파일 경로 타입
+	 * @param contentType 클라이언트 제공 MIME 타입
+	 * @throws BadRequestException 확장자·크기·Content-Type 검증 실패 시
+	 */
+	public static void validateUploadRequest(String fileName, long fileSize, @NotNull FilePath filePath,
+		String contentType) {
+		String extension = extractAndValidateExtension(fileName);
+		validateFileSize(fileSize, filePath);
+		validateExtension(extension, filePath);
+		validateContentType(extension, contentType);
+	}
+
+	/**
+	 * 다중 파일 업로드 요청 목록 검증 (다중 Presigned URL 발급 시 사용)
+	 *
+	 * @param count    파일 개수
+	 * @param filePath 파일 경로 타입
+	 * @throws BaseRunTimeV2Exception 파일 목록이 비어있을 경우 (FILE_LIST_EMPTY)
+	 * @throws BadRequestException 개수 초과 시
+	 */
+	public static void validateUploadRequestCount(int count, @NotNull FilePath filePath) {
+		if (count == 0) {
+			throw FileErrorCode.FILE_LIST_EMPTY.toBaseException();
+		}
+		validateFileCount(count, filePath);
+	}
+
+	/**
 	 * 파일 목록 검증 (개수, 각 파일 검증)
 	 *
 	 * @param fileList 검증할 파일 목록
@@ -54,6 +91,35 @@ public final class FileValidator {
 		for (MultipartFile file : fileList) {
 			validateFile(file, filePath);
 		}
+	}
+
+	/**
+	 * Content-Type과 확장자 일치 여부 검증
+	 * 1차 타입(image/video/application 등)이 일치하지 않으면 거부합니다.
+	 *
+	 * @param extension   파일 확장자 (소문자)
+	 * @param contentType 클라이언트 제공 MIME 타입
+	 * @throws BadRequestException Content-Type이 유효하지 않거나 확장자와 불일치할 경우
+	 */
+	public static void validateContentType(String extension, String contentType) {
+		MediaType provided;
+		try {
+			provided = MediaType.parseMediaType(contentType);
+		} catch (InvalidMediaTypeException e) {
+			log.warn("Invalid Content-Type format: {}", contentType);
+			throw new BadRequestException(ErrorCode.INVALID_PARAMETER,
+				"유효하지 않은 Content-Type입니다: " + contentType);
+		}
+
+		MediaTypeFactory.getMediaType("file." + extension).ifPresent(expected -> {
+			if (!provided.getType().equals(expected.getType())
+				|| !provided.getSubtype().equals(expected.getSubtype())) {
+				log.warn("Content-Type mismatch. Extension: {}, Expected: {}, Provided: {}",
+					extension, expected, contentType);
+				throw new BadRequestException(ErrorCode.INVALID_PARAMETER,
+					"Content-Type이 파일 형식과 일치하지 않습니다. 제공된 Content-Type: " + contentType);
+			}
+		});
 	}
 
 	/**
@@ -113,8 +179,8 @@ public final class FileValidator {
 	 * @throws BadRequestException 크기 초과 시
 	 */
 	public static void validateFileSize(long size, FilePath filePath) {
-		if (size > filePath.getMaxFileSize()) {
-			log.warn("File size exceeded. Size: {} bytes, Max: {} bytes", size, filePath.getMaxFileSize());
+		if (size <= 0 || size > filePath.getMaxFileSize()) {
+			log.warn("File size invalid. Size: {} bytes, Max: {} bytes", size, filePath.getMaxFileSize());
 			throw new BadRequestException(
 				ErrorCode.INVALID_PARAMETER,
 				MessageUtil.FILE_SIZE_EXCEEDED + " (크기: " + size + " bytes)");

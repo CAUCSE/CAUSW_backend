@@ -52,6 +52,27 @@ public class CeremonyService {
 	@Transactional
 	public CeremonyDetailResult createCeremony(
 		User user,
+		@Valid CeremonyCreateCommand command) {
+		ceremonyValidator.validateForCreate(command);
+
+		List<Integer> targetAdmissionYears = command.isSetAll()
+			? new ArrayList<>()
+			: command.targetAdmissionYears();
+
+		List<UuidFile> uuidFileList = fileWriter.confirmFiles(
+			command.imageUuids() == null ? List.of() : command.imageUuids(), FilePath.CEREMONY);
+
+		Ceremony ceremony = ceremonyCreateMapper.toCeremony(user, command, targetAdmissionYears, uuidFileList);
+		ceremonyCreator.save(ceremony);
+
+		applicationEventPublisher.publishEvent(new CeremonyAdminNotificationEvent(ceremony.getId()));
+
+		return ceremonyMapper.toDetailResult(ceremony);
+	}
+
+	@Transactional
+	public CeremonyDetailResult createCeremony(
+		User user,
 		@Valid CeremonyCreateCommand command,
 		List<MultipartFile> imageFileList) {
 		ceremonyValidator.validateForCreate(command);

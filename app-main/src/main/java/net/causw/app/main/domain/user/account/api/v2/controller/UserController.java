@@ -102,12 +102,13 @@ public class UserController {
 
 	// ── 재학정보 인증 ──
 
-	@Operation(summary = "재학정보 인증 신청 V2", description = "회원가입 후 재학정보 인증을 신청합니다. "
+	@Operation(summary = "재학정보 인증 신청", description = "회원가입 후 재학정보 인증을 신청합니다. "
 		+ "이름, 학과, 입학년도, 학번, 재학분류와 증빙서류 이미지를 제출합니다. "
+		+ "이미지를 직접 첨부(multipart/form-data)하거나, presigned URL로 업로드한 이미지 UUID(application/json)를 전달할 수 있습니다. "
 		+ "관리자 승인 후 서비스 이용이 가능합니다.")
 	@PostMapping(value = "/me/admission", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.CREATED)
-	public ApiResponse<AdmissionResponse> createAdmission(
+	public ApiResponse<AdmissionResponse> createAdmissionByMultipart(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestPart(value = "request") @Valid AdmissionCreateRequest request,
 		@RequestPart(value = "attachImages") List<MultipartFile> attachImages) {
@@ -116,6 +117,23 @@ public class UserController {
 			userDetails.getUser(),
 			admissionDtoMapper.toCreateCommand(request),
 			attachImages);
+
+		return ApiResponse.success(admissionDtoMapper.toResponse(result));
+	}
+
+	@Operation(summary = "재학정보 인증 신청", description = "회원가입 후 재학정보 인증을 신청합니다. "
+		+ "이름, 학과, 입학년도, 학번, 재학분류와 증빙서류 이미지를 제출합니다. "
+		+ "이미지를 직접 첨부(multipart/form-data)하거나, presigned URL로 업로드한 이미지 UUID(application/json)를 전달할 수 있습니다. "
+		+ "관리자 승인 후 서비스 이용이 가능합니다.")
+	@PostMapping(value = "/me/admission", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseStatus(HttpStatus.CREATED)
+	public ApiResponse<AdmissionResponse> createAdmission(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestBody @Valid AdmissionCreateRequest request) {
+
+		AdmissionResult result = admissionService.createAdmission(
+			userDetails.getUser(),
+			admissionDtoMapper.toCreateCommand(request));
 
 		return ApiResponse.success(admissionDtoMapper.toResponse(result));
 	}

@@ -4,7 +4,11 @@ import java.util.List;
 
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.domain.user.academic.api.v2.dto.request.EnrollmentApplicationRequest;
@@ -40,16 +44,22 @@ public class AcademicRecordUserController {
 				req));
 	}
 
-	@PostMapping(path = "/return", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "학적상태변경(졸업 -> 재학) 요청", description = "유저의 학적 상태를 졸업에서 재학으로 변경합니다. 관리자의 승인이 필요합니다.")
-	public ApiResponse<AcademicStatusResponse<EnrollmentDetailsResponse>> updateStatusToEnrolled(
+	@PostMapping(value = "/return", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	@Operation(summary = "학적상태변경(졸업 -> 재학) 요청", description = "이미지를 직접 첨부(multipart/form-data)하거나, presigned URL로 업로드한 이미지 UUID(application/json)를 전달하여 재학 변경을 신청합니다.")
+	public ApiResponse<AcademicStatusResponse<EnrollmentDetailsResponse>> updateStatusToEnrolledByMultipart(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestPart(value = "enrollmentApplicationRequest") @Valid EnrollmentApplicationRequest req,
 		@RequestPart(value = "imageFileList", required = false) List<MultipartFile> imageFileList) {
 		return ApiResponse.success(
-			academicRecordUserService.updateStatusToEnrolled(
-				userDetails.getUser(),
-				req,
-				imageFileList));
+			academicRecordUserService.updateStatusToEnrolled(userDetails.getUser(), req, imageFileList));
+	}
+
+	@PostMapping(value = "/return", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(summary = "학적상태변경(졸업 -> 재학) 요청", description = "이미지를 직접 첨부(multipart/form-data)하거나, presigned URL로 업로드한 이미지 UUID(application/json)를 전달하여 재학 변경을 신청합니다.")
+	public ApiResponse<AcademicStatusResponse<EnrollmentDetailsResponse>> updateStatusToEnrolled(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestBody @Valid EnrollmentApplicationRequest req) {
+		return ApiResponse.success(
+			academicRecordUserService.updateStatusToEnrolled(userDetails.getUser(), req));
 	}
 }

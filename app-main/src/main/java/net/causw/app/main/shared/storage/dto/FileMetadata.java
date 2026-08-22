@@ -15,20 +15,26 @@ public record FileMetadata(
 	String extension,
 	String originalFileName,
 	FilePath filePath,
-	String fileKey) {
+	String fileKey,
+	String contentType,
+	long fileSize) {
 	public static FileMetadata of(
 		String uuid,
 		String rawFileName,
 		String extension,
 		String originalFileName,
 		FilePath filePath,
-		String fileKey) {
+		String fileKey,
+		String contentType,
+		long fileSize) {
 		return new FileMetadata(
 			uuid,
 			rawFileName,
 			extension,
 			originalFileName,
 			filePath,
-			fileKey);
+			fileKey,
+			contentType,
+			fileSize);
 	}
 }
