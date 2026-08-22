@@ -65,6 +65,7 @@ import net.causw.app.main.domain.community.post.service.dto.PostUpdateResult;
 import net.causw.app.main.domain.community.post.service.implementation.PostImageManager;
 import net.causw.app.main.domain.community.post.service.implementation.PostReader;
 import net.causw.app.main.domain.community.post.service.implementation.PostWriter;
+import net.causw.app.main.domain.community.post.service.implementation.ViewCountManager;
 import net.causw.app.main.domain.community.reaction.service.implementation.LikePostReader;
 import net.causw.app.main.domain.community.vote.service.implementation.VoteWriter;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
@@ -77,6 +78,9 @@ import net.causw.app.main.domain.user.relation.service.implementation.BlockReade
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
 import net.causw.app.main.util.ObjectFixtures;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @ExtendWith(MockitoExtension.class)
 public class PostServiceTest {
@@ -116,6 +120,9 @@ public class PostServiceTest {
 
 	@Mock
 	UserProfileImageReader userProfileImageReader;
+
+	@Mock
+	ViewCountManager viewCountManager;
 
 	@Nested
 	@DisplayName("게시글 생성 테스트")
@@ -1447,6 +1454,9 @@ public class PostServiceTest {
 			Mockito.lenient().when(blockReader.existsByBlockerAndBlocked(any(), any())).thenReturn(false);
 		}
 
+		HttpServletRequest mockRequest = mock(HttpServletRequest.class);
+		HttpServletResponse mockResponse = mock(HttpServletResponse.class);
+
 		@DisplayName("차단한 사용자의 게시글은 상세 조회 불가")
 		@Test
 		void getPostDetail_shouldFail_whenWriterIsBlocked() {
@@ -1460,7 +1470,7 @@ public class PostServiceTest {
 			given(blockReader.existsByBlockerAndBlocked(viewer, writer)).willReturn(true);
 
 			// when & then
-			assertThatThrownBy(() -> postService.getPostDetail(query, true))
+			assertThatThrownBy(() -> postService.getPostDetail(query, mockRequest, mockResponse))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.satisfies(ex -> assertThat(((BaseRunTimeV2Exception)ex).getErrorCode())
 					.isEqualTo(PostErrorCode.BLOCKED_USER_CONTENT));
@@ -1481,7 +1491,7 @@ public class PostServiceTest {
 			given(blockReader.existsByBlockerAndBlocked(writer, writer)).willReturn(true);
 
 			// when & then
-			assertThatThrownBy(() -> postService.getPostDetail(query, true))
+			assertThatThrownBy(() -> postService.getPostDetail(query, mockRequest, mockResponse))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.satisfies(ex -> assertThat(((BaseRunTimeV2Exception)ex).getErrorCode())
 					.isEqualTo(PostErrorCode.BLOCKED_USER_CONTENT));
@@ -1503,7 +1513,7 @@ public class PostServiceTest {
 			given(likePostReader.existsByPostIdAndUserId(postId, "admin-id")).willReturn(false);
 
 			// when
-			PostDetailResult result = postService.getPostDetail(query, true);
+			PostDetailResult result = postService.getPostDetail(query, mockRequest, mockResponse);
 
 			// then
 			assertAll(
@@ -1528,7 +1538,7 @@ public class PostServiceTest {
 			given(likePostReader.existsByPostIdAndUserId(postId, "viewer-id")).willReturn(false);
 
 			// when
-			PostDetailResult result = postService.getPostDetail(query, true);
+			PostDetailResult result = postService.getPostDetail(query, mockRequest, mockResponse);
 
 			// then
 			assertAll(
@@ -1560,7 +1570,7 @@ public class PostServiceTest {
 			given(likePostReader.existsByPostIdAndUserId(postId, "writer-id")).willReturn(false);
 
 			// when
-			PostDetailResult result = postService.getPostDetail(query, true);
+			PostDetailResult result = postService.getPostDetail(query, mockRequest, mockResponse);
 
 			// then
 			assertAll(
@@ -1584,7 +1594,7 @@ public class PostServiceTest {
 			given(likePostReader.existsByPostIdAndUserId(postId, "admin-id")).willReturn(false);
 
 			// when
-			PostDetailResult result = postService.getPostDetail(query, true);
+			PostDetailResult result = postService.getPostDetail(query, mockRequest, mockResponse);
 
 			// then
 			assertAll(
@@ -1607,7 +1617,7 @@ public class PostServiceTest {
 			given(likePostReader.existsByPostIdAndUserId(postId, "viewer-id")).willReturn(true);
 
 			// when
-			PostDetailResult result = postService.getPostDetail(query, true);
+			PostDetailResult result = postService.getPostDetail(query, mockRequest, mockResponse);
 
 			// then
 			assertAll(
@@ -1633,7 +1643,7 @@ public class PostServiceTest {
 			given(likePostReader.existsByPostIdAndUserId(postId, "viewer-id")).willReturn(false);
 
 			// when
-			PostDetailResult result = postService.getPostDetail(query, true);
+			PostDetailResult result = postService.getPostDetail(query, mockRequest, mockResponse);
 
 			// then
 			assertAll(
@@ -1666,7 +1676,7 @@ public class PostServiceTest {
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
 
 			// when & then
-			assertThatThrownBy(() -> postService.getPostDetail(query, true))
+			assertThatThrownBy(() -> postService.getPostDetail(query, mockRequest, mockResponse))
 				.isInstanceOf(BaseRunTimeV2Exception.class);
 		}
 	}
