@@ -286,8 +286,11 @@ public class PostService {
 		// 차단한 사용자가 작성한 게시글은 조회 불가
 		validateBlockedWriterAccess(viewer, post, boardAdminIds);
 
-		if (viewCountManager.isFirstView(request, response, postId)) {
+		// 쿠키가 없는 경우에만(최초 조회인 경우에만) 조회수 증가 및 엔티티 재조회
+		boolean isFirstView = !viewCountManager.hasViewedCookie(request, postId);
+		if (isFirstView) {
 			postWriter.incrementViewCount(postId);
+			post = postReader.findByIdAndNotDeleted(postId);
 		}
 
 		// 게시글 이미지 조회
@@ -326,6 +329,11 @@ public class PostService {
 		UserProfileImage writerProfileImage = (!isNotice && post.getWriter() != null)
 			? userProfileImageReader.findByUserIdOrNull(post.getWriter().getId())
 			: null;
+
+		// 모든 로직이 안전하게 성공한 시점에 응답에 쿠키 마킹 발급
+		if (isFirstView) {
+			viewCountManager.markViewed(response, postId);
+		}
 
 		// PostMapper를 사용하여 PostDetailResult 생성
 		return PostMapper.toPostDetailResult(

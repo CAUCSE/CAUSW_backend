@@ -1553,7 +1553,7 @@ public class PostServiceTest {
 				() -> assertThat(result.boardId()).isEqualTo(boardId),
 				() -> assertThat(result.boardName()).isNotNull());
 
-			verify(postReader, times(1)).findByIdAndNotDeleted(postId);
+			verify(postReader, times(2)).findByIdAndNotDeleted(postId);
 		}
 
 		@DisplayName("작성자가 게시글 상세 조회 시 수정/삭제 가능")
