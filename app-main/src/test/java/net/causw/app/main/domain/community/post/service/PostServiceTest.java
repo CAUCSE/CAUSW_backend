@@ -1452,6 +1452,10 @@ public class PostServiceTest {
 				null,
 				null);
 			Mockito.lenient().when(blockReader.existsByBlockerAndBlocked(any(), any())).thenReturn(false);
+
+			Mockito.lenient().when(viewCountManager.hasViewedCookie(any(), anyString())).thenReturn(false);
+			Mockito.lenient().when(viewCountManager.reserve(anyString(), anyString()))
+				.thenReturn(new ViewCountManager.ViewReservation("key", "token", true));
 		}
 
 		HttpServletRequest mockRequest = mock(HttpServletRequest.class);
