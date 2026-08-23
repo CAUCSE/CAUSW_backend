@@ -1,15 +1,11 @@
 package net.causw.app.main.domain.integration.crawled.service;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.doThrow;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.mock;
-import static org.mockito.BDDMockito.never;
 import static org.mockito.BDDMockito.verify;
-import static org.mockito.BDDMockito.when;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,137 +13,62 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
-import org.springframework.context.ApplicationEventPublisher;
 
-import net.causw.app.main.domain.community.board.entity.Board;
-import net.causw.app.main.domain.community.board.repository.BoardRepository;
-import net.causw.app.main.domain.community.post.entity.Post;
-import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
-import net.causw.app.main.domain.integration.crawled.repository.CrawledNoticeRepository;
-import net.causw.app.main.domain.integration.crawled.repository.CrawledPostImageRepository;
-import net.causw.app.main.domain.notification.notification.event.OfficialPostEvent;
-import net.causw.app.main.domain.user.account.entity.user.User;
-import net.causw.app.main.domain.user.account.repository.user.UserRepository;
-import net.causw.global.constant.StaticValue;
+import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeReader;
+import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeTransferProcessor;
 
 @ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
 @DisplayName("CrawledToPostTransferService 테스트")
-public class CrawledToPostTransferServiceTest {
+class CrawledToPostTransferServiceTest {
 
 	@InjectMocks
 	private CrawledToPostTransferService crawledToPostTransferService;
 
 	@Mock
-	private CrawledNoticeRepository crawledNoticeRepository;
+	private CrawledNoticeReader crawledNoticeReader;
 
 	@Mock
-	private PostRepository postRepository;
-
-	@Mock
-	private UserRepository userRepository;
-
-	@Mock
-	private BoardRepository boardRepository;
-
-	@Mock
-	private CrawledPostImageRepository crawledPostImageRepository;
-
-	@Mock
-	private ApplicationEventPublisher applicationEventPublisher;
+	private CrawledNoticeTransferProcessor crawledNoticeTransferProcessor;
 
 	@Test
-	@DisplayName("새 공지사항이 Post로 변환되어 저장됨")
-	void transferToPosts_shouldCreateNewPost_whenNewNotice() {
+	@DisplayName("전송 대기 공지를 Processor에 위임한다")
+	void transferToPosts_delegatesPendingNoticesToProcessor() {
 		// given
-		Board mockBoard = createMockBoard();
-		User mockUser = createMockUser();
-		CrawledNotice newNotice = CrawledNoticeFixture.newNotice();
-
-		given(boardRepository.findByName(StaticValue.CrawlingBoard))
-			.willReturn(Optional.of(mockBoard));
-		given(userRepository.findByEmail(StaticValue.SYSTEM_CRAWLER_ACCOUNT))
-			.willReturn(Optional.of(mockUser));
-		given(crawledNoticeRepository.findTop30ByIsUpdatedTrueOrderByLastModifiedDesc())
-			.willReturn(List.of(newNotice));
-		given(postRepository.findAllByBoardAndIsDeletedIsFalse(mockBoard))
-			.willReturn(Collections.emptyList());
+		CrawledNotice firstNotice = notice("notice-1");
+		CrawledNotice secondNotice = notice("notice-2");
+		given(crawledNoticeReader.findPendingNotices()).willReturn(List.of(firstNotice, secondNotice));
 
 		// when
 		crawledToPostTransferService.transferToPosts();
 
 		// then
-		verify(postRepository).save(any(Post.class));
-		verify(crawledNoticeRepository).save(newNotice);
-
-		verify(applicationEventPublisher).publishEvent(any(OfficialPostEvent.class));
+		verify(crawledNoticeTransferProcessor).transfer("notice-1");
+		verify(crawledNoticeTransferProcessor).transfer("notice-2");
 	}
 
 	@Test
-	@DisplayName("수정된 공지사항이 기존 Post를 업데이트함")
-	void transferToPosts_shouldUpdateExistingPost_whenNoticeUpdated() {
+	@DisplayName("한 공지 처리에 실패해도 다음 공지를 계속 처리한다")
+	void transferToPosts_continuesWhenOneNoticeTransferFails() {
 		// given
-		Board mockBoard = createMockBoard();
-		User mockUser = createMockUser();
-		CrawledNotice updatedNotice = CrawledNoticeFixture.updatedNotice();
-		Post existingPost = createMockPost("수정된 공지사항");
-
-		given(boardRepository.findByName(StaticValue.CrawlingBoard))
-			.willReturn(Optional.of(mockBoard));
-		given(userRepository.findByEmail(StaticValue.SYSTEM_CRAWLER_ACCOUNT))
-			.willReturn(Optional.of(mockUser));
-		given(crawledNoticeRepository.findTop30ByIsUpdatedTrueOrderByLastModifiedDesc())
-			.willReturn(List.of(updatedNotice));
-		given(postRepository.findAllByBoardAndIsDeletedIsFalse(mockBoard))
-			.willReturn(List.of(existingPost));
+		CrawledNotice failedNotice = notice("notice-1");
+		CrawledNotice nextNotice = notice("notice-2");
+		given(crawledNoticeReader.findPendingNotices()).willReturn(List.of(failedNotice, nextNotice));
+		given(failedNotice.getSiteId()).willReturn("site-id");
+		given(failedNotice.getExternalId()).willReturn("external-id");
+		doThrow(new IllegalStateException()).when(crawledNoticeTransferProcessor).transfer("notice-1");
 
 		// when
 		crawledToPostTransferService.transferToPosts();
 
 		// then
-		verify(postRepository).save(existingPost);
-		verify(crawledNoticeRepository).save(updatedNotice);
+		verify(crawledNoticeTransferProcessor).transfer("notice-1");
+		verify(crawledNoticeTransferProcessor).transfer("notice-2");
 	}
 
-	@Test
-	@DisplayName("업데이트된 공지사항이 없으면 아무것도 처리하지 않음")
-	void transferToPosts_shouldDoNothing_whenNoUpdatedNotices() {
-		// given
-		Board mockBoard = createMockBoard();
-		User mockUser = createMockUser();
-
-		given(boardRepository.findByName(StaticValue.CrawlingBoard))
-			.willReturn(Optional.of(mockBoard));
-		given(userRepository.findByEmail(StaticValue.SYSTEM_CRAWLER_ACCOUNT))
-			.willReturn(Optional.of(mockUser));
-		given(crawledNoticeRepository.findTop30ByIsUpdatedTrueOrderByLastModifiedDesc())
-			.willReturn(Collections.emptyList());
-
-		// when
-		crawledToPostTransferService.transferToPosts();
-
-		// then
-		verify(postRepository, never()).save(any(Post.class));
-	}
-
-	private Board createMockBoard() {
-		Board board = mock(Board.class);
-		when(board.getName()).thenReturn(StaticValue.CrawlingBoard);
-		return board;
-	}
-
-	private User createMockUser() {
-		User user = mock(User.class);
-		when(user.getEmail()).thenReturn(StaticValue.SYSTEM_CRAWLER_ACCOUNT);
-		return user;
-	}
-
-	private Post createMockPost(String title) {
-		Post post = mock(Post.class);
-		when(post.getTitle()).thenReturn(title);
-		return post;
+	private CrawledNotice notice(String id) {
+		CrawledNotice notice = mock(CrawledNotice.class);
+		given(notice.getId()).willReturn(id);
+		return notice;
 	}
 }

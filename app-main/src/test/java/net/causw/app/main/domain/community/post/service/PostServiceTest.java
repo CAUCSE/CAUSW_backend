@@ -213,6 +213,7 @@ public class PostServiceTest {
 		void createPost_shouldSucceed_withoutImages() {
 			// given
 			PostCreateCommand command = new PostCreateCommand(
+				"테스트 게시글 제목",
 				"테스트 게시글 내용",
 				boardId,
 				false,
@@ -220,7 +221,7 @@ public class PostServiceTest {
 				null,
 				null);
 
-			Post mockPost = Post.of(null, "테스트 게시글 내용", writer, false, board, List.of());
+			Post mockPost = Post.of("테스트 게시글 제목", "테스트 게시글 내용", writer, false, board, List.of());
 			ReflectionTestUtils.setField(mockPost, "id", "post-id");
 			ReflectionTestUtils.setField(mockPost, "createdAt", LocalDateTime.now());
 			ReflectionTestUtils.setField(mockPost, "updatedAt", LocalDateTime.now());
@@ -239,6 +240,7 @@ public class PostServiceTest {
 			assertAll(
 				() -> assertThat(result).isNotNull(),
 				() -> assertThat(result.id()).isEqualTo("post-id"),
+				() -> assertThat(result.title()).isEqualTo("테스트 게시글 제목"),
 				() -> assertThat(result.content()).isEqualTo("테스트 게시글 내용"),
 				() -> assertThat(result.writerId()).isEqualTo("writer-id"),
 				() -> assertThat(result.isAnonymous()).isFalse(),
@@ -261,6 +263,7 @@ public class PostServiceTest {
 				new ImageCreateMeta(0, 0, true));
 
 			PostCreateCommand command = new PostCreateCommand(
+				"테스트 게시글 제목",
 				"테스트 게시글 내용",
 				boardId,
 				false,
@@ -278,7 +281,7 @@ public class PostServiceTest {
 
 			PostAttachImage mockAttachImage = PostAttachImage.of(null, mockUuidFile, 0, true);
 
-			Post mockPost = Post.of(null, "테스트 게시글 내용", writer, false, board, List.of());
+			Post mockPost = Post.of("테스트 게시글 제목", "테스트 게시글 내용", writer, false, board, List.of());
 			ReflectionTestUtils.setField(mockPost, "id", "post-id");
 			ReflectionTestUtils.setField(mockPost, "createdAt", LocalDateTime.now());
 			ReflectionTestUtils.setField(mockPost, "updatedAt", LocalDateTime.now());
@@ -297,6 +300,7 @@ public class PostServiceTest {
 			assertAll(
 				() -> assertThat(result).isNotNull(),
 				() -> assertThat(result.id()).isEqualTo("post-id"),
+				() -> assertThat(result.title()).isEqualTo("테스트 게시글 제목"),
 				() -> assertThat(result.content()).isEqualTo("테스트 게시글 내용"),
 				() -> assertThat(result.fileUrlList()).hasSize(1),
 				() -> assertThat(result.fileUrlList().get(0)).isEqualTo("https://example.com/image.jpg"));
@@ -310,6 +314,7 @@ public class PostServiceTest {
 		void createPost_shouldSucceed_asAnonymous() {
 			// given
 			PostCreateCommand command = new PostCreateCommand(
+				"익명 게시글 제목",
 				"익명 게시글",
 				boardId,
 				true,
@@ -317,7 +322,7 @@ public class PostServiceTest {
 				null,
 				null);
 
-			Post mockPost = Post.of(null, "익명 게시글", writer, true, board, List.of());
+			Post mockPost = Post.of("익명 게시글 제목", "익명 게시글", writer, true, board, List.of());
 			ReflectionTestUtils.setField(mockPost, "id", "post-id");
 			ReflectionTestUtils.setField(mockPost, "createdAt", LocalDateTime.now());
 			ReflectionTestUtils.setField(mockPost, "updatedAt", LocalDateTime.now());
@@ -357,6 +362,7 @@ public class PostServiceTest {
 				null);
 
 			PostCreateCommand command = new PostCreateCommand(
+				"익명 게시글 제목",
 				"익명 게시글",
 				boardId,
 				true, // 익명으로 작성 시도
@@ -514,7 +520,7 @@ public class PostServiceTest {
 			boardId = "board-id";
 			board = ObjectFixtures.getBoardV2WithId(boardId);
 			postId = "post-id";
-			post = Post.of(null, "원본 내용", updater, false, board, List.of());
+			post = Post.of("원본 제목", "원본 내용", updater, false, board, List.of());
 			ReflectionTestUtils.setField(post, "id", postId);
 			ReflectionTestUtils.setField(post, "createdAt", LocalDateTime.now());
 			ReflectionTestUtils.setField(post, "updatedAt", LocalDateTime.now());
@@ -526,6 +532,7 @@ public class PostServiceTest {
 			// given
 			PostUpdateCommand command = new PostUpdateCommand(
 				postId,
+				"수정된 제목",
 				"수정된 내용",
 				false,
 				updater,
@@ -549,8 +556,12 @@ public class PostServiceTest {
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
 			given(postImageManager.mergeAndBuildForUpdate(eq(post), isNull(), isNull()))
 				.willReturn(new PostImageManager.ImageUpdateResult(List.of(), List.of()));
-			given(postWriter.updateContentAndImages(eq(post), eq("수정된 내용"), eq(false), anyList()))
-				.willReturn(post);
+			given(postWriter.update(
+				eq(post),
+				eq("수정된 제목"),
+				eq("수정된 내용"),
+				eq(false),
+				anyList())).willReturn(post);
 
 			// when
 			PostUpdateResult result = postService.update(command);
@@ -560,7 +571,11 @@ public class PostServiceTest {
 				() -> assertThat(result).isNotNull(),
 				() -> assertThat(result.id()).isEqualTo(postId));
 
-			verify(postWriter, times(1)).updateContentAndImages(eq(post), eq("수정된 내용"), eq(false),
+			verify(postWriter, times(1)).update(
+				eq(post),
+				eq("수정된 제목"),
+				eq("수정된 내용"),
+				eq(false),
 				anyList());
 		}
 
@@ -584,6 +599,7 @@ public class PostServiceTest {
 
 			PostUpdateCommand command = new PostUpdateCommand(
 				postId,
+				null,
 				"수정된 내용",
 				false,
 				updater,
@@ -613,8 +629,12 @@ public class PostServiceTest {
 			given(postImageManager.mergeAndBuildForUpdate(eq(post), eq(newImageFiles), eq(imageMetas)))
 				.willReturn(new PostImageManager.ImageUpdateResult(
 					List.of(newAttachImage), List.of("old-file-id")));
-			given(postWriter.updateContentAndImages(eq(post), eq("수정된 내용"), eq(false), anyList()))
-				.willReturn(post);
+			given(postWriter.update(
+				eq(post),
+				isNull(),
+				eq("수정된 내용"),
+				eq(false),
+				anyList())).willReturn(post);
 
 			// when
 			PostUpdateResult result = postService.update(command);
@@ -636,6 +656,7 @@ public class PostServiceTest {
 
 			PostUpdateCommand command = new PostUpdateCommand(
 				postId,
+				null,
 				"수정된 내용",
 				true, // 익명으로 변경 시도
 				updater,
@@ -662,7 +683,7 @@ public class PostServiceTest {
 			assertThatThrownBy(() -> postService.update(command))
 				.hasMessageContaining("비익명 게시판에서 익명으로 작성할 수 없습니다.");
 
-			verify(postWriter, never()).updateContentAndImages(any(), any(), any(), anyList());
+			verify(postWriter, never()).update(any(), any(), any(), any(), anyList());
 		}
 	}
 
@@ -733,6 +754,7 @@ public class PostServiceTest {
 
 			PostCursorResult postCursorResult = new PostCursorResult(
 				"post-id",
+				"테스트 제목",
 				"게시글 내용",
 				5L,
 				10L,
@@ -792,6 +814,7 @@ public class PostServiceTest {
 			PostListQuery query = PostListQuery.of(viewer, List.of(boardId), null, 20, null);
 			PostCursorResult deletedPostResult = new PostCursorResult(
 				"deleted-post-id",
+				"테스트 제목",
 				"삭제된 게시글",
 				0L,
 				0L,
@@ -854,6 +877,7 @@ public class PostServiceTest {
 
 			PostCursorResult postCursorResult1 = new PostCursorResult(
 				"post-id-1",
+				"테스트 제목",
 				"게시판1 게시글 내용",
 				5L,
 				10L,
@@ -876,6 +900,7 @@ public class PostServiceTest {
 
 			PostCursorResult postCursorResult2 = new PostCursorResult(
 				"post-id-2",
+				"테스트 제목",
 				"게시판2 게시글 내용",
 				3L,
 				8L,
@@ -951,6 +976,7 @@ public class PostServiceTest {
 
 			PostCursorResult postCursorResult = new PostCursorResult(
 				"post-id-2",
+				"게시글 제목",
 				"게시글 내용",
 				5L,
 				10L,
@@ -1019,6 +1045,7 @@ public class PostServiceTest {
 
 			PostCursorResult postCursorResult = new PostCursorResult(
 				"post-id",
+				"검색 결과 제목",
 				"검색어가 포함된 게시글 내용",
 				5L,
 				10L,
@@ -1074,6 +1101,7 @@ public class PostServiceTest {
 
 			PostCursorResult postCursorResult = new PostCursorResult(
 				"post-id",
+				"테스트 제목",
 				"게시글 내용",
 				5L,
 				10L,
@@ -1208,6 +1236,7 @@ public class PostServiceTest {
 
 			PostCursorResult anonymousPostResult = new PostCursorResult(
 				"post-id",
+				"익명 게시글 제목",
 				"익명 게시글 내용",
 				5L,
 				10L,
@@ -1267,6 +1296,7 @@ public class PostServiceTest {
 
 			PostCursorResult normalPostResult = new PostCursorResult(
 				"post-id-1",
+				"일반 게시글 제목",
 				"일반 게시글 내용",
 				5L,
 				10L,
@@ -1289,6 +1319,7 @@ public class PostServiceTest {
 
 			PostCursorResult anonymousPostResult = new PostCursorResult(
 				"post-id-2",
+				"익명 게시글 제목",
 				"익명 게시글 내용",
 				3L,
 				8L,

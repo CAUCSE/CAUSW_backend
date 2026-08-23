@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.asset.file.service;
 
+import java.time.Duration;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -7,13 +8,19 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.core.aop.annotation.MeasureTime;
+import net.causw.app.main.domain.asset.file.api.v2.dto.request.MultiplePresignedUrlRequest;
+import net.causw.app.main.domain.asset.file.api.v2.dto.request.PresignedUrlRequest;
+import net.causw.app.main.domain.asset.file.api.v2.dto.response.MultiplePresignedUrlResponse;
+import net.causw.app.main.domain.asset.file.api.v2.dto.response.PresignedUrlResponse;
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.asset.file.service.implementation.FileReader;
 import net.causw.app.main.domain.asset.file.service.implementation.FileWriter;
 import net.causw.app.main.domain.asset.file.service.util.FileMetadataManager;
 import net.causw.app.main.domain.asset.file.service.util.FileValidator;
+import net.causw.app.main.shared.storage.StorageClient;
 import net.causw.app.main.shared.storage.dto.FileMetadata;
+import net.causw.app.main.shared.storage.dto.PresignedUploadResult;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -29,8 +36,67 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class UuidFileService {
+
+	private static final Duration PRESIGNED_URL_EXPIRY = Duration.ofMinutes(10);
+
 	private final FileReader fileReader;
 	private final FileWriter fileWriter;
+	private final StorageClient storageClient;
+
+	/**
+	 * 단일 파일 Presigned URL 발급
+	 * 파일 메타데이터를 검증하고 PENDING 상태의 UuidFile을 생성한 뒤 S3 presigned PUT URL을 반환합니다.
+	 *
+	 * @param request 파일명, 파일 크기, 파일 경로 타입
+	 * @return presigned URL, 최종 파일 URL, UUID 등
+	 */
+	@Transactional
+	public PresignedUrlResponse issuePresignedUrl(@NotNull PresignedUrlRequest request) {
+		// 확장자·크기·Content-Type 검증
+		FileValidator.validateUploadRequest(
+			request.fileName(), request.fileSize(), request.filePath(), request.contentType());
+
+		// presigned PUT URL 발급
+		FileMetadata metadata = FileMetadataManager.createMetadataFromFileName(
+			request.fileName(), request.filePath(), request.contentType(), request.fileSize());
+		PresignedUploadResult presignedResult = storageClient.generatePresignedUploadUrl(metadata,
+			PRESIGNED_URL_EXPIRY);
+
+		// 업로드 대기 상태로 DB 등록
+		UuidFile pending = fileWriter.savePending(metadata, presignedResult.fileUrl());
+
+		log.info("Presigned URL issued. UUID: {}, FilePath: {}", pending.getUuid(), request.filePath());
+		return PresignedUrlResponse.of(pending, presignedResult);
+	}
+
+	/**
+	 * 다중 파일 Presigned URL 발급
+	 *
+	 * @param request 파일 목록과 파일 경로 타입
+	 * @return 각 파일의 presigned URL 목록 (요청 순서와 동일)
+	 */
+	@Transactional
+	public MultiplePresignedUrlResponse issueMultiplePresignedUrls(@NotNull MultiplePresignedUrlRequest request) {
+		// 파일 개수 및 각 파일 확장자·크기·Content-Type 검증
+		FileValidator.validateUploadRequestCount(request.files().size(), request.filePath());
+		request.files().forEach(entry -> FileValidator.validateUploadRequest(
+			entry.fileName(), entry.fileSize(), request.filePath(), entry.contentType()));
+
+		// 파일별 presigned URL 발급 및 DB 등록
+		List<PresignedUrlResponse> responses = request.files().stream()
+			.map(entry -> {
+				FileMetadata metadata = FileMetadataManager.createMetadataFromFileName(
+					entry.fileName(), request.filePath(), entry.contentType(), entry.fileSize());
+				PresignedUploadResult presignedResult = storageClient.generatePresignedUploadUrl(metadata,
+					PRESIGNED_URL_EXPIRY);
+				UuidFile pending = fileWriter.savePending(metadata, presignedResult.fileUrl());
+				return PresignedUrlResponse.of(pending, presignedResult);
+			})
+			.toList();
+
+		log.info("Multiple presigned URLs issued. Count: {}, FilePath: {}", responses.size(), request.filePath());
+		return MultiplePresignedUrlResponse.of(responses);
+	}
 
 	/**
 	 * ID로 파일 조회

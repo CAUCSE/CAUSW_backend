@@ -35,7 +35,44 @@ public class AdmissionService {
 	private final ApplicationEventPublisher eventPublisher;
 
 	/**
-	 * v2 재학정보 인증 신청을 생성합니다.
+	 * 재학정보 인증 신청을 생성합니다. (v3 presigned URL)
+	 *
+	 * 검증 사항:
+	 * - 추방된 학번인지 검증
+	 * - 사용자 상태가 AWAIT 또는 REJECT인 경우만 신청 가능
+	 * - 기존 신청이 존재하지 않아야 함
+	 * - 첨부 이미지 UUID 1개 이상 필수
+	 * - 요청 학번이 다른 ACTIVE/INACTIVE/DROP 사용자와 중복되지 않아야 함
+	 */
+	@Transactional
+	public AdmissionResult createAdmission(
+		User user,
+		AdmissionCreateCommand dto) {
+		admissionValidator.validateAdmissionCreateWithUuids(user, dto.requestedStudentId(),
+			dto.requestedAcademicStatus(), dto.graduationYear(), dto.attachImageUuids());
+
+		List<UuidFile> uuidFiles = fileWriter.confirmFiles(dto.attachImageUuids(), FilePath.USER_ADMISSION);
+
+		userWriter.updateStateToAwait(user);
+
+		UserAdmission admission = admissionWriter.create(
+			user,
+			uuidFiles,
+			dto.description(),
+			dto.requestedAcademicStatus(),
+			dto.requestedStudentId(),
+			dto.requestedAdmissionYear(),
+			dto.requestedDepartment(),
+			dto.graduationYear());
+
+		eventPublisher.publishEvent(new AdmissionRequestedEvent(user.getId(), admission.getRequestedAcademicStatus(),
+			dto.requestedStudentId()));
+
+		return AdmissionResult.from(admission);
+	}
+
+	/**
+	 * 재학정보 인증 신청을 생성합니다. (v2 multipart)
 	 *
 	 * 검증 사항:
 	 * - 추방된 학번인지 검증
@@ -49,17 +86,13 @@ public class AdmissionService {
 		User user,
 		AdmissionCreateCommand dto,
 		List<MultipartFile> attachImages) {
-		// 인증 신청 생성 검증
 		admissionValidator.validateAdmissionCreate(user, dto.requestedStudentId(),
 			dto.requestedAcademicStatus(), dto.graduationYear(), attachImages);
 
-		// 이미지 파일 업로드
 		List<UuidFile> uuidFiles = fileWriter.uploadAndSaveList(attachImages, FilePath.USER_ADMISSION);
 
-		// 사용자 상태를 AWAIT으로 설정 (REJECT에서 재신청 시)
 		userWriter.updateStateToAwait(user);
 
-		// UserAdmission 생성 (v2 방식)
 		UserAdmission admission = admissionWriter.create(
 			user,
 			uuidFiles,

@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.notification.notification.service.listener;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -79,9 +81,13 @@ class AdmissionNotificationListenerTest {
 			handler.handleRequest(new AdmissionRequestedEvent("requesterId", AcademicStatus.ENROLLED, "20191234"));
 
 			// then
-			verify(notificationWriter).save(any());
+			ArgumentCaptor<Notification> notificationCaptor = ArgumentCaptor.forClass(Notification.class);
+			verify(notificationWriter).save(notificationCaptor.capture());
+			Notification captured = notificationCaptor.getValue();
+			assertThat(captured.getNoticeType()).isEqualTo(NoticeType.ADMIN);
+			assertThat(captured.getTargetId()).isNull();
 
-			PushNotificationData expectedData = new PushNotificationData(NoticeType.SYSTEM, null, null);
+			PushNotificationData expectedData = new PushNotificationData(NoticeType.ADMIN, null, null);
 			verify(notificationPushSender).sendToUser(eq(admin1), any(), any(), eq(expectedData));
 			verify(notificationPushSender).sendToUser(eq(admin2), any(), any(), eq(expectedData));
 		}
@@ -124,7 +130,13 @@ class AdmissionNotificationListenerTest {
 			handler.handleRequest(new AdmissionRequestedEvent("requesterId", AcademicStatus.ENROLLED, "20191234"));
 
 			// then
-			PushNotificationData expectedData = new PushNotificationData(NoticeType.SYSTEM, null, null);
+			ArgumentCaptor<Notification> notificationCaptor = ArgumentCaptor.forClass(Notification.class);
+			verify(notificationWriter).save(notificationCaptor.capture());
+			Notification captured = notificationCaptor.getValue();
+			assertThat(captured.getNoticeType()).isEqualTo(NoticeType.ADMIN);
+			assertThat(captured.getTargetId()).isNull();
+
+			PushNotificationData expectedData = new PushNotificationData(NoticeType.ADMIN, null, null);
 			verify(notificationPushSender).sendToUser(eq(adminOn), any(), any(), eq(expectedData));
 			verify(notificationPushSender, never()).sendToUser(eq(adminOff), any(), any(), any());
 		}

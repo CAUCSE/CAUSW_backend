@@ -9,6 +9,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -45,13 +46,24 @@ public class CeremonyController {
 
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(value = HttpStatus.CREATED)
-	@Operation(summary = "사용자 본인의 경조사 생성", description = "사용자 본인의 경조사 생성합니다.")
-	public ApiResponse<CeremonyDetailResponse> createCeremony(
+	@Operation(summary = "사용자 본인의 경조사 생성", description = "이미지를 직접 첨부(multipart/form-data)하거나, presigned URL로 업로드한 이미지 UUID(application/json)를 전달하여 경조사를 생성합니다.")
+	public ApiResponse<CeremonyDetailResponse> createCeremonyByMultipart(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestPart(value = "ceremonyCreateRequest") @Valid CeremonyCreateRequest request,
 		@RequestPart(value = "imageFileList", required = false) List<MultipartFile> imageFileList) {
 		CeremonyCreateCommand command = ceremonyDtoMapper.toCreateCommand(request);
 		CeremonyDetailResult result = ceremonyService.createCeremony(userDetails.getUser(), command, imageFileList);
+		return ApiResponse.success(ceremonyDtoMapper.toDetailResponse(result));
+	}
+
+	@PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseStatus(value = HttpStatus.CREATED)
+	@Operation(summary = "사용자 본인의 경조사 생성", description = "이미지를 직접 첨부(multipart/form-data)하거나, presigned URL로 업로드한 이미지 UUID(application/json)를 전달하여 경조사를 생성합니다.")
+	public ApiResponse<CeremonyDetailResponse> createCeremony(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestBody @Valid CeremonyCreateRequest request) {
+		CeremonyCreateCommand command = ceremonyDtoMapper.toCreateCommand(request);
+		CeremonyDetailResult result = ceremonyService.createCeremony(userDetails.getUser(), command);
 		return ApiResponse.success(ceremonyDtoMapper.toDetailResponse(result));
 	}
 

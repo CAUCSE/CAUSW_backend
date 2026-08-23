@@ -23,7 +23,7 @@ public class AdmissionValidator {
 	private final DroppedUserIdentifierValidator droppedUserIdentifierValidator;
 
 	/**
-	 * 재학정보 인증 신청이 가능한 상태인지 검증합니다.
+	 * 재학정보 인증 신청이 가능한 상태인지 검증합니다. (v2 multipart)
 	 *
 	 * - 졸업자가 아닌 경우 학번 필수
 	 * - 추방된 학번인지 검증 (Blocked User)
@@ -40,6 +40,28 @@ public class AdmissionValidator {
 		validateUserStateForAdmission(user);
 		validateNoExistingAdmission(user);
 		validateAttachImages(attachImages);
+		validateStudentIdNotDuplicated(requestedStudentId);
+		validateGraduationYear(requestedAcademicStatus, graduationYear);
+	}
+
+	/**
+	 * 재학정보 인증 신청이 가능한 상태인지 검증합니다. (v3 presigned URL)
+	 *
+	 * - 졸업자가 아닌 경우 학번 필수
+	 * - 추방된 학번인지 검증 (Blocked User)
+	 * - 사용자 상태가 AWAIT 또는 REJECT인 경우만 신청 가능
+	 * - 기존 신청이 존재하지 않아야 함
+	 * - 첨부 이미지 UUID 1개 이상 필수
+	 * - 요청 학번이 다른 ACTIVE/INACTIVE/DROP 사용자와 중복되지 않아야 함
+	 */
+	public void validateAdmissionCreateWithUuids(User user, String requestedStudentId,
+		AcademicStatus requestedAcademicStatus, Integer graduationYear,
+		List<String> attachImageUuids) {
+		validateStudentIdRequired(requestedStudentId, requestedAcademicStatus);
+		validateBlockedStudentId(requestedStudentId);
+		validateUserStateForAdmission(user);
+		validateNoExistingAdmission(user);
+		validateAttachImageUuids(attachImageUuids);
 		validateStudentIdNotDuplicated(requestedStudentId);
 		validateGraduationYear(requestedAcademicStatus, graduationYear);
 	}
@@ -79,6 +101,15 @@ public class AdmissionValidator {
 	 */
 	public void validateAttachImages(List<MultipartFile> attachImages) {
 		if (attachImages == null || attachImages.isEmpty()) {
+			throw UserErrorCode.ADMISSION_IMAGE_REQUIRED.toBaseException();
+		}
+	}
+
+	/**
+	 * 첨부 이미지 UUID가 1개 이상 존재하는지 검증합니다.
+	 */
+	public void validateAttachImageUuids(List<String> attachImageUuids) {
+		if (attachImageUuids == null || attachImageUuids.isEmpty()) {
 			throw UserErrorCode.ADMISSION_IMAGE_REQUIRED.toBaseException();
 		}
 	}

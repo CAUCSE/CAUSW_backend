@@ -10,6 +10,7 @@ import lombok.Builder;
 @Builder
 public record PostDetailResult(
 	String id,
+	String title,
 	String content,
 	Boolean isDeleted,
 	String displayWriterNickname,

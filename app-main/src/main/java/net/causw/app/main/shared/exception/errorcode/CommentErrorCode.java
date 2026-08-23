@@ -12,7 +12,8 @@ public enum CommentErrorCode implements BaseResponseCode {
 	COMMENT_NOT_ALLOWED_ON_SYSTEM_NOTICE(HttpStatus.FORBIDDEN, "COMMENT_403_001", "시스템 공지에는 댓글을 달 수 없습니다"),
 	COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "COMMENT_404_001", "댓글을 찾을 수 없습니다"),
 	COMMENT_ALREADY_LIKED(HttpStatus.CONFLICT, "LIKE_COMMENT_409_001", "좋아요를 이미 누른 댓글 입니다"),
-	COMMENT_NOT_LIKE(HttpStatus.CONFLICT, "LIKE_COMMENT_409_002", "좋아요를 누르지 않은 댓글입니다");
+	COMMENT_NOT_LIKE(HttpStatus.CONFLICT, "LIKE_COMMENT_409_002", "좋아요를 누르지 않은 댓글입니다"),
+	ANONYMOUS_NICKNAME_ISSUE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "COMMENT_500_001", "익명 닉네임 발급에 실패했습니다");
 
 	private final HttpStatus status;
 	private final String code;

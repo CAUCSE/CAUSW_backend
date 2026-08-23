@@ -37,7 +37,7 @@ class ReportValidatorSoftDeleteTest {
 		User writer = ObjectFixtures.getCertifiedUserWithId("writer-id");
 		User reporter = ObjectFixtures.getCertifiedUserWithId("reporter-id");
 		Post post = ObjectFixtures.getPost(writer, ObjectFixtures.getBoardV2WithId("board-id"));
-		Comment comment = Comment.ofRoot("댓글", false, writer, post);
+		Comment comment = Comment.ofRoot("댓글", false, null, writer, post);
 		post.setIsDeleted(true);
 
 		assertThatThrownBy(() -> CommentReportValidator.validateCreate(reporter, comment, false))

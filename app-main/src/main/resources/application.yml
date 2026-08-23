@@ -8,3 +8,10 @@ redis:
       enabled: false
     collided-refresh-token-cleanup:
       enabled: false
+
+app:
+  crawl:
+    enabled: true
+    local-run-on-start: false
+    zone: Asia/Seoul
+    cron: "0 0 * * * *"

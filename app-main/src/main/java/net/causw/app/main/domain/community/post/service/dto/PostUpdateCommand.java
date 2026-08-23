@@ -8,6 +8,7 @@ import net.causw.app.main.domain.user.account.entity.user.User;
 
 public record PostUpdateCommand(
 	String postId,
+	String title,
 	String content,
 	Boolean isAnonymous,
 	User updater,

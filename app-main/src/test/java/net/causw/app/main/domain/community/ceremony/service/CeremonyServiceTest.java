@@ -16,11 +16,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
-import net.causw.app.main.domain.asset.file.service.UuidFileService;
+import net.causw.app.main.domain.asset.file.entity.UuidFile;
+import net.causw.app.main.domain.asset.file.enums.FilePath;
+import net.causw.app.main.domain.asset.file.service.implementation.FileWriter;
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.request.CeremonyCreateRequest;
 import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
 import net.causw.app.main.domain.community.ceremony.enums.CeremonyContext;
@@ -35,6 +38,7 @@ import net.causw.app.main.domain.community.ceremony.util.CeremonyValidator;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.CeremonyErrorCode;
+import net.causw.app.main.shared.exception.errorcode.FileErrorCode;
 import net.causw.app.main.shared.pageable.PageableFactory;
 import net.causw.global.constant.StaticValue;
 
@@ -45,7 +49,9 @@ public class CeremonyServiceTest {
 	CeremonyService ceremonyService;
 
 	@Mock
-	UuidFileService uuidFileService;
+	FileWriter fileWriter;
+	@Mock
+	ApplicationEventPublisher applicationEventPublisher;
 	@Mock
 	CeremonyCreator ceremonyCreator;
 	@Mock
@@ -85,7 +91,7 @@ public class CeremonyServiceTest {
 			assertThatThrownBy(() -> ceremonyService.createCeremony(user, command, null))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.CUSTOM_CATEGORY_REQUIRED);
-			then(uuidFileService).should(never()).saveFileList(any(), any());
+			then(fileWriter).should(never()).uploadAndSaveList(any(), any(FilePath.class));
 			then(ceremonyCreateMapper).should(never()).toCeremony(any(), any(), any(), any());
 			then(ceremonyCreator).should(never()).save(any());
 		}
@@ -100,7 +106,7 @@ public class CeremonyServiceTest {
 			assertThatThrownBy(() -> ceremonyService.createCeremony(user, command, null))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.FAMILY_RELATION_REQUIRED);
-			then(uuidFileService).should(never()).saveFileList(any(), any());
+			then(fileWriter).should(never()).uploadAndSaveList(any(), any(FilePath.class));
 			then(ceremonyCreateMapper).should(never()).toCeremony(any(), any(), any(), any());
 			then(ceremonyCreator).should(never()).save(any());
 		}
@@ -115,7 +121,7 @@ public class CeremonyServiceTest {
 			assertThatThrownBy(() -> ceremonyService.createCeremony(user, command, null))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.ALUMNI_NAME_REQUIRED);
-			then(uuidFileService).should(never()).saveFileList(any(), any());
+			then(fileWriter).should(never()).uploadAndSaveList(any(), any(FilePath.class));
 			then(ceremonyCreateMapper).should(never()).toCeremony(any(), any(), any(), any());
 			then(ceremonyCreator).should(never()).save(any());
 		}
@@ -130,7 +136,7 @@ public class CeremonyServiceTest {
 			assertThatThrownBy(() -> ceremonyService.createCeremony(user, command, null))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.ALUMNI_ADMISSION_YEAR_REQUIRED);
-			then(uuidFileService).should(never()).saveFileList(any(), any());
+			then(fileWriter).should(never()).uploadAndSaveList(any(), any(FilePath.class));
 			then(ceremonyCreateMapper).should(never()).toCeremony(any(), any(), any(), any());
 			then(ceremonyCreator).should(never()).save(any());
 		}
@@ -146,7 +152,7 @@ public class CeremonyServiceTest {
 			assertThatThrownBy(() -> ceremonyService.createCeremony(user, command, null))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.START_TIME_REQUIRED);
-			then(uuidFileService).should(never()).saveFileList(any(), any());
+			then(fileWriter).should(never()).uploadAndSaveList(any(), any(FilePath.class));
 			then(ceremonyCreateMapper).should(never()).toCeremony(any(), any(), any(), any());
 			then(ceremonyCreator).should(never()).save(any());
 		}
@@ -162,9 +168,107 @@ public class CeremonyServiceTest {
 			assertThatThrownBy(() -> ceremonyService.createCeremony(user, command, null))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.TARGET_ADMISSION_YEARS_REQUIRED);
-			then(uuidFileService).should(never()).saveFileList(any(), any());
+			then(fileWriter).should(never()).uploadAndSaveList(any(), any(FilePath.class));
 			then(ceremonyCreateMapper).should(never()).toCeremony(any(), any(), any(), any());
 			then(ceremonyCreator).should(never()).save(any());
+		}
+	}
+
+	@Nested
+	@DisplayName("경조사 생성 테스트 (presigned URL 경로)")
+	class CreateCeremonyPresignedTest {
+
+		private User user;
+		private CeremonyCreateCommand command;
+
+		@BeforeEach
+		void setUp() {
+			user = mock(User.class);
+			command = mock(CeremonyCreateCommand.class);
+		}
+
+		@Test
+		@DisplayName("이미지 UUID 목록이 있을 때 confirmFiles 호출 후 경조사 생성 성공")
+		void givenImageUuids_whenCreateCeremony_thenConfirmFilesAndSave() {
+			// given
+			List<String> uuids = List.of("uuid-1", "uuid-2");
+			List<UuidFile> confirmedFiles = List.of(mock(UuidFile.class), mock(UuidFile.class));
+			Ceremony ceremony = mock(Ceremony.class);
+
+			given(command.imageUuids()).willReturn(uuids);
+			given(command.isSetAll()).willReturn(false);
+			given(command.targetAdmissionYears()).willReturn(List.of());
+			given(fileWriter.confirmFiles(uuids, FilePath.CEREMONY)).willReturn(confirmedFiles);
+			given(ceremonyCreateMapper.toCeremony(any(), any(), anyList(), anyList())).willReturn(ceremony);
+			given(ceremony.getId()).willReturn("ceremony-1");
+			given(ceremonyMapper.toDetailResult(ceremony)).willReturn(mock(
+				net.causw.app.main.domain.community.ceremony.service.dto.response.CeremonyDetailResult.class));
+
+			// when
+			ceremonyService.createCeremony(user, command);
+
+			// then
+			then(ceremonyValidator).should(times(1)).validateForCreate(command);
+			then(fileWriter).should(times(1)).confirmFiles(uuids, FilePath.CEREMONY);
+			then(ceremonyCreateMapper).should().toCeremony(eq(user), eq(command), eq(List.of()), eq(confirmedFiles));
+			then(ceremonyCreator).should(times(1)).save(ceremony);
+			then(applicationEventPublisher).should(times(1)).publishEvent((Object)any());
+		}
+
+		@Test
+		@DisplayName("이미지 UUID가 null이면 confirmFiles에 빈 리스트를 전달하고 성공")
+		void givenNullImageUuids_whenCreateCeremony_thenConfirmFilesWithEmptyList() {
+			// given
+			Ceremony ceremony = mock(Ceremony.class);
+
+			given(command.imageUuids()).willReturn(null);
+			given(command.isSetAll()).willReturn(false);
+			given(command.targetAdmissionYears()).willReturn(List.of());
+			given(fileWriter.confirmFiles(List.of(), FilePath.CEREMONY)).willReturn(List.of());
+			given(ceremonyCreateMapper.toCeremony(any(), any(), anyList(), anyList())).willReturn(ceremony);
+			given(ceremony.getId()).willReturn("ceremony-1");
+			given(ceremonyMapper.toDetailResult(ceremony)).willReturn(mock(
+				net.causw.app.main.domain.community.ceremony.service.dto.response.CeremonyDetailResult.class));
+
+			// when
+			ceremonyService.createCeremony(user, command);
+
+			// then
+			then(fileWriter).should(times(1)).confirmFiles(List.of(), FilePath.CEREMONY);
+			then(ceremonyCreateMapper).should().toCeremony(eq(user), eq(command), eq(List.of()), eq(List.of()));
+			then(ceremonyCreator).should(times(1)).save(ceremony);
+		}
+
+		@Test
+		@DisplayName("유효성 검증 실패 시 confirmFiles를 호출하지 않고 예외 반환")
+		void givenValidatorFails_whenCreateCeremony_thenNeverCallsConfirmFiles() {
+			// given
+			doThrow(CeremonyErrorCode.CUSTOM_CATEGORY_REQUIRED.toBaseException())
+				.when(ceremonyValidator).validateForCreate(command);
+
+			// when & then
+			assertThatThrownBy(() -> ceremonyService.createCeremony(user, command))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasFieldOrPropertyWithValue("errorCode", CeremonyErrorCode.CUSTOM_CATEGORY_REQUIRED);
+			then(fileWriter).should(never()).confirmFiles(any(), any());
+			then(ceremonyCreator).should(never()).save(any());
+		}
+
+		@Test
+		@DisplayName("confirmFiles가 FILE_NOT_UPLOADED 예외를 던지면 그대로 전파")
+		void givenFileNotUploaded_whenCreateCeremony_thenThrowsException() {
+			// given
+			List<String> uuids = List.of("uuid-1");
+			given(command.imageUuids()).willReturn(uuids);
+			given(fileWriter.confirmFiles(uuids, FilePath.CEREMONY))
+				.willThrow(FileErrorCode.FILE_NOT_UPLOADED.toBaseException());
+
+			// when & then
+			assertThatThrownBy(() -> ceremonyService.createCeremony(user, command))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasFieldOrPropertyWithValue("errorCode", FileErrorCode.FILE_NOT_UPLOADED);
+			then(ceremonyCreator).should(never()).save(any());
+			then(applicationEventPublisher).should(never()).publishEvent(any());
 		}
 	}
 
