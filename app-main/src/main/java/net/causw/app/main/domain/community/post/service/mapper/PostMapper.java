@@ -7,6 +7,7 @@ import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.query.PostCursorResult;
+import net.causw.app.main.domain.community.post.service.dto.CrawledAttachmentResult;
 import net.causw.app.main.domain.community.post.service.dto.PostCreateCommand;
 import net.causw.app.main.domain.community.post.service.dto.PostCreateResult;
 import net.causw.app.main.domain.community.post.service.dto.PostDetailResult;
@@ -141,6 +142,8 @@ public class PostMapper {
 		Post post,
 		UserProfileImage writerProfileImage,
 		List<String> imageUrls,
+		List<CrawledAttachmentResult> crawledAttachments,
+		String originalNoticeUrl,
 		Long numComment,
 		Long numLike,
 		Boolean isPostLike,
@@ -186,6 +189,8 @@ public class PostMapper {
 			.displayWriterNickname(displayWriterNickname)
 			.writerProfileImage(writerProfileImageDto)
 			.fileUrlList(imageUrls)
+			.crawledAttachments(crawledAttachments)
+			.originalNoticeUrl(originalNoticeUrl)
 			.numComment(numComment)
 			.numLike(numLike)
 			.viewCount(post.getViewCount())

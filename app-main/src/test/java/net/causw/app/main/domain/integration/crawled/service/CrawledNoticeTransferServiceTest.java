@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.integration.crawled.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
@@ -20,6 +21,7 @@ import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.service.implementation.BoardReader;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.implementation.PostWriter;
+import net.causw.app.main.domain.integration.crawled.entity.CrawledFileLink;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
 import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeReader;
 import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeWriter;
@@ -50,6 +52,28 @@ class CrawledNoticeTransferServiceTest {
 	private CrawledPostImageWriter crawledPostImageWriter;
 	@Mock
 	private org.springframework.context.ApplicationEventPublisher applicationEventPublisher;
+
+	@Test
+	@DisplayName("새 크롤링 게시물 본문에는 제목, 첨부파일, 원문 링크를 포함하지 않는다")
+	void transfer_shouldStoreOnlyBodyHtml_whenCreatingCrawledPost() {
+		// given
+		CrawledNotice notice = CrawledNotice.of(
+			"site", "external-id", "board-id", "공지", "제목", "<p>본문</p><img src=\"image.png\">",
+			"https://example.com/notice", "관리자", LocalDate.now(), null,
+			List.of(CrawledFileLink.of("첨부.pdf", "https://example.com/attachment.pdf")), "content-hash");
+		given(crawledNoticeReader.findById(notice.getId())).willReturn(notice);
+		given(userReader.findByEmail(StaticValue.SYSTEM_CRAWLER_ACCOUNT))
+			.willReturn(Optional.of(org.mockito.Mockito.mock(User.class)));
+		given(boardReader.getById("board-id")).willReturn(org.mockito.Mockito.mock(Board.class));
+
+		// when
+		transferService.transfer(notice.getId());
+
+		// then
+		org.mockito.ArgumentCaptor<Post> postCaptor = org.mockito.ArgumentCaptor.forClass(Post.class);
+		verify(postWriter).save(postCaptor.capture());
+		assertThat(postCaptor.getValue().getContent()).isEqualTo("<p>본문</p>");
+	}
 
 	@Test
 	@DisplayName("연결된 Post가 없는 오늘 공지는 새 Post로 생성한다")

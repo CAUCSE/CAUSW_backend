@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -17,7 +16,6 @@ import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.service.implementation.BoardReader;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.implementation.PostWriter;
-import net.causw.app.main.domain.integration.crawled.entity.CrawledFileLink;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledPostImage;
 import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeReader;
@@ -95,7 +93,8 @@ public class CrawledNoticeTransferService {
 	private Post processUpdatedNotice(CrawledNotice notice, Board board, User adminUser, Post existingPost) {
 		String title = (notice.getTitle() == null || notice.getTitle().isBlank())
 			? "제목 없음" : notice.getTitle();
-		String contentHtml = buildContentWithAttachmentsAndLink(notice, title);
+		String contentHtml = (notice.getContent() == null || notice.getContent().isBlank())
+			? "<p>내용 없음</p>" : cleanUpHtml(notice.getContent(), notice.getLink());
 		List<String> imageUrls = extractImageUrls(notice.getContent(), notice.getLink());
 		if (existingPost != null) {
 			existingPost.update(title, contentHtml, existingPost.getIsAnonymous(),
@@ -170,99 +169,6 @@ public class CrawledNoticeTransferService {
 			}
 		}
 		return doc.body().html();
-	}
-
-	/**
-	 * 공지 제목, 정리된 본문, 첨부파일 및 원본 공지 링크를 포함한 Post HTML을 구성합니다.
-	 *
-	 * @param notice 전송할 크롤링 공지
-	 * @param title Post에 표시할 제목
-	 * @return Post에 저장할 HTML 본문
-	 */
-	private String buildContentWithAttachmentsAndLink(CrawledNotice notice, String title) {
-		Document document = Jsoup.parseBodyFragment("");
-		Element body = document.body();
-		body.appendElement("p")
-			.attr("style", "margin-bottom: 20px;")
-			.appendElement("strong")
-			.text(title);
-
-		String originalContent = (notice.getContent() == null || notice.getContent().isBlank())
-			? "<p>내용 없음</p>" : cleanUpHtml(notice.getContent(), notice.getLink());
-		body.append(originalContent);
-
-		if (notice.getCrawledFileLinks() != null && !notice.getCrawledFileLinks().isEmpty()) {
-			body.appendElement("hr").attr("style", "margin: 20px 0; border: 1px solid #eee;");
-			Element attachmentSection = body.appendElement("div")
-				.attr("style", "margin-top: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 5px;");
-			attachmentSection.appendElement("h4")
-				.attr("style", "margin: 0 0 10px 0; color: #495057;")
-				.text("📎 첨부파일");
-			Element attachmentList = attachmentSection.appendElement("ul")
-				.attr("style", "margin: 0; padding-left: 20px;");
-
-			for (CrawledFileLink fileLink : notice.getCrawledFileLinks()) {
-				Element fileLinkElement = buildExternalLink(document, fileLink.getFileLink(),
-					"📄 " + fileLink.getFileName());
-				if (fileLinkElement != null) {
-					attachmentList.appendElement("li")
-						.attr("style", "margin-bottom: 5px;")
-						.appendChild(fileLinkElement);
-				}
-			}
-		}
-
-		body.appendElement("hr").attr("style", "margin: 20px 0; border: 1px solid #eee;");
-		Element sourceInfo = body.appendElement("div")
-			.attr("style",
-				"margin-top: 15px; padding: 10px; background-color: #f1f3f4; border-radius: 5px; font-size: 14px; color: #666;");
-		sourceInfo.appendText("🔗 ");
-		sourceInfo.appendElement("strong").text("원본 공지사항:");
-		Element sourceLink = buildExternalLink(document, notice.getLink(), StaticValue.ORIGINAL_NOTICE_SITE_NAME);
-		if (sourceLink != null) {
-			sourceInfo.appendText(" ").appendChild(sourceLink)
-				.attr("style", "color: #1a73e8; text-decoration: none;");
-		}
-
-		return body.html();
-	}
-
-	/**
-	 * HTTP(S) URL인 경우 새 탭으로 열리는 외부 링크 요소를 생성합니다.
-	 *
-	 * @param document 링크 요소를 생성할 문서
-	 * @param url 링크 대상 URL
-	 * @param text 링크 표시 문구
-	 * @return 생성한 링크 요소. URL이 유효하지 않으면 {@code null}
-	 */
-	private Element buildExternalLink(Document document, String url, String text) {
-		if (!isHttpOrHttpsUrl(url)) {
-			return null;
-		}
-		return document.createElement("a")
-			.attr("href", url.trim())
-			.attr("target", "_blank")
-			.attr("rel", "noopener noreferrer")
-			.attr("style", "color: #007bff; text-decoration: none;")
-			.text(text == null ? "" : text);
-	}
-
-	/**
-	 * URL이 HTTP 또는 HTTPS 스킴을 사용하는지 검증합니다.
-	 *
-	 * @param url 검증할 URL
-	 * @return HTTP(S) URL이면 {@code true}, 그렇지 않으면 {@code false}
-	 */
-	private boolean isHttpOrHttpsUrl(String url) {
-		if (url == null || url.isBlank()) {
-			return false;
-		}
-		try {
-			String scheme = java.net.URI.create(url.trim()).getScheme();
-			return "http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme);
-		} catch (IllegalArgumentException e) {
-			return false;
-		}
 	}
 
 	/**

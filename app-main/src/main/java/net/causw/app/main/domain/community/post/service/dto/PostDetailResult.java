@@ -16,6 +16,8 @@ public record PostDetailResult(
 	String displayWriterNickname,
 	ProfileImageDto writerProfileImage,
 	List<String> fileUrlList,
+	List<CrawledAttachmentResult> crawledAttachments,
+	String originalNoticeUrl,
 	Long numComment,
 	Long numLike,
 	Long viewCount,

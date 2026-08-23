@@ -22,6 +22,10 @@ public record PostResponse(
 
 	@Schema(description = "첨부파일", example = "첨부파일 url 작성") List<String> fileUrlList,
 
+	@Schema(description = "크롤링 원본 첨부파일 목록. 일반 게시글은 빈 배열") List<CrawledAttachmentResponse> crawledAttachments,
+
+	@Schema(description = "크롤링 원본 공지 URL. 일반 게시글 또는 연결 정보가 없으면 null") String originalNoticeUrl,
+
 	@Schema(description = "답글 개수", example = "13") Long numComment,
 
 	@Schema(description = "게시글 좋아요 개수", example = "10") Long numLike,
