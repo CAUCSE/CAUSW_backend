@@ -57,10 +57,10 @@ public class CrawledNoticeTransferService {
 	public void transfer(String noticeId) {
 		CrawledNotice notice = crawledNoticeReader.findById(noticeId);
 		Post existingPost = findExistingPost(notice);
-//		if (existingPost == null && !LocalDate.now().equals(notice.getAnnounceDate())) {
-//			crawledNoticeWriter.markTransferred(notice);
-//			return;
-//		}
+		if (existingPost == null && !LocalDate.now().equals(notice.getAnnounceDate())) {
+			crawledNoticeWriter.markTransferred(notice);
+			return;
+		}
 		User systemUser = getSystemUser();
 		Board board = boardReader.getById(notice.getTargetBoardId());
 		Post post = processUpdatedNotice(notice, board, systemUser, existingPost);
