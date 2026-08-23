@@ -119,7 +119,7 @@ class CrawledNoticeTransferServiceTest {
 	@DisplayName("크롤링 시스템 계정이 없으면 통합 오류 코드로 예외를 발생시킨다")
 	void transfer_shouldThrowIntegrationException_whenSystemUserDoesNotExist() {
 		// given
-		CrawledNotice notice = notice(LocalDate.of(2026, 8, 10));
+		CrawledNotice notice = notice(LocalDate.now());
 		given(crawledNoticeReader.findById(notice.getId())).willReturn(notice);
 		given(userReader.findByEmail(StaticValue.SYSTEM_CRAWLER_ACCOUNT)).willReturn(Optional.empty());
 
