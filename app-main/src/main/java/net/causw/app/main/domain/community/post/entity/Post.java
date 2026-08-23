@@ -76,6 +76,18 @@ public class Post extends BaseEntity {
 	@Builder.Default
 	private Boolean isCrawled = false;
 
+	/**
+	 * 크롤링 원문 링크와 첨부파일이 {@code content}에서 분리되었는지 나타냅니다.
+	 *
+	 * <p>기존 크롤링 게시물은 본문에 부가 정보가 포함된 상태를 보존해야 하므로 {@code false}로 둡니다.
+	 * {@code isCrawledContentSeparated} 도입 시점부터 본문 분리 로직을 거친 크롤링 게시물만
+	 * {@code true}로 표시합니다.</p>
+	 */
+	@Column(name = "is_crawled_content_separated", nullable = false)
+	@ColumnDefault("false")
+	@Builder.Default
+	private Boolean isCrawledContentSeparated = false;
+
 	@ManyToOne(targetEntity = Board.class)
 	@JoinColumn(name = "board_id", nullable = false)
 	private Board board;
@@ -188,6 +200,13 @@ public class Post extends BaseEntity {
 
 	public void setCrawled() {
 		this.isCrawled = true;
+	}
+
+	/**
+	 * 현재 크롤링 결과로 본문을 갱신하면서 원문 링크와 첨부파일을 본문 밖으로 분리했음을 기록합니다.
+	 */
+	public void markCrawledContentSeparated() {
+		this.isCrawledContentSeparated = true;
 	}
 
 	public void increaseViewCount() {

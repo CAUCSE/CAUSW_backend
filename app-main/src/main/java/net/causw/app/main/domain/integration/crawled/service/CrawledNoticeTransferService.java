@@ -99,6 +99,8 @@ public class CrawledNoticeTransferService {
 		if (existingPost != null) {
 			existingPost.update(title, contentHtml, existingPost.getIsAnonymous(),
 				existingPost.getPostAttachImageList());
+			// isCrawledContentSeparated 도입 시점부터는 본문 HTML만 저장하므로, 상세 API에서 부가 정보를 별도 응답할 수 있게 표시한다.
+			existingPost.markCrawledContentSeparated();
 			postWriter.save(existingPost);
 			crawledPostImageWriter.deleteAllByPostId(existingPost.getId());
 			savePostImages(existingPost, imageUrls);
@@ -107,6 +109,8 @@ public class CrawledNoticeTransferService {
 
 		Post newPost = Post.of(title, contentHtml, adminUser, false, false, board, null, new ArrayList<>());
 		newPost.setCrawled();
+		// isCrawledContentSeparated 도입 전 기존 게시물은 false를 유지하고, 도입 후 본문 분리 포맷으로 저장된 게시물만 구분한다.
+		newPost.markCrawledContentSeparated();
 		postWriter.save(newPost);
 		savePostImages(newPost, imageUrls);
 		applicationEventPublisher.publishEvent(new OfficialPostEvent(board.getId(), newPost.getId(), title));

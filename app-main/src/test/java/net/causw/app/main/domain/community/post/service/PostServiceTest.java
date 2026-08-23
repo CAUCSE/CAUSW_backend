@@ -68,6 +68,9 @@ import net.causw.app.main.domain.community.post.service.implementation.PostWrite
 import net.causw.app.main.domain.community.post.service.implementation.ViewCountManager;
 import net.causw.app.main.domain.community.reaction.service.implementation.LikePostReader;
 import net.causw.app.main.domain.community.vote.service.implementation.VoteWriter;
+import net.causw.app.main.domain.integration.crawled.entity.CrawledFileLink;
+import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
+import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeReader;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.ProfileImageType;
@@ -123,6 +126,9 @@ public class PostServiceTest {
 
 	@Mock
 	ViewCountManager viewCountManager;
+
+	@Mock
+	CrawledNoticeReader crawledNoticeReader;
 
 	@Nested
 	@DisplayName("게시글 생성 테스트")
@@ -1549,6 +1555,8 @@ public class PostServiceTest {
 				() -> assertThat(result).isNotNull(),
 				() -> assertThat(result.id()).isEqualTo(postId),
 				() -> assertThat(result.content()).isEqualTo("게시글 내용"),
+				() -> assertThat(result.crawledAttachments()).isEmpty(),
+				() -> assertThat(result.originalNoticeUrl()).isNull(),
 				() -> assertThat(result.numLike()).isEqualTo(10L),
 				() -> assertThat(result.isPostLike()).isFalse(),
 				() -> assertThat(result.isOwner()).isFalse(),
@@ -1558,6 +1566,38 @@ public class PostServiceTest {
 				() -> assertThat(result.boardName()).isNotNull());
 
 			verify(postReader, times(2)).findByIdAndNotDeleted(postId);
+		}
+
+		@DisplayName("본문 분리가 완료된 크롤링 게시글은 원문 링크와 첨부파일을 별도 반환한다")
+		@Test
+		void getPostDetail_shouldReturnCrawledMetadata_whenCrawledContentIsSeparated() {
+			// given
+			ReflectionTestUtils.setField(post, "isCrawled", true);
+			ReflectionTestUtils.setField(post, "isCrawledContentSeparated", true);
+			CrawledNotice crawledNotice = CrawledNotice.of(
+				"site", "external-id", boardId, "공지", "제목", "<p>본문</p>", "https://example.com/notice",
+				"관리자", java.time.LocalDate.now(), null,
+				List.of(CrawledFileLink.of("첨부.pdf", "https://example.com/attachment.pdf")), "content-hash");
+			PostDetailQuery query = new PostDetailQuery(postId, viewer);
+			List<String> boardAdminIds = List.of("admin-id");
+
+			given(postReader.findByIdAndNotDeleted(postId)).willReturn(post);
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
+			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(likePostReader.countByPostId(postId)).willReturn(10L);
+			given(likePostReader.existsByPostIdAndUserId(postId, "viewer-id")).willReturn(false);
+			given(crawledNoticeReader.findByPostId(postId)).willReturn(java.util.Optional.of(crawledNotice));
+
+			// when
+			PostDetailResult result = postService.getPostDetail(query, mockRequest, mockResponse);
+
+			// then
+			assertAll(
+				() -> assertThat(result.crawledAttachments())
+					.extracting(attachment -> attachment.name(), attachment -> attachment.url())
+					.containsExactly(
+						org.assertj.core.groups.Tuple.tuple("첨부.pdf", "https://example.com/attachment.pdf")),
+				() -> assertThat(result.originalNoticeUrl()).isEqualTo("https://example.com/notice"));
 		}
 
 		@DisplayName("작성자가 게시글 상세 조회 시 수정/삭제 가능")

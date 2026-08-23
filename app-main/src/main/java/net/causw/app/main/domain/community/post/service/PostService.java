@@ -362,7 +362,10 @@ public class PostService {
 	}
 
 	private CrawledPostDetail getCrawledPostDetail(Post post) {
-		if (!Boolean.TRUE.equals(post.getIsCrawled())) {
+		// 기존 크롤링 게시물은 본문에 첨부파일·원문 링크가 남아 있다.
+		// 중복 노출과 연결 누락에 따른 데이터 손실을 막기 위해 분리 완료 표시가 있는 경우에만 별도 필드를 제공한다.
+		if (!Boolean.TRUE.equals(post.getIsCrawled())
+			|| !Boolean.TRUE.equals(post.getIsCrawledContentSeparated())) {
 			return CrawledPostDetail.empty();
 		}
 
