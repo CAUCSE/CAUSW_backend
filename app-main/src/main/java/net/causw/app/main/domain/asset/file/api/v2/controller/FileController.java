@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import net.causw.app.main.core.aop.annotation.RequireAdminRole;
+import net.causw.app.main.core.aop.enums.AdminTarget;
 import net.causw.app.main.domain.asset.file.api.v2.dto.request.MultiplePresignedUrlRequest;
 import net.causw.app.main.domain.asset.file.api.v2.dto.request.PresignedUrlRequest;
 import net.causw.app.main.domain.asset.file.api.v2.dto.response.FileInfoResponse;
@@ -73,7 +75,8 @@ public class FileController {
 
 	@Operation(summary = "파일 업로드 (ADMIN)", description = "단일 파일을 업로드합니다.")
 	@PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	@PreAuthorize("@security.hasRole(@Role.ADMIN)")
+	@PreAuthorize("@security.hasRole(@Role.ADMIN) or @security.hasRole(@Role.SYSTEM_ADMIN)")
+	@RequireAdminRole(target = AdminTarget.ALL_ADMIN)
 	public ResponseEntity<FileUploadResponse> uploadFile(
 		@RequestParam("file") MultipartFile file,
 		@RequestParam("type") FilePath filePath) {
@@ -86,7 +89,8 @@ public class FileController {
 
 	@Operation(summary = "다중 파일 업로드", description = "여러 파일을 한 번에 업로드합니다.")
 	@PostMapping(value = "/upload/multiple", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	@PreAuthorize("@security.hasRole(@Role.ADMIN)")
+	@PreAuthorize("@security.hasRole(@Role.ADMIN) or @security.hasRole(@Role.SYSTEM_ADMIN)")
+	@RequireAdminRole(target = AdminTarget.ALL_ADMIN)
 	public ResponseEntity<MultipleFilesUploadResponse> uploadMultipleFiles(
 		@RequestParam("files") List<MultipartFile> files,
 		@RequestParam("type") FilePath filePath) {
@@ -99,7 +103,8 @@ public class FileController {
 
 	@Operation(summary = "파일 조회", description = "파일 ID로 파일 정보를 조회합니다.")
 	@GetMapping("/{fileId}")
-	@PreAuthorize("@security.hasRole(@Role.ADMIN)")
+	@PreAuthorize("@security.hasRole(@Role.ADMIN) or @security.hasRole(@Role.SYSTEM_ADMIN)")
+	@RequireAdminRole(target = AdminTarget.ALL_ADMIN)
 	public ResponseEntity<FileInfoResponse> getFile(@PathVariable String fileId) {
 		log.info("File info requested. FileId: {}", fileId);
 
@@ -110,7 +115,8 @@ public class FileController {
 
 	@Operation(summary = "파일 수정", description = "기존 파일을 삭제하고 새 파일로 교체합니다.")
 	@PutMapping(value = "/{fileId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	@PreAuthorize("@security.hasRole(@Role.ADMIN)")
+	@PreAuthorize("@security.hasRole(@Role.ADMIN) or @security.hasRole(@Role.SYSTEM_ADMIN)")
+	@RequireAdminRole(target = AdminTarget.ALL_ADMIN)
 	public ResponseEntity<FileUploadResponse> updateFile(
 		@PathVariable String fileId,
 		@RequestParam("file") MultipartFile file,
@@ -124,7 +130,8 @@ public class FileController {
 
 	@Operation(summary = "파일 삭제", description = "파일을 삭제합니다.")
 	@DeleteMapping("/{fileId}")
-	@PreAuthorize("@security.hasRole(@Role.ADMIN)")
+	@PreAuthorize("@security.hasRole(@Role.ADMIN) or @security.hasRole(@Role.SYSTEM_ADMIN)")
+	@RequireAdminRole(target = AdminTarget.ALL_ADMIN)
 	public ResponseEntity<Void> deleteFile(@PathVariable String fileId) {
 		log.info("File delete requested. FileId: {}", fileId);
 
