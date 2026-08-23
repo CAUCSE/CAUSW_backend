@@ -33,6 +33,16 @@ public class CrawledNoticeWriter {
 	}
 
 	/**
+	 * 공지를 Post로 변환하지 않고 전송 완료 상태로 저장합니다.
+	 *
+	 * @param notice 전송을 완료한 공지
+	 */
+	public void markTransferred(CrawledNotice notice) {
+		notice.setIsUpdated(false);
+		crawledNoticeRepository.save(notice);
+	}
+
+	/**
 	 * 정제 공지를 새 엔티티로 저장하고 Post 전송 대기 상태로 표시합니다.
 	 *
 	 * @param article 저장할 정제 공지

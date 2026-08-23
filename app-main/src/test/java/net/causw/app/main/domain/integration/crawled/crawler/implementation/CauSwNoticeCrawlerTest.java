@@ -4,6 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.junit.jupiter.api.DisplayName;
@@ -23,6 +26,9 @@ import net.causw.app.main.domain.integration.crawled.dto.RawArticle;
 @ExtendWith(MockitoExtension.class)
 @DisplayName("CauSwNoticeCrawler 테스트")
 class CauSwNoticeCrawlerTest {
+	private static final ZoneId KOREA_ZONE_ID = ZoneId.of("Asia/Seoul");
+	private static final DateTimeFormatter LIST_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd");
+
 	@InjectMocks
 	private CauSwNoticeCrawler crawler;
 
@@ -50,12 +56,8 @@ class CauSwNoticeCrawlerTest {
 		@DisplayName("공지 URL의 code와 uid를 외부 식별자로 사용한다")
 		void shouldUseCodeAndUidAsExternalId_whenNoticeUrlIsFetched() {
 			// given
-			given(crawlHttpClient.fetch(any(), any())).willReturn("""
-				<table class='table-basic'><tbody>
-				<tr><td class='aleft'><a href='/sub05/sub0501.php?nmode=view&code=oktomato_bbs05&uid=3433'>공지</a></td>
-				<td><span class='tag'>학사</span></td></tr>
-				</tbody></table>
-				""");
+			given(crawlHttpClient.fetch(any(), any())).willReturn(
+				noticeRows(noticeRow(3433, LocalDate.now(KOREA_ZONE_ID))));
 
 			// when
 			List<ArticleUrl> result = crawler.fetchList(context);
@@ -64,6 +66,22 @@ class CauSwNoticeCrawlerTest {
 			assertThat(result).containsExactly(new ArticleUrl(
 				"https://cse.cau.ac.kr/sub05/sub0501.php?nmode=view&code=oktomato_bbs05&uid=3433",
 				"oktomato_bbs05:3433", "학사"));
+		}
+
+		@Test
+		@DisplayName("최대 스캔 범위 밖의 공지는 목록 수집에서 제외한다")
+		void shouldExcludeNoticesOutsideMaxScanRange_whenListIsFetched() {
+			// given
+			LocalDate today = LocalDate.now(KOREA_ZONE_ID);
+			given(crawlHttpClient.fetch(any(), any())).willReturn(noticeRows(
+				noticeRow(3433, today.minusDays(3)),
+				noticeRow(3432, today.minusDays(4))));
+
+			// when
+			List<ArticleUrl> result = crawler.fetchList(context);
+
+			// then
+			assertThat(result).extracting(ArticleUrl::externalId).containsExactly("oktomato_bbs05:3433");
 		}
 	}
 
@@ -95,5 +113,17 @@ class CauSwNoticeCrawlerTest {
 			assertThat(result.category()).isEqualTo("공지");
 			assertThat(result.attachments()).hasSize(1);
 		}
+	}
+
+	private String noticeRows(String... rows) {
+		return "<table class='table-basic'><tbody>" + String.join("", rows) + "</tbody></table>";
+	}
+
+	private String noticeRow(int uid, LocalDate announceDate) {
+		return """
+			<tr><td><span class='tag'>학사</span></td><td class='pc-only'></td>
+			<td class='aleft'><a href='/sub05/sub0501.php?nmode=view&code=oktomato_bbs05&uid=%d'>공지</a></td>
+			<td class='pc-only'>학부사무실</td><td class='pc-only'>%s</td><td class='pc-only'>1</td></tr>
+			""".formatted(uid, announceDate.format(LIST_DATE_FORMATTER));
 	}
 }
