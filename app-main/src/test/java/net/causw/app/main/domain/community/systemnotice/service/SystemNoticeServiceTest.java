@@ -86,7 +86,7 @@ class SystemNoticeServiceTest {
 			.willReturn(postResult);
 
 		SystemNoticeCreateResult result = systemNoticeService.create(
-			new SystemNoticeCreateCommand("content", writer));
+			new SystemNoticeCreateCommand("테스트 제목", "content", writer));
 
 		ArgumentCaptor<PostCreateCommand> captor = ArgumentCaptor.forClass(PostCreateCommand.class);
 		verify(postService).createSystemNotice(captor.capture());
@@ -99,7 +99,7 @@ class SystemNoticeServiceTest {
 		User updater = org.mockito.Mockito.mock(User.class);
 		given(systemNoticeReader.getSystemNoticePost("post-id")).willReturn(latestPost);
 
-		systemNoticeService.update("post-id", new SystemNoticeUpdateCommand("updated content", updater));
+		systemNoticeService.update("post-id", new SystemNoticeUpdateCommand("테스트 제목", "updated content", updater));
 
 		ArgumentCaptor<PostUpdateCommand> captor = ArgumentCaptor.forClass(PostUpdateCommand.class);
 		verify(postService).updateSystemNotice(captor.capture());

@@ -41,17 +41,17 @@ public class SystemNoticeService {
 	public SystemNoticeCreateResult create(SystemNoticeCreateCommand command) {
 		String boardId = systemNoticeReader.getSystemNoticeBoardId();
 		PostCreateResult result = postService.createSystemNotice(new PostCreateCommand(
-			command.content(), boardId, false, command.writer(), List.of(), List.of()));
+			command.title(), command.content(), boardId, false, command.writer(), List.of(), List.of()));
 
 		return new SystemNoticeCreateResult(
-			result.id(), result.content(), command.writer().getNickname(), result.createdAt());
+			result.id(), result.title(), result.content(), command.writer().getNickname(), result.createdAt());
 	}
 
 	@Transactional
 	public void update(String postId, SystemNoticeUpdateCommand command) {
 		systemNoticeReader.getSystemNoticePost(postId);
 		postService.updateSystemNotice(new PostUpdateCommand(
-			postId, command.content(), false, command.updater(), List.of(), List.of()));
+			postId, command.title(), command.content(), false, command.updater(), List.of(), List.of()));
 	}
 
 	@Transactional
@@ -99,6 +99,7 @@ public class SystemNoticeService {
 
 		return new SystemNoticeResult(
 			post.getId(),
+			post.getTitle(),
 			post.getContent(),
 			authorName,
 			post.getCreatedAt(),

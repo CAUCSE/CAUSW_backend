@@ -53,7 +53,7 @@ class SystemNoticeControllerTest {
 	void getLatestReturnsMappedSystemNoticeWhenNoticeExists() {
 		LocalDateTime createdAt = LocalDateTime.of(2026, 8, 12, 10, 0);
 		SystemNoticeResult result = new SystemNoticeResult(
-			"post-id", "content", "author", createdAt, true);
+			"post-id", "테스트 제목", "content", "author", createdAt, true);
 		given(userDetails.getUser()).willReturn(viewer);
 		given(systemNoticeService.getLatest(viewer)).willReturn(Optional.of(result));
 

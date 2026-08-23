@@ -124,7 +124,7 @@ public class PostServiceTest {
 		BoardConfig boardConfig = mock(BoardConfig.class);
 		User writer = mock(User.class);
 		PostCreateCommand command = new PostCreateCommand(
-			"content", boardId, false, writer, List.of(), List.of());
+			null, "content", boardId, false, writer, List.of(), List.of());
 		given(boardReader.getById(boardId)).willReturn(board);
 		given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 		given(boardConfig.isSystemNotice()).willReturn(true);
@@ -145,7 +145,7 @@ public class PostServiceTest {
 		BoardConfig boardConfig = mock(BoardConfig.class);
 		User updater = mock(User.class);
 		PostUpdateCommand command = new PostUpdateCommand(
-			postId, "content", false, updater, List.of(), List.of());
+			postId, null, "content", false, updater, List.of(), List.of());
 		given(postReader.findByIdAndNotDeleted(postId)).willReturn(post);
 		given(post.getBoard()).willReturn(board);
 		given(board.getId()).willReturn(boardId);
