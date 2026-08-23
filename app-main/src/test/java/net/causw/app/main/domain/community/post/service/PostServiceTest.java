@@ -1683,5 +1683,82 @@ public class PostServiceTest {
 			assertThatThrownBy(() -> postService.getPostDetail(query, mockRequest, mockResponse))
 				.isInstanceOf(BaseRunTimeV2Exception.class);
 		}
+
+		@DisplayName("쿠키가 없고 예약 성공 시 조회수가 증가하고 쿠키가 발급된다")
+		@Test
+		void getPostDetail_shouldIncrementViewCount_whenReserveSucceeds() {
+			// given
+			PostDetailQuery query = new PostDetailQuery(postId, viewer);
+			List<String> boardAdminIds = List.of("admin-id");
+
+			// setUp의 기본 stub(성공)을 활용하되 명시적으로 검증
+			given(postReader.findByIdAndNotDeleted(postId)).willReturn(post);
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
+			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(likePostReader.countByPostId(postId)).willReturn(10L);
+			given(likePostReader.existsByPostIdAndUserId(postId, "viewer-id")).willReturn(false);
+
+			// when
+			PostDetailResult result = postService.getPostDetail(query, mockRequest, mockResponse);
+
+			// then
+			assertAll(
+				() -> assertThat(result).isNotNull(),
+				() -> verify(postWriter, times(1)).incrementViewCount(postId),
+				() -> verify(viewCountManager, times(1)).markViewed(mockResponse, postId));
+		}
+
+		@DisplayName("이미 쿠키가 존재하는 경우 조회수 증가와 쿠키 발급이 생략된다")
+		@Test
+		void getPostDetail_shouldNotIncrementViewCount_whenCookieExists() {
+			// given
+			PostDetailQuery query = new PostDetailQuery(postId, viewer);
+			List<String> boardAdminIds = List.of("admin-id");
+
+			// 쿠키가 이미 존재한다고 설정 (setUp의 기본 stub을 덮어씀)
+			given(viewCountManager.hasViewedCookie(any(), eq(postId))).willReturn(true);
+
+			given(postReader.findByIdAndNotDeleted(postId)).willReturn(post);
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
+			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(likePostReader.countByPostId(postId)).willReturn(10L);
+			given(likePostReader.existsByPostIdAndUserId(postId, "viewer-id")).willReturn(false);
+
+			// when
+			PostDetailResult result = postService.getPostDetail(query, mockRequest, mockResponse);
+
+			// then
+			assertAll(
+				() -> assertThat(result).isNotNull(),
+				() -> verify(postWriter, never()).incrementViewCount(anyString()),
+				() -> verify(viewCountManager, never()).markViewed(any(), anyString()));
+		}
+
+		@DisplayName("Redis 예약 획득에 실패한 경우 조회수 증가와 쿠키 발급이 생략된다")
+		@Test
+		void getPostDetail_shouldNotIncrementViewCount_whenReserveFails() {
+			// given
+			PostDetailQuery query = new PostDetailQuery(postId, viewer);
+			List<String> boardAdminIds = List.of("admin-id");
+
+			// 예약 실패(acquired = false)로 설정 (setUp의 기본 stub을 덮어씀)
+			given(viewCountManager.reserve(eq(viewer.getId()), eq(postId)))
+				.willReturn(new ViewCountManager.ViewReservation("key", "token", false));
+
+			given(postReader.findByIdAndNotDeleted(postId)).willReturn(post);
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
+			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(likePostReader.countByPostId(postId)).willReturn(10L);
+			given(likePostReader.existsByPostIdAndUserId(postId, "viewer-id")).willReturn(false);
+
+			// when
+			PostDetailResult result = postService.getPostDetail(query, mockRequest, mockResponse);
+
+			// then
+			assertAll(
+				() -> assertThat(result).isNotNull(),
+				() -> verify(postWriter, never()).incrementViewCount(anyString()),
+				() -> verify(viewCountManager, never()).markViewed(any(), anyString()));
+		}
 	}
 }
