@@ -9,7 +9,7 @@ import net.causw.app.main.core.aop.enums.AdminTarget;
 
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface RequireAdminRole {
+public @interface RequireAdminRole{
 	/**
 	 * 접근을 허용할 관리자 타겟을 지정합니다.
 	 * 기본값은 모든 관리자가 접근 가능한 ALL_ADMIN 입니다.

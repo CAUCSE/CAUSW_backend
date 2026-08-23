@@ -40,7 +40,7 @@ public class AdminAuthorizationAspect {
 		}
 
 		// User 정보 추출
-		CustomUserDetails userDetails = (CustomUserDetails) principal;
+		CustomUserDetails userDetails = (CustomUserDetails)principal;
 		User user = userDetails.getUser();
 
 		boolean isSystemAdmin = user.getRoles().contains(Role.SYSTEM_ADMIN);
@@ -79,7 +79,7 @@ public class AdminAuthorizationAspect {
 
 	// JoinPoint에서 @RequireAdminRole 어노테이션 추출
 	private RequireAdminRole getAnnotation(JoinPoint joinPoint) {
-		MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+		MethodSignature signature = (MethodSignature)joinPoint.getSignature();
 		Method method = signature.getMethod();
 
 		RequireAdminRole annotation = AnnotationUtils.findAnnotation(method, RequireAdminRole.class);

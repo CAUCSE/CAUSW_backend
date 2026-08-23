@@ -297,7 +297,8 @@ public class PostService {
 
 		// 닉네임 마스킹 및 공식 배지 여부 판단
 		boolean isNotice = boardConfig.isNotice() || post.getIsCrawled();
-		boolean isSystemAdminWriter = post.getWriter() != null && post.getWriter().getRoles().contains(Role.SYSTEM_ADMIN);
+		boolean isSystemAdminWriter = post.getWriter() != null
+			&& post.getWriter().getRoles().contains(Role.SYSTEM_ADMIN);
 		boolean isBoardAdminWriter = post.getWriter() != null && boardAdminIds.contains(post.getWriter().getId());
 		boolean isOfficial = isNotice || ((isSystemAdminWriter || isBoardAdminWriter) && !post.getIsAnonymous());
 
@@ -482,7 +483,8 @@ public class PostService {
 
 				// 마스킹 및 공식배지 판단 (시스템 관리자 또는 해당 게시판 관리자의 글에는 공식 배지 부여)
 				boolean isNotice = (boardConfig != null && boardConfig.isNotice()) || result.isCrawled();
-				boolean isSystemAdminWriter = result.writerId() != null && systemAdminWriterIds.contains(result.writerId());
+				boolean isSystemAdminWriter = result.writerId() != null
+					&& systemAdminWriterIds.contains(result.writerId());
 				boolean isBoardAdminWriter = result.writerId() != null && boardAdminIds.contains(result.writerId());
 				boolean isOfficial = isNotice || ((isSystemAdminWriter || isBoardAdminWriter) && !result.isAnonymous());
 
