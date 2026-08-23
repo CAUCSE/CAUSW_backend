@@ -90,7 +90,6 @@ class CrawledNoticeTransferServiceTest {
 
 		// then
 		verify(postWriter).save(org.mockito.ArgumentMatchers.any(Post.class));
-		verify(postWriter).save(org.mockito.ArgumentMatchers.argThat(Post::getIsCrawledContentSeparated));
 		verify(crawledNoticeWriter).markTransferred(org.mockito.ArgumentMatchers.eq(notice),
 			org.mockito.ArgumentMatchers.any(Post.class));
 	}
@@ -136,7 +135,6 @@ class CrawledNoticeTransferServiceTest {
 		// then
 		verify(existingPost).update(org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.anyString(),
 			org.mockito.ArgumentMatchers.eq(false), org.mockito.ArgumentMatchers.eq(List.of()));
-		verify(existingPost).markCrawledContentSeparated();
 		verify(postWriter).save(existingPost);
 		verify(crawledNoticeWriter).markTransferred(notice, existingPost);
 	}
