@@ -506,24 +506,24 @@ public class PostQueryRepository {
 	}
 
 	/**
-	 * 주어진 사용자 ID 목록 중 최고 관리자(ADMIN) 권한을 가진 사용자 ID를 조회합니다.
+	 * 주어진 사용자 ID 목록 중 시스템 관리자(SYSTEM_ADMIN) 권한을 가진 사용자 ID를 조회합니다.
 	 * @param userIds 확인할 사용자 ID 목록
-	 * @return ADMIN 권한을 가진 사용자 ID Set
+	 * @return SYSTEM_ADMIN 권한을 가진 사용자 ID Set
 	 */
-	public Set<String> findAdminUserIds(List<String> userIds) {
+	public Set<String> findSystemAdminUserIds(List<String> userIds) {
 		if (userIds == null || userIds.isEmpty()) {
 			return Collections.emptySet();
 		}
 
 		QUser user = QUser.user;
 
-		List<String> adminIds = jpaQueryFactory.select(user.id)
+		List<String> systemAdminIds = jpaQueryFactory.select(user.id)
 			.from(user)
 			.where(
 				user.id.in(userIds),
-				user.roles.any().eq(Role.ADMIN))
+				user.roles.any().eq(Role.SYSTEM_ADMIN))
 			.fetch();
 
-		return new HashSet<>(adminIds);
+		return new HashSet<>(systemAdminIds);
 	}
 }

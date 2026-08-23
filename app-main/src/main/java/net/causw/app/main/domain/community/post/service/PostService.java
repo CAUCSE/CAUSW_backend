@@ -240,17 +240,17 @@ public class PostService {
 		Map<String, BoardConfig> boardConfigMap = boardConfigReader.getBoardConfigMapByBoardIds(uniqueBoardIds);
 		Map<String, Set<String>> boardAdminIdMap = boardConfigReader.getAdminIdSetMapByBoardIds(uniqueBoardIds);
 
-		// 작성자 중 Role이 ADMIN인 사용자 ID 조회 (시스템 관리자 판별용)
+		// 작성자 중 Role이 SYSTEM_ADMIN인 사용자 ID 조회 (시스템 관리자 판별용)
 		List<String> writerIds = posts.stream()
 			.map(PostCursorResult::writerId)
 			.filter(Objects::nonNull)
 			.distinct()
 			.toList();
-		Set<String> adminWriterIds = postReader.findAdminUserIds(writerIds);
+		Set<String> systemAdminWriterIds = postReader.findSystemAdminUserIds(writerIds);
 
 		// PostListResult로 변환 (PostMapper 사용)
 		List<PostListResult.PostItem> postItems = buildPostItems(posts, postImagesMap, likedPostIds, viewer,
-			boardConfigMap, boardAdminIdMap, adminWriterIds);
+			boardConfigMap, boardAdminIdMap, systemAdminWriterIds);
 
 		return PostListResult.of(postItems, nextCursor);
 	}
@@ -297,8 +297,9 @@ public class PostService {
 
 		// 닉네임 마스킹 및 공식 배지 여부 판단
 		boolean isNotice = boardConfig.isNotice() || post.getIsCrawled();
-		boolean isAdmin = post.getWriter() != null && post.getWriter().getRoles().contains(Role.ADMIN);
-		boolean isOfficial = isNotice || (isAdmin && !post.getIsAnonymous());
+		boolean isSystemAdminWriter = post.getWriter() != null && post.getWriter().getRoles().contains(Role.SYSTEM_ADMIN);
+		boolean isBoardAdminWriter = post.getWriter() != null && boardAdminIds.contains(post.getWriter().getId());
+		boolean isOfficial = isNotice || ((isSystemAdminWriter || isBoardAdminWriter) && !post.getIsAnonymous());
 
 		// 공식 프로필 정보 조회
 		String officialNickname = boardConfig.getOfficialNickname();
@@ -423,16 +424,16 @@ public class PostService {
 		Map<String, BoardConfig> boardConfigMap = boardConfigReader.getBoardConfigMapByBoardIds(uniqueBoardIds);
 		Map<String, Set<String>> boardAdminIdMap = boardConfigReader.getAdminIdSetMapByBoardIds(uniqueBoardIds);
 
-		// 작성자 중 Role이 ADMIN인 사용자 ID 조회 (시스템 관리자 판별용)
+		// 작성자 중 Role이 SYSTEM_ADMIN인 사용자 ID 조회 (시스템 관리자 판별용)
 		List<String> writerIds = posts.stream()
 			.map(PostCursorResult::writerId)
 			.filter(Objects::nonNull)
 			.distinct()
 			.toList();
-		Set<String> adminWriterIds = postReader.findAdminUserIds(writerIds);
+		Set<String> systemAdminUserIds = postReader.findSystemAdminUserIds(writerIds);
 
 		List<PostListResult.PostItem> postItems = buildPostItems(posts, postImagesMap, likedPostIds, viewer,
-			boardConfigMap, boardAdminIdMap, adminWriterIds);
+			boardConfigMap, boardAdminIdMap, systemAdminUserIds);
 
 		String nextCursor = null;
 		if (slice.hasNext()) {
@@ -452,6 +453,8 @@ public class PostService {
 	 * @param likedPostIds   viewer가 좋아요한 게시글 ID 집합
 	 * @param viewer         조회 요청 사용자
 	 * @param boardConfigMap 게시판 ID → BoardConfig맵
+	 * @param boardAdminIdMap 게시판 ID → 게시판 관리자 ID 맵
+	 * @param systemAdminWriterIds SYSTEM_ADMIN 권한을 가진 작성자ID 집합
 	 * @return PostItem 리스트
 	 */
 	private List<PostListResult.PostItem> buildPostItems(
@@ -461,7 +464,7 @@ public class PostService {
 		User viewer,
 		Map<String, BoardConfig> boardConfigMap,
 		Map<String, Set<String>> boardAdminIdMap,
-		Set<String> adminWriterIds) {
+		Set<String> systemAdminWriterIds) {
 
 		return posts.stream()
 			.map(result -> {
@@ -477,10 +480,11 @@ public class PostService {
 
 				BoardConfig boardConfig = boardConfigMap.get(result.boardId());
 
-				// 마스킹 및 공식배지 판단
+				// 마스킹 및 공식배지 판단 (시스템 관리자 또는 해당 게시판 관리자의 글에는 공식 배지 부여)
 				boolean isNotice = (boardConfig != null && boardConfig.isNotice()) || result.isCrawled();
-				boolean isAdmin = result.writerId() != null && adminWriterIds.contains(result.writerId());
-				boolean isOfficial = isNotice || (isAdmin && !result.isAnonymous());
+				boolean isSystemAdminWriter = result.writerId() != null && systemAdminWriterIds.contains(result.writerId());
+				boolean isBoardAdminWriter = result.writerId() != null && boardAdminIds.contains(result.writerId());
+				boolean isOfficial = isNotice || ((isSystemAdminWriter || isBoardAdminWriter) && !result.isAnonymous());
 
 				String officialNickname = boardConfig != null ? boardConfig.getOfficialNickname() : null;
 				String officialImageUrl = null;
