@@ -25,6 +25,7 @@ import net.causw.app.main.domain.community.common.service.CommunityPermissionPol
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.query.PostCursorResult;
 import net.causw.app.main.domain.community.post.repository.query.PostReadQueryContext;
+import net.causw.app.main.domain.community.post.service.dto.CrawledAttachmentResult;
 import net.causw.app.main.domain.community.post.service.dto.PostCreateCommand;
 import net.causw.app.main.domain.community.post.service.dto.PostCreateResult;
 import net.causw.app.main.domain.community.post.service.dto.PostDetailQuery;
@@ -41,6 +42,7 @@ import net.causw.app.main.domain.community.post.service.mapper.PostMapper;
 import net.causw.app.main.domain.community.post.service.util.PostCursorManager;
 import net.causw.app.main.domain.community.post.service.util.PostValidator;
 import net.causw.app.main.domain.community.reaction.service.implementation.LikePostReader;
+import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeReader;
 import net.causw.app.main.domain.notification.notification.event.OfficialPostEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;
@@ -68,6 +70,7 @@ public class PostService {
 	private final UserProfileImageReader userProfileImageReader;
 	private final FileReader fileReader;
 	private final ViewCountManager viewCountManager;
+	private final CrawledNoticeReader crawledNoticeReader;
 
 	/**
 	 * 게시글을 생성합니다. 게시글 내용과 첨부 이미지를 저장합니다.
@@ -303,6 +306,7 @@ public class PostService {
 
 		// 게시글 이미지 조회
 		List<String> imageUrls = postReader.findPostImages(postId);
+		CrawledPostDetail crawledPostDetail = getCrawledPostDetail(post);
 
 		// 좋아요, 댓글 개수 조회
 		Long numComment = postReader.countComments(postId);
@@ -343,6 +347,8 @@ public class PostService {
 			post,
 			writerProfileImage,
 			imageUrls,
+			crawledPostDetail.attachments(),
+			crawledPostDetail.originalNoticeUrl(),
 			numComment,
 			numLike,
 			isPostLike,
@@ -353,6 +359,26 @@ public class PostService {
 			isOfficial,
 			officialNickname,
 			officialImageUrl);
+	}
+
+	private CrawledPostDetail getCrawledPostDetail(Post post) {
+		if (!Boolean.TRUE.equals(post.getIsCrawled())) {
+			return CrawledPostDetail.empty();
+		}
+
+		return crawledNoticeReader.findByPostId(post.getId())
+			.map(notice -> new CrawledPostDetail(
+				notice.getCrawledFileLinks().stream()
+					.map(fileLink -> new CrawledAttachmentResult(fileLink.getFileName(), fileLink.getFileLink()))
+					.toList(),
+				notice.getLink()))
+			.orElseGet(CrawledPostDetail::empty);
+	}
+
+	private record CrawledPostDetail(List<CrawledAttachmentResult> attachments, String originalNoticeUrl) {
+		private static CrawledPostDetail empty() {
+			return new CrawledPostDetail(List.of(), null);
+		}
 	}
 
 	/**
