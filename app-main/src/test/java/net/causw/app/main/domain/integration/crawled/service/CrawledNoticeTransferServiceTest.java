@@ -2,6 +2,7 @@ package net.causw.app.main.domain.integration.crawled.service;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.verify;
 
 import java.time.LocalDate;
@@ -51,10 +52,10 @@ class CrawledNoticeTransferServiceTest {
 	private org.springframework.context.ApplicationEventPublisher applicationEventPublisher;
 
 	@Test
-	@DisplayName("연결된 Post가 없는 전송 대기 공지는 공지일과 관계없이 새 Post로 생성한다")
-	void transfer_shouldCreatePost_whenUnlinkedNoticeIsPending() {
+	@DisplayName("연결된 Post가 없는 오늘 공지는 새 Post로 생성한다")
+	void transfer_shouldCreatePost_whenUnlinkedNoticeIsAnnouncedToday() {
 		// given
-		CrawledNotice notice = notice(LocalDate.of(2026, 8, 10));
+		CrawledNotice notice = notice(LocalDate.now());
 		given(crawledNoticeReader.findById(notice.getId())).willReturn(notice);
 		given(userReader.findByEmail(StaticValue.SYSTEM_CRAWLER_ACCOUNT))
 			.willReturn(Optional.of(org.mockito.Mockito.mock(User.class)));
@@ -67,6 +68,23 @@ class CrawledNoticeTransferServiceTest {
 		verify(postWriter).save(org.mockito.ArgumentMatchers.any(Post.class));
 		verify(crawledNoticeWriter).markTransferred(org.mockito.ArgumentMatchers.eq(notice),
 			org.mockito.ArgumentMatchers.any(Post.class));
+	}
+
+	@Test
+	@DisplayName("연결된 Post가 없는 과거 공지는 전송 완료만 기록한다")
+	void transfer_shouldMarkTransferredWithoutCreatingPost_whenUnlinkedNoticeIsNotAnnouncedToday() {
+		// given
+		CrawledNotice notice = notice(LocalDate.now().minusDays(1));
+		given(crawledNoticeReader.findById(notice.getId())).willReturn(notice);
+
+		// when
+		transferService.transfer(notice.getId());
+
+		// then
+		verify(crawledNoticeWriter).markTransferred(notice);
+		then(postWriter).shouldHaveNoInteractions();
+		then(userReader).shouldHaveNoInteractions();
+		then(boardReader).shouldHaveNoInteractions();
 	}
 
 	@Test
