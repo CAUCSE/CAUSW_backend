@@ -116,6 +116,7 @@ public class PostMapper {
 			imageUrls,
 			result.boardId(),
 			result.boardName(),
+			result.category(),
 			isPostLike,
 			isOwner,
 			updatable,

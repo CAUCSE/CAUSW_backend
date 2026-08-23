@@ -13,9 +13,13 @@ import net.causw.app.main.domain.community.vote.entity.Vote;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.entity.BaseEntity;
 
+import net.causw.app.main.domain.community.post.enums.PostCategory;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
@@ -75,6 +79,10 @@ public class Post extends BaseEntity {
 	@ColumnDefault("false")
 	@Builder.Default
 	private Boolean isCrawled = false;
+
+	@Column(name = "category")
+	@Enumerated(EnumType.STRING)
+	private PostCategory category;
 
 	@ManyToOne(targetEntity = Board.class)
 	@JoinColumn(name = "board_id", nullable = false)
