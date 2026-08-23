@@ -64,6 +64,7 @@ class SystemNoticeControllerTest {
 		SystemNoticeResponse data = response.getBody().getData();
 		assertThat(data).isNotNull();
 		assertThat(data.id()).isEqualTo("post-id");
+		assertThat(data.title()).isEqualTo("테스트 제목");
 		assertThat(data.content()).isEqualTo("content");
 		assertThat(data.authorName()).isEqualTo("author");
 		assertThat(data.createdAt()).isEqualTo(createdAt);

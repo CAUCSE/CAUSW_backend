@@ -156,7 +156,7 @@ public class PostServiceTest {
 			.isInstanceOf(BaseRunTimeV2Exception.class)
 			.extracting("errorCode")
 			.isEqualTo(PostErrorCode.POST_SYSTEM_NOTICE_CUD_ONLY_VIA_DEDICATED_API);
-		verify(postWriter, never()).updateContentAndImages(any(), anyString(), any(), anyList());
+		verify(postWriter, never()).update(any(), any(), any(), any(), anyList());
 	}
 
 	@Test

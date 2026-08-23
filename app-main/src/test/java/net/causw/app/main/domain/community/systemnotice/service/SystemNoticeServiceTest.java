@@ -77,6 +77,7 @@ class SystemNoticeServiceTest {
 		LocalDateTime createdAt = LocalDateTime.of(2026, 8, 9, 12, 0);
 		PostCreateResult postResult = PostCreateResult.builder()
 			.id("post-id")
+			.title("테스트 제목")
 			.content("content")
 			.createdAt(createdAt)
 			.build();
@@ -90,7 +91,9 @@ class SystemNoticeServiceTest {
 
 		ArgumentCaptor<PostCreateCommand> captor = ArgumentCaptor.forClass(PostCreateCommand.class);
 		verify(postService).createSystemNotice(captor.capture());
+		assertThat(captor.getValue().title()).isEqualTo("테스트 제목");
 		assertThat(captor.getValue().content()).isEqualTo("content");
+		assertThat(result.title()).isEqualTo("테스트 제목");
 		assertThat(result.content()).isEqualTo("content");
 	}
 
@@ -103,6 +106,7 @@ class SystemNoticeServiceTest {
 
 		ArgumentCaptor<PostUpdateCommand> captor = ArgumentCaptor.forClass(PostUpdateCommand.class);
 		verify(postService).updateSystemNotice(captor.capture());
+		assertThat(captor.getValue().title()).isEqualTo("테스트 제목");
 		assertThat(captor.getValue().content()).isEqualTo("updated content");
 	}
 
@@ -125,12 +129,14 @@ class SystemNoticeServiceTest {
 		givenReadableSystemNotice(latestPost);
 		given(systemNoticeReader.findReadByUserId("user-id")).willReturn(Optional.empty());
 		given(latestPost.getId()).willReturn("post-id");
+		given(latestPost.getTitle()).willReturn("테스트 제목");
 		given(latestPost.getContent()).willReturn("content");
 		given(latestPost.getWriter()).willReturn(writer);
 		given(writer.getNickname()).willReturn("admin");
 
 		SystemNoticeResult result = systemNoticeService.getLatest(viewer).orElseThrow();
 
+		assertThat(result.title()).isEqualTo("테스트 제목");
 		assertThat(result.content()).isEqualTo("content");
 	}
 
