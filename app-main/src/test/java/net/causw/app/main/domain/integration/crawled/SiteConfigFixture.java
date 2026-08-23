@@ -69,4 +69,36 @@ public final class SiteConfigFixture {
 			false,
 			true);
 	}
+
+	public static SiteConfig cauAiNotice() {
+		return SiteConfig.of(
+			"cau-ai-notice",
+			"target-board-id",
+			CrawlerType.CAU_AI_NOTICE,
+			"https://ai.cau.ac.kr/sub07/sub0701.php?category=1&view=list&currentPage=",
+			"https://ai.cau.ac.kr",
+			Map.of(),
+			Duration.ZERO,
+			Duration.ofSeconds(1),
+			1,
+			30,
+			3,
+			PaginationType.PAGE_NUMBER,
+			"currentPage",
+			1,
+			SiteSelectors.of(
+				"table.table-basic tbody tr",
+				"td.title a",
+				"td:first-child",
+				"section.board div.header > h3",
+				"section.board div.fr-view.detail",
+				"section.board div.header > div > span:nth-of-type(1)",
+				"section.board div.header > div > span:nth-of-type(2)",
+				"section.board div.fr-view.detail img",
+				"yyyy-MM-dd HH:mm:ss",
+				null),
+			false,
+			false,
+			true);
+	}
 }
