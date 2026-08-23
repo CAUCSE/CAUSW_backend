@@ -89,8 +89,7 @@ public class SystemNoticeService {
 
 	private SystemNoticeResult toResult(Post post, User viewer) {
 		boolean isRead = systemNoticeReader.findReadByUserId(viewer.getId())
-			.map(UserSystemNoticeRead::getLastReadPost)
-			.map(Post::getId)
+			.map(UserSystemNoticeRead::getLastReadPostId)
 			.filter(post.getId()::equals)
 			.isPresent();
 
