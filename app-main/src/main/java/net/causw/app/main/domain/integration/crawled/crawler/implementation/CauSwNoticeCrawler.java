@@ -1,5 +1,9 @@
 package net.causw.app.main.domain.integration.crawled.crawler.implementation;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -32,6 +36,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class CauSwNoticeCrawler implements SiteCrawler {
+	private static final ZoneId KOREA_ZONE_ID = ZoneId.of("Asia/Seoul");
+	private static final DateTimeFormatter LIST_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd");
 	private static final Pattern SCRIPT_DOWNLOAD_PATTERN = Pattern.compile(
 		"goLocation\\('/_module/bbs/download.php','(\\d+)','(\\w+)'\\).*?>(.*?)<");
 	private static final Pattern NOTICE_CODE_PATTERN = Pattern.compile("[?&]code=([^&]+)");
@@ -71,6 +77,9 @@ public class CauSwNoticeCrawler implements SiteCrawler {
 				if (articleUrls.size() >= siteConfig.getMaxArticles()) {
 					break;
 				}
+				if (!isWithinScanRange(row, siteConfig)) {
+					continue;
+				}
 				Element linkElement = row.selectFirst(selectors.getArticleLink());
 				if (linkElement == null) {
 					continue;
@@ -88,6 +97,21 @@ public class CauSwNoticeCrawler implements SiteCrawler {
 		log.debug("[크롤링] 공지 목록 수집 완료. siteId={}, 추출={}, 중복 제거 후={}",
 			siteConfig.getSiteId(), articleUrls.size(), distinctArticleUrls.size());
 		return distinctArticleUrls;
+	}
+
+	private boolean isWithinScanRange(Element row, SiteConfig siteConfig) {
+		Element dateElement = row.selectFirst("td:nth-last-child(2)");
+		if (dateElement == null || dateElement.text().isBlank()) {
+			throw IntegrationErrorCode.CRAWL_PARSE_FAILED.toBaseException();
+		}
+		try {
+			LocalDate announceDate = LocalDate.parse(dateElement.text().trim(), LIST_DATE_FORMATTER);
+			LocalDate today = LocalDate.now(KOREA_ZONE_ID);
+			return !announceDate.isBefore(today.minusDays(siteConfig.getMaxScanRangeDays()))
+				&& !announceDate.isAfter(today);
+		} catch (DateTimeParseException e) {
+			throw IntegrationErrorCode.CRAWL_PARSE_FAILED.toBaseException();
+		}
 	}
 
 	private String extractNoticeId(String url) {
