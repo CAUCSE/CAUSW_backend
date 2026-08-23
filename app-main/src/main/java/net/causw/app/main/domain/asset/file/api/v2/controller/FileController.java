@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -77,47 +76,47 @@ public class FileController {
 	@PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@PreAuthorize("@security.hasRole(@Role.ADMIN) or @security.hasRole(@Role.SYSTEM_ADMIN)")
 	@RequireAdminRole(target = AdminTarget.ALL_ADMIN)
-	public ResponseEntity<FileUploadResponse> uploadFile(
+	public ApiResponse<FileUploadResponse> uploadFile(
 		@RequestParam("file") MultipartFile file,
 		@RequestParam("type") FilePath filePath) {
 		log.info("File upload requested. FilePath: {}", filePath);
 
 		UuidFile savedFile = uuidFileService.saveFile(file, filePath);
 
-		return ResponseEntity.ok(FileUploadResponse.from(savedFile));
+		return ApiResponse.success(FileUploadResponse.from(savedFile));
 	}
 
 	@Operation(summary = "다중 파일 업로드", description = "여러 파일을 한 번에 업로드합니다.")
 	@PostMapping(value = "/upload/multiple", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@PreAuthorize("@security.hasRole(@Role.ADMIN) or @security.hasRole(@Role.SYSTEM_ADMIN)")
 	@RequireAdminRole(target = AdminTarget.ALL_ADMIN)
-	public ResponseEntity<MultipleFilesUploadResponse> uploadMultipleFiles(
+	public ApiResponse<MultipleFilesUploadResponse> uploadMultipleFiles(
 		@RequestParam("files") List<MultipartFile> files,
 		@RequestParam("type") FilePath filePath) {
 		log.info("Multiple files upload requested. Count: {}, FilePath: {}", files.size(), filePath);
 
 		List<UuidFile> savedFiles = uuidFileService.saveFileList(files, filePath);
 
-		return ResponseEntity.ok(MultipleFilesUploadResponse.from(savedFiles));
+		return ApiResponse.success(MultipleFilesUploadResponse.from(savedFiles));
 	}
 
 	@Operation(summary = "파일 조회", description = "파일 ID로 파일 정보를 조회합니다.")
 	@GetMapping("/{fileId}")
 	@PreAuthorize("@security.hasRole(@Role.ADMIN) or @security.hasRole(@Role.SYSTEM_ADMIN)")
 	@RequireAdminRole(target = AdminTarget.ALL_ADMIN)
-	public ResponseEntity<FileInfoResponse> getFile(@PathVariable String fileId) {
+	public ApiResponse<FileInfoResponse> getFile(@PathVariable String fileId) {
 		log.info("File info requested. FileId: {}", fileId);
 
 		UuidFile file = uuidFileService.findUuidFileById(fileId);
 
-		return ResponseEntity.ok(FileInfoResponse.from(file));
+		return ApiResponse.success(FileInfoResponse.from(file));
 	}
 
 	@Operation(summary = "파일 수정", description = "기존 파일을 삭제하고 새 파일로 교체합니다.")
 	@PutMapping(value = "/{fileId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@PreAuthorize("@security.hasRole(@Role.ADMIN) or @security.hasRole(@Role.SYSTEM_ADMIN)")
 	@RequireAdminRole(target = AdminTarget.ALL_ADMIN)
-	public ResponseEntity<FileUploadResponse> updateFile(
+	public ApiResponse<FileUploadResponse> updateFile(
 		@PathVariable String fileId,
 		@RequestParam("file") MultipartFile file,
 		@RequestParam("type") FilePath filePath) {
@@ -125,18 +124,18 @@ public class FileController {
 
 		UuidFile updatedFile = uuidFileService.updateFile(fileId, file, filePath);
 
-		return ResponseEntity.ok(FileUploadResponse.from(updatedFile));
+		return ApiResponse.success(FileUploadResponse.from(updatedFile));
 	}
 
 	@Operation(summary = "파일 삭제", description = "파일을 삭제합니다.")
 	@DeleteMapping("/{fileId}")
 	@PreAuthorize("@security.hasRole(@Role.ADMIN) or @security.hasRole(@Role.SYSTEM_ADMIN)")
 	@RequireAdminRole(target = AdminTarget.ALL_ADMIN)
-	public ResponseEntity<Void> deleteFile(@PathVariable String fileId) {
+	public ApiResponse<Void> deleteFile(@PathVariable String fileId) {
 		log.info("File delete requested. FileId: {}", fileId);
 
 		uuidFileService.deleteFile(fileId);
 
-		return ResponseEntity.noContent().build();
+		return ApiResponse.success();
 	}
 }
