@@ -12,9 +12,11 @@ import com.querydsl.core.annotations.QueryProjection;
  */
 public record PostCursorResult(
 	String postId,
+	String title,
 	String content,
 	long numComment,
 	long numLike,
+	long viewCount,
 	boolean isAnonymous,
 	String voteId,
 	boolean isDeleted,

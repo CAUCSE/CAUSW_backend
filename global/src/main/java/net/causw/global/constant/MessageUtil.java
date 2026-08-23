@@ -35,6 +35,9 @@ public class MessageUtil {
 
 	public static final String FILE_UPLOAD_FAIL = "파일 업로드에 실패했습니다.";
 	public static final String FILE_DELETE_FAIL = "파일 삭제에 실패했습니다.";
+	public static final String FILE_NOT_UPLOADED = "파일이 아직 업로드되지 않았습니다. S3에 직접 업로드 후 다시 시도해 주세요.";
+	public static final String FILE_ALREADY_USED = "이미 사용된 파일입니다.";
+	public static final String INVALID_FILE_PATH = "파일 경로 유형이 요청한 도메인과 일치하지 않습니다.";
 	public static final String BATCH_FAIL = "[배치 실행에 실패했습니다.]";
 
 	public static final String FAIL_TO_CRAWL_CAU_SW_NOTICE_SITE = "소프트웨어학부 공지사항 크롤링 실패";

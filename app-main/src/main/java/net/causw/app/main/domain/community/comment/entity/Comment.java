@@ -41,6 +41,9 @@ public class Comment extends BaseEntity {
 	@ColumnDefault("false")
 	private Boolean isAnonymous;
 
+	@Column(name = "anonymous_nickname", length = 30)
+	private String anonymousNickname;
+
 	@ManyToOne(targetEntity = User.class)
 	@JoinColumn(name = "user_id", nullable = false)
 	private User writer;
@@ -76,12 +79,14 @@ public class Comment extends BaseEntity {
 	public static Comment ofRoot(
 		String content,
 		Boolean isAnonymous,
+		String anonymousNickname,
 		User writer,
 		Post post) {
 		return Comment.builder()
 			.content(content)
 			.isDeleted(false)
 			.isAnonymous(isAnonymous)
+			.anonymousNickname(anonymousNickname)
 			.writer(writer)
 			.post(post)
 			.build();
@@ -90,12 +95,14 @@ public class Comment extends BaseEntity {
 	public static Comment ofChildComment(
 		String content,
 		Boolean isAnonymous,
+		String anonymousNickname,
 		User writer,
 		Comment parentComment) {
 		return Comment.builder()
 			.content(content)
 			.isDeleted(false)
 			.isAnonymous(isAnonymous)
+			.anonymousNickname(anonymousNickname)
 			.writer(writer)
 			.post(parentComment.getPost())
 			.parentComment(parentComment)

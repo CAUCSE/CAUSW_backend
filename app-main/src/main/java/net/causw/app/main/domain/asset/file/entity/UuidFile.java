@@ -52,6 +52,12 @@ public class UuidFile extends BaseEntity {
 	@Column(name = "is_used", nullable = false)
 	private Boolean isUsed = Boolean.TRUE;
 
+	@Setter(AccessLevel.PUBLIC)
+	@ColumnDefault("false")
+	@Builder.Default
+	@Column(name = "is_uploaded", nullable = false)
+	private Boolean isUploaded = Boolean.FALSE;
+
 	public static UuidFile of(String uuid, String fileKey, String fileUrl, String rawFileName, String extension,
 		FilePath filePath) {
 		return UuidFile.builder()

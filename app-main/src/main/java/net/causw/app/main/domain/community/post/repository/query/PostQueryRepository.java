@@ -449,8 +449,9 @@ public class PostQueryRepository {
 			.where(upi.user.id.eq(post.writer.id));
 
 		return new QPostCursorResult(
-			post.id, post.content,
+			post.id, post.title, post.content,
 			totalCommentCount, likeCount,
+			post.viewCount,
 			post.isAnonymous, post.vote.id, post.isDeleted,
 			post.isCrawled,
 			writer.isNotNull(), writer.id, writer.name, writer.nickname, writer.admissionYear, writer.state,

@@ -11,8 +11,10 @@ import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.implementation.PostReader;
 import net.causw.app.main.domain.community.post.service.util.LikePostValidator;
 import net.causw.app.main.domain.community.post.service.util.PostValidator;
+import net.causw.app.main.domain.community.reaction.service.implementation.LikePostReader;
 import net.causw.app.main.domain.community.reaction.service.implementation.LikePostWriter;
-import net.causw.app.main.domain.notification.notification.event.PostLikedEvent;
+import net.causw.app.main.domain.notification.notification.event.PostLikeMilestoneReachedEvent;
+import net.causw.app.main.domain.notification.notification.service.policy.LikePostNotificationPolicy;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.relation.service.implementation.BlockReader;
@@ -26,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 public class LikePostService {
 
 	private final PostReader postReader;
+	private final LikePostReader likePostReader;
 	private final LikePostWriter likePostWriter;
 	private final LikePostValidator likePostValidator;
 	private final ApplicationEventPublisher eventPublisher;
@@ -52,8 +55,10 @@ public class LikePostService {
 
 		likePostWriter.saveLikePost(userId, post);
 
-		// 좋아요 알림 이벤트
-		eventPublisher.publishEvent(new PostLikedEvent(postId, userId));
+		long likeCount = likePostReader.countByPostId(postId);
+		if (LikePostNotificationPolicy.isMilestone(likeCount)) {
+			eventPublisher.publishEvent(new PostLikeMilestoneReachedEvent(postId, userId, likeCount));
+		}
 	}
 
 	/**

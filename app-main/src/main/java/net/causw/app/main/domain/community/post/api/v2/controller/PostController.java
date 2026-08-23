@@ -39,6 +39,8 @@ import net.causw.app.main.shared.dto.ApiResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -139,9 +141,11 @@ public class PostController {
 	@Operation(summary = "게시글 단건 조회", description = "특정 게시글의 상세 정보를 조회합니다.")
 	public ApiResponse<PostResponse> getPost(
 		@PathVariable String postId,
+		HttpServletRequest request,
+		HttpServletResponse response,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		PostDetailQuery query = postDtoMapper.toDetailQuery(postId, userDetails.getUser());
-		PostDetailResult result = postService.getPostDetail(query);
+		PostDetailResult result = postService.getPostDetail(query, request, response);
 		return ApiResponse.success(postDtoMapper.toDetailResponse(result));
 	}
 

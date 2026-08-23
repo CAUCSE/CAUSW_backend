@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.asset.file.entity.joinEntity.PostAttachImage;
-import net.causw.app.main.domain.community.form.entity.Form;
 import net.causw.app.main.domain.community.form.repository.FormRepository;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
@@ -42,12 +41,13 @@ public class PostWriter {
 	 * @param post 수정할 Post
 	 * @param title 제목
 	 * @param content 내용
-	 * @param form Form Entity
+	 * @param isAnonymous 익명 여부 (null 허용 - null이면 기존 값 유지)
 	 * @param postAttachImageList 첨부 이미지 리스트
 	 * @return 수정된 Post Entity
 	 */
-	public Post update(Post post, String title, String content, Form form, List<PostAttachImage> postAttachImageList) {
-		post.update(title, content, form, postAttachImageList);
+	public Post update(Post post, String title, String content, Boolean isAnonymous,
+		List<PostAttachImage> postAttachImageList) {
+		post.update(title, content, isAnonymous, postAttachImageList);
 		return postRepository.save(post);
 	}
 
@@ -123,5 +123,14 @@ public class PostWriter {
 	 */
 	public void hardDeleteById(String postId) {
 		postRepository.deleteById(postId);
+	}
+
+	/**
+	 * 특정 Post의 조회수를 1 증가시킵니다. (원자적 업데이트)
+	 *
+	 * @param postId 게시글 ID
+	 */
+	public void incrementViewCount(String postId) {
+		postRepository.incrementViewCount(postId);
 	}
 }

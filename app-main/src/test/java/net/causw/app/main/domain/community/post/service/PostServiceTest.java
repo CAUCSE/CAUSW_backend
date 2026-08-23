@@ -65,6 +65,7 @@ import net.causw.app.main.domain.community.post.service.dto.PostUpdateResult;
 import net.causw.app.main.domain.community.post.service.implementation.PostImageManager;
 import net.causw.app.main.domain.community.post.service.implementation.PostReader;
 import net.causw.app.main.domain.community.post.service.implementation.PostWriter;
+import net.causw.app.main.domain.community.post.service.implementation.ViewCountManager;
 import net.causw.app.main.domain.community.reaction.service.implementation.LikePostReader;
 import net.causw.app.main.domain.community.vote.service.implementation.VoteWriter;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
@@ -77,6 +78,9 @@ import net.causw.app.main.domain.user.relation.service.implementation.BlockReade
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
 import net.causw.app.main.util.ObjectFixtures;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @ExtendWith(MockitoExtension.class)
 public class PostServiceTest {
@@ -117,6 +121,9 @@ public class PostServiceTest {
 	@Mock
 	UserProfileImageReader userProfileImageReader;
 
+	@Mock
+	ViewCountManager viewCountManager;
+
 	@Nested
 	@DisplayName("게시글 생성 테스트")
 	class CreatePostTest {
@@ -150,6 +157,7 @@ public class PostServiceTest {
 		void createPost_shouldSucceed_withoutImages() {
 			// given
 			PostCreateCommand command = new PostCreateCommand(
+				"테스트 게시글 제목",
 				"테스트 게시글 내용",
 				boardId,
 				false,
@@ -157,7 +165,7 @@ public class PostServiceTest {
 				null,
 				null);
 
-			Post mockPost = Post.of(null, "테스트 게시글 내용", writer, false, board, List.of());
+			Post mockPost = Post.of("테스트 게시글 제목", "테스트 게시글 내용", writer, false, board, List.of());
 			ReflectionTestUtils.setField(mockPost, "id", "post-id");
 			ReflectionTestUtils.setField(mockPost, "createdAt", LocalDateTime.now());
 			ReflectionTestUtils.setField(mockPost, "updatedAt", LocalDateTime.now());
@@ -176,6 +184,7 @@ public class PostServiceTest {
 			assertAll(
 				() -> assertThat(result).isNotNull(),
 				() -> assertThat(result.id()).isEqualTo("post-id"),
+				() -> assertThat(result.title()).isEqualTo("테스트 게시글 제목"),
 				() -> assertThat(result.content()).isEqualTo("테스트 게시글 내용"),
 				() -> assertThat(result.writerId()).isEqualTo("writer-id"),
 				() -> assertThat(result.isAnonymous()).isFalse(),
@@ -198,6 +207,7 @@ public class PostServiceTest {
 				new ImageCreateMeta(0, 0, true));
 
 			PostCreateCommand command = new PostCreateCommand(
+				"테스트 게시글 제목",
 				"테스트 게시글 내용",
 				boardId,
 				false,
@@ -215,7 +225,7 @@ public class PostServiceTest {
 
 			PostAttachImage mockAttachImage = PostAttachImage.of(null, mockUuidFile, 0, true);
 
-			Post mockPost = Post.of(null, "테스트 게시글 내용", writer, false, board, List.of());
+			Post mockPost = Post.of("테스트 게시글 제목", "테스트 게시글 내용", writer, false, board, List.of());
 			ReflectionTestUtils.setField(mockPost, "id", "post-id");
 			ReflectionTestUtils.setField(mockPost, "createdAt", LocalDateTime.now());
 			ReflectionTestUtils.setField(mockPost, "updatedAt", LocalDateTime.now());
@@ -234,6 +244,7 @@ public class PostServiceTest {
 			assertAll(
 				() -> assertThat(result).isNotNull(),
 				() -> assertThat(result.id()).isEqualTo("post-id"),
+				() -> assertThat(result.title()).isEqualTo("테스트 게시글 제목"),
 				() -> assertThat(result.content()).isEqualTo("테스트 게시글 내용"),
 				() -> assertThat(result.fileUrlList()).hasSize(1),
 				() -> assertThat(result.fileUrlList().get(0)).isEqualTo("https://example.com/image.jpg"));
@@ -247,6 +258,7 @@ public class PostServiceTest {
 		void createPost_shouldSucceed_asAnonymous() {
 			// given
 			PostCreateCommand command = new PostCreateCommand(
+				"익명 게시글 제목",
 				"익명 게시글",
 				boardId,
 				true,
@@ -254,7 +266,7 @@ public class PostServiceTest {
 				null,
 				null);
 
-			Post mockPost = Post.of(null, "익명 게시글", writer, true, board, List.of());
+			Post mockPost = Post.of("익명 게시글 제목", "익명 게시글", writer, true, board, List.of());
 			ReflectionTestUtils.setField(mockPost, "id", "post-id");
 			ReflectionTestUtils.setField(mockPost, "createdAt", LocalDateTime.now());
 			ReflectionTestUtils.setField(mockPost, "updatedAt", LocalDateTime.now());
@@ -294,6 +306,7 @@ public class PostServiceTest {
 				null);
 
 			PostCreateCommand command = new PostCreateCommand(
+				"익명 게시글 제목",
 				"익명 게시글",
 				boardId,
 				true, // 익명으로 작성 시도
@@ -451,7 +464,7 @@ public class PostServiceTest {
 			boardId = "board-id";
 			board = ObjectFixtures.getBoardV2WithId(boardId);
 			postId = "post-id";
-			post = Post.of(null, "원본 내용", updater, false, board, List.of());
+			post = Post.of("원본 제목", "원본 내용", updater, false, board, List.of());
 			ReflectionTestUtils.setField(post, "id", postId);
 			ReflectionTestUtils.setField(post, "createdAt", LocalDateTime.now());
 			ReflectionTestUtils.setField(post, "updatedAt", LocalDateTime.now());
@@ -463,6 +476,7 @@ public class PostServiceTest {
 			// given
 			PostUpdateCommand command = new PostUpdateCommand(
 				postId,
+				"수정된 제목",
 				"수정된 내용",
 				false,
 				updater,
@@ -486,8 +500,12 @@ public class PostServiceTest {
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
 			given(postImageManager.mergeAndBuildForUpdate(eq(post), isNull(), isNull()))
 				.willReturn(new PostImageManager.ImageUpdateResult(List.of(), List.of()));
-			given(postWriter.updateContentAndImages(eq(post), eq("수정된 내용"), eq(false), anyList()))
-				.willReturn(post);
+			given(postWriter.update(
+				eq(post),
+				eq("수정된 제목"),
+				eq("수정된 내용"),
+				eq(false),
+				anyList())).willReturn(post);
 
 			// when
 			PostUpdateResult result = postService.update(command);
@@ -497,7 +515,11 @@ public class PostServiceTest {
 				() -> assertThat(result).isNotNull(),
 				() -> assertThat(result.id()).isEqualTo(postId));
 
-			verify(postWriter, times(1)).updateContentAndImages(eq(post), eq("수정된 내용"), eq(false),
+			verify(postWriter, times(1)).update(
+				eq(post),
+				eq("수정된 제목"),
+				eq("수정된 내용"),
+				eq(false),
 				anyList());
 		}
 
@@ -521,6 +543,7 @@ public class PostServiceTest {
 
 			PostUpdateCommand command = new PostUpdateCommand(
 				postId,
+				null,
 				"수정된 내용",
 				false,
 				updater,
@@ -550,8 +573,12 @@ public class PostServiceTest {
 			given(postImageManager.mergeAndBuildForUpdate(eq(post), eq(newImageFiles), eq(imageMetas)))
 				.willReturn(new PostImageManager.ImageUpdateResult(
 					List.of(newAttachImage), List.of("old-file-id")));
-			given(postWriter.updateContentAndImages(eq(post), eq("수정된 내용"), eq(false), anyList()))
-				.willReturn(post);
+			given(postWriter.update(
+				eq(post),
+				isNull(),
+				eq("수정된 내용"),
+				eq(false),
+				anyList())).willReturn(post);
 
 			// when
 			PostUpdateResult result = postService.update(command);
@@ -573,6 +600,7 @@ public class PostServiceTest {
 
 			PostUpdateCommand command = new PostUpdateCommand(
 				postId,
+				null,
 				"수정된 내용",
 				true, // 익명으로 변경 시도
 				updater,
@@ -599,7 +627,7 @@ public class PostServiceTest {
 			assertThatThrownBy(() -> postService.update(command))
 				.hasMessageContaining("비익명 게시판에서 익명으로 작성할 수 없습니다.");
 
-			verify(postWriter, never()).updateContentAndImages(any(), any(), any(), anyList());
+			verify(postWriter, never()).update(any(), any(), any(), any(), anyList());
 		}
 	}
 
@@ -670,9 +698,11 @@ public class PostServiceTest {
 
 			PostCursorResult postCursorResult = new PostCursorResult(
 				"post-id",
+				"테스트 제목",
 				"게시글 내용",
 				5L,
 				10L,
+				0L,
 				false,
 				null,
 				false,
@@ -729,7 +759,9 @@ public class PostServiceTest {
 			PostListQuery query = PostListQuery.of(viewer, List.of(boardId), null, 20, null);
 			PostCursorResult deletedPostResult = new PostCursorResult(
 				"deleted-post-id",
+				"테스트 제목",
 				"삭제된 게시글",
+				0L,
 				0L,
 				0L,
 				false,
@@ -791,9 +823,11 @@ public class PostServiceTest {
 
 			PostCursorResult postCursorResult1 = new PostCursorResult(
 				"post-id-1",
+				"테스트 제목",
 				"게시판1 게시글 내용",
 				5L,
 				10L,
+				0L,
 				false,
 				null,
 				false,
@@ -813,9 +847,11 @@ public class PostServiceTest {
 
 			PostCursorResult postCursorResult2 = new PostCursorResult(
 				"post-id-2",
+				"테스트 제목",
 				"게시판2 게시글 내용",
 				3L,
 				8L,
+				0L,
 				false,
 				null,
 				false,
@@ -888,9 +924,11 @@ public class PostServiceTest {
 
 			PostCursorResult postCursorResult = new PostCursorResult(
 				"post-id-2",
+				"게시글 제목",
 				"게시글 내용",
 				5L,
 				10L,
+				0L,
 				false,
 				null,
 				false,
@@ -956,9 +994,11 @@ public class PostServiceTest {
 
 			PostCursorResult postCursorResult = new PostCursorResult(
 				"post-id",
+				"검색 결과 제목",
 				"검색어가 포함된 게시글 내용",
 				5L,
 				10L,
+				0L,
 				false,
 				null,
 				false,
@@ -1011,9 +1051,11 @@ public class PostServiceTest {
 
 			PostCursorResult postCursorResult = new PostCursorResult(
 				"post-id",
+				"테스트 제목",
 				"게시글 내용",
 				5L,
 				10L,
+				0L,
 				false,
 				null,
 				false,
@@ -1145,9 +1187,11 @@ public class PostServiceTest {
 
 			PostCursorResult anonymousPostResult = new PostCursorResult(
 				"post-id",
+				"익명 게시글 제목",
 				"익명 게시글 내용",
 				5L,
 				10L,
+				0L,
 				true, // 익명 게시글
 				null,
 				false,
@@ -1204,9 +1248,11 @@ public class PostServiceTest {
 
 			PostCursorResult normalPostResult = new PostCursorResult(
 				"post-id-1",
+				"일반 게시글 제목",
 				"일반 게시글 내용",
 				5L,
 				10L,
+				0L,
 				false, // 일반 게시글
 				null,
 				false,
@@ -1226,9 +1272,11 @@ public class PostServiceTest {
 
 			PostCursorResult anonymousPostResult = new PostCursorResult(
 				"post-id-2",
+				"익명 게시글 제목",
 				"익명 게시글 내용",
 				3L,
 				8L,
+				0L,
 				true, // 익명 게시글
 				null,
 				false,
@@ -1404,7 +1452,14 @@ public class PostServiceTest {
 				null,
 				null);
 			Mockito.lenient().when(blockReader.existsByBlockerAndBlocked(any(), any())).thenReturn(false);
+
+			Mockito.lenient().when(viewCountManager.hasViewedCookie(any(), anyString())).thenReturn(false);
+			Mockito.lenient().when(viewCountManager.reserve(anyString(), anyString()))
+				.thenReturn(new ViewCountManager.ViewReservation("key", "token", true));
 		}
+
+		HttpServletRequest mockRequest = mock(HttpServletRequest.class);
+		HttpServletResponse mockResponse = mock(HttpServletResponse.class);
 
 		@DisplayName("차단한 사용자의 게시글은 상세 조회 불가")
 		@Test
@@ -1419,7 +1474,7 @@ public class PostServiceTest {
 			given(blockReader.existsByBlockerAndBlocked(viewer, writer)).willReturn(true);
 
 			// when & then
-			assertThatThrownBy(() -> postService.getPostDetail(query))
+			assertThatThrownBy(() -> postService.getPostDetail(query, mockRequest, mockResponse))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.satisfies(ex -> assertThat(((BaseRunTimeV2Exception)ex).getErrorCode())
 					.isEqualTo(PostErrorCode.BLOCKED_USER_CONTENT));
@@ -1440,7 +1495,7 @@ public class PostServiceTest {
 			given(blockReader.existsByBlockerAndBlocked(writer, writer)).willReturn(true);
 
 			// when & then
-			assertThatThrownBy(() -> postService.getPostDetail(query))
+			assertThatThrownBy(() -> postService.getPostDetail(query, mockRequest, mockResponse))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.satisfies(ex -> assertThat(((BaseRunTimeV2Exception)ex).getErrorCode())
 					.isEqualTo(PostErrorCode.BLOCKED_USER_CONTENT));
@@ -1462,7 +1517,7 @@ public class PostServiceTest {
 			given(likePostReader.existsByPostIdAndUserId(postId, "admin-id")).willReturn(false);
 
 			// when
-			PostDetailResult result = postService.getPostDetail(query);
+			PostDetailResult result = postService.getPostDetail(query, mockRequest, mockResponse);
 
 			// then
 			assertAll(
@@ -1487,7 +1542,7 @@ public class PostServiceTest {
 			given(likePostReader.existsByPostIdAndUserId(postId, "viewer-id")).willReturn(false);
 
 			// when
-			PostDetailResult result = postService.getPostDetail(query);
+			PostDetailResult result = postService.getPostDetail(query, mockRequest, mockResponse);
 
 			// then
 			assertAll(
@@ -1502,7 +1557,7 @@ public class PostServiceTest {
 				() -> assertThat(result.boardId()).isEqualTo(boardId),
 				() -> assertThat(result.boardName()).isNotNull());
 
-			verify(postReader, times(1)).findByIdAndNotDeleted(postId);
+			verify(postReader, times(2)).findByIdAndNotDeleted(postId);
 		}
 
 		@DisplayName("작성자가 게시글 상세 조회 시 수정/삭제 가능")
@@ -1519,7 +1574,7 @@ public class PostServiceTest {
 			given(likePostReader.existsByPostIdAndUserId(postId, "writer-id")).willReturn(false);
 
 			// when
-			PostDetailResult result = postService.getPostDetail(query);
+			PostDetailResult result = postService.getPostDetail(query, mockRequest, mockResponse);
 
 			// then
 			assertAll(
@@ -1543,7 +1598,7 @@ public class PostServiceTest {
 			given(likePostReader.existsByPostIdAndUserId(postId, "admin-id")).willReturn(false);
 
 			// when
-			PostDetailResult result = postService.getPostDetail(query);
+			PostDetailResult result = postService.getPostDetail(query, mockRequest, mockResponse);
 
 			// then
 			assertAll(
@@ -1566,7 +1621,7 @@ public class PostServiceTest {
 			given(likePostReader.existsByPostIdAndUserId(postId, "viewer-id")).willReturn(true);
 
 			// when
-			PostDetailResult result = postService.getPostDetail(query);
+			PostDetailResult result = postService.getPostDetail(query, mockRequest, mockResponse);
 
 			// then
 			assertAll(
@@ -1592,7 +1647,7 @@ public class PostServiceTest {
 			given(likePostReader.existsByPostIdAndUserId(postId, "viewer-id")).willReturn(false);
 
 			// when
-			PostDetailResult result = postService.getPostDetail(query);
+			PostDetailResult result = postService.getPostDetail(query, mockRequest, mockResponse);
 
 			// then
 			assertAll(
@@ -1625,8 +1680,85 @@ public class PostServiceTest {
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
 
 			// when & then
-			assertThatThrownBy(() -> postService.getPostDetail(query))
+			assertThatThrownBy(() -> postService.getPostDetail(query, mockRequest, mockResponse))
 				.isInstanceOf(BaseRunTimeV2Exception.class);
+		}
+
+		@DisplayName("쿠키가 없고 예약 성공 시 조회수가 증가하고 쿠키가 발급된다")
+		@Test
+		void getPostDetail_shouldIncrementViewCount_whenReserveSucceeds() {
+			// given
+			PostDetailQuery query = new PostDetailQuery(postId, viewer);
+			List<String> boardAdminIds = List.of("admin-id");
+
+			// setUp의 기본 stub(성공)을 활용하되 명시적으로 검증
+			given(postReader.findByIdAndNotDeleted(postId)).willReturn(post);
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
+			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(likePostReader.countByPostId(postId)).willReturn(10L);
+			given(likePostReader.existsByPostIdAndUserId(postId, "viewer-id")).willReturn(false);
+
+			// when
+			PostDetailResult result = postService.getPostDetail(query, mockRequest, mockResponse);
+
+			// then
+			assertAll(
+				() -> assertThat(result).isNotNull(),
+				() -> verify(postWriter, times(1)).incrementViewCount(postId),
+				() -> verify(viewCountManager, times(1)).markViewed(mockResponse, postId));
+		}
+
+		@DisplayName("이미 쿠키가 존재하는 경우 조회수 증가와 쿠키 발급이 생략된다")
+		@Test
+		void getPostDetail_shouldNotIncrementViewCount_whenCookieExists() {
+			// given
+			PostDetailQuery query = new PostDetailQuery(postId, viewer);
+			List<String> boardAdminIds = List.of("admin-id");
+
+			// 쿠키가 이미 존재한다고 설정 (setUp의 기본 stub을 덮어씀)
+			given(viewCountManager.hasViewedCookie(any(), eq(postId))).willReturn(true);
+
+			given(postReader.findByIdAndNotDeleted(postId)).willReturn(post);
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
+			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(likePostReader.countByPostId(postId)).willReturn(10L);
+			given(likePostReader.existsByPostIdAndUserId(postId, "viewer-id")).willReturn(false);
+
+			// when
+			PostDetailResult result = postService.getPostDetail(query, mockRequest, mockResponse);
+
+			// then
+			assertAll(
+				() -> assertThat(result).isNotNull(),
+				() -> verify(postWriter, never()).incrementViewCount(anyString()),
+				() -> verify(viewCountManager, never()).markViewed(any(), anyString()));
+		}
+
+		@DisplayName("Redis 예약 획득에 실패한 경우 조회수 증가와 쿠키 발급이 생략된다")
+		@Test
+		void getPostDetail_shouldNotIncrementViewCount_whenReserveFails() {
+			// given
+			PostDetailQuery query = new PostDetailQuery(postId, viewer);
+			List<String> boardAdminIds = List.of("admin-id");
+
+			// 예약 실패(acquired = false)로 설정 (setUp의 기본 stub을 덮어씀)
+			given(viewCountManager.reserve(eq(viewer.getId()), eq(postId)))
+				.willReturn(new ViewCountManager.ViewReservation("key", "token", false));
+
+			given(postReader.findByIdAndNotDeleted(postId)).willReturn(post);
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
+			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(likePostReader.countByPostId(postId)).willReturn(10L);
+			given(likePostReader.existsByPostIdAndUserId(postId, "viewer-id")).willReturn(false);
+
+			// when
+			PostDetailResult result = postService.getPostDetail(query, mockRequest, mockResponse);
+
+			// then
+			assertAll(
+				() -> assertThat(result).isNotNull(),
+				() -> verify(postWriter, never()).incrementViewCount(anyString()),
+				() -> verify(viewCountManager, never()).markViewed(any(), anyString()));
 		}
 	}
 }

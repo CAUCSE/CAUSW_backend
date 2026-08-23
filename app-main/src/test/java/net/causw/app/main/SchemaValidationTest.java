@@ -25,7 +25,7 @@ import jakarta.persistence.EntityManagerFactory;
 @ContextConfiguration(classes = SchemaValidationTest.Config.class)
 public class SchemaValidationTest {
 
-	private static final String targetPackages = "net.causw.app.main.domain.model.entity";
+	private static final String ENTITY_BASE_PACKAGE = "net.causw.app.main.domain";
 
 	@Test
 	void contextLoads() {
@@ -33,7 +33,7 @@ public class SchemaValidationTest {
 	}
 
 	@TestConfiguration
-	@EntityScan(basePackages = targetPackages)
+	@EntityScan(basePackages = ENTITY_BASE_PACKAGE)
 	static class Config {
 
 		@Bean
@@ -52,7 +52,7 @@ public class SchemaValidationTest {
 
 			LocalContainerEntityManagerFactoryBean emf = new LocalContainerEntityManagerFactoryBean();
 			emf.setDataSource(dataSource);
-			emf.setPackagesToScan(targetPackages);
+			emf.setPackagesToScan(ENTITY_BASE_PACKAGE);
 			emf.setJpaVendorAdapter(jpaVendorAdapter);
 			emf.setJpaProperties(jpaProperties());
 
