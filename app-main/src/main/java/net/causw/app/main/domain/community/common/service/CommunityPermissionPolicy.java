@@ -2,7 +2,6 @@ package net.causw.app.main.domain.community.common.service;
 
 import java.util.Collection;
 import java.util.EnumSet;
-
 import java.util.Set;
 
 import net.causw.app.main.domain.community.board.entity.Board;

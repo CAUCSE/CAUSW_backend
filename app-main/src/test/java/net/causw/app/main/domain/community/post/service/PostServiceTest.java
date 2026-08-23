@@ -1150,7 +1150,8 @@ public class PostServiceTest {
 				() -> assertThat(result.posts()).hasSize(1));
 
 			verify(postReader, times(1))
-				.findPostsWithCursor(isNull(), any(PostReadQueryContext.class), eq(null), eq(null), eq(20), eq(null), eq(null));
+				.findPostsWithCursor(isNull(), any(PostReadQueryContext.class), eq(null), eq(null), eq(20), eq(null),
+					eq(null));
 		}
 
 		@DisplayName("전체 목록에서 조회 가능한 게시글이 없으면 빈 결과 반환")
@@ -1176,7 +1177,8 @@ public class PostServiceTest {
 				() -> assertThat(result.nextCursor()).isNull());
 
 			verify(postReader, times(1))
-				.findPostsWithCursor(isNull(), any(PostReadQueryContext.class), eq(null), eq(null), eq(20), eq(null), eq(null));
+				.findPostsWithCursor(isNull(), any(PostReadQueryContext.class), eq(null), eq(null), eq(20), eq(null),
+					eq(null));
 		}
 
 		@DisplayName("숨겨진 게시판은 관리자만 조회 가능")

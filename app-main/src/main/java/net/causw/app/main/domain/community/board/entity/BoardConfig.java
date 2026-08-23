@@ -3,10 +3,10 @@ package net.causw.app.main.domain.community.board.entity;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.hibernate.annotations.BatchSize;
+
 import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.shared.entity.AuditableEntity;
-
-import org.hibernate.annotations.BatchSize;
 
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
