@@ -26,7 +26,7 @@ import lombok.NoArgsConstructor;
 public final class CommunityPermissionPolicy {
 
 	private static final EnumSet<Role> GLOBAL_DELETE_ROLES = EnumSet.of(
-		Role.ADMIN,
+		Role.SYSTEM_ADMIN,
 		Role.PRESIDENT,
 		Role.VICE_PRESIDENT);
 
@@ -46,13 +46,14 @@ public final class CommunityPermissionPolicy {
 	}
 
 	public static boolean isSystemAdmin(User user) {
-		return user != null && user.getRoles().contains(Role.ADMIN);
+		return user != null && user.getRoles().contains(Role.SYSTEM_ADMIN);
 	}
 
 	public static boolean isBoardAdmin(User user, Collection<String> boardAdminIds) {
 		return user != null
 			&& boardAdminIds != null
-			&& boardAdminIds.contains(user.getId());
+			&& boardAdminIds.contains(user.getId())
+			&& user.getRoles().contains(Role.ADMIN);
 	}
 
 	public static boolean isModerator(User user, Collection<String> boardAdminIds) {
