@@ -5,6 +5,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +31,9 @@ import net.causw.app.main.domain.integration.crawled.entity.SiteConfig;
 @ExtendWith(MockitoExtension.class)
 @DisplayName("CauAiNoticeCrawler 테스트")
 class CauAiNoticeCrawlerTest {
+	private static final ZoneId KOREA_ZONE_ID = ZoneId.of("Asia/Seoul");
+	private static final DateTimeFormatter LIST_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
 	@InjectMocks
 	private CauAiNoticeCrawler crawler;
 
@@ -42,12 +48,7 @@ class CauAiNoticeCrawlerTest {
 		@DisplayName("공지 URL의 no를 외부 식별자로 사용한다")
 		void shouldUseNoAsExternalId_whenNoticeUrlIsFetched() {
 			// given
-			given(crawlHttpClient.fetch(any(), any())).willReturn("""
-				<table class='table-basic'><tbody>
-				<tr><td><span class='tag blue'>공지</span></td>
-				<td class='title'><a href='?category=1&view=detail&no=3491&keyword=&search=title'>AI 공지</a></td></tr>
-				</tbody></table>
-				""");
+			given(crawlHttpClient.fetch(any(), any())).willReturn(noticeRows(3491));
 
 			// when
 			List<ArticleUrl> result = crawler.fetchList(context);
@@ -56,6 +57,22 @@ class CauAiNoticeCrawlerTest {
 			assertThat(result).containsExactly(new ArticleUrl(
 				"https://ai.cau.ac.kr/sub07/sub0701.php?category=1&view=detail&no=3491&keyword=&search=title",
 				"3491", "공지"));
+		}
+
+		@Test
+		@DisplayName("최대 스캔 범위 밖의 공지는 목록 수집에서 제외한다")
+		void shouldExcludeNoticesOutsideMaxScanRange_whenListIsFetched() {
+			// given
+			LocalDateTime now = LocalDateTime.now(KOREA_ZONE_ID);
+			given(crawlHttpClient.fetch(any(), any())).willReturn(noticeRows(
+				noticeRow(3491, now.minusDays(3)),
+				noticeRow(3490, now.minusDays(4))));
+
+			// when
+			List<ArticleUrl> result = crawler.fetchList(context);
+
+			// then
+			assertThat(result).extracting(ArticleUrl::externalId).containsExactly("3491");
 		}
 
 		@Test
@@ -117,12 +134,20 @@ class CauAiNoticeCrawlerTest {
 	private String noticeRows(int... noticeIds) {
 		StringBuilder rows = new StringBuilder("<table class='table-basic'><tbody>");
 		for (int noticeId : noticeIds) {
-			rows.append("<tr><td>공지</td><td class='title'><a href='?no=")
-				.append(noticeId)
-				.append("'>공지 ")
-				.append(noticeId)
-				.append("</a></td></tr>");
+			rows.append(noticeRow(noticeId, LocalDateTime.now(KOREA_ZONE_ID)));
 		}
 		return rows.append("</tbody></table>").toString();
+	}
+
+	private String noticeRows(String... rows) {
+		return "<table class='table-basic'><tbody>" + String.join("", rows) + "</tbody></table>";
+	}
+
+	private String noticeRow(int noticeId, LocalDateTime announceDate) {
+		return """
+			<tr><td>공지</td><td class='title'><a href='?category=1&view=detail&no=%d&keyword=&search=title'>공지 %d</a></td>
+			<td class='pc-only'>관리자</td><td class='pc-only'>%s</td><td class='pc-only'>1</td></tr>
+			"""
+			.formatted(noticeId, noticeId, announceDate.format(LIST_DATE_FORMATTER));
 	}
 }

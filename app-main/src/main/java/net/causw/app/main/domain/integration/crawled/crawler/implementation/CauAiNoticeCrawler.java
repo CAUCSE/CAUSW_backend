@@ -1,5 +1,10 @@
 package net.causw.app.main.domain.integration.crawled.crawler.implementation;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +35,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class CauAiNoticeCrawler implements SiteCrawler {
+	private static final ZoneId KOREA_ZONE_ID = ZoneId.of("Asia/Seoul");
+	private static final DateTimeFormatter LIST_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 	private static final Pattern NOTICE_NO_PATTERN = Pattern.compile("[?&]no=(\\d+)");
 
 	private final CrawlHttpClient crawlHttpClient;
@@ -60,6 +67,9 @@ public class CauAiNoticeCrawler implements SiteCrawler {
 				if (articleUrlsByExternalId.size() >= siteConfig.getMaxArticles()) {
 					break;
 				}
+				if (!isWithinScanRange(row, siteConfig)) {
+					continue;
+				}
 				Element linkElement = row.selectFirst(selectors.getArticleLink());
 				if (linkElement == null) {
 					continue;
@@ -75,6 +85,22 @@ public class CauAiNoticeCrawler implements SiteCrawler {
 		}
 
 		return List.copyOf(articleUrlsByExternalId.values());
+	}
+
+	private boolean isWithinScanRange(Element row, SiteConfig siteConfig) {
+		Element dateElement = row.selectFirst("td:nth-last-child(2)");
+		if (dateElement == null || dateElement.text().isBlank()) {
+			throw IntegrationErrorCode.CRAWL_PARSE_FAILED.toBaseException();
+		}
+		try {
+			LocalDate announceDate = LocalDateTime.parse(dateElement.text().trim(), LIST_DATE_FORMATTER)
+				.toLocalDate();
+			LocalDate today = LocalDate.now(KOREA_ZONE_ID);
+			return !announceDate.isBefore(today.minusDays(siteConfig.getMaxScanRangeDays()))
+				&& !announceDate.isAfter(today);
+		} catch (DateTimeParseException e) {
+			throw IntegrationErrorCode.CRAWL_PARSE_FAILED.toBaseException();
+		}
 	}
 
 	private String extractNoticeId(String url) {
