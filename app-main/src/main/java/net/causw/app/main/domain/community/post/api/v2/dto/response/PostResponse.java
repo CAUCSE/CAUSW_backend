@@ -26,6 +26,8 @@ public record PostResponse(
 
 	@Schema(description = "게시글 좋아요 개수", example = "10") Long numLike,
 
+	@Schema(description = "조회수", example = "125") Long viewCount,
+
 	@Schema(description = "게시글에 연결된 투표 ID (투표가 없으면 null)", example = "uuid 형식의 String 값") String voteId,
 
 	@Schema(description = "익명글 여부", example = "False") Boolean isAnonymous,

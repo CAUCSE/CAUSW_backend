@@ -18,6 +18,7 @@ public record PostDetailResult(
 	List<String> fileUrlList,
 	Long numComment,
 	Long numLike,
+	Long viewCount,
 	String voteId,
 	Boolean isAnonymous,
 	Boolean isCrawled,

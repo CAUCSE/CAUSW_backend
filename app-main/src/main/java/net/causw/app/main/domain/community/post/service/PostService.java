@@ -9,6 +9,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.PostAttachImage;
@@ -34,6 +36,7 @@ import net.causw.app.main.domain.community.post.service.dto.PostUpdateResult;
 import net.causw.app.main.domain.community.post.service.implementation.PostImageManager;
 import net.causw.app.main.domain.community.post.service.implementation.PostReader;
 import net.causw.app.main.domain.community.post.service.implementation.PostWriter;
+import net.causw.app.main.domain.community.post.service.implementation.ViewCountManager;
 import net.causw.app.main.domain.community.post.service.mapper.PostMapper;
 import net.causw.app.main.domain.community.post.service.util.PostCursorManager;
 import net.causw.app.main.domain.community.post.service.util.PostValidator;
@@ -45,6 +48,8 @@ import net.causw.app.main.domain.user.relation.service.implementation.BlockReade
 import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
 import net.causw.global.constant.StaticValue;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -62,6 +67,7 @@ public class PostService {
 	private final ApplicationEventPublisher eventPublisher;
 	private final UserProfileImageReader userProfileImageReader;
 	private final FileReader fileReader;
+	private final ViewCountManager viewCountManager;
 
 	/**
 	 * 게시글을 생성합니다. 게시글 내용과 첨부 이미지를 저장합니다.
@@ -258,9 +264,13 @@ public class PostService {
 	/**
 	 * 게시글 단건 조회. 게시글 내용, 첨부 이미지 URL 목록, 좋아요/댓글 개수, 사용자의 좋아요 여부, 수정/삭제 가능 여부 등을 포함합니다.
 	 * @param query 조회 조건 (게시글 ID, 조회 요청 사용자)
+	 * @param request  HTTP 요청 객체 (쿠키 검증용)
+	 * @param response HTTP 응답 객체 (쿠키 발급용)
 	 * @return 게시글 상세 정보 (게시글 ID, 내용, 첨부 이미지 URL 목록, 좋아요/댓글 개수, 사용자의 좋아요 여부, 수정/삭제 가능 여부 등)
 	 */
-	public PostDetailResult getPostDetail(PostDetailQuery query) {
+	@Transactional
+	public PostDetailResult getPostDetail(PostDetailQuery query, HttpServletRequest request,
+		HttpServletResponse response) {
 		User viewer = query.viewer();
 		String postId = query.postId();
 
@@ -277,6 +287,19 @@ public class PostService {
 
 		// 차단한 사용자가 작성한 게시글은 조회 불가
 		validateBlockedWriterAccess(viewer, post, boardAdminIds);
+
+		// 쿠키 확인 및 Redis 원자적 예약 시도 (동시 연타 방어)
+		boolean hasCookie = viewCountManager.hasViewedCookie(request, postId);
+		final ViewCountManager.ViewReservation reservation = hasCookie ? null
+			: viewCountManager.reserve(viewer.getId(), postId);
+
+		// 예약을 성공한 요청만 조회수 증가, 엔티티 재조회 및 트랜잭션 동기화 처리
+		if (reservation != null && reservation.acquired()) {
+			postWriter.incrementViewCount(postId);
+			post = postReader.findByIdAndNotDeleted(postId);
+
+			registerViewSync(response, postId, reservation);
+		}
 
 		// 게시글 이미지 조회
 		List<String> imageUrls = postReader.findPostImages(postId);
@@ -508,5 +531,29 @@ public class PostService {
 		if (userBlockReader.existsByBlockerAndBlocked(viewer, writer)) {
 			throw PostErrorCode.BLOCKED_USER_CONTENT.toBaseException();
 		}
+	}
+
+	private void registerViewSync(HttpServletResponse response, String postId,
+		ViewCountManager.ViewReservation reservation) {
+		if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+			// 단위 테스트 환경 등 트랜잭션이 활성화되지 않은 경우 즉시 쿠키 발급
+			viewCountManager.markViewed(response, postId);
+			return;
+		}
+
+		TransactionSynchronizationManager.registerSynchronization(
+			new TransactionSynchronization() {
+				@Override
+				public void afterCommit() {
+					viewCountManager.markViewed(response, postId);
+				}
+
+				@Override
+				public void afterCompletion(int status) {
+					if (status != STATUS_COMMITTED) {
+						viewCountManager.release(reservation);
+					}
+				}
+			});
 	}
 }
