@@ -34,7 +34,7 @@ class SiteConfigReaderTest {
 	void getEnabledBySiteId_shouldReturnConfig() {
 		// given
 		SiteConfig config = SiteConfigFixture.create();
-		given(repository.findBySiteIdAndIsEnabledTrue("site")).willReturn(Optional.of(config));
+		given(repository.findById("site")).willReturn(Optional.of(config));
 
 		// when
 		SiteConfig result = reader.getEnabledBySiteId("site");
@@ -47,7 +47,7 @@ class SiteConfigReaderTest {
 	@DisplayName("활성화된 설정이 없으면 예외를 발생시킨다")
 	void getEnabledBySiteId_shouldThrow_whenConfigDoesNotExist() {
 		// given
-		given(repository.findBySiteIdAndIsEnabledTrue("site")).willReturn(Optional.empty());
+		given(repository.findById("site")).willReturn(Optional.empty());
 
 		// when & then
 		assertThatThrownBy(() -> reader.getEnabledBySiteId("site"))

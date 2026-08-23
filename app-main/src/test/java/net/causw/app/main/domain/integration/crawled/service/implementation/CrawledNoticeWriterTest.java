@@ -1,7 +1,6 @@
 package net.causw.app.main.domain.integration.crawled.service.implementation;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.BDDMockito.never;
 import static org.mockito.BDDMockito.verify;
 
 import java.time.LocalDate;
@@ -15,7 +14,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import net.causw.app.main.domain.integration.crawled.dto.CleanArticle;
-import net.causw.app.main.domain.integration.crawled.dto.CrawlSaveStatus;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
 import net.causw.app.main.domain.integration.crawled.repository.CrawledNoticeRepository;
 
@@ -30,14 +28,13 @@ class CrawledNoticeWriterTest {
 
 	@Test
 	@DisplayName("새 외부 식별자를 저장한다")
-	void upsert_shouldCreate_whenSourceDoesNotExist() {
+	void save_shouldCreateNotice() {
 		// given
 		CleanArticle article = article("hash");
 		// when
-		CrawlSaveStatus result = writer.upsert(article, null);
+		writer.save(article);
 
 		// then
-		assertThat(result).isEqualTo(CrawlSaveStatus.CREATED);
 		verify(repository).save(org.mockito.ArgumentMatchers
 			.argThat(notice -> notice.getSiteId().equals("site")
 				&& notice.getExternalId().equals("10")
@@ -45,40 +42,23 @@ class CrawledNoticeWriterTest {
 	}
 
 	@Test
-	@DisplayName("해시가 같으면 저장하지 않는다")
-	void upsert_shouldSkip_whenHashIsSame() {
-		// given
-		CrawledNotice existing = existing("hash");
-		// when
-		CrawlSaveStatus result = writer.upsert(article("hash"), existing);
-
-		// then
-		assertThat(result).isEqualTo(CrawlSaveStatus.UNCHANGED);
-		verify(repository, never()).save(existing);
-	}
-
-	@Test
-	@DisplayName("저장 대상 게시판이 바뀌면 같은 내용도 갱신한다")
-	void upsert_shouldUpdate_whenTargetBoardChanges() {
+	@DisplayName("기존 공지를 최신 내용으로 갱신한다")
+	void update_shouldUpdateExistingNotice() {
 		// given
 		CrawledNotice existing = existing("hash", "old-board-id");
 		// when
-		CrawlSaveStatus result = writer.upsert(article("hash"), existing);
+		writer.update(existing, article("hash"));
 
 		// then
-		assertThat(result).isEqualTo(CrawlSaveStatus.UPDATED);
 		assertThat(existing.getTargetBoardId()).isEqualTo("target-board-id");
 		assertThat(existing.getIsUpdated()).isTrue();
+		verify(repository).save(existing);
 	}
 
 	private CleanArticle article(String hash) {
 		return new CleanArticle(
 			"site", "target-board-id", "10", "https://example.com/10", "공지", "제목", "<p>본문</p>", "관리자",
 			LocalDate.of(2026, 8, 10), null, List.of(), hash);
-	}
-
-	private CrawledNotice existing(String hash) {
-		return existing(hash, "target-board-id");
 	}
 
 	private CrawledNotice existing(String hash, String targetBoardId) {

@@ -19,11 +19,16 @@ public class JsoupCrawlHttpClient implements CrawlHttpClient {
 	public String fetch(String url, SiteConfig siteConfig) {
 		for (int attempt = 1; attempt <= siteConfig.getMaxRetries(); attempt++) {
 			try {
+				log.debug("[크롤링] HTTP 요청 시작. siteId={}, url={}, 시도={}/{}, timeoutMs={}",
+					siteConfig.getSiteId(), url, attempt, siteConfig.getMaxRetries(),
+					siteConfig.getTimeout().toMillis());
 				String html = Jsoup.connect(url)
 					.headers(siteConfig.getRequestHeaders())
 					.timeout(Math.toIntExact(siteConfig.getTimeout().toMillis()))
 					.get()
 					.outerHtml();
+				log.debug("[크롤링] HTTP 요청 성공. siteId={}, url={}, 응답 크기={}bytes",
+					siteConfig.getSiteId(), url, html.length());
 				delay(siteConfig.getRequestDelay().toMillis());
 				return html;
 			} catch (IOException e) {
@@ -47,6 +52,7 @@ public class JsoupCrawlHttpClient implements CrawlHttpClient {
 			return;
 		}
 		try {
+			log.debug("[크롤링] HTTP 요청 지연. 대기={}ms", milliseconds);
 			Thread.sleep(milliseconds);
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
