@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Component;
@@ -51,17 +52,25 @@ public class ViewCountManager {
 		String key = REDIS_KEY_PREFIX + postId + ":" + userId;
 		String token = UUID.randomUUID().toString();
 
-		Boolean acquired = redisTemplate.opsForValue().setIfAbsent(key, token, Duration.ofSeconds(COOKIE_MAX_AGE));
-
-		return new ViewReservation(key, token, Boolean.TRUE.equals(acquired));
+		try {
+			Boolean acquired = redisTemplate.opsForValue().setIfAbsent(key, token, Duration.ofSeconds(COOKIE_MAX_AGE));
+			return new ViewReservation(key, token, Boolean.TRUE.equals(acquired));
+		} catch (DataAccessException e) {
+			// Redis 장애 발생 시 조회수 예약을 건너뛰고 게시글 조회를 정상 진행 (Fail-Open)
+			return new ViewReservation("", "", false);
+		}
 	}
 
 	public void release(ViewReservation reservation) {
-		if (reservation == null || !reservation.acquired()) {
+		if (reservation == null || !reservation.acquired() || reservation.key().isBlank()) {
 			return;
 		}
-		DefaultRedisScript<Long> redisScript = new DefaultRedisScript<>(RELEASE_LUA_SCRIPT, Long.class);
-		redisTemplate.execute(redisScript, List.of(reservation.key()), reservation.token());
+		try {
+			DefaultRedisScript<Long> redisScript = new DefaultRedisScript<>(RELEASE_LUA_SCRIPT, Long.class);
+			redisTemplate.execute(redisScript, List.of(reservation.key()), reservation.token());
+		} catch (DataAccessException e) {
+			// 락 해제 실패 시 Redis 만료 시간에 의존하도록 로그만 남기고 무시
+		}
 	}
 
 	/**
