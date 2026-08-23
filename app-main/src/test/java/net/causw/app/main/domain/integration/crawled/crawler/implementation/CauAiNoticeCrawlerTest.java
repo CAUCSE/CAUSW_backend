@@ -4,7 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
+import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -16,9 +18,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import net.causw.app.main.domain.integration.crawled.SiteConfigFixture;
 import net.causw.app.main.domain.integration.crawled.client.CrawlHttpClient;
+import net.causw.app.main.domain.integration.crawled.config.CrawlerType;
+import net.causw.app.main.domain.integration.crawled.config.PaginationType;
 import net.causw.app.main.domain.integration.crawled.core.CrawlContext;
 import net.causw.app.main.domain.integration.crawled.dto.ArticleUrl;
 import net.causw.app.main.domain.integration.crawled.dto.RawArticle;
+import net.causw.app.main.domain.integration.crawled.entity.SiteConfig;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("CauAiNoticeCrawler 테스트")
@@ -52,6 +57,23 @@ class CauAiNoticeCrawlerTest {
 				"https://ai.cau.ac.kr/sub07/sub0701.php?category=1&view=detail&no=3491&keyword=&search=title",
 				"3491", "공지"));
 		}
+
+		@Test
+		@DisplayName("페이지마다 반복되는 고정 공지를 제외하고 설정된 수만큼 고유 공지를 수집한다")
+		void shouldReturnConfiguredNumberOfUniqueNotices_whenPinnedNoticeIsRepeatedAcrossPages() {
+			// given
+			CrawlContext twoPageContext = new CrawlContext(createCauAiNoticeConfig(3, 2));
+			given(crawlHttpClient.fetch("https://ai.cau.ac.kr/sub07/sub0701.php?category=1&view=list&currentPage=1",
+				twoPageContext.siteConfig())).willReturn(noticeRows(100));
+			given(crawlHttpClient.fetch("https://ai.cau.ac.kr/sub07/sub0701.php?category=1&view=list&currentPage=2",
+				twoPageContext.siteConfig())).willReturn(noticeRows(100, 101, 102));
+
+			// when
+			List<ArticleUrl> result = crawler.fetchList(twoPageContext);
+
+			// then
+			assertThat(result).extracting(ArticleUrl::externalId).containsExactly("100", "101", "102");
+		}
 	}
 
 	@Nested
@@ -81,5 +103,26 @@ class CauAiNoticeCrawlerTest {
 				new net.causw.app.main.domain.integration.crawled.dto.RawAttachment(
 					"자료.pdf", "https://ai.cau.ac.kr/board/download.php?id=1"));
 		}
+	}
+
+	private SiteConfig createCauAiNoticeConfig(int maxArticles, int maxPages) {
+		SiteConfig source = SiteConfigFixture.cauAiNotice();
+		return SiteConfig.of(
+			source.getSiteId(), source.getTargetBoardId(), CrawlerType.CAU_AI_NOTICE,
+			source.getListUrl(), source.getBaseUrl(), Map.of(), Duration.ZERO, Duration.ofSeconds(1),
+			1, maxArticles, 3, PaginationType.PAGE_NUMBER, "currentPage", maxPages,
+			source.getSelectors(), false, false, true);
+	}
+
+	private String noticeRows(int... noticeIds) {
+		StringBuilder rows = new StringBuilder("<table class='table-basic'><tbody>");
+		for (int noticeId : noticeIds) {
+			rows.append("<tr><td>공지</td><td class='title'><a href='?no=")
+				.append(noticeId)
+				.append("'>공지 ")
+				.append(noticeId)
+				.append("</a></td></tr>");
+		}
+		return rows.append("</tbody></table>").toString();
 	}
 }

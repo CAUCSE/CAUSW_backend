@@ -1,6 +1,5 @@
 package net.causw.app.main.domain.integration.crawled.crawler.implementation;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,13 +42,13 @@ public class CauAiNoticeCrawler implements SiteCrawler {
 	@Override
 	public List<ArticleUrl> fetchList(CrawlContext context) {
 		SiteConfig siteConfig = context.siteConfig();
-		List<ArticleUrl> articleUrls = new ArrayList<>();
+		Map<String, ArticleUrl> articleUrlsByExternalId = new LinkedHashMap<>();
 		SiteSelectors selectors = siteConfig.getSelectors();
 		log.debug("[크롤링] AI학과 공지 목록 수집 시작. siteId={}, maxPages={}, maxArticles={}",
 			siteConfig.getSiteId(), siteConfig.getMaxPages(), siteConfig.getMaxArticles());
 
 		for (int page = 1; page <= siteConfig.getMaxPages()
-			&& articleUrls.size() < siteConfig.getMaxArticles(); page++) {
+			&& articleUrlsByExternalId.size() < siteConfig.getMaxArticles(); page++) {
 			String listUrl = siteConfig.getListUrl() + page;
 			Document document = Jsoup.parse(crawlHttpClient.fetch(listUrl, siteConfig), listUrl);
 			Elements rows = document.select(selectors.getArticleRow());
@@ -58,7 +57,7 @@ public class CauAiNoticeCrawler implements SiteCrawler {
 			}
 
 			for (Element row : rows) {
-				if (articleUrls.size() >= siteConfig.getMaxArticles()) {
+				if (articleUrlsByExternalId.size() >= siteConfig.getMaxArticles()) {
 					break;
 				}
 				Element linkElement = row.selectFirst(selectors.getArticleLink());
@@ -69,12 +68,13 @@ public class CauAiNoticeCrawler implements SiteCrawler {
 				if (url.isBlank()) {
 					continue;
 				}
-				articleUrls
-					.add(new ArticleUrl(url, extractNoticeId(url), row.select(selectors.getArticleCategory()).text()));
+				String externalId = extractNoticeId(url);
+				articleUrlsByExternalId.putIfAbsent(externalId,
+					new ArticleUrl(url, externalId, row.select(selectors.getArticleCategory()).text()));
 			}
 		}
 
-		return articleUrls.stream().distinct().toList();
+		return List.copyOf(articleUrlsByExternalId.values());
 	}
 
 	private String extractNoticeId(String url) {
