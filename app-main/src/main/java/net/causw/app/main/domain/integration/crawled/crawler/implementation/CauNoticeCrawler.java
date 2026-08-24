@@ -3,9 +3,12 @@ package net.causw.app.main.domain.integration.crawled.crawler.implementation;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -35,7 +38,9 @@ import tools.jackson.databind.ObjectMapper;
 @Slf4j
 public class CauNoticeCrawler implements SiteCrawler {
 	private static final ZoneId KOREA_ZONE_ID = ZoneId.of("Asia/Seoul");
-	private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd");
+	private static final Pattern ARTICLE_ID_PATTERN = Pattern.compile("[?&]BBS_SEQ=([^&]+)");
+	private static final Pattern DATE_PATTERN = Pattern.compile("\\d{4}[.-]\\d{2}[.-]\\d{2}");
+	private static final String HTML_ARTICLE_LINK_SELECTOR = "#contents a[href*='BoardView.do'][href*='BBS_SEQ=']";
 	private static final String TITLE_SELECTOR = ".lineList_v .txtL p";
 	private static final String AUTHOR_SELECTOR = ".lineList_v .txtInfo .writer";
 	private static final String BODY_SELECTOR = ".lineList_v .view_txt";
@@ -61,17 +66,15 @@ public class CauNoticeCrawler implements SiteCrawler {
 		Map<String, ArticleUrl> targets = new LinkedHashMap<>();
 		for (int page = 1; page <= config.getMaxPages() && targets.size() < config.getMaxArticles(); page++) {
 			try {
-				// 중앙대 공지 목록은 HTML이 아닌 전용 JSON API로 제공됩니다.
-				JsonNode list = objectMapper.readTree(crawlHttpClient.fetch(config.getListUrl() + page, config))
-					.path("data").path("list");
-				for (JsonNode item : list) {
-					String announcedAt = item.path("WRITE_DATE").asText();
-					if (!isWithinScanRange(announcedAt, config))
-						continue;
-					String externalId = item.path("BBS_SEQ").asText();
-					// 상세 URL에 목록 등록일이 없으므로 수집 대상에 함께 보관합니다.
-					targets.putIfAbsent(externalId, new ArticleUrl(detailUrl(config, externalId), externalId,
-						item.path("CATEGORY_NM").asText(), announcedAt));
+				String response = crawlHttpClient.fetch(config.getListUrl() + page, config);
+				boolean isJson = isJson(response);
+				log.info("[크롤링] 본교 공지 목록 응답 형식. crawlerType={}, siteId={}, page={}, isJson={}",
+					CrawlerType.CAU_NOTICE, config.getSiteId(), page, isJson);
+				List<ArticleUrl> articleUrls = isJson
+					? fetchJsonArticleUrls(response, config)
+					: fetchHtmlArticleUrls(response, config);
+				for (ArticleUrl articleUrl : articleUrls) {
+					targets.putIfAbsent(articleUrl.externalId(), articleUrl);
 					if (targets.size() >= config.getMaxArticles())
 						break;
 				}
@@ -82,6 +85,64 @@ public class CauNoticeCrawler implements SiteCrawler {
 			}
 		}
 		return List.copyOf(targets.values());
+	}
+
+	private boolean isJson(String response) {
+		String trimmed = response.trim();
+		return trimmed.startsWith("{") || trimmed.startsWith("[");
+	}
+
+	private List<ArticleUrl> fetchJsonArticleUrls(String response, SiteConfig config) {
+		JsonNode list = objectMapper.readTree(response).path("data").path("list");
+		List<ArticleUrl> articleUrls = new ArrayList<>();
+		for (JsonNode item : list) {
+			String announcedAt = item.path("WRITE_DATE").asText();
+			if (!isWithinScanRange(announcedAt, config))
+				continue;
+			String externalId = item.path("BBS_SEQ").asText();
+			articleUrls.add(new ArticleUrl(detailUrl(config, externalId), externalId,
+				item.path("CATEGORY_NM").asText(), announcedAt));
+		}
+		return articleUrls;
+	}
+
+	private List<ArticleUrl> fetchHtmlArticleUrls(String response, SiteConfig config) {
+		Document document = Jsoup.parse(response, config.getBaseUrl());
+		List<ArticleUrl> articleUrls = new ArrayList<>();
+		for (Element link : document.select(HTML_ARTICLE_LINK_SELECTOR)) {
+			String externalId = extractArticleId(link.attr("href"));
+			Element row = link.closest("tr");
+			if (row == null) {
+				continue;
+			}
+			String announcedAt = extractAnnouncedAt(row);
+			if (!isWithinScanRange(announcedAt, config)) {
+				continue;
+			}
+			articleUrls.add(new ArticleUrl(link.absUrl("href"), externalId, extractCategory(row), announcedAt));
+		}
+		return articleUrls;
+	}
+
+	private String extractArticleId(String url) {
+		Matcher matcher = ARTICLE_ID_PATTERN.matcher(url);
+		if (!matcher.find()) {
+			throw IntegrationErrorCode.CRAWL_PARSE_FAILED.toBaseException();
+		}
+		return matcher.group(1);
+	}
+
+	private String extractAnnouncedAt(Element row) {
+		Matcher matcher = DATE_PATTERN.matcher(row.text());
+		if (!matcher.find()) {
+			throw IntegrationErrorCode.CRAWL_PARSE_FAILED.toBaseException();
+		}
+		return matcher.group();
+	}
+
+	private String extractCategory(Element row) {
+		Element category = row.selectFirst("td");
+		return category == null ? "" : category.text().trim();
 	}
 
 	@Override
@@ -124,12 +185,12 @@ public class CauNoticeCrawler implements SiteCrawler {
 
 	private boolean isWithinScanRange(String value, SiteConfig config) {
 		try {
-			LocalDate date = LocalDate.parse(value, DATE_FORMATTER);
+			LocalDate date = LocalDate.parse(value, DateTimeFormatter.ofPattern(config.getDateFormat()));
 			LocalDate today = LocalDate.now(KOREA_ZONE_ID);
 			return !date.isBefore(today.minusDays(config.getMaxScanRangeDays())) && !date.isAfter(today);
 		} catch (RuntimeException e) {
 			log.error("[크롤링] 본교 공지 등록일 파싱 실패. crawlerType={}, siteId={}, announcedAt={}, format={}",
-				CrawlerType.CAU_NOTICE, config.getSiteId(), value, DATE_FORMATTER, e);
+				CrawlerType.CAU_NOTICE, config.getSiteId(), value, config.getDateFormat(), e);
 			throw IntegrationErrorCode.CRAWL_PARSE_FAILED.toBaseException();
 		}
 	}
