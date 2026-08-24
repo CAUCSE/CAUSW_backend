@@ -29,6 +29,11 @@ import net.causw.app.main.shared.exception.errorcode.IntegrationErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * 중앙대학교 SW교육원 공지를 수집합니다.
+ *
+ * <p>상세 페이지에 등록일이 없어 목록에서 추출한 등록일을 수집 대상과 함께 전달합니다.</p>
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -80,6 +85,7 @@ public class CauSwEduNoticeCrawler implements SiteCrawler {
 				if (articleUrlsByExternalId.size() >= siteConfig.getMaxArticles()) {
 					break;
 				}
+				// 상세 페이지에 등록일이 없으므로 목록에서 얻은 날짜를 수집 대상에 전달합니다.
 				String announcedAt = requiredText(row, LIST_DATE_SELECTOR);
 				if (!isWithinScanRange(announcedAt, siteConfig)) {
 					continue;
@@ -137,6 +143,7 @@ public class CauSwEduNoticeCrawler implements SiteCrawler {
 	}
 
 	private String requiredArticleDate(ArticleUrl articleUrl) {
+		// 목록 수집 없이 상세만 처리하면 등록일을 알 수 없으므로 실패로 처리합니다.
 		if (articleUrl.announcedAt() == null || articleUrl.announcedAt().isBlank()) {
 			throw IntegrationErrorCode.CRAWL_PARSE_FAILED.toBaseException();
 		}
