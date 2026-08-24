@@ -14,10 +14,6 @@ spring:
       max-request-size: 1000MB
       enabled: true
 
-  mvc:
-    pathmatch:
-      matching-strategy: ant_path_matcher
-
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     # 본인 로컬 DB 정보

@@ -9,10 +9,6 @@ spring:
       max-request-size: 1000MB
       enabled: true
 
-  mvc:
-    pathmatch:
-      matching-strategy: ant_path_matcher
-
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     # AWS RDS 콘솔 -> 데이터베이스 -> db-caucse
