@@ -669,7 +669,7 @@ public class PostServiceTest {
 		void getPosts_shouldExcludeBlockedUsersPosts() {
 			// given
 			Set<String> blockedUserIds = Set.of("blocked-writer-id");
-			PostListQuery query = PostListQuery.of(viewer, List.of(boardId), null, 20, null);
+			PostListQuery query = PostListQuery.of(viewer, List.of(boardId), null, null, 20, null);
 			List<String> boardAdminIds = List.of("admin-id");
 
 			given(blockReader.findBlockeeUserIdsByBlocker(viewer)).willReturn(blockedUserIds);
@@ -692,7 +692,7 @@ public class PostServiceTest {
 		@Test
 		void getPosts_shouldSucceed_forSpecificBoard() {
 			// given
-			PostListQuery query = PostListQuery.of(viewer, List.of(boardId), null, 20, null);
+			PostListQuery query = PostListQuery.of(viewer, List.of(boardId), null, null, 20, null);
 
 			List<String> boardAdminIds = List.of("admin-id");
 
@@ -756,7 +756,7 @@ public class PostServiceTest {
 		@Test
 		void getPosts_shouldReturnFalsePermissionFlags_whenPostIsDeleted() {
 			// given
-			PostListQuery query = PostListQuery.of(viewer, List.of(boardId), null, 20, null);
+			PostListQuery query = PostListQuery.of(viewer, List.of(boardId), null, null, 20, null);
 			PostCursorResult deletedPostResult = new PostCursorResult(
 				"deleted-post-id",
 				"테스트 제목",
@@ -806,7 +806,7 @@ public class PostServiceTest {
 		void getPosts_shouldSucceed_forMultipleBoards() {
 			// given
 			String boardId2 = "board-id-2";
-			PostListQuery query = PostListQuery.of(viewer, List.of(boardId, boardId2), null, 20, null);
+			PostListQuery query = PostListQuery.of(viewer, List.of(boardId, boardId2), null, null, 20, null);
 
 			List<String> firstBoardAdminIds = List.of("viewer-id");
 			List<String> secondBoardAdminIds = List.of("admin-id");
@@ -918,7 +918,7 @@ public class PostServiceTest {
 		void getPosts_shouldSucceed_withCursor() {
 			// given
 			String cursor = "2024-01-01T12:00:00|post-id-1";
-			PostListQuery query = PostListQuery.of(viewer, List.of(boardId), cursor, 20, null);
+			PostListQuery query = PostListQuery.of(viewer, List.of(boardId), null, cursor, 20, null);
 
 			List<String> boardAdminIds = List.of("admin-id");
 
@@ -988,7 +988,7 @@ public class PostServiceTest {
 		void getPosts_shouldSucceed_withKeyword() {
 			// given
 			String keyword = "검색어";
-			PostListQuery query = PostListQuery.of(viewer, List.of(boardId), null, 20, keyword);
+			PostListQuery query = PostListQuery.of(viewer, List.of(boardId), null, null, 20, keyword);
 
 			List<String> boardAdminIds = List.of("admin-id");
 
@@ -1047,7 +1047,7 @@ public class PostServiceTest {
 		@Test
 		void getPosts_shouldSucceed_withoutBoardId() {
 			// given
-			PostListQuery query = PostListQuery.of(viewer, null, null, 20, null);
+			PostListQuery query = PostListQuery.of(viewer, null, null, null, 20, null);
 
 			PostCursorResult postCursorResult = new PostCursorResult(
 				"post-id",
@@ -1101,7 +1101,7 @@ public class PostServiceTest {
 		@Test
 		void getPosts_shouldReturnEmpty_whenNoAccessibleBoards() {
 			// given
-			PostListQuery query = PostListQuery.of(viewer, null, null, 20, null);
+			PostListQuery query = PostListQuery.of(viewer, null, null, null, 20, null);
 			Slice<PostCursorResult> emptySlice = new SliceImpl<>(
 				List.of(),
 				PageRequest.of(0, 20),
@@ -1138,7 +1138,7 @@ public class PostServiceTest {
 				null,
 				null);
 
-			PostListQuery query = PostListQuery.of(viewer, List.of(boardId), null, 20, null);
+			PostListQuery query = PostListQuery.of(viewer, List.of(boardId), null, null, 20, null);
 			List<String> boardAdminIds = List.of("admin-id");
 
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(hiddenBoardConfig);
@@ -1154,7 +1154,7 @@ public class PostServiceTest {
 		@Test
 		void getPosts_shouldSucceed_withEmptyResult() {
 			// given
-			PostListQuery query = PostListQuery.of(viewer, List.of(boardId), null, 20, null);
+			PostListQuery query = PostListQuery.of(viewer, List.of(boardId), null, null, 20, null);
 			List<String> boardAdminIds = List.of("admin-id");
 
 			Slice<PostCursorResult> emptySlice = new SliceImpl<>(
@@ -1182,7 +1182,7 @@ public class PostServiceTest {
 		@Test
 		void getPosts_shouldSucceed_withAnonymousPost() {
 			// given
-			PostListQuery query = PostListQuery.of(viewer, List.of(boardId), null, 20, null);
+			PostListQuery query = PostListQuery.of(viewer, List.of(boardId), null, null, 20, null);
 			List<String> boardAdminIds = List.of("admin-id");
 
 			PostCursorResult anonymousPostResult = new PostCursorResult(
@@ -1243,7 +1243,7 @@ public class PostServiceTest {
 		@Test
 		void getPosts_shouldSucceed_withMixedAnonymousPosts() {
 			// given
-			PostListQuery query = PostListQuery.of(viewer, List.of(boardId), null, 20, null);
+			PostListQuery query = PostListQuery.of(viewer, List.of(boardId), null, null, 20, null);
 			List<String> boardAdminIds = List.of("admin-id");
 
 			PostCursorResult normalPostResult = new PostCursorResult(
