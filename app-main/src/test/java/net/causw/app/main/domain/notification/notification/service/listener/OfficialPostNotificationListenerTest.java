@@ -6,12 +6,9 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.never;
 import static org.mockito.BDDMockito.verify;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 
 import java.util.List;
-
-import net.causw.app.main.domain.community.board.entity.BoardReadScope;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
