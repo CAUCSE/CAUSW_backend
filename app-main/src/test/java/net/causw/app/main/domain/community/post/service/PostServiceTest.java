@@ -1355,8 +1355,7 @@ public class PostServiceTest {
 			PostCursorResult postCursorResult = new PostCursorResult(
 				"post-id", "테스트 제목", "게시글 내용", 5L, 10L, 0L, false, null, false, false, true,
 				"writer-id", "작성자", "닉네임", 2020, UserState.ACTIVE, ProfileImageType.CUSTOM, "profile-url",
-				LocalDateTime.now(), LocalDateTime.now(), freeBoardId, "자유 게시판"
-			);
+				LocalDateTime.now(), LocalDateTime.now(), freeBoardId, "자유 게시판");
 			Slice<PostCursorResult> slice = new SliceImpl<>(List.of(postCursorResult), PageRequest.of(0, 20), false);
 
 			// Mocking
@@ -1375,13 +1374,13 @@ public class PostServiceTest {
 			assertAll(
 				() -> assertThat(result).isNotNull(),
 				() -> assertThat(result.posts()).hasSize(1),
-				() -> assertThat(result.posts().get(0).boardId()).isEqualTo(freeBoardId)
-			);
+				() -> assertThat(result.posts().get(0).boardId()).isEqualTo(freeBoardId));
 
 			// Verify
 			verify(boardAccessManager, times(1)).getReadableBoards(viewer, BoardGroup.COMMUNITY);
 			verify(postReader, times(1)).findPostsWithCursor(
-				eq(List.of(freeBoardId, successBoardId)), any(PostReadQueryContext.class), eq(null), eq(null), eq(20), eq(null));
+				eq(List.of(freeBoardId, successBoardId)), any(PostReadQueryContext.class), eq(null), eq(null), eq(20),
+				eq(null));
 		}
 	}
 
