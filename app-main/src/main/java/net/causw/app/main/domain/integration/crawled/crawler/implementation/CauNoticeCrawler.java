@@ -22,6 +22,7 @@ import net.causw.app.main.domain.integration.crawled.dto.RawAttachment;
 import net.causw.app.main.domain.integration.crawled.entity.SiteConfig;
 import net.causw.app.main.shared.exception.errorcode.IntegrationErrorCode;
 
+import lombok.extern.slf4j.Slf4j;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
@@ -31,6 +32,7 @@ import tools.jackson.databind.ObjectMapper;
  * <p>게시판별 식별값은 {@link SiteConfig#getListUrl()}의 쿼리 파라미터에서 읽어 상세 URL을 구성합니다.</p>
  */
 @Component
+@Slf4j
 public class CauNoticeCrawler implements SiteCrawler {
 	private static final ZoneId KOREA_ZONE_ID = ZoneId.of("Asia/Seoul");
 	private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd");
@@ -74,6 +76,8 @@ public class CauNoticeCrawler implements SiteCrawler {
 						break;
 				}
 			} catch (Exception e) {
+				log.error("[크롤링] 본교 공지 목록 파싱 실패. crawlerType={}, siteId={}, page={}",
+					CrawlerType.CAU_NOTICE, config.getSiteId(), page, e);
 				throw IntegrationErrorCode.CRAWL_PARSE_FAILED.toBaseException();
 			}
 		}
@@ -111,7 +115,11 @@ public class CauNoticeCrawler implements SiteCrawler {
 		return java.util.Arrays.stream(url.substring(url.indexOf('?') + 1).split("&"))
 			.filter(pair -> pair.startsWith(key + "="))
 			.map(pair -> pair.substring(key.length() + 1))
-			.findFirst().orElseThrow(IntegrationErrorCode.CRAWL_PARSE_FAILED::toBaseException);
+			.findFirst()
+			.orElseThrow(() -> {
+				log.error("[크롤링] 본교 공지 상세 URL 구성 파라미터 누락. parameter={}", key);
+				return IntegrationErrorCode.CRAWL_PARSE_FAILED.toBaseException();
+			});
 	}
 
 	private boolean isWithinScanRange(String value, SiteConfig config) {
@@ -120,6 +128,8 @@ public class CauNoticeCrawler implements SiteCrawler {
 			LocalDate today = LocalDate.now(KOREA_ZONE_ID);
 			return !date.isBefore(today.minusDays(config.getMaxScanRangeDays())) && !date.isAfter(today);
 		} catch (RuntimeException e) {
+			log.error("[크롤링] 본교 공지 등록일 파싱 실패. crawlerType={}, siteId={}, announcedAt={}, format={}",
+				CrawlerType.CAU_NOTICE, config.getSiteId(), value, DATE_FORMATTER, e);
 			throw IntegrationErrorCode.CRAWL_PARSE_FAILED.toBaseException();
 		}
 	}
