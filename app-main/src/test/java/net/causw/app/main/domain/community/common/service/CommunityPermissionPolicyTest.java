@@ -9,14 +9,17 @@ import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
 import net.causw.app.main.domain.community.board.entity.BoardReadScope;
+import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.community.board.entity.BoardVisibility;
 import net.causw.app.main.domain.community.board.entity.BoardWriteScope;
 import net.causw.app.main.domain.community.comment.entity.Comment;
@@ -406,6 +409,71 @@ class CommunityPermissionPolicyTest {
 
 		assertThat(CommunityPermissionPolicy.isAlive(rootComment)).isFalse();
 		assertThat(CommunityPermissionPolicy.isAlive(childComment)).isTrue();
+	}
+
+	@Nested
+	@DisplayName("학과별 접근 권한")
+	class DepartmentAccessTest {
+
+		@Test
+		@DisplayName("허용 학과가 없는 게시판은 모든 학과 사용자가 접근할 수 있다")
+		void emptyDepartments_allowsAllDepartments() {
+			BoardConfig config = boardConfigWithDepartments(Set.of());
+
+			for (Department dept : Department.values()) {
+				User viewer = userWithDepartment(dept);
+				assertThat(CommunityPermissionPolicy.canReadBoard(viewer, board, config, BOARD_ADMIN_IDS))
+					.as("department %s should be allowed when no restriction", dept)
+					.isTrue();
+			}
+		}
+
+		@Test
+		@DisplayName("허용 학과에 속하는 사용자는 접근할 수 있다")
+		void allowedDepartment_grantsAccess() {
+			BoardConfig config = boardConfigWithDepartments(Set.of(Department.SCHOOL_OF_SW, Department.DEPT_OF_AI));
+			User viewer = userWithDepartment(Department.SCHOOL_OF_SW);
+
+			assertThat(CommunityPermissionPolicy.canReadBoard(viewer, board, config, BOARD_ADMIN_IDS)).isTrue();
+		}
+
+		@Test
+		@DisplayName("허용 학과에 속하지 않는 사용자는 접근할 수 없다")
+		void disallowedDepartment_deniesAccess() {
+			BoardConfig config = boardConfigWithDepartments(Set.of(Department.SCHOOL_OF_SW));
+			User viewer = userWithDepartment(Department.DEPT_OF_CSE);
+
+			assertThat(CommunityPermissionPolicy.canReadBoard(viewer, board, config, BOARD_ADMIN_IDS)).isFalse();
+		}
+
+		@Test
+		@DisplayName("학과가 null인 사용자는 학과 제한 게시판에 접근할 수 없다")
+		void nullDepartment_deniesAccessToRestrictedBoard() {
+			BoardConfig config = boardConfigWithDepartments(Set.of(Department.SCHOOL_OF_SW));
+			User viewer = userWithDepartment(null);
+
+			assertThat(CommunityPermissionPolicy.canReadBoard(viewer, board, config, BOARD_ADMIN_IDS)).isFalse();
+		}
+
+		private BoardConfig boardConfigWithDepartments(Set<Department> departments) {
+			return BoardConfig.of(
+				BOARD_ID,
+				false,
+				BoardReadScope.BOTH,
+				BoardWriteScope.ALL_USER,
+				false,
+				BoardVisibility.VISIBLE,
+				10,
+				null,
+				null,
+				departments);
+		}
+
+		private User userWithDepartment(Department department) {
+			User user = activeUser("dept-test-user", AcademicStatus.ENROLLED, Role.COMMON);
+			ReflectionTestUtils.setField(user, "department", department);
+			return user;
+		}
 	}
 
 	private static Board aliveBoard() {
