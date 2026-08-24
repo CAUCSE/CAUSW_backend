@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.community.board.entity.Board;
+import net.causw.app.main.domain.community.board.entity.BoardGroup;
 import net.causw.app.main.domain.community.board.service.implementation.BoardAccessManager;
 import net.causw.app.main.domain.community.board.service.implementation.BoardReader;
 import net.causw.app.main.domain.notification.notification.service.dto.NotificationSettingResult;
@@ -44,7 +45,7 @@ public class NotificationSettingService {
 		userValidator.validateUser(user);
 		UserNotificationSettingMap settingMap = notificationSettingReader.findSettingMap(userId);
 
-		List<Board> boards = boardAccessManager.getReadableBoards(user, true);
+		List<Board> boards = boardAccessManager.getReadableBoards(user, BoardGroup.NOTICE);
 		List<OfficialBoardSetting> officialBoardSettings = getOfficialBoardSettings(user, boards);
 
 		return NotificationSettingResult.from(settingMap, officialBoardSettings);

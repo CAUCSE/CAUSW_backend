@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
+import net.causw.app.main.domain.community.board.entity.BoardGroup;
 import net.causw.app.main.domain.community.common.service.CommunityPermissionPolicy;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.exception.errorcode.BoardErrorCode;
@@ -24,10 +25,10 @@ public class BoardAccessManager {
 	private final BoardReader boardReader;
 	private final BoardConfigReader boardConfigReader;
 
-	public List<Board> getReadableBoards(User viewer, boolean isTab) {
+	public List<Board> getReadableBoards(User viewer, BoardGroup boardGroup) {
 		return getAccessibleBoards(
 			viewer,
-			config -> !isTab || config.isNotice(),
+			config -> isMatchingGroup(config.isNotice(), boardGroup),
 			(board, config, adminIds) -> CommunityPermissionPolicy.canReadBoard(
 				viewer, board, config, adminIds));
 	}
@@ -41,10 +42,10 @@ public class BoardAccessManager {
 		}
 	}
 
-	public List<Board> getWritableBoards(User writer) {
+	public List<Board> getWritableBoards(User writer, BoardGroup boardGroup) {
 		return getAccessibleBoards(
 			writer,
-			config -> true,
+			config -> isMatchingGroup(config.isNotice(), boardGroup),
 			(board, config, adminIds) -> CommunityPermissionPolicy.canWriteBoard(
 				writer, board, config, adminIds));
 	}
@@ -77,6 +78,16 @@ public class BoardAccessManager {
 				adminIdMap.getOrDefault(item.board().getId(), Set.of())))
 			.map(BoardWithConfig::board)
 			.toList();
+	}
+
+	// tb_board_config의 is_notice 값과 요청받은 boardGroup을 매핑
+	private boolean isMatchingGroup(boolean isNoticeConfig, BoardGroup requestGroup) {
+		if (requestGroup == BoardGroup.NOTICE) {
+			return isNoticeConfig;
+		} else if (requestGroup == BoardGroup.COMMUNITY) {
+			return !isNoticeConfig;
+		}
+		return false;
 	}
 
 	@FunctionalInterface

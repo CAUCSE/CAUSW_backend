@@ -19,6 +19,8 @@ import net.causw.app.main.domain.asset.file.service.implementation.FileReader;
 import net.causw.app.main.domain.asset.file.service.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
+import net.causw.app.main.domain.community.board.entity.BoardGroup;
+import net.causw.app.main.domain.community.board.service.implementation.BoardAccessManager;
 import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
 import net.causw.app.main.domain.community.board.service.implementation.BoardReader;
 import net.causw.app.main.domain.community.common.service.CommunityPermissionPolicy;
@@ -65,6 +67,7 @@ public class PostService {
 	private final PostImageManager postImageManager;
 	private final BoardReader boardReader;
 	private final BoardConfigReader boardConfigReader;
+	private final BoardAccessManager boardAccessManager;
 	private final LikePostReader likePostReader;
 	private final BlockReader userBlockReader;
 	private final ApplicationEventPublisher eventPublisher;
@@ -187,6 +190,7 @@ public class PostService {
 		User viewer = query.viewer();
 		CommunityPermissionPolicy.validateActiveUser(viewer);
 		List<String> requestedBoardIds = query.boardIds();
+		BoardGroup boardGroup = query.boardGroup();
 		String cursor = query.cursor();
 		int size = query.size() != null ? query.size() : StaticValue.DEFAULT_POST_PAGE_SIZE; // 기본값 20
 		String keyword = query.keyword();
@@ -208,6 +212,17 @@ public class PostService {
 			}
 
 			boardIds = requestedBoardIds;
+		}
+		// 게시판 ID가 없고, 그룹만 지정된 경우
+		else if (boardGroup != null) {
+			boardIds = boardAccessManager.getReadableBoards(viewer, boardGroup).stream()
+				.map(Board::getId)
+				.toList();
+
+			// 권한이 없거나 게시판이 없는 경우, 빈 목록 반환
+			if (boardIds.isEmpty()) {
+				return PostListResult.of(List.of(), null);
+			}
 		}
 
 		// 뷰어가 차단한 사용자 조회
