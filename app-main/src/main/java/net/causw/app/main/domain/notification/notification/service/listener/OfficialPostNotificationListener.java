@@ -58,9 +58,8 @@ public class OfficialPostNotificationListener {
 
 		// UserBoardSubscribe row가 없으면 기본 구독(true)으로 간주.
 		// isSubscribed=false인 row가 명시적으로 존재하는 경우에만 알림 대상에서 제외.
-		// ACTIVE + 미삭제 + readScope 조건을 만족하며 구독 거부하지 않은 유저 목록 조회
-		BoardReadScope readScope = boardConfig.getReadScope();
-		List<User> targets = userBoardSubscribeReader.findNotificationTargets(board.getId(), readScope);
+		// ACTIVE + 학적 범위 + 학과 제한 조건을 만족하며 구독 거부하지 않은 유저 목록 조회
+		List<User> targets = userBoardSubscribeReader.findNotificationTargets(board.getId(), boardConfig);
 
 		// 알림 발송
 		// 푸시알림 제목: 게시판 이름

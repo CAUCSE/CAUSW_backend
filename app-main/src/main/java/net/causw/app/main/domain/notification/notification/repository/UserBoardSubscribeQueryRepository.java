@@ -1,6 +1,7 @@
 package net.causw.app.main.domain.notification.notification.repository;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.stereotype.Repository;
 
@@ -8,6 +9,7 @@ import net.causw.app.main.domain.notification.notification.entity.QUserBoardSubs
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.QUser;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -31,14 +33,20 @@ public class UserBoardSubscribeQueryRepository {
 	 * <ol>
 	 *   <li>사용자 상태가 {@code ACTIVE}</li>
 	 *   <li>{@code targetAcademicStatuses}에 포함된 학적 상태 (빈 리스트이면 모든 학적 허용)</li>
+	 *   <li>{@code allowedDepartments}에 포함된 학과 (빈 Set이면 모든 학과 허용)</li>
 	 *   <li>해당 게시판에 {@code isSubscribed = false}인 row가 존재하지 않는 사용자</li>
 	 * </ol>
 	 *
-	 * @param boardId               알림을 발송할 게시판 ID
+	 * @param boardId                알림을 발송할 게시판 ID
 	 * @param targetAcademicStatuses 허용할 학적 상태 목록 ({@link net.causw.app.main.domain.community.board.entity.BoardReadScope#getTargetAcademicStatuses()} 반환값)
+	 * @param allowedDepartments     허용할 학과 Set (빈 Set이면 모든 학과 허용)
 	 * @return 알림 발송 대상 유저 목록
 	 */
-	public List<User> findNotificationTargets(String boardId, List<AcademicStatus> targetAcademicStatuses) {
+	public List<User> findNotificationTargets(
+		String boardId,
+		List<AcademicStatus> targetAcademicStatuses,
+		Set<Department> allowedDepartments) {
+
 		QUser user = QUser.user;
 		QUserBoardSubscribe ubs = QUserBoardSubscribe.userBoardSubscribe;
 
@@ -51,12 +59,13 @@ public class UserBoardSubscribeQueryRepository {
 				ubs.isSubscribed.isFalse())
 			.fetch();
 
-		// ACTIVE + 학적 조건을 만족하며 구독 거부하지 않은 유저 조회
+		// ACTIVE + 학적 조건 + 학과 조건을 만족하며 구독 거부하지 않은 유저 조회
 		return jpaQueryFactory
 			.selectFrom(user)
 			.where(
 				user.state.eq(UserState.ACTIVE),
 				academicStatusCondition(user, targetAcademicStatuses),
+				departmentCondition(user, allowedDepartments),
 				unsubscribedIds.isEmpty() ? null : user.id.notIn(unsubscribedIds))
 			.fetch();
 	}
@@ -69,5 +78,15 @@ public class UserBoardSubscribeQueryRepository {
 			return null;
 		}
 		return user.academicStatus.in(targetAcademicStatuses);
+	}
+
+	/**
+	 * 학과 필터 조건. 빈 Set이면 모든 학과 허용.
+	 */
+	private BooleanExpression departmentCondition(QUser user, Set<Department> allowedDepartments) {
+		if (allowedDepartments.isEmpty()) {
+			return null;
+		}
+		return user.department.in(allowedDepartments);
 	}
 }
