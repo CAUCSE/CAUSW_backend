@@ -1,5 +1,9 @@
 package net.causw.app.main.domain.integration.crawled.crawler.implementation;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -32,6 +36,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class CauSwNoticeCrawler implements SiteCrawler {
+	private static final ZoneId KOREA_ZONE_ID = ZoneId.of("Asia/Seoul");
+	private static final DateTimeFormatter LIST_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd");
 	private static final Pattern SCRIPT_DOWNLOAD_PATTERN = Pattern.compile(
 		"goLocation\\('/_module/bbs/download.php','(\\d+)','(\\w+)'\\).*?>(.*?)<");
 	private static final Pattern NOTICE_CODE_PATTERN = Pattern.compile("[?&]code=([^&]+)");
@@ -51,19 +57,28 @@ public class CauSwNoticeCrawler implements SiteCrawler {
 		SiteConfig siteConfig = context.siteConfig();
 		List<ArticleUrl> articleUrls = new ArrayList<>();
 		SiteSelectors selectors = siteConfig.getSelectors();
+		log.debug("[크롤링] 공지 목록 수집 시작. siteId={}, maxPages={}, maxArticles={}",
+			siteConfig.getSiteId(), siteConfig.getMaxPages(), siteConfig.getMaxArticles());
 
 		for (int page = 1; page <= siteConfig.getMaxPages()
 			&& articleUrls.size() < siteConfig.getMaxArticles(); page++) {
 			String listUrl = siteConfig.getListUrl() + page;
 			Document document = Jsoup.parse(crawlHttpClient.fetch(listUrl, siteConfig), listUrl);
 			Elements rows = document.select(selectors.getArticleRow());
+			log.debug("[크롤링] 공지 목록 페이지 파싱 완료. siteId={}, page={}, rowCount={}",
+				siteConfig.getSiteId(), page, rows.size());
 			if (rows.isEmpty()) {
+				log.debug("[크롤링] 공지 목록 수집 종료. siteId={}, page={}, 이유=목록 없음",
+					siteConfig.getSiteId(), page);
 				break;
 			}
 
 			for (Element row : rows) {
 				if (articleUrls.size() >= siteConfig.getMaxArticles()) {
 					break;
+				}
+				if (!isWithinScanRange(row, siteConfig)) {
+					continue;
 				}
 				Element linkElement = row.selectFirst(selectors.getArticleLink());
 				if (linkElement == null) {
@@ -78,7 +93,25 @@ public class CauSwNoticeCrawler implements SiteCrawler {
 			}
 		}
 
-		return articleUrls.stream().distinct().toList();
+		List<ArticleUrl> distinctArticleUrls = articleUrls.stream().distinct().toList();
+		log.debug("[크롤링] 공지 목록 수집 완료. siteId={}, 추출={}, 중복 제거 후={}",
+			siteConfig.getSiteId(), articleUrls.size(), distinctArticleUrls.size());
+		return distinctArticleUrls;
+	}
+
+	private boolean isWithinScanRange(Element row, SiteConfig siteConfig) {
+		Element dateElement = row.selectFirst("td:nth-last-child(2)");
+		if (dateElement == null || dateElement.text().isBlank()) {
+			throw IntegrationErrorCode.CRAWL_PARSE_FAILED.toBaseException();
+		}
+		try {
+			LocalDate announceDate = LocalDate.parse(dateElement.text().trim(), LIST_DATE_FORMATTER);
+			LocalDate today = LocalDate.now(KOREA_ZONE_ID);
+			return !announceDate.isBefore(today.minusDays(siteConfig.getMaxScanRangeDays()))
+				&& !announceDate.isAfter(today);
+		} catch (DateTimeParseException e) {
+			throw IntegrationErrorCode.CRAWL_PARSE_FAILED.toBaseException();
+		}
 	}
 
 	private String extractNoticeId(String url) {
@@ -94,6 +127,8 @@ public class CauSwNoticeCrawler implements SiteCrawler {
 	@Override
 	public RawArticle fetchArticle(CrawlContext context, ArticleUrl articleUrl) {
 		SiteConfig siteConfig = context.siteConfig();
+		log.debug("[크롤링] 공지 상세 수집 시작. siteId={}, externalId={}, url={}",
+			siteConfig.getSiteId(), articleUrl.externalId(), articleUrl.url());
 		String html = crawlHttpClient.fetch(articleUrl.url(), siteConfig);
 		try {
 			Document document = Jsoup.parse(html, articleUrl.url());
@@ -102,7 +137,7 @@ public class CauSwNoticeCrawler implements SiteCrawler {
 			String contentHtml = contentElement == null ? "<p>내용 없음</p>" : contentElement.html();
 			String imageUrl = document.select(selectors.getRepresentativeImage()).attr("abs:src");
 
-			return new RawArticle(
+			RawArticle rawArticle = new RawArticle(
 				siteConfig.getSiteId(),
 				articleUrl.externalId(),
 				articleUrl.url(),
@@ -113,6 +148,10 @@ public class CauSwNoticeCrawler implements SiteCrawler {
 				requiredText(document, selectors.getDate()),
 				imageUrl,
 				extractAttachments(document));
+			log.debug("[크롤링] 공지 상세 파싱 완료. siteId={}, externalId={}, 본문 크기={}chars, 첨부파일 수={}",
+				siteConfig.getSiteId(), articleUrl.externalId(), rawArticle.contentHtml().length(),
+				rawArticle.attachments().size());
+			return rawArticle;
 		} catch (RuntimeException e) {
 			log.error("[크롤링] 공지 파싱 실패. crawlerType={}, siteId={}, url={}",
 				CrawlerType.CAU_SW_NOTICE, siteConfig.getSiteId(), articleUrl.url(), e);
@@ -146,7 +185,9 @@ public class CauSwNoticeCrawler implements SiteCrawler {
 		extractScriptAttachments(document.select("div.files span"), attachments);
 		extractLinkAttachments(document.select("table.file-list tbody tr td:first-child a"), attachments);
 		extractLinkAttachments(document.select("div.fr-view a[href*='download.php']"), attachments);
-		return List.copyOf(attachments.values());
+		List<RawAttachment> result = List.copyOf(attachments.values());
+		log.debug("[크롤링] 첨부파일 추출 완료. 첨부파일 수={}", result.size());
+		return result;
 	}
 
 	/**

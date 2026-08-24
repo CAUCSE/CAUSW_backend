@@ -24,7 +24,8 @@ public class SiteConfigReader {
 	 * @return 활성화된 사이트 설정
 	 */
 	public SiteConfig getEnabledBySiteId(String siteId) {
-		return siteConfigRepository.findBySiteIdAndIsEnabledTrue(siteId)
+		return siteConfigRepository.findById(siteId)
+			.filter(SiteConfig::getIsEnabled)
 			.orElseThrow(IntegrationErrorCode.CRAWL_SITE_CONFIG_NOT_FOUND::toBaseException);
 	}
 

@@ -95,6 +95,11 @@ public class Post extends BaseEntity {
 	@JoinColumn(name = "vote_id", unique = true)
 	private Vote vote;
 
+	@Column(name = "view_count", nullable = false)
+	@ColumnDefault("0")
+	@Builder.Default
+	private Long viewCount = 0L;
+
 	public static Post of(
 		String title,
 		String content,
@@ -190,5 +195,9 @@ public class Post extends BaseEntity {
 
 	public void setCrawled() {
 		this.isCrawled = true;
+	}
+
+	public void increaseViewCount() {
+		this.viewCount++;
 	}
 }
