@@ -6,7 +6,6 @@ import java.util.Map;
 import net.causw.app.main.domain.integration.crawled.config.CrawlerType;
 import net.causw.app.main.domain.integration.crawled.config.PaginationType;
 import net.causw.app.main.domain.integration.crawled.entity.SiteConfig;
-import net.causw.app.main.domain.integration.crawled.entity.SiteSelectors;
 
 public final class SiteConfigFixture {
 	private SiteConfigFixture() {}
@@ -31,8 +30,7 @@ public final class SiteConfigFixture {
 			PaginationType.PAGE_NUMBER,
 			"page",
 			1,
-			SiteSelectors.of("tr", "a", ".type", "h1", ".body", ".date", ".author", "img",
-				"yyyy-MM-dd", null),
+			"yyyy-MM-dd",
 			false,
 			false,
 			true);
@@ -54,17 +52,7 @@ public final class SiteConfigFixture {
 			PaginationType.PAGE_NUMBER,
 			"offset",
 			1,
-			SiteSelectors.of(
-				"table.table-basic tbody tr",
-				"td.aleft a",
-				"td span.tag",
-				"section#content div.header > h3",
-				"section#content div.fr-view",
-				"div.header > div > span:nth-of-type(1)",
-				"section#content div.header > div > span:nth-of-type(3)",
-				"section#content div.fr-view > p > img",
-				"yyyy-MM-dd",
-				null),
+			"yyyy-MM-dd",
 			false,
 			false,
 			true);
@@ -86,17 +74,7 @@ public final class SiteConfigFixture {
 			PaginationType.PAGE_NUMBER,
 			"currentPage",
 			1,
-			SiteSelectors.of(
-				"table.table-basic tbody tr",
-				"td.title a",
-				"td:first-child",
-				"section.board div.header > h3",
-				"section.board div.fr-view.detail",
-				"section.board div.header > div > span:nth-of-type(1)",
-				"section.board div.header > div > span:nth-of-type(2)",
-				"section.board div.fr-view.detail img",
-				"yyyy-MM-dd HH:mm:ss",
-				null),
+			"yyyy-MM-dd HH:mm:ss",
 			false,
 			false,
 			true);

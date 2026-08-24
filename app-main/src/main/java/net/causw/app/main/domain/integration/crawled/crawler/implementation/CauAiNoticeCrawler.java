@@ -25,7 +25,6 @@ import net.causw.app.main.domain.integration.crawled.dto.ArticleUrl;
 import net.causw.app.main.domain.integration.crawled.dto.RawArticle;
 import net.causw.app.main.domain.integration.crawled.dto.RawAttachment;
 import net.causw.app.main.domain.integration.crawled.entity.SiteConfig;
-import net.causw.app.main.domain.integration.crawled.entity.SiteSelectors;
 import net.causw.app.main.shared.exception.errorcode.IntegrationErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -37,6 +36,16 @@ import lombok.extern.slf4j.Slf4j;
 public class CauAiNoticeCrawler implements SiteCrawler {
 	private static final ZoneId KOREA_ZONE_ID = ZoneId.of("Asia/Seoul");
 	private static final DateTimeFormatter LIST_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+	private static final String ARTICLE_ROW_SELECTOR = "table.table-basic tbody tr";
+	private static final String ARTICLE_LINK_SELECTOR = "td.title a";
+	private static final String ARTICLE_CATEGORY_SELECTOR = "td:first-child";
+	private static final String LIST_DATE_SELECTOR = "td:nth-last-child(2)";
+	private static final String TITLE_SELECTOR = "section.board div.header > h3";
+	private static final String BODY_SELECTOR = "section.board div.fr-view.detail";
+	private static final String DATE_SELECTOR = "section.board div.header > div > span:nth-of-type(1)";
+	private static final String AUTHOR_SELECTOR = "section.board div.header > div > span:nth-of-type(3)";
+	private static final String REPRESENTATIVE_IMAGE_SELECTOR = "section.board div.fr-view.detail img";
+	private static final String ATTACHMENT_SELECTOR = "div.files a[href], div.fr-view a[href*='download']";
 	private static final Pattern NOTICE_NO_PATTERN = Pattern.compile("[?&]no=(\\d+)");
 
 	private final CrawlHttpClient crawlHttpClient;
@@ -50,7 +59,6 @@ public class CauAiNoticeCrawler implements SiteCrawler {
 	public List<ArticleUrl> fetchList(CrawlContext context) {
 		SiteConfig siteConfig = context.siteConfig();
 		Map<String, ArticleUrl> articleUrlsByExternalId = new LinkedHashMap<>();
-		SiteSelectors selectors = siteConfig.getSelectors();
 		log.debug("[크롤링] AI학과 공지 목록 수집 시작. siteId={}, maxPages={}, maxArticles={}",
 			siteConfig.getSiteId(), siteConfig.getMaxPages(), siteConfig.getMaxArticles());
 
@@ -58,7 +66,7 @@ public class CauAiNoticeCrawler implements SiteCrawler {
 			&& articleUrlsByExternalId.size() < siteConfig.getMaxArticles(); page++) {
 			String listUrl = siteConfig.getListUrl() + page;
 			Document document = Jsoup.parse(crawlHttpClient.fetch(listUrl, siteConfig), listUrl);
-			Elements rows = document.select(selectors.getArticleRow());
+			Elements rows = document.select(ARTICLE_ROW_SELECTOR);
 			if (rows.isEmpty()) {
 				break;
 			}
@@ -70,7 +78,7 @@ public class CauAiNoticeCrawler implements SiteCrawler {
 				if (!isWithinScanRange(row, siteConfig)) {
 					continue;
 				}
-				Element linkElement = row.selectFirst(selectors.getArticleLink());
+				Element linkElement = row.selectFirst(ARTICLE_LINK_SELECTOR);
 				if (linkElement == null) {
 					continue;
 				}
@@ -80,7 +88,7 @@ public class CauAiNoticeCrawler implements SiteCrawler {
 				}
 				String externalId = extractNoticeId(url);
 				articleUrlsByExternalId.putIfAbsent(externalId,
-					new ArticleUrl(url, externalId, row.select(selectors.getArticleCategory()).text()));
+					new ArticleUrl(url, externalId, row.select(ARTICLE_CATEGORY_SELECTOR).text()));
 			}
 		}
 
@@ -88,7 +96,7 @@ public class CauAiNoticeCrawler implements SiteCrawler {
 	}
 
 	private boolean isWithinScanRange(Element row, SiteConfig siteConfig) {
-		Element dateElement = row.selectFirst("td:nth-last-child(2)");
+		Element dateElement = row.selectFirst(LIST_DATE_SELECTOR);
 		if (dateElement == null || dateElement.text().isBlank()) {
 			throw IntegrationErrorCode.CRAWL_PARSE_FAILED.toBaseException();
 		}
@@ -116,14 +124,13 @@ public class CauAiNoticeCrawler implements SiteCrawler {
 		SiteConfig siteConfig = context.siteConfig();
 		try {
 			Document document = Jsoup.parse(crawlHttpClient.fetch(articleUrl.url(), siteConfig), articleUrl.url());
-			SiteSelectors selectors = siteConfig.getSelectors();
-			Element contentElement = document.selectFirst(selectors.getBody());
+			Element contentElement = document.selectFirst(BODY_SELECTOR);
 			String contentHtml = contentElement == null ? "<p>내용 없음</p>" : contentElement.html();
-			String imageUrl = document.select(selectors.getRepresentativeImage()).attr("abs:src");
+			String imageUrl = document.select(REPRESENTATIVE_IMAGE_SELECTOR).attr("abs:src");
 			return new RawArticle(
 				siteConfig.getSiteId(), articleUrl.externalId(), articleUrl.url(), articleUrl.category(),
-				requiredText(document, selectors.getTitle()), contentHtml,
-				requiredText(document, selectors.getAuthor()), requiredText(document, selectors.getDate()), imageUrl,
+				requiredText(document, TITLE_SELECTOR), contentHtml,
+				requiredText(document, AUTHOR_SELECTOR), requiredText(document, DATE_SELECTOR), imageUrl,
 				extractAttachments(document));
 		} catch (RuntimeException e) {
 			log.error("[크롤링] AI학과 공지 파싱 실패. crawlerType={}, siteId={}, url={}",
@@ -142,7 +149,7 @@ public class CauAiNoticeCrawler implements SiteCrawler {
 
 	private List<RawAttachment> extractAttachments(Document document) {
 		Map<String, RawAttachment> attachments = new LinkedHashMap<>();
-		addAttachments(document.select("div.files a[href], div.fr-view a[href*='download']"), attachments);
+		addAttachments(document.select(ATTACHMENT_SELECTOR), attachments);
 		return List.copyOf(attachments.values());
 	}
 

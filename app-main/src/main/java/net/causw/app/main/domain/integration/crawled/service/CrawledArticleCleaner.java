@@ -51,7 +51,7 @@ public class CrawledArticleCleaner {
 			String imageUrl = normalizeNullableUrl(rawArticle.representativeImageUrl(), sourceUrl);
 			LocalDate announceDate = LocalDate.parse(
 				rawArticle.announcedAt().trim(),
-				DateTimeFormatter.ofPattern(siteConfig.getSelectors().getDateFormat()));
+				DateTimeFormatter.ofPattern(siteConfig.getDateFormat()));
 			String title = requireText(rawArticle.title());
 			String author = requireText(rawArticle.author());
 			String category = rawArticle.category() == null ? "" : rawArticle.category().trim();
