@@ -15,8 +15,8 @@ import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 
 import net.causw.app.main.domain.integration.crawled.dto.CrawlResult;
-import net.causw.app.main.domain.integration.crawled.service.CrawlService;
-import net.causw.app.main.domain.integration.crawled.service.CrawledToPostTransferService;
+import net.causw.app.main.domain.integration.crawled.service.CrawledNoticePublishFacade;
+import net.causw.app.main.domain.integration.crawled.service.NoticeCrawlingFacade;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("CrawlScheduler 테스트")
@@ -25,10 +25,10 @@ class CrawlSchedulerTest {
 	private CrawlScheduler scheduler;
 
 	@Mock
-	private CrawlService crawlService;
+	private NoticeCrawlingFacade noticeCrawlingFacade;
 
 	@Mock
-	private CrawledToPostTransferService crawledToPostTransferService;
+	private CrawledNoticePublishFacade crawledNoticePublishFacade;
 
 	@Mock
 	private RedissonClient redissonClient;
@@ -43,15 +43,15 @@ class CrawlSchedulerTest {
 		given(redissonClient.getLock("crawling.all-sites")).willReturn(lock);
 		given(lock.tryLock(3, java.util.concurrent.TimeUnit.SECONDS)).willReturn(true);
 		given(lock.isHeldByCurrentThread()).willReturn(true);
-		given(crawlService.crawlAllEnabled())
-			.willReturn(List.of(new CrawlResult("cau-sw-notice", 1, 1, 0, 0, List.of())));
+		given(noticeCrawlingFacade.crawlAllEnabled())
+			.willReturn(List.of(new CrawlResult("cau-sw-notice", 1, 1, 0, 0, 0, List.of())));
 
 		// when
 		scheduler.runAllSites();
 
 		// then
-		verify(crawlService).crawlAllEnabled();
-		verify(crawledToPostTransferService).transferToPosts();
+		verify(noticeCrawlingFacade).crawlAllEnabled();
+		verify(crawledNoticePublishFacade).publishPendingNotices();
 		verify(lock).unlock();
 	}
 }

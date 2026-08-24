@@ -65,6 +65,7 @@ import net.causw.app.main.domain.community.post.service.dto.PostUpdateResult;
 import net.causw.app.main.domain.community.post.service.implementation.PostImageManager;
 import net.causw.app.main.domain.community.post.service.implementation.PostReader;
 import net.causw.app.main.domain.community.post.service.implementation.PostWriter;
+import net.causw.app.main.domain.community.post.service.implementation.ViewCountManager;
 import net.causw.app.main.domain.community.reaction.service.implementation.LikePostReader;
 import net.causw.app.main.domain.community.vote.service.implementation.VoteWriter;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
@@ -77,6 +78,9 @@ import net.causw.app.main.domain.user.relation.service.implementation.BlockReade
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
 import net.causw.app.main.util.ObjectFixtures;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @ExtendWith(MockitoExtension.class)
 public class PostServiceTest {
@@ -179,6 +183,8 @@ public class PostServiceTest {
 			.isEqualTo(PostErrorCode.POST_SYSTEM_NOTICE_CUD_ONLY_VIA_DEDICATED_API);
 		verify(post, never()).setIsDeleted(true);
 	}
+	@Mock
+	ViewCountManager viewCountManager;
 
 	@Nested
 	@DisplayName("게시글 생성 테스트")
@@ -758,6 +764,7 @@ public class PostServiceTest {
 				"게시글 내용",
 				5L,
 				10L,
+				0L,
 				false,
 				null,
 				false,
@@ -816,6 +823,7 @@ public class PostServiceTest {
 				"deleted-post-id",
 				"테스트 제목",
 				"삭제된 게시글",
+				0L,
 				0L,
 				0L,
 				false,
@@ -881,6 +889,7 @@ public class PostServiceTest {
 				"게시판1 게시글 내용",
 				5L,
 				10L,
+				0L,
 				false,
 				null,
 				false,
@@ -904,6 +913,7 @@ public class PostServiceTest {
 				"게시판2 게시글 내용",
 				3L,
 				8L,
+				0L,
 				false,
 				null,
 				false,
@@ -980,6 +990,7 @@ public class PostServiceTest {
 				"게시글 내용",
 				5L,
 				10L,
+				0L,
 				false,
 				null,
 				false,
@@ -1049,6 +1060,7 @@ public class PostServiceTest {
 				"검색어가 포함된 게시글 내용",
 				5L,
 				10L,
+				0L,
 				false,
 				null,
 				false,
@@ -1105,6 +1117,7 @@ public class PostServiceTest {
 				"게시글 내용",
 				5L,
 				10L,
+				0L,
 				false,
 				null,
 				false,
@@ -1240,6 +1253,7 @@ public class PostServiceTest {
 				"익명 게시글 내용",
 				5L,
 				10L,
+				0L,
 				true, // 익명 게시글
 				null,
 				false,
@@ -1300,6 +1314,7 @@ public class PostServiceTest {
 				"일반 게시글 내용",
 				5L,
 				10L,
+				0L,
 				false, // 일반 게시글
 				null,
 				false,
@@ -1323,6 +1338,7 @@ public class PostServiceTest {
 				"익명 게시글 내용",
 				3L,
 				8L,
+				0L,
 				true, // 익명 게시글
 				null,
 				false,
@@ -1498,7 +1514,14 @@ public class PostServiceTest {
 				null,
 				null);
 			Mockito.lenient().when(blockReader.existsByBlockerAndBlocked(any(), any())).thenReturn(false);
+
+			Mockito.lenient().when(viewCountManager.hasViewedCookie(any(), anyString())).thenReturn(false);
+			Mockito.lenient().when(viewCountManager.reserve(anyString(), anyString()))
+				.thenReturn(new ViewCountManager.ViewReservation("key", "token", true));
 		}
+
+		HttpServletRequest mockRequest = mock(HttpServletRequest.class);
+		HttpServletResponse mockResponse = mock(HttpServletResponse.class);
 
 		@DisplayName("차단한 사용자의 게시글은 상세 조회 불가")
 		@Test
@@ -1513,7 +1536,7 @@ public class PostServiceTest {
 			given(blockReader.existsByBlockerAndBlocked(viewer, writer)).willReturn(true);
 
 			// when & then
-			assertThatThrownBy(() -> postService.getPostDetail(query))
+			assertThatThrownBy(() -> postService.getPostDetail(query, mockRequest, mockResponse))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.satisfies(ex -> assertThat(((BaseRunTimeV2Exception)ex).getErrorCode())
 					.isEqualTo(PostErrorCode.BLOCKED_USER_CONTENT));
@@ -1534,7 +1557,7 @@ public class PostServiceTest {
 			given(blockReader.existsByBlockerAndBlocked(writer, writer)).willReturn(true);
 
 			// when & then
-			assertThatThrownBy(() -> postService.getPostDetail(query))
+			assertThatThrownBy(() -> postService.getPostDetail(query, mockRequest, mockResponse))
 				.isInstanceOf(BaseRunTimeV2Exception.class)
 				.satisfies(ex -> assertThat(((BaseRunTimeV2Exception)ex).getErrorCode())
 					.isEqualTo(PostErrorCode.BLOCKED_USER_CONTENT));
@@ -1556,7 +1579,7 @@ public class PostServiceTest {
 			given(likePostReader.existsByPostIdAndUserId(postId, "admin-id")).willReturn(false);
 
 			// when
-			PostDetailResult result = postService.getPostDetail(query);
+			PostDetailResult result = postService.getPostDetail(query, mockRequest, mockResponse);
 
 			// then
 			assertAll(
@@ -1581,7 +1604,7 @@ public class PostServiceTest {
 			given(likePostReader.existsByPostIdAndUserId(postId, "viewer-id")).willReturn(false);
 
 			// when
-			PostDetailResult result = postService.getPostDetail(query);
+			PostDetailResult result = postService.getPostDetail(query, mockRequest, mockResponse);
 
 			// then
 			assertAll(
@@ -1596,7 +1619,7 @@ public class PostServiceTest {
 				() -> assertThat(result.boardId()).isEqualTo(boardId),
 				() -> assertThat(result.boardName()).isNotNull());
 
-			verify(postReader, times(1)).findByIdAndNotDeleted(postId);
+			verify(postReader, times(2)).findByIdAndNotDeleted(postId);
 		}
 
 		@DisplayName("작성자가 게시글 상세 조회 시 수정/삭제 가능")
@@ -1613,7 +1636,7 @@ public class PostServiceTest {
 			given(likePostReader.existsByPostIdAndUserId(postId, "writer-id")).willReturn(false);
 
 			// when
-			PostDetailResult result = postService.getPostDetail(query);
+			PostDetailResult result = postService.getPostDetail(query, mockRequest, mockResponse);
 
 			// then
 			assertAll(
@@ -1637,7 +1660,7 @@ public class PostServiceTest {
 			given(likePostReader.existsByPostIdAndUserId(postId, "admin-id")).willReturn(false);
 
 			// when
-			PostDetailResult result = postService.getPostDetail(query);
+			PostDetailResult result = postService.getPostDetail(query, mockRequest, mockResponse);
 
 			// then
 			assertAll(
@@ -1660,7 +1683,7 @@ public class PostServiceTest {
 			given(likePostReader.existsByPostIdAndUserId(postId, "viewer-id")).willReturn(true);
 
 			// when
-			PostDetailResult result = postService.getPostDetail(query);
+			PostDetailResult result = postService.getPostDetail(query, mockRequest, mockResponse);
 
 			// then
 			assertAll(
@@ -1686,7 +1709,7 @@ public class PostServiceTest {
 			given(likePostReader.existsByPostIdAndUserId(postId, "viewer-id")).willReturn(false);
 
 			// when
-			PostDetailResult result = postService.getPostDetail(query);
+			PostDetailResult result = postService.getPostDetail(query, mockRequest, mockResponse);
 
 			// then
 			assertAll(
@@ -1719,8 +1742,85 @@ public class PostServiceTest {
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
 
 			// when & then
-			assertThatThrownBy(() -> postService.getPostDetail(query))
+			assertThatThrownBy(() -> postService.getPostDetail(query, mockRequest, mockResponse))
 				.isInstanceOf(BaseRunTimeV2Exception.class);
+		}
+
+		@DisplayName("쿠키가 없고 예약 성공 시 조회수가 증가하고 쿠키가 발급된다")
+		@Test
+		void getPostDetail_shouldIncrementViewCount_whenReserveSucceeds() {
+			// given
+			PostDetailQuery query = new PostDetailQuery(postId, viewer);
+			List<String> boardAdminIds = List.of("admin-id");
+
+			// setUp의 기본 stub(성공)을 활용하되 명시적으로 검증
+			given(postReader.findByIdAndNotDeleted(postId)).willReturn(post);
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
+			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(likePostReader.countByPostId(postId)).willReturn(10L);
+			given(likePostReader.existsByPostIdAndUserId(postId, "viewer-id")).willReturn(false);
+
+			// when
+			PostDetailResult result = postService.getPostDetail(query, mockRequest, mockResponse);
+
+			// then
+			assertAll(
+				() -> assertThat(result).isNotNull(),
+				() -> verify(postWriter, times(1)).incrementViewCount(postId),
+				() -> verify(viewCountManager, times(1)).markViewed(mockResponse, postId));
+		}
+
+		@DisplayName("이미 쿠키가 존재하는 경우 조회수 증가와 쿠키 발급이 생략된다")
+		@Test
+		void getPostDetail_shouldNotIncrementViewCount_whenCookieExists() {
+			// given
+			PostDetailQuery query = new PostDetailQuery(postId, viewer);
+			List<String> boardAdminIds = List.of("admin-id");
+
+			// 쿠키가 이미 존재한다고 설정 (setUp의 기본 stub을 덮어씀)
+			given(viewCountManager.hasViewedCookie(any(), eq(postId))).willReturn(true);
+
+			given(postReader.findByIdAndNotDeleted(postId)).willReturn(post);
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
+			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(likePostReader.countByPostId(postId)).willReturn(10L);
+			given(likePostReader.existsByPostIdAndUserId(postId, "viewer-id")).willReturn(false);
+
+			// when
+			PostDetailResult result = postService.getPostDetail(query, mockRequest, mockResponse);
+
+			// then
+			assertAll(
+				() -> assertThat(result).isNotNull(),
+				() -> verify(postWriter, never()).incrementViewCount(anyString()),
+				() -> verify(viewCountManager, never()).markViewed(any(), anyString()));
+		}
+
+		@DisplayName("Redis 예약 획득에 실패한 경우 조회수 증가와 쿠키 발급이 생략된다")
+		@Test
+		void getPostDetail_shouldNotIncrementViewCount_whenReserveFails() {
+			// given
+			PostDetailQuery query = new PostDetailQuery(postId, viewer);
+			List<String> boardAdminIds = List.of("admin-id");
+
+			// 예약 실패(acquired = false)로 설정 (setUp의 기본 stub을 덮어씀)
+			given(viewCountManager.reserve(eq(viewer.getId()), eq(postId)))
+				.willReturn(new ViewCountManager.ViewReservation("key", "token", false));
+
+			given(postReader.findByIdAndNotDeleted(postId)).willReturn(post);
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
+			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(likePostReader.countByPostId(postId)).willReturn(10L);
+			given(likePostReader.existsByPostIdAndUserId(postId, "viewer-id")).willReturn(false);
+
+			// when
+			PostDetailResult result = postService.getPostDetail(query, mockRequest, mockResponse);
+
+			// then
+			assertAll(
+				() -> assertThat(result).isNotNull(),
+				() -> verify(postWriter, never()).incrementViewCount(anyString()),
+				() -> verify(viewCountManager, never()).markViewed(any(), anyString()));
 		}
 	}
 }

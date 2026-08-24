@@ -13,8 +13,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.integration.crawled.dto.CrawlResult;
-import net.causw.app.main.domain.integration.crawled.service.CrawlService;
-import net.causw.app.main.domain.integration.crawled.service.CrawledToPostTransferService;
+import net.causw.app.main.domain.integration.crawled.service.CrawledNoticePublishFacade;
+import net.causw.app.main.domain.integration.crawled.service.NoticeCrawlingFacade;
 import net.causw.app.main.shared.exception.errorcode.IntegrationErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -25,8 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @ConditionalOnProperty(prefix = "app.crawl", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class CrawlScheduler {
-	private final CrawlService crawlService;
-	private final CrawledToPostTransferService crawledToPostTransferService;
+	private final NoticeCrawlingFacade noticeCrawlingFacade;
+	private final CrawledNoticePublishFacade crawledNoticePublishFacade;
 
 	private final RedissonClient redissonClient;
 
@@ -61,8 +61,8 @@ public class CrawlScheduler {
 			}
 
 			log.info("[크롤링] 크롤링 시작");
-			List<CrawlResult> results = crawlService.crawlAllEnabled();
-			crawledToPostTransferService.transferToPosts();
+			List<CrawlResult> results = noticeCrawlingFacade.crawlAllEnabled();
+			crawledNoticePublishFacade.publishPendingNotices();
 			results.forEach(this::logResult);
 			log.info("[크롤링] 활성 사이트 크롤링 완료. 성공 사이트 수={}", results.size());
 
@@ -86,8 +86,8 @@ public class CrawlScheduler {
 	 */
 	private void logResult(CrawlResult result) {
 		log.info(
-			"[크롤링] 사이트 크롤링 완료. siteId={}, 발견={}, 생성={}, 수정={}, 변경 없음={}, 실패={}",
+			"[크롤링] 사이트 크롤링 완료. siteId={}, 발견={}, 생성={}, 수정={}, 변경 없음={}, 건너뜀={}, 실패={}",
 			result.siteId(), result.discoveredCount(), result.createdCount(), result.updatedCount(),
-			result.unchangedCount(), result.failedCount());
+			result.unchangedCount(), result.skippedCount(), result.failedCount());
 	}
 }

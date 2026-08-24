@@ -45,6 +45,7 @@ IMAGE_LIST="$(
 printf '%s\n' "$IMAGE_LIST" |
   while read -r image_ref image_id; do
     [ -n "$image_ref" ] || continue
+    [ "$image_ref" = "<none>:<none>" ] && continue
     if [ "$image_ref" = "$MIGRATION_IMAGE" ] || \
       [ "$image_id" = "$CURRENT_IMAGE_ID" ] || \
       [ "$image_id" = "$PREVIOUS_IMAGE_ID" ]; then

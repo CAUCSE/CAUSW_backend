@@ -14,8 +14,11 @@ public interface CrawledNoticeRepository extends JpaRepository<CrawledNotice, St
 	//링크로 공지 조회 (업데이트 감지용)
 	Optional<CrawledNotice> findByLink(String link);
 
-	@EntityGraph(attributePaths = "post")
+	@EntityGraph(attributePaths = {"post", "crawledFileLinks"})
 	List<CrawledNotice> findBySiteIdAndExternalIdIn(String siteId, List<String> externalIds);
+
+	@EntityGraph(attributePaths = "crawledFileLinks")
+	Optional<CrawledNotice> findByPostId(String postId);
 
 	//업데이트된 공지들 조회 (배치 처리용)
 	List<CrawledNotice> findTop30ByIsUpdatedTrueOrderByLastModifiedDesc();
