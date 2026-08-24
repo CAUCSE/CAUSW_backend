@@ -1431,13 +1431,13 @@ public class PostServiceTest {
 			PostCursorResult postCursorResult = new PostCursorResult(
 				"post-id", "테스트 제목", "게시글 내용", 5L, 10L, 0L, false, null, false, false, true,
 				"writer-id", "작성자", "닉네임", 2020, UserState.ACTIVE, ProfileImageType.CUSTOM, "profile-url",
-				LocalDateTime.now(), LocalDateTime.now(), freeBoardId, "자유 게시판");
+				LocalDateTime.now(), LocalDateTime.now(), freeBoardId, "자유 게시판", null);
 			Slice<PostCursorResult> slice = new SliceImpl<>(List.of(postCursorResult), PageRequest.of(0, 20), false);
 
 			// Mocking
 			given(postReader.findPostsWithCursor(
 				eq(List.of(freeBoardId, successBoardId)),
-				any(PostReadQueryContext.class), eq(null), eq(null), eq(20), eq(null)))
+				any(PostReadQueryContext.class), eq(null), eq(null), eq(20), eq(null), eq(null)))
 				.willReturn(slice);
 
 			given(postReader.findPostImagesByPostIds(anyList())).willReturn(Map.of());
@@ -1456,7 +1456,7 @@ public class PostServiceTest {
 			verify(boardAccessManager, times(1)).getReadableBoards(viewer, BoardGroup.COMMUNITY);
 			verify(postReader, times(1)).findPostsWithCursor(
 				eq(List.of(freeBoardId, successBoardId)), any(PostReadQueryContext.class), eq(null), eq(null), eq(20),
-				eq(null));
+				eq(null), eq(null));
 		}
 	}
 
