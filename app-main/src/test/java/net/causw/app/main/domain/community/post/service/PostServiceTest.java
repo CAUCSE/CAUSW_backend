@@ -1067,6 +1067,7 @@ public class PostServiceTest {
 				"모집 게시글 내용",
 				5L,
 				10L,
+				0L,
 				false,
 				null,
 				false,
