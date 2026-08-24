@@ -38,7 +38,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/admin/boards")
 @PreAuthorize("@security.hasRole(@Role.ADMIN) or @security.hasRole(@Role.SYSTEM_ADMIN)")
-@RequireAdminRole(target = AdminTarget.ALL_ADMIN)
+@RequireAdminRole(target = AdminTarget.SYSTEM_ONLY)
 @Tag(name = "Board Admin v2", description = "관리자 게시판 관리 API")
 public class BoardAdminController {
 
