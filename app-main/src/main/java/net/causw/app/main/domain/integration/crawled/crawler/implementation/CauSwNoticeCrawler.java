@@ -35,20 +35,29 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class CauSwNoticeCrawler implements SiteCrawler {
+	// 목록 날짜 판별에 사용할 시간대와 형식
 	private static final ZoneId KOREA_ZONE_ID = ZoneId.of("Asia/Seoul");
 	private static final DateTimeFormatter LIST_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd");
+
+	// 공지 목록 파싱용 CSS 셀렉터
 	private static final String ARTICLE_ROW_SELECTOR = "table.table-basic tbody tr";
 	private static final String ARTICLE_LINK_SELECTOR = "td.aleft a";
 	private static final String ARTICLE_CATEGORY_SELECTOR = "td span.tag";
 	private static final String LIST_DATE_SELECTOR = "td:nth-last-child(2)";
+
+	// 공지 상세 파싱용 CSS 셀렉터
 	private static final String TITLE_SELECTOR = "section#content div.header > h3";
 	private static final String BODY_SELECTOR = "section#content div.fr-view";
 	private static final String DATE_SELECTOR = "section#content div.header > div > span:nth-of-type(1)";
 	private static final String AUTHOR_SELECTOR = "section#content div.header > div > span:nth-of-type(3)";
 	private static final String REPRESENTATIVE_IMAGE_SELECTOR = "section#content div.fr-view > p > img";
+
+	// 첨부파일 파싱용 CSS 셀렉터
 	private static final String SCRIPT_ATTACHMENT_SELECTOR = "div.files span";
 	private static final String LINK_ATTACHMENT_SELECTOR = "table.file-list tbody tr td:first-child a";
 	private static final String CONTENT_ATTACHMENT_SELECTOR = "div.fr-view a[href*='download.php']";
+
+	// 첨부파일과 공지 URL에서 식별자를 추출하기 위한 패턴
 	private static final Pattern SCRIPT_DOWNLOAD_PATTERN = Pattern.compile(
 		"goLocation\\('/_module/bbs/download.php','(\\d+)','(\\w+)'\\).*?>(.*?)<");
 	private static final Pattern NOTICE_CODE_PATTERN = Pattern.compile("[?&]code=([^&]+)");

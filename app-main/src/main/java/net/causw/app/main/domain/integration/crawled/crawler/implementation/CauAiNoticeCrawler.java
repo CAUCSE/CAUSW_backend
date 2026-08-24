@@ -34,18 +34,27 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class CauAiNoticeCrawler implements SiteCrawler {
+	// 목록 날짜 판별에 사용할 시간대와 형식
 	private static final ZoneId KOREA_ZONE_ID = ZoneId.of("Asia/Seoul");
 	private static final DateTimeFormatter LIST_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+	// 공지 목록 파싱용 CSS 셀렉터
 	private static final String ARTICLE_ROW_SELECTOR = "table.table-basic tbody tr";
 	private static final String ARTICLE_LINK_SELECTOR = "td.title a";
 	private static final String ARTICLE_CATEGORY_SELECTOR = "td:first-child";
 	private static final String LIST_DATE_SELECTOR = "td:nth-last-child(2)";
+
+	// 공지 상세 파싱용 CSS 셀렉터
 	private static final String TITLE_SELECTOR = "section.board div.header > h3";
 	private static final String BODY_SELECTOR = "section.board div.fr-view.detail";
 	private static final String DATE_SELECTOR = "section.board div.header > div > span:nth-of-type(1)";
 	private static final String AUTHOR_SELECTOR = "section.board div.header > div > span:nth-of-type(3)";
 	private static final String REPRESENTATIVE_IMAGE_SELECTOR = "section.board div.fr-view.detail img";
+
+	// 첨부파일 파싱용 CSS 셀렉터
 	private static final String ATTACHMENT_SELECTOR = "div.files a[href], div.fr-view a[href*='download']";
+
+	// 공지 URL에서 외부 식별자를 추출하기 위한 패턴
 	private static final Pattern NOTICE_NO_PATTERN = Pattern.compile("[?&]no=(\\d+)");
 
 	private final CrawlHttpClient crawlHttpClient;
