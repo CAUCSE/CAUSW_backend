@@ -111,8 +111,8 @@ public class BoardConfig extends AuditableEntity {
 		this.visibility = visibility;
 		this.officialNickname = officialNickname;
 		this.officialProfileImageId = officialProfileImageId;
-		this.departments.clear();
 		if (departments != null) {
+			this.departments.clear();
 			this.departments.addAll(departments);
 		}
 	}
