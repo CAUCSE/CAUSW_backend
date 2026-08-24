@@ -1,0 +1,10 @@
+ALTER TABLE tb_crawl_site_config
+    DROP COLUMN article_row_selector,
+    DROP COLUMN article_link_selector,
+    DROP COLUMN article_category_selector,
+    DROP COLUMN title_selector,
+    DROP COLUMN body_selector,
+    DROP COLUMN date_selector,
+    DROP COLUMN author_selector,
+    DROP COLUMN representative_image_selector,
+    DROP COLUMN next_page_selector;
