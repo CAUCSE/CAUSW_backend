@@ -12,7 +12,8 @@ public record PostListQuery(
 	String cursor,
 	Integer size,
 	String keyword) {
-	public static PostListQuery of(User viewer, List<String> boardIds, BoardGroup boardGroup, String cursor, Integer size, String keyword) {
+	public static PostListQuery of(User viewer, List<String> boardIds, BoardGroup boardGroup, String cursor,
+		Integer size, String keyword) {
 		return new PostListQuery(viewer, boardIds, boardGroup, cursor, size, keyword);
 	}
 }

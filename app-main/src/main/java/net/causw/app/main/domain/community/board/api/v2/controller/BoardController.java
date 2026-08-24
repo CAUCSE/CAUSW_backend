@@ -51,6 +51,7 @@ public class BoardController {
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestParam(name = "boardGroup") BoardGroup boardGroup) {
 		return ApiResponse.success(
-			boardWritableMapper.toWritableListResponse(boardService.getWritableBoards(userDetails.getUser().getId(), boardGroup)));
+			boardWritableMapper
+				.toWritableListResponse(boardService.getWritableBoards(userDetails.getUser().getId(), boardGroup)));
 	}
 }
