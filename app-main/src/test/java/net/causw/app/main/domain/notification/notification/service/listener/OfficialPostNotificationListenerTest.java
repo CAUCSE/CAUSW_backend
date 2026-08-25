@@ -73,7 +73,8 @@ class OfficialPostNotificationListenerTest {
 			given(postReader.findById("postId")).willReturn(post);
 			given(boardConfigReader.getByBoardId("boardId")).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdSetMapByBoardIds(any())).willReturn(Map.of());
-			given(userBoardSubscribeReader.findNotificationTargets("boardId", boardConfig, Set.of())).willReturn(targets);
+			given(userBoardSubscribeReader.findNotificationTargets("boardId", boardConfig, Set.of()))
+				.willReturn(targets);
 			// 성공 경로에서만 사용되는 stub
 			given(post.getContent()).willReturn("공지 내용입니다.");
 			given(board.getName()).willReturn("공지 게시판");
@@ -210,7 +211,8 @@ class OfficialPostNotificationListenerTest {
 			given(postReader.findById("postId")).willReturn(post);
 			given(boardConfigReader.getByBoardId("boardId")).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdSetMapByBoardIds(any())).willReturn(Map.of());
-			given(userBoardSubscribeReader.findNotificationTargets("boardId", boardConfig, Set.of())).willReturn(targets);
+			given(userBoardSubscribeReader.findNotificationTargets("boardId", boardConfig, Set.of()))
+				.willReturn(targets);
 
 			// 크롤링 글은 post.getContent()를 읽지 않으므로 해당 stub 불필요
 			given(board.getName()).willReturn("공지 게시판");
