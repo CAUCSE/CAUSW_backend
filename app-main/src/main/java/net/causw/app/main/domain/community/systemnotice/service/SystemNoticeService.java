@@ -75,6 +75,17 @@ public class SystemNoticeService {
 			});
 	}
 
+	public List<SystemNoticeCreateResult> getAll() {
+		return systemNoticeReader.findAllPosts().stream()
+			.map(post -> new SystemNoticeCreateResult(
+				post.getId(),
+				post.getTitle(),
+				post.getContent(),
+				post.getWriter().getNickname(),
+				post.getCreatedAt()))
+			.toList();
+	}
+
 	@Transactional
 	public void markAsRead(User viewer, String postId) {
 		CommunityPermissionPolicy.validateActiveUser(viewer);

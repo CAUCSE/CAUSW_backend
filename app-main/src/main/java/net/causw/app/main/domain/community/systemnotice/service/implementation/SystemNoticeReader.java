@@ -32,6 +32,13 @@ public class SystemNoticeReader {
 				.findTop1ByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(config.getBoardId()));
 	}
 
+	public List<Post> findAllPosts() {
+		return findSystemNoticeConfig()
+			.map(config -> postRepository
+				.findAllByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(config.getBoardId()))
+			.orElseGet(List::of);
+	}
+
 	public Optional<UserSystemNoticeRead> findReadByUserId(String userId) {
 		return userSystemNoticeReadRepository.findByUserId(userId);
 	}

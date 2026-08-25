@@ -1,9 +1,12 @@
 package net.causw.app.main.domain.community.systemnotice.api.v2.controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -35,6 +38,13 @@ public class AdminSystemNoticeController {
 
 	private final SystemNoticeService systemNoticeService;
 	private final SystemNoticeDtoMapper systemNoticeDtoMapper;
+
+	@GetMapping
+	@Operation(summary = "시스템 공지 목록 조회", description = "시스템 공지를 최신순으로 조회합니다.")
+	public ApiResponse<List<SystemNoticeCreateResponse>> getAll(
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
+		return ApiResponse.success(systemNoticeDtoMapper.toCreateResponseList(systemNoticeService.getAll()));
+	}
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
