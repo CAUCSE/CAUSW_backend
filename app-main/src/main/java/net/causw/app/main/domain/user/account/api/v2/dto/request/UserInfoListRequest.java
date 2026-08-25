@@ -2,6 +2,8 @@ package net.causw.app.main.domain.user.account.api.v2.dto.request;
 
 import java.util.List;
 
+import net.causw.app.main.domain.user.account.enums.user.Department;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Size;
 
@@ -14,6 +16,8 @@ public record UserInfoListRequest(
 	@Schema(description = "학번 범위 끝", example = "2025") Integer admissionYearEnd,
 
 	@Schema(description = "학적 상태", example = "[\"ENROLLED\", \"GRADUATED\"]") List<String> academicStatus,
+
+	@Schema(description = "학과 필터링 (복수 선택 가능, 미선택 시 전체)", example = "[\"SCHOOL_OF_SW\", \"SCHOOL_OF_CSE\"]") List<Department> department,
 
 	@Schema(description = "정렬 기준", example = "UPDATED_AT_DESC") String sortType,
 

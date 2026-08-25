@@ -2,6 +2,7 @@ package net.causw.app.main.domain.community.common.service;
 
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.Set;
 
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
@@ -12,6 +13,7 @@ import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
@@ -72,6 +74,10 @@ public final class CommunityPermissionPolicy {
 
 		if (isModerator(viewer, boardAdminIds)) {
 			return true;
+		}
+
+		if (!isDepartmentAllowed(boardConfig.getDepartments(), viewer.getDepartment())) {
+			return false;
 		}
 
 		return boardConfig.getVisibility() == BoardVisibility.VISIBLE
@@ -211,6 +217,10 @@ public final class CommunityPermissionPolicy {
 		return comment != null
 			&& !Boolean.TRUE.equals(comment.getIsDeleted())
 			&& isAlive(comment.getPost());
+	}
+
+	private static boolean isDepartmentAllowed(Set<Department> allowed, Department department) {
+		return allowed.isEmpty() || (department != null && allowed.contains(department));
 	}
 
 	private static boolean matchesReadScope(AcademicStatus academicStatus, BoardReadScope readScope) {

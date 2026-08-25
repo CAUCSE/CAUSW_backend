@@ -1,10 +1,12 @@
 package net.causw.app.main.domain.community.board.service.dto.result;
 
 import java.util.List;
+import java.util.Set;
 
 import net.causw.app.main.domain.community.board.entity.BoardReadScope;
 import net.causw.app.main.domain.community.board.entity.BoardVisibility;
 import net.causw.app.main.domain.community.board.entity.BoardWriteScope;
+import net.causw.app.main.domain.user.account.enums.user.Department;
 
 import lombok.Builder;
 
@@ -26,5 +28,6 @@ public record BoardConfigDetail(
 	Integer displayOrder,
 	String officialNickname,
 	String officialProfileImageId,
+	Set<Department> departments,
 	List<BoardConfigAdmin> admins) {
 }

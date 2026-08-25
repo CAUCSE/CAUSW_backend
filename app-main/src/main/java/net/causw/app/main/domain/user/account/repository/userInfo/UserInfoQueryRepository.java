@@ -16,6 +16,7 @@ import net.causw.app.main.domain.user.account.entity.user.QUser;
 import net.causw.app.main.domain.user.account.entity.userInfo.QUserCareer;
 import net.causw.app.main.domain.user.account.entity.userInfo.QUserInfo;
 import net.causw.app.main.domain.user.account.entity.userInfo.UserInfo;
+import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.account.enums.userinfo.SortType;
 import net.causw.app.main.domain.user.account.enums.userinfo.UserInfoSectionType;
 import net.causw.app.main.domain.user.account.service.dto.request.UserInfoListCondition;
@@ -248,6 +249,7 @@ public class UserInfoQueryRepository {
 			condition = condition.and(userInfo.user.id.ne(excludeUserId));
 		}
 		List<String> academicStatusList = filter.academicStatus();
+		List<Department> departmentList = filter.department();
 		Integer admissionYearStart = filter.admissionYearStart();
 		Integer admissionYearEnd = filter.admissionYearEnd();
 		String keyword = filter.keyword();
@@ -261,6 +263,11 @@ public class UserInfoQueryRepository {
 				.map(AcademicStatus::fromString)
 				.toList();
 			condition = condition.and(userInfo.user.academicStatus.in(academicStatuses));
+		}
+
+		// 학과 필터
+		if (departmentList != null && !departmentList.isEmpty()) {
+			condition = condition.and(userInfo.user.department.in(departmentList));
 		}
 
 		// 학번 필터

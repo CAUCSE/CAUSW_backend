@@ -243,6 +243,16 @@ public class CrawledNotice extends BaseEntity {
 	}
 
 	/**
+	 * 최신 크롤링 결과의 저장 대상 게시판이 현재 공지와 다른지 확인합니다.
+	 *
+	 * @param targetBoardId 최신 저장 대상 게시판 식별자
+	 * @return 대상 게시판이 다르면 {@code true}
+	 */
+	public boolean isTargetBoardChanged(String targetBoardId) {
+		return !this.targetBoardId.equals(targetBoardId);
+	}
+
+	/**
 	 * 이 공지로 생성하거나 갱신한 Post를 연결합니다.
 	 *
 	 * @param post 연결할 Post

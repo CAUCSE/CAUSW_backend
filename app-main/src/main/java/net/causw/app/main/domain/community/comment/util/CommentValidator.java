@@ -27,6 +27,9 @@ public class CommentValidator {
 	 * 댓글 생성 시 필요한 모든 검증 로직을 수행합니다.
 	 */
 	public void validateForCreate(User creator, Post post, BoardConfig boardConfig, List<String> boardAdminIds) {
+		if (boardConfig.isSystemNotice()) {
+			throw CommentErrorCode.COMMENT_NOT_ALLOWED_ON_SYSTEM_NOTICE.toBaseException();
+		}
 		validateForFind(creator, post, boardConfig, boardAdminIds);
 		if (!CommunityPermissionPolicy.canWriteBoard(
 			creator, post.getBoard(), boardConfig, boardAdminIds)) {
