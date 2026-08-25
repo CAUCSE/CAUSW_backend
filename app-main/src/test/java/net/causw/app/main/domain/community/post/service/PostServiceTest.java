@@ -449,6 +449,7 @@ public class PostServiceTest {
 		void deletePost_shouldSucceed_byBoardAdmin() {
 			// given
 			User admin = ObjectFixtures.getCertifiedUserWithId("admin-id");
+			admin.setRoles(Set.of(Role.ADMIN));
 			List<String> boardAdminIds = List.of("admin-id");
 
 			given(postReader.findById(postId)).willReturn(post);
@@ -876,6 +877,7 @@ public class PostServiceTest {
 		@Test
 		void getPosts_shouldSucceed_forMultipleBoards() {
 			// given
+			viewer.setRoles(Set.of(Role.ADMIN));
 			String boardId2 = "board-id-2";
 			PostListQuery query = PostListQuery.of(viewer, List.of(boardId, boardId2), null, null, 20, null, null);
 
@@ -1540,7 +1542,7 @@ public class PostServiceTest {
 		@Test
 		void myPostLists_shouldPassCommonReadContext_forSystemAdmin() {
 			// given
-			viewer.setRoles(Set.of(Role.ADMIN));
+			viewer.setRoles(Set.of(Role.SYSTEM_ADMIN));
 			Set<String> blockedWriterIds = Set.of("blocked-writer-id");
 			Slice<PostCursorResult> emptySlice = new SliceImpl<>(List.of(), PageRequest.of(0, pageSize), false);
 			given(blockReader.findBlockeeUserIdsByBlocker(viewer)).willReturn(blockedWriterIds);
@@ -1700,6 +1702,7 @@ public class PostServiceTest {
 		void getPostDetail_shouldSucceed_asBoardAdmin_evenWhenWriterIsBlocked() {
 			// given
 			User admin = ObjectFixtures.getCertifiedUserWithId("admin-id");
+			admin.setRoles(Set.of(Role.ADMIN));
 			PostDetailQuery query = new PostDetailQuery(postId, admin);
 			List<String> boardAdminIds = List.of("admin-id");
 
@@ -1781,6 +1784,7 @@ public class PostServiceTest {
 		void getPostDetail_shouldSucceed_asBoardAdmin() {
 			// given
 			User admin = ObjectFixtures.getCertifiedUserWithId("admin-id");
+			admin.setRoles(Set.of(Role.ADMIN));
 			PostDetailQuery query = new PostDetailQuery(postId, admin);
 			List<String> boardAdminIds = List.of("admin-id");
 

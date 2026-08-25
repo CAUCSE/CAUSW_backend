@@ -14,6 +14,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum Role {
+	SYSTEM_ADMIN("SYSTEM_ADMIN", "시스템 관리자"),
 	ADMIN("ADMIN", "관리자"),
 	PRESIDENT("PRESIDENT", "학생회장"),
 	VICE_PRESIDENT("VICE_PRESIDENT", "부학생회장"),
@@ -37,6 +38,7 @@ public enum Role {
 	private final String description;
 
 	private static final List<Role> PRIVILEGED_ROLES = List.of(
+		SYSTEM_ADMIN,
 		ADMIN,
 		PRESIDENT,
 		VICE_PRESIDENT,
@@ -68,6 +70,7 @@ public enum Role {
 
 	@Component("Role")
 	public static class RoleComponent {
+		public static final Role SYSTEM_ADMIN = Role.SYSTEM_ADMIN;
 		public static final Role ADMIN = Role.ADMIN;
 		public static final Role PRESIDENT = Role.PRESIDENT;
 		public static final Role VICE_PRESIDENT = Role.VICE_PRESIDENT;

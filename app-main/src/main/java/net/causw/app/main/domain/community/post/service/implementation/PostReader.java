@@ -190,11 +190,11 @@ public class PostReader {
 	}
 
 	/**
-	 * 특정 사용자 ID 목록 중 최고 관리자(ADMIN) 권한을 가진 사용자 ID를 조회합니다.
+	 * 특정 사용자 ID 목록 중 시스템 관리자(SYSTEM_ADMIN) 권한을 가진 사용자 ID를 조회합니다.
 	 * @param userIds 조회할 사용자 ID 목록
-	 * @return ADMIN 권한을 가진 사용자 ID Set
+	 * @return SYSTEM_ADMIN 권한을 가진 사용자 ID Set
 	 */
-	public Set<String> findAdminUserIds(List<String> userIds) {
-		return postQueryRepository.findAdminUserIds(userIds);
+	public Set<String> findSystemAdminUserIds(List<String> userIds) {
+		return postQueryRepository.findSystemAdminUserIds(userIds);
 	}
 }

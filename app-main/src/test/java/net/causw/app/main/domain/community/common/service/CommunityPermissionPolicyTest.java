@@ -1,8 +1,6 @@
 package net.causw.app.main.domain.community.common.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.List;
 import java.util.Set;
@@ -102,26 +100,30 @@ class CommunityPermissionPolicyTest {
 	}
 
 	@Test
-	@DisplayName("시스템 관리자는 Role.ADMIN만을 의미한다")
-	void onlyAdminRoleIsSystemAdmin() {
+	@DisplayName("시스템 관리자는 Role.SYSTEM_ADMIN만을 의미한다")
+	void onlySystemAdminRoleIsSystemAdmin() {
+		User systemAdmin = activeUser("system-admin-id", AcademicStatus.ENROLLED, Role.SYSTEM_ADMIN);
 		User admin = activeUser("admin-id", AcademicStatus.ENROLLED, Role.ADMIN);
 		User president = activeUser("president-id", AcademicStatus.ENROLLED, Role.PRESIDENT);
 		User vicePresident = activeUser("vice-president-id", AcademicStatus.ENROLLED, Role.VICE_PRESIDENT);
 		User boardAdmin = activeUser(BOARD_ADMIN_ID, AcademicStatus.ENROLLED, Role.COMMON);
 
-		assertThat(CommunityPermissionPolicy.isSystemAdmin(admin)).isTrue();
+		assertThat(CommunityPermissionPolicy.isSystemAdmin(systemAdmin)).isTrue();
+		assertThat(CommunityPermissionPolicy.isSystemAdmin(admin)).isFalse();
 		assertThat(CommunityPermissionPolicy.isSystemAdmin(president)).isFalse();
 		assertThat(CommunityPermissionPolicy.isSystemAdmin(vicePresident)).isFalse();
 		assertThat(CommunityPermissionPolicy.isSystemAdmin(boardAdmin)).isFalse();
 	}
 
 	@Test
-	@DisplayName("게시판 관리자는 역할이 아니라 BoardAdmin ID 목록으로 판단한다")
-	void boardAdminIsDeterminedByBoardAdminIds() {
+	@DisplayName("게시판 관리자는 Role.ADMIN 역할과 BoardAdmin ID 목록으로 판단한다")
+	void boardAdminRequiresAdminRoleAndBoardAdminIds() {
+		User validBoardAdmin = activeUser(BOARD_ADMIN_ID, AcademicStatus.ENROLLED, Role.ADMIN);
 		User listedCommonUser = activeUser(BOARD_ADMIN_ID, AcademicStatus.ENROLLED, Role.COMMON);
-		User unlistedPrivilegedUser = activeUser("council-id", AcademicStatus.ENROLLED, Role.COUNCIL);
+		User unlistedPrivilegedUser = activeUser("unlisted-admin-id", AcademicStatus.ENROLLED, Role.ADMIN);
 
-		assertThat(CommunityPermissionPolicy.isBoardAdmin(listedCommonUser, BOARD_ADMIN_IDS)).isTrue();
+		assertThat(CommunityPermissionPolicy.isBoardAdmin(validBoardAdmin, BOARD_ADMIN_IDS)).isTrue();
+		assertThat(CommunityPermissionPolicy.isBoardAdmin(listedCommonUser, BOARD_ADMIN_IDS)).isFalse();
 		assertThat(CommunityPermissionPolicy.isBoardAdmin(unlistedPrivilegedUser, BOARD_ADMIN_IDS)).isFalse();
 	}
 
@@ -500,8 +502,8 @@ class CommunityPermissionPolicyTest {
 	private User actorUser(Actor actor, AcademicStatus academicStatus) {
 		return switch (actor) {
 			case OWNER -> ownerWithAcademicStatus(academicStatus);
-			case BOARD_ADMIN -> activeUser(BOARD_ADMIN_ID, academicStatus, Role.COMMON);
-			case SYSTEM_ADMIN -> activeUser("system-admin-id", academicStatus, Role.ADMIN);
+			case BOARD_ADMIN -> activeUser(BOARD_ADMIN_ID, academicStatus, Role.ADMIN);
+			case SYSTEM_ADMIN -> activeUser("system-admin-id", academicStatus, Role.SYSTEM_ADMIN);
 			case PRESIDENT -> activeUser("president-id", academicStatus, Role.PRESIDENT);
 			case VICE_PRESIDENT -> activeUser("vice-president-id", academicStatus, Role.VICE_PRESIDENT);
 			case COMMON -> activeUser("common-id", academicStatus, Role.COMMON);

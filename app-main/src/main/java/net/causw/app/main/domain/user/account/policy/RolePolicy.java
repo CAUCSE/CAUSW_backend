@@ -1,20 +1,7 @@
 package net.causw.app.main.domain.user.account.policy;
 
 import static java.util.Map.entry;
-import static net.causw.app.main.domain.user.account.enums.user.Role.ADMIN;
-import static net.causw.app.main.domain.user.account.enums.user.Role.ALUMNI_MANAGER;
-import static net.causw.app.main.domain.user.account.enums.user.Role.COMMON;
-import static net.causw.app.main.domain.user.account.enums.user.Role.COUNCIL;
-import static net.causw.app.main.domain.user.account.enums.user.Role.LEADER_1;
-import static net.causw.app.main.domain.user.account.enums.user.Role.LEADER_2;
-import static net.causw.app.main.domain.user.account.enums.user.Role.LEADER_3;
-import static net.causw.app.main.domain.user.account.enums.user.Role.LEADER_4;
-import static net.causw.app.main.domain.user.account.enums.user.Role.LEADER_ALUMNI;
-import static net.causw.app.main.domain.user.account.enums.user.Role.LEADER_CIRCLE;
-import static net.causw.app.main.domain.user.account.enums.user.Role.NONE;
-import static net.causw.app.main.domain.user.account.enums.user.Role.PRESIDENT;
-import static net.causw.app.main.domain.user.account.enums.user.Role.PROFESSOR;
-import static net.causw.app.main.domain.user.account.enums.user.Role.VICE_PRESIDENT;
+import static net.causw.app.main.domain.user.account.enums.user.Role.*;
 
 import java.util.EnumSet;
 import java.util.Map;
@@ -30,6 +17,7 @@ public class RolePolicy {
 	 * - Value: 해당 권한을 사용자가 단 하나만 보유할 수 있는지 여부
 	 */
 	private static final Map<Role, Boolean> ROLE_UNIQUE = Map.ofEntries(
+		entry(SYSTEM_ADMIN, true),
 		entry(ADMIN, false),
 		entry(PRESIDENT, true),
 		entry(VICE_PRESIDENT, true),
@@ -52,21 +40,22 @@ public class RolePolicy {
 	 * - Value: 권한의 우선순위 (값이 작을수록 높은 우선순위)
 	 */
 	private static final Map<Role, Integer> ROLE_PRIORITY = Map.ofEntries(
-		entry(ADMIN, 0),
-		entry(PRESIDENT, 1),
-		entry(VICE_PRESIDENT, 2),
-		entry(COUNCIL, 3),
-		entry(LEADER_1, 4),
-		entry(LEADER_2, 4),
-		entry(LEADER_3, 4),
-		entry(LEADER_4, 4),
-		entry(LEADER_ALUMNI, 5),
-		entry(ALUMNI_MANAGER, 5),
+		entry(SYSTEM_ADMIN, 0),
+		entry(ADMIN, 1),
+		entry(PRESIDENT, 2),
+		entry(VICE_PRESIDENT, 3),
+		entry(COUNCIL, 4),
+		entry(LEADER_1, 5),
+		entry(LEADER_2, 5),
+		entry(LEADER_3, 5),
+		entry(LEADER_4, 5),
+		entry(LEADER_ALUMNI, 6),
+		entry(ALUMNI_MANAGER, 6),
 		entry(COMMON, 99),
 		entry(NONE, 100),
 
-		entry(LEADER_CIRCLE, 5),
-		entry(PROFESSOR, 6));
+		entry(LEADER_CIRCLE, 6),
+		entry(PROFESSOR, 7));
 
 	/**
 	 * 권한 설정 가능 대상 정책 (부여 및 위임 공통)
@@ -91,6 +80,19 @@ public class RolePolicy {
 	 * - Value: 부여자가 수혜자에게 부여 가능한 권한 목록
 	 */
 	private static final Map<Role, Set<Role>> GRANTABLE_ROLES = Map.of(
+		SYSTEM_ADMIN, Set.of(
+			ADMIN,
+			PRESIDENT,
+			VICE_PRESIDENT,
+			COUNCIL,
+			LEADER_1,
+			LEADER_2,
+			LEADER_3,
+			LEADER_4,
+			LEADER_ALUMNI,
+			ALUMNI_MANAGER,
+			COMMON),
+
 		ADMIN, Set.of(
 			PRESIDENT,
 			VICE_PRESIDENT,
@@ -120,6 +122,18 @@ public class RolePolicy {
 	 * - Value: 부여자가 대리로 위임 가능한 권한 목록
 	 */
 	private static final Map<Role, Set<Role>> PROXY_DELEGATABLE_ROLES = Map.of(
+		SYSTEM_ADMIN, Set.of(
+			ADMIN,
+			PRESIDENT,
+			VICE_PRESIDENT,
+			COUNCIL,
+			LEADER_1,
+			LEADER_2,
+			LEADER_3,
+			LEADER_4,
+			LEADER_ALUMNI,
+			ALUMNI_MANAGER),
+
 		ADMIN, Set.of(
 			PRESIDENT,
 			VICE_PRESIDENT,
