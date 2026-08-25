@@ -13,6 +13,7 @@ import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
@@ -32,42 +33,87 @@ public class UserBoardSubscribeQueryRepository {
 	 * <p>발송 대상 조건:
 	 * <ol>
 	 *   <li>사용자 상태가 {@code ACTIVE}</li>
-	 *   <li>{@code targetAcademicStatuses}에 포함된 학적 상태 (빈 리스트이면 모든 학적 허용)</li>
-	 *   <li>{@code allowedDepartments}에 포함된 학과 (빈 Set이면 모든 학과 허용)</li>
+	 *   <li>아래 중 하나를 만족:
+	 *     <ul>
+	 *       <li>{@code boardAdminIds}에 포함된 게시판 관리자 (학적·학과 조건 우회)</li>
+	 *       <li>그 외: {@code targetAcademicStatuses}에 포함된 학적 상태 AND {@code allowedDepartments}에 포함된 학과</li>
+	 *     </ul>
+	 *   </li>
 	 *   <li>해당 게시판에 {@code isSubscribed = false}인 row가 존재하지 않는 사용자</li>
 	 * </ol>
 	 *
 	 * @param boardId                알림을 발송할 게시판 ID
-	 * @param targetAcademicStatuses 허용할 학적 상태 목록 ({@link net.causw.app.main.domain.community.board.entity.BoardReadScope#getTargetAcademicStatuses()} 반환값)
+	 * @param targetAcademicStatuses 허용할 학적 상태 목록 (빈 리스트이면 모든 학적 허용)
 	 * @param allowedDepartments     허용할 학과 Set (빈 Set이면 모든 학과 허용)
+	 * @param boardAdminIds          게시판 관리자 ID Set (학적·학과 조건 우회)
 	 * @return 알림 발송 대상 유저 목록
 	 */
 	public List<User> findNotificationTargets(
 		String boardId,
 		List<AcademicStatus> targetAcademicStatuses,
-		Set<Department> allowedDepartments) {
+		Set<Department> allowedDepartments,
+		Set<String> boardAdminIds) {
 
 		QUser user = QUser.user;
 		QUserBoardSubscribe ubs = QUserBoardSubscribe.userBoardSubscribe;
 
-		// 해당 게시판에 isSubscribed=false로 명시적 구독 거부한 유저 ID 목록 조회
-		List<String> unsubscribedIds = jpaQueryFactory
-			.select(ubs.user.id)
-			.from(ubs)
-			.where(
-				ubs.board.id.eq(boardId),
-				ubs.isSubscribed.isFalse())
-			.fetch();
-
-		// ACTIVE + 학적 조건 + 학과 조건을 만족하며 구독 거부하지 않은 유저 조회
 		return jpaQueryFactory
 			.selectFrom(user)
 			.where(
 				user.state.eq(UserState.ACTIVE),
-				academicStatusCondition(user, targetAcademicStatuses),
-				departmentCondition(user, allowedDepartments),
-				unsubscribedIds.isEmpty() ? null : user.id.notIn(unsubscribedIds))
+				accessCondition(user, targetAcademicStatuses, allowedDepartments, boardAdminIds),
+				JPAExpressions.selectOne()
+					.from(ubs)
+					.where(
+						ubs.user.id.eq(user.id),
+						ubs.board.id.eq(boardId),
+						ubs.isSubscribed.isFalse())
+					.notExists())
 			.fetch();
+	}
+
+	/**
+	 * 게시판 관리자 우회를 포함한 접근 조건을 구성합니다.
+	 *
+	 * <p>학적·학과 제한이 없는 경우({@code commonCondition == null})
+	 * 모든 ACTIVE 유저가 이미 대상이므로 OR 분기 없이 {@code null}을 반환합니다.
+	 * QueryDSL {@code where(null)}은 해당 조건을 무시하므로 안전합니다.
+	 */
+	private BooleanExpression accessCondition(
+		QUser user,
+		List<AcademicStatus> targetAcademicStatuses,
+		Set<Department> allowedDepartments,
+		Set<String> boardAdminIds) {
+
+		BooleanExpression commonCondition = commonUserCondition(user, targetAcademicStatuses, allowedDepartments);
+		if (commonCondition == null) {
+			return null;
+		}
+
+		BooleanExpression isAdmin = boardAdminIds.isEmpty() ? null : user.id.in(boardAdminIds);
+		return isAdmin != null ? isAdmin.or(commonCondition) : commonCondition;
+	}
+
+	/**
+	 * 학적·학과 조건을 AND로 결합합니다. 둘 다 제한 없으면 {@code null}을 반환합니다.
+	 */
+	private BooleanExpression commonUserCondition(
+		QUser user,
+		List<AcademicStatus> targetAcademicStatuses,
+		Set<Department> allowedDepartments) {
+
+		BooleanExpression academic = academicStatusCondition(user, targetAcademicStatuses);
+		BooleanExpression dept = departmentCondition(user, allowedDepartments);
+		if (academic == null && dept == null) {
+			return null;
+		}
+		if (academic == null) {
+			return dept;
+		}
+		if (dept == null) {
+			return academic;
+		}
+		return academic.and(dept);
 	}
 
 	/**

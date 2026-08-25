@@ -1,6 +1,7 @@
 package net.causw.app.main.domain.notification.notification.service.listener;
 
 import java.util.List;
+import java.util.Set;
 
 import org.jsoup.Jsoup;
 import org.springframework.scheduling.annotation.Async;
@@ -58,7 +59,11 @@ public class OfficialPostNotificationListener {
 		// UserBoardSubscribe row가 없으면 기본 구독(true)으로 간주.
 		// isSubscribed=false인 row가 명시적으로 존재하는 경우에만 알림 대상에서 제외.
 		// ACTIVE + 학적 범위 + 학과 제한 조건을 만족하며 구독 거부하지 않은 유저 목록 조회
-		List<User> targets = userBoardSubscribeReader.findNotificationTargets(board.getId(), boardConfig);
+		// 게시판 관리자는 학적·학과 제한 없이 포함.
+		Set<String> boardAdminIds = boardConfigReader.getAdminIdSetMapByBoardIds(List.of(board.getId()))
+			.getOrDefault(board.getId(), Set.of());
+		List<User> targets = userBoardSubscribeReader.findNotificationTargets(
+			board.getId(), boardConfig, boardAdminIds);
 
 		// 알림 발송
 		// 푸시알림 제목: 게시판 이름
