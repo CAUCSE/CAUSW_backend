@@ -83,11 +83,21 @@ public class PostService {
 	 */
 	@Transactional
 	public PostCreateResult create(PostCreateCommand command) {
+		return create(command, false);
+	}
+
+	@Transactional
+	public PostCreateResult createSystemNotice(PostCreateCommand command) {
+		return create(command, true);
+	}
+
+	private PostCreateResult create(PostCreateCommand command, boolean systemNoticeApi) {
 		User writer = command.writer();
 
 		Board board = boardReader.getById(command.boardId());
 		BoardConfig boardConfig = boardConfigReader.getByBoardId(command.boardId());
 		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(command.boardId());
+		validateSystemNoticeCudAccess(boardConfig, systemNoticeApi);
 
 		PostValidator.validateCreate(writer, board, boardConfig, boardAdminIds, command.isAnonymous());
 
@@ -117,11 +127,21 @@ public class PostService {
 
 	@Transactional
 	public void deletePost(User deleter, String postId) {
+		deletePost(deleter, postId, false);
+	}
+
+	@Transactional
+	public void deleteSystemNotice(User deleter, String postId) {
+		deletePost(deleter, postId, true);
+	}
+
+	private void deletePost(User deleter, String postId, boolean systemNoticeApi) {
 		CommunityPermissionPolicy.validateActiveUser(deleter);
 		Post post = postReader.findById(postId);
 		String boardId = post.getBoard().getId();
 		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(boardId);
 		BoardConfig boardConfig = boardConfigReader.getByBoardId(boardId);
+		validateSystemNoticeCudAccess(boardConfig, systemNoticeApi);
 		validateBlockedWriterAccess(deleter, post, boardAdminIds);
 		if (Boolean.TRUE.equals(post.getIsDeleted())) {
 			if (!CommunityPermissionPolicy.canDeletePostIgnoringTargetDeletion(
@@ -148,10 +168,20 @@ public class PostService {
 	 */
 	@Transactional
 	public PostUpdateResult update(PostUpdateCommand command) {
+		return update(command, false);
+	}
+
+	@Transactional
+	public PostUpdateResult updateSystemNotice(PostUpdateCommand command) {
+		return update(command, true);
+	}
+
+	private PostUpdateResult update(PostUpdateCommand command, boolean systemNoticeApi) {
 		User updater = command.updater();
 		Post post = postReader.findByIdAndNotDeleted(command.postId());
 		BoardConfig boardConfig = boardConfigReader.getByBoardId(post.getBoard().getId());
 		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
+		validateSystemNoticeCudAccess(boardConfig, systemNoticeApi);
 
 		PostValidator.validateUpdate(updater, post, boardAdminIds, boardConfig, command.isAnonymous());
 
@@ -177,6 +207,12 @@ public class PostService {
 		postImageManager.deleteOrphanedFiles(imageResult.deletedFileIds());
 
 		return result;
+	}
+
+	private void validateSystemNoticeCudAccess(BoardConfig boardConfig, boolean systemNoticeApi) {
+		if (boardConfig.isSystemNotice() && !systemNoticeApi) {
+			throw PostErrorCode.POST_SYSTEM_NOTICE_CUD_ONLY_VIA_DEDICATED_API.toBaseException();
+		}
 	}
 
 	/**
@@ -334,8 +370,10 @@ public class PostService {
 		boolean isOwner = post.getWriter().getId().equals(viewer.getId());
 
 		// 수정/삭제 가능 여부 (공통 정책에서 목록 응답과 같은 기준으로 계산)
-		boolean updatable = CommunityPermissionPolicy.canUpdatePost(viewer, post, boardConfig, boardAdminIds);
-		boolean deletable = CommunityPermissionPolicy.canDeletePost(viewer, post, boardConfig, boardAdminIds);
+		boolean updatable = !boardConfig.isSystemNotice()
+			&& CommunityPermissionPolicy.canUpdatePost(viewer, post, boardConfig, boardAdminIds);
+		boolean deletable = !boardConfig.isSystemNotice()
+			&& CommunityPermissionPolicy.canDeletePost(viewer, post, boardConfig, boardAdminIds);
 
 		// 닉네임 마스킹 및 공식 배지 여부 판단
 		boolean isNotice = boardConfig.isNotice() || post.getIsCrawled();
@@ -533,13 +571,13 @@ public class PostService {
 				boolean isPostLike = likedPostIds.contains(result.postId());
 				boolean isOwner = result.writerId() != null && result.writerId().equals(viewer.getId());
 				Set<String> boardAdminIds = boardAdminIdMap.getOrDefault(result.boardId(), Set.of());
-				boolean updatable = !result.isDeleted()
+				BoardConfig boardConfig = boardConfigMap.get(result.boardId());
+				boolean isSystemNotice = boardConfig != null && boardConfig.isSystemNotice();
+				boolean updatable = !isSystemNotice && !result.isDeleted()
 					&& CommunityPermissionPolicy.canUpdateReadableContent(viewer, result.writerId());
-				boolean deletable = !result.isDeleted()
+				boolean deletable = !isSystemNotice && !result.isDeleted()
 					&& CommunityPermissionPolicy.canDeleteReadableContent(
 						viewer, result.writerId(), boardAdminIds);
-
-				BoardConfig boardConfig = boardConfigMap.get(result.boardId());
 
 				// 마스킹 및 공식배지 판단
 				boolean isNotice = (boardConfig != null && boardConfig.isNotice()) || result.isCrawled();

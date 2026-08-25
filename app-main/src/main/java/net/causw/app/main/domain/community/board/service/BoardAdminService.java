@@ -28,6 +28,7 @@ import net.causw.app.main.domain.community.board.util.BoardValidator;
 import net.causw.app.main.domain.community.post.service.implementation.PostWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
+import net.causw.app.main.shared.exception.errorcode.BoardErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -118,12 +119,13 @@ public class BoardAdminService {
 	 */
 	@Transactional
 	public void updateBoard(String boardId, BoardPart board, BoardConfigPart config, List<String> adminUserIds) {
-		// board 관련 검증
-		boardValidator.validateForUpdate(board.name(), boardId, config.isNotice(), config.isAnonymous());
-
 		// board, boardConfig 조회
 		Board boardEntity = boardReader.getById(boardId);
 		BoardConfig boardConfig = boardConfigReader.getByBoardId(boardId);
+		validateSystemNoticeNotModifiable(boardConfig);
+
+		// board 관련 검증
+		boardValidator.validateForUpdate(board.name(), boardId, config.isNotice(), config.isAnonymous());
 
 		// 수정 수행
 		boardWriter.updateBoard(boardEntity, board);
@@ -138,6 +140,8 @@ public class BoardAdminService {
 	@Transactional
 	public void deleteBoard(String boardId) {
 		Board board = boardReader.getById(boardId);
+		BoardConfig boardConfig = boardConfigReader.getByBoardId(boardId);
+		validateSystemNoticeNotModifiable(boardConfig);
 		board.setIsDeleted(true);
 		boardWriter.save(board);
 		postWriter.deleteAllByBoardId(boardId);
@@ -149,7 +153,15 @@ public class BoardAdminService {
 	 */
 	@Transactional
 	public void updateBoardOrder(BoardOrderUpdateCommand command) {
+		boardConfigReader.getAllBoardConfigInBoardIds(command.boardIds())
+			.forEach(this::validateSystemNoticeNotModifiable);
 		boardConfigWriter.updateDisplayOrders(command.boardIds());
+	}
+
+	private void validateSystemNoticeNotModifiable(BoardConfig boardConfig) {
+		if (boardConfig.isSystemNotice()) {
+			throw BoardErrorCode.BOARD_SYSTEM_NOTICE_NOT_MODIFIABLE.toBaseException();
+		}
 	}
 
 }
