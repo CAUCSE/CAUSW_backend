@@ -526,8 +526,7 @@ public class PostQueryRepository {
 			.from(user)
 			.where(
 				user.id.in(userIds),
-				user.roles.contains(Role.SYSTEM_ADMIN)
-			)
+				user.roles.contains(Role.SYSTEM_ADMIN))
 			.fetch();
 
 		return new HashSet<>(systemAdminIds);
