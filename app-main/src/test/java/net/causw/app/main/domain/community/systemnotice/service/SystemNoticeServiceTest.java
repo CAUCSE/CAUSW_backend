@@ -16,6 +16,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
@@ -33,6 +34,7 @@ import net.causw.app.main.domain.community.systemnotice.service.dto.SystemNotice
 import net.causw.app.main.domain.community.systemnotice.service.dto.SystemNoticeUpdateCommand;
 import net.causw.app.main.domain.community.systemnotice.service.implementation.SystemNoticeReader;
 import net.causw.app.main.domain.community.systemnotice.service.implementation.SystemNoticeWriter;
+import net.causw.app.main.domain.notification.notification.event.SystemNoticeNotificationEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
@@ -58,6 +60,9 @@ class SystemNoticeServiceTest {
 
 	@Mock
 	private BoardConfigReader boardConfigReader;
+
+	@Mock
+	private ApplicationEventPublisher eventPublisher;
 
 	@Mock
 	private User viewer;
@@ -98,6 +103,29 @@ class SystemNoticeServiceTest {
 	}
 
 	@Test
+	void createPublishesSystemNoticeNotificationEventExactlyOnceWithCreatedPostId() {
+		User writer = org.mockito.Mockito.mock(User.class);
+		LocalDateTime createdAt = LocalDateTime.of(2026, 8, 9, 12, 0);
+		PostCreateResult postResult = PostCreateResult.builder()
+			.id("post-id")
+			.title("테스트 제목")
+			.content("content")
+			.createdAt(createdAt)
+			.build();
+		given(systemNoticeReader.getSystemNoticeBoardId()).willReturn("system-notice-board-id");
+		given(writer.getNickname()).willReturn("admin");
+		given(postService.createSystemNotice(org.mockito.ArgumentMatchers.any(PostCreateCommand.class)))
+			.willReturn(postResult);
+
+		systemNoticeService.create(new SystemNoticeCreateCommand("테스트 제목", "content", writer));
+
+		ArgumentCaptor<SystemNoticeNotificationEvent> eventCaptor = ArgumentCaptor
+			.forClass(SystemNoticeNotificationEvent.class);
+		verify(eventPublisher).publishEvent(eventCaptor.capture());
+		assertThat(eventCaptor.getValue().postId()).isEqualTo("post-id");
+	}
+
+	@Test
 	void updatePassesContentToDedicatedPostCommand() {
 		User updater = org.mockito.Mockito.mock(User.class);
 		given(systemNoticeReader.getSystemNoticePost("post-id")).willReturn(latestPost);
@@ -111,6 +139,16 @@ class SystemNoticeServiceTest {
 	}
 
 	@Test
+	void updateDoesNotPublishNotificationEvent() {
+		User updater = org.mockito.Mockito.mock(User.class);
+		given(systemNoticeReader.getSystemNoticePost("post-id")).willReturn(latestPost);
+
+		systemNoticeService.update("post-id", new SystemNoticeUpdateCommand("테스트 제목", "updated content", updater));
+
+		verify(eventPublisher, never()).publishEvent(org.mockito.ArgumentMatchers.any());
+	}
+
+	@Test
 	void deleteUsesDedicatedSystemNoticePostFlow() {
 		User updater = org.mockito.Mockito.mock(User.class);
 		given(systemNoticeReader.getSystemNoticePost("post-id")).willReturn(latestPost);
@@ -118,6 +156,16 @@ class SystemNoticeServiceTest {
 		systemNoticeService.delete("post-id", updater);
 
 		verify(postService).deleteSystemNotice(updater, "post-id");
+	}
+
+	@Test
+	void deleteDoesNotPublishNotificationEvent() {
+		User updater = org.mockito.Mockito.mock(User.class);
+		given(systemNoticeReader.getSystemNoticePost("post-id")).willReturn(latestPost);
+
+		systemNoticeService.delete("post-id", updater);
+
+		verify(eventPublisher, never()).publishEvent(org.mockito.ArgumentMatchers.any());
 	}
 
 	@Test

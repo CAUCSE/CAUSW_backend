@@ -3,6 +3,7 @@ package net.causw.app.main.domain.community.systemnotice.service;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +23,7 @@ import net.causw.app.main.domain.community.systemnotice.service.dto.SystemNotice
 import net.causw.app.main.domain.community.systemnotice.service.dto.SystemNoticeUpdateCommand;
 import net.causw.app.main.domain.community.systemnotice.service.implementation.SystemNoticeReader;
 import net.causw.app.main.domain.community.systemnotice.service.implementation.SystemNoticeWriter;
+import net.causw.app.main.domain.notification.notification.event.SystemNoticeNotificationEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
 
@@ -36,12 +38,16 @@ public class SystemNoticeService {
 	private final SystemNoticeWriter systemNoticeWriter;
 	private final PostService postService;
 	private final BoardConfigReader boardConfigReader;
+	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
 	public SystemNoticeCreateResult create(SystemNoticeCreateCommand command) {
 		String boardId = systemNoticeReader.getSystemNoticeBoardId();
 		PostCreateResult result = postService.createSystemNotice(new PostCreateCommand(
 			command.title(), command.content(), boardId, false, command.writer(), List.of(), List.of()));
+
+		// 시스템 공지 생성 시에만 알림 발행 (수정 시에는 재알림하지 않음)
+		eventPublisher.publishEvent(new SystemNoticeNotificationEvent(result.id()));
 
 		return new SystemNoticeCreateResult(
 			result.id(), result.title(), result.content(), command.writer().getNickname(), result.createdAt());
