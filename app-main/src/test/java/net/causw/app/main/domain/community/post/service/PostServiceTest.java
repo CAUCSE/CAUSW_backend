@@ -183,6 +183,7 @@ public class PostServiceTest {
 			.isEqualTo(PostErrorCode.POST_SYSTEM_NOTICE_CUD_ONLY_VIA_DEDICATED_API);
 		verify(post, never()).setIsDeleted(true);
 	}
+
 	@Mock
 	ViewCountManager viewCountManager;
 
