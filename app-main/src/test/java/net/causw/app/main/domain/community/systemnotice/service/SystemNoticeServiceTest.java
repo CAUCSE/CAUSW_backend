@@ -7,6 +7,7 @@ import static org.mockito.BDDMockito.never;
 import static org.mockito.BDDMockito.verify;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -186,6 +187,30 @@ class SystemNoticeServiceTest {
 
 		assertThat(result.title()).isEqualTo("테스트 제목");
 		assertThat(result.content()).isEqualTo("content");
+	}
+
+	@Test
+	void getAllReturnsSystemNoticesInReaderOrder() {
+		User writer = org.mockito.Mockito.mock(User.class);
+		Post olderPost = org.mockito.Mockito.mock(Post.class);
+		given(systemNoticeReader.findAllPosts()).willReturn(List.of(latestPost, olderPost));
+		given(latestPost.getId()).willReturn("latest-post-id");
+		given(latestPost.getTitle()).willReturn("최신 공지");
+		given(latestPost.getContent()).willReturn("latest content");
+		given(latestPost.getWriter()).willReturn(writer);
+		given(latestPost.getCreatedAt()).willReturn(LocalDateTime.of(2026, 8, 25, 12, 0));
+		given(olderPost.getId()).willReturn("older-post-id");
+		given(olderPost.getTitle()).willReturn("이전 공지");
+		given(olderPost.getContent()).willReturn("older content");
+		given(olderPost.getWriter()).willReturn(writer);
+		given(olderPost.getCreatedAt()).willReturn(LocalDateTime.of(2026, 8, 24, 12, 0));
+		given(writer.getNickname()).willReturn("관리자");
+
+		List<SystemNoticeCreateResult> results = systemNoticeService.getAll();
+
+		assertThat(results).extracting(SystemNoticeCreateResult::id)
+			.containsExactly("latest-post-id", "older-post-id");
+		assertThat(results.get(0).authorName()).isEqualTo("관리자");
 	}
 
 	@Test

@@ -1,5 +1,7 @@
 package net.causw.app.main.domain.community.systemnotice.api.v2.mapper;
 
+import java.util.List;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -21,4 +23,6 @@ public interface SystemNoticeDtoMapper {
 	SystemNoticeUpdateCommand toUpdateCommand(SystemNoticeUpdateRequest request, User user);
 
 	SystemNoticeCreateResponse toCreateResponse(SystemNoticeCreateResult result);
+
+	List<SystemNoticeCreateResponse> toCreateResponseList(List<SystemNoticeCreateResult> results);
 }

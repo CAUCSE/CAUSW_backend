@@ -25,6 +25,9 @@ public interface PostRepository extends JpaRepository<Post, String> {
 
 	Optional<Post> findTop1ByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(String boardId);
 
+	@EntityGraph(attributePaths = {"writer"})
+	List<Post> findAllByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(String boardId);
+
 	// Repository
 	@Query("""
 		    SELECT p FROM Post p
