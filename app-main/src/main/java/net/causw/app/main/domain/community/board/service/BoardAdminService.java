@@ -64,6 +64,7 @@ public class BoardAdminService {
 	 * @param boardQueryCondition 게시판 조회 조건 DTO
 	 * @return 게시판 설정 목록 조회 결과 DTO
 	 */
+	@Transactional(readOnly = true)
 	public BoardConfigListResult getAllBoardList(BoardQueryCondition boardQueryCondition) {
 		List<Board> boards = boardReader.searchBoardList(boardQueryCondition);
 		Map<String, BoardConfig> configMap = boardConfigReader.getBoardConfigMapByBoardIds(
@@ -78,6 +79,7 @@ public class BoardAdminService {
 	 * @param boardId 게시판 아이디
 	 * @return 게시판 설정 상세 조회 결과 DTO
 	 */
+	@Transactional(readOnly = true)
 	public BoardConfigDetail getBoardConfigEditInfo(String boardId) {
 		Board board = boardReader.getById(boardId);
 		BoardConfig boardConfig = boardConfigReader.getByBoardId(boardId);

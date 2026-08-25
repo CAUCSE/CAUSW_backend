@@ -13,6 +13,7 @@ import net.causw.app.main.domain.community.board.entity.BoardConfig;
 import net.causw.app.main.domain.community.board.entity.BoardGroup;
 import net.causw.app.main.domain.community.common.service.CommunityPermissionPolicy;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.shared.exception.errorcode.BoardErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,6 +31,15 @@ public class BoardAccessManager {
 			config -> isMatchingGroup(config.isNotice(), boardGroup),
 			(board, config, adminIds) -> CommunityPermissionPolicy.canReadBoard(
 				viewer, board, config, adminIds));
+	}
+
+	public void validateCanRead(User user, Board board) {
+		BoardConfig config = boardConfigReader.getByBoardId(board.getId());
+		Set<String> adminIds = boardConfigReader.getAdminIdSetMapByBoardIds(List.of(board.getId()))
+			.getOrDefault(board.getId(), Set.of());
+		if (!CommunityPermissionPolicy.canReadBoard(user, board, config, adminIds)) {
+			throw BoardErrorCode.BOARD_FORBIDDEN.toBaseException();
+		}
 	}
 
 	public List<Board> getWritableBoards(User writer, BoardGroup boardGroup) {

@@ -1,0 +1,2 @@
+ALTER TABLE tb_post
+    ADD COLUMN category VARCHAR(50) NULL;

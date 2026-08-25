@@ -9,6 +9,8 @@ import static org.mockito.BDDMockito.verify;
 import static org.mockito.Mockito.mock;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -21,7 +23,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
-import net.causw.app.main.domain.community.board.entity.BoardReadScope;
 import net.causw.app.main.domain.community.board.entity.BoardVisibility;
 import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
 import net.causw.app.main.domain.community.board.service.implementation.BoardReader;
@@ -65,13 +66,15 @@ class OfficialPostNotificationListenerTest {
 			// given
 			Board board = mockBoard("boardId");
 			Post post = mockPost();
-			BoardConfig boardConfig = mockVisibleNoticeConfig(BoardReadScope.BOTH);
+			BoardConfig boardConfig = mockVisibleNoticeConfig();
 			List<User> targets = List.of(mock(User.class), mock(User.class));
 
 			given(boardReader.getById("boardId")).willReturn(board);
 			given(postReader.findById("postId")).willReturn(post);
 			given(boardConfigReader.getByBoardId("boardId")).willReturn(boardConfig);
-			given(userBoardSubscribeReader.findNotificationTargets("boardId", BoardReadScope.BOTH)).willReturn(targets);
+			given(boardConfigReader.getAdminIdSetMapByBoardIds(any())).willReturn(Map.of());
+			given(userBoardSubscribeReader.findNotificationTargets("boardId", boardConfig, Set.of()))
+				.willReturn(targets);
 			// 성공 경로에서만 사용되는 stub
 			given(post.getContent()).willReturn("공지 내용입니다.");
 			given(board.getName()).willReturn("공지 게시판");
@@ -137,12 +140,13 @@ class OfficialPostNotificationListenerTest {
 			// given
 			Board board = mockBoard("boardId");
 			Post post = mockPost();
-			BoardConfig boardConfig = mockVisibleNoticeConfig(BoardReadScope.ENROLLED);
+			BoardConfig boardConfig = mockVisibleNoticeConfig();
 
 			given(boardReader.getById("boardId")).willReturn(board);
 			given(postReader.findById("postId")).willReturn(post);
 			given(boardConfigReader.getByBoardId("boardId")).willReturn(boardConfig);
-			given(userBoardSubscribeReader.findNotificationTargets("boardId", BoardReadScope.ENROLLED))
+			given(boardConfigReader.getAdminIdSetMapByBoardIds(any())).willReturn(Map.of());
+			given(userBoardSubscribeReader.findNotificationTargets("boardId", boardConfig, Set.of()))
 				.willReturn(List.of());
 			// 성공 경로 stub
 			given(post.getContent()).willReturn("공지 내용입니다.");
@@ -161,20 +165,24 @@ class OfficialPostNotificationListenerTest {
 		}
 
 		@Test
-		@DisplayName("성공: readScope=ENROLLED이면 ENROLLED 범위로 대상 조회")
-		void givenEnrolledReadScope_whenHandle_thenQueryWithEnrolledScope() {
+		@DisplayName("성공: readScope·학과 조건에 해당하는 유저에게만 알림 발송")
+		void givenScopedBoard_whenHandle_thenOnlyFilteredUsersReceiveNotification() {
 			// given
+			// reader가 재학생 + 허용 학과 조건으로 필터링한 결과를 시뮬레이션.
+			// 졸업생이나 허용되지 않은 학과 유저는 이미 제외된 상태로 반환된다.
 			Board board = mockBoard("boardId");
 			Post post = mockPost();
-			BoardConfig boardConfig = mockVisibleNoticeConfig(BoardReadScope.ENROLLED);
-			List<User> targets = List.of(mock(User.class));
+			BoardConfig boardConfig = mockVisibleNoticeConfig();
+			User enrolledSwUser1 = mock(User.class);
+			User enrolledSwUser2 = mock(User.class);
+			List<User> filteredTargets = List.of(enrolledSwUser1, enrolledSwUser2);
 
 			given(boardReader.getById("boardId")).willReturn(board);
 			given(postReader.findById("postId")).willReturn(post);
 			given(boardConfigReader.getByBoardId("boardId")).willReturn(boardConfig);
-			given(userBoardSubscribeReader.findNotificationTargets("boardId", BoardReadScope.ENROLLED))
-				.willReturn(targets);
-			// 성공 경로 stub
+			given(boardConfigReader.getAdminIdSetMapByBoardIds(any())).willReturn(Map.of());
+			given(userBoardSubscribeReader.findNotificationTargets("boardId", boardConfig, Set.of()))
+				.willReturn(filteredTargets);
 			given(post.getContent()).willReturn("공지 내용입니다.");
 			given(board.getName()).willReturn("공지 게시판");
 			given(post.getId()).willReturn("postId");
@@ -184,7 +192,9 @@ class OfficialPostNotificationListenerTest {
 			handler.handle(new OfficialPostEvent("boardId", "postId", null));
 
 			// then
-			verify(userBoardSubscribeReader).findNotificationTargets("boardId", BoardReadScope.ENROLLED);
+			PushNotificationData expectedData = new PushNotificationData(NoticeType.OFFICIAL, "postId", "boardId");
+			verify(notificationPushSender).sendToUsers(eq(filteredTargets), any(), any(), eq(expectedData));
+			verify(notificationWriter).saveLogs(eq(filteredTargets), any());
 		}
 
 		@Test
@@ -193,14 +203,16 @@ class OfficialPostNotificationListenerTest {
 			// given
 			Board board = mockBoard("boardId");
 			Post post = mockPost();
-			BoardConfig boardConfig = mockVisibleNoticeConfig(BoardReadScope.BOTH);
+			BoardConfig boardConfig = mockVisibleNoticeConfig();
 			List<User> targets = List.of(mock(User.class), mock(User.class));
 			String crawledTitle = "크롤링 공지사항 제목입니다";
 
 			given(boardReader.getById("boardId")).willReturn(board);
 			given(postReader.findById("postId")).willReturn(post);
 			given(boardConfigReader.getByBoardId("boardId")).willReturn(boardConfig);
-			given(userBoardSubscribeReader.findNotificationTargets("boardId", BoardReadScope.BOTH)).willReturn(targets);
+			given(boardConfigReader.getAdminIdSetMapByBoardIds(any())).willReturn(Map.of());
+			given(userBoardSubscribeReader.findNotificationTargets("boardId", boardConfig, Set.of()))
+				.willReturn(targets);
 
 			// 크롤링 글은 post.getContent()를 읽지 않으므로 해당 stub 불필요
 			given(board.getName()).willReturn("공지 게시판");
@@ -242,12 +254,11 @@ class OfficialPostNotificationListenerTest {
 		return post;
 	}
 
-	/** isNotice=true, VISIBLE 조건 통과 후 readScope까지 필요한 config */
-	private BoardConfig mockVisibleNoticeConfig(BoardReadScope readScope) {
+	/** isNotice=true, VISIBLE 조건 통과용 config */
+	private BoardConfig mockVisibleNoticeConfig() {
 		BoardConfig config = mock(BoardConfig.class);
 		given(config.isNotice()).willReturn(true);
 		given(config.getVisibility()).willReturn(BoardVisibility.VISIBLE);
-		given(config.getReadScope()).willReturn(readScope);
 		return config;
 	}
 }

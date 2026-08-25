@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.enums.PostCategory;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.community.post.repository.query.PostCursorResult;
 import net.causw.app.main.domain.community.post.repository.query.PostQueryRepository;
@@ -94,9 +95,10 @@ public class PostReader {
 		String cursorCreatedAt,
 		String cursorId,
 		int size,
-		String keyword) {
+		String keyword,
+		PostCategory category) {
 		return postQueryRepository.findPostsWithCursor(
-			boardIds, readContext, cursorCreatedAt, cursorId, size, keyword);
+			boardIds, readContext, cursorCreatedAt, cursorId, size, keyword, category);
 	}
 
 	/**

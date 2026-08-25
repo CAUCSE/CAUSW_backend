@@ -25,6 +25,7 @@ import net.causw.app.main.domain.community.board.service.implementation.BoardCon
 import net.causw.app.main.domain.community.board.service.implementation.BoardReader;
 import net.causw.app.main.domain.community.common.service.CommunityPermissionPolicy;
 import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.enums.PostCategory;
 import net.causw.app.main.domain.community.post.repository.query.PostCursorResult;
 import net.causw.app.main.domain.community.post.repository.query.PostReadQueryContext;
 import net.causw.app.main.domain.community.post.service.dto.CrawledAttachmentResult;
@@ -229,6 +230,7 @@ public class PostService {
 		String cursor = query.cursor();
 		int size = query.size() != null ? query.size() : StaticValue.DEFAULT_POST_PAGE_SIZE; // 기본값 20
 		String keyword = query.keyword();
+		PostCategory category = query.category();
 
 		// 커서 파싱
 		PostCursorManager.ParsedCursor parsedCursor = PostCursorManager.parseCursor(cursor);
@@ -270,7 +272,8 @@ public class PostService {
 			parsedCursor.createdAt(),
 			parsedCursor.postId(),
 			size,
-			keyword);
+			keyword,
+			category);
 
 		// Slice에서 content와 hasNext 추출
 		List<PostCursorResult> posts = slice.getContent();
