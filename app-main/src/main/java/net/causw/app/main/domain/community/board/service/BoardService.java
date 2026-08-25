@@ -36,7 +36,7 @@ public class BoardService {
 	 */
 	public List<BoardReadableItemResult> getReadableBoards(String userId, BoardGroup boardGroup) {
 		User user = userReader.findUserById(userId);
-		List<Board> readableBoards = boardAccessManager.getReadableBoards(user, isTab);
+		List<Board> readableBoards = boardAccessManager.getReadableBoards(user, boardGroup);
 		List<String> boardIds = readableBoards.stream().map(Board::getId).toList();
 		Map<String, BoardConfig> boardConfigMap = boardConfigReader.getBoardConfigMapByBoardIds(boardIds);
 
