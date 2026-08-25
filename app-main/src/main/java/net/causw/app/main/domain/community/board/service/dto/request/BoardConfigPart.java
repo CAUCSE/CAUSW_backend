@@ -1,8 +1,11 @@
 package net.causw.app.main.domain.community.board.service.dto.request;
 
+import java.util.Set;
+
 import net.causw.app.main.domain.community.board.entity.BoardReadScope;
 import net.causw.app.main.domain.community.board.entity.BoardVisibility;
 import net.causw.app.main.domain.community.board.entity.BoardWriteScope;
+import net.causw.app.main.domain.user.account.enums.user.Department;
 
 import lombok.Builder;
 
@@ -18,5 +21,6 @@ public record BoardConfigPart(
 	boolean isNotice,
 	BoardVisibility visibility,
 	String officialNickname,
-	String officialProfileImageId) {
+	String officialProfileImageId,
+	Set<Department> departments) {
 }

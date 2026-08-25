@@ -1,0 +1,87 @@
+package net.causw.app.main.domain.community.post.service.implementation;
+
+import java.time.Duration;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
+import org.springframework.stereotype.Component;
+
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+
+@Component
+@RequiredArgsConstructor
+public class ViewCountManager {
+
+	private static final String COOKIE_PREFIX = "post_view_";
+	private static final int COOKIE_MAX_AGE = 60 * 60 * 24; // 24시간
+	private static final String REDIS_KEY_PREFIX = "PostView:";
+
+	private static final String RELEASE_LUA_SCRIPT = "if redis.call('get', KEYS[1]) == ARGV[1] then " +
+		"return redis.call('del', KEYS[1]) " +
+		"else " +
+		"return 0 " +
+		"end";
+
+	private final StringRedisTemplate redisTemplate;
+
+	public record ViewReservation(String key, String token, boolean acquired) {
+	}
+
+	/**
+	 * 해당 게시글에 대한 조회수 쿠키가 이미 존재하는지 확인합니다. (권한 검증 전 사용)
+	 */
+	public boolean hasViewedCookie(HttpServletRequest request, String postId) {
+		String cookieName = COOKIE_PREFIX + postId;
+
+		if (request.getCookies() != null) {
+			return Arrays.stream(request.getCookies())
+				.anyMatch(cookie -> cookie.getName().equals(cookieName));
+		}
+
+		return false;
+	}
+
+	public ViewReservation reserve(String userId, String postId) {
+		String key = REDIS_KEY_PREFIX + postId + ":" + userId;
+		String token = UUID.randomUUID().toString();
+
+		try {
+			Boolean acquired = redisTemplate.opsForValue().setIfAbsent(key, token, Duration.ofSeconds(COOKIE_MAX_AGE));
+			return new ViewReservation(key, token, Boolean.TRUE.equals(acquired));
+		} catch (DataAccessException e) {
+			// Redis 장애 발생 시 조회수 예약을 건너뛰고 게시글 조회를 정상 진행 (Fail-Open)
+			return new ViewReservation("", "", false);
+		}
+	}
+
+	public void release(ViewReservation reservation) {
+		if (reservation == null || !reservation.acquired() || reservation.key().isBlank()) {
+			return;
+		}
+		try {
+			DefaultRedisScript<Long> redisScript = new DefaultRedisScript<>(RELEASE_LUA_SCRIPT, Long.class);
+			redisTemplate.execute(redisScript, List.of(reservation.key()), reservation.token());
+		} catch (DataAccessException e) {
+			// 락 해제 실패 시 Redis 만료 시간에 의존하도록 로그만 남기고 무시
+		}
+	}
+
+	/**
+	 * 모든 권한 검증과 조회수 증가가 성공적으로 끝난 후, 클라이언트에게 조회 완료 쿠키를 발급합니다.
+	 */
+	public void markViewed(HttpServletResponse response, String postId) {
+		String cookieName = COOKIE_PREFIX + postId;
+
+		Cookie viewCookie = new Cookie(cookieName, "true");
+		viewCookie.setMaxAge(COOKIE_MAX_AGE);
+		viewCookie.setPath("/");
+		response.addCookie(viewCookie);
+	}
+}

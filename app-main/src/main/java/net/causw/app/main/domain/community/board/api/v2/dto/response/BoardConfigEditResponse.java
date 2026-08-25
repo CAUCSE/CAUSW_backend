@@ -1,10 +1,12 @@
 package net.causw.app.main.domain.community.board.api.v2.dto.response;
 
 import java.util.List;
+import java.util.Set;
 
 import net.causw.app.main.domain.community.board.entity.BoardReadScope;
 import net.causw.app.main.domain.community.board.entity.BoardVisibility;
 import net.causw.app.main.domain.community.board.entity.BoardWriteScope;
+import net.causw.app.main.domain.user.account.enums.user.Department;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -20,6 +22,7 @@ public record BoardConfigEditResponse(
 	@Schema(description = "게시판 표시 순서", example = "1") Integer displayOrder,
 	@Schema(description = "공지 작성자 닉네임 (마스킹용)", example = "게시판 관리자") String officialNickname,
 	@Schema(description = "공지 작성자 프로필 이미지 파일 ID (마스킹용)") String officialProfileImageId,
+	@Schema(description = "노출 대상 학과 목록 (빈 배열이면 전체 학과)") Set<Department> departments,
 	@Schema(description = "게시판 관리자 목록") List<AdminResponse> admins) {
 	public record AdminResponse(
 		@Schema(description = "관리자 고유 아이디", example = "uuid-1234-5678-9012-abcdefg") String id,

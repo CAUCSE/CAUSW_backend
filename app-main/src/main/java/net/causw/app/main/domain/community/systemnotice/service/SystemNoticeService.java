@@ -1,0 +1,124 @@
+package net.causw.app.main.domain.community.systemnotice.service;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import net.causw.app.main.domain.community.board.entity.BoardConfig;
+import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
+import net.causw.app.main.domain.community.common.service.CommunityPermissionPolicy;
+import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.service.PostService;
+import net.causw.app.main.domain.community.post.service.dto.PostCreateCommand;
+import net.causw.app.main.domain.community.post.service.dto.PostCreateResult;
+import net.causw.app.main.domain.community.post.service.dto.PostUpdateCommand;
+import net.causw.app.main.domain.community.post.service.util.PostValidator;
+import net.causw.app.main.domain.community.systemnotice.entity.UserSystemNoticeRead;
+import net.causw.app.main.domain.community.systemnotice.service.dto.SystemNoticeCreateCommand;
+import net.causw.app.main.domain.community.systemnotice.service.dto.SystemNoticeCreateResult;
+import net.causw.app.main.domain.community.systemnotice.service.dto.SystemNoticeResult;
+import net.causw.app.main.domain.community.systemnotice.service.dto.SystemNoticeUpdateCommand;
+import net.causw.app.main.domain.community.systemnotice.service.implementation.SystemNoticeReader;
+import net.causw.app.main.domain.community.systemnotice.service.implementation.SystemNoticeWriter;
+import net.causw.app.main.domain.notification.notification.event.SystemNoticeNotificationEvent;
+import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class SystemNoticeService {
+
+	private final SystemNoticeReader systemNoticeReader;
+	private final SystemNoticeWriter systemNoticeWriter;
+	private final PostService postService;
+	private final BoardConfigReader boardConfigReader;
+	private final ApplicationEventPublisher eventPublisher;
+
+	@Transactional
+	public SystemNoticeCreateResult create(SystemNoticeCreateCommand command) {
+		String boardId = systemNoticeReader.getSystemNoticeBoardId();
+		PostCreateResult result = postService.createSystemNotice(new PostCreateCommand(
+			command.title(), command.content(), boardId, false, command.writer(), List.of(), List.of()));
+
+		// 시스템 공지 생성 시에만 알림 발행 (수정 시에는 재알림하지 않음)
+		eventPublisher.publishEvent(new SystemNoticeNotificationEvent(result.id()));
+
+		return new SystemNoticeCreateResult(
+			result.id(), result.title(), result.content(), command.writer().getNickname(), result.createdAt());
+	}
+
+	@Transactional
+	public void update(String postId, SystemNoticeUpdateCommand command) {
+		systemNoticeReader.getSystemNoticePost(postId);
+		postService.updateSystemNotice(new PostUpdateCommand(
+			postId, command.title(), command.content(), false, command.updater(), List.of(), List.of()));
+	}
+
+	@Transactional
+	public void delete(String postId, User updater) {
+		systemNoticeReader.getSystemNoticePost(postId);
+		postService.deleteSystemNotice(updater, postId);
+	}
+
+	public Optional<SystemNoticeResult> getLatest(User viewer) {
+		CommunityPermissionPolicy.validateActiveUser(viewer);
+		return systemNoticeReader.findLatestPost()
+			.map(latestPost -> {
+				validateReadAccess(viewer, latestPost);
+				return toResult(latestPost, viewer);
+			});
+	}
+
+	public List<SystemNoticeCreateResult> getAll() {
+		return systemNoticeReader.findAllPosts().stream()
+			.map(post -> new SystemNoticeCreateResult(
+				post.getId(),
+				post.getTitle(),
+				post.getContent(),
+				post.getWriter().getNickname(),
+				post.getCreatedAt()))
+			.toList();
+	}
+
+	@Transactional
+	public void markAsRead(User viewer, String postId) {
+		CommunityPermissionPolicy.validateActiveUser(viewer);
+		Post post = systemNoticeReader.findLatestPost()
+			.filter(latestPost -> latestPost.getId().equals(postId))
+			.orElseThrow(PostErrorCode.POST_NOT_FOUND::toBaseException);
+		validateReadAccess(viewer, post);
+
+		systemNoticeWriter.upsertLastReadPost(viewer.getId(), post.getId());
+	}
+
+	private void validateReadAccess(User viewer, Post post) {
+		String boardId = post.getBoard().getId();
+		BoardConfig boardConfig = boardConfigReader.getByBoardId(boardId);
+		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(boardId);
+		PostValidator.validateRead(viewer, post, boardConfig, boardAdminIds);
+	}
+
+	private SystemNoticeResult toResult(Post post, User viewer) {
+		boolean isRead = systemNoticeReader.findReadByUserId(viewer.getId())
+			.map(UserSystemNoticeRead::getLastReadPostId)
+			.filter(post.getId()::equals)
+			.isPresent();
+
+		User writer = post.getWriter();
+		String authorName = writer.getNickname();
+
+		return new SystemNoticeResult(
+			post.getId(),
+			post.getTitle(),
+			post.getContent(),
+			authorName,
+			post.getCreatedAt(),
+			isRead);
+	}
+}

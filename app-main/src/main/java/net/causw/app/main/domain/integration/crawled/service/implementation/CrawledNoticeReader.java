@@ -2,6 +2,7 @@ package net.causw.app.main.domain.integration.crawled.service.implementation;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -35,6 +36,10 @@ public class CrawledNoticeReader {
 	public CrawledNotice findById(String noticeId) {
 		return crawledNoticeRepository.findById(noticeId)
 			.orElseThrow(IntegrationErrorCode.CRAWLING_ERROR::toBaseException);
+	}
+
+	public Optional<CrawledNotice> findByPostId(String postId) {
+		return crawledNoticeRepository.findByPostId(postId);
 	}
 
 	/**
