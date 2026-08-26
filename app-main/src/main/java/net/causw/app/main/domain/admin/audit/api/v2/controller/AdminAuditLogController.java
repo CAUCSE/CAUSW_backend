@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/admin/audit-logs")
-@PreAuthorize("@security.hasRole(@Role.ADMIN) or @security.hasRole(@Role.SYSTEM_ADMIN)")
+@PreAuthorize("@security.hasAnyRole(@Role.ADMIN, @Role.SYSTEM_ADMIN)")
 @RequireAdminRole(target = AdminTarget.ALL_ADMIN)
 @Tag(name = "Admin Audit Log v2", description = "관리자 감사 로그 API")
 public class AdminAuditLogController {

@@ -26,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/admin/lockers/policy")
-@PreAuthorize("@security.hasRole(@Role.ADMIN) or @security.hasRole(@Role.SYSTEM_ADMIN)")
+@PreAuthorize("@security.hasAnyRole(@Role.ADMIN, @Role.SYSTEM_ADMIN)")
 @RequireAdminRole(target = AdminTarget.ENROLLED_ADMIN)
 @Tag(name = "LockerPolicy Admin v2", description = "관리자 사물함 정책 관리 API V2")
 public class LockerPolicyAdminController {

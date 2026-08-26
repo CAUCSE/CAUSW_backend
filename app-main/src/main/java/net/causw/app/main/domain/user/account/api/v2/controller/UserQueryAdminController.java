@@ -29,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/admin/users")
-@PreAuthorize("@security.hasRole(@Role.ADMIN) or @security.hasRole(@Role.SYSTEM_ADMIN)")
+@PreAuthorize("@security.hasAnyRole(@Role.ADMIN, @Role.SYSTEM_ADMIN)")
 @RequireAdminRole(target = AdminTarget.ALL_ADMIN)
 @Tag(name = "User Admin Query v2", description = "게시판 관리 등 관리자 기능에서 공통으로 사용되는 사용자 검색용 API")
 public class UserQueryAdminController {

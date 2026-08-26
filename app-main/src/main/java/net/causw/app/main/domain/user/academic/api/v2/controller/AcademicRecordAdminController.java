@@ -30,7 +30,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/admin/academic-records")
-@PreAuthorize("@security.hasRole(@Role.ADMIN) or @security.hasRole(@Role.SYSTEM_ADMIN)")
+@PreAuthorize("@security.hasAnyRole(@Role.ADMIN, @Role.SYSTEM_ADMIN)")
 @RequireAdminRole(target = AdminTarget.ALL_ADMIN)
 @Tag(name = "AcademicRecord Admin v2", description = "관리자 학적상태 변경신청 관리 API")
 public class AcademicRecordAdminController {
