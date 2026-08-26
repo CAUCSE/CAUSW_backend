@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.causw.app.main.core.aop.annotation.RequireAdminRole;
+import net.causw.app.main.core.aop.enums.AdminTarget;
 import net.causw.app.main.domain.community.systemnotice.api.v2.dto.request.SystemNoticeCreateRequest;
 import net.causw.app.main.domain.community.systemnotice.api.v2.dto.request.SystemNoticeUpdateRequest;
 import net.causw.app.main.domain.community.systemnotice.api.v2.dto.response.SystemNoticeCreateResponse;
@@ -32,7 +34,8 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/admin/system-notices")
-@PreAuthorize("@security.hasRole(@Role.ADMIN)")
+@PreAuthorize("@security.hasAnyRole(@Role.ADMIN, @Role.SYSTEM_ADMIN)")
+@RequireAdminRole(target = AdminTarget.SYSTEM_ONLY)
 @Tag(name = "System Notice Admin v2", description = "관리자 시스템 공지 관리 API")
 public class AdminSystemNoticeController {
 
