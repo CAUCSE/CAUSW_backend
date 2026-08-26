@@ -43,9 +43,10 @@ public class LockerExpirationProcessor {
 		var userEmail = expiredUser.map(User::getEmail).orElse("알 수 없음");
 		var userName = expiredUser.map(User::getName).orElse("알 수 없음");
 
+		adminAuditLogEventPublisher.publishLockerReleaseExpired(locker, actor, expiredUser);
+
 		lockerWriter.releaseLocker(locker, actor, userEmail, userName);
 
-		adminAuditLogEventPublisher.publishLockerReleaseExpired(locker, actor, expiredUser);
 		if (userId != null) {
 			applicationEventPublisher.publishEvent(new LockerExpiredEvent(userId, locker.getId()));
 		}
