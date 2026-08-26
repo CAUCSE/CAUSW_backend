@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/admin/reports")
-@PreAuthorize("@security.hasRole(@Role.ADMIN) or @security.hasRole(@Role.SYSTEM_ADMIN)")
+@PreAuthorize("@security.hasAnyRole(@Role.ADMIN, @Role.SYSTEM_ADMIN)")
 @RequireAdminRole(target = AdminTarget.ALL_ADMIN)
 @Tag(name = "Report Admin v2", description = "관리자 신고 관리 API")
 public class ReportAdminController {

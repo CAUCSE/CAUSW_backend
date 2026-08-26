@@ -54,6 +54,19 @@ public class SecurityService {
 	}
 
 	/**
+	 * 현재 인증된 사용자가 주어진 Role 중 하나라도 보유하고 있는지 확인
+	 * @param roles Role enum 배열 (예: Role.ADMIN, Role.SYSTEM_ADMIN)
+	 */
+	public boolean hasAnyRole(Role... roles) {
+		for (Role role : roles) {
+			if (hasRole(role)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * 현재 인증된 사용자가 활성 상태인지 확인
 	 * <p>
 	 * 사용자 상태(UserState)가 ACTIVE고
