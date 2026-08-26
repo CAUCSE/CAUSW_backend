@@ -5,6 +5,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.causw.app.main.core.aop.annotation.RequireAdminRole;
+import net.causw.app.main.core.aop.enums.AdminTarget;
 import net.causw.app.main.shared.dto.ApiResponse;
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.ServiceUnavailableException;
@@ -14,7 +16,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/api/v2/admin/system-error-tests")
-@PreAuthorize("@security.hasRole(@Role.ADMIN)")
+@PreAuthorize("@security.hasAnyRole(@Role.ADMIN, @Role.SYSTEM_ADMIN)")
+@RequireAdminRole(target = AdminTarget.SYSTEM_ONLY)
 @Tag(name = "System Error Alert Test v2", description = "서버 오류 알림 검증 API")
 public class ServerErrorAlertTestController {
 
