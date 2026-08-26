@@ -2,7 +2,6 @@ package net.causw.app.main.shared.infra.redis;
 
 import java.time.Duration;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,50 +9,66 @@ import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.cache.RedisCacheWriter;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
+import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
 public class RedisConfig {
-	@Value("${spring.data.redis.port}")
-	private int port;
-
-	@Value("${spring.data.redis.host}")
-	private String host;
-
+	/**
+	 * Redis 값과 캐시 값을 JSON으로 직렬화할 공통 직렬화기를 생성합니다.
+	 *
+	 * @return Spring Boot 4 기본 JSON 직렬화기
+	 */
 	@Bean
-	public RedisConnectionFactory redisConnectionFactory() {
-		return new LettuceConnectionFactory(host, port);
+	public RedisSerializer<Object> redisValueSerializer() {
+		return RedisSerializer.json();
 	}
 
+	/**
+	 * 문자열 키와 JSON 값을 사용하는 RedisTemplate을 생성합니다.
+	 *
+	 * @param connectionFactory 자동 구성된 Redis 연결 팩토리
+	 * @param redisValueSerializer 값 직렬화에 사용할 JSON 직렬화기
+	 * @return Redis 작업에 사용할 템플릿
+	 */
 	@Bean
-	public RedisTemplate<String, Object> redisTemplate() {
+	public RedisTemplate<String, Object> redisTemplate(
+		RedisConnectionFactory connectionFactory,
+		RedisSerializer<Object> redisValueSerializer) {
 		RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
+		StringRedisSerializer stringSerializer = new StringRedisSerializer();
 
 		// Key는 String으로 직렬화
-		redisTemplate.setKeySerializer(new StringRedisSerializer());
+		redisTemplate.setKeySerializer(stringSerializer);
 
 		// Value는 다양한 타입을 처리할 수 있도록 JSON 직렬화
-		redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+		redisTemplate.setValueSerializer(redisValueSerializer);
 
 		// HashKey와 HashValue의 직렬화 설정
-		redisTemplate.setHashKeySerializer(new StringRedisSerializer());
-		redisTemplate.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
+		redisTemplate.setHashKeySerializer(stringSerializer);
+		redisTemplate.setHashValueSerializer(redisValueSerializer);
 
-		redisTemplate.setConnectionFactory(redisConnectionFactory());
+		redisTemplate.setConnectionFactory(connectionFactory);
 		return redisTemplate;
 	}
 
-	// CacheManager 설정
+	/**
+	 * 문자열 키와 JSON 값, 기본 TTL 1시간을 사용하는 캐시 관리자를 생성합니다.
+	 *
+	 * @param connectionFactory 자동 구성된 Redis 연결 팩토리
+	 * @param redisValueSerializer 캐시 값 직렬화에 사용할 JSON 직렬화기
+	 * @return Redis 기반 캐시 관리자
+	 */
 	@Bean
-	public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
+	public CacheManager cacheManager(
+		RedisConnectionFactory connectionFactory,
+		RedisSerializer<Object> redisValueSerializer) {
 		RedisCacheConfiguration redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
 			.serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
 			.serializeValuesWith(
-				RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()))
+				RedisSerializationContext.SerializationPair.fromSerializer(redisValueSerializer))
 			.entryTtl(Duration.ofMinutes(60)); // 캐시 TTL 설정, (기본값: 1시간, TTL 따로 지정안한 경우만 적용)
 
 		return RedisCacheManager.builder(RedisCacheWriter.nonLockingRedisCacheWriter(connectionFactory))

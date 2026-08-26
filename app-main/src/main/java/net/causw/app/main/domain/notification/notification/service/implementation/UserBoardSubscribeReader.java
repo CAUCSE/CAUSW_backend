@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.community.board.entity.Board;
-import net.causw.app.main.domain.community.board.entity.BoardReadScope;
+import net.causw.app.main.domain.community.board.entity.BoardConfig;
 import net.causw.app.main.domain.notification.notification.entity.UserBoardSubscribe;
 import net.causw.app.main.domain.notification.notification.repository.UserBoardSubscribeQueryRepository;
 import net.causw.app.main.domain.notification.notification.repository.UserBoardSubscribeRepository;
@@ -61,12 +61,18 @@ public class UserBoardSubscribeReader {
 	 * <p>기본 구독 정책: {@code UserBoardSubscribe} row가 없으면 구독 상태(true)로 간주합니다.
 	 * {@code isSubscribed = false}인 row가 명시적으로 존재하는 경우에만 알림 대상에서 제외됩니다.
 	 *
-	 * @param boardId   알림을 발송할 게시판 ID
-	 * @param readScope 게시판 읽기 범위
+	 * <p>권한 정책: 게시판 관리자는 학적·학과 제한 없이 알림 대상에 포함됩니다.
+	 *
+	 * @param boardId       알림을 발송할 게시판 ID
+	 * @param boardConfig   게시판 설정 (읽기 범위·허용 학과 조건 추출에 사용)
+	 * @param boardAdminIds   게시판 관리자 ID Set
 	 * @return 알림 발송 대상 유저 목록
 	 */
-	public List<User> findNotificationTargets(String boardId, BoardReadScope readScope) {
-		return userBoardSubscribeQueryRepository.findNotificationTargets(boardId,
-			readScope.getTargetAcademicStatuses());
+	public List<User> findNotificationTargets(String boardId, BoardConfig boardConfig, Set<String> boardAdminIds) {
+		return userBoardSubscribeQueryRepository.findNotificationTargets(
+			boardId,
+			boardConfig.getReadScope().getTargetAcademicStatuses(),
+			boardConfig.getDepartments(),
+			boardAdminIds);
 	}
 }

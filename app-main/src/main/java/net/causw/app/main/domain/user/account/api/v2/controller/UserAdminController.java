@@ -7,6 +7,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import net.causw.app.main.core.aop.annotation.RequireAdminRole;
+import net.causw.app.main.core.aop.enums.AdminTarget;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.AdmissionListRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.AdmissionRejectRequest;
 import net.causw.app.main.domain.user.account.api.v2.dto.request.DeletedUserSearchCondition;
@@ -40,7 +42,8 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/admin/users")
-@PreAuthorize("@security.hasRole(@Role.ADMIN)")
+@PreAuthorize("@security.hasRole(@Role.ADMIN) or @security.hasRole(@Role.SYSTEM_ADMIN)")
+@RequireAdminRole(target = AdminTarget.ALL_ADMIN)
 @Tag(name = "User Admin v2", description = "관리자 권한으로 사용자 계정을 관리하는 API")
 public class UserAdminController {
 

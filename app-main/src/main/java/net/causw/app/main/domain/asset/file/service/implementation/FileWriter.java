@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.asset.file.service.implementation;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,10 +14,12 @@ import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.asset.file.repository.UuidFileRepository;
 import net.causw.app.main.domain.asset.file.service.util.FileMetadataManager;
 import net.causw.app.main.domain.asset.file.service.util.FileValidator;
+import net.causw.app.main.shared.exception.errorcode.FileErrorCode;
 import net.causw.app.main.shared.storage.StorageClient;
 import net.causw.app.main.shared.storage.dto.FileMetadata;
 import net.causw.app.main.shared.storage.dto.StorageResult;
 import net.causw.global.constant.MessageUtil;
+import net.causw.global.constant.StaticValue;
 import net.causw.global.exception.ErrorCode;
 import net.causw.global.exception.InternalServerException;
 
@@ -265,11 +268,104 @@ public class FileWriter {
 			metadata.rawFileName(),
 			metadata.extension(),
 			metadata.filePath());
+		uuidFile.setIsUploaded(true);
 
 		UuidFile saved = uuidFileRepository.save(uuidFile);
 		log.debug("File entity saved to database. FileId: {}, FileKey: {}", saved.getId(), result.fileKey());
 
 		return saved;
+	}
+
+	/**
+	 * PENDING 상태의 UuidFile을 DB에 저장 (isUploaded=false)
+	 * Presigned URL 발급 시 호출
+	 *
+	 * @param metadata 파일 메타데이터
+	 * @param fileUrl  S3에 업로드 완료 후 접근할 최종 URL
+	 * @return 저장된 파일 엔티티 (isUploaded=false)
+	 */
+	@Transactional
+	public UuidFile savePending(@NotNull FileMetadata metadata, @NotNull String fileUrl) {
+		UuidFile uuidFile = UuidFile.of(
+			metadata.uuid(),
+			metadata.fileKey(),
+			fileUrl,
+			metadata.rawFileName(),
+			metadata.extension(),
+			metadata.filePath());
+		uuidFile.setIsUsed(false);
+		UuidFile saved = uuidFileRepository.save(uuidFile);
+		log.debug("Pending file saved. UUID: {}, FileKey: {}", saved.getUuid(), saved.getFileKey());
+		return saved;
+	}
+
+	/**
+	 * UUID 목록으로 PENDING 파일을 검증하고 CONFIRMED(isUploaded=true, isUsed=true)로 전환
+	 * 조건부 UPDATE로 이미 confirm된 파일이 있으면 예외를 던져 중복 confirm을 방지합니다.
+	 *
+	 * @param uuids            confirm할 파일 UUID 목록
+	 * @param expectedFilePath 파일이 등록된 경로 타입 (불일치 시 예외)
+	 * @return confirm된 파일 엔티티 목록
+	 */
+	@Transactional
+	public List<UuidFile> confirmFiles(@NotNull List<String> uuids, @NotNull FilePath expectedFilePath) {
+		if (uuids.isEmpty()) {
+			return List.of();
+		}
+
+		List<UuidFile> files = uuidFileRepository.findAllByUuidIn(uuids);
+		if (files.size() != uuids.size()) {
+			log.warn("Some UUIDs not found. Requested: {}, Found: {}", uuids.size(), files.size());
+			throw FileErrorCode.FILE_NOT_FOUND.toBaseException();
+		}
+
+		// 배치 cutoff(PENDING_FILE_EXPIRY_HOURS)보다 1시간 앞서 거부해 경계값에서의 경쟁 조건을 방지
+		LocalDateTime confirmDeadline = LocalDateTime.now().minusHours(StaticValue.PENDING_FILE_EXPIRY_HOURS - 1);
+		for (UuidFile file : files) {
+			if (file.getCreatedAt().isBefore(confirmDeadline)) {
+				log.warn("File expired. UUID: {}, CreatedAt: {}", file.getUuid(), file.getCreatedAt());
+				throw FileErrorCode.FILE_EXPIRED.toBaseException();
+			}
+			if (file.getFilePath() != expectedFilePath) {
+				log.warn("FilePath mismatch. Expected: {}, Actual: {}, UUID: {}",
+					expectedFilePath, file.getFilePath(), file.getUuid());
+				throw FileErrorCode.INVALID_FILE_PATH.toBaseException();
+			}
+			if (!storageClient.exists(file.getFileKey())) {
+				log.warn("File not found in storage. FileKey: {}", file.getFileKey());
+				throw FileErrorCode.FILE_NOT_UPLOADED.toBaseException();
+			}
+		}
+
+		int updated = uuidFileRepository.confirmByUuids(uuids);
+		if (updated != uuids.size()) {
+			log.warn("Some files already confirmed. Expected: {}, Updated: {}", uuids.size(), updated);
+			throw FileErrorCode.FILE_ALREADY_USED.toBaseException();
+		}
+
+		return files;
+	}
+
+	/**
+	 * DB에서만 파일 삭제 (S3는 건드리지 않음)
+	 * S3 삭제 완료 후 DB 레코드 정리 시 사용
+	 *
+	 * @param id 삭제할 파일 엔티티 ID
+	 */
+	@Transactional
+	public void deleteFromDb(@NotNull String id) {
+		uuidFileRepository.deleteById(id);
+	}
+
+	/**
+	 * DB에서 파일 목록 일괄 삭제 (S3는 건드리지 않음)
+	 * S3 bulk delete 완료 후 성공한 레코드 정리 시 사용
+	 *
+	 * @param ids 삭제할 파일 엔티티 ID 목록
+	 */
+	@Transactional
+	public void deleteAllFromDb(@NotNull List<String> ids) {
+		uuidFileRepository.deleteAllByIdInBatch(ids);
 	}
 
 	private void rollbackUploadedFiles(List<String> fileKeys) {

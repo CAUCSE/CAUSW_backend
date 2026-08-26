@@ -10,13 +10,17 @@ import lombok.Builder;
 @Builder
 public record PostDetailResult(
 	String id,
+	String title,
 	String content,
 	Boolean isDeleted,
 	String displayWriterNickname,
 	ProfileImageDto writerProfileImage,
 	List<String> fileUrlList,
+	List<CrawledAttachmentResult> crawledAttachments,
+	String originalNoticeUrl,
 	Long numComment,
 	Long numLike,
+	Long viewCount,
 	String voteId,
 	Boolean isAnonymous,
 	Boolean isCrawled,

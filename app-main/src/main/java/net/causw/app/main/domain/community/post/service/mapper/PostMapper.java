@@ -7,6 +7,7 @@ import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.query.PostCursorResult;
+import net.causw.app.main.domain.community.post.service.dto.CrawledAttachmentResult;
 import net.causw.app.main.domain.community.post.service.dto.PostCreateCommand;
 import net.causw.app.main.domain.community.post.service.dto.PostCreateResult;
 import net.causw.app.main.domain.community.post.service.dto.PostDetailResult;
@@ -26,7 +27,11 @@ public class PostMapper {
 
 	public static Post fromCreateCommand(PostCreateCommand command, User writer, Board board,
 		List<UuidFile> images) {
-		return Post.of(null,
+
+		String title = command.title();
+
+		return Post.of(
+			title == null || title.isBlank() ? null : title,
 			command.content(),
 			writer,
 			command.isAnonymous(),
@@ -37,6 +42,7 @@ public class PostMapper {
 	public static PostCreateResult toCreateResult(Post post, List<String> images) {
 		return PostCreateResult.builder()
 			.id(post.getId())
+			.title(post.getTitle())
 			.content(post.getContent())
 			.isAnonymous(post.getIsAnonymous())
 			.fileUrlList(images)
@@ -50,6 +56,7 @@ public class PostMapper {
 	public static PostUpdateResult toUpdateResult(Post post, List<String> images) {
 		return PostUpdateResult.builder()
 			.id(post.getId())
+			.title(post.getTitle())
 			.content(post.getContent())
 			.isAnonymous(post.getIsAnonymous())
 			.fileUrlList(images)
@@ -95,9 +102,11 @@ public class PostMapper {
 
 		return PostListResult.PostItem.of(
 			result.postId(),
+			result.title(),
 			result.content(),
 			result.numComment(),
 			result.numLike(),
+			result.viewCount(),
 			result.isAnonymous(),
 			result.voteId(),
 			result.isDeleted(),
@@ -109,6 +118,7 @@ public class PostMapper {
 			imageUrls,
 			result.boardId(),
 			result.boardName(),
+			result.category(),
 			isPostLike,
 			isOwner,
 			updatable,
@@ -133,6 +143,8 @@ public class PostMapper {
 		Post post,
 		UserProfileImage writerProfileImage,
 		List<String> imageUrls,
+		List<CrawledAttachmentResult> crawledAttachments,
+		String originalNoticeUrl,
 		Long numComment,
 		Long numLike,
 		Boolean isPostLike,
@@ -172,13 +184,17 @@ public class PostMapper {
 
 		return PostDetailResult.builder()
 			.id(post.getId())
+			.title(post.getTitle())
 			.content(post.getContent())
 			.isDeleted(post.getIsDeleted())
 			.displayWriterNickname(displayWriterNickname)
 			.writerProfileImage(writerProfileImageDto)
 			.fileUrlList(imageUrls)
+			.crawledAttachments(crawledAttachments)
+			.originalNoticeUrl(originalNoticeUrl)
 			.numComment(numComment)
 			.numLike(numLike)
+			.viewCount(post.getViewCount())
 			.voteId(voteId)
 			.isAnonymous(post.getIsAnonymous())
 			.isCrawled(post.getIsCrawled())

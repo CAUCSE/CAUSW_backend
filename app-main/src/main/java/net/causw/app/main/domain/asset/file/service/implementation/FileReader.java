@@ -1,14 +1,18 @@
 package net.causw.app.main.domain.asset.file.service.implementation;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.repository.UuidFileRepository;
+import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
+import net.causw.app.main.shared.exception.errorcode.FileErrorCode;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.BadRequestException;
 import net.causw.global.exception.ErrorCode;
@@ -77,5 +81,43 @@ public class FileReader {
 	 */
 	public Optional<UuidFile> findByIdOptional(@NotBlank String id) {
 		return uuidFileRepository.findById(id);
+	}
+
+	/**
+	 * 비즈니스 UUID로 파일 조회
+	 *
+	 * @param uuid 비즈니스 UUID (presigned URL 발급 시 반환된 값)
+	 * @return 파일 엔티티
+	 * @throws BaseRunTimeV2Exception 파일이 존재하지 않을 경우 (FILE_NOT_FOUND)
+	 */
+	public UuidFile findByUuid(@NotBlank String uuid) {
+		return uuidFileRepository.findByUuid(uuid)
+			.orElseThrow(() -> {
+				log.warn("File not found by UUID: {}", uuid);
+				return FileErrorCode.FILE_NOT_FOUND.toBaseException();
+			});
+	}
+
+	/**
+	 * 비즈니스 UUID 목록으로 파일 목록 조회
+	 *
+	 * @param uuids 비즈니스 UUID 목록
+	 * @return 파일 엔티티 목록
+	 */
+	public List<UuidFile> findAllByUuids(List<String> uuids) {
+		return uuidFileRepository.findAllByUuidIn(uuids);
+	}
+
+	/**
+	 * cutoff 이전에 생성된 PENDING 파일을 최대 limit 개만 조회 (배치 청크 처리용)
+	 *
+	 * @param cutoff 기준 시각
+	 * @param limit  최대 조회 개수
+	 * @return PENDING 파일 엔티티 목록
+	 */
+	public List<UuidFile> findPendingChunkBefore(LocalDateTime cutoff, int limit) {
+		return uuidFileRepository
+			.findAllByIsUploadedFalseAndCreatedAtBefore(cutoff, PageRequest.of(0, limit))
+			.getContent();
 	}
 }

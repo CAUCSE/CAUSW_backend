@@ -9,6 +9,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.PostAttachImage;
@@ -17,12 +19,16 @@ import net.causw.app.main.domain.asset.file.service.implementation.FileReader;
 import net.causw.app.main.domain.asset.file.service.implementation.UserProfileImageReader;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
+import net.causw.app.main.domain.community.board.entity.BoardGroup;
+import net.causw.app.main.domain.community.board.service.implementation.BoardAccessManager;
 import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
 import net.causw.app.main.domain.community.board.service.implementation.BoardReader;
 import net.causw.app.main.domain.community.common.service.CommunityPermissionPolicy;
 import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.enums.PostCategory;
 import net.causw.app.main.domain.community.post.repository.query.PostCursorResult;
 import net.causw.app.main.domain.community.post.repository.query.PostReadQueryContext;
+import net.causw.app.main.domain.community.post.service.dto.CrawledAttachmentResult;
 import net.causw.app.main.domain.community.post.service.dto.PostCreateCommand;
 import net.causw.app.main.domain.community.post.service.dto.PostCreateResult;
 import net.causw.app.main.domain.community.post.service.dto.PostDetailQuery;
@@ -34,10 +40,12 @@ import net.causw.app.main.domain.community.post.service.dto.PostUpdateResult;
 import net.causw.app.main.domain.community.post.service.implementation.PostImageManager;
 import net.causw.app.main.domain.community.post.service.implementation.PostReader;
 import net.causw.app.main.domain.community.post.service.implementation.PostWriter;
+import net.causw.app.main.domain.community.post.service.implementation.ViewCountManager;
 import net.causw.app.main.domain.community.post.service.mapper.PostMapper;
 import net.causw.app.main.domain.community.post.service.util.PostCursorManager;
 import net.causw.app.main.domain.community.post.service.util.PostValidator;
 import net.causw.app.main.domain.community.reaction.service.implementation.LikePostReader;
+import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeReader;
 import net.causw.app.main.domain.notification.notification.event.OfficialPostEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;
@@ -45,6 +53,8 @@ import net.causw.app.main.domain.user.relation.service.implementation.BlockReade
 import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
 import net.causw.global.constant.StaticValue;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -57,11 +67,14 @@ public class PostService {
 	private final PostImageManager postImageManager;
 	private final BoardReader boardReader;
 	private final BoardConfigReader boardConfigReader;
+	private final BoardAccessManager boardAccessManager;
 	private final LikePostReader likePostReader;
 	private final BlockReader userBlockReader;
 	private final ApplicationEventPublisher eventPublisher;
 	private final UserProfileImageReader userProfileImageReader;
 	private final FileReader fileReader;
+	private final ViewCountManager viewCountManager;
+	private final CrawledNoticeReader crawledNoticeReader;
 
 	/**
 	 * 게시글을 생성합니다. 게시글 내용과 첨부 이미지를 저장합니다.
@@ -71,11 +84,21 @@ public class PostService {
 	 */
 	@Transactional
 	public PostCreateResult create(PostCreateCommand command) {
+		return create(command, false);
+	}
+
+	@Transactional
+	public PostCreateResult createSystemNotice(PostCreateCommand command) {
+		return create(command, true);
+	}
+
+	private PostCreateResult create(PostCreateCommand command, boolean systemNoticeApi) {
 		User writer = command.writer();
 
 		Board board = boardReader.getById(command.boardId());
 		BoardConfig boardConfig = boardConfigReader.getByBoardId(command.boardId());
 		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(command.boardId());
+		validateSystemNoticeCudAccess(boardConfig, systemNoticeApi);
 
 		PostValidator.validateCreate(writer, board, boardConfig, boardAdminIds, command.isAnonymous());
 
@@ -105,11 +128,21 @@ public class PostService {
 
 	@Transactional
 	public void deletePost(User deleter, String postId) {
+		deletePost(deleter, postId, false);
+	}
+
+	@Transactional
+	public void deleteSystemNotice(User deleter, String postId) {
+		deletePost(deleter, postId, true);
+	}
+
+	private void deletePost(User deleter, String postId, boolean systemNoticeApi) {
 		CommunityPermissionPolicy.validateActiveUser(deleter);
 		Post post = postReader.findById(postId);
 		String boardId = post.getBoard().getId();
 		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(boardId);
 		BoardConfig boardConfig = boardConfigReader.getByBoardId(boardId);
+		validateSystemNoticeCudAccess(boardConfig, systemNoticeApi);
 		validateBlockedWriterAccess(deleter, post, boardAdminIds);
 		if (Boolean.TRUE.equals(post.getIsDeleted())) {
 			if (!CommunityPermissionPolicy.canDeletePostIgnoringTargetDeletion(
@@ -136,10 +169,20 @@ public class PostService {
 	 */
 	@Transactional
 	public PostUpdateResult update(PostUpdateCommand command) {
+		return update(command, false);
+	}
+
+	@Transactional
+	public PostUpdateResult updateSystemNotice(PostUpdateCommand command) {
+		return update(command, true);
+	}
+
+	private PostUpdateResult update(PostUpdateCommand command, boolean systemNoticeApi) {
 		User updater = command.updater();
 		Post post = postReader.findByIdAndNotDeleted(command.postId());
 		BoardConfig boardConfig = boardConfigReader.getByBoardId(post.getBoard().getId());
 		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(post.getBoard().getId());
+		validateSystemNoticeCudAccess(boardConfig, systemNoticeApi);
 
 		PostValidator.validateUpdate(updater, post, boardAdminIds, boardConfig, command.isAnonymous());
 
@@ -148,8 +191,12 @@ public class PostService {
 			post, command.newImageFiles(), command.imageMetas());
 
 		// 게시글 업데이트
-		Post updatedPost = postWriter.updateContentAndImages(
-			post, command.content(), command.isAnonymous(), imageResult.finalImages());
+		Post updatedPost = postWriter.update(
+			post,
+			command.title(),
+			command.content(),
+			command.isAnonymous(),
+			imageResult.finalImages());
 
 		List<String> imageUrls = imageResult.finalImages().stream()
 			.map(img -> img.getUuidFile().getFileUrl())
@@ -163,6 +210,12 @@ public class PostService {
 		return result;
 	}
 
+	private void validateSystemNoticeCudAccess(BoardConfig boardConfig, boolean systemNoticeApi) {
+		if (boardConfig.isSystemNotice() && !systemNoticeApi) {
+			throw PostErrorCode.POST_SYSTEM_NOTICE_CUD_ONLY_VIA_DEDICATED_API.toBaseException();
+		}
+	}
+
 	/**
 	 * 게시글 목록을 커서 기반으로 조회합니다.
 	 * <br> 게시판 ID 목록이 지정된 경우 해당 게시판들에서, 지정되지 않은 경우 사용자가 접근 가능한 모든 게시판에서 게시글을 조회합니다.
@@ -173,9 +226,11 @@ public class PostService {
 		User viewer = query.viewer();
 		CommunityPermissionPolicy.validateActiveUser(viewer);
 		List<String> requestedBoardIds = query.boardIds();
+		BoardGroup boardGroup = query.boardGroup();
 		String cursor = query.cursor();
 		int size = query.size() != null ? query.size() : StaticValue.DEFAULT_POST_PAGE_SIZE; // 기본값 20
 		String keyword = query.keyword();
+		PostCategory category = query.category();
 
 		// 커서 파싱
 		PostCursorManager.ParsedCursor parsedCursor = PostCursorManager.parseCursor(cursor);
@@ -194,6 +249,17 @@ public class PostService {
 
 			boardIds = requestedBoardIds;
 		}
+		// 게시판 ID가 없고, 그룹만 지정된 경우
+		else if (boardGroup != null) {
+			boardIds = boardAccessManager.getReadableBoards(viewer, boardGroup).stream()
+				.map(Board::getId)
+				.toList();
+
+			// 권한이 없거나 게시판이 없는 경우, 빈 목록 반환
+			if (boardIds.isEmpty()) {
+				return PostListResult.of(List.of(), null);
+			}
+		}
 
 		// 뷰어가 차단한 사용자 조회
 		Set<String> blockedUserIds = userBlockReader.findBlockeeUserIdsByBlocker(viewer);
@@ -206,7 +272,8 @@ public class PostService {
 			parsedCursor.createdAt(),
 			parsedCursor.postId(),
 			size,
-			keyword);
+			keyword,
+			category);
 
 		// Slice에서 content와 hasNext 추출
 		List<PostCursorResult> posts = slice.getContent();
@@ -236,17 +303,17 @@ public class PostService {
 		Map<String, BoardConfig> boardConfigMap = boardConfigReader.getBoardConfigMapByBoardIds(uniqueBoardIds);
 		Map<String, Set<String>> boardAdminIdMap = boardConfigReader.getAdminIdSetMapByBoardIds(uniqueBoardIds);
 
-		// 작성자 중 Role이 ADMIN인 사용자 ID 조회 (시스템 관리자 판별용)
+		// 작성자 중 Role이 SYSTEM_ADMIN인 사용자 ID 조회 (시스템 관리자 판별용)
 		List<String> writerIds = posts.stream()
 			.map(PostCursorResult::writerId)
 			.filter(Objects::nonNull)
 			.distinct()
 			.toList();
-		Set<String> adminWriterIds = postReader.findAdminUserIds(writerIds);
+		Set<String> systemAdminWriterIds = postReader.findSystemAdminUserIds(writerIds);
 
 		// PostListResult로 변환 (PostMapper 사용)
 		List<PostListResult.PostItem> postItems = buildPostItems(posts, postImagesMap, likedPostIds, viewer,
-			boardConfigMap, boardAdminIdMap, adminWriterIds);
+			boardConfigMap, boardAdminIdMap, systemAdminWriterIds);
 
 		return PostListResult.of(postItems, nextCursor);
 	}
@@ -254,9 +321,13 @@ public class PostService {
 	/**
 	 * 게시글 단건 조회. 게시글 내용, 첨부 이미지 URL 목록, 좋아요/댓글 개수, 사용자의 좋아요 여부, 수정/삭제 가능 여부 등을 포함합니다.
 	 * @param query 조회 조건 (게시글 ID, 조회 요청 사용자)
+	 * @param request  HTTP 요청 객체 (쿠키 검증용)
+	 * @param response HTTP 응답 객체 (쿠키 발급용)
 	 * @return 게시글 상세 정보 (게시글 ID, 내용, 첨부 이미지 URL 목록, 좋아요/댓글 개수, 사용자의 좋아요 여부, 수정/삭제 가능 여부 등)
 	 */
-	public PostDetailResult getPostDetail(PostDetailQuery query) {
+	@Transactional
+	public PostDetailResult getPostDetail(PostDetailQuery query, HttpServletRequest request,
+		HttpServletResponse response) {
 		User viewer = query.viewer();
 		String postId = query.postId();
 
@@ -274,8 +345,22 @@ public class PostService {
 		// 차단한 사용자가 작성한 게시글은 조회 불가
 		validateBlockedWriterAccess(viewer, post, boardAdminIds);
 
+		// 쿠키 확인 및 Redis 원자적 예약 시도 (동시 연타 방어)
+		boolean hasCookie = viewCountManager.hasViewedCookie(request, postId);
+		final ViewCountManager.ViewReservation reservation = hasCookie ? null
+			: viewCountManager.reserve(viewer.getId(), postId);
+
+		// 예약을 성공한 요청만 조회수 증가, 엔티티 재조회 및 트랜잭션 동기화 처리
+		if (reservation != null && reservation.acquired()) {
+			postWriter.incrementViewCount(postId);
+			post = postReader.findByIdAndNotDeleted(postId);
+
+			registerViewSync(response, postId, reservation);
+		}
+
 		// 게시글 이미지 조회
 		List<String> imageUrls = postReader.findPostImages(postId);
+		CrawledPostDetail crawledPostDetail = getCrawledPostDetail(post);
 
 		// 좋아요, 댓글 개수 조회
 		Long numComment = postReader.countComments(postId);
@@ -288,13 +373,17 @@ public class PostService {
 		boolean isOwner = post.getWriter().getId().equals(viewer.getId());
 
 		// 수정/삭제 가능 여부 (공통 정책에서 목록 응답과 같은 기준으로 계산)
-		boolean updatable = CommunityPermissionPolicy.canUpdatePost(viewer, post, boardConfig, boardAdminIds);
-		boolean deletable = CommunityPermissionPolicy.canDeletePost(viewer, post, boardConfig, boardAdminIds);
+		boolean updatable = !boardConfig.isSystemNotice()
+			&& CommunityPermissionPolicy.canUpdatePost(viewer, post, boardConfig, boardAdminIds);
+		boolean deletable = !boardConfig.isSystemNotice()
+			&& CommunityPermissionPolicy.canDeletePost(viewer, post, boardConfig, boardAdminIds);
 
 		// 닉네임 마스킹 및 공식 배지 여부 판단
 		boolean isNotice = boardConfig.isNotice() || post.getIsCrawled();
-		boolean isAdmin = post.getWriter() != null && post.getWriter().getRoles().contains(Role.ADMIN);
-		boolean isOfficial = isNotice || (isAdmin && !post.getIsAnonymous());
+		boolean isSystemAdminWriter = post.getWriter() != null
+			&& post.getWriter().getRoles().contains(Role.SYSTEM_ADMIN);
+		boolean isBoardAdminWriter = post.getWriter() != null && boardAdminIds.contains(post.getWriter().getId());
+		boolean isOfficial = isNotice || ((isSystemAdminWriter || isBoardAdminWriter) && !post.getIsAnonymous());
 
 		// 공식 프로필 정보 조회
 		String officialNickname = boardConfig.getOfficialNickname();
@@ -316,6 +405,8 @@ public class PostService {
 			post,
 			writerProfileImage,
 			imageUrls,
+			crawledPostDetail.attachments(),
+			crawledPostDetail.originalNoticeUrl(),
 			numComment,
 			numLike,
 			isPostLike,
@@ -326,6 +417,26 @@ public class PostService {
 			isOfficial,
 			officialNickname,
 			officialImageUrl);
+	}
+
+	private CrawledPostDetail getCrawledPostDetail(Post post) {
+		if (!Boolean.TRUE.equals(post.getIsCrawled())) {
+			return CrawledPostDetail.empty();
+		}
+
+		return crawledNoticeReader.findByPostId(post.getId())
+			.map(notice -> new CrawledPostDetail(
+				notice.getCrawledFileLinks().stream()
+					.map(fileLink -> new CrawledAttachmentResult(fileLink.getFileName(), fileLink.getFileLink()))
+					.toList(),
+				notice.getLink()))
+			.orElseGet(CrawledPostDetail::empty);
+	}
+
+	private record CrawledPostDetail(List<CrawledAttachmentResult> attachments, String originalNoticeUrl) {
+		private static CrawledPostDetail empty() {
+			return new CrawledPostDetail(List.of(), null);
+		}
 	}
 
 	/**
@@ -419,16 +530,16 @@ public class PostService {
 		Map<String, BoardConfig> boardConfigMap = boardConfigReader.getBoardConfigMapByBoardIds(uniqueBoardIds);
 		Map<String, Set<String>> boardAdminIdMap = boardConfigReader.getAdminIdSetMapByBoardIds(uniqueBoardIds);
 
-		// 작성자 중 Role이 ADMIN인 사용자 ID 조회 (시스템 관리자 판별용)
+		// 작성자 중 Role이 SYSTEM_ADMIN인 사용자 ID 조회 (시스템 관리자 판별용)
 		List<String> writerIds = posts.stream()
 			.map(PostCursorResult::writerId)
 			.filter(Objects::nonNull)
 			.distinct()
 			.toList();
-		Set<String> adminWriterIds = postReader.findAdminUserIds(writerIds);
+		Set<String> systemAdminUserIds = postReader.findSystemAdminUserIds(writerIds);
 
 		List<PostListResult.PostItem> postItems = buildPostItems(posts, postImagesMap, likedPostIds, viewer,
-			boardConfigMap, boardAdminIdMap, adminWriterIds);
+			boardConfigMap, boardAdminIdMap, systemAdminUserIds);
 
 		String nextCursor = null;
 		if (slice.hasNext()) {
@@ -448,6 +559,8 @@ public class PostService {
 	 * @param likedPostIds   viewer가 좋아요한 게시글 ID 집합
 	 * @param viewer         조회 요청 사용자
 	 * @param boardConfigMap 게시판 ID → BoardConfig맵
+	 * @param boardAdminIdMap 게시판 ID → 게시판 관리자 ID 맵
+	 * @param systemAdminWriterIds SYSTEM_ADMIN 권한을 가진 작성자ID 집합
 	 * @return PostItem 리스트
 	 */
 	private List<PostListResult.PostItem> buildPostItems(
@@ -457,7 +570,7 @@ public class PostService {
 		User viewer,
 		Map<String, BoardConfig> boardConfigMap,
 		Map<String, Set<String>> boardAdminIdMap,
-		Set<String> adminWriterIds) {
+		Set<String> systemAdminWriterIds) {
 
 		return posts.stream()
 			.map(result -> {
@@ -465,18 +578,20 @@ public class PostService {
 				boolean isPostLike = likedPostIds.contains(result.postId());
 				boolean isOwner = result.writerId() != null && result.writerId().equals(viewer.getId());
 				Set<String> boardAdminIds = boardAdminIdMap.getOrDefault(result.boardId(), Set.of());
-				boolean updatable = !result.isDeleted()
+				BoardConfig boardConfig = boardConfigMap.get(result.boardId());
+				boolean isSystemNotice = boardConfig != null && boardConfig.isSystemNotice();
+				boolean updatable = !isSystemNotice && !result.isDeleted()
 					&& CommunityPermissionPolicy.canUpdateReadableContent(viewer, result.writerId());
-				boolean deletable = !result.isDeleted()
+				boolean deletable = !isSystemNotice && !result.isDeleted()
 					&& CommunityPermissionPolicy.canDeleteReadableContent(
 						viewer, result.writerId(), boardAdminIds);
 
-				BoardConfig boardConfig = boardConfigMap.get(result.boardId());
-
 				// 마스킹 및 공식배지 판단
 				boolean isNotice = (boardConfig != null && boardConfig.isNotice()) || result.isCrawled();
-				boolean isAdmin = result.writerId() != null && adminWriterIds.contains(result.writerId());
-				boolean isOfficial = isNotice || (isAdmin && !result.isAnonymous());
+				boolean isSystemAdminWriter = result.writerId() != null
+					&& systemAdminWriterIds.contains(result.writerId());
+				boolean isBoardAdminWriter = result.writerId() != null && boardAdminIds.contains(result.writerId());
+				boolean isOfficial = isNotice || ((isSystemAdminWriter || isBoardAdminWriter) && !result.isAnonymous());
 
 				String officialNickname = boardConfig != null ? boardConfig.getOfficialNickname() : null;
 				String officialImageUrl = null;
@@ -504,5 +619,29 @@ public class PostService {
 		if (userBlockReader.existsByBlockerAndBlocked(viewer, writer)) {
 			throw PostErrorCode.BLOCKED_USER_CONTENT.toBaseException();
 		}
+	}
+
+	private void registerViewSync(HttpServletResponse response, String postId,
+		ViewCountManager.ViewReservation reservation) {
+		if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+			// 단위 테스트 환경 등 트랜잭션이 활성화되지 않은 경우 즉시 쿠키 발급
+			viewCountManager.markViewed(response, postId);
+			return;
+		}
+
+		TransactionSynchronizationManager.registerSynchronization(
+			new TransactionSynchronization() {
+				@Override
+				public void afterCommit() {
+					viewCountManager.markViewed(response, postId);
+				}
+
+				@Override
+				public void afterCompletion(int status) {
+					if (status != STATUS_COMMITTED) {
+						viewCountManager.release(reservation);
+					}
+				}
+			});
 	}
 }

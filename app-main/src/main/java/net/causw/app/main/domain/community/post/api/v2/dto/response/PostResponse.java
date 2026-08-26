@@ -10,6 +10,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public record PostResponse(
 	@Schema(description = "게시글 id", example = "uuid 형식의 String 값입니다.") String id,
 
+	@Schema(description = "게시글 제목", example = "학생회 공지사항") String title,
+
 	@Schema(description = "게시글 내용", example = "안녕하세요. 학생회입니다. 공지사항입니다.") String content,
 
 	@Schema(description = "게시글 삭제여부", example = "false") Boolean isDeleted,
@@ -20,9 +22,15 @@ public record PostResponse(
 
 	@Schema(description = "첨부파일", example = "첨부파일 url 작성") List<String> fileUrlList,
 
+	@Schema(description = "크롤링 원본 첨부파일 목록. 일반 게시글은 빈 배열") List<CrawledAttachmentResponse> crawledAttachments,
+
+	@Schema(description = "크롤링 원본 공지 URL. 일반 게시글 또는 연결 정보가 없으면 null") String originalNoticeUrl,
+
 	@Schema(description = "답글 개수", example = "13") Long numComment,
 
 	@Schema(description = "게시글 좋아요 개수", example = "10") Long numLike,
+
+	@Schema(description = "조회수", example = "125") Long viewCount,
 
 	@Schema(description = "게시글에 연결된 투표 ID (투표가 없으면 null)", example = "uuid 형식의 String 값") String voteId,
 

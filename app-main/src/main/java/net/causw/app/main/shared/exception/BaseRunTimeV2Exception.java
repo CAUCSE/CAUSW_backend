@@ -11,4 +11,9 @@ public class BaseRunTimeV2Exception extends RuntimeException {
 		super(errorCode.getMessage());
 		this.errorCode = errorCode;
 	}
+
+	public BaseRunTimeV2Exception(BaseResponseCode errorCode, String message, Throwable cause) {
+		super(message, cause);
+		this.errorCode = errorCode;
+	}
 }

@@ -3,6 +3,7 @@ package net.causw.app.main.domain.community.post.service.dto;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import net.causw.app.main.domain.community.post.enums.PostCategory;
 import net.causw.app.main.shared.dto.ProfileImageDto;
 
 public record PostListResult(
@@ -15,9 +16,11 @@ public record PostListResult(
 
 	public record PostItem(
 		String postId,
+		String title,
 		String content,
 		long numComment,
 		long numLike,
+		long viewCount,
 		boolean isAnonymous,
 		String voteId, // 투표 ID (투표가 없으면 null)
 		boolean isDeleted,
@@ -29,6 +32,7 @@ public record PostListResult(
 		List<String> postImageUrls,
 		String boardId,
 		String boardName,
+		PostCategory category,
 		boolean isPostLike,
 		boolean isOwner,
 		boolean updatable,
@@ -36,9 +40,11 @@ public record PostListResult(
 		boolean isOfficial) {
 		public static PostItem of(
 			String postId,
+			String title,
 			String content,
 			long numComment,
 			long numLike,
+			long viewCount,
 			boolean isAnonymous,
 			String voteId,
 			boolean isDeleted,
@@ -50,17 +56,19 @@ public record PostListResult(
 			List<String> postImageUrls,
 			String boardId,
 			String boardName,
+			PostCategory category,
 			boolean isPostLike,
 			boolean isOwner,
 			boolean updatable,
 			boolean deletable,
 			boolean isOfficial) {
 			return new PostItem(
-				postId, content, numComment, numLike,
-				isAnonymous, voteId, isDeleted, isCrawled,
+				postId, title, content, numComment, numLike,
+				viewCount, isAnonymous, voteId, isDeleted, isCrawled,
 				writerNickname, writerProfileImage,
 				createdAt, updatedAt, postImageUrls,
-				boardId, boardName, isPostLike, isOwner, updatable, deletable, isOfficial);
+				boardId, boardName, category,
+				isPostLike, isOwner, updatable, deletable, isOfficial);
 		}
 	}
 }

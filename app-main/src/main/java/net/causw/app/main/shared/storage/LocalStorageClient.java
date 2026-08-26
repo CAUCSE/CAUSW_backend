@@ -5,7 +5,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
@@ -14,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import net.causw.app.main.core.aop.annotation.MeasureTime;
 import net.causw.app.main.shared.storage.dto.FileMetadata;
+import net.causw.app.main.shared.storage.dto.PresignedUploadResult;
 import net.causw.app.main.shared.storage.dto.StorageResult;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.exception.ErrorCode;
@@ -88,5 +92,42 @@ public class LocalStorageClient implements StorageClient {
 				ErrorCode.FILE_DELETE_FAIL,
 				MessageUtil.FILE_DELETE_FAIL + e.getMessage());
 		}
+	}
+
+	@Override
+	public List<String> deleteAll(List<String> fileKeys) {
+		List<String> succeededKeys = new ArrayList<>();
+		for (String fileKey : fileKeys) {
+			try {
+				delete(fileKey);
+				succeededKeys.add(fileKey);
+			} catch (Exception e) {
+				log.warn("로컬 파일 삭제 실패. FileKey: {}", fileKey, e);
+			}
+		}
+		return succeededKeys;
+	}
+
+	@Override
+	public PresignedUploadResult generatePresignedUploadUrl(FileMetadata metadata, Duration expiry) {
+		String fileKey = metadata.fileKey();
+		Path filePath = Paths.get(baseDirectory, fileKey);
+
+		try {
+			Files.createDirectories(filePath.getParent());
+			if (!Files.exists(filePath)) {
+				Files.createFile(filePath);
+			}
+		} catch (IOException e) {
+			log.warn("로컬 Presigned 스텁 파일 생성 실패. FileKey: {}", fileKey, e);
+		}
+
+		String fileUrl = "file://" + filePath.toAbsolutePath();
+		return PresignedUploadResult.of("local://presigned-stub", fileUrl, Instant.now().plus(expiry));
+	}
+
+	@Override
+	public boolean exists(String fileKey) {
+		return Files.isRegularFile(Paths.get(baseDirectory, fileKey));
 	}
 }

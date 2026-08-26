@@ -72,7 +72,9 @@ public record CommentAuthorInfo(
 		if (isInactiveUser) {
 			displayWriterNickname = StaticValue.INACTIVE_USER_NICKNAME;
 		} else if (Boolean.TRUE.equals(isAnonymous)) {
-			displayWriterNickname = StaticValue.ANONYMOUS_USER_NICKNAME;
+			displayWriterNickname = comment.getAnonymousNickname() != null
+				? comment.getAnonymousNickname()
+				: StaticValue.ANONYMOUS_USER_NICKNAME;
 		} else {
 			displayWriterNickname = writer != null ? writer.getNickname() : null;
 		}

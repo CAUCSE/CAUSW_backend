@@ -9,6 +9,7 @@ import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.PostAttachImage;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.form.entity.Form;
+import net.causw.app.main.domain.community.post.enums.PostCategory;
 import net.causw.app.main.domain.community.vote.entity.Vote;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.entity.BaseEntity;
@@ -16,6 +17,8 @@ import net.causw.app.main.shared.entity.BaseEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
@@ -42,7 +45,7 @@ import lombok.NoArgsConstructor;
 	@Index(name = "post_cursor_index", columnList = "created_at, id")
 })
 public class Post extends BaseEntity {
-	@Deprecated
+
 	@Column(name = "title", nullable = true)
 	private String title;
 
@@ -76,6 +79,10 @@ public class Post extends BaseEntity {
 	@Builder.Default
 	private Boolean isCrawled = false;
 
+	@Column(name = "category")
+	@Enumerated(EnumType.STRING)
+	private PostCategory category;
+
 	@ManyToOne(targetEntity = Board.class)
 	@JoinColumn(name = "board_id", nullable = false)
 	private Board board;
@@ -87,6 +94,11 @@ public class Post extends BaseEntity {
 	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
 	@JoinColumn(name = "vote_id", unique = true)
 	private Vote vote;
+
+	@Column(name = "view_count", nullable = false)
+	@ColumnDefault("0")
+	@Builder.Default
+	private Long viewCount = 0L;
 
 	public static Post of(
 		String title,
@@ -150,10 +162,10 @@ public class Post extends BaseEntity {
 		return post;
 	}
 
-	public void update(String title, String content, Form form, List<PostAttachImage> postAttachImageList) {
-		this.title = title;
+	public void update(String title, String content, Boolean isAnonymous, List<PostAttachImage> postAttachImageList) {
+		this.title = title != null ? title : this.title;
 		this.content = content;
-		this.form = form;
+		this.isAnonymous = (isAnonymous != null) ? isAnonymous : this.isAnonymous;
 		this.postAttachImageList.clear();
 		this.postAttachImageList.addAll(postAttachImageList);
 	}
@@ -183,5 +195,9 @@ public class Post extends BaseEntity {
 
 	public void setCrawled() {
 		this.isCrawled = true;
+	}
+
+	public void increaseViewCount() {
+		this.viewCount++;
 	}
 }

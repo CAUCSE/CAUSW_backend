@@ -1,0 +1,129 @@
+package net.causw.app.main.domain.integration.crawled.crawler.implementation;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import net.causw.app.main.domain.integration.crawled.SiteConfigFixture;
+import net.causw.app.main.domain.integration.crawled.client.CrawlHttpClient;
+import net.causw.app.main.domain.integration.crawled.core.CrawlContext;
+import net.causw.app.main.domain.integration.crawled.dto.ArticleUrl;
+import net.causw.app.main.domain.integration.crawled.dto.RawArticle;
+
+@ExtendWith(MockitoExtension.class)
+@DisplayName("CauSwNoticeCrawler 테스트")
+class CauSwNoticeCrawlerTest {
+	private static final ZoneId KOREA_ZONE_ID = ZoneId.of("Asia/Seoul");
+	private static final DateTimeFormatter LIST_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd");
+
+	@InjectMocks
+	private CauSwNoticeCrawler crawler;
+
+	@Mock
+	private CrawlHttpClient crawlHttpClient;
+	private final CrawlContext context = new CrawlContext(SiteConfigFixture.cauSwNotice());
+
+	@Nested
+	@DisplayName("목록 수집")
+	class FetchList {
+		@Test
+		@DisplayName("빈 목록은 빈 결과로 반환한다")
+		void shouldReturnEmptyList_whenListIsEmpty() {
+			// given
+			given(crawlHttpClient.fetch(any(), any())).willReturn("<table><tbody></tbody></table>");
+
+			// when
+			List<ArticleUrl> result = crawler.fetchList(context);
+
+			// then
+			assertThat(result).isEmpty();
+		}
+
+		@Test
+		@DisplayName("공지 URL의 code와 uid를 외부 식별자로 사용한다")
+		void shouldUseCodeAndUidAsExternalId_whenNoticeUrlIsFetched() {
+			// given
+			given(crawlHttpClient.fetch(any(), any())).willReturn(
+				noticeRows(noticeRow(3433, LocalDate.now(KOREA_ZONE_ID))));
+
+			// when
+			List<ArticleUrl> result = crawler.fetchList(context);
+
+			// then
+			assertThat(result).containsExactly(new ArticleUrl(
+				"https://cse.cau.ac.kr/sub05/sub0501.php?nmode=view&code=oktomato_bbs05&uid=3433",
+				"oktomato_bbs05:3433", "학사"));
+		}
+
+		@Test
+		@DisplayName("최대 스캔 범위 밖의 공지는 목록 수집에서 제외한다")
+		void shouldExcludeNoticesOutsideMaxScanRange_whenListIsFetched() {
+			// given
+			LocalDate today = LocalDate.now(KOREA_ZONE_ID);
+			given(crawlHttpClient.fetch(any(), any())).willReturn(noticeRows(
+				noticeRow(3433, today.minusDays(3)),
+				noticeRow(3432, today.minusDays(4))));
+
+			// when
+			List<ArticleUrl> result = crawler.fetchList(context);
+
+			// then
+			assertThat(result).extracting(ArticleUrl::externalId).containsExactly("oktomato_bbs05:3433");
+		}
+	}
+
+	@Nested
+	@DisplayName("상세 수집")
+	class FetchArticle {
+		@Test
+		@DisplayName("상세 HTML을 요청하고 공지 필드와 첨부파일을 파싱한다")
+		void shouldParseNoticeFields() {
+			// given
+			ArticleUrl articleUrl = new ArticleUrl(
+				"https://cse.cau.ac.kr/notice?code=oktomato_bbs05&uid=10", "oktomato_bbs05:10", "NEW 공지");
+			String html = """
+				<section id='content'>
+				<div class='header'><h3>제목</h3><div>
+				<span>2026-08-10</span><span>라벨</span><span>관리자</span><span>라벨2</span>
+				</div></div>
+				<div class='fr-view'><p>본문</p><a href='/download.php?id=1'>자료.pdf</a></div>
+				</section>
+				""";
+			given(crawlHttpClient.fetch(articleUrl.url(), context.siteConfig())).willReturn(html);
+
+			// when
+			RawArticle result = crawler.fetchArticle(context, articleUrl);
+
+			// then
+			assertThat(result.title()).isEqualTo("제목");
+			assertThat(result.author()).isEqualTo("관리자");
+			assertThat(result.category()).isEqualTo("공지");
+			assertThat(result.attachments()).hasSize(1);
+		}
+	}
+
+	private String noticeRows(String... rows) {
+		return "<table class='table-basic'><tbody>" + String.join("", rows) + "</tbody></table>";
+	}
+
+	private String noticeRow(int uid, LocalDate announceDate) {
+		return """
+			<tr><td><span class='tag'>학사</span></td><td class='pc-only'></td>
+			<td class='aleft'><a href='/sub05/sub0501.php?nmode=view&code=oktomato_bbs05&uid=%d'>공지</a></td>
+			<td class='pc-only'>학부사무실</td><td class='pc-only'>%s</td><td class='pc-only'>1</td></tr>
+			""".formatted(uid, announceDate.format(LIST_DATE_FORMATTER));
+	}
+}

@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.causw.app.main.core.aop.annotation.RequireAdminRole;
+import net.causw.app.main.core.aop.enums.AdminTarget;
 import net.causw.app.main.domain.community.report.api.v2.dto.request.ReportedUserListRequest;
 import net.causw.app.main.domain.community.report.api.v2.dto.response.ReportedCommentSummaryResponse;
 import net.causw.app.main.domain.community.report.api.v2.dto.response.ReportedPostSummaryResponse;
@@ -26,7 +28,8 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/admin/reports")
-@PreAuthorize("@security.hasRole(@Role.ADMIN)")
+@PreAuthorize("@security.hasRole(@Role.ADMIN) or @security.hasRole(@Role.SYSTEM_ADMIN)")
+@RequireAdminRole(target = AdminTarget.ALL_ADMIN)
 @Tag(name = "Report Admin v2", description = "관리자 신고 관리 API")
 public class ReportAdminController {
 

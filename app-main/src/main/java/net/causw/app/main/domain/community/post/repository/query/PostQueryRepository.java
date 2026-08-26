@@ -24,6 +24,7 @@ import net.causw.app.main.domain.community.board.entity.QBoardAdmin;
 import net.causw.app.main.domain.community.board.entity.QBoardConfig;
 import net.causw.app.main.domain.community.comment.entity.QComment;
 import net.causw.app.main.domain.community.post.entity.QPost;
+import net.causw.app.main.domain.community.post.enums.PostCategory;
 import net.causw.app.main.domain.community.reaction.entity.QLikePost;
 import net.causw.app.main.domain.user.account.entity.user.QUser;
 import net.causw.app.main.domain.user.account.enums.user.Role;
@@ -100,7 +101,8 @@ public class PostQueryRepository {
 		String cursorCreatedAt,
 		String cursorId,
 		int size,
-		String keyword) {
+		String keyword,
+		PostCategory category) {
 		// 빈 리스트가 전달된 경우 "조회 가능한 게시판이 한 개도 없음"을 의미하므로 즉시 빈 결과 반환.
 		// (null은 docstring 계약상 "전체 게시판"이므로 별도 처리하지 않음)
 		if (hasEmptyBoardFilter(boardIds)) {
@@ -120,6 +122,7 @@ public class PostQueryRepository {
 		BooleanExpression[] conditions = new BooleanExpression[] {
 			boardCondition,
 			containsKeywordInContent(post, keyword),
+			category != null ? post.category.eq(category) : NO_CONDITION,
 			cursorCondition
 		};
 
@@ -449,15 +452,17 @@ public class PostQueryRepository {
 			.where(upi.user.id.eq(post.writer.id));
 
 		return new QPostCursorResult(
-			post.id, post.content,
+			post.id, post.title, post.content,
 			totalCommentCount, likeCount,
+			post.viewCount,
 			post.isAnonymous, post.vote.id, post.isDeleted,
 			post.isCrawled,
 			writer.isNotNull(), writer.id, writer.name, writer.nickname, writer.admissionYear, writer.state,
 			writer.profileImageType,
 			writerProfileImageUrl,
 			post.createdAt, post.updatedAt,
-			post.board.id, post.board.name);
+			post.board.id, post.board.name,
+			post.category);
 	}
 
 	/**
@@ -506,24 +511,24 @@ public class PostQueryRepository {
 	}
 
 	/**
-	 * 주어진 사용자 ID 목록 중 최고 관리자(ADMIN) 권한을 가진 사용자 ID를 조회합니다.
+	 * 주어진 사용자 ID 목록 중 시스템 관리자(SYSTEM_ADMIN) 권한을 가진 사용자 ID를 조회합니다.
 	 * @param userIds 확인할 사용자 ID 목록
-	 * @return ADMIN 권한을 가진 사용자 ID Set
+	 * @return SYSTEM_ADMIN 권한을 가진 사용자 ID Set
 	 */
-	public Set<String> findAdminUserIds(List<String> userIds) {
+	public Set<String> findSystemAdminUserIds(List<String> userIds) {
 		if (userIds == null || userIds.isEmpty()) {
 			return Collections.emptySet();
 		}
 
 		QUser user = QUser.user;
 
-		List<String> adminIds = jpaQueryFactory.select(user.id)
+		List<String> systemAdminIds = jpaQueryFactory.select(user.id)
 			.from(user)
 			.where(
 				user.id.in(userIds),
-				user.roles.any().eq(Role.ADMIN))
+				user.roles.contains(Role.SYSTEM_ADMIN))
 			.fetch();
 
-		return new HashSet<>(adminIds);
+		return new HashSet<>(systemAdminIds);
 	}
 }

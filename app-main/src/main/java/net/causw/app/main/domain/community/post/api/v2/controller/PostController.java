@@ -39,6 +39,8 @@ import net.causw.app.main.shared.dto.ApiResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -92,7 +94,7 @@ public class PostController {
 
 	@GetMapping
 	@ResponseStatus(HttpStatus.OK)
-	@Operation(summary = "게시글 목록 조회", description = "게시글 목록을 커서 기반 페이징으로 조회합니다.")
+	@Operation(summary = "게시글 목록 조회", description = "게시글 목록을 커서 기반 페이징으로 조회합니다. boardGroup에는 필요한 탭에 맞춰 NOTICE(소식) / COMMUNITY(소통) 값을 입력해야합니다.")
 	public ApiResponse<PostListResponse> getPosts(
 		@ModelAttribute PostListCondition condition,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -139,9 +141,11 @@ public class PostController {
 	@Operation(summary = "게시글 단건 조회", description = "특정 게시글의 상세 정보를 조회합니다.")
 	public ApiResponse<PostResponse> getPost(
 		@PathVariable String postId,
+		HttpServletRequest request,
+		HttpServletResponse response,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		PostDetailQuery query = postDtoMapper.toDetailQuery(postId, userDetails.getUser());
-		PostDetailResult result = postService.getPostDetail(query);
+		PostDetailResult result = postService.getPostDetail(query, request, response);
 		return ApiResponse.success(postDtoMapper.toDetailResponse(result));
 	}
 

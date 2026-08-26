@@ -40,6 +40,7 @@ import net.causw.app.main.domain.user.account.service.implementation.AdmissionVa
 import net.causw.app.main.domain.user.account.service.implementation.AdmissionWriter;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
+import net.causw.app.main.shared.exception.errorcode.FileErrorCode;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 import net.causw.app.main.util.ObjectFixtures;
 
@@ -249,6 +250,165 @@ class AdmissionServiceTest {
 			verify(eventPublisher, never()).publishEvent(any());
 		}
 
+	}
+
+	/* =========================
+	 * createAdmission (presigned) 테스트
+	 * ========================= */
+	@Nested
+	@DisplayName("createAdmission (presigned) - presigned URL 기반 인증 신청 생성")
+	class CreateAdmissionPresigned {
+
+		@Test
+		@DisplayName("AWAIT 상태의 사용자가 유효한 UUID로 요청하면 인증 신청이 생성된다")
+		void givenAwaitUser_whenCreateAdmissionPresigned_thenSuccess() {
+			// given
+			User user = ObjectFixtures.getUserWithId("user-p1");
+			List<String> uuids = List.of("uuid-1", "uuid-2");
+			AdmissionCreateCommand command = new AdmissionCreateCommand(
+				"재학증명서 첨부합니다",
+				net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus.ENROLLED,
+				"20231234",
+				2023,
+				net.causw.app.main.domain.user.account.enums.user.Department.SCHOOL_OF_SW,
+				null,
+				uuids);
+			List<UuidFile> uuidFiles = List.of(ObjectFixtures.getUuidFile());
+			UserAdmission admission = ObjectFixtures.getUserAdmissionWithId("admission-p1", user);
+
+			when(fileWriter.confirmFiles(uuids, FilePath.USER_ADMISSION)).thenReturn(uuidFiles);
+			when(userWriter.updateStateToAwait(user)).thenReturn(user);
+			when(admissionWriter.create(
+				eq(user), eq(uuidFiles), eq(command.description()),
+				eq(command.requestedAcademicStatus()), eq(command.requestedStudentId()),
+				eq(command.requestedAdmissionYear()), eq(command.requestedDepartment()),
+				eq(command.graduationYear())))
+				.thenReturn(admission);
+
+			// when
+			AdmissionResult result = admissionService.createAdmission(user, command);
+
+			// then
+			assertThat(result).isNotNull();
+			assertThat(result.id()).isEqualTo("admission-p1");
+
+			verify(admissionValidator).validateAdmissionCreateWithUuids(
+				eq(user), eq(command.requestedStudentId()),
+				eq(command.requestedAcademicStatus()), eq(command.graduationYear()), eq(uuids));
+			verify(fileWriter).confirmFiles(uuids, FilePath.USER_ADMISSION);
+			verify(userWriter).updateStateToAwait(user);
+			verify(admissionWriter).create(
+				eq(user), eq(uuidFiles), eq(command.description()),
+				eq(command.requestedAcademicStatus()), eq(command.requestedStudentId()),
+				eq(command.requestedAdmissionYear()), eq(command.requestedDepartment()),
+				eq(command.graduationYear()));
+			verify(eventPublisher).publishEvent((Object)any());
+		}
+
+		@Test
+		@DisplayName("validator가 INVALID_USER_STATE_FOR_ADMISSION을 던지면 confirmFiles를 호출하지 않는다")
+		void givenInvalidUserState_whenCreateAdmissionPresigned_thenThrowsException() {
+			// given
+			User user = ObjectFixtures.getCertifiedUserWithId("user-p2");
+			List<String> uuids = List.of("uuid-1");
+			AdmissionCreateCommand command = new AdmissionCreateCommand(
+				"설명",
+				net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus.ENROLLED,
+				"20231234", 2023,
+				net.causw.app.main.domain.user.account.enums.user.Department.SCHOOL_OF_SW,
+				null, uuids);
+
+			doThrow(UserErrorCode.INVALID_USER_STATE_FOR_ADMISSION.toBaseException())
+				.when(admissionValidator)
+				.validateAdmissionCreateWithUuids(eq(user), anyString(), any(), any(), eq(uuids));
+
+			// when & then
+			assertThatThrownBy(() -> admissionService.createAdmission(user, command))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
+				.isEqualTo(UserErrorCode.INVALID_USER_STATE_FOR_ADMISSION);
+
+			verify(fileWriter, never()).confirmFiles(any(), any());
+			verify(admissionWriter, never()).create(any(), any(), any(), any(), any(), any(), any(), any());
+		}
+
+		@Test
+		@DisplayName("imageUuids가 null이면 validator가 ADMISSION_IMAGE_REQUIRED를 던진다")
+		void givenNullImageUuids_whenCreateAdmissionPresigned_thenThrowsException() {
+			// given
+			User user = ObjectFixtures.getUserWithId("user-p3");
+			AdmissionCreateCommand command = new AdmissionCreateCommand(
+				"설명",
+				net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus.ENROLLED,
+				"20231234", 2023,
+				net.causw.app.main.domain.user.account.enums.user.Department.SCHOOL_OF_SW,
+				null, null);
+
+			doThrow(UserErrorCode.ADMISSION_IMAGE_REQUIRED.toBaseException())
+				.when(admissionValidator)
+				.validateAdmissionCreateWithUuids(eq(user), anyString(), any(), any(), eq(null));
+
+			// when & then
+			assertThatThrownBy(() -> admissionService.createAdmission(user, command))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
+				.isEqualTo(UserErrorCode.ADMISSION_IMAGE_REQUIRED);
+
+			verify(fileWriter, never()).confirmFiles(any(), any());
+		}
+
+		@Test
+		@DisplayName("imageUuids가 빈 목록이면 validator가 ADMISSION_IMAGE_REQUIRED를 던진다")
+		void givenEmptyImageUuids_whenCreateAdmissionPresigned_thenThrowsException() {
+			// given
+			User user = ObjectFixtures.getUserWithId("user-p5");
+			List<String> uuids = List.of();
+			AdmissionCreateCommand command = new AdmissionCreateCommand(
+				"설명",
+				net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus.ENROLLED,
+				"20231234", 2023,
+				net.causw.app.main.domain.user.account.enums.user.Department.SCHOOL_OF_SW,
+				null, uuids);
+
+			doThrow(UserErrorCode.ADMISSION_IMAGE_REQUIRED.toBaseException())
+				.when(admissionValidator)
+				.validateAdmissionCreateWithUuids(eq(user), anyString(), any(), any(), eq(uuids));
+
+			// when & then
+			assertThatThrownBy(() -> admissionService.createAdmission(user, command))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
+				.isEqualTo(UserErrorCode.ADMISSION_IMAGE_REQUIRED);
+
+			verify(fileWriter, never()).confirmFiles(any(), any());
+			verify(admissionWriter, never()).create(any(), any(), any(), any(), any(), any(), any(), any());
+		}
+
+		@Test
+		@DisplayName("confirmFiles가 FILE_NOT_UPLOADED를 던지면 신청서를 생성하지 않는다")
+		void givenFileNotUploaded_whenCreateAdmissionPresigned_thenThrowsException() {
+			// given
+			User user = ObjectFixtures.getUserWithId("user-p4");
+			List<String> uuids = List.of("uuid-missing");
+			AdmissionCreateCommand command = new AdmissionCreateCommand(
+				"설명",
+				net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus.ENROLLED,
+				"20231234", 2023,
+				net.causw.app.main.domain.user.account.enums.user.Department.SCHOOL_OF_SW,
+				null, uuids);
+
+			when(fileWriter.confirmFiles(uuids, FilePath.USER_ADMISSION))
+				.thenThrow(FileErrorCode.FILE_NOT_UPLOADED.toBaseException());
+
+			// when & then
+			assertThatThrownBy(() -> admissionService.createAdmission(user, command))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.extracting(e -> ((BaseRunTimeV2Exception)e).getErrorCode())
+				.isEqualTo(FileErrorCode.FILE_NOT_UPLOADED);
+
+			verify(admissionWriter, never()).create(any(), any(), any(), any(), any(), any(), any(), any());
+			verify(eventPublisher, never()).publishEvent((Object)any());
+		}
 	}
 
 	/* =========================

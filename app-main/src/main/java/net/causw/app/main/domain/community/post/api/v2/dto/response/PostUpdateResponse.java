@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public record PostUpdateResponse(
 	@Schema(description = "게시글 id", example = "uuid 형식의 String 값입니다.") String id,
 
+	@Schema(description = "게시글 제목", example = "학생회 공지사항") String title,
+
 	@Schema(description = "게시글 내용", example = "수정된 게시글 내용입니다.") String content,
 
 	@Schema(description = "작성자 Id", example = "uuid-uuid") String writerId,

@@ -185,7 +185,7 @@ public class BatchSchedulerTest {
 	}
 
 	@Test
-	@DisplayName("만료 사물함 배치는 매일 03:30 크론으로 등록된다")
+	@DisplayName("만료 사물함 배치는 매일 03:40 크론으로 등록된다")
 	void scheduleReleaseExpiredLockers_isRegisteredWithCron() throws NoSuchMethodException {
 		// when
 		Scheduled scheduled = BatchScheduler.class
@@ -194,6 +194,6 @@ public class BatchSchedulerTest {
 
 		// then
 		assertThat(scheduled).isNotNull();
-		assertThat(scheduled.cron()).isEqualTo("0 30 3 * * ?");
+		assertThat(scheduled.cron()).isEqualTo("0 40 3 * * ?");
 	}
 }

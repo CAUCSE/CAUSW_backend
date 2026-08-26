@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.causw.app.main.core.aop.annotation.RequireAdminRole;
+import net.causw.app.main.core.aop.enums.AdminTarget;
 import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.request.LockerPolicyExtendPeriodRequest;
 import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.request.LockerPolicyExtendStatusRequest;
 import net.causw.app.main.domain.asset.locker.api.v2.controller.admin.dto.request.LockerPolicyRegisterPeriodRequest;
@@ -24,7 +26,8 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/admin/lockers/policy")
-@PreAuthorize("@security.hasRole(@Role.ADMIN)")
+@PreAuthorize("@security.hasRole(@Role.ADMIN) or @security.hasRole(@Role.SYSTEM_ADMIN)")
+@RequireAdminRole(target = AdminTarget.ENROLLED_ADMIN)
 @Tag(name = "LockerPolicy Admin v2", description = "관리자 사물함 정책 관리 API V2")
 public class LockerPolicyAdminController {
 

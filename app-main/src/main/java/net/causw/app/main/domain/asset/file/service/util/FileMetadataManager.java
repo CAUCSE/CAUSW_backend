@@ -25,6 +25,32 @@ import lombok.extern.slf4j.Slf4j;
 public final class FileMetadataManager {
 
 	/**
+	 * 파일명 문자열로부터 FileMetadata 생성 (Presigned URL 발급 시 사용)
+	 * contentType·fileSize는 클라이언트가 선언한 값을 그대로 사용합니다.
+	 *
+	 * @param fileName    원본 파일명 (확장자 포함)
+	 * @param filePath    파일 경로 타입
+	 * @param contentType 클라이언트 제공 MIME 타입
+	 * @param fileSize    클라이언트 제공 파일 크기 (bytes)
+	 * @return 파일 메타데이터
+	 */
+	public static FileMetadata createMetadataFromFileName(
+		@NotBlank String fileName,
+		@NotNull FilePath filePath,
+		@NotBlank String contentType,
+		long fileSize) {
+		String uuid = generateUuid();
+		String rawFileName = extractRawFileName(fileName);
+		String extension = extractExtension(fileName);
+		String fileKey = buildFileKey(uuid, rawFileName, extension, filePath);
+
+		log.debug("Created file metadata from name. UUID: {}, FileName: {}, Extension: {}, FileKey: {}",
+			uuid, rawFileName, extension, fileKey);
+
+		return FileMetadata.of(uuid, rawFileName, extension, fileName, filePath, fileKey, contentType, fileSize);
+	}
+
+	/**
 	 * MultipartFile로부터 FileMetadata 생성
 	 *
 	 * @param file     업로드된 파일
@@ -37,6 +63,9 @@ public final class FileMetadataManager {
 		String rawFileName = extractRawFileName(originalFileName);
 		String extension = extractExtension(originalFileName);
 		String fileKey = buildFileKey(uuid, rawFileName, extension, filePath);
+		String contentType = file.getContentType() != null
+			? file.getContentType()
+			: "application/octet-stream";
 
 		log.debug("Created file metadata. UUID: {}, FileName: {}, Extension: {}, FileKey: {}",
 			uuid, rawFileName, extension, fileKey);
@@ -47,7 +76,9 @@ public final class FileMetadataManager {
 			extension,
 			originalFileName,
 			filePath,
-			fileKey);
+			fileKey,
+			contentType,
+			file.getSize());
 	}
 
 	/**

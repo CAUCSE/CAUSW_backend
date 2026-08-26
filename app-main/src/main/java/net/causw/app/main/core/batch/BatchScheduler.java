@@ -2,11 +2,15 @@ package net.causw.app.main.core.batch;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Slice;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import net.causw.app.main.domain.asset.file.entity.UuidFile;
+import net.causw.app.main.domain.asset.file.service.implementation.FileReader;
+import net.causw.app.main.domain.asset.file.service.implementation.FileWriter;
 import net.causw.app.main.domain.asset.locker.service.LockerExpirationService;
 import net.causw.app.main.domain.asset.locker.service.dto.result.LockerExpirationResult;
 import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyWriter;
@@ -20,6 +24,7 @@ import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 import net.causw.app.main.shared.pageable.PageableFactory;
+import net.causw.app.main.shared.storage.StorageClient;
 import net.causw.global.constant.MessageUtil;
 import net.causw.global.constant.StaticValue;
 import net.causw.global.exception.ErrorCode;
@@ -33,6 +38,9 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class BatchScheduler {
 
+	private final FileReader fileReader;
+	private final FileWriter fileWriter;
+	private final StorageClient storageClient;
 	private final UserReader userReader;
 	private final PageableFactory pageableFactory;
 	private final UserInfoWriter userInfoWriter;
@@ -42,6 +50,53 @@ public class BatchScheduler {
 	private final AdmissionWriter admissionWriter;
 	private final UserProfileImageService userProfileImageService;
 	private final LockerExpirationService lockerExpirationService;
+
+	@Scheduled(cron = "0 30 3 * * ?") // 매일 새벽 3시 30분
+	public void scheduleCleanupPendingFiles() {
+		log.info("[PENDING 파일 정리 배치] 시작");
+		LocalDateTime cutoff = LocalDateTime.now().minusHours(StaticValue.PENDING_FILE_EXPIRY_HOURS);
+
+		int totalCleaned = 0;
+		int totalFailed = 0;
+
+		while (true) {
+			List<UuidFile> chunk = fileReader.findPendingChunkBefore(
+				cutoff, StaticValue.BATCH_PENDING_FILE_CHUNK_SIZE);
+			if (chunk.isEmpty()) {
+				break;
+			}
+
+			List<String> fileKeys = chunk.stream().map(UuidFile::getFileKey).toList();
+			List<String> succeededKeys;
+			try {
+				succeededKeys = storageClient.deleteAll(fileKeys);
+			} catch (Exception e) {
+				log.warn("[PENDING 파일 정리 배치] S3 요청 실패. 다음 배치에서 재시도.", e);
+				break;
+			}
+			Set<String> succeededKeySet = Set.copyOf(succeededKeys);
+
+			List<String> ids = chunk.stream()
+				.filter(f -> succeededKeySet.contains(f.getFileKey()))
+				.map(UuidFile::getId)
+				.toList();
+
+			if (!ids.isEmpty()) {
+				fileWriter.deleteAllFromDb(ids);
+				totalCleaned += ids.size();
+			}
+			int chunkFail = chunk.size() - ids.size();
+			totalFailed += chunkFail;
+
+			// 청크 내 모든 파일이 S3 삭제 실패 → 진행 불가, 다음 배치에서 재시도
+			if (ids.isEmpty()) {
+				log.warn("[PENDING 파일 정리 배치] 청크 전체 S3 삭제 실패. 다음 배치에서 재시도. 실패 수: {}", chunkFail);
+				break;
+			}
+		}
+
+		log.info("[PENDING 파일 정리 배치] 완료. 정리: {}, S3 실패(재시도 예정): {}", totalCleaned, totalFailed);
+	}
 
 	@Scheduled(cron = "0 10 3 * * ?") // 매일 새벽 3시 10분
 	public void scheduleCleanupDeactivatedUsers() {
@@ -116,7 +171,7 @@ public class BatchScheduler {
 		}
 	}
 
-	@Scheduled(cron = "0 30 3 * * ?") // 매일 새벽 3시 30분 (다른 배치와 시각 충돌 방지)
+	@Scheduled(cron = "0 40 3 * * ?") // 매일 새벽 3시 40분 (다른 배치와 시각 충돌 방지)
 	public void scheduleReleaseExpiredLockers() {
 		try {
 			log.info("[사물함 만료 배치] 만료 사물함 자동 반납 시작");
