@@ -1,10 +1,13 @@
 package net.causw.app.main.domain.community.post.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.enums.PostCategory;
+import net.causw.app.main.domain.community.post.service.dto.UncategorizedPostResult;
 import net.causw.app.main.domain.community.post.service.implementation.PostReader;
 import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
 
@@ -35,5 +38,21 @@ public class PostAdminService {
 		}
 
 		post.updateCategory(category);
+	}
+
+	/**
+	 * 성격이 미분류인 크롤링 게시글을 조회합니다.
+	 *
+	 * @param pageable 페이지 정보
+	 * @return 미분류 게시글 페이지
+	 */
+	@Transactional(readOnly = true)
+	public Page<UncategorizedPostResult> getUncategorizedPosts(Pageable pageable) {
+		return postReader.findUncategorizedCrawledPosts(pageable)
+			.map(post -> new UncategorizedPostResult(
+				post.getId(),
+				post.getTitle(),
+				post.getBoard().getName(),
+				post.getCreatedAt()));
 	}
 }

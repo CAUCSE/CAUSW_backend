@@ -80,9 +80,8 @@ domain/integration/crawled/
 
 ## 성격 분류
 
-Post를 새로 생성할 때만 `PostCategoryClassifier`가 제목 키워드로 성격(`Post.category`)을 지정한다. 규칙은 채용 → 대외활동 → 행사·특강 → 연구 → 학사 순으로 평가해 먼저 걸리는 카테고리로 확정하고, 어디에도 걸리지 않으면 미분류(null)로 남긴다. 기존 Post를 갱신할 때는 재분류하지 않는다. 관리자가 `PATCH /api/v2/admin/posts/{postId}/category`로 지정한 성격이 원문 수정 때마다 덮어써지는 것을 막기 위함이다. 목록의 `article_category_selector`가 수집하는 배지는 분류에 쓰지 않는다. 중앙대 SW 공지는 이 값이 모든 글에서 "공지"로 동일해 성격 신호가 되지 않기 때문이며, 주제 태그를 제공하는 사이트를 추가할 때 태그 기반 분류를 앞단에 두는 것을 검토한다.
-
-이미 변환된 과거 공지는 `POST /api/v2/admin/crawled-notices/categories/backfill`로 소급 분류한다. 같은 분류기를 재사용하므로 규칙이 이원화되지 않으며, 성격이 이미 지정된 게시글은 대상에서 제외되므로 관리자가 지정한 값은 보존된다. 새 Post를 만들지 않아 공지 알림(`OfficialPostEvent`)은 발행되지 않고, 벌크 갱신을 사용해 `updated_at`도 변경하지 않는다.
+Post를 새로 생성할 때만 `PostCategoryClassifier`가 제목 키워드로 성격(`Post.category`)을 지정한다. 규칙은 채용 → 대외활동 → 행사·특강 → 연구 → 학사 순으로 평가해 먼저 걸리는 카테고리로 확정하고, 어디에도 걸리지 않으면 미분류(null)로 남긴다. 갱신 시 재분류하지 않는 것은 관리자가 지정한 성격을 보존하기 위함이다. 목록의 `article_category_selector`가 수집하는 배지는 모든 글에서 값이 같아 분류에 쓰지 않는다.
+관리자는 `GET /api/v2/admin/posts/uncategorized`로 미분류 게시글을 조회하고 `PATCH /api/v2/admin/posts/{postId}/category`로 성격을 지정한다. 이미 변환된 과거 공지는 `POST /api/v2/admin/crawled-notices/categories/backfill`로 소급 분류하며, 새 Post를 만들지 않아 알림이 발행되지 않고 `updated_at`도 변경되지 않는다.
 
 ## 실패 정책
 

@@ -88,4 +88,14 @@ public interface PostRepository extends JpaRepository<Post, String> {
 	int updateCategoryByIds(
 		@Param("category") PostCategory category,
 		@Param("postIds") Collection<String> postIds);
+
+	// 성격이 미분류인 크롤링 게시글 조회 (관리자 수동 분류용)
+	@Query("""
+			SELECT p FROM Post p
+			JOIN FETCH p.board
+			WHERE p.category IS NULL
+			AND p.isCrawled = true
+			AND p.isDeleted = false
+		""")
+	Page<Post> findUncategorizedCrawledPosts(Pageable pageable);
 }
