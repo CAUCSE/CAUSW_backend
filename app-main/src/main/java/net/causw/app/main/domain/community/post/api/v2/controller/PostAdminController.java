@@ -46,7 +46,7 @@ public class PostAdminController {
 
 	@GetMapping("/uncategorized")
 	@ResponseStatus(HttpStatus.OK)
-	@Operation(summary = "성격 미분류 게시글 목록 조회", description = "자동 분류에 실패해 성격이 지정되지 않은 크롤링 게시글을 조회합니다.")
+	@Operation(summary = "성격 미분류 게시글 목록 조회", description = "성격이 지정되지 않아 확인이 필요한 크롤링 게시글을 조회합니다. 관리자가 성격을 지정하면 목록에서 제외됩니다.")
 	public ApiResponse<PageResponse<UncategorizedPostResponse>> getUncategorizedPosts(
 		@ParameterObject @PageableDefault(page = 0, size = 10) Pageable pageable) {
 		return ApiResponse.success(

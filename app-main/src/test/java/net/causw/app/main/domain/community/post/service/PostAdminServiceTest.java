@@ -109,4 +109,18 @@ class PostAdminServiceTest {
 			.satisfies(item -> assertThat(item.title()).isEqualTo(post.getTitle()));
 		assertThat(result.getTotalElements()).isEqualTo(1);
 	}
+
+	@Test
+	@DisplayName("5개 분류에 해당하지 않는 게시글은 기타로 지정할 수 있다")
+	void updateCategory_shouldAllowEtc() {
+		// given
+		post.setCrawled();
+		given(postReader.findByIdAndNotDeleted(postId)).willReturn(post);
+
+		// when
+		postAdminService.updateCategory(postId, PostCategory.ETC);
+
+		// then
+		assertThat(post.getCategory()).isEqualTo(PostCategory.ETC);
+	}
 }

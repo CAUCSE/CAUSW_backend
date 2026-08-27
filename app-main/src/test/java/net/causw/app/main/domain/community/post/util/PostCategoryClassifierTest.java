@@ -80,4 +80,30 @@ class PostCategoryClassifierTest {
 		assertThat(classifier.classify("")).isNull();
 		assertThat(classifier.classify("   ")).isNull();
 	}
+
+	@Test
+	@DisplayName("학부 운영 관련 공지를 학사로 분류한다")
+	void classify_shouldClassifyDepartmentOperationNoticeAsAcademic() {
+		assertThat(classifier.classify("2026-01 캡스톤디자인(2) 공지")).isEqualTo(PostCategory.ACADEMIC);
+		assertThat(classifier.classify("2025-2학기 『코딩 Help Desk』 튜터링 프로그램 운영 공고"))
+			.isEqualTo(PostCategory.ACADEMIC);
+		assertThat(classifier.classify("제25회 TOPCIT 정기평가 응시료 지원 신청 안내"))
+			.isEqualTo(PostCategory.ACADEMIC);
+		assertThat(classifier.classify("2026-1학기 공학인증 선후수과목 안내")).isEqualTo(PostCategory.ACADEMIC);
+		assertThat(classifier.classify("대학원 2025-2학기 개설과목 영어A 변경안내")).isEqualTo(PostCategory.ACADEMIC);
+	}
+
+	@Test
+	@DisplayName("교류 캠프 참가자 모집을 대외활동으로 분류한다")
+	void classify_shouldClassifyExchangeCampAsExternalActivity() {
+		assertThat(classifier.classify("2026년 유엔참전국 미래세대 교류캠프 참가자 모집"))
+			.isEqualTo(PostCategory.EXTERNAL_ACTIVITY);
+	}
+
+	@Test
+	@DisplayName("기타(ETC)는 자동 분류 결과로 지정하지 않는다")
+	void classify_shouldNeverReturnEtc() {
+		assertThat(classifier.classify("2026년도 서울캠퍼스 예비군 훈련 안내"))
+			.isNotEqualTo(PostCategory.ETC);
+	}
 }
