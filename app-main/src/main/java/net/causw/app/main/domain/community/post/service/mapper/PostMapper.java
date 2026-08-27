@@ -190,6 +190,7 @@ public class PostMapper {
 			.voteId(voteId)
 			.isAnonymous(post.getIsAnonymous())
 			.isCrawled(post.getIsCrawled())
+			.category(post.getCategory())
 			.isOwner(isOwner)
 			.isPostLike(isPostLike)
 			.updatable(updatable)
