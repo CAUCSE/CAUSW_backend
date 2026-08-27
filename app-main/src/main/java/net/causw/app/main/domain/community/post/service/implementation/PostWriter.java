@@ -140,4 +140,13 @@ public class PostWriter {
 		}
 		return postRepository.updateCategoryByIds(category, postIds);
 	}
+
+	/**
+	 * 특정 Post의 조회수를 1 증가시킵니다. (원자적 업데이트)
+	 *
+	 * @param postId 게시글 ID
+	 */
+	public void incrementViewCount(String postId) {
+		postRepository.incrementViewCount(postId);
+	}
 }

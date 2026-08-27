@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public enum PostErrorCode implements BaseResponseCode {
+	POST_SYSTEM_NOTICE_CUD_ONLY_VIA_DEDICATED_API(HttpStatus.FORBIDDEN, "POST_403_003",
+		"시스템 공지는 전용 API로만 작성·수정·삭제할 수 있습니다."),
 	POST_NOT_FOUND(HttpStatus.NOT_FOUND, "POST_404_001", "게시글을 찾을 수 없습니다"),
 	DELETED_WRITER(HttpStatus.NOT_FOUND, "POST_404_002", "작성자가 삭제된 사용자입니다"),
 	POST_FORBIDDEN(HttpStatus.FORBIDDEN, "POST_403_001", "게시글에 대한 권한이 없습니다"),

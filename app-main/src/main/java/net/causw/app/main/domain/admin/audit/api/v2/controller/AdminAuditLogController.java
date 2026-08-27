@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.causw.app.main.core.aop.annotation.RequireAdminRole;
+import net.causw.app.main.core.aop.enums.AdminTarget;
 import net.causw.app.main.domain.admin.audit.api.v2.dto.request.AdminAuditLogRequest;
 import net.causw.app.main.domain.admin.audit.api.v2.dto.response.AdminAuditLogResponse;
 import net.causw.app.main.domain.admin.audit.api.v2.mapper.AdminAuditLogMapper;
@@ -22,7 +24,8 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/admin/audit-logs")
-@PreAuthorize("@security.hasRole(@Role.ADMIN)")
+@PreAuthorize("@security.hasAnyRole(@Role.ADMIN, @Role.SYSTEM_ADMIN)")
+@RequireAdminRole(target = AdminTarget.ALL_ADMIN)
 @Tag(name = "Admin Audit Log v2", description = "관리자 감사 로그 API")
 public class AdminAuditLogController {
 

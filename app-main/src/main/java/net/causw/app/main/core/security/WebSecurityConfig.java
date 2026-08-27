@@ -83,7 +83,7 @@ public class WebSecurityConfig {
 				.permitAll()
 				.requestMatchers(HttpMethod.GET, "/api/v2/terms")
 				.permitAll()
-				.requestMatchers("/api/v2/admin/**").hasRole("ADMIN")
+				.requestMatchers("/api/v2/admin/**").hasAnyRole("ADMIN", "SYSTEM_ADMIN")
 				.anyRequest().authenticated())
 			.oauth2Login(oauth2 -> oauth2
 				.authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint

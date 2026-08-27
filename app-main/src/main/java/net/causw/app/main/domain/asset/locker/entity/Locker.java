@@ -124,4 +124,12 @@ public class Locker extends BaseEntity {
 		return Boolean.TRUE.equals(this.isActive);
 	}
 
+	/**
+	 * 사물함 만료 여부
+	 * @param targetTime 판단 기준 시각
+	 */
+	public boolean isExpired(LocalDateTime targetTime) {
+		return this.expireDate != null && this.expireDate.isBefore(targetTime);
+	}
+
 }

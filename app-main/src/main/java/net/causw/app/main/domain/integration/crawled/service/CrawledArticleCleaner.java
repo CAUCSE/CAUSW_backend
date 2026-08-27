@@ -19,19 +19,22 @@ import net.causw.app.main.domain.integration.crawled.dto.CleanAttachment;
 import net.causw.app.main.domain.integration.crawled.dto.RawArticle;
 import net.causw.app.main.domain.integration.crawled.dto.RawAttachment;
 import net.causw.app.main.domain.integration.crawled.entity.SiteConfig;
+import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeContentHashManager;
 import net.causw.app.main.shared.exception.errorcode.IntegrationErrorCode;
 import net.causw.global.constant.StaticValue;
-import net.causw.global.util.HashUtil;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class CrawledArticleCleaner {
 	private static final Safelist CONTENT_SAFELIST = Safelist.relaxed()
 		.addTags("img")
 		.addAttributes(":all", "class", "style")
 		.addAttributes("img", "src", "alt", "title", "width", "height");
+	private final CrawledNoticeContentHashManager crawledNoticeContentHashManager;
 
 	/**
 	 * 파싱된 원문 공지를 정규화하고 저장 가능한 데이터로 변환합니다.
@@ -52,9 +55,10 @@ public class CrawledArticleCleaner {
 			String title = requireText(rawArticle.title());
 			String author = requireText(rawArticle.author());
 			String category = rawArticle.category() == null ? "" : rawArticle.category().trim();
-			String contentHash = generateContentHash(title, contentHtml, author, announceDate, imageUrl, attachments);
+			String contentHash = crawledNoticeContentHashManager.generate(
+				title, contentHtml, author, announceDate, imageUrl, attachments);
 
-			return new CleanArticle(
+			return CleanArticle.of(
 				rawArticle.siteId(),
 				siteConfig.getTargetBoardId(),
 				requireText(rawArticle.externalId()),
@@ -116,35 +120,6 @@ public class CrawledArticleCleaner {
 		return attachmentsByUrl.values().stream()
 			.sorted(Comparator.comparing(CleanAttachment::fileUrl))
 			.toList();
-	}
-
-	/**
-	 * 저장 대상 필드와 첨부파일을 조합해 변경 감지용 해시를 생성합니다.
-	 *
-	 * @param title 공지 제목
-	 * @param content 정제된 본문 HTML
-	 * @param author 작성자
-	 * @param announceDate 공지일
-	 * @param imageUrl 대표 이미지 URL
-	 * @param attachments 정제된 첨부파일 목록
-	 * @return SHA-256 콘텐츠 해시
-	 */
-	private String generateContentHash(
-		String title,
-		String content,
-		String author,
-		LocalDate announceDate,
-		String imageUrl,
-		List<CleanAttachment> attachments) {
-		StringBuilder value = new StringBuilder()
-			.append(title).append('\u001f')
-			.append(content).append('\u001f')
-			.append(author).append('\u001f')
-			.append(announceDate).append('\u001f')
-			.append(imageUrl == null ? "" : imageUrl);
-		attachments.forEach(attachment -> value.append('\u001e')
-			.append(attachment.fileName()).append('\u001f').append(attachment.fileUrl()));
-		return HashUtil.generateSHA256(value.toString());
 	}
 
 	/**

@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.causw.app.main.core.aop.annotation.RequireAdminRole;
+import net.causw.app.main.core.aop.enums.AdminTarget;
 import net.causw.app.main.domain.notification.notification.api.v2.dto.request.AdminPushNotificationRequest;
 import net.causw.app.main.domain.notification.notification.service.AdminNotificationService;
 import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
@@ -20,7 +22,8 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/admin/notifications")
-@PreAuthorize("@security.hasRole(@Role.ADMIN)")
+@PreAuthorize("@security.hasAnyRole(@Role.ADMIN, @Role.SYSTEM_ADMIN)")
+@RequireAdminRole(target = AdminTarget.ALL_ADMIN)
 @Tag(name = "Notification Admin v2", description = "관리자 알림 관리 API")
 public class NotificationAdminController {
 

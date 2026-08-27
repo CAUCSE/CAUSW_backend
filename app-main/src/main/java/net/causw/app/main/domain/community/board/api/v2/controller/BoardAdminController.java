@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.causw.app.main.core.aop.annotation.RequireAdminRole;
+import net.causw.app.main.core.aop.enums.AdminTarget;
 import net.causw.app.main.domain.community.board.api.v2.dto.request.BoardConfigUpdateRequest;
 import net.causw.app.main.domain.community.board.api.v2.dto.request.BoardCreateRequest;
 import net.causw.app.main.domain.community.board.api.v2.dto.request.BoardOrderUpdateRequest;
@@ -35,7 +37,8 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/admin/boards")
-@PreAuthorize("@security.hasRole(@Role.ADMIN)")
+@PreAuthorize("@security.hasAnyRole(@Role.ADMIN, @Role.SYSTEM_ADMIN)")
+@RequireAdminRole(target = AdminTarget.SYSTEM_ONLY)
 @Tag(name = "Board Admin v2", description = "관리자 게시판 관리 API")
 public class BoardAdminController {
 

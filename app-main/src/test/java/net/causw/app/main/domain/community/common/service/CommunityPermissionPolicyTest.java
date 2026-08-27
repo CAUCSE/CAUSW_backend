@@ -1,18 +1,18 @@
 package net.causw.app.main.domain.community.common.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
@@ -23,6 +23,7 @@ import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.enums.user.Department;
 import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
@@ -99,26 +100,30 @@ class CommunityPermissionPolicyTest {
 	}
 
 	@Test
-	@DisplayName("시스템 관리자는 Role.ADMIN만을 의미한다")
-	void onlyAdminRoleIsSystemAdmin() {
+	@DisplayName("시스템 관리자는 Role.SYSTEM_ADMIN만을 의미한다")
+	void onlySystemAdminRoleIsSystemAdmin() {
+		User systemAdmin = activeUser("system-admin-id", AcademicStatus.ENROLLED, Role.SYSTEM_ADMIN);
 		User admin = activeUser("admin-id", AcademicStatus.ENROLLED, Role.ADMIN);
 		User president = activeUser("president-id", AcademicStatus.ENROLLED, Role.PRESIDENT);
 		User vicePresident = activeUser("vice-president-id", AcademicStatus.ENROLLED, Role.VICE_PRESIDENT);
 		User boardAdmin = activeUser(BOARD_ADMIN_ID, AcademicStatus.ENROLLED, Role.COMMON);
 
-		assertThat(CommunityPermissionPolicy.isSystemAdmin(admin)).isTrue();
+		assertThat(CommunityPermissionPolicy.isSystemAdmin(systemAdmin)).isTrue();
+		assertThat(CommunityPermissionPolicy.isSystemAdmin(admin)).isFalse();
 		assertThat(CommunityPermissionPolicy.isSystemAdmin(president)).isFalse();
 		assertThat(CommunityPermissionPolicy.isSystemAdmin(vicePresident)).isFalse();
 		assertThat(CommunityPermissionPolicy.isSystemAdmin(boardAdmin)).isFalse();
 	}
 
 	@Test
-	@DisplayName("게시판 관리자는 역할이 아니라 BoardAdmin ID 목록으로 판단한다")
-	void boardAdminIsDeterminedByBoardAdminIds() {
+	@DisplayName("게시판 관리자는 Role.ADMIN 역할과 BoardAdmin ID 목록으로 판단한다")
+	void boardAdminRequiresAdminRoleAndBoardAdminIds() {
+		User validBoardAdmin = activeUser(BOARD_ADMIN_ID, AcademicStatus.ENROLLED, Role.ADMIN);
 		User listedCommonUser = activeUser(BOARD_ADMIN_ID, AcademicStatus.ENROLLED, Role.COMMON);
-		User unlistedPrivilegedUser = activeUser("council-id", AcademicStatus.ENROLLED, Role.COUNCIL);
+		User unlistedPrivilegedUser = activeUser("unlisted-admin-id", AcademicStatus.ENROLLED, Role.ADMIN);
 
-		assertThat(CommunityPermissionPolicy.isBoardAdmin(listedCommonUser, BOARD_ADMIN_IDS)).isTrue();
+		assertThat(CommunityPermissionPolicy.isBoardAdmin(validBoardAdmin, BOARD_ADMIN_IDS)).isTrue();
+		assertThat(CommunityPermissionPolicy.isBoardAdmin(listedCommonUser, BOARD_ADMIN_IDS)).isFalse();
 		assertThat(CommunityPermissionPolicy.isBoardAdmin(unlistedPrivilegedUser, BOARD_ADMIN_IDS)).isFalse();
 	}
 
@@ -408,6 +413,71 @@ class CommunityPermissionPolicyTest {
 		assertThat(CommunityPermissionPolicy.isAlive(childComment)).isTrue();
 	}
 
+	@Nested
+	@DisplayName("학과별 접근 권한")
+	class DepartmentAccessTest {
+
+		@Test
+		@DisplayName("허용 학과가 없는 게시판은 모든 학과 사용자가 접근할 수 있다")
+		void emptyDepartments_allowsAllDepartments() {
+			BoardConfig config = boardConfigWithDepartments(Set.of());
+
+			for (Department dept : Department.values()) {
+				User viewer = userWithDepartment(dept);
+				assertThat(CommunityPermissionPolicy.canReadBoard(viewer, board, config, BOARD_ADMIN_IDS))
+					.as("department %s should be allowed when no restriction", dept)
+					.isTrue();
+			}
+		}
+
+		@Test
+		@DisplayName("허용 학과에 속하는 사용자는 접근할 수 있다")
+		void allowedDepartment_grantsAccess() {
+			BoardConfig config = boardConfigWithDepartments(Set.of(Department.SCHOOL_OF_SW, Department.DEPT_OF_AI));
+			User viewer = userWithDepartment(Department.SCHOOL_OF_SW);
+
+			assertThat(CommunityPermissionPolicy.canReadBoard(viewer, board, config, BOARD_ADMIN_IDS)).isTrue();
+		}
+
+		@Test
+		@DisplayName("허용 학과에 속하지 않는 사용자는 접근할 수 없다")
+		void disallowedDepartment_deniesAccess() {
+			BoardConfig config = boardConfigWithDepartments(Set.of(Department.SCHOOL_OF_SW));
+			User viewer = userWithDepartment(Department.DEPT_OF_CSE);
+
+			assertThat(CommunityPermissionPolicy.canReadBoard(viewer, board, config, BOARD_ADMIN_IDS)).isFalse();
+		}
+
+		@Test
+		@DisplayName("학과가 null인 사용자는 학과 제한 게시판에 접근할 수 없다")
+		void nullDepartment_deniesAccessToRestrictedBoard() {
+			BoardConfig config = boardConfigWithDepartments(Set.of(Department.SCHOOL_OF_SW));
+			User viewer = userWithDepartment(null);
+
+			assertThat(CommunityPermissionPolicy.canReadBoard(viewer, board, config, BOARD_ADMIN_IDS)).isFalse();
+		}
+
+		private BoardConfig boardConfigWithDepartments(Set<Department> departments) {
+			return BoardConfig.of(
+				BOARD_ID,
+				false,
+				BoardReadScope.BOTH,
+				BoardWriteScope.ALL_USER,
+				false,
+				BoardVisibility.VISIBLE,
+				10,
+				null,
+				null,
+				departments);
+		}
+
+		private User userWithDepartment(Department department) {
+			User user = activeUser("dept-test-user", AcademicStatus.ENROLLED, Role.COMMON);
+			ReflectionTestUtils.setField(user, "department", department);
+			return user;
+		}
+	}
+
 	private static Board aliveBoard() {
 		return ObjectFixtures.getBoardV2WithId(BOARD_ID);
 	}
@@ -432,8 +502,8 @@ class CommunityPermissionPolicyTest {
 	private User actorUser(Actor actor, AcademicStatus academicStatus) {
 		return switch (actor) {
 			case OWNER -> ownerWithAcademicStatus(academicStatus);
-			case BOARD_ADMIN -> activeUser(BOARD_ADMIN_ID, academicStatus, Role.COMMON);
-			case SYSTEM_ADMIN -> activeUser("system-admin-id", academicStatus, Role.ADMIN);
+			case BOARD_ADMIN -> activeUser(BOARD_ADMIN_ID, academicStatus, Role.ADMIN);
+			case SYSTEM_ADMIN -> activeUser("system-admin-id", academicStatus, Role.SYSTEM_ADMIN);
 			case PRESIDENT -> activeUser("president-id", academicStatus, Role.PRESIDENT);
 			case VICE_PRESIDENT -> activeUser("vice-president-id", academicStatus, Role.VICE_PRESIDENT);
 			case COMMON -> activeUser("common-id", academicStatus, Role.COMMON);

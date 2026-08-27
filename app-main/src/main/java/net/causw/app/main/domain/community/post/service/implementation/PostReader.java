@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.enums.PostCategory;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.community.post.repository.query.PostCursorResult;
 import net.causw.app.main.domain.community.post.repository.query.PostQueryRepository;
@@ -96,9 +97,10 @@ public class PostReader {
 		String cursorCreatedAt,
 		String cursorId,
 		int size,
-		String keyword) {
+		String keyword,
+		PostCategory category) {
 		return postQueryRepository.findPostsWithCursor(
-			boardIds, readContext, cursorCreatedAt, cursorId, size, keyword);
+			boardIds, readContext, cursorCreatedAt, cursorId, size, keyword, category);
 	}
 
 	/**
@@ -190,12 +192,12 @@ public class PostReader {
 	}
 
 	/**
-	 * 특정 사용자 ID 목록 중 최고 관리자(ADMIN) 권한을 가진 사용자 ID를 조회합니다.
+	 * 특정 사용자 ID 목록 중 시스템 관리자(SYSTEM_ADMIN) 권한을 가진 사용자 ID를 조회합니다.
 	 * @param userIds 조회할 사용자 ID 목록
-	 * @return ADMIN 권한을 가진 사용자 ID Set
+	 * @return SYSTEM_ADMIN 권한을 가진 사용자 ID Set
 	 */
-	public Set<String> findAdminUserIds(List<String> userIds) {
-		return postQueryRepository.findAdminUserIds(userIds);
+	public Set<String> findSystemAdminUserIds(List<String> userIds) {
+		return postQueryRepository.findSystemAdminUserIds(userIds);
 	}
 
 	/**

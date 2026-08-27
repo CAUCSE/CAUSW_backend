@@ -62,14 +62,7 @@ public class PostCategoryBackfillService {
 		return updated;
 	}
 
-	/**
-	 * 대상을 분류해 성격별 게시글 식별자 목록으로 묶습니다.
-	 *
-	 * <p>분류에 실패한 대상은 미분류로 남기기 위해 결과에서 제외합니다.</p>
-	 *
-	 * @param targets 백필 대상 목록
-	 * @return 성격별 게시글 식별자 목록
-	 */
+	// 분류에 실패한 대상은 미분류로 남기기 위해 결과에서 제외한다.
 	private Map<PostCategory, List<String>> groupByCategory(List<PostCategoryBackfillTarget> targets) {
 		Map<PostCategory, List<String>> grouped = new EnumMap<>(PostCategory.class);
 		for (PostCategoryBackfillTarget target : targets) {

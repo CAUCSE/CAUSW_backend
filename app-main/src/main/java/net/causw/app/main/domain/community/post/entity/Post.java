@@ -79,9 +79,8 @@ public class Post extends BaseEntity {
 	@Builder.Default
 	private Boolean isCrawled = false;
 
-	// 소식 게시글 성격 (null이면 미분류)
+	@Column(name = "category")
 	@Enumerated(EnumType.STRING)
-	@Column(name = "category", nullable = true, length = 30)
 	private PostCategory category;
 
 	@ManyToOne(targetEntity = Board.class)
@@ -95,6 +94,11 @@ public class Post extends BaseEntity {
 	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
 	@JoinColumn(name = "vote_id", unique = true)
 	private Vote vote;
+
+	@Column(name = "view_count", nullable = false)
+	@ColumnDefault("0")
+	@Builder.Default
+	private Long viewCount = 0L;
 
 	public static Post of(
 		String title,
@@ -195,5 +199,9 @@ public class Post extends BaseEntity {
 
 	public void setCrawled() {
 		this.isCrawled = true;
+	}
+
+	public void increaseViewCount() {
+		this.viewCount++;
 	}
 }

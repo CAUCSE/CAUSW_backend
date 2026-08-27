@@ -13,10 +13,11 @@ import net.causw.app.main.domain.integration.crawled.dto.CleanArticle;
 import net.causw.app.main.domain.integration.crawled.dto.RawArticle;
 import net.causw.app.main.domain.integration.crawled.dto.RawAttachment;
 import net.causw.app.main.domain.integration.crawled.entity.SiteConfig;
+import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeContentHashManager;
 
 @DisplayName("CrawledArticleCleaner 테스트")
 class CrawledArticleCleanerTest {
-	private final CrawledArticleCleaner cleaner = new CrawledArticleCleaner();
+	private final CrawledArticleCleaner cleaner = new CrawledArticleCleaner(new CrawledNoticeContentHashManager());
 
 	@Test
 	@DisplayName("상대 URL과 이미지를 정규화하고 위험한 HTML을 제거한다")

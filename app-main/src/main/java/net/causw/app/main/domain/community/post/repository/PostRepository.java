@@ -26,6 +26,9 @@ public interface PostRepository extends JpaRepository<Post, String> {
 
 	Optional<Post> findTop1ByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(String boardId);
 
+	@EntityGraph(attributePaths = {"writer"})
+	List<Post> findAllByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(String boardId);
+
 	// Repository
 	@Query("""
 		    SELECT p FROM Post p
@@ -74,15 +77,7 @@ public interface PostRepository extends JpaRepository<Post, String> {
 
 	Optional<Post> findByIdAndIsDeletedFalse(String postId);
 
-	/**
-	 * 지정한 게시글들의 성격을 일괄 지정합니다.
-	 *
-	 * <p>벌크 연산이므로 {@code updated_at}이 갱신되지 않습니다.</p>
-	 *
-	 * @param category 지정할 성격
-	 * @param postIds 대상 게시글 식별자 목록
-	 * @return 변경된 게시글 수
-	 */
+	// 성격 일괄 지정 (벌크 연산이라 updated_at이 갱신되지 않음)
 	@Modifying
 	@Query("UPDATE Post p SET p.category = :category WHERE p.id IN :postIds")
 	int updateCategoryByIds(
@@ -98,4 +93,13 @@ public interface PostRepository extends JpaRepository<Post, String> {
 			AND p.isDeleted = false
 		""")
 	Page<Post> findUncategorizedCrawledPosts(Pageable pageable);
+
+	@Modifying(clearAutomatically = true)
+	@Query("""
+			update Post p
+			   set p.viewCount = p.viewCount + 1
+			 where p.id = :postId
+			   and p.isDeleted = false
+		""")
+	int incrementViewCount(@Param("postId") String postId);
 }

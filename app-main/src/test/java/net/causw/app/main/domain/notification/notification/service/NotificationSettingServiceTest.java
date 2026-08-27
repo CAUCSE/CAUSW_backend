@@ -24,6 +24,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import net.causw.app.main.domain.community.board.entity.Board;
+import net.causw.app.main.domain.community.board.entity.BoardGroup;
+import net.causw.app.main.domain.community.board.service.implementation.BoardAccessManager;
 import net.causw.app.main.domain.community.board.service.implementation.BoardReader;
 import net.causw.app.main.domain.notification.notification.enums.UserNotificationSettingKey;
 import net.causw.app.main.domain.notification.notification.service.dto.NotificationSettingResult;
@@ -32,7 +34,6 @@ import net.causw.app.main.domain.notification.notification.service.dto.UserNotif
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationSettingReader;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationSettingWriter;
 import net.causw.app.main.domain.notification.notification.service.implementation.UserBoardSubscribeReader;
-import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
@@ -53,6 +54,8 @@ class NotificationSettingServiceTest {
 	private NotificationSettingWriter notificationSettingWriter;
 	@Mock
 	private BoardReader boardReader;
+	@Mock
+	private BoardAccessManager boardAccessManager;
 	@Mock
 	private UserBoardSubscribeReader userBoardSubscribeReader;
 	@Mock
@@ -78,8 +81,7 @@ class NotificationSettingServiceTest {
 			User mockUser = mock(User.class);
 			given(userReader.findUserByIdNotDeleted(userId)).willReturn(mockUser);
 			given(notificationSettingReader.findSettingMap(userId)).willReturn(emptySettingMap());
-			given(mockUser.getAcademicStatus()).willReturn(AcademicStatus.ENROLLED);
-			given(boardReader.findAccessibleNoticeBoards(AcademicStatus.ENROLLED)).willReturn(List.of());
+			given(boardAccessManager.getReadableBoards(mockUser, BoardGroup.NOTICE)).willReturn(List.of());
 
 			// when
 			NotificationSettingResult result = notificationSettingService.getAllSettings(userId);
@@ -97,10 +99,9 @@ class NotificationSettingServiceTest {
 			Board mockBoard = mock(Board.class);
 			given(userReader.findUserByIdNotDeleted(userId)).willReturn(mockUser);
 			given(notificationSettingReader.findSettingMap(userId)).willReturn(emptySettingMap());
-			given(mockUser.getAcademicStatus()).willReturn(AcademicStatus.ENROLLED);
 			given(mockBoard.getId()).willReturn("board-001");
 			given(mockBoard.getName()).willReturn("공지사항");
-			given(boardReader.findAccessibleNoticeBoards(AcademicStatus.ENROLLED)).willReturn(List.of(mockBoard));
+			given(boardAccessManager.getReadableBoards(mockUser, BoardGroup.NOTICE)).willReturn(List.of(mockBoard));
 			given(userBoardSubscribeReader.findSubscribedBoardIds(mockUser, List.of(mockBoard)))
 				.willReturn(Set.of("board-001"));
 
@@ -121,8 +122,7 @@ class NotificationSettingServiceTest {
 			User mockUser = mock(User.class);
 			given(userReader.findUserByIdNotDeleted(userId)).willReturn(mockUser);
 			given(notificationSettingReader.findSettingMap(userId)).willReturn(emptySettingMap());
-			given(mockUser.getAcademicStatus()).willReturn(AcademicStatus.ENROLLED);
-			given(boardReader.findAccessibleNoticeBoards(AcademicStatus.ENROLLED)).willReturn(List.of());
+			given(boardAccessManager.getReadableBoards(mockUser, BoardGroup.NOTICE)).willReturn(List.of());
 
 			// when
 			NotificationSettingResult result = notificationSettingService.getAllSettings(userId);
