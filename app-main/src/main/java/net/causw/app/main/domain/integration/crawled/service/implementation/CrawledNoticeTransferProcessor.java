@@ -16,6 +16,7 @@ import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.service.implementation.BoardReader;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.implementation.PostWriter;
+import net.causw.app.main.domain.community.post.util.PostCategoryClassifier;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledFileLink;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledPostImage;
@@ -39,6 +40,7 @@ public class CrawledNoticeTransferProcessor {
 	private final BoardReader boardReader;
 	private final CrawledPostImageWriter crawledPostImageWriter;
 	private final ApplicationEventPublisher applicationEventPublisher;
+	private final PostCategoryClassifier postCategoryClassifier;
 
 	/**
 	 * 하나의 크롤링 공지를 Post로 생성하거나 갱신하고 전송 완료 상태로 변경합니다.
@@ -80,6 +82,8 @@ public class CrawledNoticeTransferProcessor {
 
 		Post newPost = Post.of(title, contentHtml, adminUser, false, false, board, null, new ArrayList<>());
 		newPost.setCrawled();
+		// 성격 자동 분류 (갱신 시에는 관리자 수동 지정 보존을 위해 미적용)
+		newPost.updateCategory(postCategoryClassifier.classify(notice.getTitle()));
 		postWriter.save(newPost);
 		savePostImages(newPost, imageUrls);
 		applicationEventPublisher.publishEvent(new OfficialPostEvent(board.getId(), newPost.getId(), title));
