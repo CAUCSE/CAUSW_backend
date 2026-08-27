@@ -5,11 +5,13 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
 import net.causw.app.main.domain.integration.crawled.repository.CrawledNoticeRepository;
+import net.causw.app.main.domain.integration.crawled.repository.query.PostCategoryBackfillTarget;
 import net.causw.app.main.shared.exception.errorcode.IntegrationErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -44,5 +46,16 @@ public class CrawledNoticeReader {
 	 */
 	public List<CrawledNotice> findPendingNotices() {
 		return crawledNoticeRepository.findTop30ByIsUpdatedTrueOrderByLastModifiedDesc();
+	}
+
+	/**
+	 * 연결된 Post의 성격이 미분류로 남아 있는 공지를 id 커서 순으로 조회합니다.
+	 *
+	 * @param cursor 직전 청크의 마지막 공지 식별자. 처음 조회 시 빈 문자열
+	 * @param size 한 번에 조회할 공지 수
+	 * @return 성격 백필 대상 공지 목록
+	 */
+	public List<PostCategoryBackfillTarget> findCategoryBackfillTargets(String cursor, int size) {
+		return crawledNoticeRepository.findBackfillTargets(cursor, PageRequest.of(0, size));
 	}
 }

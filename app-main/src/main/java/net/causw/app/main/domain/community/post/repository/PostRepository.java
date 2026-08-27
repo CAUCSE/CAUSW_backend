@@ -17,6 +17,7 @@ import org.springframework.stereotype.Repository;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.form.entity.Form;
 import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.enums.PostCategory;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, String> {
@@ -72,4 +73,19 @@ public interface PostRepository extends JpaRepository<Post, String> {
 	int deleteAllPostsByBoardId(@Param("boardId") String boardId);
 
 	Optional<Post> findByIdAndIsDeletedFalse(String postId);
+
+	/**
+	 * 지정한 게시글들의 성격을 일괄 지정합니다.
+	 *
+	 * <p>벌크 연산이므로 {@code updated_at}이 갱신되지 않습니다.</p>
+	 *
+	 * @param category 지정할 성격
+	 * @param postIds 대상 게시글 식별자 목록
+	 * @return 변경된 게시글 수
+	 */
+	@Modifying
+	@Query("UPDATE Post p SET p.category = :category WHERE p.id IN :postIds")
+	int updateCategoryByIds(
+		@Param("category") PostCategory category,
+		@Param("postIds") Collection<String> postIds);
 }
