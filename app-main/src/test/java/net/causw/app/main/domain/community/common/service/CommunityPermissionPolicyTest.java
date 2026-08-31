@@ -132,8 +132,12 @@ class CommunityPermissionPolicyTest {
 		"COMMON, ENROLLED, ENROLLED, VISIBLE, true",
 		"COMMON, GRADUATED, ENROLLED, VISIBLE, false",
 		"COMMON, ENROLLED, BOTH, HIDDEN, false",
+		"BOARD_ADMIN, ENROLLED, BOTH, HIDDEN, false",
+		"SYSTEM_ADMIN, ENROLLED, BOTH, HIDDEN, false",
 		"BOARD_ADMIN, GRADUATED, ENROLLED, HIDDEN, false",
 		"SYSTEM_ADMIN, GRADUATED, ENROLLED, HIDDEN, false",
+		"BOARD_ADMIN, ENROLLED, ENROLLED, VISIBLE, true",
+		"SYSTEM_ADMIN, GRADUATED, GRADUATED, VISIBLE, true",
 		"PRESIDENT, GRADUATED, ENROLLED, HIDDEN, false",
 		"VICE_PRESIDENT, GRADUATED, ENROLLED, HIDDEN, false"
 	})
@@ -259,7 +263,7 @@ class CommunityPermissionPolicyTest {
 	@DisplayName("시스템 관리자와 해당 게시판 관리자도 HIDDEN 콘텐츠에 접근할 수 없다")
 	void moderatorsCannotAccessHiddenContent() {
 		BoardConfig hiddenConfig = boardConfig(
-			BoardReadScope.GRADUATED,
+			BoardReadScope.BOTH,
 			BoardWriteScope.ONLY_ADMIN,
 			BoardVisibility.HIDDEN);
 
