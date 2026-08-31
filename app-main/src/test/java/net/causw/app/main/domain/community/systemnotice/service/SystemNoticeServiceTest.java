@@ -274,7 +274,6 @@ class SystemNoticeServiceTest {
 	@Test
 	void markAsReadRejectsViewerWithoutBoardReadPermission() {
 		givenActiveViewer();
-		given(viewer.getId()).willReturn("user-id");
 		given(latestPost.getId()).willReturn("latest-post-id");
 		given(systemNoticeReader.findLatestPost()).willReturn(Optional.of(latestPost));
 		given(latestPost.getBoard()).willReturn(systemNoticeBoard);
