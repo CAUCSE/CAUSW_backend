@@ -132,12 +132,12 @@ class CommunityPermissionPolicyTest {
 		"COMMON, ENROLLED, ENROLLED, VISIBLE, true",
 		"COMMON, GRADUATED, ENROLLED, VISIBLE, false",
 		"COMMON, ENROLLED, BOTH, HIDDEN, false",
-		"BOARD_ADMIN, GRADUATED, ENROLLED, HIDDEN, true",
-		"SYSTEM_ADMIN, GRADUATED, ENROLLED, HIDDEN, true",
+		"BOARD_ADMIN, GRADUATED, ENROLLED, HIDDEN, false",
+		"SYSTEM_ADMIN, GRADUATED, ENROLLED, HIDDEN, false",
 		"PRESIDENT, GRADUATED, ENROLLED, HIDDEN, false",
 		"VICE_PRESIDENT, GRADUATED, ENROLLED, HIDDEN, false"
 	})
-	void canReadBoardFollowsScopeVisibilityAndModeratorPolicy(
+	void canReadBoardFollowsScopeAndVisibilityPolicyForAllUsers(
 		Actor actor,
 		AcademicStatus academicStatus,
 		BoardReadScope readScope,
@@ -168,8 +168,8 @@ class CommunityPermissionPolicyTest {
 		"COMMON, ENROLLED, BOTH, ALL_USER, VISIBLE, true",
 		"COMMON, ENROLLED, BOTH, ONLY_ADMIN, VISIBLE, false",
 		"COMMON, ENROLLED, GRADUATED, ALL_USER, VISIBLE, false",
-		"BOARD_ADMIN, ENROLLED, GRADUATED, ONLY_ADMIN, VISIBLE, true",
-		"SYSTEM_ADMIN, ENROLLED, GRADUATED, ONLY_ADMIN, VISIBLE, true",
+		"BOARD_ADMIN, ENROLLED, GRADUATED, ONLY_ADMIN, VISIBLE, false",
+		"SYSTEM_ADMIN, ENROLLED, GRADUATED, ONLY_ADMIN, VISIBLE, false",
 		"PRESIDENT, ENROLLED, BOTH, ONLY_ADMIN, VISIBLE, false",
 		"VICE_PRESIDENT, ENROLLED, BOTH, ONLY_ADMIN, VISIBLE, false",
 		"COMMON, ENROLLED, BOTH, ALL_USER, HIDDEN, false",
@@ -256,8 +256,8 @@ class CommunityPermissionPolicyTest {
 	}
 
 	@Test
-	@DisplayName("시스템 관리자와 해당 게시판 관리자는 HIDDEN 콘텐츠를 읽고 삭제할 수 있지만 수정할 수 없다")
-	void moderatorsCanReadAndDeleteButCannotUpdateHiddenContent() {
+	@DisplayName("시스템 관리자와 해당 게시판 관리자도 HIDDEN 콘텐츠에 접근할 수 없다")
+	void moderatorsCannotAccessHiddenContent() {
 		BoardConfig hiddenConfig = boardConfig(
 			BoardReadScope.GRADUATED,
 			BoardWriteScope.ONLY_ADMIN,
@@ -266,17 +266,17 @@ class CommunityPermissionPolicyTest {
 		for (Actor actor : List.of(Actor.SYSTEM_ADMIN, Actor.BOARD_ADMIN)) {
 			User moderator = actorUser(actor, AcademicStatus.ENROLLED);
 			assertThat(CommunityPermissionPolicy.canReadPost(
-				moderator, post, hiddenConfig, BOARD_ADMIN_IDS)).isTrue();
+				moderator, post, hiddenConfig, BOARD_ADMIN_IDS)).isFalse();
 			assertThat(CommunityPermissionPolicy.canUpdatePost(
 				moderator, post, hiddenConfig, BOARD_ADMIN_IDS)).isFalse();
 			assertThat(CommunityPermissionPolicy.canDeletePost(
-				moderator, post, hiddenConfig, BOARD_ADMIN_IDS)).isTrue();
+				moderator, post, hiddenConfig, BOARD_ADMIN_IDS)).isFalse();
 			assertThat(CommunityPermissionPolicy.canReadComment(
-				moderator, rootComment, hiddenConfig, BOARD_ADMIN_IDS)).isTrue();
+				moderator, rootComment, hiddenConfig, BOARD_ADMIN_IDS)).isFalse();
 			assertThat(CommunityPermissionPolicy.canUpdateComment(
 				moderator, rootComment, hiddenConfig, BOARD_ADMIN_IDS)).isFalse();
 			assertThat(CommunityPermissionPolicy.canDeleteComment(
-				moderator, rootComment, hiddenConfig, BOARD_ADMIN_IDS)).isTrue();
+				moderator, rootComment, hiddenConfig, BOARD_ADMIN_IDS)).isFalse();
 		}
 	}
 

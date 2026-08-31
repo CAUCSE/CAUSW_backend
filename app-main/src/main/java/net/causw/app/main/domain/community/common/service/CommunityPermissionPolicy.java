@@ -32,6 +32,12 @@ public final class CommunityPermissionPolicy {
 		Role.PRESIDENT,
 		Role.VICE_PRESIDENT);
 
+	/**
+	 * 사용자가 활성 상태이며 권한이 부여되었는지 검증합니다.
+	 *
+	 * @param user 검증할 사용자
+	 * @throws net.causw.app.main.shared.exception.BaseException 사용자가 없거나 비활성 상태 또는 역할이 없는 경우
+	 */
 	public static void validateActiveUser(User user) {
 		if (user == null || user.getState() != UserState.ACTIVE) {
 			throw AuthErrorCode.INVALID_REGISTRATION_STATUS.toBaseException();
@@ -41,16 +47,35 @@ public final class CommunityPermissionPolicy {
 		}
 	}
 
+	/**
+	 * 사용자가 활성 상태이며 역할이 부여되었는지 반환합니다.
+	 *
+	 * @param user 확인할 사용자
+	 * @return 활성 사용자이면 {@code true}, 그렇지 않으면 {@code false}
+	 */
 	public static boolean isActiveUser(User user) {
 		return user != null
 			&& user.getState() == UserState.ACTIVE
 			&& !user.getRoles().contains(Role.NONE);
 	}
 
+	/**
+	 * 사용자가 시스템 관리자인지 반환합니다.
+	 *
+	 * @param user 확인할 사용자
+	 * @return 시스템 관리자 역할을 보유하면 {@code true}
+	 */
 	public static boolean isSystemAdmin(User user) {
 		return user != null && user.getRoles().contains(Role.SYSTEM_ADMIN);
 	}
 
+	/**
+	 * 사용자가 해당 게시판의 관리자 권한을 보유하는지 반환합니다.
+	 *
+	 * @param user 확인할 사용자
+	 * @param boardAdminIds 게시판 관리자 사용자 식별자 목록
+	 * @return 목록에 포함되고 {@link Role#ADMIN} 역할을 보유하면 {@code true}
+	 */
 	public static boolean isBoardAdmin(User user, Collection<String> boardAdminIds) {
 		return user != null
 			&& boardAdminIds != null
@@ -58,10 +83,27 @@ public final class CommunityPermissionPolicy {
 			&& user.getRoles().contains(Role.ADMIN);
 	}
 
+	/**
+	 * 사용자가 시스템 관리자 또는 해당 게시판 관리자인지 반환합니다.
+	 *
+	 * @param user 확인할 사용자
+	 * @param boardAdminIds 게시판 관리자 사용자 식별자 목록
+	 * @return 게시판 운영 권한이 있으면 {@code true}
+	 */
 	public static boolean isModerator(User user, Collection<String> boardAdminIds) {
 		return isSystemAdmin(user) || isBoardAdmin(user, boardAdminIds);
 	}
 
+	/**
+	 * 사용자가 게시판을 읽을 수 있는지 계산합니다.
+	 * 모든 사용자는 활성 상태, 게시판 생존 상태, 학과 제한, 공개 상태 및 학적 읽기 범위를 만족해야 합니다.
+	 *
+	 * @param viewer 조회할 사용자
+	 * @param board 대상 게시판
+	 * @param boardConfig 게시판 접근 설정
+	 * @param boardAdminIds 게시판 관리자 사용자 식별자 목록
+	 * @return 읽기가 허용되면 {@code true}
+	 */
 	public static boolean canReadBoard(
 		User viewer,
 		Board board,
@@ -70,10 +112,6 @@ public final class CommunityPermissionPolicy {
 
 		if (!isActiveUser(viewer) || !isAlive(board) || boardConfig == null) {
 			return false;
-		}
-
-		if (isModerator(viewer, boardAdminIds)) {
-			return true;
 		}
 
 		if (!isDepartmentAllowed(boardConfig.getDepartments(), viewer.getDepartment())) {
@@ -106,6 +144,15 @@ public final class CommunityPermissionPolicy {
 		return boardConfig.getWriteScope() == BoardWriteScope.ALL_USER;
 	}
 
+	/**
+	 * 사용자가 게시글을 읽을 수 있는지 계산합니다.
+	 *
+	 * @param viewer 조회할 사용자
+	 * @param post 대상 게시글
+	 * @param boardConfig 게시판 접근 설정
+	 * @param boardAdminIds 게시판 관리자 사용자 식별자 목록
+	 * @return 게시글이 삭제되지 않았고 게시판 읽기가 허용되면 {@code true}
+	 */
 	public static boolean canReadPost(
 		User viewer,
 		Post post,
@@ -116,6 +163,15 @@ public final class CommunityPermissionPolicy {
 			&& canReadBoard(viewer, post.getBoard(), boardConfig, boardAdminIds);
 	}
 
+	/**
+	 * 사용자가 게시글을 수정할 수 있는지 계산합니다.
+	 *
+	 * @param updater 수정할 사용자
+	 * @param post 대상 게시글
+	 * @param boardConfig 게시판 접근 설정
+	 * @param boardAdminIds 게시판 관리자 사용자 식별자 목록
+	 * @return 게시글을 읽을 수 있으며 작성자 본인이면 {@code true}
+	 */
 	public static boolean canUpdatePost(
 		User updater,
 		Post post,
@@ -126,6 +182,15 @@ public final class CommunityPermissionPolicy {
 			&& canUpdateReadableContent(updater, post.getWriter() != null ? post.getWriter().getId() : null);
 	}
 
+	/**
+	 * 사용자가 삭제되지 않은 게시글을 삭제할 수 있는지 계산합니다.
+	 *
+	 * @param deleter 삭제할 사용자
+	 * @param post 대상 게시글
+	 * @param boardConfig 게시판 접근 설정
+	 * @param boardAdminIds 게시판 관리자 사용자 식별자 목록
+	 * @return 삭제가 허용되면 {@code true}
+	 */
 	public static boolean canDeletePost(
 		User deleter,
 		Post post,
@@ -152,6 +217,15 @@ public final class CommunityPermissionPolicy {
 				deleter, post.getWriter() != null ? post.getWriter().getId() : null, boardAdminIds);
 	}
 
+	/**
+	 * 사용자가 댓글을 읽을 수 있는지 계산합니다.
+	 *
+	 * @param viewer 조회할 사용자
+	 * @param comment 대상 댓글
+	 * @param boardConfig 게시판 접근 설정
+	 * @param boardAdminIds 게시판 관리자 사용자 식별자 목록
+	 * @return 댓글과 상위 게시글이 삭제되지 않았고 게시판 읽기가 허용되면 {@code true}
+	 */
 	public static boolean canReadComment(
 		User viewer,
 		Comment comment,
@@ -162,6 +236,15 @@ public final class CommunityPermissionPolicy {
 			&& canReadPost(viewer, comment.getPost(), boardConfig, boardAdminIds);
 	}
 
+	/**
+	 * 사용자가 댓글을 수정할 수 있는지 계산합니다.
+	 *
+	 * @param updater 수정할 사용자
+	 * @param comment 대상 댓글
+	 * @param boardConfig 게시판 접근 설정
+	 * @param boardAdminIds 게시판 관리자 사용자 식별자 목록
+	 * @return 댓글을 읽을 수 있으며 작성자 본인이면 {@code true}
+	 */
 	public static boolean canUpdateComment(
 		User updater,
 		Comment comment,
@@ -173,6 +256,15 @@ public final class CommunityPermissionPolicy {
 				updater, comment.getWriter() != null ? comment.getWriter().getId() : null);
 	}
 
+	/**
+	 * 사용자가 댓글을 삭제할 수 있는지 계산합니다.
+	 *
+	 * @param deleter 삭제할 사용자
+	 * @param comment 대상 댓글
+	 * @param boardConfig 게시판 접근 설정
+	 * @param boardAdminIds 게시판 관리자 사용자 식별자 목록
+	 * @return 댓글 삭제가 허용되면 {@code true}
+	 */
 	public static boolean canDeleteComment(
 		User deleter,
 		Comment comment,
@@ -184,14 +276,27 @@ public final class CommunityPermissionPolicy {
 				deleter, comment.getWriter() != null ? comment.getWriter().getId() : null, boardAdminIds);
 	}
 
-	/** 읽기 및 대상 생존이 이미 보장된 응답 목록에서 수정 가능 여부를 계산합니다. */
+	/**
+	 * 읽기 및 대상 생존이 이미 보장된 콘텐츠의 수정 가능 여부를 계산합니다.
+	 *
+	 * @param updater 수정할 사용자
+	 * @param writerId 콘텐츠 작성자 식별자
+	 * @return 활성 사용자가 작성자 본인이면 {@code true}
+	 */
 	public static boolean canUpdateReadableContent(User updater, String writerId) {
 		return isActiveUser(updater)
 			&& writerId != null
 			&& writerId.equals(updater.getId());
 	}
 
-	/** 읽기 및 대상 생존이 이미 보장된 응답 목록에서 삭제 가능 여부를 계산합니다. */
+	/**
+	 * 읽기 및 대상 생존이 이미 보장된 콘텐츠의 삭제 가능 여부를 계산합니다.
+	 *
+	 * @param deleter 삭제할 사용자
+	 * @param writerId 콘텐츠 작성자 식별자
+	 * @param boardAdminIds 게시판 관리자 사용자 식별자 목록
+	 * @return 작성자 본인, 게시판 관리자 또는 전역 삭제 권한자이면 {@code true}
+	 */
 	public static boolean canDeleteReadableContent(
 		User deleter,
 		String writerId,
@@ -203,16 +308,34 @@ public final class CommunityPermissionPolicy {
 				|| deleter.getRoles().stream().anyMatch(GLOBAL_DELETE_ROLES::contains));
 	}
 
+	/**
+	 * 게시판이 존재하고 삭제되지 않았는지 반환합니다.
+	 *
+	 * @param board 확인할 게시판
+	 * @return 생존한 게시판이면 {@code true}
+	 */
 	public static boolean isAlive(Board board) {
 		return board != null && !Boolean.TRUE.equals(board.getIsDeleted());
 	}
 
+	/**
+	 * 게시글과 상위 게시판이 존재하고 삭제되지 않았는지 반환합니다.
+	 *
+	 * @param post 확인할 게시글
+	 * @return 게시글과 상위 게시판이 모두 생존하면 {@code true}
+	 */
 	public static boolean isAlive(Post post) {
 		return post != null
 			&& !Boolean.TRUE.equals(post.getIsDeleted())
 			&& isAlive(post.getBoard());
 	}
 
+	/**
+	 * 댓글, 상위 게시글 및 게시판이 존재하고 삭제되지 않았는지 반환합니다.
+	 *
+	 * @param comment 확인할 댓글
+	 * @return 댓글과 모든 상위 리소스가 생존하면 {@code true}
+	 */
 	public static boolean isAlive(Comment comment) {
 		return comment != null
 			&& !Boolean.TRUE.equals(comment.getIsDeleted())
