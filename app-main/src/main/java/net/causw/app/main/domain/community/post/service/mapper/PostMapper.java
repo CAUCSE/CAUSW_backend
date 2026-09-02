@@ -217,7 +217,9 @@ public class PostMapper {
 			return StaticValue.INACTIVE_USER_NICKNAME;
 		}
 		if (result.isAnonymous()) {
-			return StaticValue.ANONYMOUS_USER_NICKNAME;
+			return result.anonymousNickname() != null
+				? result.anonymousNickname()
+				: StaticValue.ANONYMOUS_USER_NICKNAME;
 		}
 		return result.writerNickname();
 	}
@@ -235,7 +237,9 @@ public class PostMapper {
 			return StaticValue.INACTIVE_USER_NICKNAME;
 		}
 		if (post.getIsAnonymous()) {
-			return StaticValue.ANONYMOUS_USER_NICKNAME;
+			return post.getAnonymousNickname() != null
+				? post.getAnonymousNickname()
+				: StaticValue.ANONYMOUS_USER_NICKNAME;
 		}
 		return writer.getNickname();
 	}

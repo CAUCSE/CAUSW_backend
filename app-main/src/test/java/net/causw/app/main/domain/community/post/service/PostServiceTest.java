@@ -27,6 +27,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -51,6 +52,7 @@ import net.causw.app.main.domain.community.board.entity.BoardWriteScope;
 import net.causw.app.main.domain.community.board.service.implementation.BoardAccessManager;
 import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
 import net.causw.app.main.domain.community.board.service.implementation.BoardReader;
+import net.causw.app.main.domain.community.comment.util.AnonymousNicknameGenerator;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.enums.PostCategory;
 import net.causw.app.main.domain.community.post.repository.query.PostCursorResult;
@@ -126,6 +128,9 @@ public class PostServiceTest {
 
 	@Mock
 	UserProfileImageReader userProfileImageReader;
+
+	@Mock
+	AnonymousNicknameGenerator anonymousNicknameGenerator;
 
 	@Test
 	void createRejectsSystemNoticeThroughGeneralPostFlow() {
@@ -347,6 +352,7 @@ public class PostServiceTest {
 			given(boardReader.getById(boardId)).willReturn(board);
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(anonymousBoardConfig);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(boardAdminIds);
+			given(anonymousNicknameGenerator.generate()).willReturn("성실한 호퍼 7");
 			given(postWriter.save(any(Post.class))).willReturn(mockPost);
 			given(postImageManager.uploadAndBuildForCreate(any(Post.class), isNull(), isNull()))
 				.willReturn(List.of());
@@ -356,7 +362,9 @@ public class PostServiceTest {
 
 			// then
 			assertThat(result.isAnonymous()).isTrue();
-			verify(postWriter, times(1)).save(any(Post.class));
+			ArgumentCaptor<Post> savedPostCaptor = ArgumentCaptor.forClass(Post.class);
+			verify(postWriter, times(1)).save(savedPostCaptor.capture());
+			assertThat(savedPostCaptor.getValue().getAnonymousNickname()).isEqualTo("성실한 호퍼 7");
 		}
 
 		@DisplayName("비익명 게시판에 익명 게시글 작성 시 실패")
@@ -775,6 +783,7 @@ public class PostServiceTest {
 				0L,
 				false,
 				null,
+				null,
 				false,
 				false,
 				true,
@@ -836,6 +845,7 @@ public class PostServiceTest {
 				0L,
 				0L,
 				false,
+				null,
 				null,
 				true,
 				false,
@@ -903,6 +913,7 @@ public class PostServiceTest {
 				0L,
 				false,
 				null,
+				null,
 				false,
 				false,
 				true,
@@ -927,6 +938,7 @@ public class PostServiceTest {
 				8L,
 				0L,
 				false,
+				null,
 				null,
 				false,
 				false,
@@ -1006,6 +1018,7 @@ public class PostServiceTest {
 				0L,
 				false,
 				null,
+				null,
 				false,
 				false,
 				true,
@@ -1079,6 +1092,7 @@ public class PostServiceTest {
 				0L,
 				false,
 				null,
+				null,
 				false,
 				false,
 				true,
@@ -1140,6 +1154,7 @@ public class PostServiceTest {
 				0L,
 				false,
 				null,
+				null,
 				false,
 				false,
 				true,
@@ -1197,6 +1212,7 @@ public class PostServiceTest {
 				10L,
 				0L,
 				false,
+				null,
 				null,
 				false,
 				false,
@@ -1337,6 +1353,7 @@ public class PostServiceTest {
 				0L,
 				true, // 익명 게시글
 				null,
+				null,
 				false,
 				false,
 				true,
@@ -1399,6 +1416,7 @@ public class PostServiceTest {
 				0L,
 				false, // 일반 게시글
 				null,
+				null,
 				false,
 				false,
 				true,
@@ -1423,6 +1441,7 @@ public class PostServiceTest {
 				8L,
 				0L,
 				true, // 익명 게시글
+				null,
 				null,
 				false,
 				false,
@@ -1494,7 +1513,7 @@ public class PostServiceTest {
 				.willReturn(List.of(freeBoard, successBoard));
 
 			PostCursorResult postCursorResult = new PostCursorResult(
-				"post-id", "테스트 제목", "게시글 내용", 5L, 10L, 0L, false, null, false, false, true,
+				"post-id", "테스트 제목", "게시글 내용", 5L, 10L, 0L, false, null, null, false, false, true,
 				"writer-id", "작성자", "닉네임", 2020, UserState.ACTIVE, ProfileImageType.CUSTOM, "profile-url",
 				LocalDateTime.now(), LocalDateTime.now(), freeBoardId, "자유 게시판", null);
 			Slice<PostCursorResult> slice = new SliceImpl<>(List.of(postCursorResult), PageRequest.of(0, 20), false);

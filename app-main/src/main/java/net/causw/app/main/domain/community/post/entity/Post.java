@@ -70,6 +70,9 @@ public class Post extends BaseEntity {
 	@ColumnDefault("false")
 	private Boolean isAnonymous;
 
+	@Column(name = "anonymous_nickname", length = 30)
+	private String anonymousNickname;
+
 	@Column(name = "is_question", nullable = false)
 	@ColumnDefault("false")
 	private Boolean isQuestion;
@@ -199,5 +202,17 @@ public class Post extends BaseEntity {
 
 	public void increaseViewCount() {
 		this.viewCount++;
+	}
+
+	/**
+	 * 익명 닉네임이 아직 없을 때만 배정한다.
+	 *
+	 * <p>게시글은 존속 기간 동안 한 번 배정된 값을 그대로 유지해야 하므로, 이미 값이 있으면
+	 * 아무 것도 하지 않는다 (수정 시 익명 여부를 껐다 켜도 값이 바뀌지 않도록 하기 위함).</p>
+	 */
+	public void assignAnonymousNicknameIfAbsent(String nickname) {
+		if (this.anonymousNickname == null) {
+			this.anonymousNickname = nickname;
+		}
 	}
 }

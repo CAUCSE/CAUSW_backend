@@ -6,7 +6,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import org.springframework.stereotype.Component;
 
 /**
- * 익명 댓글에 부여할 "수식어 + 명사 + 숫자" 형태의 랜덤 닉네임을 생성한다.
+ * 익명 게시글/댓글에 부여할 "수식어 + 명사 + 숫자" 형태의 랜덤 닉네임을 생성한다.
  *
  * <p>후보 하나를 무작위로 생성만 할 뿐 중복 여부는 판단하지 않는다. 실제 유일성은
  * {@code CommentAnonymousNicknameResolver}가 DB 유니크 제약과 재시도로 보장한다.</p>
