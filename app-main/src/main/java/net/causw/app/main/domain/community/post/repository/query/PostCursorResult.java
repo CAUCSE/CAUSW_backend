@@ -20,6 +20,7 @@ public record PostCursorResult(
 	long viewCount,
 	boolean isAnonymous,
 	String anonymousNickname,
+	ProfileImageType anonymousProfileImageType,
 	String voteId,
 	boolean isDeleted,
 	boolean isCrawled,

@@ -82,9 +82,9 @@ class CommentMapperTest {
 	@Test
 	@DisplayName("삭제된 루트 댓글은 tombstone으로 반환하고 미삭제 답글은 그대로 유지한다")
 	void deletedRootCommentIsMappedAsTombstoneWithAliveChildComment() {
-		Comment rootComment = Comment.ofRoot("삭제될 댓글", false, null, viewer, post);
+		Comment rootComment = Comment.ofRoot("삭제될 댓글", false, null, null, viewer, post);
 		ReflectionTestUtils.setField(rootComment, "id", "root-comment-id");
-		Comment childComment = Comment.ofChildComment("남아 있는 답글", false, null, viewer, rootComment);
+		Comment childComment = Comment.ofChildComment("남아 있는 답글", false, null, null, viewer, rootComment);
 		ReflectionTestUtils.setField(childComment, "id", "child-comment-id");
 		rootComment.setChildCommentList(List.of(childComment));
 		rootComment.delete();
@@ -122,8 +122,8 @@ class CommentMapperTest {
 	@Test
 	@DisplayName("삭제된 답글은 tombstone으로 반환한다")
 	void deletedChildCommentIsMappedAsTombstone() {
-		Comment rootComment = Comment.ofRoot("루트 댓글", false, null, viewer, post);
-		Comment childComment = Comment.ofChildComment("삭제될 답글", false, null, viewer, rootComment);
+		Comment rootComment = Comment.ofRoot("루트 댓글", false, null, null, viewer, post);
+		Comment childComment = Comment.ofChildComment("삭제될 답글", false, null, null, viewer, rootComment);
 		childComment.delete();
 		ChildCommentMapper mapper = new ChildCommentMapper();
 

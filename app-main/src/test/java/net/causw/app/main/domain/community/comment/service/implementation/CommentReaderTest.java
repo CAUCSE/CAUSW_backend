@@ -96,9 +96,9 @@ class CommentReaderTest {
 			User writer = ObjectFixtures.getUser();
 			Board board = ObjectFixtures.getBoard();
 			Post post = ObjectFixtures.getPost(writer, board);
-			Comment root = Comment.ofRoot("루트 댓글", false, null, writer, post);
+			Comment root = Comment.ofRoot("루트 댓글", false, null, null, writer, post);
 			ReflectionTestUtils.setField(root, "id", "root-comment-id");
-			Comment childComment = Comment.ofChildComment("답글", false, null, writer, root);
+			Comment childComment = Comment.ofChildComment("답글", false, null, null, writer, root);
 			ReflectionTestUtils.setField(childComment, "id", "child-comment-id");
 			Pageable pageable = PageRequest.of(0, 10);
 

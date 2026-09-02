@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.community.comment.entity.CommentAnonymousNickname;
 import net.causw.app.main.domain.community.comment.repository.CommentAnonymousNicknameRepository;
+import net.causw.app.main.domain.user.account.enums.user.ProfileImageType;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,7 +26,8 @@ public class CommentAnonymousNicknameWriter {
 	private final CommentAnonymousNicknameRepository commentAnonymousNicknameRepository;
 
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
-	public void save(String postId, String userId, String nickname) {
-		commentAnonymousNicknameRepository.saveAndFlush(CommentAnonymousNickname.of(postId, userId, nickname));
+	public void save(String postId, String userId, String nickname, ProfileImageType profileImageType) {
+		commentAnonymousNicknameRepository.saveAndFlush(
+			CommentAnonymousNickname.of(postId, userId, nickname, profileImageType));
 	}
 }
