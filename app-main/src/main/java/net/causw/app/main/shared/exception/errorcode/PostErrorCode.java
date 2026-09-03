@@ -24,7 +24,8 @@ public enum PostErrorCode implements BaseResponseCode {
 	IMAGE_EXISTING_URL_REQUIRED(HttpStatus.BAD_REQUEST, "POST_400_007", "type=existing인 이미지는 url이 필수입니다."),
 	IMAGE_NEW_FILE_INDEX_REQUIRED(HttpStatus.BAD_REQUEST, "POST_400_008", "type=new인 이미지는 fileIndex가 필수입니다."),
 	IMAGE_EXISTING_URL_NOT_FOUND(HttpStatus.BAD_REQUEST, "POST_400_009", "기존 게시글에 존재하지 않는 이미지 URL입니다."),
-	POST_NOTICE_BOARD_NOT_ALLOW_ANONYMOUS(HttpStatus.BAD_REQUEST, "POST_400_010", "공지사항 게시판에서 익명으로 작성할 수 없습니다.");
+	POST_NOTICE_BOARD_NOT_ALLOW_ANONYMOUS(HttpStatus.BAD_REQUEST, "POST_400_010", "공지사항 게시판에서 익명으로 작성할 수 없습니다."),
+	POST_CATEGORY_NOT_SUPPORTED(HttpStatus.BAD_REQUEST, "POST_400_011", "성격 분류는 크롤링 소식 게시글에만 지정할 수 있습니다.");
 
 	private final HttpStatus status;
 	private final String code;

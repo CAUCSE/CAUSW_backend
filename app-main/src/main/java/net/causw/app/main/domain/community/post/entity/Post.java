@@ -201,6 +201,10 @@ public class Post extends BaseEntity {
 		this.vote = vote;
 	}
 
+	public void updateCategory(PostCategory category) {
+		this.category = category;
+	}
+
 	public void setCrawled() {
 		this.isCrawled = true;
 	}

@@ -22,6 +22,7 @@ CrawlScheduler
       → CREATED / UPDATED / UNCHANGED
   → CrawledToPostTransferService
     → Post 생성 또는 수정
+    → 신규 생성 시 PostCategoryClassifier로 성격 분류
     → CrawledNotice.post 연결
 ```
 
@@ -41,6 +42,7 @@ domain/integration/crawled/
 └── service/
     ├── CrawledArticleCleaner
     ├── CrawledToPostTransferService
+    ├── PostCategoryBackfillService
     └── implementation/     # CrawledNoticeReader/Writer
 ```
 
@@ -75,6 +77,11 @@ domain/integration/crawled/
 ## Post 변환
 
 `CrawledNotice.target_board_id`는 수집 당시 `SiteConfig`의 저장 대상 게시판을 보존한다. Transfer는 게시판 이름을 사용하지 않고 이 ID로 Board를 조회한다. `post_id`는 원본 공지와 내부 Post를 직접 연결한다. 기존 데이터는 마이그레이션에서 제목이 유일하게 매칭되는 경우만 백필한다. 매핑되지 않은 기존 행은 첫 변환 시 제목으로 한 번 탐색한 후 `post_id`를 저장한다. 이후에는 제목이 바뀌어도 같은 Post를 수정한다.
+
+## 성격 분류
+
+Post를 새로 생성할 때만 `PostCategoryClassifier`가 제목 키워드로 성격(`Post.category`)을 지정한다. 규칙은 채용 → 대외활동 → 행사·특강 → 연구 → 학사 순으로 평가해 먼저 걸리는 카테고리로 확정하고, 어디에도 걸리지 않으면 미분류(null)로 남긴다. 자동 분류는 `ETC`를 지정하지 않으며, 확인 결과 5개 분류에 해당하지 않는 공지만 관리자가 `ETC`로 지정한다. 갱신 시 재분류하지 않는 것은 관리자가 지정한 성격을 보존하기 위함이다. 목록의 `article_category_selector`가 수집하는 배지는 모든 글에서 값이 같아 분류에 쓰지 않는다.
+관리자는 `GET /api/v2/admin/posts/uncategorized`로 미분류 게시글을 조회하고 `PATCH /api/v2/admin/posts/{postId}/category`로 성격을 지정한다. 이미 변환된 과거 공지는 `POST /api/v2/admin/crawled-notices/categories/backfill`로 소급 분류하며, 새 Post를 만들지 않아 알림이 발행되지 않고 `updated_at`도 변경되지 않는다.
 
 ## 실패 정책
 

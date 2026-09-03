@@ -3,6 +3,7 @@ package net.causw.app.main.domain.community.post.api.v2.dto.response;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import net.causw.app.main.domain.community.post.enums.PostCategory;
 import net.causw.app.main.shared.dto.ProfileImageDto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -37,6 +38,8 @@ public record PostResponse(
 	@Schema(description = "익명글 여부", example = "False") Boolean isAnonymous,
 
 	@Schema(description = "크롤링 게시글 여부", example = "False") Boolean isCrawled,
+
+	@Schema(description = "게시글 성격 (미분류는 null)", example = "RECRUIT", nullable = true) PostCategory category,
 
 	@Schema(description = "게시글 작성자 여부", example = "False") Boolean isOwner,
 
