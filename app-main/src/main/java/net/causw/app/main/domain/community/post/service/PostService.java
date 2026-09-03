@@ -24,6 +24,7 @@ import net.causw.app.main.domain.community.board.service.implementation.BoardAcc
 import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
 import net.causw.app.main.domain.community.board.service.implementation.BoardReader;
 import net.causw.app.main.domain.community.common.service.CommunityPermissionPolicy;
+import net.causw.app.main.domain.community.common.util.AnonymousNicknameGenerator;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.enums.PostCategory;
 import net.causw.app.main.domain.community.post.repository.query.PostCursorResult;
@@ -75,6 +76,7 @@ public class PostService {
 	private final FileReader fileReader;
 	private final ViewCountManager viewCountManager;
 	private final CrawledNoticeReader crawledNoticeReader;
+	private final AnonymousNicknameGenerator anonymousNicknameGenerator;
 
 	/**
 	 * 게시글을 생성합니다. 게시글 내용과 첨부 이미지를 저장합니다.
@@ -104,6 +106,10 @@ public class PostService {
 
 		// Post 엔티티 생성 (이미지 없이 먼저 생성)
 		Post post = PostMapper.fromCreateCommand(command, writer, board, List.of());
+		if (Boolean.TRUE.equals(command.isAnonymous())) {
+			post.assignAnonymousIdentityIfAbsent(
+				anonymousNicknameGenerator.generate(), anonymousNicknameGenerator.generateProfileImageType());
+		}
 		Post savedPost = postWriter.save(post);
 
 		// 공식 공지글인 경우 알림 발송 이벤트
@@ -191,6 +197,10 @@ public class PostService {
 			post, command.newImageFiles(), command.imageMetas());
 
 		// 게시글 업데이트
+		if (Boolean.TRUE.equals(command.isAnonymous())) {
+			post.assignAnonymousIdentityIfAbsent(
+				anonymousNicknameGenerator.generate(), anonymousNicknameGenerator.generateProfileImageType());
+		}
 		Post updatedPost = postWriter.update(
 			post,
 			command.title(),

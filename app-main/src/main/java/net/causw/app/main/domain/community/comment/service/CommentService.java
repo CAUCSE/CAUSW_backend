@@ -22,6 +22,7 @@ import net.causw.app.main.domain.community.comment.service.dto.CommentListQuery;
 import net.causw.app.main.domain.community.comment.service.dto.CommentMeta;
 import net.causw.app.main.domain.community.comment.service.dto.CommentResult;
 import net.causw.app.main.domain.community.comment.service.dto.CommentUpdateCommand;
+import net.causw.app.main.domain.community.comment.service.implementation.CommentAnonymousIdentity;
 import net.causw.app.main.domain.community.comment.service.implementation.CommentAnonymousNicknameResolver;
 import net.causw.app.main.domain.community.comment.service.implementation.CommentMapper;
 import net.causw.app.main.domain.community.comment.service.implementation.CommentMetaReader;
@@ -35,6 +36,7 @@ import net.causw.app.main.domain.community.post.service.implementation.PostReade
 import net.causw.app.main.domain.notification.notification.event.CommentChildCommentCreatedEvent;
 import net.causw.app.main.domain.notification.notification.event.PostCommentCreatedEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.enums.user.ProfileImageType;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.relation.service.implementation.BlockReader;
 import net.causw.app.main.shared.exception.errorcode.ChildCommentErrorCode;
@@ -93,14 +95,19 @@ public class CommentService {
 		validatePostWriterBlockAccess(creator, post, boardAdminIds);
 		commentValidator.validateChildCommentDepth(parentComment);
 
-		String anonymousNickname = Boolean.TRUE.equals(command.isAnonymous())
+		CommentAnonymousIdentity anonymousIdentity = Boolean.TRUE.equals(command.isAnonymous())
 			? commentAnonymousNicknameResolver.resolve(post.getId(), creator.getId())
+			: null;
+		String anonymousNickname = anonymousIdentity != null ? anonymousIdentity.nickname() : null;
+		ProfileImageType anonymousProfileImageType = anonymousIdentity != null
+			? anonymousIdentity.profileImageType()
 			: null;
 
 		Comment comment = parentComment == null
-			? Comment.ofRoot(command.content(), command.isAnonymous(), anonymousNickname, creator, post)
-			: Comment.ofChildComment(command.content(), command.isAnonymous(), anonymousNickname, creator,
-				parentComment);
+			? Comment.ofRoot(command.content(), command.isAnonymous(), anonymousNickname, anonymousProfileImageType,
+				creator, post)
+			: Comment.ofChildComment(command.content(), command.isAnonymous(), anonymousNickname,
+				anonymousProfileImageType, creator, parentComment);
 
 		commentWriter.save(comment);
 

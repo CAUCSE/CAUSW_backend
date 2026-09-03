@@ -16,12 +16,13 @@ import net.causw.global.constant.StaticValue;
  *
  * <p>{@link CommentResult}에서 공통으로 사용합니다.
  * 익명 댓글이거나 탈퇴·비활성 유저인 경우 닉네임을 고정값으로 치환하고,
- * 개인 정보(이름, 입학연도, 프로필 이미지)를 노출하지 않습니다.</p>
+ * 개인 식별 정보(이름, 닉네임, 프로필 이미지)를 노출하지 않습니다. 다만 입학연도는
+ * 개인 식별 정보로 보지 않아 익명이어도 그대로 노출합니다.</p>
  *
  * @param writerName            작성자 실명 (익명 댓글이면 {@code null})
  * @param writerNickname        작성자 닉네임 (익명 댓글이면 {@code null})
  * @param displayWriterNickname 화면에 표시되는 닉네임 (익명·탈퇴 시 고정 문자열로 치환)
- * @param writerAdmissionYear   작성자 입학연도 (익명 댓글이면 {@code null})
+ * @param writerAdmissionYear   작성자 입학연도 (익명이어도 노출되지만, 작성자가 없거나 삭제된 댓글이면 {@code null})
  * @param writerProfileImage    작성자 프로필 이미지 정보 (익명/차단/추방/탈퇴 시 GHOST)
  * @param updatable             현재 조회 유저가 이 댓글을 수정할 수 있는지 여부
  * @param deletable             현재 조회 유저가 이 댓글을 삭제할 수 있는지 여부
@@ -79,17 +80,21 @@ public record CommentAuthorInfo(
 			displayWriterNickname = writer != null ? writer.getNickname() : null;
 		}
 
+		// 입학연도는 개인 식별 정보가 아니므로 실제 익명 댓글이면 노출한다.
+		// 단, 삭제된 댓글은 tombstone 처리를 위해 isAnonymous가 강제로 true로 넘어오므로 제외한다.
+		boolean isTombstone = Boolean.TRUE.equals(comment.getIsDeleted());
 		String writerName = null;
 		String writerNickname = null;
-		Integer writerAdmissionYear = null;
+		Integer writerAdmissionYear = (writer != null && !isTombstone) ? writer.getAdmissionYear() : null;
 		ProfileImageDto writerProfileImage;
 		if (Boolean.TRUE.equals(isAnonymous) || writer == null) {
-			// 익명 댓글이거나 작성자가 없는 경우 → GHOST 타입, url null
-			writerProfileImage = ProfileImageDto.anonymous();
+			// 익명 댓글이거나 작성자가 없는 경우 → 게시글 내에서 배정된 랜덤 프로필, 없으면 GHOST
+			writerProfileImage = comment.getAnonymousProfileImageType() != null
+				? ProfileImageDto.of(comment.getAnonymousProfileImageType(), null)
+				: ProfileImageDto.anonymous();
 		} else {
 			writerName = writer.getName();
 			writerNickname = writer.getNickname();
-			writerAdmissionYear = writer.getAdmissionYear();
 
 			if (isBlocked) {
 				// 차단된 유저는 GHOST 처리 (비식별)

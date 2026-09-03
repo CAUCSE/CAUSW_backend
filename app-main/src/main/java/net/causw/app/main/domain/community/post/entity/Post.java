@@ -12,6 +12,7 @@ import net.causw.app.main.domain.community.form.entity.Form;
 import net.causw.app.main.domain.community.post.enums.PostCategory;
 import net.causw.app.main.domain.community.vote.entity.Vote;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.enums.user.ProfileImageType;
 import net.causw.app.main.shared.entity.BaseEntity;
 
 import jakarta.persistence.CascadeType;
@@ -69,6 +70,13 @@ public class Post extends BaseEntity {
 	@Column(name = "is_anonymous", nullable = false)
 	@ColumnDefault("false")
 	private Boolean isAnonymous;
+
+	@Column(name = "anonymous_nickname", length = 30)
+	private String anonymousNickname;
+
+	@Column(name = "anonymous_profile_image_type", length = 20)
+	@Enumerated(EnumType.STRING)
+	private ProfileImageType anonymousProfileImageType;
 
 	@Column(name = "is_question", nullable = false)
 	@ColumnDefault("false")
@@ -199,5 +207,18 @@ public class Post extends BaseEntity {
 
 	public void increaseViewCount() {
 		this.viewCount++;
+	}
+
+	/**
+	 * 익명 닉네임/프로필 이미지가 아직 없을 때만 배정한다.
+	 *
+	 * <p>게시글은 존속 기간 동안 한 번 배정된 값을 그대로 유지해야 하므로, 이미 값이 있으면
+	 * 아무 것도 하지 않는다 (수정 시 익명 여부를 껐다 켜도 값이 바뀌지 않도록 하기 위함).</p>
+	 */
+	public void assignAnonymousIdentityIfAbsent(String nickname, ProfileImageType profileImageType) {
+		if (this.anonymousNickname == null) {
+			this.anonymousNickname = nickname;
+			this.anonymousProfileImageType = profileImageType;
+		}
 	}
 }

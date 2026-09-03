@@ -217,14 +217,21 @@ public class PostMapper {
 			return StaticValue.INACTIVE_USER_NICKNAME;
 		}
 		if (result.isAnonymous()) {
-			return StaticValue.ANONYMOUS_USER_NICKNAME;
+			return result.anonymousNickname() != null
+				? result.anonymousNickname()
+				: StaticValue.ANONYMOUS_USER_NICKNAME;
 		}
 		return result.writerNickname();
 	}
 
 	private static ProfileImageDto resolveWriterProfileImage(PostCursorResult result) {
-		if (isInactiveWriter(result.writerUserState(), !result.hasWriter()) || result.isAnonymous()) {
+		if (isInactiveWriter(result.writerUserState(), !result.hasWriter())) {
 			return ProfileImageDto.GHOST;
+		}
+		if (result.isAnonymous()) {
+			return result.anonymousProfileImageType() != null
+				? ProfileImageDto.of(result.anonymousProfileImageType(), null)
+				: ProfileImageDto.GHOST;
 		}
 		return ProfileImageDto.of(result.writerProfileImageType(), result.writerProfileImageUrl());
 	}
@@ -235,14 +242,21 @@ public class PostMapper {
 			return StaticValue.INACTIVE_USER_NICKNAME;
 		}
 		if (post.getIsAnonymous()) {
-			return StaticValue.ANONYMOUS_USER_NICKNAME;
+			return post.getAnonymousNickname() != null
+				? post.getAnonymousNickname()
+				: StaticValue.ANONYMOUS_USER_NICKNAME;
 		}
 		return writer.getNickname();
 	}
 
 	private static ProfileImageDto resolveWriterProfileImage(Post post, UserProfileImage writerProfileImage) {
-		if (isInactiveWriter(post.getWriter()) || post.getIsAnonymous()) {
+		if (isInactiveWriter(post.getWriter())) {
 			return ProfileImageDto.GHOST;
+		}
+		if (post.getIsAnonymous()) {
+			return post.getAnonymousProfileImageType() != null
+				? ProfileImageDto.of(post.getAnonymousProfileImageType(), null)
+				: ProfileImageDto.GHOST;
 		}
 		return ProfileImageDto.from(post.getWriter(), writerProfileImage);
 	}

@@ -46,8 +46,8 @@ class ChildCommentReportValidatorTest {
 		User writer = ObjectFixtures.getCertifiedUserWithId("writer-id");
 		User reporter = ObjectFixtures.getCertifiedUserWithId("reporter-id");
 		Post post = ObjectFixtures.getPost(writer, ObjectFixtures.getBoardV2WithId("board-id"));
-		Comment rootComment = Comment.ofRoot("루트 댓글", false, null, writer, post);
-		Comment childComment = Comment.ofChildComment("답글", false, null, writer, rootComment);
+		Comment rootComment = Comment.ofRoot("루트 댓글", false, null, null, writer, post);
+		Comment childComment = Comment.ofChildComment("답글", false, null, null, writer, rootComment);
 		rootComment.delete();
 
 		assertThatCode(() -> ChildCommentReportValidator.validateCreate(reporter, childComment, false))
@@ -60,8 +60,8 @@ class ChildCommentReportValidatorTest {
 		User writer = ObjectFixtures.getCertifiedUserWithId("writer-id");
 		User reporter = ObjectFixtures.getCertifiedUserWithId("reporter-id");
 		Post post = ObjectFixtures.getPost(writer, ObjectFixtures.getBoardV2WithId("board-id"));
-		Comment rootComment = Comment.ofRoot("루트 댓글", false, null, writer, post);
-		Comment childComment = Comment.ofChildComment("답글", false, null, writer, rootComment);
+		Comment rootComment = Comment.ofRoot("루트 댓글", false, null, null, writer, post);
+		Comment childComment = Comment.ofChildComment("답글", false, null, null, writer, rootComment);
 		post.setIsDeleted(true);
 
 		assertThatThrownBy(() -> ChildCommentReportValidator.validateCreate(reporter, childComment, false))

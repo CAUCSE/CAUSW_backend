@@ -1,15 +1,19 @@
-package net.causw.app.main.domain.community.comment.util;
+package net.causw.app.main.domain.community.common.util;
 
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.springframework.stereotype.Component;
 
+import net.causw.app.main.domain.user.account.enums.user.ProfileImageType;
+
 /**
- * 익명 댓글에 부여할 "수식어 + 명사 + 숫자" 형태의 랜덤 닉네임을 생성한다.
+ * 익명 게시글/댓글에 부여할 "수식어 + 명사 + 숫자" 형태의 랜덤 닉네임과,
+ * 기본 제공 4종 중 랜덤 프로필 이미지 타입을 생성한다.
  *
- * <p>후보 하나를 무작위로 생성만 할 뿐 중복 여부는 판단하지 않는다. 실제 유일성은
- * {@code CommentAnonymousNicknameResolver}가 DB 유니크 제약과 재시도로 보장한다.</p>
+ * <p>후보 하나를 무작위로 생성만 할 뿐 중복 여부는 판단하지 않는다. 닉네임의 실제 유일성이
+ * 필요한 경우(댓글) {@code CommentAnonymousNicknameResolver}가 DB 유니크 제약과 재시도로
+ * 보장하며, 프로필 이미지 타입은 애초에 유일성 제약이 없다.</p>
  */
 @Component
 public class AnonymousNicknameGenerator {
@@ -35,11 +39,19 @@ public class AnonymousNicknameGenerator {
 		"매카시", "노이스", "잡스", "워즈니악", "게이츠", "엘리슨", "베이조스", "머스크", "페이지",
 		"브린", "피차이", "나델라", "저커버그", "나카모토", "마윈");
 
+	private static final List<ProfileImageType> PROFILE_IMAGE_TYPES = List.of(
+		ProfileImageType.MALE_1, ProfileImageType.MALE_2, ProfileImageType.FEMALE_1, ProfileImageType.FEMALE_2);
+
 	public String generate() {
 		ThreadLocalRandom random = ThreadLocalRandom.current();
 		String trait = TRAITS.get(random.nextInt(TRAITS.size()));
 		String noun = NOUNS.get(random.nextInt(NOUNS.size()));
 		int number = NUMBER_MIN + random.nextInt(NUMBER_MAX - NUMBER_MIN + 1);
 		return trait + " " + noun + " " + number;
+	}
+
+	public ProfileImageType generateProfileImageType() {
+		ThreadLocalRandom random = ThreadLocalRandom.current();
+		return PROFILE_IMAGE_TYPES.get(random.nextInt(PROFILE_IMAGE_TYPES.size()));
 	}
 }
