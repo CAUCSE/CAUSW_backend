@@ -49,7 +49,18 @@ public class CommentAnonymousNicknameResolver {
 	private final CommentAnonymousNicknameWriter commentAnonymousNicknameWriter;
 	private final AnonymousNicknameGenerator anonymousNicknameGenerator;
 
+	/**
+	 * 게시글(postId) 안에서 작성자(userId)가 사용할 익명 닉네임+프로필이미지를 확정해 반환한다.
+	 *
+	 * <p>같은 게시글에 같은 작성자가 이미 익명 댓글을 단 적이 있으면 그때 배정된 값을
+	 * 그대로 재사용하고, 처음이면 새로 발급한다.</p>
+	 *
+	 * @param postId 댓글이 달리는 게시글 ID (재사용 스코프의 기준)
+	 * @param userId 댓글 작성자 ID
+	 * @return 이번 요청에서 사용할 (닉네임, 프로필이미지타입) 조합
+	 */
 	public CommentAnonymousIdentity resolve(String postId, String userId) {
+		// (post_id, user_id) 조합으로 이미 발급된 매핑이 있으면 재사용하고, 없을 때만 새로 발급한다.
 		return commentAnonymousNicknameRepository.findByPostIdAndUserId(postId, userId)
 			.map(entity -> new CommentAnonymousIdentity(entity.getNickname(), entity.getProfileImageType()))
 			.orElseGet(() -> insertUnusedIdentity(postId, userId));
