@@ -449,12 +449,12 @@ class CommunityPermissionPolicyTest {
 		}
 
 		@Test
-		@DisplayName("학과가 null인 사용자는 학과 제한 게시판에 접근할 수 없다")
-		void nullDepartment_deniesAccessToRestrictedBoard() {
+		@DisplayName("학과가 null인 사용자는 학과 미확정 레거시 유저로 간주하여 학과 제한 게시판에 접근할 수 있다")
+		void nullDepartment_allowsAccessToRestrictedBoard() {
 			BoardConfig config = boardConfigWithDepartments(Set.of(Department.SCHOOL_OF_SW));
 			User viewer = userWithDepartment(null);
 
-			assertThat(CommunityPermissionPolicy.canReadBoard(viewer, board, config, BOARD_ADMIN_IDS)).isFalse();
+			assertThat(CommunityPermissionPolicy.canReadBoard(viewer, board, config, BOARD_ADMIN_IDS)).isTrue();
 		}
 
 		private BoardConfig boardConfigWithDepartments(Set<Department> departments) {
