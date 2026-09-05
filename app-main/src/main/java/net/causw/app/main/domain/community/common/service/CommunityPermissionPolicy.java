@@ -342,8 +342,13 @@ public final class CommunityPermissionPolicy {
 			&& isAlive(comment.getPost());
 	}
 
+	/**
+	 * department가 null인 유저는 학과 미확정 레거시 유저로 간주하여 제한 없이 허용한다.
+	 * 이 정책은 UserBoardSubscribeQueryRepository.departmentCondition()과 동일하게 유지되어야 한다.
+	 * TODO: department 백필 완료 후 null 허용 조건 제거
+	 */
 	private static boolean isDepartmentAllowed(Set<Department> allowed, Department department) {
-		return allowed.isEmpty() || (department != null && allowed.contains(department));
+		return allowed.isEmpty() || department == null || allowed.contains(department);
 	}
 
 	private static boolean matchesReadScope(AcademicStatus academicStatus, BoardReadScope readScope) {
