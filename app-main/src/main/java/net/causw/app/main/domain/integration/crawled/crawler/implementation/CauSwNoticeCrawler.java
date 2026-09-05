@@ -75,7 +75,7 @@ public class CauSwNoticeCrawler implements SiteCrawler {
 	public List<ArticleUrl> fetchList(CrawlContext context) {
 		SiteConfig siteConfig = context.siteConfig();
 		List<ArticleUrl> articleUrls = new ArrayList<>();
-		CrawlDateFormat dateFormat = CrawlDateFormat.resolve(CrawlerType.CAU_SW_NOTICE);
+		CrawlDateFormat dateFormat = CrawlDateFormat.YYYY_MM_DD_DOT;
 		log.debug("[크롤링] 공지 목록 수집 시작. siteId={}, maxPages={}, maxArticles={}",
 			siteConfig.getSiteId(), siteConfig.getMaxPages(), siteConfig.getMaxArticles());
 
@@ -124,7 +124,6 @@ public class CauSwNoticeCrawler implements SiteCrawler {
 			throw IntegrationErrorCode.CRAWL_PARSE_FAILED.toBaseException();
 		}
 		try {
-
 			LocalDate announceDate = crawlDateFormat.parse(dateElement.text().trim());
 			LocalDate today = LocalDate.now(KOREA_ZONE_ID);
 			return !announceDate.isBefore(today.minusDays(siteConfig.getMaxScanRangeDays()))

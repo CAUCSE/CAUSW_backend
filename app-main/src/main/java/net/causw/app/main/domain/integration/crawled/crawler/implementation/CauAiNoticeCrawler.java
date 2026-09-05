@@ -68,7 +68,7 @@ public class CauAiNoticeCrawler implements SiteCrawler {
 		Map<String, ArticleUrl> articleUrlsByExternalId = new LinkedHashMap<>();
 		log.debug("[크롤링] AI학과 공지 목록 수집 시작. siteId={}, maxPages={}, maxArticles={}",
 			siteConfig.getSiteId(), siteConfig.getMaxPages(), siteConfig.getMaxArticles());
-		CrawlDateFormat dateFormat = CrawlDateFormat.resolve(CrawlerType.CAU_AI_NOTICE);
+		CrawlDateFormat dateFormat = CrawlDateFormat.YYYY_MM_DD_HH_MM_SS;
 
 		for (int page = 1; page <= siteConfig.getMaxPages()
 			&& articleUrlsByExternalId.size() < siteConfig.getMaxArticles(); page++) {

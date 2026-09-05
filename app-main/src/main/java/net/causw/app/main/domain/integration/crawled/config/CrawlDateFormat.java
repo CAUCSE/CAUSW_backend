@@ -5,6 +5,7 @@ import java.time.format.DateTimeFormatter;
 
 public enum CrawlDateFormat {
 	YYYY_MM_DD("yyyy-MM-dd"),
+	YYYY_MM_DD_DOT("yyyy.MM.dd"),
 	YYYY_MM_DD_HH_MM_SS("yyyy-MM-dd HH:mm:ss");
 
 	private final DateTimeFormatter formatter;
