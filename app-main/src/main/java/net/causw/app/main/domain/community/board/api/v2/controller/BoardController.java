@@ -42,7 +42,8 @@ public class BoardController {
 		BoardGroup resolvedBoardGroup = boardGroup != null ? boardGroup : (isTab ? BoardGroup.NOTICE : null);
 		return ApiResponse.success(
 			boardReadableMapper
-				.toReadableListResponse(boardService.getReadableBoards(userDetails.getUser().getId(), resolvedBoardGroup)));
+				.toReadableListResponse(
+					boardService.getReadableBoards(userDetails.getUser().getId(), resolvedBoardGroup)));
 	}
 
 	@GetMapping("/writable")
