@@ -18,6 +18,7 @@ import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
@@ -38,7 +39,7 @@ public class BoardController {
 	public ApiResponse<BoardReadableListResponse> getAvailableBoards(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestParam(name = "boardGroup", required = false) BoardGroup boardGroup,
-		@RequestParam(name = "isTab", defaultValue = "false") boolean isTab) {
+		@Parameter(description = "Deprecated. boardGroup=NOTICE 사용을 권장합니다.", deprecated = true) @Deprecated(since = "4.0", forRemoval = true) @RequestParam(name = "isTab", defaultValue = "false") boolean isTab) {
 		BoardGroup resolvedBoardGroup = boardGroup != null ? boardGroup : (isTab ? BoardGroup.NOTICE : null);
 		return ApiResponse.success(
 			boardReadableMapper
