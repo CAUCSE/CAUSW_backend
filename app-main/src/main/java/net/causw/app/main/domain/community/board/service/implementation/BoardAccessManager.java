@@ -82,6 +82,9 @@ public class BoardAccessManager {
 
 	// tb_board_config의 is_notice 값과 요청받은 boardGroup을 매핑
 	private boolean isMatchingGroup(boolean isNoticeConfig, BoardGroup requestGroup) {
+		if (requestGroup == null) {
+			return true;
+		}
 		if (requestGroup == BoardGroup.NOTICE) {
 			return isNoticeConfig;
 		} else if (requestGroup == BoardGroup.COMMUNITY) {

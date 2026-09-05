@@ -18,6 +18,7 @@ import net.causw.app.main.domain.user.auth.userdetails.CustomUserDetails;
 import net.causw.app.main.shared.dto.ApiResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
@@ -34,22 +35,25 @@ public class BoardController {
 	@GetMapping("/available")
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "이용 가능한 게시판 목록", description = "현재 사용자가 이용 가능한 게시판의 id, name 목록을 표시 순서대로 반환합니다.\n"
-		+ "파라미터로 boardGroup 전달 시 해당 그룹(소식 = NOTICE, 소통 = COMMUNITY)에 맞는 게시판 목록을 반환합니다.")
+		+ "파라미터로 boardGroup 전달 시 해당 그룹(소식 = NOTICE, 소통 = COMMUNITY)에 맞는 게시판 목록을 반환합니다. 미지정 시 전체 게시판을 반환합니다. 기존 isTab=true 요청도 지원합니다.")
 	public ApiResponse<BoardReadableListResponse> getAvailableBoards(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
-		@RequestParam(name = "boardGroup") BoardGroup boardGroup) {
+		@RequestParam(name = "boardGroup", required = false) BoardGroup boardGroup,
+		@Parameter(description = "Deprecated. boardGroup=NOTICE 사용을 권장합니다.", deprecated = true) @Deprecated(since = "4.0", forRemoval = true) @RequestParam(name = "isTab", defaultValue = "false") boolean isTab) {
+		BoardGroup resolvedBoardGroup = boardGroup != null ? boardGroup : (isTab ? BoardGroup.NOTICE : null);
 		return ApiResponse.success(
 			boardReadableMapper
-				.toReadableListResponse(boardService.getReadableBoards(userDetails.getUser().getId(), boardGroup)));
+				.toReadableListResponse(
+					boardService.getReadableBoards(userDetails.getUser().getId(), resolvedBoardGroup)));
 	}
 
 	@GetMapping("/writable")
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "쓰기 가능한 게시판 목록", description = "현재 사용자가 쓰기 가능한 게시판의 id, name 목록을 표시 순서대로 반환합니다.\n"
-		+ "파라미터로 boardGroup 전달 시 해당 그룹(소식 = NOTICE, 소통 = COMMUNITY)에 맞는 게시판 목록을 반환합니다.")
+		+ "파라미터로 boardGroup 전달 시 해당 그룹(소식 = NOTICE, 소통 = COMMUNITY)에 맞는 게시판 목록을 반환합니다. 미지정 시 전체 게시판을 반환합니다.")
 	public ApiResponse<BoardWritableListResponse> getWritableBoards(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
-		@RequestParam(name = "boardGroup") BoardGroup boardGroup) {
+		@RequestParam(name = "boardGroup", required = false) BoardGroup boardGroup) {
 		return ApiResponse.success(
 			boardWritableMapper
 				.toWritableListResponse(boardService.getWritableBoards(userDetails.getUser().getId(), boardGroup)));
