@@ -102,13 +102,14 @@ class CauAiNoticeCrawlerTest {
 			// given
 			ArticleUrl articleUrl = new ArticleUrl(
 				"https://ai.cau.ac.kr/sub07/sub0701.php?category=1&view=detail&no=3491", "3491", "공지");
-			given(crawlHttpClient.fetch(articleUrl.url(), context.siteConfig())).willReturn("""
-				<section class='board'>
-				<div class='header'><h3>AI 공지 제목</h3><div><span>2026-08-20 13:27:52</span><span>관리자</span></div></div>
-				<div class='fr-view detail'><p>본문</p><img src='/image.png'></div>
-				<div class='files'><a href='/board/download.php?id=1'>자료.pdf</a></div>
-				</section>
-				""");
+			given(crawlHttpClient.fetch(articleUrl.url(), context.siteConfig())).willReturn(
+				"""
+					<section class='board'>
+					<div class='header'><h3>AI 공지 제목</h3><div><span>2026-08-20 13:27:52</span><span>조회수</span><span>관리자</span></div></div>
+					<div class='fr-view detail'><p>본문</p><img src='/image.png'></div>
+					<div class='files'><a href='/board/download.php?id=1'>자료.pdf</a></div>
+					</section>
+					""");
 
 			// when
 			RawArticle result = crawler.fetchArticle(context, articleUrl);
@@ -128,7 +129,7 @@ class CauAiNoticeCrawlerTest {
 			source.getSiteId(), source.getTargetBoardId(), CrawlerType.CAU_AI_NOTICE,
 			source.getListUrl(), source.getBaseUrl(), Map.of(), Duration.ZERO, Duration.ofSeconds(1),
 			1, maxArticles, 3, PaginationType.PAGE_NUMBER, "currentPage", maxPages,
-			source.getSelectors(), false, false, true);
+			false, false, true);
 	}
 
 	private String noticeRows(int... noticeIds) {

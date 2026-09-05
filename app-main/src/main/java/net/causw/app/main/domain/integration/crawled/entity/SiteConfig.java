@@ -10,7 +10,6 @@ import net.causw.app.main.shared.entity.AuditableEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
-import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -75,9 +74,6 @@ public class SiteConfig extends AuditableEntity {
 	@Column(name = "max_pages", nullable = false)
 	private Integer maxPages;
 
-	@Embedded
-	private SiteSelectors selectors;
-
 	@Column(name = "requires_js_rendering", nullable = false)
 	private Boolean requiresJsRendering;
 
@@ -104,7 +100,6 @@ public class SiteConfig extends AuditableEntity {
 	 * @param paginationType 페이지네이션 유형
 	 * @param pageParam 페이지 파라미터명
 	 * @param maxPages 탐색할 최대 페이지 수
-	 * @param selectors 사이트별 CSS 셀렉터
 	 * @param requiresJsRendering JavaScript 렌더링 필요 여부
 	 * @param requiresLogin 로그인 필요 여부
 	 * @param isEnabled 활성화 여부
@@ -125,7 +120,6 @@ public class SiteConfig extends AuditableEntity {
 		PaginationType paginationType,
 		String pageParam,
 		int maxPages,
-		SiteSelectors selectors,
 		boolean requiresJsRendering,
 		boolean requiresLogin,
 		boolean isEnabled) {
@@ -144,7 +138,6 @@ public class SiteConfig extends AuditableEntity {
 			.paginationType(paginationType)
 			.pageParam(pageParam)
 			.maxPages(maxPages)
-			.selectors(selectors)
 			.requiresJsRendering(requiresJsRendering)
 			.requiresLogin(requiresLogin)
 			.isEnabled(isEnabled)

@@ -2,6 +2,7 @@ package net.causw.app.main.domain.integration.crawled.service;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -14,6 +15,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.safety.Safelist;
 import org.springframework.stereotype.Component;
 
+import net.causw.app.main.domain.integration.crawled.config.CrawlerType;
 import net.causw.app.main.domain.integration.crawled.dto.CleanArticle;
 import net.causw.app.main.domain.integration.crawled.dto.CleanAttachment;
 import net.causw.app.main.domain.integration.crawled.dto.RawArticle;
@@ -30,6 +32,9 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @RequiredArgsConstructor
 public class CrawledArticleCleaner {
+	private static final DateTimeFormatter CAU_SW_ANNOUNCED_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+	private static final DateTimeFormatter CAU_AI_ANNOUNCED_DATE_FORMATTER = DateTimeFormatter
+		.ofPattern("yyyy-MM-dd HH:mm:ss");
 	private static final Safelist CONTENT_SAFELIST = Safelist.relaxed()
 		.addTags("img")
 		.addAttributes(":all", "class", "style")
@@ -40,7 +45,7 @@ public class CrawledArticleCleaner {
 	 * 파싱된 원문 공지를 정규화하고 저장 가능한 데이터로 변환합니다.
 	 *
 	 * @param rawArticle 사이트에서 파싱한 원문 공지
-	 * @param siteConfig 날짜 형식과 기본 URL을 포함한 사이트 설정
+	 * @param siteConfig 크롤러 유형과 기본 URL을 포함한 사이트 설정
 	 * @return 정제된 공지
 	 */
 	public CleanArticle clean(RawArticle rawArticle, SiteConfig siteConfig) {
@@ -49,9 +54,7 @@ public class CrawledArticleCleaner {
 			String contentHtml = cleanContent(rawArticle.contentHtml(), sourceUrl);
 			List<CleanAttachment> attachments = cleanAttachments(rawArticle.attachments(), sourceUrl);
 			String imageUrl = normalizeNullableUrl(rawArticle.representativeImageUrl(), sourceUrl);
-			LocalDate announceDate = LocalDate.parse(
-				rawArticle.announcedAt().trim(),
-				DateTimeFormatter.ofPattern(siteConfig.getSelectors().getDateFormat()));
+			LocalDate announceDate = parseAnnouncedDate(rawArticle.announcedAt(), siteConfig.getCrawlerType());
 			String title = requireText(rawArticle.title());
 			String author = requireText(rawArticle.author());
 			String category = rawArticle.category() == null ? "" : rawArticle.category().trim();
@@ -76,6 +79,14 @@ public class CrawledArticleCleaner {
 				rawArticle.siteId(), rawArticle.externalId(), e);
 			throw IntegrationErrorCode.CRAWL_PARSE_FAILED.toBaseException();
 		}
+	}
+
+	private LocalDate parseAnnouncedDate(String announcedAt, CrawlerType crawlerType) {
+		return switch (crawlerType) {
+			case CAU_SW_NOTICE -> LocalDate.parse(announcedAt.trim(), CAU_SW_ANNOUNCED_DATE_FORMATTER);
+			case CAU_AI_NOTICE -> LocalDateTime.parse(announcedAt.trim(), CAU_AI_ANNOUNCED_DATE_FORMATTER)
+				.toLocalDate();
+		};
 	}
 
 	/**
