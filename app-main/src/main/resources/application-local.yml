@@ -149,6 +149,7 @@ spring:
 logging:
   level:
     org.hibernate.SQL: DEBUG
+    net.causw.app.main.domain.integration.crawled: DEBUG
 
 management:
   endpoints:
@@ -173,7 +174,7 @@ fcm:
 
 app:
   crawl:
-    local-run-on-start: true
+    local-run-on-start: ${CRAWL_LOCAL_RUN_ON_START:false}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS}
   auth:
