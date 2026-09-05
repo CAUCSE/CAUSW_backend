@@ -72,7 +72,7 @@ class CrawledArticleCleanerTest {
 		CleanArticle result = cleaner.clean(raw, SiteConfigFixture.cauAiNotice());
 
 		// then
-		assertThat(result.announcedDate()).isEqualTo(LocalDate.of(2026, 9, 2));
+		assertThat(result.announceDate()).isEqualTo(LocalDate.of(2026, 9, 2));
 	}
 
 	@Test
