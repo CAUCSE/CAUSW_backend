@@ -2,7 +2,6 @@ package net.causw.app.main.domain.integration.crawled.crawler.implementation;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -18,6 +17,7 @@ import org.jsoup.select.Elements;
 import org.springframework.stereotype.Component;
 
 import net.causw.app.main.domain.integration.crawled.client.CrawlHttpClient;
+import net.causw.app.main.domain.integration.crawled.config.CrawlDateFormat;
 import net.causw.app.main.domain.integration.crawled.config.CrawlerType;
 import net.causw.app.main.domain.integration.crawled.core.CrawlContext;
 import net.causw.app.main.domain.integration.crawled.crawler.SiteCrawler;
@@ -37,7 +37,6 @@ import lombok.extern.slf4j.Slf4j;
 public class CauSwNoticeCrawler implements SiteCrawler {
 	// 목록 날짜 판별에 사용할 시간대와 형식
 	private static final ZoneId KOREA_ZONE_ID = ZoneId.of("Asia/Seoul");
-	private static final DateTimeFormatter LIST_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd");
 
 	// 공지 목록 파싱용 CSS 셀렉터
 	private static final String ARTICLE_ROW_SELECTOR = "table.table-basic tbody tr";
@@ -76,6 +75,7 @@ public class CauSwNoticeCrawler implements SiteCrawler {
 	public List<ArticleUrl> fetchList(CrawlContext context) {
 		SiteConfig siteConfig = context.siteConfig();
 		List<ArticleUrl> articleUrls = new ArrayList<>();
+		CrawlDateFormat dateFormat = CrawlDateFormat.resolve(CrawlerType.CAU_SW_NOTICE);
 		log.debug("[크롤링] 공지 목록 수집 시작. siteId={}, maxPages={}, maxArticles={}",
 			siteConfig.getSiteId(), siteConfig.getMaxPages(), siteConfig.getMaxArticles());
 
@@ -96,7 +96,7 @@ public class CauSwNoticeCrawler implements SiteCrawler {
 				if (articleUrls.size() >= siteConfig.getMaxArticles()) {
 					break;
 				}
-				if (!isWithinScanRange(row, siteConfig)) {
+				if (!isWithinScanRange(row, siteConfig, dateFormat)) {
 					continue;
 				}
 				Element linkElement = row.selectFirst(ARTICLE_LINK_SELECTOR);
@@ -118,13 +118,14 @@ public class CauSwNoticeCrawler implements SiteCrawler {
 		return distinctArticleUrls;
 	}
 
-	private boolean isWithinScanRange(Element row, SiteConfig siteConfig) {
+	private boolean isWithinScanRange(Element row, SiteConfig siteConfig, CrawlDateFormat crawlDateFormat) {
 		Element dateElement = row.selectFirst(LIST_DATE_SELECTOR);
 		if (dateElement == null || dateElement.text().isBlank()) {
 			throw IntegrationErrorCode.CRAWL_PARSE_FAILED.toBaseException();
 		}
 		try {
-			LocalDate announceDate = LocalDate.parse(dateElement.text().trim(), LIST_DATE_FORMATTER);
+
+			LocalDate announceDate = crawlDateFormat.parse(dateElement.text().trim());
 			LocalDate today = LocalDate.now(KOREA_ZONE_ID);
 			return !announceDate.isBefore(today.minusDays(siteConfig.getMaxScanRangeDays()))
 				&& !announceDate.isAfter(today);
