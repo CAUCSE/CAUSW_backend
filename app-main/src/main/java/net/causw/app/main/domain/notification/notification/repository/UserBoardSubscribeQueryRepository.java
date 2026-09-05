@@ -128,11 +128,14 @@ public class UserBoardSubscribeQueryRepository {
 
 	/**
 	 * 학과 필터 조건. 빈 Set이면 모든 학과 허용.
+	 * department가 null인 유저는 학과 미확정 레거시 유저로 간주하여 제한 없이 포함한다.
+	 * 이 정책은 CommunityPermissionPolicy.isDepartmentAllowed()와 동일하게 유지되어야 한다.
+	 * TODO: department 백필 완료 후 isNull() 조건 제거
 	 */
 	private BooleanExpression departmentCondition(QUser user, Set<Department> allowedDepartments) {
 		if (allowedDepartments.isEmpty()) {
 			return null;
 		}
-		return user.department.in(allowedDepartments);
+		return user.department.isNull().or(user.department.in(allowedDepartments));
 	}
 }
