@@ -78,8 +78,16 @@ public interface PostRepository extends JpaRepository<Post, String> {
 	Optional<Post> findByIdAndIsDeletedFalse(String postId);
 
 	// 성격 일괄 지정 (벌크 연산이라 updated_at이 갱신되지 않음)
+	// 대상 조회와 갱신 사이에 수동 지정되거나 삭제된 게시글을 덮어쓰지 않도록 현재 상태를 다시 확인한다.
 	@Modifying
-	@Query("UPDATE Post p SET p.category = :category WHERE p.id IN :postIds")
+	@Query("""
+			UPDATE Post p
+			SET p.category = :category
+			WHERE p.id IN :postIds
+			AND p.category IS NULL
+			AND p.isCrawled = true
+			AND p.isDeleted = false
+		""")
 	int updateCategoryByIds(
 		@Param("category") PostCategory category,
 		@Param("postIds") Collection<String> postIds);
