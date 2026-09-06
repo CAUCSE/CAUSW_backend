@@ -3,9 +3,11 @@ package net.causw.app.main.domain.integration.crawled.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.never;
 import static org.mockito.BDDMockito.verify;
+import static org.mockito.Mockito.inOrder;
 
 import java.util.List;
 
@@ -13,6 +15,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -93,6 +96,13 @@ class PostCategoryBackfillServiceTest {
 		// then
 		assertThat(updated).isEqualTo(2);
 		verify(postWriter).updateCategoryByIds(PostCategory.ACADEMIC, List.of("post-3"));
+
+		// 커서가 전진하지 않으면 같은 청크를 반복 조회하므로, 직전 청크의 마지막 공지 id가 전달되는지 확인한다
+		InOrder order = inOrder(crawledNoticeReader);
+		order.verify(crawledNoticeReader).findCategoryBackfillTargets(eq(""), anyInt());
+		order.verify(crawledNoticeReader).findCategoryBackfillTargets(eq("notice-2"), anyInt());
+		order.verify(crawledNoticeReader).findCategoryBackfillTargets(eq("notice-3"), anyInt());
+		order.verifyNoMoreInteractions();
 	}
 
 	@Test
