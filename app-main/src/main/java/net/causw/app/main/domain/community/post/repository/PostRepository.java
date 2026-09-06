@@ -99,6 +99,7 @@ public interface PostRepository extends JpaRepository<Post, String> {
 			WHERE p.category IS NULL
 			AND p.isCrawled = true
 			AND p.isDeleted = false
+			ORDER BY p.createdAt ASC, p.id ASC
 		""")
 	Page<Post> findUncategorizedCrawledPosts(Pageable pageable);
 
