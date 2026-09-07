@@ -29,4 +29,8 @@ public record UserMeResponse(
 	@Schema(description = "현재 학적 상태", example = "ENROLLED") AcademicStatus academicStatus,
 
 	@Schema(description = "사용자 역할 목록", example = "[\"COMMON\", \"COUNCIL\"]") Set<Role> roles) {
+
+	public UserMeResponse {
+		roles = Set.copyOf(roles);
+	}
 }

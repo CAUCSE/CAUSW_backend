@@ -21,4 +21,8 @@ public record AuthResponse(
 	@Schema(description = "온보딩 플로우 분기 상태", example = "TERMS_REQUIRED") OnboardingStatus onboardingStatus,
 	@Schema(description = "현재 학적 상태", example = "ENROLLED") AcademicStatus academicStatus,
 	@Schema(description = "사용자 역할 목록", example = "[\"COMMON\", \"ADMIN\"]") Set<Role> roles) {
+
+	public AuthResponse {
+		roles = Set.copyOf(roles);
+	}
 }

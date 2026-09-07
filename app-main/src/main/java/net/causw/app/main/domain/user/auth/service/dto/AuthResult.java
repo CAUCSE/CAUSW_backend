@@ -17,6 +17,11 @@ public record AuthResult(
 	boolean isAcademicCertified,
 	AcademicStatus academicStatus,
 	Set<Role> roles) {
+
+	public AuthResult {
+		roles = Set.copyOf(roles);
+	}
+
 	public static AuthResult of(String accessToken,
 		String name,
 		String email,
@@ -28,6 +33,6 @@ public record AuthResult(
 		AcademicStatus academicStatus,
 		Set<Role> roles) {
 		return new AuthResult(accessToken, name, email, profileImage, refreshToken, isGuest, hasAllRequiredLatestTerms,
-			isAcademicCertified, academicStatus, Set.copyOf(roles));
+			isAcademicCertified, academicStatus, roles);
 	}
 }

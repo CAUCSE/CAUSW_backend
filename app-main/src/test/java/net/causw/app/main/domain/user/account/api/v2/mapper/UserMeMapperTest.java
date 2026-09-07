@@ -2,6 +2,7 @@ package net.causw.app.main.domain.user.account.api.v2.mapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.jupiter.api.DisplayName;
@@ -29,5 +30,20 @@ class UserMeMapperTest {
 
 		// then
 		assertThat(response.roles()).containsExactlyInAnyOrder(Role.COMMON, Role.COUNCIL);
+	}
+
+	@Test
+	@DisplayName("내 정보 응답은 생성 시 전달된 역할 목록의 변경에 영향을 받지 않는다")
+	void copyRolesInUserMeResponseCanonicalConstructor() {
+		// given
+		Set<Role> roles = new HashSet<>(Set.of(Role.COMMON));
+		UserMeResponse response = new UserMeResponse(
+			"user-id", "user@example.com", "사용자", "닉네임", null, 2020, null, null, roles);
+
+		// when
+		roles.add(Role.COUNCIL);
+
+		// then
+		assertThat(response.roles()).containsExactly(Role.COMMON);
 	}
 }
