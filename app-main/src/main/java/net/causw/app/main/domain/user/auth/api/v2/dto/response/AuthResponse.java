@@ -1,6 +1,9 @@
 package net.causw.app.main.domain.user.auth.api.v2.dto.response;
 
+import java.util.Set;
+
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
+import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.auth.enums.OnboardingStatus;
 import net.causw.app.main.shared.dto.ProfileImageDto;
 
@@ -16,5 +19,10 @@ public record AuthResponse(
 	@Schema(description = "사용자 프로필: 이메일", example = "user@cau.ac.kr") String email,
 	@Schema(description = "사용자 프로필: 프로필 이미지 정보") ProfileImageDto profileImage,
 	@Schema(description = "온보딩 플로우 분기 상태", example = "TERMS_REQUIRED") OnboardingStatus onboardingStatus,
-	@Schema(description = "현재 학적 상태", example = "ENROLLED") AcademicStatus academicStatus) {
+	@Schema(description = "현재 학적 상태", example = "ENROLLED") AcademicStatus academicStatus,
+	@Schema(description = "사용자 역할 목록", example = "[\"COMMON\", \"ADMIN\"]") Set<Role> roles) {
+
+	public AuthResponse {
+		roles = Set.copyOf(roles);
+	}
 }
