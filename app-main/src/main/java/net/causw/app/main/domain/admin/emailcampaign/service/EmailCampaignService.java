@@ -54,11 +54,21 @@ public class EmailCampaignService {
 	private final ApplicationEventPublisher eventPublisher;
 	private final EmailCampaignAuditLogWriter auditLogWriter;
 
+	/**
+	 * 발송 대상 필터를 적용하고 대상 수와 항목별 분포를 계산한다.
+	 * @param filter 정규화된 대상 필터
+	 * @return 대상 미리보기 결과
+	 */
 	public EmailCampaignTargetPreviewResult previewTargets(EmailCampaignFilter filter) {
 		return toPreviewResult(targetReader.findTargets(filter));
 	}
 
 	@Transactional
+	/**
+	 * HTML을 정제하고 현재 대상자의 이메일 스냅샷과 함께 캠페인을 생성한다.
+	 * @param command 캠페인 생성 명령
+	 * @return 저장된 DRAFT 캠페인
+	 */
 	public EmailCampaignResult createCampaign(EmailCampaignCreateCommand command) {
 		List<EmailCampaignTarget> targets = targetReader.findTargets(command.filter());
 		validator.validateCreate(command.subject(), targets.size());
@@ -77,6 +87,11 @@ public class EmailCampaignService {
 	}
 
 	@Transactional
+	/**
+	 * SES 설정과 최종 확인값을 검증하고 커밋 후 발송 이벤트를 발행한다.
+	 * @param command 캠페인 발송 요청 명령
+	 * @return QUEUED 상태의 캠페인
+	 */
 	public EmailCampaignResult requestSend(EmailCampaignSendCommand command) {
 		validator.validateConfiguration(properties);
 		EmailCampaign campaign = campaignReader.getById(command.campaignId());
@@ -87,15 +102,32 @@ public class EmailCampaignService {
 		return toResult(campaign);
 	}
 
+	/**
+	 * 조건에 해당하는 캠페인 요약 목록을 페이지 조회한다.
+	 * @param query 상태와 생성 기간 조건
+	 * @param pageable 페이지 정보
+	 * @return 캠페인 요약 페이지
+	 */
 	public Page<EmailCampaignResult> getCampaigns(EmailCampaignListQuery query, Pageable pageable) {
 		return campaignReader.findCampaigns(query.status(), query.from(), query.to(), pageable)
 			.map(this::toResult);
 	}
 
+	/**
+	 * 캠페인 상세 정보를 조회한다.
+	 * @param campaignId 캠페인 ID
+	 * @return 캠페인 상세 결과
+	 */
 	public EmailCampaignResult getCampaignDetail(String campaignId) {
 		return toResult(campaignReader.getById(campaignId));
 	}
 
+	/**
+	 * 캠페인 수신자 목록을 조회하고 이메일 주소를 마스킹한다.
+	 * @param query 캠페인 ID와 수신자 상태 조건
+	 * @param pageable 페이지 정보
+	 * @return 마스킹된 수신자 처리 결과 페이지
+	 */
 	public Page<EmailCampaignRecipientListResult> getCampaignRecipients(
 		EmailCampaignRecipientListQuery query, Pageable pageable) {
 		return campaignReader.findRecipients(query.campaignId(), query.status(), pageable)

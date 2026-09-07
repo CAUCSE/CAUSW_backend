@@ -15,6 +15,11 @@ import software.amazon.awssdk.services.sesv2.model.TooManyRequestsException;
 @Component
 public class SesEmailExceptionClassifier {
 
+	/**
+	 * AWS SDK 예외를 재시도 정책과 안전한 오류 코드를 포함한 발송 예외로 변환한다.
+	 * @param exception SES 또는 AWS SDK 호출 예외
+	 * @return 분류된 이메일 발송 예외
+	 */
 	public SesEmailSendException classify(RuntimeException exception) {
 		if (exception instanceof TooManyRequestsException) {
 			return create(EmailCampaignFailureType.RETRYABLE, "SES_THROTTLED", exception);

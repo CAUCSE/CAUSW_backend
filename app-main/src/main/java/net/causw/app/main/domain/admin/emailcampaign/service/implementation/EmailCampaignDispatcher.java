@@ -33,6 +33,14 @@ public class EmailCampaignDispatcher {
 	private final Semaphore inFlightLimit;
 	private final Set<String> activeCampaigns = ConcurrentHashMap.newKeySet();
 
+	/**
+	 * 단일 서버에서 사용할 발송률 제한과 동시 SES 요청 제한을 초기화한다.
+	 * @param dispatchStore 발송 상태 저장소
+	 * @param emailSender 이메일 발송 포트
+	 * @param rateLimiter JVM 로컬 발송률 제한기
+	 * @param properties 이메일 캠페인 설정
+	 * @param auditLogWriter 완료 감사 로그 기록기
+	 */
 	public EmailCampaignDispatcher(
 		EmailCampaignDispatchStore dispatchStore,
 		EmailSender emailSender,
@@ -47,6 +55,11 @@ public class EmailCampaignDispatcher {
 		this.inFlightLimit = new Semaphore(Math.max(1, properties.getMaxConcurrency()));
 	}
 
+	/**
+	 * 캠페인 단위 중복 실행을 막고 claim 가능한 수신자가 없을 때까지 배치 발송한다.
+	 * <p>DB 작업은 호출 스레드에서, claim된 수신자의 SES I/O만 virtual thread에서 수행한다.</p>
+	 * @param campaignId 발송하거나 재개할 캠페인 ID
+	 */
 	public void dispatch(String campaignId) {
 		if (!properties.isEnabled() || !activeCampaigns.add(campaignId)) {
 			return;

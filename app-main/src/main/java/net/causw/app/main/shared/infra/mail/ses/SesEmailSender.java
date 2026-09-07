@@ -19,6 +19,11 @@ public class SesEmailSender implements EmailSender {
 	private final SesV2Client sesV2Client;
 	private final SesEmailExceptionClassifier exceptionClassifier;
 
+	/**
+	 * 메시지를 SES v2 SendEmail 요청으로 변환하여 발송하고 message ID를 반환한다.
+	 * @param message 정제된 HTML 이메일 메시지
+	 * @return SES 접수 message ID
+	 */
 	@Override
 	public EmailSendResult send(EmailMessage message) {
 		try {

@@ -15,6 +15,9 @@ public record EmailCampaignFilter(
 	private static final int MIN_ADMISSION_YEAR = 1900;
 	private static final int MAX_ADMISSION_YEAR = 2100;
 
+	/**
+	 * null 목록을 빈 목록으로 바꾸고 중복 제거 및 입학연도 범위 검증을 수행한다.
+	 */
 	public EmailCampaignFilter {
 		admissionYears = normalize(admissionYears);
 		departments = normalize(departments);

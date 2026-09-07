@@ -27,6 +27,14 @@ public class EmailCampaignQueryRepository {
 
 	private final JPAQueryFactory jpaQueryFactory;
 
+	/**
+	 * 상태와 생성 기간 조건으로 캠페인 요약을 페이지 조회한다.
+	 * @param status 캠페인 상태. null이면 전체 상태를 조회한다.
+	 * @param from 생성 시각 하한
+	 * @param to 생성 시각 상한
+	 * @param pageable 페이지 정보
+	 * @return 캠페인 요약 페이지
+	 */
 	public Page<EmailCampaignSummary> findCampaigns(
 		EmailCampaignStatus status,
 		LocalDateTime from,
@@ -65,6 +73,13 @@ public class EmailCampaignQueryRepository {
 		return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
 	}
 
+	/**
+	 * 캠페인의 수신자 처리 결과를 상태 조건으로 페이지 조회한다.
+	 * @param campaignId 캠페인 ID
+	 * @param status 수신자 상태. null이면 전체 상태를 조회한다.
+	 * @param pageable 페이지 정보
+	 * @return 수신자 처리 결과 페이지
+	 */
 	public Page<EmailCampaignRecipientItem> findRecipients(
 		String campaignId,
 		EmailCampaignRecipientStatus status,

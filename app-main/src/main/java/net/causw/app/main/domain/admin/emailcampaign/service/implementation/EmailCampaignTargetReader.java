@@ -18,6 +18,11 @@ public class EmailCampaignTargetReader {
 
 	private final EmailCampaignTargetQueryRepository targetQueryRepository;
 
+	/**
+	 * 지정한 필터에 해당하는 현재 발송 대상을 조회한다.
+	 * @param filter 발송 대상 필터
+	 * @return 발송 대상 스냅샷 목록
+	 */
 	public List<EmailCampaignTarget> findTargets(EmailCampaignFilter filter) {
 		return targetQueryRepository.findTargets(filter);
 	}

@@ -22,6 +22,9 @@ public class EmailCampaignRecoveryScheduler {
 	private final EmailCampaignDispatcher dispatcher;
 	private final EmailCampaignProperties properties;
 
+	/**
+	 * 주기적으로 stale claim을 해제하고 QUEUED 또는 SENDING 캠페인을 재개한다.
+	 */
 	@Scheduled(fixedDelayString = "${app.email-campaign.recovery-interval-ms:30000}")
 	public void recover() {
 		if (!properties.isEnabled()) {

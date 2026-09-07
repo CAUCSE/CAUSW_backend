@@ -16,6 +16,10 @@ public class SesConfig {
 
 	private final EmailCampaignProperties properties;
 
+	/**
+	 * 설정된 리전과 기본 AWS credential chain을 사용하는 SES v2 client를 생성한다.
+	 * @return 애플리케이션에서 공유할 SES v2 client
+	 */
 	@Bean
 	public SesV2Client sesV2Client() {
 		return SesV2Client.builder()

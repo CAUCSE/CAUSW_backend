@@ -80,6 +80,13 @@ public class EmailCampaignRecipient extends AuditableEntity {
 	@Column(name = "skip_reason", length = 100)
 	private String skipReason;
 
+	/**
+	 * 캠페인 생성 시점의 사용자와 이메일을 보존하는 PENDING 수신자를 생성한다.
+	 * @param campaign 소속 캠페인
+	 * @param userId 수신 사용자 ID
+	 * @param emailSnapshot 생성 시점 이메일
+	 * @return 초기 수신자
+	 */
 	public static EmailCampaignRecipient of(EmailCampaign campaign, String userId, String emailSnapshot) {
 		return EmailCampaignRecipient.builder()
 			.campaign(campaign)
@@ -90,6 +97,10 @@ public class EmailCampaignRecipient extends AuditableEntity {
 			.build();
 	}
 
+	/**
+	 * PENDING 수신자를 SENDING으로 claim하고 시도 횟수를 증가시킨다.
+	 * @param now claim 시각
+	 */
 	public void claim(LocalDateTime now) {
 		validateStatus(EmailCampaignRecipientStatus.PENDING);
 		status = EmailCampaignRecipientStatus.SENDING;
@@ -99,6 +110,11 @@ public class EmailCampaignRecipient extends AuditableEntity {
 		nextAttemptAt = null;
 	}
 
+	/**
+	 * SES 접수 결과를 기록하고 수신자를 SENT로 전환한다.
+	 * @param messageId SES 메시지 ID
+	 * @param now 발송 완료 시각
+	 */
 	public void markSent(String messageId, LocalDateTime now) {
 		validateStatus(EmailCampaignRecipientStatus.SENDING);
 		status = EmailCampaignRecipientStatus.SENT;
@@ -108,6 +124,12 @@ public class EmailCampaignRecipient extends AuditableEntity {
 		clearError();
 	}
 
+	/**
+	 * 재시도 가능한 실패를 기록하고 지정 시각 이후 처리할 PENDING 상태로 되돌린다.
+	 * @param errorCode 안전한 실패 코드
+	 * @param errorDetail 개인정보가 없는 실패 설명
+	 * @param nextAttemptAt 다음 시도 시각
+	 */
 	public void markRetryableFailure(String errorCode, String errorDetail, LocalDateTime nextAttemptAt) {
 		validateStatus(EmailCampaignRecipientStatus.SENDING);
 		status = EmailCampaignRecipientStatus.PENDING;
@@ -117,6 +139,11 @@ public class EmailCampaignRecipient extends AuditableEntity {
 		claimedAt = null;
 	}
 
+	/**
+	 * 재시도하지 않는 실패를 기록하고 수신자를 FAILED로 전환한다.
+	 * @param errorCode 안전한 실패 코드
+	 * @param errorDetail 개인정보가 없는 실패 설명
+	 */
 	public void markPermanentFailure(String errorCode, String errorDetail) {
 		validateStatus(EmailCampaignRecipientStatus.SENDING);
 		status = EmailCampaignRecipientStatus.FAILED;
@@ -126,6 +153,10 @@ public class EmailCampaignRecipient extends AuditableEntity {
 		nextAttemptAt = null;
 	}
 
+	/**
+	 * 발송 대상에서 제외된 사유를 기록하고 SKIPPED로 전환한다.
+	 * @param reason 제외 사유
+	 */
 	public void markSkipped(String reason) {
 		validateStatus(EmailCampaignRecipientStatus.PENDING);
 		status = EmailCampaignRecipientStatus.SKIPPED;
@@ -133,6 +164,10 @@ public class EmailCampaignRecipient extends AuditableEntity {
 		nextAttemptAt = null;
 	}
 
+	/**
+	 * timeout된 SENDING claim을 다음 처리가 가능한 PENDING 상태로 되돌린다.
+	 * @param nextAttemptAt 다음 시도 가능 시각
+	 */
 	public void releaseStaleClaim(LocalDateTime nextAttemptAt) {
 		validateStatus(EmailCampaignRecipientStatus.SENDING);
 		status = EmailCampaignRecipientStatus.PENDING;

@@ -82,6 +82,17 @@ public class EmailCampaign extends BaseEntity {
 	@Column(name = "failure_detail", columnDefinition = "TEXT")
 	private String failureDetail;
 
+	/**
+	 * 발송 전 DRAFT 캠페인을 생성한다.
+	 * @param subject 정제된 제목
+	 * @param sanitizedHtml 정제된 HTML 본문
+	 * @param fromAddress 발신 주소
+	 * @param replyToAddress 회신 주소
+	 * @param filterJson 생성 당시 대상 필터 JSON
+	 * @param recipientCount 수신자 수
+	 * @param createdByUserId 생성 관리자 ID
+	 * @return 초기 집계가 설정된 캠페인
+	 */
 	public static EmailCampaign of(
 		String subject,
 		String sanitizedHtml,
@@ -106,6 +117,11 @@ public class EmailCampaign extends BaseEntity {
 			.build();
 	}
 
+	/**
+	 * DRAFT 캠페인을 QUEUED로 전환하고 발송 요청자를 기록한다.
+	 * @param requestedByUserId 발송 요청 관리자 ID
+	 * @param requestedAt 발송 요청 시각
+	 */
 	public void queue(String requestedByUserId, LocalDateTime requestedAt) {
 		if (status != EmailCampaignStatus.DRAFT) {
 			throw EmailCampaignErrorCode.EMAIL_CAMPAIGN_SEND_ALREADY_REQUESTED.toBaseException();
@@ -116,12 +132,23 @@ public class EmailCampaign extends BaseEntity {
 		queuedAt = requestedAt;
 	}
 
+	/**
+	 * QUEUED 캠페인을 SENDING으로 전환한다.
+	 * @param now 발송 시작 시각
+	 */
 	public void start(LocalDateTime now) {
 		validateStatus(EmailCampaignStatus.QUEUED);
 		status = EmailCampaignStatus.SENDING;
 		startedAt = now;
 	}
 
+	/**
+	 * 수신자 최종 집계에 따라 캠페인을 완료 상태로 전환한다.
+	 * @param sentCount 성공 수
+	 * @param failedCount 실패 수
+	 * @param skippedCount 제외 수
+	 * @param now 완료 시각
+	 */
 	public void complete(long sentCount, long failedCount, long skippedCount, LocalDateTime now) {
 		validateStatus(EmailCampaignStatus.SENDING);
 		this.sentCount = sentCount;
@@ -138,6 +165,11 @@ public class EmailCampaign extends BaseEntity {
 		}
 	}
 
+	/**
+	 * 발송 중인 캠페인을 시스템 실패로 종료한다.
+	 * @param detail 실패 상세
+	 * @param now 실패 시각
+	 */
 	public void fail(String detail, LocalDateTime now) {
 		if (status != EmailCampaignStatus.QUEUED && status != EmailCampaignStatus.SENDING) {
 			throw EmailCampaignErrorCode.EMAIL_CAMPAIGN_INVALID_STATUS.toBaseException();

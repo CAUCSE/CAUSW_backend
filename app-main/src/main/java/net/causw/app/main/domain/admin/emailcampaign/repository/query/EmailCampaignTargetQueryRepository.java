@@ -22,6 +22,11 @@ public class EmailCampaignTargetQueryRepository {
 
 	private final JPAQueryFactory jpaQueryFactory;
 
+	/**
+	 * 활성·미삭제·유효 이메일 사용자를 대상으로 필터 항목 간 AND 조건을 적용한다.
+	 * @param filter 입학연도, 학과, 학적 상태 필터
+	 * @return 사용자 ID와 이메일을 포함한 발송 대상 스냅샷 목록
+	 */
 	public List<EmailCampaignTarget> findTargets(EmailCampaignFilter filter) {
 		BooleanBuilder where = new BooleanBuilder()
 			.and(user.state.eq(UserState.ACTIVE))

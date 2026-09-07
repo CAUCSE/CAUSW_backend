@@ -48,6 +48,11 @@ public class EmailCampaignAdminController {
 
 	@PostMapping("/target-preview")
 	@Operation(summary = "이메일 캠페인 대상 미리보기")
+	/**
+	 * 지정한 필터에 해당하는 발송 대상 수와 항목별 분포를 조회한다.
+	 * @param request 대상 필터 요청
+	 * @return 대상 수와 입학연도·학과·학적 상태별 분포
+	 */
 	public ApiResponse<EmailCampaignTargetPreviewResponse> previewTargets(
 		@Valid @RequestBody EmailCampaignTargetPreviewRequest request) {
 		return ApiResponse.success(campaignApiMapper.toResponse(
@@ -57,6 +62,12 @@ public class EmailCampaignAdminController {
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	@Operation(summary = "이메일 캠페인 생성")
+	/**
+	 * 현재 대상자와 이메일을 스냅샷으로 저장하여 발송 전 캠페인을 생성한다.
+	 * @param request 캠페인 제목, HTML 본문, 대상 필터
+	 * @param userDetails 캠페인을 생성하는 인증 관리자
+	 * @return 생성된 DRAFT 캠페인
+	 */
 	public ApiResponse<EmailCampaignResponse> createCampaign(
 		@Valid @RequestBody EmailCampaignCreateRequest request,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -66,6 +77,13 @@ public class EmailCampaignAdminController {
 
 	@PostMapping("/{campaignId}/send")
 	@Operation(summary = "이메일 캠페인 발송 요청")
+	/**
+	 * 제목과 대상 수의 최종 확인값을 검증한 뒤 캠페인 발송을 요청한다.
+	 * @param campaignId 발송할 캠페인 ID
+	 * @param request 제목과 수신자 수 확인값
+	 * @param userDetails 발송을 요청하는 인증 관리자
+	 * @return QUEUED 상태로 변경된 캠페인
+	 */
 	public ApiResponse<EmailCampaignResponse> requestSend(
 		@PathVariable String campaignId,
 		@Valid @RequestBody EmailCampaignSendRequest request,
@@ -77,6 +95,12 @@ public class EmailCampaignAdminController {
 
 	@GetMapping
 	@Operation(summary = "이메일 캠페인 목록 조회")
+	/**
+	 * 상태와 생성 기간 조건으로 캠페인 목록을 페이지 조회한다.
+	 * @param request 캠페인 조회 조건
+	 * @param pageable 페이지 정보
+	 * @return 본문과 필터 상세를 제외한 캠페인 페이지
+	 */
 	public ApiResponse<PageResponse<EmailCampaignResponse>> getCampaigns(
 		@ModelAttribute EmailCampaignListRequest request,
 		@PageableDefault(page = 0, size = 10) Pageable pageable) {
@@ -87,12 +111,24 @@ public class EmailCampaignAdminController {
 
 	@GetMapping("/{campaignId}")
 	@Operation(summary = "이메일 캠페인 상세 조회")
+	/**
+	 * 캠페인 본문과 생성 당시 필터를 포함한 상세 정보를 조회한다.
+	 * @param campaignId 조회할 캠페인 ID
+	 * @return 캠페인 상세 정보
+	 */
 	public ApiResponse<EmailCampaignResponse> getCampaignDetail(@PathVariable String campaignId) {
 		return ApiResponse.success(campaignApiMapper.toResponse(campaignService.getCampaignDetail(campaignId)));
 	}
 
 	@GetMapping("/{campaignId}/recipients")
 	@Operation(summary = "이메일 캠페인 수신자 목록 조회")
+	/**
+	 * 캠페인의 수신자 처리 상태를 이메일 마스킹이 적용된 페이지로 조회한다.
+	 * @param campaignId 조회할 캠페인 ID
+	 * @param request 수신자 상태 조건
+	 * @param pageable 페이지 정보
+	 * @return 마스킹된 수신자 처리 결과 페이지
+	 */
 	public ApiResponse<PageResponse<EmailCampaignRecipientListItemResponse>> getCampaignRecipients(
 		@PathVariable String campaignId,
 		@ModelAttribute EmailCampaignRecipientListRequest request,

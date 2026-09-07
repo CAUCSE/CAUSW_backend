@@ -25,14 +25,28 @@ public class EmailCampaignAuditLogWriter {
 	private final EmailCampaignRepository campaignRepository;
 	private final UserRepository userRepository;
 
+	/**
+	 * 제목·본문·수신자 이메일을 제외한 캠페인 생성 감사 로그를 기록한다.
+	 * @param campaign 생성된 캠페인
+	 * @param actor 생성 관리자
+	 */
 	public void writeCreate(EmailCampaign campaign, User actor) {
 		write(campaign, actor, "EMAIL_CAMPAIGN_CREATE", "이메일 캠페인 생성", "이메일 캠페인을 생성했습니다.");
 	}
 
+	/**
+	 * 캠페인 발송 요청 감사 로그를 기록한다.
+	 * @param campaign 발송 요청된 캠페인
+	 * @param actor 발송 요청 관리자
+	 */
 	public void writeSendRequest(EmailCampaign campaign, User actor) {
 		write(campaign, actor, "EMAIL_CAMPAIGN_SEND_REQUEST", "이메일 캠페인 발송 요청", "이메일 캠페인 발송을 요청했습니다.");
 	}
 
+	/**
+	 * 캠페인과 요청자를 다시 조회하여 최종 집계를 포함한 완료 감사 로그를 기록한다.
+	 * @param campaignId 완료된 캠페인 ID
+	 */
 	public void writeCompletion(String campaignId) {
 		campaignRepository.findById(campaignId).ifPresent(campaign -> userRepository
 			.findById(campaign.getSendRequestedByUserId())

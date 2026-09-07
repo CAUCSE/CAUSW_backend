@@ -35,6 +35,11 @@ public class EmailHtmlSanitizer {
 		.addProtocols("img", "src", "https")
 		.addEnforcedAttribute("a", "rel", "noopener noreferrer");
 
+	/**
+	 * 허용된 이메일 HTML 요소와 HTTPS URL 및 제한된 inline style만 남긴다.
+	 * @param html 정제할 원본 HTML
+	 * @return 저장과 발송에 사용할 정제 HTML
+	 */
 	public String sanitize(String html) {
 		if (html == null || html.isBlank()) {
 			throw EmailCampaignErrorCode.EMAIL_CAMPAIGN_INVALID_HTML.toBaseException();
