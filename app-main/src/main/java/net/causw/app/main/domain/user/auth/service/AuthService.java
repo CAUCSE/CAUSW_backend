@@ -180,7 +180,7 @@ public class AuthService {
 		return AuthResult.of(tokens.accessToken(), savedUser.getName(), savedUser.getEmail(),
 			ProfileImageDto.from(savedUser, null), tokens.refreshToken(),
 			savedUser.isGuest(), true, savedUser.isAcademicCertified(),
-			savedUser.getAcademicStatus());
+			savedUser.getAcademicStatus(), savedUser.getRoles());
 	}
 
 	/**
@@ -209,7 +209,7 @@ public class AuthService {
 		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(),
 			ProfileImageDto.from(user, profileImage),
 			tokens.refreshToken(), user.isGuest(), hasAllRequiredLatestTerms, user.isAcademicCertified(),
-			user.getAcademicStatus());
+			user.getAcademicStatus(), user.getRoles());
 	}
 
 	@Transactional(readOnly = true)
@@ -267,7 +267,7 @@ public class AuthService {
 		return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(),
 			ProfileImageDto.from(user, profileImage),
 			tokens.refreshToken(), user.isGuest(), hasAllRequiredLatestTerms, user.isAcademicCertified(),
-			user.getAcademicStatus());
+			user.getAcademicStatus(), user.getRoles());
 	}
 
 	/**

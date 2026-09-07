@@ -1,8 +1,11 @@
 package net.causw.app.main.domain.user.account.service.dto.result;
 
+import java.util.Set;
+
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.enums.user.Role;
 import net.causw.app.main.domain.user.auth.enums.OnboardingStatus;
 import net.causw.app.main.shared.dto.ProfileImageDto;
 
@@ -14,7 +17,8 @@ public record UserMeResult(
 	ProfileImageDto profileImage,
 	Integer admissionYear,
 	OnboardingStatus onboardingStatus,
-	AcademicStatus academicStatus) {
+	AcademicStatus academicStatus,
+	Set<Role> roles) {
 
 	public static UserMeResult from(User user, UserProfileImage userProfileImage, boolean hasAllRequiredLatestTerms) {
 		return new UserMeResult(
@@ -25,6 +29,7 @@ public record UserMeResult(
 			ProfileImageDto.from(user, userProfileImage),
 			user.getAdmissionYear(),
 			OnboardingStatus.resolve(user.isGuest(), hasAllRequiredLatestTerms, user.isAcademicCertified()),
-			user.getAcademicStatus());
+			user.getAcademicStatus(),
+			Set.copyOf(user.getRoles()));
 	}
 }
