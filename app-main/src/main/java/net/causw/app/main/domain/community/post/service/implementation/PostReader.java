@@ -7,6 +7,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -196,5 +198,15 @@ public class PostReader {
 	 */
 	public Set<String> findSystemAdminUserIds(List<String> userIds) {
 		return postQueryRepository.findSystemAdminUserIds(userIds);
+	}
+
+	/**
+	 * 성격이 미분류인 크롤링 게시글을 조회합니다.
+	 *
+	 * @param pageable 페이지 정보
+	 * @return 미분류 크롤링 게시글 페이지
+	 */
+	public Page<Post> findUncategorizedCrawledPosts(Pageable pageable) {
+		return postRepository.findUncategorizedCrawledPosts(pageable);
 	}
 }

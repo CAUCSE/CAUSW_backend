@@ -1689,6 +1689,24 @@ public class PostServiceTest {
 		HttpServletRequest mockRequest = mock(HttpServletRequest.class);
 		HttpServletResponse mockResponse = mock(HttpServletResponse.class);
 
+		@DisplayName("게시글 성격을 상세 응답에 포함한다")
+		@Test
+		void getPostDetail_shouldIncludeCategory() {
+			// given
+			post.updateCategory(PostCategory.EVENT_LECTURE);
+			PostDetailQuery query = new PostDetailQuery(postId, viewer);
+
+			given(postReader.findByIdAndNotDeleted(postId)).willReturn(post);
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
+			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(List.of("admin-id"));
+
+			// when
+			PostDetailResult result = postService.getPostDetail(query, mockRequest, mockResponse);
+
+			// then
+			assertThat(result.category()).isEqualTo(PostCategory.EVENT_LECTURE);
+		}
+
 		@DisplayName("차단한 사용자의 게시글은 상세 조회 불가")
 		@Test
 		void getPostDetail_shouldFail_whenWriterIsBlocked() {
@@ -1991,4 +2009,5 @@ public class PostServiceTest {
 				() -> verify(viewCountManager, never()).markViewed(any(), anyString()));
 		}
 	}
+
 }

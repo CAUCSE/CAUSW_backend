@@ -15,12 +15,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.service.implementation.BoardReader;
 import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.enums.PostCategory;
 import net.causw.app.main.domain.community.post.service.implementation.PostWriter;
+import net.causw.app.main.domain.community.post.util.PostCategoryClassifier;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledFileLink;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledNotice;
 import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeReader;
@@ -52,6 +55,8 @@ class CrawledNoticeTransferServiceTest {
 	private CrawledPostImageWriter crawledPostImageWriter;
 	@Mock
 	private org.springframework.context.ApplicationEventPublisher applicationEventPublisher;
+	@Spy
+	private PostCategoryClassifier postCategoryClassifier = new PostCategoryClassifier();
 
 	@Test
 	@DisplayName("새 크롤링 게시물 본문에는 제목, 첨부파일, 원문 링크를 포함하지 않는다")
@@ -157,6 +162,57 @@ class CrawledNoticeTransferServiceTest {
 	private CrawledNotice notice(LocalDate announceDate) {
 		return CrawledNotice.of(
 			"site", "external-id", "board-id", "공지", "제목", "본문", "https://example.com/notice", "관리자",
+			announceDate, null, List.of(), "content-hash");
+	}
+
+	@Test
+	@DisplayName("새 Post 생성 시 제목으로 성격을 분류해 저장한다")
+	void transfer_shouldClassifyCategory_whenCreatingNewPost() {
+		// given
+		CrawledNotice notice = notice(LocalDate.now(), "2026 하반기 신입사원 채용 안내");
+		given(crawledNoticeReader.findById(notice.getId())).willReturn(notice);
+		given(userReader.findByEmail(StaticValue.SYSTEM_CRAWLER_ACCOUNT))
+			.willReturn(Optional.of(org.mockito.Mockito.mock(User.class)));
+		given(boardReader.getById("board-id")).willReturn(org.mockito.Mockito.mock(Board.class));
+
+		// when
+		transferService.transfer(notice.getId());
+
+		// then
+		org.mockito.ArgumentCaptor<Post> postCaptor = org.mockito.ArgumentCaptor.forClass(Post.class);
+		verify(postWriter).save(postCaptor.capture());
+		assertThat(postCaptor.getValue().getCategory()).isEqualTo(PostCategory.RECRUIT);
+	}
+
+	@Test
+	@DisplayName("기존 Post 갱신 시 성격을 덮어쓰지 않는다")
+	void transfer_shouldNotOverwriteCategory_whenUpdatingExistingPost() {
+		// given
+		CrawledNotice notice = notice(LocalDate.of(2026, 8, 10), "수강신청 일정 안내");
+		Post existingPost = org.mockito.Mockito.mock(Post.class);
+		Board board = org.mockito.Mockito.mock(Board.class);
+		notice.linkPost(existingPost);
+		given(crawledNoticeReader.findById(notice.getId())).willReturn(notice);
+		given(existingPost.getIsDeleted()).willReturn(false);
+		given(existingPost.getBoard()).willReturn(board);
+		given(board.getId()).willReturn("board-id");
+		given(existingPost.getIsAnonymous()).willReturn(false);
+		given(existingPost.getPostAttachImageList()).willReturn(List.of());
+		given(userReader.findByEmail(StaticValue.SYSTEM_CRAWLER_ACCOUNT))
+			.willReturn(Optional.of(org.mockito.Mockito.mock(User.class)));
+		given(boardReader.getById("board-id")).willReturn(board);
+
+		// when
+		transferService.transfer(notice.getId());
+
+		// then
+		verify(existingPost, org.mockito.Mockito.never())
+			.updateCategory(org.mockito.ArgumentMatchers.any());
+	}
+
+	private CrawledNotice notice(LocalDate announceDate, String title) {
+		return CrawledNotice.of(
+			"site", "external-id", "board-id", "공지", title, "본문", "https://example.com/notice", "관리자",
 			announceDate, null, List.of(), "content-hash");
 	}
 }

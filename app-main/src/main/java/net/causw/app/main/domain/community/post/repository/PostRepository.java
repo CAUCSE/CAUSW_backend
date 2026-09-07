@@ -17,6 +17,7 @@ import org.springframework.stereotype.Repository;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.form.entity.Form;
 import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.enums.PostCategory;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, String> {
@@ -75,6 +76,32 @@ public interface PostRepository extends JpaRepository<Post, String> {
 	int deleteAllPostsByBoardId(@Param("boardId") String boardId);
 
 	Optional<Post> findByIdAndIsDeletedFalse(String postId);
+
+	// 성격 일괄 지정 (벌크 연산이라 updated_at이 갱신되지 않음)
+	// 대상 조회와 갱신 사이에 수동 지정되거나 삭제된 게시글을 덮어쓰지 않도록 현재 상태를 다시 확인한다.
+	@Modifying
+	@Query("""
+			UPDATE Post p
+			SET p.category = :category
+			WHERE p.id IN :postIds
+			AND p.category IS NULL
+			AND p.isCrawled = true
+			AND p.isDeleted = false
+		""")
+	int updateCategoryByIds(
+		@Param("category") PostCategory category,
+		@Param("postIds") Collection<String> postIds);
+
+	// 성격이 미분류인 크롤링 게시글 조회 (관리자 수동 분류용)
+	@Query("""
+			SELECT p FROM Post p
+			JOIN FETCH p.board
+			WHERE p.category IS NULL
+			AND p.isCrawled = true
+			AND p.isDeleted = false
+			ORDER BY p.createdAt ASC, p.id ASC
+		""")
+	Page<Post> findUncategorizedCrawledPosts(Pageable pageable);
 
 	@Modifying(clearAutomatically = true)
 	@Query("""

@@ -1,5 +1,6 @@
 package net.causw.app.main.domain.community.post.service.implementation;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.stereotype.Component;
@@ -8,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.PostAttachImage;
 import net.causw.app.main.domain.community.form.repository.FormRepository;
 import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.enums.PostCategory;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.community.vote.entity.Vote;
 import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
@@ -123,6 +125,23 @@ public class PostWriter {
 	 */
 	public void hardDeleteById(String postId) {
 		postRepository.deleteById(postId);
+	}
+
+	/**
+	 * 지정한 게시글들의 성격을 일괄 지정합니다. 수정 시각은 갱신되지 않습니다.
+	 *
+	 * <p>미분류 상태인 크롤링 게시글만 갱신하므로, 대상 조회 이후 관리자가 성격을 지정했거나
+	 * 삭제된 게시글은 제외됩니다.</p>
+	 *
+	 * @param category 지정할 성격
+	 * @param postIds 대상 게시글 식별자 목록
+	 * @return 실제로 변경된 게시글 수
+	 */
+	public int updateCategoryByIds(PostCategory category, Collection<String> postIds) {
+		if (postIds.isEmpty()) {
+			return 0;
+		}
+		return postRepository.updateCategoryByIds(category, postIds);
 	}
 
 	/**
