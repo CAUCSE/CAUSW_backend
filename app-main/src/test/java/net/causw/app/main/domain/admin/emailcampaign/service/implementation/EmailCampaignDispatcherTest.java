@@ -4,10 +4,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -97,6 +100,36 @@ class EmailCampaignDispatcherTest {
 			org.mockito.ArgumentMatchers.any(LocalDateTime.class));
 		assertThat(captor.getValue().failureType()).isEqualTo(EmailCampaignFailureType.RETRYABLE);
 		assertThat(captor.getValue().errorCode()).isEqualTo("SES_THROTTLED");
+	}
+
+	@Test
+	@DisplayName("같은 캠페인의 dispatcher가 실행 중이면 중복 실행하지 않는다")
+	void preventDuplicateDispatch() throws InterruptedException {
+		// given
+		String campaignId = "campaign-id";
+		CountDownLatch sending = new CountDownLatch(1);
+		CountDownLatch release = new CountDownLatch(1);
+		given(dispatchStore.prepare(org.mockito.ArgumentMatchers.eq(campaignId), org.mockito.ArgumentMatchers.any()))
+			.willReturn(true);
+		given(dispatchStore.claimBatch(
+			org.mockito.ArgumentMatchers.eq(campaignId), org.mockito.ArgumentMatchers.eq(10),
+			org.mockito.ArgumentMatchers.any())).willReturn(List.of(target(1L)));
+		given(emailSender.send(org.mockito.ArgumentMatchers.any())).willAnswer(invocation -> {
+			sending.countDown();
+			release.await(3, TimeUnit.SECONDS);
+			return new EmailSendResult("message-id");
+		});
+		Thread firstDispatch = Thread.ofPlatform().start(() -> dispatcher.dispatch(campaignId));
+		assertThat(sending.await(3, TimeUnit.SECONDS)).isTrue();
+
+		// when
+		dispatcher.dispatch(campaignId);
+		release.countDown();
+		firstDispatch.join(3000);
+
+		// then
+		verify(dispatchStore, times(1)).prepare(
+			org.mockito.ArgumentMatchers.eq(campaignId), org.mockito.ArgumentMatchers.any());
 	}
 
 	private EmailCampaignDispatchTarget target(Long recipientId) {
