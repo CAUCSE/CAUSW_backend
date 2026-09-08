@@ -29,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/admin")
-@PreAuthorize("@security.hasRole(@Role.ADMIN)")
+@PreAuthorize("@security.hasAnyRole(@Role.ADMIN, @Role.SYSTEM_ADMIN)")
 @Tag(name = "Comment Admin v2", description = "관리자 댓글 관리 API")
 public class CommentAdminController {
 	private final CommentAdminService commentAdminService;

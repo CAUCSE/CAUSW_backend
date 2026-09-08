@@ -34,7 +34,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/admin/posts")
-@PreAuthorize("@security.hasRole(@Role.ADMIN)")
+@PreAuthorize("@security.hasAnyRole(@Role.ADMIN, @Role.SYSTEM_ADMIN)")
 @Tag(name = "Post Admin v2", description = "관리자 게시글 관리 API")
 public class PostAdminController {
 

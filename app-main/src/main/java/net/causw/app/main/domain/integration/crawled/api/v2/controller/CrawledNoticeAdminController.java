@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/admin/crawled-notices")
-@PreAuthorize("@security.hasRole(@Role.ADMIN)")
+@PreAuthorize("@security.hasAnyRole(@Role.ADMIN, @Role.SYSTEM_ADMIN)")
 @Tag(name = "Crawled Notice Admin v2", description = "관리자 크롤링 공지 관리 API")
 public class CrawledNoticeAdminController {
 
