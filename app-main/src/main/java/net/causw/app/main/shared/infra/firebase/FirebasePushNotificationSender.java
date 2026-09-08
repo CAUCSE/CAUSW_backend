@@ -50,6 +50,10 @@ public class FirebasePushNotificationSender implements PushNotificationSender {
 			data.put("targetParentId", pushNotificationData.targetParentId());
 		}
 
+		if (pushNotificationData.notificationLogId() != null) {
+			data.put("notificationLogId", pushNotificationData.notificationLogId());
+		}
+
 		Notification notification = Notification.builder()
 			.setTitle(title)
 			.setBody(body)

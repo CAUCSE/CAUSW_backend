@@ -81,9 +81,10 @@ class CeremonyNotificationListenerTest {
 			handler.handle(new CeremonyNotificationEvent("ceremonyId"));
 
 			// then
-			PushNotificationData expectedData = new PushNotificationData(NoticeType.CEREMONY_V2, "ceremonyId", null);
+			PushNotificationData expectedData = new PushNotificationData(null, NoticeType.CEREMONY_V2, "ceremonyId",
+				null);
 			verify(notificationWriter).save(any());
-			verify(notificationPushSender).sendToUsers(any(), any(), any(), eq(expectedData));
+			verify(notificationPushSender).sendToUsers(any(), any(), any(), eq(expectedData), any());
 			verify(notificationWriter).saveLogs(any(), any());
 		}
 
@@ -105,8 +106,9 @@ class CeremonyNotificationListenerTest {
 			handler.handle(new CeremonyNotificationEvent("ceremonyId"));
 
 			// then
-			PushNotificationData expectedData = new PushNotificationData(NoticeType.CEREMONY_V2, "ceremonyId", null);
-			verify(notificationPushSender).sendToUsers(any(), any(), any(), eq(expectedData));
+			PushNotificationData expectedData = new PushNotificationData(null, NoticeType.CEREMONY_V2, "ceremonyId",
+				null);
+			verify(notificationPushSender).sendToUsers(any(), any(), any(), eq(expectedData), any());
 		}
 
 		@Test
@@ -158,8 +160,9 @@ class CeremonyNotificationListenerTest {
 			handler.handle(new CeremonyNotificationEvent("ceremonyId"));
 
 			// then
-			PushNotificationData expectedData = new PushNotificationData(NoticeType.CEREMONY_V2, "ceremonyId", null);
-			verify(notificationPushSender).sendToUsers(any(), eq("조사 소식"), any(), eq(expectedData));
+			PushNotificationData expectedData = new PushNotificationData(null, NoticeType.CEREMONY_V2, "ceremonyId",
+				null);
+			verify(notificationPushSender).sendToUsers(any(), eq("조사 소식"), any(), eq(expectedData), any());
 		}
 	}
 
@@ -187,7 +190,8 @@ class CeremonyNotificationListenerTest {
 			handler.handleApproved(new CeremonyApprovedEvent("ceremonyId"));
 
 			// then
-			PushNotificationData expectedData = new PushNotificationData(NoticeType.CEREMONY_V2, "ceremonyId", null);
+			PushNotificationData expectedData = new PushNotificationData(null, NoticeType.CEREMONY_V2, "ceremonyId",
+				null);
 			verify(notificationPushSender).sendToUser(eq(applicant), eq("경조사 신청 승인"), any(), eq(expectedData));
 			verify(notificationWriter).saveLog(eq(applicant), any());
 		}
@@ -240,7 +244,8 @@ class CeremonyNotificationListenerTest {
 			handler.handleRejected(new CeremonyRejectedEvent("ceremonyId", "요건에 부합하지 않습니다."));
 
 			// then
-			PushNotificationData expectedData = new PushNotificationData(NoticeType.CEREMONY_V2, "ceremonyId", null);
+			PushNotificationData expectedData = new PushNotificationData(null, NoticeType.CEREMONY_V2, "ceremonyId",
+				null);
 			verify(notificationPushSender).sendToUser(eq(applicant), eq("경조사 신청 거절"), eq("경조사 신청이 거절되었습니다."),
 				eq(expectedData));
 			verify(notificationWriter).save(argThat(n -> n.getTitle().contains("요건에 부합하지 않습니다.")));

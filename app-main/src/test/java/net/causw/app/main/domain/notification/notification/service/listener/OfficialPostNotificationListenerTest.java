@@ -87,8 +87,9 @@ class OfficialPostNotificationListenerTest {
 			// then
 			verify(notificationWriter).save(any());
 
-			PushNotificationData expectedData = new PushNotificationData(NoticeType.OFFICIAL, "postId", "boardId");
-			verify(notificationPushSender).sendToUsers(eq(targets), any(), any(), eq(expectedData));
+			PushNotificationData expectedData = new PushNotificationData(null, NoticeType.OFFICIAL, "postId",
+				"boardId");
+			verify(notificationPushSender).sendToUsers(eq(targets), any(), any(), eq(expectedData), any());
 			verify(notificationWriter).saveLogs(eq(targets), any());
 		}
 
@@ -110,7 +111,7 @@ class OfficialPostNotificationListenerTest {
 
 			// then
 			verify(notificationWriter, never()).save(any());
-			verify(notificationPushSender, never()).sendToUsers(any(), any(), any(), any());
+			verify(notificationPushSender, never()).sendToUsers(any(), any(), any(), any(), any());
 		}
 
 		@Test
@@ -160,8 +161,9 @@ class OfficialPostNotificationListenerTest {
 			// then
 			verify(notificationWriter).save(any());
 
-			PushNotificationData expectedData = new PushNotificationData(NoticeType.OFFICIAL, "postId", "boardId");
-			verify(notificationPushSender).sendToUsers(eq(List.of()), any(), any(), eq(expectedData));
+			PushNotificationData expectedData = new PushNotificationData(null, NoticeType.OFFICIAL, "postId",
+				"boardId");
+			verify(notificationPushSender).sendToUsers(eq(List.of()), any(), any(), eq(expectedData), any());
 		}
 
 		@Test
@@ -192,8 +194,9 @@ class OfficialPostNotificationListenerTest {
 			handler.handle(new OfficialPostEvent("boardId", "postId", null));
 
 			// then
-			PushNotificationData expectedData = new PushNotificationData(NoticeType.OFFICIAL, "postId", "boardId");
-			verify(notificationPushSender).sendToUsers(eq(filteredTargets), any(), any(), eq(expectedData));
+			PushNotificationData expectedData = new PushNotificationData(null, NoticeType.OFFICIAL, "postId",
+				"boardId");
+			verify(notificationPushSender).sendToUsers(eq(filteredTargets), any(), any(), eq(expectedData), any());
 			verify(notificationWriter).saveLogs(eq(filteredTargets), any());
 		}
 
@@ -230,8 +233,10 @@ class OfficialPostNotificationListenerTest {
 			assertThat(savedNotification.getTitle()).isEqualTo(crawledTitle);
 			assertThat(savedNotification.getBody()).isEqualTo(crawledTitle);
 
-			PushNotificationData expectedData = new PushNotificationData(NoticeType.OFFICIAL, "postId", "boardId");
-			verify(notificationPushSender).sendToUsers(eq(targets), eq("공지 게시판"), eq(crawledTitle), eq(expectedData));
+			PushNotificationData expectedData = new PushNotificationData(null, NoticeType.OFFICIAL, "postId",
+				"boardId");
+			verify(notificationPushSender).sendToUsers(eq(targets), eq("공지 게시판"), eq(crawledTitle), eq(expectedData),
+				any());
 			verify(notificationWriter).saveLogs(eq(targets), any());
 		}
 	}

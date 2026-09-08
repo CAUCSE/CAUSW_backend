@@ -97,12 +97,13 @@ class CeremonyAdminNotificationListenerTest {
 			assertThat(captured.getNoticeType()).isEqualTo(NoticeType.ADMIN);
 			assertThat(captured.getTargetId()).isEqualTo("ceremonyId");
 
-			PushNotificationData expectedData = new PushNotificationData(NoticeType.ADMIN, "ceremonyId", null);
+			PushNotificationData expectedData = new PushNotificationData(null, NoticeType.ADMIN, "ceremonyId", null);
 			verify(notificationPushSender).sendToUsers(
 				eq(List.of(admin1, admin2)),
 				eq("경조사 신청"),
 				eq("김신청님이 경조사를 신청했습니다."),
-				eq(expectedData));
+				eq(expectedData),
+				any());
 			verify(notificationWriter).saveLogs(eq(List.of(admin1, admin2)), eq(savedNotification));
 		}
 
@@ -124,7 +125,7 @@ class CeremonyAdminNotificationListenerTest {
 
 			// then
 			verify(notificationWriter, never()).save(any());
-			verify(notificationPushSender, never()).sendToUsers(any(), any(), any(), any());
+			verify(notificationPushSender, never()).sendToUsers(any(), any(), any(), any(), any());
 		}
 
 		@Test
@@ -157,8 +158,8 @@ class CeremonyAdminNotificationListenerTest {
 			handler.handle(new CeremonyAdminNotificationEvent("ceremonyId"));
 
 			// then
-			PushNotificationData expectedData = new PushNotificationData(NoticeType.ADMIN, "ceremonyId", null);
-			verify(notificationPushSender).sendToUsers(eq(List.of(adminOn)), any(), any(), eq(expectedData));
+			PushNotificationData expectedData = new PushNotificationData(null, NoticeType.ADMIN, "ceremonyId", null);
+			verify(notificationPushSender).sendToUsers(eq(List.of(adminOn)), any(), any(), eq(expectedData), any());
 			verify(notificationWriter).saveLogs(eq(List.of(adminOn)), eq(savedNotification));
 		}
 

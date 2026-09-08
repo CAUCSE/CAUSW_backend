@@ -87,7 +87,7 @@ class AdmissionNotificationListenerTest {
 			assertThat(captured.getNoticeType()).isEqualTo(NoticeType.ADMIN);
 			assertThat(captured.getTargetId()).isNull();
 
-			PushNotificationData expectedData = new PushNotificationData(NoticeType.ADMIN, null, null);
+			PushNotificationData expectedData = new PushNotificationData(null, NoticeType.ADMIN, null, null);
 			verify(notificationPushSender).sendToUser(eq(admin1), any(), any(), eq(expectedData));
 			verify(notificationPushSender).sendToUser(eq(admin2), any(), any(), eq(expectedData));
 		}
@@ -136,7 +136,7 @@ class AdmissionNotificationListenerTest {
 			assertThat(captured.getNoticeType()).isEqualTo(NoticeType.ADMIN);
 			assertThat(captured.getTargetId()).isNull();
 
-			PushNotificationData expectedData = new PushNotificationData(NoticeType.ADMIN, null, null);
+			PushNotificationData expectedData = new PushNotificationData(null, NoticeType.ADMIN, null, null);
 			verify(notificationPushSender).sendToUser(eq(adminOn), any(), any(), eq(expectedData));
 			verify(notificationPushSender, never()).sendToUser(eq(adminOff), any(), any(), any());
 		}
@@ -168,7 +168,7 @@ class AdmissionNotificationListenerTest {
 			// then
 			verify(notificationWriter).save(any());
 
-			PushNotificationData expectedData = new PushNotificationData(NoticeType.SYSTEM, null, null);
+			PushNotificationData expectedData = new PushNotificationData(null, NoticeType.SYSTEM, null, null);
 			verify(notificationPushSender).sendToUser(any(), any(), any(), eq(expectedData));
 			verify(notificationWriter).saveLog(any(), any());
 		}
@@ -220,7 +220,7 @@ class AdmissionNotificationListenerTest {
 			// then
 			verify(notificationWriter).save(any());
 
-			PushNotificationData expectedData = new PushNotificationData(NoticeType.SYSTEM, null, null);
+			PushNotificationData expectedData = new PushNotificationData(null, NoticeType.SYSTEM, null, null);
 			verify(notificationPushSender).sendToUser(any(), any(), any(), eq(expectedData));
 			verify(notificationWriter).saveLog(any(), any());
 		}

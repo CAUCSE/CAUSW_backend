@@ -72,7 +72,6 @@ public class AdmissionNotificationListener {
 
 		String pushBody = message;
 		String serviceTitle = message;
-		PushNotificationData pushData = new PushNotificationData(NoticeType.ADMIN, null, null);
 
 		// 알림 엔티티 저장 (발송자: 요청자)
 		Notification notification = notificationWriter.save(
@@ -82,8 +81,10 @@ public class AdmissionNotificationListener {
 		admins.stream()
 			.filter(admin -> settingMaps.get(admin.getId()).get(UserNotificationSettingKey.SERVICE_NOTICE_ENABLED))
 			.forEach(admin -> {
+				String notificationLogId = notificationWriter.saveLog(admin, notification);
+				PushNotificationData pushData = new PushNotificationData(notificationLogId, NoticeType.ADMIN, null,
+					null);
 				notificationPushSender.sendToUser(admin, pushTitle, pushBody, pushData);
-				notificationWriter.saveLog(admin, notification);
 			});
 	}
 
@@ -113,13 +114,13 @@ public class AdmissionNotificationListener {
 
 		String title = "재학정보 인증 완료";
 		String body = "재학정보 인증이 완료되었습니다.";
-		PushNotificationData data = new PushNotificationData(NoticeType.SYSTEM, null, null);
 
 		Notification notification = notificationWriter.save(
 			Notification.of(admin, title, body, NoticeType.SYSTEM, null, null));
+		String notificationLogId = notificationWriter.saveLog(targetUser, notification);
 
+		PushNotificationData data = new PushNotificationData(notificationLogId, NoticeType.SYSTEM, null, null);
 		notificationPushSender.sendToUser(targetUser, title, body, data);
-		notificationWriter.saveLog(targetUser, notification);
 	}
 
 	/**
@@ -149,12 +150,12 @@ public class AdmissionNotificationListener {
 
 		String title = "재학정보 인증 반려";
 		String body = String.format("재학정보 인증이 반려되었습니다. 사유: %s", event.rejectMessage());
-		PushNotificationData data = new PushNotificationData(NoticeType.SYSTEM, null, null);
 
 		Notification notification = notificationWriter.save(
 			Notification.of(admin, title, body, NoticeType.SYSTEM, null, null));
+		String notificationLogId = notificationWriter.saveLog(targetUser, notification);
 
+		PushNotificationData data = new PushNotificationData(notificationLogId, NoticeType.SYSTEM, null, null);
 		notificationPushSender.sendToUser(targetUser, title, body, data);
-		notificationWriter.saveLog(targetUser, notification);
 	}
 }

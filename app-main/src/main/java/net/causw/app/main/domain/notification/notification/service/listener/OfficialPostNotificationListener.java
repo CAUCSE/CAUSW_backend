@@ -1,6 +1,7 @@
 package net.causw.app.main.domain.notification.notification.service.listener;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.jsoup.Jsoup;
@@ -87,13 +88,14 @@ public class OfficialPostNotificationListener {
 		}
 
 		String pushBody = NotificationTextUtil.ellipsis(rawPushBody, NotificationTextUtil.PUSH_BODY_MAX_LENGTH);
-		PushNotificationData pushData = new PushNotificationData(NoticeType.OFFICIAL, post.getId(), board.getId());
+		PushNotificationData pushData = new PushNotificationData(null, NoticeType.OFFICIAL, post.getId(),
+			board.getId());
 
 		// 알림 발송자를 게시글 작성자로 설정하여 알림 저장
 		Notification notification = notificationWriter.save(
 			Notification.of(writer, serviceTitle, pushBody, NoticeType.OFFICIAL, post.getId(), board.getId()));
+		Map<String, String> logIdsByUserId = notificationWriter.saveLogs(targets, notification);
 
-		notificationPushSender.sendToUsers(targets, pushTitle, pushBody, pushData);
-		notificationWriter.saveLogs(targets, notification);
+		notificationPushSender.sendToUsers(targets, pushTitle, pushBody, pushData, logIdsByUserId);
 	}
 }

@@ -87,6 +87,7 @@ class PostLikeMilestoneNotificationProcessorTest {
 			processor.process("achievementId");
 
 			PushNotificationData expectedData = new PushNotificationData(
+				null,
 				NoticeType.COMMUNITY,
 				"postId",
 				"boardId");

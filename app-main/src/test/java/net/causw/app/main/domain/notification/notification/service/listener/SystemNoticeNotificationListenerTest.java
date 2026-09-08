@@ -70,9 +70,10 @@ class SystemNoticeNotificationListenerTest {
 			verify(systemNoticeReader).getSystemNoticePost("postId");
 
 			// then: 알림 저장 + 발송 + 로그
-			PushNotificationData expectedData = new PushNotificationData(NoticeType.SYSTEM_NOTICE, "postId", "boardId");
+			PushNotificationData expectedData = new PushNotificationData(null, NoticeType.SYSTEM_NOTICE, "postId",
+				"boardId");
 			verify(notificationWriter).save(any());
-			verify(notificationPushSender).sendToUsers(eq(targets), eq("시스템 공지"), any(), eq(expectedData));
+			verify(notificationPushSender).sendToUsers(eq(targets), eq("시스템 공지"), any(), eq(expectedData), any());
 			verify(notificationWriter).saveLogs(eq(targets), any());
 		}
 
@@ -121,7 +122,7 @@ class SystemNoticeNotificationListenerTest {
 			assertThat(saved.getBody()).isEqualTo("긴급 시스템 점검 안내");
 
 			// then: 푸시 알림 본문
-			verify(notificationPushSender).sendToUsers(eq(targets), eq("시스템 공지"), eq("긴급 시스템 점검 안내"), any());
+			verify(notificationPushSender).sendToUsers(eq(targets), eq("시스템 공지"), eq("긴급 시스템 점검 안내"), any(), any());
 		}
 
 		@Test
@@ -138,7 +139,7 @@ class SystemNoticeNotificationListenerTest {
 			handler.handle(new SystemNoticeNotificationEvent("postId"));
 
 			verify(notificationWriter).save(any());
-			verify(notificationPushSender).sendToUsers(eq(List.of()), any(), any(), any());
+			verify(notificationPushSender).sendToUsers(eq(List.of()), any(), any(), any(), any());
 			verify(notificationWriter).saveLogs(eq(List.of()), any());
 		}
 	}

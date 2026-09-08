@@ -29,7 +29,7 @@ class FirebasePushNotificationSenderTest {
 		environment.setActiveProfiles("local");
 		FirebaseMessaging firebaseMessaging = mock(FirebaseMessaging.class);
 		FirebasePushNotificationSender sender = new FirebasePushNotificationSender(environment, firebaseMessaging);
-		PushNotificationData dummyData = new PushNotificationData(NoticeType.SYSTEM, null, null);
+		PushNotificationData dummyData = new PushNotificationData(null, NoticeType.SYSTEM, null, null);
 
 		// when
 		sender.send("token", "title", "body", dummyData);
@@ -47,7 +47,7 @@ class FirebasePushNotificationSenderTest {
 		environment.setActiveProfiles(profile);
 		FirebaseMessaging messaging = mock(FirebaseMessaging.class);
 		FirebasePushNotificationSender sender = new FirebasePushNotificationSender(environment, messaging);
-		PushNotificationData dummyData = new PushNotificationData(NoticeType.SYSTEM, null, null);
+		PushNotificationData dummyData = new PushNotificationData(null, NoticeType.SYSTEM, null, null);
 		when(messaging.send(any(Message.class))).thenReturn("message-id");
 
 		// when

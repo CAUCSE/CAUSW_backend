@@ -1,6 +1,8 @@
 package net.causw.app.main.domain.notification.notification.service.implementation;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,14 +27,29 @@ public class NotificationWriter {
 		return notificationRepository.save(notification);
 	}
 
-	public void saveLog(User user, Notification notification) {
-		notificationLogRepository.save(NotificationLog.of(user, notification));
+	/**
+	 * 알림 로그를 저장하고, 저장된 로그의 id를 반환합니다.
+	 * 반환된 id는 푸시 알림 data 필드의 notificationLogId 값으로 사용됩니다.
+	 */
+	public String saveLog(User user, Notification notification) {
+		NotificationLog log = notificationLogRepository.save(NotificationLog.of(user, notification));
+		return log.getId();
 	}
 
-	public void saveLogs(List<User> users, Notification notification) {
+	/**
+	 * 여러 유저에 대한 알림 로그를 일괄 저장하고, 유저 id -> 로그 id 맵을 반환합니다.
+	 * 반환된 맵은 유저별 푸시 알림 data 필드의 notificationLogId 값으로 사용됩니다.
+	 */
+	public Map<String, String> saveLogs(List<User> users, Notification notification) {
 		List<NotificationLog> logs = users.stream()
 			.map(user -> NotificationLog.of(user, notification))
 			.toList();
-		notificationLogRepository.saveAll(logs);
+		List<NotificationLog> savedLogs = notificationLogRepository.saveAll(logs);
+
+		Map<String, String> logIdsByUserId = new HashMap<>();
+		for (int i = 0; i < users.size(); i++) {
+			logIdsByUserId.put(users.get(i).getId(), savedLogs.get(i).getId());
+		}
+		return logIdsByUserId;
 	}
 }

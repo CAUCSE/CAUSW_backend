@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -71,13 +72,14 @@ public class CeremonyNotificationListener {
 		String pushTitle = buildPushTitle(ceremony);
 		String pushBody = buildPushBody(ceremony);
 		String serviceTitle = buildServiceTitle(ceremony);
-		PushNotificationData pushData = new PushNotificationData(NoticeType.CEREMONY_V2, ceremony.getId(), null);
+		PushNotificationData pushData = new PushNotificationData(null, NoticeType.CEREMONY_V2, ceremony.getId(),
+			null);
 
 		Notification notification = notificationWriter.save(
 			Notification.of(ceremonyUser, serviceTitle, pushBody, NoticeType.CEREMONY_V2, ceremony.getId(), null));
+		Map<String, String> logIdsByUserId = notificationWriter.saveLogs(targets, notification);
 
-		notificationPushSender.sendToUsers(targets, pushTitle, pushBody, pushData);
-		notificationWriter.saveLogs(targets, notification);
+		notificationPushSender.sendToUsers(targets, pushTitle, pushBody, pushData, logIdsByUserId);
 	}
 
 	/**
@@ -108,13 +110,13 @@ public class CeremonyNotificationListener {
 		String body = "경조사 신청이 승인되었습니다.";
 		String serviceTitle = "경조사 신청이 승인되었습니다.";
 
-		PushNotificationData data = new PushNotificationData(NoticeType.CEREMONY_V2, ceremony.getId(), null);
-
 		Notification notification = notificationWriter.save(
 			Notification.of(applicant, serviceTitle, body, NoticeType.CEREMONY_V2, ceremony.getId(), null));
+		String notificationLogId = notificationWriter.saveLog(applicant, notification);
 
+		PushNotificationData data = new PushNotificationData(notificationLogId, NoticeType.CEREMONY_V2,
+			ceremony.getId(), null);
 		notificationPushSender.sendToUser(applicant, pushTitle, body, data);
-		notificationWriter.saveLog(applicant, notification);
 	}
 
 	/**
@@ -145,13 +147,13 @@ public class CeremonyNotificationListener {
 		String body = "경조사 신청이 거절되었습니다.";
 		String serviceTitle = String.format("경조사 신청이 거절되었습니다. 사유: %s", event.rejectReason());
 
-		PushNotificationData data = new PushNotificationData(NoticeType.CEREMONY_V2, ceremony.getId(), null);
-
 		Notification notification = notificationWriter.save(
 			Notification.of(applicant, serviceTitle, body, NoticeType.CEREMONY_V2, ceremony.getId(), null));
+		String notificationLogId = notificationWriter.saveLog(applicant, notification);
 
+		PushNotificationData data = new PushNotificationData(notificationLogId, NoticeType.CEREMONY_V2,
+			ceremony.getId(), null);
 		notificationPushSender.sendToUser(applicant, pushTitle, body, data);
-		notificationWriter.saveLog(applicant, notification);
 	}
 
 	/**
