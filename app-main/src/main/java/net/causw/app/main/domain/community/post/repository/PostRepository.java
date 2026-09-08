@@ -22,12 +22,13 @@ import net.causw.app.main.domain.community.post.enums.PostCategory;
 @Repository
 public interface PostRepository extends JpaRepository<Post, String> {
 	@EntityGraph(attributePaths = {"postAttachImageList"})
-	Page<Post> findAllByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(String boardId, Pageable pageable);
+	Page<Post> findAllByBoard_IdAndIsDeletedIsFalseAndIsHiddenFalseOrderByCreatedAtDesc(String boardId,
+		Pageable pageable);
 
-	Optional<Post> findTop1ByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(String boardId);
+	Optional<Post> findTop1ByBoard_IdAndIsDeletedIsFalseAndIsHiddenFalseOrderByCreatedAtDesc(String boardId);
 
 	@EntityGraph(attributePaths = {"writer"})
-	List<Post> findAllByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(String boardId);
+	List<Post> findAllByBoard_IdAndIsDeletedIsFalseAndIsHiddenFalseOrderByCreatedAtDesc(String boardId);
 
 	// Repository
 	@Query("""
@@ -67,7 +68,7 @@ public interface PostRepository extends JpaRepository<Post, String> {
 	Optional<Post> findByForm(Form form);
 
 	//특정 게시판의 모든 게시글 조회 (해시 계산용)
-	List<Post> findAllByBoardAndIsDeletedIsFalse(Board board);
+	List<Post> findAllByBoardAndIsDeletedIsFalseAndIsHiddenFalse(Board board);
 
 	// 게시판 삭제 시, 게시글도 함께 삭제
 	@Query("UPDATE Post p SET p.isDeleted = true " +
@@ -75,7 +76,7 @@ public interface PostRepository extends JpaRepository<Post, String> {
 	@Modifying(flushAutomatically = true, clearAutomatically = true)
 	int deleteAllPostsByBoardId(@Param("boardId") String boardId);
 
-	Optional<Post> findByIdAndIsDeletedFalse(String postId);
+	Optional<Post> findByIdAndIsDeletedFalseAndIsHiddenFalse(String postId);
 
 	// 성격 일괄 지정 (벌크 연산이라 updated_at이 갱신되지 않음)
 	// 대상 조회와 갱신 사이에 수동 지정되거나 삭제된 게시글을 덮어쓰지 않도록 현재 상태를 다시 확인한다.

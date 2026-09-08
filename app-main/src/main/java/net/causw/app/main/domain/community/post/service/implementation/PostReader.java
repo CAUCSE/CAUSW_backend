@@ -72,12 +72,12 @@ public class PostReader {
 	 * @return Post Entity
 	 */
 	public Post findByIdAndNotDeleted(String postId) {
-		return postRepository.findByIdAndIsDeletedFalse(postId)
+		return postRepository.findByIdAndIsDeletedFalseAndIsHiddenFalse(postId)
 			.orElseThrow(PostErrorCode.POST_NOT_FOUND::toBaseException);
 	}
 
 	public List<Post> findAllByBoardAndNotDeleted(Board board) {
-		return postRepository.findAllByBoardAndIsDeletedIsFalse(board);
+		return postRepository.findAllByBoardAndIsDeletedIsFalseAndIsHiddenFalse(board);
 	}
 
 	/**

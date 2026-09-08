@@ -58,6 +58,7 @@ public class PostQueryRepository {
 		BooleanExpression[] conditions = new BooleanExpression[] {
 			post.board.id.eq(boardId),
 			isNotDeleted(post, includeDeleted),
+			post.isHidden.isFalse(),
 			notInBlockedUsers(writer, blockedUserIds),
 			containsKeyword(post, writer, keyword)
 		};
@@ -302,6 +303,7 @@ public class PostQueryRepository {
 		PostReadQueryContext context) {
 
 		BooleanExpression alive = post.isDeleted.isFalse()
+			.and(post.isHidden.isFalse())
 			.and(post.board.isDeleted.isFalse());
 		if (context.systemAdmin()) {
 			return alive;

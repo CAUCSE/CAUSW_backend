@@ -29,13 +29,13 @@ public class SystemNoticeReader {
 	public Optional<Post> findLatestPost() {
 		return findSystemNoticeConfig()
 			.flatMap(config -> postRepository
-				.findTop1ByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(config.getBoardId()));
+				.findTop1ByBoard_IdAndIsDeletedIsFalseAndIsHiddenFalseOrderByCreatedAtDesc(config.getBoardId()));
 	}
 
 	public List<Post> findAllPosts() {
 		return findSystemNoticeConfig()
 			.map(config -> postRepository
-				.findAllByBoard_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(config.getBoardId()))
+				.findAllByBoard_IdAndIsDeletedIsFalseAndIsHiddenFalseOrderByCreatedAtDesc(config.getBoardId()))
 			.orElseGet(List::of);
 	}
 
@@ -44,7 +44,7 @@ public class SystemNoticeReader {
 	}
 
 	public Post getSystemNoticePost(String postId) {
-		return postRepository.findByIdAndIsDeletedFalse(postId)
+		return postRepository.findByIdAndIsDeletedFalseAndIsHiddenFalse(postId)
 			.filter(this::isSystemNoticePost)
 			.orElseThrow(PostErrorCode.POST_NOT_FOUND::toBaseException);
 	}
