@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.hibernate.annotations.ColumnDefault;
 
+import net.causw.app.main.domain.community.comment.enums.CommentAdminStatus;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.ProfileImageType;
@@ -130,5 +131,9 @@ public class Comment extends BaseEntity {
 
 	public void delete() {
 		this.isDeleted = true;
+	}
+
+	public void changeAdminStatus(CommentAdminStatus status) {
+		this.isDeleted = status == CommentAdminStatus.DELETED;
 	}
 }

@@ -42,6 +42,11 @@ public class CommentReader {
 			.orElseThrow(CommentErrorCode.COMMENT_NOT_FOUND::toBaseException);
 	}
 
+	public Comment getCommentIncludeDeleted(String commentId) {
+		return commentRepository.findById(commentId)
+			.orElseThrow(CommentErrorCode.COMMENT_NOT_FOUND::toBaseException);
+	}
+
 	/**
 	 * 삭제 여부와 관계없이 답글의 부모 댓글을 조회합니다.
 	 *
