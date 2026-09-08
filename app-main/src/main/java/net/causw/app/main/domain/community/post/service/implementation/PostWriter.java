@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.PostAttachImage;
 import net.causw.app.main.domain.community.form.repository.FormRepository;
 import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.enums.PostAdminStatus;
 import net.causw.app.main.domain.community.post.enums.PostCategory;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.community.vote.entity.Vote;
@@ -103,6 +104,11 @@ public class PostWriter {
 		Post post = postRepository.findById(postId).orElseThrow(
 			PostErrorCode.POST_NOT_FOUND::toBaseException);
 		post.setIsDeleted(isDeleted);
+		postRepository.save(post);
+	}
+
+	public void changeAdminStatus(Post post, PostAdminStatus status) {
+		post.changeAdminStatus(status);
 		postRepository.save(post);
 	}
 
