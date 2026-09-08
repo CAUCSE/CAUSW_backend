@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import net.causw.app.main.domain.community.reaction.entity.LikePost;
+import net.causw.app.main.domain.community.reaction.repository.query.PostLikeCount;
 
 public interface LikePostRepository extends JpaRepository<LikePost, String> {
 
@@ -19,6 +20,14 @@ public interface LikePostRepository extends JpaRepository<LikePost, String> {
 	void deleteLikeByPostIdAndUserId(String postId, String userId);
 
 	Long countByPostId(String postId);
+
+	@Query("""
+		SELECT new net.causw.app.main.domain.community.reaction.repository.query.PostLikeCount(lp.post.id, COUNT(lp))
+		FROM LikePost lp
+		WHERE lp.post.id IN :postIds
+		GROUP BY lp.post.id
+		""")
+	List<PostLikeCount> countByPostIds(@Param("postIds") List<String> postIds);
 
 	@Query("SELECT lp.post.id FROM LikePost lp WHERE lp.user.id = :userId AND lp.post.id IN :postIds")
 	Set<String> findLikedPostIdsByUserIdAndPostIds(@Param("userId") String userId,

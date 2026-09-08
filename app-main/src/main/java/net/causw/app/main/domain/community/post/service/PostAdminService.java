@@ -1,14 +1,23 @@
 package net.causw.app.main.domain.community.post.service;
 
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.enums.PostAdminStatus;
 import net.causw.app.main.domain.community.post.enums.PostCategory;
+import net.causw.app.main.domain.community.post.service.dto.PostAdminDetailResult;
+import net.causw.app.main.domain.community.post.service.dto.PostAdminListQuery;
+import net.causw.app.main.domain.community.post.service.dto.PostAdminSummaryResult;
 import net.causw.app.main.domain.community.post.service.dto.UncategorizedPostResult;
 import net.causw.app.main.domain.community.post.service.implementation.PostReader;
+import net.causw.app.main.domain.community.post.service.implementation.PostWriter;
+import net.causw.app.main.domain.community.reaction.service.implementation.LikePostReader;
 import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -18,6 +27,8 @@ import lombok.RequiredArgsConstructor;
 public class PostAdminService {
 
 	private final PostReader postReader;
+	private final PostWriter postWriter;
+	private final LikePostReader likePostReader;
 
 	/**
 	 * 관리자가 게시글의 성격(카테고리)을 수동으로 지정합니다.
@@ -53,5 +64,34 @@ public class PostAdminService {
 				post.getTitle(),
 				post.getBoard().getName(),
 				post.getCreatedAt()));
+	}
+
+	@Transactional(readOnly = true)
+	public Page<PostAdminSummaryResult> getPosts(PostAdminListQuery query, Pageable pageable) {
+		Page<Post> posts = postReader.findAllForAdmin(query, pageable);
+		List<String> postIds = posts.getContent().stream().map(Post::getId).toList();
+		Map<String, Long> commentCounts = postIds.isEmpty() ? Map.of() : postReader.countCommentsByPostIds(postIds);
+		Map<String, Long> likeCounts = postIds.isEmpty() ? Map.of() : likePostReader.countByPostIds(postIds);
+		return posts
+			.map(post -> PostAdminSummaryResult.from(
+				post,
+				commentCounts.getOrDefault(post.getId(), 0L),
+				likeCounts.getOrDefault(post.getId(), 0L)));
+	}
+
+	@Transactional
+	public void changeStatus(String postId, PostAdminStatus status) {
+		Post post = postReader.findById(postId);
+		postWriter.changeAdminStatus(post, status);
+	}
+
+	@Transactional(readOnly = true)
+	public PostAdminDetailResult getPostDetail(String postId) {
+		Post post = postReader.findById(postId);
+		return PostAdminDetailResult.from(
+			post,
+			postReader.findPostImages(postId),
+			postReader.countComments(postId),
+			likePostReader.countByPostId(postId));
 	}
 }

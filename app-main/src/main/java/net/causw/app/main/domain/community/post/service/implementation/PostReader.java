@@ -15,11 +15,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.enums.PostAdminStatus;
 import net.causw.app.main.domain.community.post.enums.PostCategory;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
+import net.causw.app.main.domain.community.post.repository.query.PostCommentCount;
 import net.causw.app.main.domain.community.post.repository.query.PostCursorResult;
 import net.causw.app.main.domain.community.post.repository.query.PostQueryRepository;
 import net.causw.app.main.domain.community.post.repository.query.PostReadQueryContext;
+import net.causw.app.main.domain.community.post.service.dto.PostAdminListQuery;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledPostImage;
 import net.causw.app.main.domain.integration.crawled.repository.CrawledPostImageRepository;
 import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
@@ -191,6 +194,14 @@ public class PostReader {
 		return postQueryRepository.countCommentsByPostId(postId);
 	}
 
+	public Map<String, Long> countCommentsByPostIds(List<String> postIds) {
+		if (postIds.isEmpty()) {
+			return Map.of();
+		}
+		return postRepository.countCommentsByPostIds(postIds).stream()
+			.collect(Collectors.toMap(PostCommentCount::postId, PostCommentCount::count));
+	}
+
 	/**
 	 * 특정 사용자 ID 목록 중 시스템 관리자(SYSTEM_ADMIN) 권한을 가진 사용자 ID를 조회합니다.
 	 * @param userIds 조회할 사용자 ID 목록
@@ -208,5 +219,17 @@ public class PostReader {
 	 */
 	public Page<Post> findUncategorizedCrawledPosts(Pageable pageable) {
 		return postRepository.findUncategorizedCrawledPosts(pageable);
+	}
+
+	public Page<Post> findAllForAdmin(PostAdminListQuery query, Pageable pageable) {
+		Boolean isDeleted = query.status() == null ? null : query.status() == PostAdminStatus.DELETED;
+		Boolean isHidden = null;
+		if (query.status() == PostAdminStatus.VISIBLE) {
+			isHidden = false;
+		} else if (query.status() == PostAdminStatus.HIDDEN) {
+			isHidden = true;
+		}
+		return postRepository.findAllForAdmin(
+			query.boardId(), query.category(), isDeleted, isHidden, query.keyword(), query.writerKeyword(), pageable);
 	}
 }

@@ -18,6 +18,7 @@ import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.form.entity.Form;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.enums.PostCategory;
+import net.causw.app.main.domain.community.post.repository.query.PostCommentCount;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, String> {
@@ -60,6 +61,14 @@ public interface PostRepository extends JpaRepository<Post, String> {
 	@Query("SELECT COUNT(c) FROM Comment c WHERE c.post.id = :postId AND c.isDeleted = false")
 	Long countCommentsByPostId(@Param("postId") String postId);
 
+	@Query("""
+		SELECT new net.causw.app.main.domain.community.post.repository.query.PostCommentCount(c.post.id, COUNT(c))
+		FROM Comment c
+		WHERE c.post.id IN :postIds AND c.isDeleted = false
+		GROUP BY c.post.id
+		""")
+	List<PostCommentCount> countCommentsByPostIds(@Param("postIds") Collection<String> postIds);
+
 	// 게시글에 작성된 모든댓글의 수 반환
 	default Long countAllCommentByPost_Id(String postId) {
 		return countCommentsByPostId(postId);
@@ -77,6 +86,28 @@ public interface PostRepository extends JpaRepository<Post, String> {
 	int deleteAllPostsByBoardId(@Param("boardId") String boardId);
 
 	Optional<Post> findByIdAndIsDeletedFalseAndIsHiddenFalse(String postId);
+
+	@EntityGraph(attributePaths = {"writer", "board"})
+	@Query("""
+		SELECT p FROM Post p
+		WHERE (:boardId IS NULL OR p.board.id = :boardId)
+		AND (:category IS NULL OR p.category = :category)
+		AND (:isDeleted IS NULL OR p.isDeleted = :isDeleted)
+		AND (:isHidden IS NULL OR p.isHidden = :isHidden)
+		AND (:keyword IS NULL OR :keyword = '' OR p.title LIKE CONCAT('%', :keyword, '%')
+			OR p.content LIKE CONCAT('%', :keyword, '%'))
+		AND (:writerKeyword IS NULL OR :writerKeyword = ''
+			OR p.writer.name LIKE CONCAT('%', :writerKeyword, '%')
+			OR p.writer.nickname LIKE CONCAT('%', :writerKeyword, '%'))
+		""")
+	Page<Post> findAllForAdmin(
+		@Param("boardId") String boardId,
+		@Param("category") PostCategory category,
+		@Param("isDeleted") Boolean isDeleted,
+		@Param("isHidden") Boolean isHidden,
+		@Param("keyword") String keyword,
+		@Param("writerKeyword") String writerKeyword,
+		Pageable pageable);
 
 	// 성격 일괄 지정 (벌크 연산이라 updated_at이 갱신되지 않음)
 	// 대상 조회와 갱신 사이에 수동 지정되거나 삭제된 게시글을 덮어쓰지 않도록 현재 상태를 다시 확인한다.
