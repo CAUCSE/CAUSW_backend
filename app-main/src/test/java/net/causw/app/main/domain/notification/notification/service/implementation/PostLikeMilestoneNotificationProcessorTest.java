@@ -83,11 +83,12 @@ class PostLikeMilestoneNotificationProcessorTest {
 			given(blockReader.existsByBlockerAndBlocked(postWriter, liker)).willReturn(false);
 			Notification notification = mock(Notification.class);
 			given(notificationWriter.save(any(Notification.class))).willReturn(notification);
+			given(notificationWriter.saveLog(postWriter, notification)).willReturn("notificationLogId");
 
 			processor.process("achievementId");
 
 			PushNotificationData expectedData = new PushNotificationData(
-				null,
+				"notificationLogId",
 				NoticeType.COMMUNITY,
 				"postId",
 				"boardId");

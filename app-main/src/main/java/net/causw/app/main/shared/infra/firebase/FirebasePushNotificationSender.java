@@ -39,20 +39,7 @@ public class FirebasePushNotificationSender implements PushNotificationSender {
 			return;
 		}
 
-		Map<String, String> data = new HashMap<>();
-		data.put("noticeType", pushNotificationData.noticeType().name());
-
-		if (pushNotificationData.targetId() != null) {
-			data.put("targetId", pushNotificationData.targetId());
-		}
-
-		if (pushNotificationData.targetParentId() != null) {
-			data.put("targetParentId", pushNotificationData.targetParentId());
-		}
-
-		if (pushNotificationData.notificationLogId() != null) {
-			data.put("notificationLogId", pushNotificationData.notificationLogId());
-		}
+		Map<String, String> data = buildData(pushNotificationData);
 
 		Notification notification = Notification.builder()
 			.setTitle(title)
@@ -72,5 +59,29 @@ public class FirebasePushNotificationSender implements PushNotificationSender {
 	private boolean isPushEnabledProfile() {
 		return Arrays.stream(environment.getActiveProfiles())
 			.anyMatch(profile -> PROD_PROFILE.equals(profile) || DEV_PROFILE.equals(profile));
+	}
+
+	/**
+	 * FCM data 필드를 구성합니다. noticeType은 항상 포함되고, targetId/targetParentId/notificationLogId는
+	 * null이 아닐 때만 포함됩니다. 패키지 전용으로 열어 단위 테스트에서 직접 검증합니다.
+	 */
+	Map<String, String> buildData(PushNotificationData pushNotificationData) {
+		Map<String, String> data = new HashMap<>();
+
+		if (pushNotificationData.notificationLogId() != null) {
+			data.put("notificationLogId", pushNotificationData.notificationLogId());
+		}
+
+		data.put("noticeType", pushNotificationData.noticeType().name());
+
+		if (pushNotificationData.targetId() != null) {
+			data.put("targetId", pushNotificationData.targetId());
+		}
+
+		if (pushNotificationData.targetParentId() != null) {
+			data.put("targetParentId", pushNotificationData.targetParentId());
+		}
+
+		return data;
 	}
 }

@@ -160,7 +160,9 @@ class AdmissionNotificationListenerTest {
 			given(userReader.findUserById("adminId")).willReturn(admin);
 			given(userReader.findUserById("targetUserId")).willReturn(targetUser);
 			given(notificationSettingReader.findSettingMap("targetUserId")).willReturn(settingMapAllOn());
-			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
+			Notification notification = mock(Notification.class);
+			given(notificationWriter.save(any())).willReturn(notification);
+			given(notificationWriter.saveLog(targetUser, notification)).willReturn("notificationLogId");
 
 			// when
 			handler.handleAccepted(new AdmissionAcceptedEvent("adminId", "targetUserId"));
@@ -168,9 +170,10 @@ class AdmissionNotificationListenerTest {
 			// then
 			verify(notificationWriter).save(any());
 
-			PushNotificationData expectedData = new PushNotificationData(null, NoticeType.SYSTEM, null, null);
+			PushNotificationData expectedData = new PushNotificationData("notificationLogId", NoticeType.SYSTEM, null,
+				null);
 			verify(notificationPushSender).sendToUser(any(), any(), any(), eq(expectedData));
-			verify(notificationWriter).saveLog(any(), any());
+			verify(notificationWriter).saveLog(targetUser, notification);
 		}
 
 		@Test
@@ -212,7 +215,9 @@ class AdmissionNotificationListenerTest {
 			given(userReader.findUserById("adminId")).willReturn(admin);
 			given(userReader.findUserById("targetUserId")).willReturn(targetUser);
 			given(notificationSettingReader.findSettingMap("targetUserId")).willReturn(settingMapAllOn());
-			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
+			Notification notification = mock(Notification.class);
+			given(notificationWriter.save(any())).willReturn(notification);
+			given(notificationWriter.saveLog(targetUser, notification)).willReturn("notificationLogId");
 
 			// when
 			handler.handleRejected(new AdmissionRejectedEvent("adminId", "targetUserId", "증빙서류 불일치"));
@@ -220,9 +225,10 @@ class AdmissionNotificationListenerTest {
 			// then
 			verify(notificationWriter).save(any());
 
-			PushNotificationData expectedData = new PushNotificationData(null, NoticeType.SYSTEM, null, null);
+			PushNotificationData expectedData = new PushNotificationData("notificationLogId", NoticeType.SYSTEM, null,
+				null);
 			verify(notificationPushSender).sendToUser(any(), any(), any(), eq(expectedData));
-			verify(notificationWriter).saveLog(any(), any());
+			verify(notificationWriter).saveLog(targetUser, notification);
 		}
 
 		@Test

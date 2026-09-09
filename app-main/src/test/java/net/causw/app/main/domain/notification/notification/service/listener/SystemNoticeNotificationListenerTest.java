@@ -9,6 +9,7 @@ import static org.mockito.BDDMockito.verify;
 import static org.mockito.Mockito.mock;
 
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -56,12 +57,16 @@ class SystemNoticeNotificationListenerTest {
 		void givenTargets_whenHandle_thenRefetchPostAndSendToTargets() {
 			// given
 			Post post = mockSystemNoticePost();
-			List<User> targets = List.of(mock(User.class), mock(User.class));
+			User target1 = mock(User.class);
+			User target2 = mock(User.class);
+			List<User> targets = List.of(target1, target2);
 
 			given(systemNoticeReader.getSystemNoticePost("postId")).willReturn(post);
 			given(notificationSettingReader.findAllActiveUsersBySettingKey(
 				UserNotificationSettingKey.SERVICE_NOTICE_ENABLED)).willReturn(targets);
 			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
+			Map<String, String> logIdsByUserId = Map.of("target1Id", "logId1", "target2Id", "logId2");
+			given(notificationWriter.saveLogs(eq(targets), any())).willReturn(logIdsByUserId);
 
 			// when
 			handler.handle(new SystemNoticeNotificationEvent("postId"));
@@ -73,7 +78,8 @@ class SystemNoticeNotificationListenerTest {
 			PushNotificationData expectedData = new PushNotificationData(null, NoticeType.SYSTEM_NOTICE, "postId",
 				"boardId");
 			verify(notificationWriter).save(any());
-			verify(notificationPushSender).sendToUsers(eq(targets), eq("시스템 공지"), any(), eq(expectedData), any());
+			verify(notificationPushSender).sendToUsers(eq(targets), eq("시스템 공지"), any(), eq(expectedData),
+				eq(logIdsByUserId));
 			verify(notificationWriter).saveLogs(eq(targets), any());
 		}
 
@@ -104,12 +110,15 @@ class SystemNoticeNotificationListenerTest {
 			// given
 			Post post = mockSystemNoticePost();
 			given(post.getTitle()).willReturn("긴급 시스템 점검 안내");
-			List<User> targets = List.of(mock(User.class));
+			User target = mock(User.class);
+			List<User> targets = List.of(target);
 
 			given(systemNoticeReader.getSystemNoticePost("postId")).willReturn(post);
 			given(notificationSettingReader.findAllActiveUsersBySettingKey(
 				UserNotificationSettingKey.SERVICE_NOTICE_ENABLED)).willReturn(targets);
 			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
+			Map<String, String> logIdsByUserId = Map.of("targetId", "logId");
+			given(notificationWriter.saveLogs(eq(targets), any())).willReturn(logIdsByUserId);
 
 			// when
 			handler.handle(new SystemNoticeNotificationEvent("postId"));
@@ -122,7 +131,8 @@ class SystemNoticeNotificationListenerTest {
 			assertThat(saved.getBody()).isEqualTo("긴급 시스템 점검 안내");
 
 			// then: 푸시 알림 본문
-			verify(notificationPushSender).sendToUsers(eq(targets), eq("시스템 공지"), eq("긴급 시스템 점검 안내"), any(), any());
+			verify(notificationPushSender).sendToUsers(eq(targets), eq("시스템 공지"), eq("긴급 시스템 점검 안내"), any(),
+				eq(logIdsByUserId));
 		}
 
 		@Test
@@ -134,12 +144,13 @@ class SystemNoticeNotificationListenerTest {
 			given(notificationSettingReader.findAllActiveUsersBySettingKey(
 				UserNotificationSettingKey.SERVICE_NOTICE_ENABLED)).willReturn(List.of());
 			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
+			given(notificationWriter.saveLogs(eq(List.of()), any())).willReturn(Map.of());
 
 			// when & then: 예외 없이 처리됨
 			handler.handle(new SystemNoticeNotificationEvent("postId"));
 
 			verify(notificationWriter).save(any());
-			verify(notificationPushSender).sendToUsers(eq(List.of()), any(), any(), any(), any());
+			verify(notificationPushSender).sendToUsers(eq(List.of()), any(), any(), any(), eq(Map.of()));
 			verify(notificationWriter).saveLogs(eq(List.of()), any());
 		}
 	}
