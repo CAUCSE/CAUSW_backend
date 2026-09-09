@@ -83,7 +83,9 @@ class CommentNotificationListenerTest {
 			given(commentReader.getComment("commentId")).willReturn(comment);
 			given(notificationSettingReader.findSettingMap("postWriterId")).willReturn(settingMapAllOn());
 			given(blockReader.existsByBlockerAndBlocked(postWriter, commentWriter)).willReturn(false);
-			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
+			Notification notification = mock(Notification.class);
+			given(notificationWriter.save(any())).willReturn(notification);
+			given(notificationWriter.saveLog(postWriter, notification)).willReturn("notificationLogId");
 
 			// when
 			handler.handleComment(new PostCommentCreatedEvent("postId", "commentId"));
@@ -92,11 +94,12 @@ class CommentNotificationListenerTest {
 			verify(notificationWriter).save(any());
 
 			PushNotificationData expectedData = new PushNotificationData(
+				"notificationLogId",
 				NoticeType.COMMUNITY,
 				"postId",
 				"boardId");
 			verify(notificationPushSender).sendToUser(any(), any(), any(), eq(expectedData));
-			verify(notificationWriter).saveLog(any(), any());
+			verify(notificationWriter).saveLog(postWriter, notification);
 		}
 
 		@Test
@@ -222,7 +225,9 @@ class CommentNotificationListenerTest {
 			given(commentReader.getComment("childCommentId")).willReturn(childComment);
 			given(notificationSettingReader.findSettingMap("commentWriterId")).willReturn(settingMapAllOn());
 			given(blockReader.existsByBlockerAndBlocked(commentWriter, childCommentWriter)).willReturn(false);
-			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
+			Notification notification = mock(Notification.class);
+			given(notificationWriter.save(any())).willReturn(notification);
+			given(notificationWriter.saveLog(commentWriter, notification)).willReturn("notificationLogId");
 
 			// when
 			handler.handleChildComment(new CommentChildCommentCreatedEvent("commentId", "childCommentId"));
@@ -231,11 +236,12 @@ class CommentNotificationListenerTest {
 			verify(notificationWriter).save(any());
 
 			PushNotificationData expectedData = new PushNotificationData(
+				"notificationLogId",
 				NoticeType.COMMUNITY,
 				"postId",
 				"boardId");
 			verify(notificationPushSender).sendToUser(any(), any(), any(), eq(expectedData));
-			verify(notificationWriter).saveLog(any(), any());
+			verify(notificationWriter).saveLog(commentWriter, notification);
 		}
 
 		@Test

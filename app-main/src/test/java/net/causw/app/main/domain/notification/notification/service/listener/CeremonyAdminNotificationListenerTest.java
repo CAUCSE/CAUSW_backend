@@ -84,6 +84,8 @@ class CeremonyAdminNotificationListenerTest {
 					"adminId1", settingMapAllOn(),
 					"adminId2", settingMapAllOn()));
 			given(notificationWriter.save(any())).willReturn(savedNotification);
+			Map<String, String> logIdsByUserId = Map.of("adminId1", "logId1", "adminId2", "logId2");
+			given(notificationWriter.saveLogs(List.of(admin1, admin2), savedNotification)).willReturn(logIdsByUserId);
 
 			// when
 			handler.handle(new CeremonyAdminNotificationEvent("ceremonyId"));
@@ -97,12 +99,13 @@ class CeremonyAdminNotificationListenerTest {
 			assertThat(captured.getNoticeType()).isEqualTo(NoticeType.ADMIN);
 			assertThat(captured.getTargetId()).isEqualTo("ceremonyId");
 
-			PushNotificationData expectedData = new PushNotificationData(NoticeType.ADMIN, "ceremonyId", null);
+			PushNotificationData expectedData = new PushNotificationData(null, NoticeType.ADMIN, "ceremonyId", null);
 			verify(notificationPushSender).sendToUsers(
 				eq(List.of(admin1, admin2)),
 				eq("경조사 신청"),
 				eq("김신청님이 경조사를 신청했습니다."),
-				eq(expectedData));
+				eq(expectedData),
+				eq(logIdsByUserId));
 			verify(notificationWriter).saveLogs(eq(List.of(admin1, admin2)), eq(savedNotification));
 		}
 
@@ -124,7 +127,7 @@ class CeremonyAdminNotificationListenerTest {
 
 			// then
 			verify(notificationWriter, never()).save(any());
-			verify(notificationPushSender, never()).sendToUsers(any(), any(), any(), any());
+			verify(notificationPushSender, never()).sendToUsers(any(), any(), any(), any(), any());
 		}
 
 		@Test
@@ -152,13 +155,16 @@ class CeremonyAdminNotificationListenerTest {
 					"adminOnId", settingMapAllOn(),
 					"adminOffId", settingMapWith(UserNotificationSettingKey.SERVICE_NOTICE_ENABLED, false)));
 			given(notificationWriter.save(any())).willReturn(savedNotification);
+			Map<String, String> logIdsByUserId = Map.of("adminOnId", "logId");
+			given(notificationWriter.saveLogs(List.of(adminOn), savedNotification)).willReturn(logIdsByUserId);
 
 			// when
 			handler.handle(new CeremonyAdminNotificationEvent("ceremonyId"));
 
 			// then
-			PushNotificationData expectedData = new PushNotificationData(NoticeType.ADMIN, "ceremonyId", null);
-			verify(notificationPushSender).sendToUsers(eq(List.of(adminOn)), any(), any(), eq(expectedData));
+			PushNotificationData expectedData = new PushNotificationData(null, NoticeType.ADMIN, "ceremonyId", null);
+			verify(notificationPushSender).sendToUsers(eq(List.of(adminOn)), any(), any(), eq(expectedData),
+				eq(logIdsByUserId));
 			verify(notificationWriter).saveLogs(eq(List.of(adminOn)), eq(savedNotification));
 		}
 

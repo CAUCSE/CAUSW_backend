@@ -76,14 +76,17 @@ class CeremonyNotificationListenerTest {
 				List.of(), UserNotificationSettingKey.CEREMONY_NOTIFICATION_ENABLED))
 				.willReturn(List.of(target1, target2));
 			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
+			Map<String, String> logIdsByUserId = Map.of("target1Id", "logId1", "target2Id", "logId2");
+			given(notificationWriter.saveLogs(eq(List.of(target1, target2)), any())).willReturn(logIdsByUserId);
 
 			// when
 			handler.handle(new CeremonyNotificationEvent("ceremonyId"));
 
 			// then
-			PushNotificationData expectedData = new PushNotificationData(NoticeType.CEREMONY_V2, "ceremonyId", null);
+			PushNotificationData expectedData = new PushNotificationData(null, NoticeType.CEREMONY_V2, "ceremonyId",
+				null);
 			verify(notificationWriter).save(any());
-			verify(notificationPushSender).sendToUsers(any(), any(), any(), eq(expectedData));
+			verify(notificationPushSender).sendToUsers(any(), any(), any(), eq(expectedData), eq(logIdsByUserId));
 			verify(notificationWriter).saveLogs(any(), any());
 		}
 
@@ -100,13 +103,16 @@ class CeremonyNotificationListenerTest {
 				any(), eq(UserNotificationSettingKey.CEREMONY_NOTIFICATION_ENABLED)))
 				.willReturn(List.of(target));
 			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
+			Map<String, String> logIdsByUserId = Map.of("targetId", "logId");
+			given(notificationWriter.saveLogs(eq(List.of(target)), any())).willReturn(logIdsByUserId);
 
 			// when
 			handler.handle(new CeremonyNotificationEvent("ceremonyId"));
 
 			// then
-			PushNotificationData expectedData = new PushNotificationData(NoticeType.CEREMONY_V2, "ceremonyId", null);
-			verify(notificationPushSender).sendToUsers(any(), any(), any(), eq(expectedData));
+			PushNotificationData expectedData = new PushNotificationData(null, NoticeType.CEREMONY_V2, "ceremonyId",
+				null);
+			verify(notificationPushSender).sendToUsers(any(), any(), any(), eq(expectedData), eq(logIdsByUserId));
 		}
 
 		@Test
@@ -153,13 +159,17 @@ class CeremonyNotificationListenerTest {
 				List.of(), UserNotificationSettingKey.CEREMONY_NOTIFICATION_ENABLED))
 				.willReturn(List.of(target));
 			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
+			Map<String, String> logIdsByUserId = Map.of("targetId", "logId");
+			given(notificationWriter.saveLogs(eq(List.of(target)), any())).willReturn(logIdsByUserId);
 
 			// when
 			handler.handle(new CeremonyNotificationEvent("ceremonyId"));
 
 			// then
-			PushNotificationData expectedData = new PushNotificationData(NoticeType.CEREMONY_V2, "ceremonyId", null);
-			verify(notificationPushSender).sendToUsers(any(), eq("조사 소식"), any(), eq(expectedData));
+			PushNotificationData expectedData = new PushNotificationData(null, NoticeType.CEREMONY_V2, "ceremonyId",
+				null);
+			verify(notificationPushSender).sendToUsers(any(), eq("조사 소식"), any(), eq(expectedData),
+				eq(logIdsByUserId));
 		}
 	}
 
@@ -181,15 +191,18 @@ class CeremonyNotificationListenerTest {
 			given(ceremonyReader.findById("ceremonyId")).willReturn(Optional.of(ceremony));
 			given(notificationSettingReader.findSettingMap("userId"))
 				.willReturn(ceremonyNotificationOn());
-			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
+			Notification notification = mock(Notification.class);
+			given(notificationWriter.save(any())).willReturn(notification);
+			given(notificationWriter.saveLog(applicant, notification)).willReturn("notificationLogId");
 
 			// when
 			handler.handleApproved(new CeremonyApprovedEvent("ceremonyId"));
 
 			// then
-			PushNotificationData expectedData = new PushNotificationData(NoticeType.CEREMONY_V2, "ceremonyId", null);
+			PushNotificationData expectedData = new PushNotificationData("notificationLogId", NoticeType.CEREMONY_V2,
+				"ceremonyId", null);
 			verify(notificationPushSender).sendToUser(eq(applicant), eq("경조사 신청 승인"), any(), eq(expectedData));
-			verify(notificationWriter).saveLog(eq(applicant), any());
+			verify(notificationWriter).saveLog(applicant, notification);
 		}
 
 		@Test
@@ -234,17 +247,20 @@ class CeremonyNotificationListenerTest {
 			given(ceremonyReader.findById("ceremonyId")).willReturn(Optional.of(ceremony));
 			given(notificationSettingReader.findSettingMap("userId"))
 				.willReturn(ceremonyNotificationOn());
-			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
+			Notification notification = mock(Notification.class);
+			given(notificationWriter.save(any())).willReturn(notification);
+			given(notificationWriter.saveLog(applicant, notification)).willReturn("notificationLogId");
 
 			// when
 			handler.handleRejected(new CeremonyRejectedEvent("ceremonyId", "요건에 부합하지 않습니다."));
 
 			// then
-			PushNotificationData expectedData = new PushNotificationData(NoticeType.CEREMONY_V2, "ceremonyId", null);
+			PushNotificationData expectedData = new PushNotificationData("notificationLogId", NoticeType.CEREMONY_V2,
+				"ceremonyId", null);
 			verify(notificationPushSender).sendToUser(eq(applicant), eq("경조사 신청 거절"), eq("경조사 신청이 거절되었습니다."),
 				eq(expectedData));
 			verify(notificationWriter).save(argThat(n -> n.getTitle().contains("요건에 부합하지 않습니다.")));
-			verify(notificationWriter).saveLog(eq(applicant), any());
+			verify(notificationWriter).saveLog(applicant, notification);
 		}
 
 		@Test

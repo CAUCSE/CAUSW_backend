@@ -67,7 +67,9 @@ class OfficialPostNotificationListenerTest {
 			Board board = mockBoard("boardId");
 			Post post = mockPost();
 			BoardConfig boardConfig = mockVisibleNoticeConfig();
-			List<User> targets = List.of(mock(User.class), mock(User.class));
+			User target1 = mock(User.class);
+			User target2 = mock(User.class);
+			List<User> targets = List.of(target1, target2);
 
 			given(boardReader.getById("boardId")).willReturn(board);
 			given(postReader.findById("postId")).willReturn(post);
@@ -80,6 +82,8 @@ class OfficialPostNotificationListenerTest {
 			given(board.getName()).willReturn("공지 게시판");
 			given(post.getId()).willReturn("postId");
 			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
+			Map<String, String> logIdsByUserId = Map.of("target1Id", "logId1", "target2Id", "logId2");
+			given(notificationWriter.saveLogs(eq(targets), any())).willReturn(logIdsByUserId);
 
 			// when
 			handler.handle(new OfficialPostEvent("boardId", "postId", null));
@@ -87,8 +91,9 @@ class OfficialPostNotificationListenerTest {
 			// then
 			verify(notificationWriter).save(any());
 
-			PushNotificationData expectedData = new PushNotificationData(NoticeType.OFFICIAL, "postId", "boardId");
-			verify(notificationPushSender).sendToUsers(eq(targets), any(), any(), eq(expectedData));
+			PushNotificationData expectedData = new PushNotificationData(null, NoticeType.OFFICIAL, "postId",
+				"boardId");
+			verify(notificationPushSender).sendToUsers(eq(targets), any(), any(), eq(expectedData), eq(logIdsByUserId));
 			verify(notificationWriter).saveLogs(eq(targets), any());
 		}
 
@@ -110,7 +115,7 @@ class OfficialPostNotificationListenerTest {
 
 			// then
 			verify(notificationWriter, never()).save(any());
-			verify(notificationPushSender, never()).sendToUsers(any(), any(), any(), any());
+			verify(notificationPushSender, never()).sendToUsers(any(), any(), any(), any(), any());
 		}
 
 		@Test
@@ -153,6 +158,7 @@ class OfficialPostNotificationListenerTest {
 			given(board.getName()).willReturn("공지 게시판");
 			given(post.getId()).willReturn("postId");
 			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
+			given(notificationWriter.saveLogs(eq(List.of()), any())).willReturn(Map.of());
 
 			// when
 			handler.handle(new OfficialPostEvent("boardId", "postId", null));
@@ -160,8 +166,9 @@ class OfficialPostNotificationListenerTest {
 			// then
 			verify(notificationWriter).save(any());
 
-			PushNotificationData expectedData = new PushNotificationData(NoticeType.OFFICIAL, "postId", "boardId");
-			verify(notificationPushSender).sendToUsers(eq(List.of()), any(), any(), eq(expectedData));
+			PushNotificationData expectedData = new PushNotificationData(null, NoticeType.OFFICIAL, "postId",
+				"boardId");
+			verify(notificationPushSender).sendToUsers(eq(List.of()), any(), any(), eq(expectedData), eq(Map.of()));
 		}
 
 		@Test
@@ -187,13 +194,17 @@ class OfficialPostNotificationListenerTest {
 			given(board.getName()).willReturn("공지 게시판");
 			given(post.getId()).willReturn("postId");
 			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
+			Map<String, String> logIdsByUserId = Map.of("enrolledSwUser1Id", "logId1", "enrolledSwUser2Id", "logId2");
+			given(notificationWriter.saveLogs(eq(filteredTargets), any())).willReturn(logIdsByUserId);
 
 			// when
 			handler.handle(new OfficialPostEvent("boardId", "postId", null));
 
 			// then
-			PushNotificationData expectedData = new PushNotificationData(NoticeType.OFFICIAL, "postId", "boardId");
-			verify(notificationPushSender).sendToUsers(eq(filteredTargets), any(), any(), eq(expectedData));
+			PushNotificationData expectedData = new PushNotificationData(null, NoticeType.OFFICIAL, "postId",
+				"boardId");
+			verify(notificationPushSender).sendToUsers(eq(filteredTargets), any(), any(), eq(expectedData),
+				eq(logIdsByUserId));
 			verify(notificationWriter).saveLogs(eq(filteredTargets), any());
 		}
 
@@ -204,7 +215,9 @@ class OfficialPostNotificationListenerTest {
 			Board board = mockBoard("boardId");
 			Post post = mockPost();
 			BoardConfig boardConfig = mockVisibleNoticeConfig();
-			List<User> targets = List.of(mock(User.class), mock(User.class));
+			User target1 = mock(User.class);
+			User target2 = mock(User.class);
+			List<User> targets = List.of(target1, target2);
 			String crawledTitle = "크롤링 공지사항 제목입니다";
 
 			given(boardReader.getById("boardId")).willReturn(board);
@@ -218,6 +231,8 @@ class OfficialPostNotificationListenerTest {
 			given(board.getName()).willReturn("공지 게시판");
 			given(post.getId()).willReturn("postId");
 			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
+			Map<String, String> logIdsByUserId = Map.of("target1Id", "logId1", "target2Id", "logId2");
+			given(notificationWriter.saveLogs(eq(targets), any())).willReturn(logIdsByUserId);
 
 			// when
 			handler.handle(new OfficialPostEvent("boardId", "postId", crawledTitle));
@@ -230,8 +245,10 @@ class OfficialPostNotificationListenerTest {
 			assertThat(savedNotification.getTitle()).isEqualTo(crawledTitle);
 			assertThat(savedNotification.getBody()).isEqualTo(crawledTitle);
 
-			PushNotificationData expectedData = new PushNotificationData(NoticeType.OFFICIAL, "postId", "boardId");
-			verify(notificationPushSender).sendToUsers(eq(targets), eq("공지 게시판"), eq(crawledTitle), eq(expectedData));
+			PushNotificationData expectedData = new PushNotificationData(null, NoticeType.OFFICIAL, "postId",
+				"boardId");
+			verify(notificationPushSender).sendToUsers(eq(targets), eq("공지 게시판"), eq(crawledTitle), eq(expectedData),
+				eq(logIdsByUserId));
 			verify(notificationWriter).saveLogs(eq(targets), any());
 		}
 	}
