@@ -1,8 +1,8 @@
 package net.causw.app.main.domain.notification.notification.service.implementation;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,10 +46,7 @@ public class NotificationWriter {
 			.toList();
 		List<NotificationLog> savedLogs = notificationLogRepository.saveAll(logs);
 
-		Map<String, String> logIdsByUserId = new HashMap<>();
-		for (int i = 0; i < users.size(); i++) {
-			logIdsByUserId.put(users.get(i).getId(), savedLogs.get(i).getId());
-		}
-		return logIdsByUserId;
+		return savedLogs.stream()
+			.collect(Collectors.toMap(log -> log.getUser().getId(), NotificationLog::getId));
 	}
 }
