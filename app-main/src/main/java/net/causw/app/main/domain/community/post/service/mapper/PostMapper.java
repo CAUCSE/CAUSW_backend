@@ -5,6 +5,7 @@ import java.util.List;
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.community.board.entity.Board;
+import net.causw.app.main.domain.community.board.entity.BoardGroup;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.query.PostCursorResult;
 import net.causw.app.main.domain.community.post.service.dto.CrawledAttachmentResult;
@@ -73,7 +74,7 @@ public class PostMapper {
 	public static PostListResult.PostItem toPostListItem(PostCursorResult result, List<String> imageUrls,
 		boolean isPostLike, boolean isOwner, boolean updatable, boolean deletable,
 		boolean isNotice, boolean isOfficial, String officialNickname,
-		String officialImageUrl) {
+		String officialImageUrl, BoardGroup boardGroup) {
 		// 닉네임 마스킹
 		String writerNickname;
 		if (isNotice) {
@@ -118,6 +119,7 @@ public class PostMapper {
 			imageUrls,
 			result.boardId(),
 			result.boardName(),
+			boardGroup,
 			result.category(),
 			isPostLike,
 			isOwner,

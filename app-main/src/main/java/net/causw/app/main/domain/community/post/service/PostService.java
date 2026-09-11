@@ -603,6 +603,8 @@ public class PostService {
 				boolean isBoardAdminWriter = result.writerId() != null && boardAdminIds.contains(result.writerId());
 				boolean isOfficial = isNotice || ((isSystemAdminWriter || isBoardAdminWriter) && !result.isAnonymous());
 
+				BoardGroup boardGroup = isNotice ? BoardGroup.NOTICE : BoardGroup.COMMUNITY;
+
 				String officialNickname = boardConfig != null ? boardConfig.getOfficialNickname() : null;
 				String officialImageUrl = null;
 				if (boardConfig != null && boardConfig.getOfficialProfileImageId() != null) {
@@ -615,7 +617,7 @@ public class PostService {
 				return PostMapper.toPostListItem(
 					result, imageUrls, isPostLike, isOwner, updatable, deletable, isNotice, isOfficial,
 					officialNickname,
-					officialImageUrl);
+					officialImageUrl, boardGroup);
 			})
 			.toList();
 	}
