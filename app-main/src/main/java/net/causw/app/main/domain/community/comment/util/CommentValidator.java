@@ -31,7 +31,7 @@ public class CommentValidator {
 			throw CommentErrorCode.COMMENT_NOT_ALLOWED_ON_SYSTEM_NOTICE.toBaseException();
 		}
 		validateForFind(creator, post, boardConfig, boardAdminIds);
-		if (!CommunityPermissionPolicy.canWriteBoard(
+		if (!CommunityPermissionPolicy.canReadBoard(
 			creator, post.getBoard(), boardConfig, boardAdminIds)) {
 			throw BoardErrorCode.BOARD_FORBIDDEN.toBaseException();
 		}
