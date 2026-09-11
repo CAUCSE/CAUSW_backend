@@ -43,7 +43,7 @@ public class PostAdminService {
 	 */
 	@Transactional
 	public void updateCategory(String postId, PostCategory category) {
-		Post post = postReader.findByIdAndNotDeleted(postId);
+		Post post = postReader.findByIdAndNotDeletedIncludingHidden(postId);
 
 		if (!Boolean.TRUE.equals(post.getIsCrawled())) {
 			throw PostErrorCode.POST_CATEGORY_NOT_SUPPORTED.toBaseException();

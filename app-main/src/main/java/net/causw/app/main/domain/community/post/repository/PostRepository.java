@@ -39,6 +39,8 @@ public interface PostRepository extends JpaRepository<Post, String> {
 
 	Optional<Post> findByIdAndIsDeletedFalseAndIsHiddenFalse(String postId);
 
+	Optional<Post> findByIdAndIsDeletedFalse(String postId);
+
 	@EntityGraph(attributePaths = {"writer", "board"})
 	@Query("""
 		SELECT p FROM Post p

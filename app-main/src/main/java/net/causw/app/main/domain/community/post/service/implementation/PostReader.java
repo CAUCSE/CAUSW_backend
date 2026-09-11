@@ -78,6 +78,17 @@ public class PostReader {
 	}
 
 	/**
+	 * 관리자 기능에서 사용할 수 있도록 숨김 여부와 관계없이 삭제되지 않은 Post를 조회합니다.
+	 *
+	 * @param postId Post ID
+	 * @return Post Entity
+	 */
+	public Post findByIdAndNotDeletedIncludingHidden(String postId) {
+		return postRepository.findByIdAndIsDeletedFalse(postId)
+			.orElseThrow(PostErrorCode.POST_NOT_FOUND::toBaseException);
+	}
+
+	/**
 	 * 커서 기반 페이징으로 게시글 목록을 조회합니다. (V2용)
 	 *
 	 * @param boardIds 게시판 ID 목록 (null이면 전체 게시판)

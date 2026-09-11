@@ -75,7 +75,7 @@ class PostAdminServiceTest {
 		// given
 		post.setCrawled();
 		post.updateCategory(PostCategory.ACADEMIC);
-		given(postReader.findByIdAndNotDeleted(postId)).willReturn(post);
+		given(postReader.findByIdAndNotDeletedIncludingHidden(postId)).willReturn(post);
 
 		// when
 		postAdminService.updateCategory(postId, PostCategory.RECRUIT);
@@ -90,7 +90,7 @@ class PostAdminServiceTest {
 		// given
 		post.setCrawled();
 		post.updateCategory(PostCategory.ACADEMIC);
-		given(postReader.findByIdAndNotDeleted(postId)).willReturn(post);
+		given(postReader.findByIdAndNotDeletedIncludingHidden(postId)).willReturn(post);
 
 		// when
 		postAdminService.updateCategory(postId, null);
@@ -103,7 +103,7 @@ class PostAdminServiceTest {
 	@DisplayName("크롤링 게시글이 아니면 수정할 수 없다")
 	void updateCategory_shouldRejectNonCrawledPost() {
 		// given
-		given(postReader.findByIdAndNotDeleted(postId)).willReturn(post);
+		given(postReader.findByIdAndNotDeletedIncludingHidden(postId)).willReturn(post);
 
 		// when & then
 		assertThatThrownBy(() -> postAdminService.updateCategory(postId, PostCategory.RECRUIT))
@@ -135,7 +135,7 @@ class PostAdminServiceTest {
 	void updateCategory_shouldAllowEtc() {
 		// given
 		post.setCrawled();
-		given(postReader.findByIdAndNotDeleted(postId)).willReturn(post);
+		given(postReader.findByIdAndNotDeletedIncludingHidden(postId)).willReturn(post);
 
 		// when
 		postAdminService.updateCategory(postId, PostCategory.ETC);
