@@ -19,20 +19,8 @@ public class RolePolicy {
 	private static final Map<Role, Boolean> ROLE_UNIQUE = Map.ofEntries(
 		entry(SYSTEM_ADMIN, true),
 		entry(ADMIN, false),
-		entry(PRESIDENT, true),
-		entry(VICE_PRESIDENT, true),
-		entry(COUNCIL, false),
-		entry(LEADER_1, false),
-		entry(LEADER_2, false),
-		entry(LEADER_3, false),
-		entry(LEADER_4, false),
-		entry(LEADER_ALUMNI, true),
-		entry(ALUMNI_MANAGER, false),
 		entry(COMMON, false),
-		entry(NONE, false),
-
-		entry(LEADER_CIRCLE, false),
-		entry(PROFESSOR, false));
+		entry(NONE, false));
 
 	/**
 	 * 권한 우선순위 정책
@@ -42,20 +30,8 @@ public class RolePolicy {
 	private static final Map<Role, Integer> ROLE_PRIORITY = Map.ofEntries(
 		entry(SYSTEM_ADMIN, 0),
 		entry(ADMIN, 1),
-		entry(PRESIDENT, 2),
-		entry(VICE_PRESIDENT, 3),
-		entry(COUNCIL, 4),
-		entry(LEADER_1, 5),
-		entry(LEADER_2, 5),
-		entry(LEADER_3, 5),
-		entry(LEADER_4, 5),
-		entry(LEADER_ALUMNI, 6),
-		entry(ALUMNI_MANAGER, 6),
 		entry(COMMON, 99),
-		entry(NONE, 100),
-
-		entry(LEADER_CIRCLE, 6),
-		entry(PROFESSOR, 7));
+		entry(NONE, 100));
 
 	/**
 	 * 권한 설정 가능 대상 정책 (부여 및 위임 공통)
@@ -63,16 +39,13 @@ public class RolePolicy {
 	 * - Value: 해당 권한을 설정받을 수 있는 수혜자의 권한 목록
 	 */
 	private static final Map<Role, Set<Role>> ROLES_ASSIGNABLE_FOR = Map.of(
-		// 부학생회장과 학생회 권한이 같이 삭제되므로 대상이 일반, 학생회장, 부학생회장 권한까지 설정 가능함.
-		PRESIDENT, Set.of(VICE_PRESIDENT, COUNCIL, COMMON),
-		// 일반 권한의 경우 모두 권한에 설정 가능함.
 		COMMON, EnumSet.allOf(Role.class));
 
 	/**
 	 * 권한 위임 정책
 	 * - 이 Set에 포함된 권한만 사용자가 다른 사용자에게 위임 가능
 	 */
-	private static final Set<Role> DELEGATABLE_ROLES = Set.of(ADMIN, PRESIDENT);
+	private static final Set<Role> DELEGATABLE_ROLES = Set.of(ADMIN);
 
 	/**
 	 * 권한 부여 정책
@@ -80,41 +53,8 @@ public class RolePolicy {
 	 * - Value: 부여자가 수혜자에게 부여 가능한 권한 목록
 	 */
 	private static final Map<Role, Set<Role>> GRANTABLE_ROLES = Map.of(
-		SYSTEM_ADMIN, Set.of(
-			ADMIN,
-			PRESIDENT,
-			VICE_PRESIDENT,
-			COUNCIL,
-			LEADER_1,
-			LEADER_2,
-			LEADER_3,
-			LEADER_4,
-			LEADER_ALUMNI,
-			ALUMNI_MANAGER,
-			COMMON),
-
-		ADMIN, Set.of(
-			PRESIDENT,
-			VICE_PRESIDENT,
-			COUNCIL,
-			LEADER_1,
-			LEADER_2,
-			LEADER_3,
-			LEADER_4,
-			LEADER_ALUMNI,
-			ALUMNI_MANAGER,
-			COMMON),
-
-		PRESIDENT, Set.of(
-			VICE_PRESIDENT,
-			COUNCIL,
-			LEADER_1,
-			LEADER_2,
-			LEADER_3,
-			LEADER_4,
-			LEADER_ALUMNI,
-			ALUMNI_MANAGER,
-			COMMON));
+		SYSTEM_ADMIN, Set.of(ADMIN, COMMON),
+		ADMIN, Set.of(COMMON));
 
 	/**
 	 * 대리 위임 정책
@@ -122,38 +62,7 @@ public class RolePolicy {
 	 * - Value: 부여자가 대리로 위임 가능한 권한 목록
 	 */
 	private static final Map<Role, Set<Role>> PROXY_DELEGATABLE_ROLES = Map.of(
-		SYSTEM_ADMIN, Set.of(
-			ADMIN,
-			PRESIDENT,
-			VICE_PRESIDENT,
-			COUNCIL,
-			LEADER_1,
-			LEADER_2,
-			LEADER_3,
-			LEADER_4,
-			LEADER_ALUMNI,
-			ALUMNI_MANAGER),
-
-		ADMIN, Set.of(
-			PRESIDENT,
-			VICE_PRESIDENT,
-			COUNCIL,
-			LEADER_1,
-			LEADER_2,
-			LEADER_3,
-			LEADER_4,
-			LEADER_ALUMNI,
-			ALUMNI_MANAGER),
-
-		PRESIDENT, Set.of(
-			VICE_PRESIDENT,
-			COUNCIL,
-			LEADER_1,
-			LEADER_2,
-			LEADER_3,
-			LEADER_4,
-			LEADER_ALUMNI,
-			ALUMNI_MANAGER));
+		SYSTEM_ADMIN, Set.of(ADMIN));
 
 	// --- Getter Methods ---
 
@@ -171,7 +80,7 @@ public class RolePolicy {
 	/**
 	 * 권한 우선순위 반환
 	 * - 값이 작을수록 우선순위 높음
-	 * - 예: ADMIN(0), PRESIDENT(1), ..., COMMON(99)
+	 * - 예: SYSTEM_ADMIN(0), ADMIN(1), COMMON(99)
 	 *
 	 * @param role 대상 권한
 	 * @return 우선순위 (작을수록 우선)

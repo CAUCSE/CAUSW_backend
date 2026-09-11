@@ -514,17 +514,17 @@ public class PostServiceTest {
 
 		@DisplayName("전역 삭제 권한자는 차단 관계와 무관하게 삭제된 게시글을 멱등하게 삭제한다")
 		@Test
-		void deletePost_shouldSucceed_whenAlreadyDeletedWriterIsBlockedByExecutive() {
+		void deletePost_shouldSucceed_whenAlreadyDeletedWriterIsBlockedBySystemAdmin() {
 			// given
-			User president = ObjectFixtures.getCertifiedUserWithId("president-id");
-			president.setRoles(Set.of(Role.PRESIDENT));
+			User systemAdmin = ObjectFixtures.getCertifiedUserWithId("system-admin-id");
+			systemAdmin.setRoles(Set.of(Role.SYSTEM_ADMIN));
 			post.setIsDeleted(true);
 			given(postReader.findById(postId)).willReturn(post);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(List.of());
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
 
 			// when
-			postService.deletePost(president, postId);
+			postService.deletePost(systemAdmin, postId);
 
 			// then
 			assertThat(post.getIsDeleted()).isTrue();

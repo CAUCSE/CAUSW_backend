@@ -130,7 +130,7 @@ public class Board extends BaseEntity {
 		String category,
 		Boolean isAnonymousAllowed,
 		Boolean isAlumni) {
-		Set<String> roleSet = RoleGroup.EXECUTIVES.getRoles().stream() // 집행부(관리자, 학생회장, 부학생회장) 글쓰기 권한 보장
+		Set<String> roleSet = RoleGroup.EXECUTIVES.getRoles().stream() // 관리자 글쓰기 권한 보장
 			.map(Role::getValue)
 			.collect(Collectors.toSet());
 

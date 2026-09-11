@@ -1,6 +1,7 @@
 package net.causw.app.main.domain.integration.crawled.entity;
 
 import java.time.Duration;
+import java.time.LocalTime;
 import java.util.Map;
 
 import net.causw.app.main.domain.integration.crawled.config.CrawlerType;
@@ -83,6 +84,12 @@ public class SiteConfig extends AuditableEntity {
 	@Column(name = "is_enabled", nullable = false)
 	private Boolean isEnabled;
 
+	@Column(name = "start_time")
+	private LocalTime startTime;
+
+	@Column(name = "end_time")
+	private LocalTime endTime;
+
 	/**
 	 * 사이트 크롤링에 필요한 설정을 생성합니다.
 	 *
@@ -123,6 +130,39 @@ public class SiteConfig extends AuditableEntity {
 		boolean requiresJsRendering,
 		boolean requiresLogin,
 		boolean isEnabled) {
+		return of(
+			siteId, targetBoardId, crawlerType, listUrl, baseUrl, requestHeaders, requestDelay, timeout,
+			maxRetries, maxArticles, maxScanRangeDays, paginationType, pageParam, maxPages,
+			requiresJsRendering, requiresLogin, isEnabled, null, null);
+	}
+
+	/**
+	 * 실행 허용 시간 구간을 포함한 사이트 크롤링 설정을 생성합니다.
+	 *
+	 * @param startTime 크롤링 실행 허용 시작 시각
+	 * @param endTime 크롤링 실행 허용 종료 시각
+	 * @return 사이트 설정
+	 */
+	public static SiteConfig of(
+		String siteId,
+		String targetBoardId,
+		CrawlerType crawlerType,
+		String listUrl,
+		String baseUrl,
+		Map<String, String> requestHeaders,
+		Duration requestDelay,
+		Duration timeout,
+		int maxRetries,
+		int maxArticles,
+		int maxScanRangeDays,
+		PaginationType paginationType,
+		String pageParam,
+		int maxPages,
+		boolean requiresJsRendering,
+		boolean requiresLogin,
+		boolean isEnabled,
+		LocalTime startTime,
+		LocalTime endTime) {
 		return SiteConfig.builder()
 			.siteId(siteId)
 			.targetBoardId(targetBoardId)
@@ -141,7 +181,29 @@ public class SiteConfig extends AuditableEntity {
 			.requiresJsRendering(requiresJsRendering)
 			.requiresLogin(requiresLogin)
 			.isEnabled(isEnabled)
+			.startTime(startTime)
+			.endTime(endTime)
 			.build();
+	}
+
+	/**
+	 * 주어진 시각이 이 사이트의 크롤링 실행 허용 구간에 포함되는지 확인합니다.
+	 * 시작 시각은 포함하고 종료 시각은 제외하며, 종료 시각이 시작 시각보다 이르면 자정을 지나는 구간으로 처리합니다.
+	 *
+	 * @param time 실행 여부를 확인할 시각
+	 * @return 실행 허용 구간이면 {@code true}
+	 */
+	public boolean isWithinSchedule(LocalTime time) {
+		if (startTime == null || endTime == null) {
+			return startTime == null && endTime == null;
+		}
+		if (startTime.isBefore(endTime)) {
+			return !time.isBefore(startTime) && time.isBefore(endTime);
+		}
+		if (startTime.isAfter(endTime)) {
+			return !time.isBefore(startTime) || time.isBefore(endTime);
+		}
+		return false;
 	}
 
 	/**

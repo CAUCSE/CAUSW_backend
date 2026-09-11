@@ -87,7 +87,7 @@ public ApiResponse<List<UserResponse>> listUsers() { ... }
 ```
 
 - `domain/user/account/enums/user/Role` enum 의 각 값이 SpEL 표현식의 `ROLE_{Role}` 로 매핑됨
-- 다중 역할: `hasAnyRole('ADMIN', 'PRESIDENT')`
+- 다중 역할: `hasAnyRole('ADMIN', 'SYSTEM_ADMIN')`
 - 복잡 조건은 `CustomAuthorizationManager` 활용
 
 ### URL 기반 인가

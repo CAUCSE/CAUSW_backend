@@ -174,7 +174,7 @@ MapStruct 1.4.x 는 최신 기능 일부가 빠져 있으니, 새 어노테이�
 public ApiResponse<...> adminApi(...) { ... }
 ```
 
-- 역할(Role): `domain/user/account/enums/user/Role` enum 의 값들 (예: `ADMIN`, `PRESIDENT`, `VICE_PRESIDENT`, `LEADER_*`, `COMMON`)
+- 역할(Role): `domain/user/account/enums/user/Role` enum 의 값들 (`NONE`, `COMMON`, `ADMIN`, `SYSTEM_ADMIN`)
 - 역할 그룹: `RoleGroup` enum
 - 가능한 한 Controller 메서드에 명시 (서비스 레벨 검증은 별도 Validator 패턴 활용)
 

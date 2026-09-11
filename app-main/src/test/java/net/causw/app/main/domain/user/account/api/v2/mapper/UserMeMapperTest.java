@@ -23,13 +23,13 @@ class UserMeMapperTest {
 		// given
 		UserMeResult result = new UserMeResult(
 			"user-id", "user@example.com", "사용자", "닉네임", null, 2020, null, null,
-			Set.of(Role.COMMON, Role.COUNCIL));
+			Set.of(Role.COMMON, Role.ADMIN));
 
 		// when
 		UserMeResponse response = mapper.toResponse(result);
 
 		// then
-		assertThat(response.roles()).containsExactlyInAnyOrder(Role.COMMON, Role.COUNCIL);
+		assertThat(response.roles()).containsExactlyInAnyOrder(Role.COMMON, Role.ADMIN);
 	}
 
 	@Test
@@ -41,7 +41,7 @@ class UserMeMapperTest {
 			"user-id", "user@example.com", "사용자", "닉네임", null, 2020, null, null, roles);
 
 		// when
-		roles.add(Role.COUNCIL);
+		roles.add(Role.ADMIN);
 
 		// then
 		assertThat(response.roles()).containsExactly(Role.COMMON);

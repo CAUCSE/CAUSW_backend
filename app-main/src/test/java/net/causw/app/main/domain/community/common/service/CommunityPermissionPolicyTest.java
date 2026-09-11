@@ -104,14 +104,10 @@ class CommunityPermissionPolicyTest {
 	void onlySystemAdminRoleIsSystemAdmin() {
 		User systemAdmin = activeUser("system-admin-id", AcademicStatus.ENROLLED, Role.SYSTEM_ADMIN);
 		User admin = activeUser("admin-id", AcademicStatus.ENROLLED, Role.ADMIN);
-		User president = activeUser("president-id", AcademicStatus.ENROLLED, Role.PRESIDENT);
-		User vicePresident = activeUser("vice-president-id", AcademicStatus.ENROLLED, Role.VICE_PRESIDENT);
 		User boardAdmin = activeUser(BOARD_ADMIN_ID, AcademicStatus.ENROLLED, Role.COMMON);
 
 		assertThat(CommunityPermissionPolicy.isSystemAdmin(systemAdmin)).isTrue();
 		assertThat(CommunityPermissionPolicy.isSystemAdmin(admin)).isFalse();
-		assertThat(CommunityPermissionPolicy.isSystemAdmin(president)).isFalse();
-		assertThat(CommunityPermissionPolicy.isSystemAdmin(vicePresident)).isFalse();
 		assertThat(CommunityPermissionPolicy.isSystemAdmin(boardAdmin)).isFalse();
 	}
 
@@ -137,9 +133,7 @@ class CommunityPermissionPolicyTest {
 		"BOARD_ADMIN, GRADUATED, ENROLLED, HIDDEN, false",
 		"SYSTEM_ADMIN, GRADUATED, ENROLLED, HIDDEN, false",
 		"BOARD_ADMIN, ENROLLED, ENROLLED, VISIBLE, true",
-		"SYSTEM_ADMIN, GRADUATED, GRADUATED, VISIBLE, true",
-		"PRESIDENT, GRADUATED, ENROLLED, HIDDEN, false",
-		"VICE_PRESIDENT, GRADUATED, ENROLLED, HIDDEN, false"
+		"SYSTEM_ADMIN, GRADUATED, GRADUATED, VISIBLE, true"
 	})
 	void canReadBoardFollowsScopeAndVisibilityPolicyForAllUsers(
 		Actor actor,
@@ -174,8 +168,6 @@ class CommunityPermissionPolicyTest {
 		"COMMON, ENROLLED, GRADUATED, ALL_USER, VISIBLE, false",
 		"BOARD_ADMIN, ENROLLED, GRADUATED, ONLY_ADMIN, VISIBLE, false",
 		"SYSTEM_ADMIN, ENROLLED, GRADUATED, ONLY_ADMIN, VISIBLE, false",
-		"PRESIDENT, ENROLLED, BOTH, ONLY_ADMIN, VISIBLE, false",
-		"VICE_PRESIDENT, ENROLLED, BOTH, ONLY_ADMIN, VISIBLE, false",
 		"COMMON, ENROLLED, BOTH, ALL_USER, HIDDEN, false",
 		"BOARD_ADMIN, ENROLLED, BOTH, ONLY_ADMIN, HIDDEN, false",
 		"SYSTEM_ADMIN, ENROLLED, BOTH, ONLY_ADMIN, HIDDEN, false"
@@ -200,8 +192,6 @@ class CommunityPermissionPolicyTest {
 		"OWNER, true, true",
 		"BOARD_ADMIN, false, true",
 		"SYSTEM_ADMIN, false, true",
-		"PRESIDENT, false, true",
-		"VICE_PRESIDENT, false, true",
 		"COMMON, false, false"
 	})
 	void postUpdateAndDeleteFollowActorMatrix(Actor actor, boolean updatable, boolean deletable) {
@@ -221,8 +211,6 @@ class CommunityPermissionPolicyTest {
 		"OWNER, true, true",
 		"BOARD_ADMIN, false, true",
 		"SYSTEM_ADMIN, false, true",
-		"PRESIDENT, false, true",
-		"VICE_PRESIDENT, false, true",
 		"COMMON, false, false"
 	})
 	void rootAndChildCommentPermissionsFollowSameActorMatrix(
@@ -240,23 +228,6 @@ class CommunityPermissionPolicyTest {
 			actorUser, childComment, visibleAllUserBoardConfig, BOARD_ADMIN_IDS)).isEqualTo(updatable);
 		assertThat(CommunityPermissionPolicy.canDeleteComment(
 			actorUser, childComment, visibleAllUserBoardConfig, BOARD_ADMIN_IDS)).isEqualTo(deletable);
-	}
-
-	@Test
-	@DisplayName("회장·부회장은 본인이 읽을 수 없는 게시글과 댓글을 삭제할 수 없다")
-	void executivesCannotDeleteUnreadableContent() {
-		BoardConfig hiddenConfig = boardConfig(
-			BoardReadScope.BOTH,
-			BoardWriteScope.ALL_USER,
-			BoardVisibility.HIDDEN);
-
-		for (Actor actor : List.of(Actor.PRESIDENT, Actor.VICE_PRESIDENT)) {
-			User executive = actorUser(actor, AcademicStatus.ENROLLED);
-			assertThat(CommunityPermissionPolicy.canDeletePost(
-				executive, post, hiddenConfig, BOARD_ADMIN_IDS)).isFalse();
-			assertThat(CommunityPermissionPolicy.canDeleteComment(
-				executive, rootComment, hiddenConfig, BOARD_ADMIN_IDS)).isFalse();
-		}
 	}
 
 	@Test
@@ -305,8 +276,6 @@ class CommunityPermissionPolicyTest {
 		"OWNER, true",
 		"BOARD_ADMIN, true",
 		"SYSTEM_ADMIN, true",
-		"PRESIDENT, true",
-		"VICE_PRESIDENT, true",
 		"COMMON, false"
 	})
 	@DisplayName("삭제된 게시글의 멱등 삭제 권한은 기존 삭제 주체 매트릭스를 유지한다")
@@ -508,8 +477,6 @@ class CommunityPermissionPolicyTest {
 			case OWNER -> ownerWithAcademicStatus(academicStatus);
 			case BOARD_ADMIN -> activeUser(BOARD_ADMIN_ID, academicStatus, Role.ADMIN);
 			case SYSTEM_ADMIN -> activeUser("system-admin-id", academicStatus, Role.SYSTEM_ADMIN);
-			case PRESIDENT -> activeUser("president-id", academicStatus, Role.PRESIDENT);
-			case VICE_PRESIDENT -> activeUser("vice-president-id", academicStatus, Role.VICE_PRESIDENT);
 			case COMMON -> activeUser("common-id", academicStatus, Role.COMMON);
 		};
 	}
@@ -530,8 +497,6 @@ class CommunityPermissionPolicyTest {
 		OWNER,
 		BOARD_ADMIN,
 		SYSTEM_ADMIN,
-		PRESIDENT,
-		VICE_PRESIDENT,
 		COMMON
 	}
 }

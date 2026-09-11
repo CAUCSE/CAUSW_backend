@@ -485,13 +485,13 @@ class UserAdminServiceTest {
 			user.setRoles(Set.of(Role.COMMON));
 
 			when(userReader.findUserById(userId)).thenReturn(user);
-			when(userWriter.replaceRole(user, Role.COMMON, Role.COUNCIL)).thenReturn(user);
+			when(userWriter.replaceRole(user, Role.COMMON, Role.ADMIN)).thenReturn(user);
 
 			// when
-			userAdminService.replaceUserRole(adminUser, userId, Role.COMMON, Role.COUNCIL);
+			userAdminService.replaceUserRole(adminUser, userId, Role.COMMON, Role.ADMIN);
 
 			// then
-			verify(userWriter).replaceRole(user, Role.COMMON, Role.COUNCIL);
+			verify(userWriter).replaceRole(user, Role.COMMON, Role.ADMIN);
 			verify(userAdminActionLogWriter).logRoleChange(any(), any(), any(), any());
 		}
 
@@ -508,7 +508,7 @@ class UserAdminServiceTest {
 
 			// when
 			Throwable throwable = catchThrowable(
-				() -> userAdminService.replaceUserRole(adminUser, userId, Role.COUNCIL, Role.ADMIN));
+				() -> userAdminService.replaceUserRole(adminUser, userId, Role.ADMIN, Role.SYSTEM_ADMIN));
 
 			// then
 			assertThat(throwable)
@@ -534,7 +534,7 @@ class UserAdminServiceTest {
 
 			// when
 			Throwable throwable = catchThrowable(
-				() -> userAdminService.replaceUserRole(adminUser, userId, Role.COMMON, Role.COUNCIL));
+				() -> userAdminService.replaceUserRole(adminUser, userId, Role.COMMON, Role.ADMIN));
 
 			// then
 			assertThat(throwable)

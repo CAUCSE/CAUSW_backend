@@ -16,39 +16,15 @@ import lombok.Getter;
 public enum Role {
 	SYSTEM_ADMIN("SYSTEM_ADMIN", "시스템 관리자"),
 	ADMIN("ADMIN", "관리자"),
-	PRESIDENT("PRESIDENT", "학생회장"),
-	VICE_PRESIDENT("VICE_PRESIDENT", "부학생회장"),
-	COUNCIL("COUNCIL", "학생회"),
-	LEADER_1("LEADER_1", "1학년 대표"),
-	LEADER_2("LEADER_2", "2학년 대표"),
-	LEADER_3("LEADER_3", "3학년 대표"),
-	LEADER_4("LEADER_4", "4학년 대표"),
-	LEADER_ALUMNI("LEADER_ALUMNI", "동문회장"),
-	ALUMNI_MANAGER("ALUMNI_MANAGER", "크자회 운영자"),
 	COMMON("COMMON", "일반"),
-	NONE("NONE", "없음"),
-
-	// Deprecated Roles
-	@Deprecated
-	LEADER_CIRCLE("LEADER_CIRCLE", "동아리장"),
-	@Deprecated
-	PROFESSOR("PROFESSOR", "교수");
+	NONE("NONE", "없음");
 
 	private final String value;
 	private final String description;
 
 	private static final List<Role> PRIVILEGED_ROLES = List.of(
 		SYSTEM_ADMIN,
-		ADMIN,
-		PRESIDENT,
-		VICE_PRESIDENT,
-		COUNCIL,
-		LEADER_1,
-		LEADER_2,
-		LEADER_3,
-		LEADER_4,
-		LEADER_ALUMNI,
-		ALUMNI_MANAGER);
+		ADMIN);
 
 	public static Role of(String value) {
 		return Arrays.stream(values())
@@ -72,19 +48,7 @@ public enum Role {
 	public static class RoleComponent {
 		public static final Role SYSTEM_ADMIN = Role.SYSTEM_ADMIN;
 		public static final Role ADMIN = Role.ADMIN;
-		public static final Role PRESIDENT = Role.PRESIDENT;
-		public static final Role VICE_PRESIDENT = Role.VICE_PRESIDENT;
-		public static final Role COUNCIL = Role.COUNCIL;
-		public static final Role LEADER_1 = Role.LEADER_1;
-		public static final Role LEADER_2 = Role.LEADER_2;
-		public static final Role LEADER_3 = Role.LEADER_3;
-		public static final Role LEADER_4 = Role.LEADER_4;
-		public static final Role LEADER_ALUMNI = Role.LEADER_ALUMNI;
-		public static final Role ALUMNI_MANAGER = Role.ALUMNI_MANAGER;
 		public static final Role COMMON = Role.COMMON;
 		public static final Role NONE = Role.NONE;
-
-		public static final Role LEADER_CIRCLE = Role.LEADER_CIRCLE;
-		public static final Role PROFESSOR = Role.PROFESSOR;
 	}
 }

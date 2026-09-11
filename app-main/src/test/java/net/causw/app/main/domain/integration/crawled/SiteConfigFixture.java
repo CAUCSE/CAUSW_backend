@@ -1,6 +1,7 @@
 package net.causw.app.main.domain.integration.crawled;
 
 import java.time.Duration;
+import java.time.LocalTime;
 import java.util.Map;
 
 import net.causw.app.main.domain.integration.crawled.config.CrawlerType;
@@ -15,10 +16,22 @@ public final class SiteConfigFixture {
 	}
 
 	public static SiteConfig create(String siteId) {
+		return create(siteId, null, null);
+	}
+
+	public static SiteConfig create(String siteId, LocalTime startTime, LocalTime endTime) {
+		return create(siteId, CrawlerType.CAU_SW_NOTICE, startTime, endTime);
+	}
+
+	public static SiteConfig create(
+		String siteId,
+		CrawlerType crawlerType,
+		LocalTime startTime,
+		LocalTime endTime) {
 		return SiteConfig.of(
 			siteId,
 			"target-board-id",
-			CrawlerType.CAU_SW_NOTICE,
+			crawlerType,
 			"https://example.com/list?page=",
 			"https://example.com",
 			Map.of(),
@@ -32,7 +45,9 @@ public final class SiteConfigFixture {
 			1,
 			false,
 			false,
-			true);
+			true,
+			startTime,
+			endTime);
 	}
 
 	public static SiteConfig cauSwNotice() {
