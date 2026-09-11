@@ -15,7 +15,6 @@ import org.springframework.stereotype.Repository;
 
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.enums.PostCategory;
-import net.causw.app.main.domain.community.post.repository.query.PostCommentCount;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, String> {
@@ -31,17 +30,6 @@ public interface PostRepository extends JpaRepository<Post, String> {
 
 	@Query("SELECT DISTINCT p FROM Post p JOIN FETCH p.board WHERE p.id IN :ids")
 	List<Post> findAllByIdInWithBoard(@Param("ids") Collection<String> ids);
-
-	@Query("SELECT COUNT(c) FROM Comment c WHERE c.post.id = :postId AND c.isDeleted = false")
-	Long countCommentsByPostId(@Param("postId") String postId);
-
-	@Query("""
-		SELECT new net.causw.app.main.domain.community.post.repository.query.PostCommentCount(c.post.id, COUNT(c))
-		FROM Comment c
-		WHERE c.post.id IN :postIds AND c.isDeleted = false
-		GROUP BY c.post.id
-		""")
-	List<PostCommentCount> countCommentsByPostIds(@Param("postIds") Collection<String> postIds);
 
 	// 게시판 삭제 시, 게시글도 함께 삭제
 	@Query("UPDATE Post p SET p.isDeleted = true " +

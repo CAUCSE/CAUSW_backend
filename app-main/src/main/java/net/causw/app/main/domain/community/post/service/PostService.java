@@ -23,6 +23,7 @@ import net.causw.app.main.domain.community.board.entity.BoardGroup;
 import net.causw.app.main.domain.community.board.service.implementation.BoardAccessManager;
 import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
 import net.causw.app.main.domain.community.board.service.implementation.BoardReader;
+import net.causw.app.main.domain.community.comment.service.implementation.CommentReader;
 import net.causw.app.main.domain.community.common.service.CommunityPermissionPolicy;
 import net.causw.app.main.domain.community.common.util.AnonymousNicknameGenerator;
 import net.causw.app.main.domain.community.post.entity.Post;
@@ -70,6 +71,7 @@ public class PostService {
 	private final BoardConfigReader boardConfigReader;
 	private final BoardAccessManager boardAccessManager;
 	private final LikePostReader likePostReader;
+	private final CommentReader commentReader;
 	private final BlockReader userBlockReader;
 	private final ApplicationEventPublisher eventPublisher;
 	private final UserProfileImageReader userProfileImageReader;
@@ -372,7 +374,7 @@ public class PostService {
 		CrawledPostDetail crawledPostDetail = getCrawledPostDetail(post);
 
 		// 좋아요, 댓글 개수 조회
-		Long numComment = postReader.countComments(postId);
+		Long numComment = commentReader.countByPostId(postId);
 		Long numLike = likePostReader.countByPostId(postId);
 
 		// 사용자의 좋아요 여부

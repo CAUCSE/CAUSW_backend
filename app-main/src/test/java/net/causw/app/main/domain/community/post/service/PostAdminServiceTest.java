@@ -22,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import net.causw.app.main.domain.community.board.entity.Board;
+import net.causw.app.main.domain.community.comment.service.implementation.CommentReader;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.enums.PostAdminStatus;
 import net.causw.app.main.domain.community.post.enums.PostCategory;
@@ -52,6 +53,9 @@ class PostAdminServiceTest {
 
 	@Mock
 	private LikePostReader likePostReader;
+
+	@Mock
+	private CommentReader commentReader;
 
 	private String postId;
 	private Post post;
@@ -165,7 +169,7 @@ class PostAdminServiceTest {
 		PostAdminListQuery query = new PostAdminListQuery(null, null, null, null, null);
 		post.updateCategory(PostCategory.EVENT_LECTURE);
 		given(postReader.findAllForAdmin(query, pageable)).willReturn(new PageImpl<>(List.of(post), pageable, 1));
-		given(postReader.countCommentsByPostIds(List.of(post.getId()))).willReturn(Map.of(post.getId(), 4L));
+		given(commentReader.countByPostIds(List.of(post.getId()))).willReturn(Map.of(post.getId(), 4L));
 		given(likePostReader.countByPostIds(List.of(post.getId()))).willReturn(Map.of(post.getId(), 5L));
 
 		// when
@@ -197,7 +201,7 @@ class PostAdminServiceTest {
 		post.updateCategory(PostCategory.RESEARCH);
 		given(postReader.findById(postId)).willReturn(post);
 		given(postReader.findPostImages(postId)).willReturn(List.of());
-		given(postReader.countComments(postId)).willReturn(2L);
+		given(commentReader.countByPostId(postId)).willReturn(2L);
 		given(likePostReader.countByPostId(postId)).willReturn(3L);
 
 		// when

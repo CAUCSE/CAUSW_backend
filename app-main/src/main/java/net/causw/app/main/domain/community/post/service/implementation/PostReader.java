@@ -17,7 +17,6 @@ import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.enums.PostAdminStatus;
 import net.causw.app.main.domain.community.post.enums.PostCategory;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
-import net.causw.app.main.domain.community.post.repository.query.PostCommentCount;
 import net.causw.app.main.domain.community.post.repository.query.PostCursorResult;
 import net.causw.app.main.domain.community.post.repository.query.PostQueryRepository;
 import net.causw.app.main.domain.community.post.repository.query.PostReadQueryContext;
@@ -177,24 +176,6 @@ public class PostReader {
 	public List<String> findPostImages(String postId) {
 		Map<String, List<String>> result = this.findPostImagesByPostIds(List.of(postId));
 		return result.getOrDefault(postId, List.of());
-	}
-
-	/**
-	 * 특정 게시글의 댓글 개수를 조회합니다. (Comment + ChildComment)
-	 *
-	 * @param postId 게시글 ID
-	 * @return 댓글 개수
-	 */
-	public long countComments(String postId) {
-		return postQueryRepository.countCommentsByPostId(postId);
-	}
-
-	public Map<String, Long> countCommentsByPostIds(List<String> postIds) {
-		if (postIds.isEmpty()) {
-			return Map.of();
-		}
-		return postRepository.countCommentsByPostIds(postIds).stream()
-			.collect(Collectors.toMap(PostCommentCount::postId, PostCommentCount::count));
 	}
 
 	/**

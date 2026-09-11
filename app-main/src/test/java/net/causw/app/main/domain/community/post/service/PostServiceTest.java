@@ -52,6 +52,7 @@ import net.causw.app.main.domain.community.board.entity.BoardWriteScope;
 import net.causw.app.main.domain.community.board.service.implementation.BoardAccessManager;
 import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
 import net.causw.app.main.domain.community.board.service.implementation.BoardReader;
+import net.causw.app.main.domain.community.comment.service.implementation.CommentReader;
 import net.causw.app.main.domain.community.common.util.AnonymousNicknameGenerator;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.enums.PostCategory;
@@ -113,6 +114,9 @@ public class PostServiceTest {
 
 	@Mock
 	LikePostReader likePostReader;
+
+	@Mock
+	CommentReader commentReader;
 
 	@Mock
 	VoteWriter voteWriter;

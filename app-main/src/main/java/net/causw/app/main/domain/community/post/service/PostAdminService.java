@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.domain.community.comment.service.implementation.CommentReader;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.enums.PostAdminStatus;
 import net.causw.app.main.domain.community.post.enums.PostCategory;
@@ -29,6 +30,7 @@ public class PostAdminService {
 	private final PostReader postReader;
 	private final PostWriter postWriter;
 	private final LikePostReader likePostReader;
+	private final CommentReader commentReader;
 
 	/**
 	 * 관리자가 게시글의 성격(카테고리)을 수동으로 지정합니다.
@@ -70,7 +72,7 @@ public class PostAdminService {
 	public Page<PostAdminSummaryResult> getPosts(PostAdminListQuery query, Pageable pageable) {
 		Page<Post> posts = postReader.findAllForAdmin(query, pageable);
 		List<String> postIds = posts.getContent().stream().map(Post::getId).toList();
-		Map<String, Long> commentCounts = postIds.isEmpty() ? Map.of() : postReader.countCommentsByPostIds(postIds);
+		Map<String, Long> commentCounts = postIds.isEmpty() ? Map.of() : commentReader.countByPostIds(postIds);
 		Map<String, Long> likeCounts = postIds.isEmpty() ? Map.of() : likePostReader.countByPostIds(postIds);
 		return posts
 			.map(post -> PostAdminSummaryResult.from(
@@ -91,7 +93,7 @@ public class PostAdminService {
 		return PostAdminDetailResult.from(
 			post,
 			postReader.findPostImages(postId),
-			postReader.countComments(postId),
+			commentReader.countByPostId(postId),
 			likePostReader.countByPostId(postId));
 	}
 }

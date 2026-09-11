@@ -371,25 +371,6 @@ public class PostQueryRepository {
 	}
 
 	/**
-	 * 특정 게시글의 댓글 개수를 조회합니다. (답글 포함, 삭제되지 않은 것만)
-	 *
-	 * @param postId 게시글 ID
-	 * @return 댓글 개수
-	 */
-	public long countCommentsByPostId(String postId) {
-		QComment comment = QComment.comment;
-
-		Long commentCount = jpaQueryFactory
-			.select(comment.count())
-			.from(comment)
-			.where(comment.post.id.eq(postId)
-				.and(comment.isDeleted.isFalse()))
-			.fetchOne();
-
-		return commentCount != null ? commentCount : 0L;
-	}
-
-	/**
 	 * 주어진 사용자 ID 목록 중 시스템 관리자(SYSTEM_ADMIN) 권한을 가진 사용자 ID를 조회합니다.
 	 * @param userIds 확인할 사용자 ID 목록
 	 * @return SYSTEM_ADMIN 권한을 가진 사용자 ID Set

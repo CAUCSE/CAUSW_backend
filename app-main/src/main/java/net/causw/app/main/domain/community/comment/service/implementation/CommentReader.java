@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.community.comment.repository.CommentQueryRepository;
 import net.causw.app.main.domain.community.comment.repository.CommentRepository;
+import net.causw.app.main.domain.community.comment.repository.query.PostCommentCount;
 import net.causw.app.main.shared.exception.errorcode.CommentErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -85,6 +86,18 @@ public class CommentReader {
 				.setChildCommentList(childCommentMap.getOrDefault(comment.getId(), Collections.emptyList())));
 		}
 		return comments;
+	}
+
+	public long countByPostId(String postId) {
+		return commentRepository.countByPostId(postId);
+	}
+
+	public Map<String, Long> countByPostIds(List<String> postIds) {
+		if (postIds.isEmpty()) {
+			return Map.of();
+		}
+		return commentRepository.countByPostIds(postIds).stream()
+			.collect(Collectors.toMap(PostCommentCount::postId, PostCommentCount::count));
 	}
 
 }
