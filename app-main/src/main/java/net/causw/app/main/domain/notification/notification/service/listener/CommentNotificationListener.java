@@ -83,8 +83,6 @@ public class CommentNotificationListener {
 		String pushTitle = "내 글에 댓글";
 		String pushBody = NotificationTextUtil.ellipsis(displayName + "님이 댓글을 남겼어요",
 			NotificationTextUtil.PUSH_BODY_MAX_LENGTH);
-		PushNotificationData pushData = new PushNotificationData(NoticeType.COMMUNITY, post.getId(),
-			post.getBoard().getId());
 
 		String servicePrefix = displayName + "님이 댓글을 남겼어요. ";
 		int contentSlot = NotificationTextUtil.SERVICE_TITLE_MAX_LENGTH - servicePrefix.length() - 2;
@@ -94,9 +92,11 @@ public class CommentNotificationListener {
 		Notification notification = notificationWriter.save(
 			Notification.of(commentWriter, serviceTitle, pushBody, NoticeType.COMMUNITY, post.getId(),
 				post.getBoard().getId()));
+		String notificationLogId = notificationWriter.saveLog(postWriter, notification);
 
+		PushNotificationData pushData = new PushNotificationData(notificationLogId, NoticeType.COMMUNITY,
+			post.getId(), post.getBoard().getId());
 		notificationPushSender.sendToUser(postWriter, pushTitle, pushBody, pushData);
-		notificationWriter.saveLog(postWriter, notification);
 	}
 
 	/**
@@ -145,8 +145,6 @@ public class CommentNotificationListener {
 		String pushTitle = "내 댓글에 답글";
 		String pushBody = NotificationTextUtil.ellipsis(displayName + "님이 답글을 남겼어요",
 			NotificationTextUtil.PUSH_BODY_MAX_LENGTH);
-		PushNotificationData pushData = new PushNotificationData(NoticeType.COMMUNITY, post.getId(),
-			post.getBoard().getId());
 
 		String servicePrefix = displayName + "님이 답글을 남겼어요: ";
 		int contentSlot = NotificationTextUtil.SERVICE_TITLE_MAX_LENGTH - servicePrefix.length() - 2;
@@ -156,9 +154,11 @@ public class CommentNotificationListener {
 		Notification notification = notificationWriter.save(
 			Notification.of(childCommentWriter, serviceTitle, pushBody, NoticeType.COMMUNITY, post.getId(),
 				post.getBoard().getId()));
+		String notificationLogId = notificationWriter.saveLog(commentWriter, notification);
 
+		PushNotificationData pushData = new PushNotificationData(notificationLogId, NoticeType.COMMUNITY,
+			post.getId(), post.getBoard().getId());
 		notificationPushSender.sendToUser(commentWriter, pushTitle, pushBody, pushData);
-		notificationWriter.saveLog(commentWriter, notification);
 	}
 
 	private static String resolveDisplayName(User user, boolean isAnonymous) {

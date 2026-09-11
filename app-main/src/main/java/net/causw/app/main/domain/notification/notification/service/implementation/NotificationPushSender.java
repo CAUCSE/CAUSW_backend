@@ -2,6 +2,7 @@ package net.causw.app.main.domain.notification.notification.service.implementati
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.stereotype.Component;
@@ -30,7 +31,7 @@ public class NotificationPushSender {
 	 * @param user  알림을 받을 유저
 	 * @param title 알림 제목
 	 * @param body  알림 내용
-	 * @param data data 필드에 들어갈 내용(noticeType, targetId, targetParentId)
+	 * @param data data 필드에 들어갈 내용(noticeType, targetId, targetParentId, notificationLogId)
 	 */
 	public void sendToUser(User user, String title, String body, PushNotificationData data) {
 		log.debug("단일 유저 푸시알림 전송 요청: userId={}", user.getId());
@@ -39,15 +40,22 @@ public class NotificationPushSender {
 
 	/**
 	 * 여러 유저에게 일괄로 푸시 알림을 전송합니다.
+	 * 유저별 notificationLogId는 logIdsByUserId에서 조회하여 data에 채워 넣습니다.
 	 *
 	 * @param users 알림을 받을 유저 목록
 	 * @param title 알림 제목
 	 * @param body  알림 내용
-	 * @param data data 필드에 들어갈 내용(noticeType, targetId, targetParentId)
+	 * @param data data 필드에 들어갈 내용(noticeType, targetId, targetParentId, notificationLogId)
+	 * @param logIdsByUserId 유저 id -> notificationLogId 맵
 	 */
-	public void sendToUsers(List<User> users, String title, String body, PushNotificationData data) {
+	public void sendToUsers(List<User> users, String title, String body, PushNotificationData data,
+		Map<String, String> logIdsByUserId) {
 		log.debug("다중 유저 푸시알림 전송 요청: userCount={}", users.size());
-		users.forEach(user -> send(user, title, body, data));
+		users.forEach(user -> {
+			PushNotificationData dataWithLogId = new PushNotificationData(logIdsByUserId.get(user.getId()),
+				data.noticeType(), data.targetId(), data.targetParentId());
+			send(user, title, body, dataWithLogId);
+		});
 	}
 
 	/**
@@ -55,7 +63,7 @@ public class NotificationPushSender {
 	 * @param user 유저
 	 * @param title 제목
 	 * @param body body값
-	 * @param data data 필드에 들어갈 내용(noticeType, targetId, targetParentId)
+	 * @param data data 필드에 들어갈 내용(noticeType, targetId, targetParentId, notificationLogId)
 	 */
 	private void send(User user, String title, String body, PushNotificationData data) {
 		if (user.getFcmTokens() == null) {
@@ -81,7 +89,7 @@ public class NotificationPushSender {
 	 * @param token fcm 토큰
 	 * @param title 제목
 	 * @param body  내용
-	 * @param data data 필드에 들어갈 내용(noticeType, targetId, targetParentId)
+	 * @param data data 필드에 들어갈 내용(noticeType, targetId, targetParentId, notificationLogId)
 	 */
 	private void trySend(User user, String token, String title, String body, PushNotificationData data) {
 		try {
