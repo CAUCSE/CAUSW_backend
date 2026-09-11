@@ -6,6 +6,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
@@ -25,6 +26,7 @@ import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.comment.entity.Comment;
 import net.causw.app.main.domain.community.comment.repository.CommentQueryRepository;
 import net.causw.app.main.domain.community.comment.repository.CommentRepository;
+import net.causw.app.main.domain.community.comment.repository.query.PostCommentCount;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
@@ -115,6 +117,37 @@ class CommentReaderTest {
 			assertThat(result.getContent().get(0).getChildCommentList()).containsExactly(childComment);
 			then(commentQueryRepository).should().findRootCommentsByPostId("post-id", pageable);
 			then(commentQueryRepository).should().findChildCommentsByParentCommentIds(List.of("root-comment-id"));
+		}
+	}
+
+	@Nested
+	@DisplayName("게시글별 댓글 개수 조회")
+	class CountByPost {
+
+		@Test
+		@DisplayName("여러 게시글의 댓글 개수를 게시글 ID 기준으로 반환한다")
+		void givenPostIds_whenCountByPostIds_thenReturnCountMap() {
+			// given
+			List<String> postIds = List.of("post-1", "post-2");
+			given(commentRepository.countByPostIds(postIds))
+				.willReturn(List.of(new PostCommentCount("post-1", 2L), new PostCommentCount("post-2", 3L)));
+
+			// when
+			Map<String, Long> result = commentReader.countByPostIds(postIds);
+
+			// then
+			assertThat(result).containsExactlyInAnyOrderEntriesOf(Map.of("post-1", 2L, "post-2", 3L));
+		}
+
+		@Test
+		@DisplayName("게시글 ID 목록이 비어 있으면 저장소를 조회하지 않는다")
+		void givenEmptyPostIds_whenCountByPostIds_thenReturnEmptyMap() {
+			// when
+			Map<String, Long> result = commentReader.countByPostIds(List.of());
+
+			// then
+			assertThat(result).isEmpty();
+			then(commentRepository).shouldHaveNoInteractions();
 		}
 	}
 }

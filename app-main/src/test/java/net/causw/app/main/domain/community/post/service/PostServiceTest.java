@@ -52,6 +52,7 @@ import net.causw.app.main.domain.community.board.entity.BoardWriteScope;
 import net.causw.app.main.domain.community.board.service.implementation.BoardAccessManager;
 import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
 import net.causw.app.main.domain.community.board.service.implementation.BoardReader;
+import net.causw.app.main.domain.community.comment.service.implementation.CommentReader;
 import net.causw.app.main.domain.community.common.util.AnonymousNicknameGenerator;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.enums.PostCategory;
@@ -113,6 +114,9 @@ public class PostServiceTest {
 
 	@Mock
 	LikePostReader likePostReader;
+
+	@Mock
+	CommentReader commentReader;
 
 	@Mock
 	VoteWriter voteWriter;
@@ -489,7 +493,6 @@ public class PostServiceTest {
 			// then
 			assertThat(post.getIsDeleted()).isTrue();
 			verify(boardConfigReader).getByBoardId(boardId);
-			verify(blockReader).existsByBlockerAndBlocked(deleter, deleter);
 		}
 
 		@DisplayName("권한 없는 사용자가 이미 삭제된 게시글을 삭제하면 실패")
@@ -509,9 +512,9 @@ public class PostServiceTest {
 					.isEqualTo(PostErrorCode.POST_FORBIDDEN));
 		}
 
-		@DisplayName("차단 우회 권한이 없는 임원은 삭제된 게시글도 삭제할 수 없음")
+		@DisplayName("전역 삭제 권한자는 차단 관계와 무관하게 삭제된 게시글을 멱등하게 삭제한다")
 		@Test
-		void deletePost_shouldFail_whenAlreadyDeletedWriterIsBlockedByExecutive() {
+		void deletePost_shouldSucceed_whenAlreadyDeletedWriterIsBlockedByExecutive() {
 			// given
 			User president = ObjectFixtures.getCertifiedUserWithId("president-id");
 			president.setRoles(Set.of(Role.PRESIDENT));
@@ -519,13 +522,12 @@ public class PostServiceTest {
 			given(postReader.findById(postId)).willReturn(post);
 			given(boardConfigReader.getAdminIdsByBoardId(boardId)).willReturn(List.of());
 			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
-			given(blockReader.existsByBlockerAndBlocked(president, deleter)).willReturn(true);
 
-			// when & then
-			assertThatThrownBy(() -> postService.deletePost(president, postId))
-				.isInstanceOf(BaseRunTimeV2Exception.class)
-				.satisfies(ex -> assertThat(((BaseRunTimeV2Exception)ex).getErrorCode())
-					.isEqualTo(PostErrorCode.BLOCKED_USER_CONTENT));
+			// when
+			postService.deletePost(president, postId);
+
+			// then
+			assertThat(post.getIsDeleted()).isTrue();
 		}
 	}
 

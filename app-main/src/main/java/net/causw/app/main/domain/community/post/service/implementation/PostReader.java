@@ -13,13 +13,14 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.enums.PostAdminStatus;
 import net.causw.app.main.domain.community.post.enums.PostCategory;
 import net.causw.app.main.domain.community.post.repository.PostRepository;
 import net.causw.app.main.domain.community.post.repository.query.PostCursorResult;
 import net.causw.app.main.domain.community.post.repository.query.PostQueryRepository;
 import net.causw.app.main.domain.community.post.repository.query.PostReadQueryContext;
+import net.causw.app.main.domain.community.post.service.dto.PostAdminListQuery;
 import net.causw.app.main.domain.integration.crawled.entity.CrawledPostImage;
 import net.causw.app.main.domain.integration.crawled.repository.CrawledPostImageRepository;
 import net.causw.app.main.shared.exception.errorcode.PostErrorCode;
@@ -72,12 +73,19 @@ public class PostReader {
 	 * @return Post Entity
 	 */
 	public Post findByIdAndNotDeleted(String postId) {
-		return postRepository.findByIdAndIsDeletedFalse(postId)
+		return postRepository.findByIdAndIsDeletedFalseAndIsHiddenFalse(postId)
 			.orElseThrow(PostErrorCode.POST_NOT_FOUND::toBaseException);
 	}
 
-	public List<Post> findAllByBoardAndNotDeleted(Board board) {
-		return postRepository.findAllByBoardAndIsDeletedIsFalse(board);
+	/**
+	 * 관리자 기능에서 사용할 수 있도록 숨김 여부와 관계없이 삭제되지 않은 Post를 조회합니다.
+	 *
+	 * @param postId Post ID
+	 * @return Post Entity
+	 */
+	public Post findByIdAndNotDeletedIncludingHidden(String postId) {
+		return postRepository.findByIdAndIsDeletedFalse(postId)
+			.orElseThrow(PostErrorCode.POST_NOT_FOUND::toBaseException);
 	}
 
 	/**
@@ -182,16 +190,6 @@ public class PostReader {
 	}
 
 	/**
-	 * 특정 게시글의 댓글 개수를 조회합니다. (Comment + ChildComment)
-	 *
-	 * @param postId 게시글 ID
-	 * @return 댓글 개수
-	 */
-	public long countComments(String postId) {
-		return postQueryRepository.countCommentsByPostId(postId);
-	}
-
-	/**
 	 * 특정 사용자 ID 목록 중 시스템 관리자(SYSTEM_ADMIN) 권한을 가진 사용자 ID를 조회합니다.
 	 * @param userIds 조회할 사용자 ID 목록
 	 * @return SYSTEM_ADMIN 권한을 가진 사용자 ID Set
@@ -208,5 +206,17 @@ public class PostReader {
 	 */
 	public Page<Post> findUncategorizedCrawledPosts(Pageable pageable) {
 		return postRepository.findUncategorizedCrawledPosts(pageable);
+	}
+
+	public Page<Post> findAllForAdmin(PostAdminListQuery query, Pageable pageable) {
+		Boolean isDeleted = query.status() == null ? null : query.status() == PostAdminStatus.DELETED;
+		Boolean isHidden = null;
+		if (query.status() == PostAdminStatus.VISIBLE) {
+			isHidden = false;
+		} else if (query.status() == PostAdminStatus.HIDDEN) {
+			isHidden = true;
+		}
+		return postRepository.findAllForAdmin(
+			query.boardId(), query.category(), isDeleted, isHidden, query.keyword(), query.writerKeyword(), pageable);
 	}
 }

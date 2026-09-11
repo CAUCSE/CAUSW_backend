@@ -9,6 +9,7 @@ import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.PostAttachImage;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.form.entity.Form;
+import net.causw.app.main.domain.community.post.enums.PostAdminStatus;
 import net.causw.app.main.domain.community.post.enums.PostCategory;
 import net.causw.app.main.domain.community.vote.entity.Vote;
 import net.causw.app.main.domain.user.account.entity.user.User;
@@ -66,6 +67,11 @@ public class Post extends BaseEntity {
 	@Builder.Default
 	@ColumnDefault("false")
 	private Boolean isDeleted = false;
+
+	@Column(name = "is_hidden", nullable = false)
+	@Builder.Default
+	@ColumnDefault("false")
+	private Boolean isHidden = false;
 
 	@Column(name = "is_anonymous", nullable = false)
 	@ColumnDefault("false")
@@ -188,6 +194,14 @@ public class Post extends BaseEntity {
 
 	public void setIsDeleted(Boolean isDeleted) {
 		this.isDeleted = Boolean.TRUE.equals(isDeleted);
+		if (form != null) {
+			this.form.setIsDeleted(this.isDeleted);
+		}
+	}
+
+	public void changeAdminStatus(PostAdminStatus status) {
+		this.isDeleted = status == PostAdminStatus.DELETED;
+		this.isHidden = status == PostAdminStatus.HIDDEN;
 		if (form != null) {
 			this.form.setIsDeleted(this.isDeleted);
 		}

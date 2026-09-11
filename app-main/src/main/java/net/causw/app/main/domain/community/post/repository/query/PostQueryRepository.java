@@ -9,8 +9,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
@@ -44,45 +42,6 @@ public class PostQueryRepository {
 	private static final BooleanExpression NO_CONDITION = null;
 
 	private final JPAQueryFactory jpaQueryFactory;
-
-	public Page<PostQueryResult> findPostsByBoardWithFilters(
-		String boardId,
-		boolean includeDeleted,
-		Set<String> blockedUserIds,
-		String keyword,
-		Pageable pageable) {
-		QPost post = QPost.post;
-		QUser writer = new QUser("writer");
-
-		// 게시글 조회 조건
-		BooleanExpression[] conditions = new BooleanExpression[] {
-			post.board.id.eq(boardId),
-			isNotDeleted(post, includeDeleted),
-			notInBlockedUsers(writer, blockedUserIds),
-			containsKeyword(post, writer, keyword)
-		};
-
-		// 게시글 조회
-		List<PostQueryResult> content = jpaQueryFactory
-			.select(toPostQueryResult(post, writer))
-			.from(post)
-			.leftJoin(post.writer, writer)
-			.where(conditions)
-			.orderBy(post.createdAt.desc())
-			.offset(pageable.getOffset())
-			.limit(pageable.getPageSize())
-			.fetch();
-
-		// 게시글 개수 조회
-		Long total = jpaQueryFactory
-			.select(post.count())
-			.from(post)
-			.leftJoin(post.writer, writer)
-			.where(conditions)
-			.fetchOne();
-
-		return new PageImpl<>(content, pageable, total != null ? total : 0L);
-	}
 
 	/**
 	 * 커서 기반 페이징으로 게시글 목록을 조회합니다. (V2용 - title 없음)
@@ -302,6 +261,7 @@ public class PostQueryRepository {
 		PostReadQueryContext context) {
 
 		BooleanExpression alive = post.isDeleted.isFalse()
+			.and(post.isHidden.isFalse())
 			.and(post.board.isDeleted.isFalse());
 		if (context.systemAdmin()) {
 			return alive;
@@ -337,88 +297,6 @@ public class PostQueryRepository {
 			return NO_CONDITION;
 		}
 		return post.content.contains(keyword);
-	}
-
-	/**
-	 * 게시글이 삭제되지 않은 경우에만 조회하도록 하는 조건식을 생성합니다.
-	 * @param post QPost 엔티티의 Q타입
-	 * @param includeDeleted 삭제된 게시글도 포함할지 여부 (true면 삭제된 게시글도 조회, false면 삭제된 게시글 제외)
-	 * @return 게시글이 삭제되지 않은 경우에만 조회하도록 하는 BooleanExpression 또는 null (includeDeleted가 true인 경우)
-	 */
-	private BooleanExpression isNotDeleted(QPost post, boolean includeDeleted) {
-		return includeDeleted ? NO_CONDITION : post.isDeleted.eq(false);
-	}
-
-	/**
-	 * 작성자가 차단된 사용자 목록에 포함되지 않은 경우에만 조회하도록 하는 조건식을 생성합니다.
-	 * @param writer QUser 엔티티의 Q타입 (작성자 정보 조인용)
-	 * @param blockedUserIds 차단된 사용자 ID 목록 (null이면 차단된 사용자 없음, 빈 리스트면 차단된 사용자 없음)
-	 * @return 작성자가 차단된 사용자 목록에 포함되지 않은 경우에만 조회하도록 하는 BooleanExpression 또는 null (차단된 사용자 목록이 없는 경우)
-	 */
-	private BooleanExpression notInBlockedUsers(QUser writer, Set<String> blockedUserIds) {
-		return (blockedUserIds == null || blockedUserIds.isEmpty()) ? NO_CONDITION : writer.id.notIn(blockedUserIds);
-	}
-
-	/**
-	 * 게시글 제목, 내용, 작성자 닉네임 중 하나라도 검색 키워드를 포함하는지 여부를 반환하는 조건식을 생성합니다.
-	 * @param post QPost 엔티티의 Q타입
-	 * @param writer QUser 엔티티의 Q타입 (작성자 정보 조인용)
-	 * @param keyword 검색 키워드 (null 또는 빈 문자열이면 조건 없이 조회)
-	 * @return 게시글 제목, 내용, 작성자 닉네임 중 하나라도 검색 키워드를 포함하는지 여부를 나타내는 BooleanExpression 또는 null (키워드가 없는 경우)
-	 */
-	private BooleanExpression containsKeyword(QPost post, QUser writer, String keyword) {
-		if (keyword == null || keyword.isBlank())
-			return NO_CONDITION;
-
-		return post.title.contains(keyword) // MySQL에서 utf8mb4_0900_ai_ci Collation 사용중이므로, 기본적으로 대소문자 무시
-			.or(post.content.contains(keyword))
-			.or(writer.nickname.contains(keyword));
-	}
-
-	/**
-	 * 게시글과 작성자 정보를 기반으로 PostQueryResult를 생성하는 팩토리 메서드입니다.
-	 * @param post QPost 엔티티의 Q타입
-	 * @param writer QUser 엔티티의 Q타입 (작성자 정보 조인용)
-	 * @return 게시글과 작성자 정보를 포함하는 PostQueryResult 객체
-	 */
-	private static QPostQueryResult toPostQueryResult(QPost post, QUser writer) {
-
-		QComment comment = QComment.comment;
-		QLikePost likePost = QLikePost.likePost;
-		QPostAttachImage postAttachImage = QPostAttachImage.postAttachImage;
-
-		// 숫자 카운트 서브쿼리
-		SubQueryExpression<Long> commentCount = JPAExpressions
-			.select(comment.count())
-			.from(comment)
-			.where(comment.post.eq(post));
-
-		// 좋아요 개수 서브쿼리
-		SubQueryExpression<Long> likeCount = JPAExpressions
-			.select(likePost.count())
-			.from(likePost)
-			.where(likePost.post.eq(post));
-
-		// 문자열 서브쿼리 (썸네일 URL)
-		SubQueryExpression<String> thumbnailUrl = JPAExpressions.select(
-			postAttachImage.uuidFile.fileUrl)
-			.from(postAttachImage)
-			.where(postAttachImage.post.eq(post)
-				.and(postAttachImage.uuidFile.extension.in(
-					FileExtensionType.IMAGE.getExtensionList()))
-				.and(postAttachImage.uuidFile.createdAt.eq(
-					JPAExpressions.select(postAttachImage.uuidFile.createdAt.min())
-						.from(postAttachImage)
-						.where(postAttachImage.post.eq(post)))));
-
-		return new QPostQueryResult(
-			post.id, post.title, post.content,
-			commentCount, likeCount,
-			post.isAnonymous, post.isQuestion, post.vote.isNotNull(), post.form.isNotNull(),
-			post.isDeleted,
-			writer.isNotNull(), writer.name, writer.nickname, writer.admissionYear, writer.state, writer.deletedAt,
-			post.createdAt, post.updatedAt,
-			thumbnailUrl);
 	}
 
 	/**
@@ -490,25 +368,6 @@ public class PostQueryRepository {
 				Collectors.mapping(
 					tuple -> tuple.get(postAttachImage.uuidFile.fileUrl),
 					Collectors.toList()))));
-	}
-
-	/**
-	 * 특정 게시글의 댓글 개수를 조회합니다. (답글 포함, 삭제되지 않은 것만)
-	 *
-	 * @param postId 게시글 ID
-	 * @return 댓글 개수
-	 */
-	public long countCommentsByPostId(String postId) {
-		QComment comment = QComment.comment;
-
-		Long commentCount = jpaQueryFactory
-			.select(comment.count())
-			.from(comment)
-			.where(comment.post.id.eq(postId)
-				.and(comment.isDeleted.isFalse()))
-			.fetchOne();
-
-		return commentCount != null ? commentCount : 0L;
 	}
 
 	/**
