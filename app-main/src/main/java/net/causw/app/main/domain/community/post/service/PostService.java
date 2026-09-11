@@ -149,7 +149,6 @@ public class PostService {
 		List<String> boardAdminIds = boardConfigReader.getAdminIdsByBoardId(boardId);
 		BoardConfig boardConfig = boardConfigReader.getByBoardId(boardId);
 		validateSystemNoticeCudAccess(boardConfig, systemNoticeApi);
-		validateBlockedWriterAccess(deleter, post, boardAdminIds);
 		if (Boolean.TRUE.equals(post.getIsDeleted())) {
 			if (!CommunityPermissionPolicy.canDeletePostIgnoringTargetDeletion(
 				deleter, post, boardConfig, boardAdminIds)) {
