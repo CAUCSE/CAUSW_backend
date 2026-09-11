@@ -173,7 +173,7 @@ public class ObjectFixtures {
 		return Board.createNoticeBoard(
 			"noticeBoardName",
 			"boardDescription",
-			List.of("ADMIN", "PRESIDENT", "VICE_PRESIDENT"),
+			List.of("ADMIN"),
 			StaticValue.BOARD_NAME_APP_NOTICE,
 			false,
 			isAlumni);

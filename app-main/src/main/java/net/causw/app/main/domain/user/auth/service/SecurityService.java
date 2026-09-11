@@ -31,7 +31,7 @@ public class SecurityService {
 
 	/**
 	 * 현재 인증된 사용자가 주어진 Role을 보유하고 있는지 확인
-	 * @param role 문자열 형태의 역할 (예: "ADMIN", "VICE_PRESIDENT")
+	 * @param role 문자열 형태의 역할 (예: "ADMIN", "SYSTEM_ADMIN")
 	 */
 	public boolean hasRole(String role) {
 		return SecurityHelper.hasRole(getAuthorities(), Role.of(role));
@@ -39,7 +39,7 @@ public class SecurityService {
 
 	/**
 	 * 현재 인증된 사용자가 주어진 Role을 보유하고 있는지 확인
-	 * @param role Role enum (예: Role.ADMIN, Role.VICE_PRESIDENT)
+	 * @param role Role enum (예: Role.ADMIN, Role.SYSTEM_ADMIN)
 	 */
 	public boolean hasRole(Role role) {
 		return SecurityHelper.hasRole(getAuthorities(), role);
