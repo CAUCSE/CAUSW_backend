@@ -2,8 +2,12 @@ package net.causw.app.main.domain.integration.crawled.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.never;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 
@@ -13,8 +17,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import net.causw.app.main.domain.integration.crawled.SiteConfigFixture;
+import net.causw.app.main.domain.integration.crawled.config.CrawlerType;
 import net.causw.app.main.domain.integration.crawled.core.CrawlContext;
 import net.causw.app.main.domain.integration.crawled.core.SiteCrawlerRegistry;
 import net.causw.app.main.domain.integration.crawled.crawler.SiteCrawler;
@@ -96,6 +102,55 @@ class NoticeCrawlingFacadeTest {
 		assertThat(results).singleElement()
 			.extracting(CrawlResult::siteId)
 			.isEqualTo("succeeded-site");
+	}
+
+	@Test
+	@DisplayName("현재 시각이 실행 허용 구간인 활성 사이트만 수집한다")
+	void crawlAllEnabled_shouldCrawlOnlySitesWithinSchedule() {
+		// given
+		SiteConfig allowedConfig = SiteConfigFixture.create(
+			"allowed-site", LocalTime.of(9, 0), LocalTime.of(18, 0));
+		SiteConfig blockedConfig = SiteConfigFixture.create(
+			"blocked-site", CrawlerType.CAU_AI_NOTICE, LocalTime.of(18, 0), LocalTime.of(9, 0));
+		CrawlContext allowedContext = new CrawlContext(allowedConfig);
+
+		given(siteConfigReader.findAllEnabled()).willReturn(List.of(allowedConfig, blockedConfig));
+		given(registry.get(allowedConfig.getCrawlerType())).willReturn(crawler);
+		given(crawler.fetchList(allowedContext)).willReturn(List.of());
+		given(crawledNoticePersistenceService.persistAll(allowedConfig, List.of())).willReturn(Map.of());
+
+		// when
+		List<CrawlResult> results = noticeCrawlingFacade.crawlAllEnabled(LocalTime.NOON);
+
+		// then
+		assertThat(results)
+			.extracting(CrawlResult::siteId)
+			.containsExactly("allowed-site");
+		then(registry).should(never()).get(CrawlerType.CAU_AI_NOTICE);
+	}
+
+	@Test
+	@DisplayName("설정된 크롤링 시간대를 기준으로 현재 실행 시각을 계산한다")
+	void crawlAllEnabled_shouldUseConfiguredZone() {
+		// given
+		ReflectionTestUtils.setField(noticeCrawlingFacade, "crawlZone", "UTC");
+		LocalTime utcNow = LocalTime.now(ZoneId.of("UTC"));
+		SiteConfig config = SiteConfigFixture.create(
+			"utc-site", utcNow.minusHours(1), utcNow.plusHours(1));
+		CrawlContext context = new CrawlContext(config);
+
+		given(siteConfigReader.findAllEnabled()).willReturn(List.of(config));
+		given(registry.get(config.getCrawlerType())).willReturn(crawler);
+		given(crawler.fetchList(context)).willReturn(List.of());
+		given(crawledNoticePersistenceService.persistAll(config, List.of())).willReturn(Map.of());
+
+		// when
+		List<CrawlResult> results = noticeCrawlingFacade.crawlAllEnabled();
+
+		// then
+		assertThat(results)
+			.extracting(CrawlResult::siteId)
+			.containsExactly("utc-site");
 	}
 
 	private SiteConfig config() {
