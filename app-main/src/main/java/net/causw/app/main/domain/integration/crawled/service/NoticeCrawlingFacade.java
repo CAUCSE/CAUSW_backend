@@ -1,5 +1,7 @@
 package net.causw.app.main.domain.integration.crawled.service;
 
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -9,6 +11,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import net.causw.app.main.domain.integration.crawled.core.CrawlContext;
@@ -38,6 +41,9 @@ import lombok.extern.slf4j.Slf4j;
 public class NoticeCrawlingFacade {
 	private static final int MAX_CONCURRENT_REQUESTS = 5;
 
+	@Value("${app.crawl.zone:Asia/Seoul}")
+	private String crawlZone = "Asia/Seoul";
+
 	private final SiteCrawlerRegistry siteCrawlerRegistry;
 	private final SiteConfigReader siteConfigReader;
 	private final CrawledArticleCleaner crawledArticleCleaner;
@@ -59,8 +65,26 @@ public class NoticeCrawlingFacade {
 	 * @return 성공적으로 실행된 사이트별 크롤링 결과
 	 */
 	public List<CrawlResult> crawlAllEnabled() {
+		return crawlAllEnabled(LocalTime.now(ZoneId.of(crawlZone)));
+	}
+
+	/**
+	 * 현재 시각이 실행 허용 구간에 포함되는 활성 사이트를 크롤링하며 사이트별 실패를 격리합니다.
+	 *
+	 * @param currentTime 크롤링 실행 시각
+	 * @return 성공적으로 실행된 사이트별 크롤링 결과
+	 */
+	public List<CrawlResult> crawlAllEnabled(LocalTime currentTime) {
 		List<CrawlResult> results = new ArrayList<>();
 		for (SiteConfig siteConfig : siteConfigReader.findAllEnabled()) {
+			if (!siteConfig.isWithinSchedule(currentTime)) {
+				if ((siteConfig.getStartTime() == null) != (siteConfig.getEndTime() == null)) {
+					log.warn("[크롤링] 실행 허용 시간 설정이 불완전하여 사이트를 건너뜁니다. siteId={}", siteConfig.getSiteId());
+				} else {
+					log.debug("[크롤링] 실행 허용 시간 외 사이트를 건너뜁니다. siteId={}", siteConfig.getSiteId());
+				}
+				continue;
+			}
 			try {
 				results.add(crawl(siteConfig));
 			} catch (RuntimeException e) {
