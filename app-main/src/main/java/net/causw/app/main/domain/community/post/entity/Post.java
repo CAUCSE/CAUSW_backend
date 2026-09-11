@@ -9,13 +9,18 @@ import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.entity.joinEntity.PostAttachImage;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.form.entity.Form;
+import net.causw.app.main.domain.community.post.enums.PostAdminStatus;
+import net.causw.app.main.domain.community.post.enums.PostCategory;
 import net.causw.app.main.domain.community.vote.entity.Vote;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.enums.user.ProfileImageType;
 import net.causw.app.main.shared.entity.BaseEntity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
@@ -63,9 +68,21 @@ public class Post extends BaseEntity {
 	@ColumnDefault("false")
 	private Boolean isDeleted = false;
 
+	@Column(name = "is_hidden", nullable = false)
+	@Builder.Default
+	@ColumnDefault("false")
+	private Boolean isHidden = false;
+
 	@Column(name = "is_anonymous", nullable = false)
 	@ColumnDefault("false")
 	private Boolean isAnonymous;
+
+	@Column(name = "anonymous_nickname", length = 30)
+	private String anonymousNickname;
+
+	@Column(name = "anonymous_profile_image_type", length = 20)
+	@Enumerated(EnumType.STRING)
+	private ProfileImageType anonymousProfileImageType;
 
 	@Column(name = "is_question", nullable = false)
 	@ColumnDefault("false")
@@ -75,6 +92,10 @@ public class Post extends BaseEntity {
 	@ColumnDefault("false")
 	@Builder.Default
 	private Boolean isCrawled = false;
+
+	@Column(name = "category")
+	@Enumerated(EnumType.STRING)
+	private PostCategory category;
 
 	@ManyToOne(targetEntity = Board.class)
 	@JoinColumn(name = "board_id", nullable = false)
@@ -178,6 +199,14 @@ public class Post extends BaseEntity {
 		}
 	}
 
+	public void changeAdminStatus(PostAdminStatus status) {
+		this.isDeleted = status == PostAdminStatus.DELETED;
+		this.isHidden = status == PostAdminStatus.HIDDEN;
+		if (form != null) {
+			this.form.setIsDeleted(this.isDeleted);
+		}
+	}
+
 	private void setPostAttachFileList(List<PostAttachImage> postAttachImageList) {
 		this.postAttachImageList = postAttachImageList;
 	}
@@ -186,11 +215,28 @@ public class Post extends BaseEntity {
 		this.vote = vote;
 	}
 
+	public void updateCategory(PostCategory category) {
+		this.category = category;
+	}
+
 	public void setCrawled() {
 		this.isCrawled = true;
 	}
 
 	public void increaseViewCount() {
 		this.viewCount++;
+	}
+
+	/**
+	 * 익명 닉네임/프로필 이미지가 아직 없을 때만 배정한다.
+	 *
+	 * <p>게시글은 존속 기간 동안 한 번 배정된 값을 그대로 유지해야 하므로, 이미 값이 있으면
+	 * 아무 것도 하지 않는다 (수정 시 익명 여부를 껐다 켜도 값이 바뀌지 않도록 하기 위함).</p>
+	 */
+	public void assignAnonymousIdentityIfAbsent(String nickname, ProfileImageType profileImageType) {
+		if (this.anonymousNickname == null) {
+			this.anonymousNickname = nickname;
+			this.anonymousProfileImageType = profileImageType;
+		}
 	}
 }

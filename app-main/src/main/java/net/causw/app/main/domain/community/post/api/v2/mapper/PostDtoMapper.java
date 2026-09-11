@@ -10,10 +10,12 @@ import org.springframework.web.multipart.MultipartFile;
 import net.causw.app.main.domain.community.post.api.v2.dto.request.PostCreateRequest;
 import net.causw.app.main.domain.community.post.api.v2.dto.request.PostListCondition;
 import net.causw.app.main.domain.community.post.api.v2.dto.request.PostUpdateRequest;
+import net.causw.app.main.domain.community.post.api.v2.dto.response.CrawledAttachmentResponse;
 import net.causw.app.main.domain.community.post.api.v2.dto.response.PostCreateResponse;
 import net.causw.app.main.domain.community.post.api.v2.dto.response.PostListResponse;
 import net.causw.app.main.domain.community.post.api.v2.dto.response.PostResponse;
 import net.causw.app.main.domain.community.post.api.v2.dto.response.PostUpdateResponse;
+import net.causw.app.main.domain.community.post.service.dto.CrawledAttachmentResult;
 import net.causw.app.main.domain.community.post.service.dto.ImageCreateMeta;
 import net.causw.app.main.domain.community.post.service.dto.ImageUpdateMeta;
 import net.causw.app.main.domain.community.post.service.dto.PostCreateCommand;
@@ -95,4 +97,6 @@ public interface PostDtoMapper {
 	PostDetailQuery toDetailQuery(String postId, User user);
 
 	PostResponse toDetailResponse(PostDetailResult result);
+
+	CrawledAttachmentResponse toCrawledAttachmentResponse(CrawledAttachmentResult result);
 }

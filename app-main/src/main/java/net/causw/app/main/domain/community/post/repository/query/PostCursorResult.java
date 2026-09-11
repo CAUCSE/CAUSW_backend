@@ -2,6 +2,7 @@ package net.causw.app.main.domain.community.post.repository.query;
 
 import java.time.LocalDateTime;
 
+import net.causw.app.main.domain.community.post.enums.PostCategory;
 import net.causw.app.main.domain.user.account.enums.user.ProfileImageType;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 
@@ -18,6 +19,8 @@ public record PostCursorResult(
 	long numLike,
 	long viewCount,
 	boolean isAnonymous,
+	String anonymousNickname,
+	ProfileImageType anonymousProfileImageType,
 	String voteId,
 	boolean isDeleted,
 	boolean isCrawled,
@@ -32,7 +35,8 @@ public record PostCursorResult(
 	LocalDateTime createdAt,
 	LocalDateTime updatedAt,
 	String boardId,
-	String boardName) {
+	String boardName,
+	PostCategory category) {
 	@QueryProjection
 	public PostCursorResult {
 	} // canonical constructor

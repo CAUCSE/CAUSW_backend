@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.enums.user.ProfileImageType;
 import net.causw.app.main.util.ObjectFixtures;
 
 class CommentTest {
@@ -26,7 +27,7 @@ class CommentTest {
 			Post post = ObjectFixtures.getPost(writer, board);
 
 			// when
-			Comment comment = Comment.ofRoot("댓글 내용", false, null, writer, post);
+			Comment comment = Comment.ofRoot("댓글 내용", false, null, null, writer, post);
 
 			// then
 			assertThat(comment.getContent()).isEqualTo("댓글 내용");
@@ -51,16 +52,18 @@ class CommentTest {
 			User childCommentWriter = ObjectFixtures.getCertifiedUser();
 			Board board = ObjectFixtures.getBoard();
 			Post post = ObjectFixtures.getPost(parentWriter, board);
-			Comment parent = Comment.ofRoot("부모 댓글", false, null, parentWriter, post);
+			Comment parent = Comment.ofRoot("부모 댓글", false, null, null, parentWriter, post);
 
 			// when
-			Comment childComment = Comment.ofChildComment("답글 내용", true, "다정한 튜링 42", childCommentWriter, parent);
+			Comment childComment = Comment.ofChildComment(
+				"답글 내용", true, "다정한 튜링 42", ProfileImageType.MALE_1, childCommentWriter, parent);
 
 			// then
 			assertThat(childComment.getContent()).isEqualTo("답글 내용");
 			assertThat(childComment.getIsDeleted()).isFalse();
 			assertThat(childComment.getIsAnonymous()).isTrue();
 			assertThat(childComment.getAnonymousNickname()).isEqualTo("다정한 튜링 42");
+			assertThat(childComment.getAnonymousProfileImageType()).isEqualTo(ProfileImageType.MALE_1);
 			assertThat(childComment.getWriter()).isEqualTo(childCommentWriter);
 			assertThat(childComment.getPost()).isEqualTo(post);
 			assertThat(childComment.getParentComment()).isEqualTo(parent);

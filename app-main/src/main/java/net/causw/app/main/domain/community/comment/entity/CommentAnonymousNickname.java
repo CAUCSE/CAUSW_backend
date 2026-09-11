@@ -1,9 +1,12 @@
 package net.causw.app.main.domain.community.comment.entity;
 
+import net.causw.app.main.domain.user.account.enums.user.ProfileImageType;
 import net.causw.app.main.shared.entity.AuditableEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -46,11 +49,17 @@ public class CommentAnonymousNickname extends AuditableEntity {
 	@Column(name = "nickname", nullable = false, updatable = false, length = 30)
 	private String nickname;
 
-	public static CommentAnonymousNickname of(String postId, String userId, String nickname) {
+	@Column(name = "profile_image_type", nullable = false, updatable = false, length = 20)
+	@Enumerated(EnumType.STRING)
+	private ProfileImageType profileImageType;
+
+	public static CommentAnonymousNickname of(
+		String postId, String userId, String nickname, ProfileImageType profileImageType) {
 		return CommentAnonymousNickname.builder()
 			.postId(postId)
 			.userId(userId)
 			.nickname(nickname)
+			.profileImageType(profileImageType)
 			.build();
 	}
 }

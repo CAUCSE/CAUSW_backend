@@ -25,13 +25,14 @@ public class AdminNotificationService {
 	public void sendPushToUser(User admin, String targetUserId, String title, String body, boolean saveNotification) {
 		User targetUser = userReader.findUserById(targetUserId);
 
-		PushNotificationData data = new PushNotificationData(NoticeType.SYSTEM, null, null);
-		notificationPushSender.sendToUser(targetUser, title, body, data);
-
+		String notificationLogId = null;
 		if (saveNotification) {
 			Notification notification = notificationWriter.save(
 				Notification.of(admin, title, body, NoticeType.SYSTEM, null, null));
-			notificationWriter.saveLog(targetUser, notification);
+			notificationLogId = notificationWriter.saveLog(targetUser, notification);
 		}
+
+		PushNotificationData data = new PushNotificationData(notificationLogId, NoticeType.SYSTEM, null, null);
+		notificationPushSender.sendToUser(targetUser, title, body, data);
 	}
 }

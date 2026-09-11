@@ -19,7 +19,7 @@ class PostReadQueryContextTest {
 	@DisplayName("시스템 관리자 여부와 차단 목록을 조회 컨텍스트에 반영한다")
 	void from_shouldReflectSystemAdminAndBlockedWriters() {
 		User admin = ObjectFixtures.getCertifiedUserWithId("admin-id");
-		admin.setRoles(Set.of(Role.ADMIN));
+		admin.setRoles(Set.of(Role.SYSTEM_ADMIN));
 		Set<String> blockedWriterIds = Set.of("blocked-writer-id");
 
 		PostReadQueryContext context = PostReadQueryContext.from(admin, blockedWriterIds);

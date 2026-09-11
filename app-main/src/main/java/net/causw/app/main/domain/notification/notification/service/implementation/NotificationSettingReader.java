@@ -62,6 +62,17 @@ public class NotificationSettingReader {
 	}
 
 	/**
+	 * 입학년도 제한 없이, 알림 설정을 고려하여 전체 ACTIVE 유저 중 발송 대상을 조회한다.
+	 * {@link #findCeremonyNotificationTargets(List, UserNotificationSettingKey)}에 빈 admissionYears를
+	 * 넘기는 것과 동일하다 (경조사 알림 전용이 아닌, 설정 키 기반 전체 유저 브로드캐스트에 쓰는 별칭).
+	 * @param key 판별할 알림 설정 키
+	 * @return 발송 대상 User 목록
+	 */
+	public List<User> findAllActiveUsersBySettingKey(UserNotificationSettingKey key) {
+		return findCeremonyNotificationTargets(List.of(), key);
+	}
+
+	/**
 	 * 여러 유저의 설정을 한 번에 조회하여 userId → UserNotificationSettingMap 으로 반환한다.
 	 * DB에 저장된 설정이 없는 유저는 enum의 defaultEnabled 값으로 채워진 맵을 반환한다.
 	 * @param userIds 조회할 유저 ID 목록

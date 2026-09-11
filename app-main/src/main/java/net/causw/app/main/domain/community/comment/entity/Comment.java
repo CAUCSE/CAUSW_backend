@@ -5,12 +5,16 @@ import java.util.List;
 
 import org.hibernate.annotations.ColumnDefault;
 
+import net.causw.app.main.domain.community.comment.enums.CommentAdminStatus;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.user.account.entity.user.User;
+import net.causw.app.main.domain.user.account.enums.user.ProfileImageType;
 import net.causw.app.main.shared.entity.BaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -43,6 +47,10 @@ public class Comment extends BaseEntity {
 
 	@Column(name = "anonymous_nickname", length = 30)
 	private String anonymousNickname;
+
+	@Column(name = "anonymous_profile_image_type", length = 20)
+	@Enumerated(EnumType.STRING)
+	private ProfileImageType anonymousProfileImageType;
 
 	@ManyToOne(targetEntity = User.class)
 	@JoinColumn(name = "user_id", nullable = false)
@@ -80,6 +88,7 @@ public class Comment extends BaseEntity {
 		String content,
 		Boolean isAnonymous,
 		String anonymousNickname,
+		ProfileImageType anonymousProfileImageType,
 		User writer,
 		Post post) {
 		return Comment.builder()
@@ -87,6 +96,7 @@ public class Comment extends BaseEntity {
 			.isDeleted(false)
 			.isAnonymous(isAnonymous)
 			.anonymousNickname(anonymousNickname)
+			.anonymousProfileImageType(anonymousProfileImageType)
 			.writer(writer)
 			.post(post)
 			.build();
@@ -96,6 +106,7 @@ public class Comment extends BaseEntity {
 		String content,
 		Boolean isAnonymous,
 		String anonymousNickname,
+		ProfileImageType anonymousProfileImageType,
 		User writer,
 		Comment parentComment) {
 		return Comment.builder()
@@ -103,6 +114,7 @@ public class Comment extends BaseEntity {
 			.isDeleted(false)
 			.isAnonymous(isAnonymous)
 			.anonymousNickname(anonymousNickname)
+			.anonymousProfileImageType(anonymousProfileImageType)
 			.writer(writer)
 			.post(parentComment.getPost())
 			.parentComment(parentComment)
@@ -119,5 +131,9 @@ public class Comment extends BaseEntity {
 
 	public void delete() {
 		this.isDeleted = true;
+	}
+
+	public void changeAdminStatus(CommentAdminStatus status) {
+		this.isDeleted = status == CommentAdminStatus.DELETED;
 	}
 }

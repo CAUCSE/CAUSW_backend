@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.causw.app.main.core.aop.annotation.RequireAdminRole;
+import net.causw.app.main.core.aop.enums.AdminTarget;
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.request.CeremonyAdminListRequest;
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.request.CeremonyRejectRequest;
 import net.causw.app.main.domain.community.ceremony.api.v2.dto.response.CeremonyAdminListResponse;
@@ -38,7 +40,8 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/admin/ceremonies")
-@PreAuthorize("@security.hasRole(@Role.ADMIN)")
+@PreAuthorize("@security.hasAnyRole(@Role.ADMIN, @Role.SYSTEM_ADMIN)")
+@RequireAdminRole(target = AdminTarget.ALL_ADMIN)
 public class CeremonyAdminController {
 
 	private final CeremonyAdminService ceremonyAdminService;

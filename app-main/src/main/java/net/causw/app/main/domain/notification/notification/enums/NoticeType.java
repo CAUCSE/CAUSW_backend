@@ -19,6 +19,7 @@ public enum NoticeType {
 	// v2
 	COMMUNITY("커뮤니티 알림", "커뮤니티 알림 - v2"),
 	SYSTEM("시스템 알림", "시스템 알림 - v2"),
+	SYSTEM_NOTICE("시스템 공지 알림", "시스템 공지 알림 - v2"),
 	OFFICIAL("공식계정 글 알림", "공식 알림 - v2"),
 	CEREMONY_V2("경조사 알림", "경조사 알림 - v2"),
 	LOCKER("사물함 알림", "사물함 알림"),

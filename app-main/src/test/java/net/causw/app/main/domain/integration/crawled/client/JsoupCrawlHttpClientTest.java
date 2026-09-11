@@ -75,7 +75,6 @@ class JsoupCrawlHttpClientTest {
 			config.getBaseUrl(),
 			config.getRequestHeaders(), config.getRequestDelay(), config.getTimeout(), maxRetries,
 			config.getMaxArticles(), config.getMaxScanRangeDays(), config.getPaginationType(), config.getPageParam(),
-			config.getMaxPages(),
-			config.getSelectors(), false, false, true);
+			config.getMaxPages(), false, false, true);
 	}
 }

@@ -104,7 +104,7 @@ public class UserAccountService {
 		return AuthResult.of(tokens.accessToken(), updatedUser.getName(), updatedUser.getEmail(),
 			ProfileImageDto.from(updatedUser, null),
 			tokens.refreshToken(), updatedUser.isGuest(), true, updatedUser.isAcademicCertified(),
-			updatedUser.getAcademicStatus());
+			updatedUser.getAcademicStatus(), updatedUser.getRoles());
 	}
 
 	/**

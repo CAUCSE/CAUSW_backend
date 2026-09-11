@@ -7,6 +7,7 @@ import net.causw.app.main.domain.asset.file.entity.joinEntity.UserProfileImage;
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.repository.query.PostCursorResult;
+import net.causw.app.main.domain.community.post.service.dto.CrawledAttachmentResult;
 import net.causw.app.main.domain.community.post.service.dto.PostCreateCommand;
 import net.causw.app.main.domain.community.post.service.dto.PostCreateResult;
 import net.causw.app.main.domain.community.post.service.dto.PostDetailResult;
@@ -117,6 +118,7 @@ public class PostMapper {
 			imageUrls,
 			result.boardId(),
 			result.boardName(),
+			result.category(),
 			isPostLike,
 			isOwner,
 			updatable,
@@ -141,6 +143,8 @@ public class PostMapper {
 		Post post,
 		UserProfileImage writerProfileImage,
 		List<String> imageUrls,
+		List<CrawledAttachmentResult> crawledAttachments,
+		String originalNoticeUrl,
 		Long numComment,
 		Long numLike,
 		Boolean isPostLike,
@@ -186,12 +190,15 @@ public class PostMapper {
 			.displayWriterNickname(displayWriterNickname)
 			.writerProfileImage(writerProfileImageDto)
 			.fileUrlList(imageUrls)
+			.crawledAttachments(crawledAttachments)
+			.originalNoticeUrl(originalNoticeUrl)
 			.numComment(numComment)
 			.numLike(numLike)
 			.viewCount(post.getViewCount())
 			.voteId(voteId)
 			.isAnonymous(post.getIsAnonymous())
 			.isCrawled(post.getIsCrawled())
+			.category(post.getCategory())
 			.isOwner(isOwner)
 			.isPostLike(isPostLike)
 			.updatable(updatable)
@@ -211,14 +218,21 @@ public class PostMapper {
 			return StaticValue.INACTIVE_USER_NICKNAME;
 		}
 		if (result.isAnonymous()) {
-			return StaticValue.ANONYMOUS_USER_NICKNAME;
+			return result.anonymousNickname() != null
+				? result.anonymousNickname()
+				: StaticValue.ANONYMOUS_USER_NICKNAME;
 		}
 		return result.writerNickname();
 	}
 
 	private static ProfileImageDto resolveWriterProfileImage(PostCursorResult result) {
-		if (isInactiveWriter(result.writerUserState(), !result.hasWriter()) || result.isAnonymous()) {
+		if (isInactiveWriter(result.writerUserState(), !result.hasWriter())) {
 			return ProfileImageDto.GHOST;
+		}
+		if (result.isAnonymous()) {
+			return result.anonymousProfileImageType() != null
+				? ProfileImageDto.of(result.anonymousProfileImageType(), null)
+				: ProfileImageDto.GHOST;
 		}
 		return ProfileImageDto.of(result.writerProfileImageType(), result.writerProfileImageUrl());
 	}
@@ -229,14 +243,21 @@ public class PostMapper {
 			return StaticValue.INACTIVE_USER_NICKNAME;
 		}
 		if (post.getIsAnonymous()) {
-			return StaticValue.ANONYMOUS_USER_NICKNAME;
+			return post.getAnonymousNickname() != null
+				? post.getAnonymousNickname()
+				: StaticValue.ANONYMOUS_USER_NICKNAME;
 		}
 		return writer.getNickname();
 	}
 
 	private static ProfileImageDto resolveWriterProfileImage(Post post, UserProfileImage writerProfileImage) {
-		if (isInactiveWriter(post.getWriter()) || post.getIsAnonymous()) {
+		if (isInactiveWriter(post.getWriter())) {
 			return ProfileImageDto.GHOST;
+		}
+		if (post.getIsAnonymous()) {
+			return post.getAnonymousProfileImageType() != null
+				? ProfileImageDto.of(post.getAnonymousProfileImageType(), null)
+				: ProfileImageDto.GHOST;
 		}
 		return ProfileImageDto.from(post.getWriter(), writerProfileImage);
 	}

@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public enum PostErrorCode implements BaseResponseCode {
+	POST_SYSTEM_NOTICE_CUD_ONLY_VIA_DEDICATED_API(HttpStatus.FORBIDDEN, "POST_403_003",
+		"시스템 공지는 전용 API로만 작성·수정·삭제할 수 있습니다."),
 	POST_NOT_FOUND(HttpStatus.NOT_FOUND, "POST_404_001", "게시글을 찾을 수 없습니다"),
 	DELETED_WRITER(HttpStatus.NOT_FOUND, "POST_404_002", "작성자가 삭제된 사용자입니다"),
 	POST_FORBIDDEN(HttpStatus.FORBIDDEN, "POST_403_001", "게시글에 대한 권한이 없습니다"),
@@ -22,7 +24,8 @@ public enum PostErrorCode implements BaseResponseCode {
 	IMAGE_EXISTING_URL_REQUIRED(HttpStatus.BAD_REQUEST, "POST_400_007", "type=existing인 이미지는 url이 필수입니다."),
 	IMAGE_NEW_FILE_INDEX_REQUIRED(HttpStatus.BAD_REQUEST, "POST_400_008", "type=new인 이미지는 fileIndex가 필수입니다."),
 	IMAGE_EXISTING_URL_NOT_FOUND(HttpStatus.BAD_REQUEST, "POST_400_009", "기존 게시글에 존재하지 않는 이미지 URL입니다."),
-	POST_NOTICE_BOARD_NOT_ALLOW_ANONYMOUS(HttpStatus.BAD_REQUEST, "POST_400_010", "공지사항 게시판에서 익명으로 작성할 수 없습니다.");
+	POST_NOTICE_BOARD_NOT_ALLOW_ANONYMOUS(HttpStatus.BAD_REQUEST, "POST_400_010", "공지사항 게시판에서 익명으로 작성할 수 없습니다."),
+	POST_CATEGORY_NOT_SUPPORTED(HttpStatus.BAD_REQUEST, "POST_400_011", "성격 분류는 소식 게시판의 게시글에만 지정할 수 있습니다.");
 
 	private final HttpStatus status;
 	private final String code;

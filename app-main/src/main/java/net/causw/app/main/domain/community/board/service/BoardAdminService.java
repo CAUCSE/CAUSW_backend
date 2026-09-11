@@ -28,6 +28,7 @@ import net.causw.app.main.domain.community.board.util.BoardValidator;
 import net.causw.app.main.domain.community.post.service.implementation.PostWriter;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
+import net.causw.app.main.shared.exception.errorcode.BoardErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -63,6 +64,7 @@ public class BoardAdminService {
 	 * @param boardQueryCondition 게시판 조회 조건 DTO
 	 * @return 게시판 설정 목록 조회 결과 DTO
 	 */
+	@Transactional(readOnly = true)
 	public BoardConfigListResult getAllBoardList(BoardQueryCondition boardQueryCondition) {
 		List<Board> boards = boardReader.searchBoardList(boardQueryCondition);
 		Map<String, BoardConfig> configMap = boardConfigReader.getBoardConfigMapByBoardIds(
@@ -77,6 +79,7 @@ public class BoardAdminService {
 	 * @param boardId 게시판 아이디
 	 * @return 게시판 설정 상세 조회 결과 DTO
 	 */
+	@Transactional(readOnly = true)
 	public BoardConfigDetail getBoardConfigEditInfo(String boardId) {
 		Board board = boardReader.getById(boardId);
 		BoardConfig boardConfig = boardConfigReader.getByBoardId(boardId);
@@ -118,12 +121,13 @@ public class BoardAdminService {
 	 */
 	@Transactional
 	public void updateBoard(String boardId, BoardPart board, BoardConfigPart config, List<String> adminUserIds) {
-		// board 관련 검증
-		boardValidator.validateForUpdate(board.name(), boardId, config.isNotice(), config.isAnonymous());
-
 		// board, boardConfig 조회
 		Board boardEntity = boardReader.getById(boardId);
 		BoardConfig boardConfig = boardConfigReader.getByBoardId(boardId);
+		validateSystemNoticeNotModifiable(boardConfig);
+
+		// board 관련 검증
+		boardValidator.validateForUpdate(board.name(), boardId, config.isNotice(), config.isAnonymous());
 
 		// 수정 수행
 		boardWriter.updateBoard(boardEntity, board);
@@ -138,6 +142,8 @@ public class BoardAdminService {
 	@Transactional
 	public void deleteBoard(String boardId) {
 		Board board = boardReader.getById(boardId);
+		BoardConfig boardConfig = boardConfigReader.getByBoardId(boardId);
+		validateSystemNoticeNotModifiable(boardConfig);
 		board.setIsDeleted(true);
 		boardWriter.save(board);
 		postWriter.deleteAllByBoardId(boardId);
@@ -149,7 +155,15 @@ public class BoardAdminService {
 	 */
 	@Transactional
 	public void updateBoardOrder(BoardOrderUpdateCommand command) {
+		boardConfigReader.getAllBoardConfigInBoardIds(command.boardIds())
+			.forEach(this::validateSystemNoticeNotModifiable);
 		boardConfigWriter.updateDisplayOrders(command.boardIds());
+	}
+
+	private void validateSystemNoticeNotModifiable(BoardConfig boardConfig) {
+		if (boardConfig.isSystemNotice()) {
+			throw BoardErrorCode.BOARD_SYSTEM_NOTICE_NOT_MODIFIABLE.toBaseException();
+		}
 	}
 
 }

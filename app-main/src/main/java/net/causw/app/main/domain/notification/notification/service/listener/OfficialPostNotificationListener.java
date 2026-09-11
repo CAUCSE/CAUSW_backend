@@ -1,6 +1,8 @@
 package net.causw.app.main.domain.notification.notification.service.listener;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.jsoup.Jsoup;
 import org.springframework.scheduling.annotation.Async;
@@ -12,7 +14,6 @@ import org.springframework.transaction.event.TransactionalEventListener;
 
 import net.causw.app.main.domain.community.board.entity.Board;
 import net.causw.app.main.domain.community.board.entity.BoardConfig;
-import net.causw.app.main.domain.community.board.entity.BoardReadScope;
 import net.causw.app.main.domain.community.board.entity.BoardVisibility;
 import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
 import net.causw.app.main.domain.community.board.service.implementation.BoardReader;
@@ -58,9 +59,12 @@ public class OfficialPostNotificationListener {
 
 		// UserBoardSubscribe row가 없으면 기본 구독(true)으로 간주.
 		// isSubscribed=false인 row가 명시적으로 존재하는 경우에만 알림 대상에서 제외.
-		// ACTIVE + 미삭제 + readScope 조건을 만족하며 구독 거부하지 않은 유저 목록 조회
-		BoardReadScope readScope = boardConfig.getReadScope();
-		List<User> targets = userBoardSubscribeReader.findNotificationTargets(board.getId(), readScope);
+		// ACTIVE + 학적 범위 + 학과 제한 조건을 만족하며 구독 거부하지 않은 유저 목록 조회
+		// 게시판 관리자는 학적·학과 제한 없이 포함.
+		Set<String> boardAdminIds = boardConfigReader.getAdminIdSetMapByBoardIds(List.of(board.getId()))
+			.getOrDefault(board.getId(), Set.of());
+		List<User> targets = userBoardSubscribeReader.findNotificationTargets(
+			board.getId(), boardConfig, boardAdminIds);
 
 		// 알림 발송
 		// 푸시알림 제목: 게시판 이름
@@ -84,13 +88,14 @@ public class OfficialPostNotificationListener {
 		}
 
 		String pushBody = NotificationTextUtil.ellipsis(rawPushBody, NotificationTextUtil.PUSH_BODY_MAX_LENGTH);
-		PushNotificationData pushData = new PushNotificationData(NoticeType.OFFICIAL, post.getId(), board.getId());
+		PushNotificationData pushData = new PushNotificationData(null, NoticeType.OFFICIAL, post.getId(),
+			board.getId());
 
 		// 알림 발송자를 게시글 작성자로 설정하여 알림 저장
 		Notification notification = notificationWriter.save(
 			Notification.of(writer, serviceTitle, pushBody, NoticeType.OFFICIAL, post.getId(), board.getId()));
+		Map<String, String> logIdsByUserId = notificationWriter.saveLogs(targets, notification);
 
-		notificationPushSender.sendToUsers(targets, pushTitle, pushBody, pushData);
-		notificationWriter.saveLogs(targets, notification);
+		notificationPushSender.sendToUsers(targets, pushTitle, pushBody, pushData, logIdsByUserId);
 	}
 }

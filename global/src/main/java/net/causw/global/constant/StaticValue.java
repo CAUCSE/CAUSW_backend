@@ -27,6 +27,7 @@ public class StaticValue {
 	public final static Integer HOME_NOTIFICATION_PAGE_SIZE = 1;
 	public final static Integer MAX_NOTIFICATION_COUNT = 10;
 	public final static Integer BATCH_USER_LIST_SIZE = 500;
+	public static final String SYSTEM_BATCH_ACCOUNT = "SYSTEM_BATCH_ACCOUNT";
 	public final static Integer BATCH_PENDING_FILE_CHUNK_SIZE = 500;
 	public final static long PENDING_FILE_EXPIRY_HOURS = 6;
 

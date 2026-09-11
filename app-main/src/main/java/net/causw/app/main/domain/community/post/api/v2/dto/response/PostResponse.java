@@ -3,6 +3,7 @@ package net.causw.app.main.domain.community.post.api.v2.dto.response;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import net.causw.app.main.domain.community.post.enums.PostCategory;
 import net.causw.app.main.shared.dto.ProfileImageDto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -22,6 +23,10 @@ public record PostResponse(
 
 	@Schema(description = "첨부파일", example = "첨부파일 url 작성") List<String> fileUrlList,
 
+	@Schema(description = "크롤링 원본 첨부파일 목록. 일반 게시글은 빈 배열") List<CrawledAttachmentResponse> crawledAttachments,
+
+	@Schema(description = "크롤링 원본 공지 URL. 일반 게시글 또는 연결 정보가 없으면 null") String originalNoticeUrl,
+
 	@Schema(description = "답글 개수", example = "13") Long numComment,
 
 	@Schema(description = "게시글 좋아요 개수", example = "10") Long numLike,
@@ -33,6 +38,8 @@ public record PostResponse(
 	@Schema(description = "익명글 여부", example = "False") Boolean isAnonymous,
 
 	@Schema(description = "크롤링 게시글 여부", example = "False") Boolean isCrawled,
+
+	@Schema(description = "게시글 성격 (미분류는 null)", example = "RECRUIT", nullable = true) PostCategory category,
 
 	@Schema(description = "게시글 작성자 여부", example = "False") Boolean isOwner,
 

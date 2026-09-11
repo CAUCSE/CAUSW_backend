@@ -17,7 +17,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -33,7 +32,6 @@ import net.causw.app.main.domain.asset.locker.service.implementation.LockerLogRe
 import net.causw.app.main.domain.asset.locker.service.implementation.LockerReader;
 import net.causw.app.main.domain.asset.locker.service.implementation.LockerValidator;
 import net.causw.app.main.domain.asset.locker.service.implementation.LockerWriter;
-import net.causw.app.main.domain.notification.notification.event.LockerExpiredEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
@@ -56,9 +54,9 @@ class LockerAdminServiceTest {
 	@Mock
 	private LockerWriter lockerWriter;
 	@Mock
-	private AdminAuditLogEventPublisher adminAuditLogEventPublisher;
+	private LockerExpirationService lockerExpirationService;
 	@Mock
-	private ApplicationEventPublisher applicationEventPublisher;
+	private AdminAuditLogEventPublisher adminAuditLogEventPublisher;
 	@Mock
 	private UserReader userReader;
 
@@ -406,36 +404,20 @@ class LockerAdminServiceTest {
 	class ReleaseExpiredLocker {
 
 		@Test
-		@DisplayName("성공: 만료된 모든 사물함을 회수하고 로그를 남긴다")
-		void givenExpiredLockers_whenReleaseExpiredLocker_thenReturnsAllAndLogs() {
+		@DisplayName("성공: 관리자를 확인하고 만료 사물함 일괄 반납을 위임한다")
+		void givenAdmin_whenReleaseExpiredLocker_thenDelegatesToExpirationService() {
 			// given
 			String adminId = "admin-1";
-
 			User admin = createUser(adminId);
-			LockerLocation location = createLocation("loc-1", LockerName.SECOND);
-			User user1 = createUser("user-1");
-			User user2 = createUser("user-2");
-			Locker locker1 = createLocker("locker-1", 1L, location, user1,
-				LocalDateTime.now().minusDays(1), true);
-			Locker locker2 = createLocker("locker-2", 2L, location, user2,
-				LocalDateTime.now().minusDays(1), true);
 
 			when(userReader.findAdminUserById(adminId)).thenReturn(admin);
-			when(lockerReader.findExpiredLockers(any(LocalDateTime.class)))
-				.thenReturn(List.of(locker1, locker2));
 
 			// when
 			lockerAdminService.releaseExpiredLocker(adminId);
 
 			// then
-			verify(lockerReader).findExpiredLockers(any(LocalDateTime.class));
-
-			verify(lockerWriter).releaseLocker(locker1, admin, user1.getEmail(), user1.getName());
-			verify(lockerWriter).releaseLocker(locker2, admin, user2.getEmail(), user2.getName());
-			verify(adminAuditLogEventPublisher).publishLockerReleaseExpired(locker1, admin, Optional.of(user1));
-			verify(adminAuditLogEventPublisher).publishLockerReleaseExpired(locker2, admin, Optional.of(user2));
-			verify(applicationEventPublisher).publishEvent(new LockerExpiredEvent(user1.getId(), locker1.getId()));
-			verify(applicationEventPublisher).publishEvent(new LockerExpiredEvent(user2.getId(), locker2.getId()));
+			verify(userReader).findAdminUserById(adminId);
+			verify(lockerExpirationService).releaseExpiredLockers(admin);
 		}
 	}
 }

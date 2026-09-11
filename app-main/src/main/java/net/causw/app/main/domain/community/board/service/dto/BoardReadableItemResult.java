@@ -5,5 +5,6 @@ package net.causw.app.main.domain.community.board.service.dto;
  */
 public record BoardReadableItemResult(
 	String id,
-	String name) {
+	String name,
+	boolean isSystemNotice) {
 }

@@ -98,7 +98,7 @@ public class SocialNativeAuthService {
 			return AuthResult.of(tokens.accessToken(), user.getName(), user.getEmail(),
 				ProfileImageDto.from(user, profileImage),
 				tokens.refreshToken(), user.isGuest(), hasAllRequiredLatestTerms, user.isAcademicCertified(),
-				user.getAcademicStatus());
+				user.getAcademicStatus(), user.getRoles());
 		} catch (BaseRunTimeV2Exception e) {
 			log.warn("Native social login failed. provider={}, code={}, message={}", providerKey,
 				e.getErrorCode().getCode(), e.getMessage());

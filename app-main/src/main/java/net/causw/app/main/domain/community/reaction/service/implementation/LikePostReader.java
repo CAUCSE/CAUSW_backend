@@ -2,12 +2,15 @@ package net.causw.app.main.domain.community.reaction.service.implementation;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.causw.app.main.domain.community.reaction.repository.LikePostRepository;
+import net.causw.app.main.domain.community.reaction.repository.query.PostLikeCount;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,6 +32,14 @@ public class LikePostReader {
 	 */
 	public Long countByPostId(String postId) {
 		return likePostRepository.countByPostId(postId);
+	}
+
+	public Map<String, Long> countByPostIds(List<String> postIds) {
+		if (postIds.isEmpty()) {
+			return Map.of();
+		}
+		return likePostRepository.countByPostIds(postIds).stream()
+			.collect(Collectors.toMap(PostLikeCount::postId, PostLikeCount::count));
 	}
 
 	/**

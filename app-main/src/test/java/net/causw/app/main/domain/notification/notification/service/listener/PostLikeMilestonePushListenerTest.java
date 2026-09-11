@@ -38,7 +38,7 @@ class PostLikeMilestonePushListenerTest {
 	@DisplayName("DB 커밋 후 작성자에게 푸시를 한 번 요청한다")
 	void givenCommittedNotification_whenHandle_thenSendPushOnce() {
 		User recipient = mock(User.class);
-		PushNotificationData pushData = new PushNotificationData(NoticeType.COMMUNITY, "postId", "boardId");
+		PushNotificationData pushData = new PushNotificationData(null, NoticeType.COMMUNITY, "postId", "boardId");
 		PostLikeMilestonePushEvent event = new PostLikeMilestonePushEvent(
 			"recipientId",
 			"push title",

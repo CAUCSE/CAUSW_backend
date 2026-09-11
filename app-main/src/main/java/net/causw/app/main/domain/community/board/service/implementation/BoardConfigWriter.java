@@ -57,7 +57,8 @@ public class BoardConfigWriter {
 			config.isNotice(),
 			config.visibility(),
 			config.officialNickname(),
-			config.officialProfileImageId());
+			config.officialProfileImageId(),
+			config.departments());
 
 		boardConfigRepository.save(boardConfig);
 	}

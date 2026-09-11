@@ -8,6 +8,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import net.causw.app.main.core.aop.annotation.RequireAdminRole;
+import net.causw.app.main.core.aop.enums.AdminTarget;
 import net.causw.app.main.domain.user.academic.api.v2.dto.request.AcademicRecordApplicationListRequest;
 import net.causw.app.main.domain.user.academic.api.v2.dto.request.AcademicRecordApplicationRejectRequest;
 import net.causw.app.main.domain.user.academic.api.v2.dto.response.AcademicRecordApplicationDetailResponse;
@@ -28,7 +30,8 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/admin/academic-records")
-@PreAuthorize("@security.hasRole(@Role.ADMIN)")
+@PreAuthorize("@security.hasAnyRole(@Role.ADMIN, @Role.SYSTEM_ADMIN)")
+@RequireAdminRole(target = AdminTarget.ALL_ADMIN)
 @Tag(name = "AcademicRecord Admin v2", description = "관리자 학적상태 변경신청 관리 API")
 public class AcademicRecordAdminController {
 

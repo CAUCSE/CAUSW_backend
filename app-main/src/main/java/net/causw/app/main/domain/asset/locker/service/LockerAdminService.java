@@ -2,7 +2,6 @@ package net.causw.app.main.domain.asset.locker.service;
 
 import java.time.LocalDateTime;
 
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -17,7 +16,6 @@ import net.causw.app.main.domain.asset.locker.service.implementation.LockerLogRe
 import net.causw.app.main.domain.asset.locker.service.implementation.LockerReader;
 import net.causw.app.main.domain.asset.locker.service.implementation.LockerValidator;
 import net.causw.app.main.domain.asset.locker.service.implementation.LockerWriter;
-import net.causw.app.main.domain.notification.notification.event.LockerExpiredEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
@@ -42,8 +40,8 @@ public class LockerAdminService {
 	private final LockerLogReader lockerLogReader;
 	private final LockerValidator lockerValidator;
 	private final LockerWriter lockerWriter;
+	private final LockerExpirationService lockerExpirationService;
 	private final AdminAuditLogEventPublisher adminAuditLogEventPublisher;
-	private final ApplicationEventPublisher applicationEventPublisher;
 	private final UserReader userReader;
 
 	/**
@@ -174,23 +172,14 @@ public class LockerAdminService {
 		adminAuditLogEventPublisher.publishLockerDisable(locker, admin, currentUser);
 	}
 
-	@Transactional
+	/**
+	 * 만료 사물함 일괄 회수
+	 * <br> 실제 반납 처리는 {@link LockerExpirationService}에 위임
+	 * @param adminId 관리자 아이디
+	 */
 	public void releaseExpiredLocker(String adminId) {
 		User admin = userReader.findAdminUserById(adminId);
 
-		var expiredLockers = lockerReader.findExpiredLockers(LocalDateTime.now());
-		expiredLockers.forEach(locker -> {
-			var expiredUser = locker.getUser();
-
-			var userId = expiredUser.map(User::getId).orElse(null);
-			var userEmail = expiredUser.map(User::getEmail).orElse("알 수 없음");
-			var userName = expiredUser.map(User::getName).orElse("알 수 없음");
-			lockerWriter.releaseLocker(locker, admin, userEmail, userName);
-
-			adminAuditLogEventPublisher.publishLockerReleaseExpired(locker, admin, expiredUser);
-			if (userId != null) {
-				applicationEventPublisher.publishEvent(new LockerExpiredEvent(userId, locker.getId()));
-			}
-		});
+		lockerExpirationService.releaseExpiredLockers(admin);
 	}
 }

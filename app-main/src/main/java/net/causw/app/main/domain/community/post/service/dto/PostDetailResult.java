@@ -3,6 +3,7 @@ package net.causw.app.main.domain.community.post.service.dto;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import net.causw.app.main.domain.community.post.enums.PostCategory;
 import net.causw.app.main.shared.dto.ProfileImageDto;
 
 import lombok.Builder;
@@ -16,12 +17,15 @@ public record PostDetailResult(
 	String displayWriterNickname,
 	ProfileImageDto writerProfileImage,
 	List<String> fileUrlList,
+	List<CrawledAttachmentResult> crawledAttachments,
+	String originalNoticeUrl,
 	Long numComment,
 	Long numLike,
 	Long viewCount,
 	String voteId,
 	Boolean isAnonymous,
 	Boolean isCrawled,
+	PostCategory category,
 	Boolean isOwner,
 	Boolean isPostLike,
 	Boolean updatable,
