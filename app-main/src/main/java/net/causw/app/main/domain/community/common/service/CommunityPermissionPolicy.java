@@ -27,10 +27,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CommunityPermissionPolicy {
 
-	private static final EnumSet<Role> GLOBAL_DELETE_ROLES = EnumSet.of(
-		Role.SYSTEM_ADMIN,
-		Role.PRESIDENT,
-		Role.VICE_PRESIDENT);
+	private static final EnumSet<Role> GLOBAL_DELETE_ROLES = EnumSet.of(Role.SYSTEM_ADMIN);
 
 	/**
 	 * 사용자가 활성 상태이며 권한이 부여되었는지 검증합니다.
