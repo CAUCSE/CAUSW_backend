@@ -8,6 +8,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.causw.app.main.domain.community.board.entity.BoardConfig;
+import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
 import net.causw.app.main.domain.community.comment.service.implementation.CommentReader;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.enums.PostAdminStatus;
@@ -31,6 +33,7 @@ public class PostAdminService {
 	private final PostWriter postWriter;
 	private final LikePostReader likePostReader;
 	private final CommentReader commentReader;
+	private final BoardConfigReader boardConfigReader;
 
 	/**
 	 * 관리자가 게시글의 성격(카테고리)을 수동으로 지정합니다.
@@ -39,13 +42,14 @@ public class PostAdminService {
 	 *
 	 * @param postId 수정할 게시글 식별자
 	 * @param category 지정할 성격. null이면 미분류
-	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception 크롤링 게시글이 아닌 경우
+	 * @throws net.causw.app.main.shared.exception.BaseRunTimeV2Exception 소식 게시판의 게시글이 아닌 경우
 	 */
 	@Transactional
 	public void updateCategory(String postId, PostCategory category) {
 		Post post = postReader.findByIdAndNotDeletedIncludingHidden(postId);
+		BoardConfig boardConfig = boardConfigReader.getByBoardId(post.getBoard().getId());
 
-		if (!Boolean.TRUE.equals(post.getIsCrawled())) {
+		if (!boardConfig.isNotice()) {
 			throw PostErrorCode.POST_CATEGORY_NOT_SUPPORTED.toBaseException();
 		}
 

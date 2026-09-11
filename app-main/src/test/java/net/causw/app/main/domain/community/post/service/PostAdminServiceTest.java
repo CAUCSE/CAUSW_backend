@@ -22,6 +22,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import net.causw.app.main.domain.community.board.entity.Board;
+import net.causw.app.main.domain.community.board.entity.BoardConfig;
+import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
 import net.causw.app.main.domain.community.comment.service.implementation.CommentReader;
 import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.enums.PostAdminStatus;
@@ -57,6 +59,12 @@ class PostAdminServiceTest {
 	@Mock
 	private CommentReader commentReader;
 
+	@Mock
+	private BoardConfigReader boardConfigReader;
+
+	@Mock
+	private BoardConfig boardConfig;
+
 	private String postId;
 	private Post post;
 
@@ -73,9 +81,10 @@ class PostAdminServiceTest {
 	@DisplayName("관리자가 지정한 성격으로 덮어쓴다")
 	void updateCategory_shouldOverwriteCategory() {
 		// given
-		post.setCrawled();
 		post.updateCategory(PostCategory.ACADEMIC);
 		given(postReader.findByIdAndNotDeletedIncludingHidden(postId)).willReturn(post);
+		given(boardConfigReader.getByBoardId("board-id")).willReturn(boardConfig);
+		given(boardConfig.isNotice()).willReturn(true);
 
 		// when
 		postAdminService.updateCategory(postId, PostCategory.RECRUIT);
@@ -88,9 +97,10 @@ class PostAdminServiceTest {
 	@DisplayName("null을 전달하면 미분류로 되돌린다")
 	void updateCategory_shouldResetToUnclassified() {
 		// given
-		post.setCrawled();
 		post.updateCategory(PostCategory.ACADEMIC);
 		given(postReader.findByIdAndNotDeletedIncludingHidden(postId)).willReturn(post);
+		given(boardConfigReader.getByBoardId("board-id")).willReturn(boardConfig);
+		given(boardConfig.isNotice()).willReturn(true);
 
 		// when
 		postAdminService.updateCategory(postId, null);
@@ -100,10 +110,13 @@ class PostAdminServiceTest {
 	}
 
 	@Test
-	@DisplayName("크롤링 게시글이 아니면 수정할 수 없다")
-	void updateCategory_shouldRejectNonCrawledPost() {
+	@DisplayName("소통 게시판의 크롤링 게시글도 성격을 수정할 수 없다")
+	void updateCategory_shouldRejectCommunityBoardPost() {
 		// given
+		post.setCrawled();
 		given(postReader.findByIdAndNotDeletedIncludingHidden(postId)).willReturn(post);
+		given(boardConfigReader.getByBoardId("board-id")).willReturn(boardConfig);
+		given(boardConfig.isNotice()).willReturn(false);
 
 		// when & then
 		assertThatThrownBy(() -> postAdminService.updateCategory(postId, PostCategory.RECRUIT))
@@ -134,8 +147,9 @@ class PostAdminServiceTest {
 	@DisplayName("5개 분류에 해당하지 않는 게시글은 기타로 지정할 수 있다")
 	void updateCategory_shouldAllowEtc() {
 		// given
-		post.setCrawled();
 		given(postReader.findByIdAndNotDeletedIncludingHidden(postId)).willReturn(post);
+		given(boardConfigReader.getByBoardId("board-id")).willReturn(boardConfig);
+		given(boardConfig.isNotice()).willReturn(true);
 
 		// when
 		postAdminService.updateCategory(postId, PostCategory.ETC);
