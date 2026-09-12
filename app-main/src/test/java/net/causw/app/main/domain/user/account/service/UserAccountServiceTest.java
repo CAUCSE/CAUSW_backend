@@ -33,6 +33,7 @@ import net.causw.app.main.domain.user.account.api.v2.dto.response.UserWithdrawRe
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.UserState;
 import net.causw.app.main.domain.user.account.service.implementation.UserAccountCleanupWriter;
+import net.causw.app.main.domain.user.account.service.implementation.UserInfoCreator;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
@@ -85,6 +86,9 @@ class UserAccountServiceTest {
 	@Mock
 	private UserAccountCleanupWriter userAccountCleanupWriter;
 
+	@Mock
+	private UserInfoCreator userInfoCreator;
+
 	private final String userId = "test-uuid";
 	private final String nickname = "푸앙";
 	private final String phoneNumber = "01012345678";
@@ -124,6 +128,7 @@ class UserAccountServiceTest {
 		verify(guestUser).submitRegistration(name, nickname, phoneNumber);
 		verify(userWriter).save(guestUser);
 		verify(userTermsAgreementWriter).saveAll(any());
+		verify(userInfoCreator).createAndSave(guestUser);
 		verify(authTokenManager).issueTokens(guestUser, refreshToken);
 	}
 

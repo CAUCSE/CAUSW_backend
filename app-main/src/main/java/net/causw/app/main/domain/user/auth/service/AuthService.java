@@ -16,6 +16,7 @@ import net.causw.app.main.domain.notification.notification.service.implementatio
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
 import net.causw.app.main.domain.user.account.service.implementation.SocialAccountReader;
+import net.causw.app.main.domain.user.account.service.implementation.UserInfoCreator;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
@@ -70,6 +71,7 @@ public class AuthService {
 	private final TermsReader termsReader;
 	private final TermsValidator termsValidator;
 	private final UserTermsAgreementWriter userTermsAgreementWriter;
+	private final UserInfoCreator userInfoCreator;
 	private final UserTermsAgreementReader userTermsAgreementReader;
 	private final UserProfileImageReader userProfileImageReader;
 	private final DroppedUserIdentifierValidator droppedUserIdentifierValidator;
@@ -173,6 +175,7 @@ public class AuthService {
 			.map(terms -> UserTermsAgreement.of(savedUser, terms))
 			.toList();
 		userTermsAgreementWriter.saveAll(newAgreements);
+		userInfoCreator.createAndSave(savedUser);
 
 		AuthTokenPair tokens = authTokenManager.issueTokens(savedUser, null);
 
