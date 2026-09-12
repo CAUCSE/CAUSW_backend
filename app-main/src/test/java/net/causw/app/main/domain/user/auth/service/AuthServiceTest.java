@@ -43,6 +43,7 @@ import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.SocialType;
 import net.causw.app.main.domain.user.account.service.dto.request.UserRegisterDto;
 import net.causw.app.main.domain.user.account.service.implementation.SocialAccountReader;
+import net.causw.app.main.domain.user.account.service.implementation.UserInfoCreator;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
@@ -117,6 +118,8 @@ public class AuthServiceTest {
 	private UserTermsAgreementReader userTermsAgreementReader;
 	@Mock
 	private UserProfileImageReader userProfileImageReader;
+	@Mock
+	private UserInfoCreator userInfoCreator;
 
 	private static final String USER_ID = "user_id_123";
 	private static final String EMAIL = "test@example.com";
@@ -189,6 +192,7 @@ public class AuthServiceTest {
 			verify(authValidator).validateRegisterInput(any(User.class), eq(PASSWORD), eq(PHONE));
 			verify(userWriter).save(any(User.class));
 			verify(userTermsAgreementWriter).saveAll(any());
+			verify(userInfoCreator).createAndSave(user);
 			verify(userTermsAgreementReader, never()).hasAgreedToAllRequiredLatestTerms(any(User.class));
 		}
 

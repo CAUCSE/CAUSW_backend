@@ -18,6 +18,7 @@ import net.causw.app.main.domain.user.account.service.dto.request.UserPasswordUp
 import net.causw.app.main.domain.user.account.service.dto.result.UserMeAccountResult;
 import net.causw.app.main.domain.user.account.service.dto.result.UserMeResult;
 import net.causw.app.main.domain.user.account.service.implementation.UserAccountCleanupWriter;
+import net.causw.app.main.domain.user.account.service.implementation.UserInfoCreator;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
 import net.causw.app.main.domain.user.account.service.implementation.UserWriter;
@@ -58,6 +59,7 @@ public class UserAccountService {
 	private final UserTermsAgreementWriter userTermsAgreementWriter;
 	private final UserProfileImageWriter userProfileImageWriter;
 	private final UserAccountCleanupWriter userAccountCleanupWriter;
+	private final UserInfoCreator userInfoCreator;
 
 	/**
 	 * 소셜 로그인을 통해 생성된 임시 유저(GUEST)의 추가 정보를 등록하고 회원가입 절차를 완료합니다.
@@ -97,6 +99,7 @@ public class UserAccountService {
 			.map(terms -> UserTermsAgreement.of(updatedUser, terms))
 			.toList();
 		userTermsAgreementWriter.saveAll(newAgreements);
+		userInfoCreator.createAndSave(updatedUser);
 
 		AuthTokenPair tokens = authTokenManager.issueTokens(updatedUser, refreshToken);
 
