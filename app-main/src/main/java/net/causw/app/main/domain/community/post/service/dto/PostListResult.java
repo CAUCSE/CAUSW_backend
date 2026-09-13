@@ -3,6 +3,7 @@ package net.causw.app.main.domain.community.post.service.dto;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import net.causw.app.main.domain.community.board.entity.BoardGroup;
 import net.causw.app.main.domain.community.post.enums.PostCategory;
 import net.causw.app.main.shared.dto.ProfileImageDto;
 
@@ -32,6 +33,7 @@ public record PostListResult(
 		List<String> postImageUrls,
 		String boardId,
 		String boardName,
+		BoardGroup boardGroup,
 		PostCategory category,
 		boolean isPostLike,
 		boolean isOwner,
@@ -56,6 +58,7 @@ public record PostListResult(
 			List<String> postImageUrls,
 			String boardId,
 			String boardName,
+			BoardGroup boardGroup,
 			PostCategory category,
 			boolean isPostLike,
 			boolean isOwner,
@@ -67,7 +70,7 @@ public record PostListResult(
 				viewCount, isAnonymous, voteId, isDeleted, isCrawled,
 				writerNickname, writerProfileImage,
 				createdAt, updatedAt, postImageUrls,
-				boardId, boardName, category,
+				boardId, boardName, boardGroup, category,
 				isPostLike, isOwner, updatable, deletable, isOfficial);
 		}
 	}
