@@ -13,6 +13,10 @@ permissions:
 # 진행 중인 배포는 끝까지 두고, 뒤따라온 실행이 기다립니다.
 concurrency:
   group: cd-prod
+  # queue 기본값(single)은 새 실행이 '대기 중'인 실행을 취소합니다.
+  # max 로 두면 최대 100건까지 줄을 서므로 배포가 유실되지 않습니다.
+  # (queue: max 와 cancel-in-progress: true 는 함께 쓸 수 없습니다)
+  queue: max
   cancel-in-progress: false
 
 env:

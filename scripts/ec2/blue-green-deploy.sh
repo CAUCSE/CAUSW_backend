@@ -294,9 +294,23 @@ if ! sudo nginx -t; then
   exit 1
 fi
 
-sudo nginx -s reload
-rm -f "$BACKUP_CONF"
+# nginx -t 가 통과해도 reload 는 따로 실패할 수 있습니다.
+# 그대로 두면 nginx 는 이전 설정으로 돌고 upstream 파일만 새 슬롯을 가리켜,
+# 다음 배포의 슬롯 판별이 실제 상태와 어긋납니다.
+if ! sudo nginx -s reload; then
+  fail "nginx reload 실패 — upstream 파일을 원래대로 되돌립니다"
+  sudo cp "$BACKUP_CONF" "$UPSTREAM_CONF"
+  if sudo nginx -t > /dev/null 2>&1; then
+    sudo nginx -s reload || true
+  fi
+  rm -f "$BACKUP_CONF"
+  docker rm -f "$TARGET_CONTAINER" > /dev/null 2>&1 || true
+  fail "트래픽은 ${CURRENT_SLOT}(${CURRENT_PORT}) 에 그대로 있습니다."
+  exit 1
+fi
 log "트래픽을 ${TARGET_SLOT}(${TARGET_PORT}) 로 전환했습니다"
+
+# BACKUP_CONF 는 유예기간 후 재검증까지 보관합니다. 되돌릴 때 필요합니다.
 
 # upstream 파일이 실제로 대상 슬롯을 가리키는지 확인합니다.
 # nginx 를 통한 curl 은 Certbot 리다이렉트(301) 때문에 판정에 쓸 수 없어
@@ -312,6 +326,33 @@ fi
 # 이 시간 동안은 구 컨테이너를 그대로 둡니다.
 log "유예기간 ${GRACE_PERIOD_SECONDS}초 대기"
 sleep "$GRACE_PERIOD_SECONDS"
+
+# ── 유예기간 후 재검증 ───────────────────────────────────────────────────────
+# 트래픽은 이미 새 슬롯으로 넘어가 있습니다. 새 컨테이너가 유예기간 중에
+# 죽었다면 구 컨테이너를 지우는 순간 가장 빠른 복구 수단이 사라집니다.
+# 그래서 지우기 "전에" 한 번 더 확인합니다.
+POST_STATE="$(docker inspect --format='{{.State.Status}}' "$TARGET_CONTAINER" 2>/dev/null || echo missing)"
+POST_CODE="$(
+  curl -s -o /dev/null -w '%{http_code}' --max-time 5 \
+    "http://127.0.0.1:${TARGET_PORT}/actuator/health" 2>/dev/null || true
+)"
+
+if [ "$POST_STATE" != "running" ] || [ "$POST_CODE" != "200" ]; then
+  fail "유예기간 후 재검증 실패 (상태 ${POST_STATE}, 헬스체크 ${POST_CODE:-응답없음})"
+  fail "구 컨테이너를 유지한 채 트래픽을 ${CURRENT_SLOT}(${CURRENT_PORT}) 로 되돌립니다"
+  sudo cp "$BACKUP_CONF" "$UPSTREAM_CONF"
+  if sudo nginx -t && sudo nginx -s reload; then
+    fail "되돌리기 완료 — 트래픽은 ${CURRENT_SLOT} 로 복귀했습니다"
+  else
+    fail "되돌리기 실패 — 수동 확인이 필요합니다: $UPSTREAM_CONF"
+  fi
+  docker logs --tail 50 "$TARGET_CONTAINER" 2>&1 | sed 's/^/  /' >&2 || true
+  rm -f "$BACKUP_CONF"
+  exit 1
+fi
+
+rm -f "$BACKUP_CONF"
+log "유예기간 후 재검증 통과"
 
 # ── 구 컨테이너 종료 ─────────────────────────────────────────────────────────
 # --time 은 graceful shutdown 이 끝날 때까지 기다리는 시간입니다.

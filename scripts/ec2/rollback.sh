@@ -47,12 +47,33 @@ esac
 
 log "복구 대상: ${TARGET} (컨테이너 ${CONTAINER}, 포트 ${PORT})"
 
+# ── 배포 잠금 ────────────────────────────────────────────────────────────────
+# 잠금을 잡아보되, 못 잡아도 진행합니다.
+# 복구는 "배포가 멈췄거나 잘못됐을 때" 쓰는 도구이므로 잠금에 막히면 안 됩니다.
+# 다만 배포와 동시에 돌면 서로 upstream 을 덮어쓸 수 있으므로 경고합니다.
+# WAIT_LOCK=1 을 주면 배포가 끝날 때까지 기다린 뒤 진행합니다.
+exec 9>"/tmp/${APP_CONTAINER_NAME}-deploy.lock"
+if flock -n 9; then
+  log "배포 잠금 획득 — 경합 없음"
+elif [ "${WAIT_LOCK:-0}" = "1" ]; then
+  log "WAIT_LOCK=1 — 배포가 끝날 때까지 대기 (최대 600초)"
+  flock -w 600 9 || fail "잠금 대기 시간 초과 — 그대로 진행합니다"
+else
+  fail "!! 배포가 진행 중입니다. 잠금 없이 복구를 강행합니다."
+  fail "   배포가 끝나면서 이 복구를 덮어쓸 수 있습니다. 완료 후 반드시 확인하세요:"
+  fail "     cat ${UPSTREAM_CONF} && docker ps"
+  fail "   기다렸다 하려면:  WAIT_LOCK=1 bash rollback.sh ${TARGET}"
+fi
+
 # ── 1. 대상 컨테이너 확보 ────────────────────────────────────────────────────
 if docker ps --format '{{.Names}}' | grep -qx "$CONTAINER"; then
   log "컨테이너가 이미 실행 중입니다"
 elif docker ps -a --format '{{.Names}}' | grep -qx "$CONTAINER"; then
   log "정지된 컨테이너를 다시 시작합니다"
-  docker start "$CONTAINER" || fail "docker start 실패"
+  if ! docker start "$CONTAINER"; then
+    fail "docker start 실패 — 죽은 포트로 전환하지 않도록 중단합니다"
+    exit 1
+  fi
 elif [ -n "${IMAGE:-}" ]; then
   log "컨테이너가 없어 새로 기동합니다 (이미지: $IMAGE)"
   MEM_ARGS=()
@@ -72,7 +93,10 @@ elif [ -n "${IMAGE:-}" ]; then
     --add-host=host.docker.internal:host-gateway \
     ${MEM_ARGS[@]+"${MEM_ARGS[@]}"} \
     ${JAVA_ARGS[@]+"${JAVA_ARGS[@]}"} \
-    "$IMAGE" || fail "docker run 실패"
+    "$IMAGE" || {
+      fail "docker run 실패 — 죽은 포트로 전환하지 않도록 중단합니다"
+      exit 1
+    }
 else
   # 컨테이너 없는 포트로 전환하면 nginx 가 502 를 냅니다.
   # 지금보다 나빠지므로 아무것도 하지 않고 멈춥니다.
@@ -135,7 +159,20 @@ if ! sudo nginx -t; then
   exit 1
 fi
 
-sudo nginx -s reload
+# set -e 를 쓰지 않으므로 reload 실패를 명시적으로 잡아야 합니다.
+# 그냥 두면 실패해도 성공 로그를 찍고 최종 확인까지 진행합니다.
+if ! sudo nginx -s reload; then
+  fail "nginx reload 실패 — upstream 파일을 원래대로 되돌립니다"
+  if [ -s "$BACKUP_CONF" ]; then
+    sudo cp "$BACKUP_CONF" "$UPSTREAM_CONF"
+    if sudo nginx -t > /dev/null 2>&1; then
+      sudo nginx -s reload || true
+    fi
+  fi
+  rm -f "$BACKUP_CONF"
+  fail "복구에 실패했습니다. 수동 확인이 필요합니다: $UPSTREAM_CONF"
+  exit 1
+fi
 rm -f "$BACKUP_CONF"
 log "트래픽을 ${TARGET}(${PORT}) 로 전환했습니다"
 
