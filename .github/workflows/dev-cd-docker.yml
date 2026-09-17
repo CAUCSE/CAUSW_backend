@@ -9,6 +9,12 @@ permissions:
   contents: read
   id-token: write
 
+# 배포가 겹치면 두 실행이 같은 슬롯을 서로 차지하려 들어 상태가 깨집니다.
+# 진행 중인 배포는 끝까지 두고, 뒤따라온 실행이 기다립니다.
+concurrency:
+  group: cd-dev
+  cancel-in-progress: false
+
 env:
   AWS_REGION: ap-northeast-2
   ECR_REPOSITORY: ccssaa/ccssaa-backend-dev
@@ -148,6 +154,19 @@ jobs:
           script: |
             sudo systemctl start redis-server
 
+      # blue/green 배포는 저장소 변수 BLUE_GREEN_ENABLED_DEV 로 켜고 끕니다.
+      #   'true'  -> scripts/ec2/blue-green-deploy.sh  (무중단)
+      #   그 외   -> .github/scripts/restart-container.sh (기존 방식)
+      # 문제가 생기면 변수만 false 로 되돌리면 됩니다. revert 커밋이 필요 없습니다.
+      #
+      # 아래 vars 는 비워두어도 됩니다. 스크립트에 기본값이 있습니다.
+      #   CONTAINER_MEM_MB_DEV        컨테이너 RAM 한도(MB), 0 또는 미설정이면 제한 없음
+      #   CONTAINER_MEMSWAP_MB_DEV    RAM+스왑 합계 한도(MB), 미설정이면 스왑 불허
+      #   JAVA_TOOL_OPTIONS_DEV       JVM 옵션. 힙 제한은 -Xmx 로 지정 (스크립트 주석 참고)
+      #   HEALTH_TIMEOUT_SECONDS_DEV  헬스체크 최대 대기 (기본 300)
+      #   GRACE_PERIOD_SECONDS_DEV    전환 후 구 컨테이너 보존 시간 (기본 30)
+      #   MIN_AVAILABLE_MB_DEV         기동 전 최소 가용 메모리(MB). 미달이면 배포 중단 (기본 0=검사안함)
+      #   NEW_OOM_SCORE_ADJ_DEV        전역 OOM 시 새 컨테이너를 먼저 죽이기 위한 가산치 (기본 500)
       - name: Restart container with new image
         uses: appleboy/ssh-action@v1.2.0
         env:
@@ -155,12 +174,19 @@ jobs:
           MIGRATION_IMAGE: ${{ needs.build-and-push.outputs.migration_image }}
           APP_CONTAINER_NAME: ${{ vars.APP_CONTAINER_NAME }}
           AWS_REGION: ${{ env.AWS_REGION }}
+          CONTAINER_MEM_MB: ${{ vars.CONTAINER_MEM_MB_DEV }}
+          CONTAINER_MEMSWAP_MB: ${{ vars.CONTAINER_MEMSWAP_MB_DEV }}
+          JAVA_TOOL_OPTIONS: ${{ vars.JAVA_TOOL_OPTIONS_DEV }}
+          HEALTH_TIMEOUT_SECONDS: ${{ vars.HEALTH_TIMEOUT_SECONDS_DEV }}
+          GRACE_PERIOD_SECONDS: ${{ vars.GRACE_PERIOD_SECONDS_DEV }}
+          MIN_AVAILABLE_MB: ${{ vars.MIN_AVAILABLE_MB_DEV }}
+          NEW_OOM_SCORE_ADJ: ${{ vars.NEW_OOM_SCORE_ADJ_DEV }}
         with:
           key: ${{ secrets.EC2_KEY_DEV }}
           host: ${{ secrets.EC2_HOST_DEV }}
           username: ${{ secrets.EC2_USER_DEV }}
-          envs: IMAGE,MIGRATION_IMAGE,APP_CONTAINER_NAME,AWS_REGION
-          script_path: .github/scripts/restart-container.sh
+          envs: IMAGE,MIGRATION_IMAGE,APP_CONTAINER_NAME,AWS_REGION,CONTAINER_MEM_MB,CONTAINER_MEMSWAP_MB,JAVA_TOOL_OPTIONS,HEALTH_TIMEOUT_SECONDS,GRACE_PERIOD_SECONDS,MIN_AVAILABLE_MB,NEW_OOM_SCORE_ADJ
+          script_path: ${{ vars.BLUE_GREEN_ENABLED_DEV == 'true' && 'scripts/ec2/blue-green-deploy.sh' || '.github/scripts/restart-container.sh' }}
 
   # ─────────────────────────────────────────
   # 4. Discord 배포 결과 알림
