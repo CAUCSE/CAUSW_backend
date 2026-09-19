@@ -15,6 +15,14 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: cd-dev
+  # queue 기본값(single)은 새 실행이 '대기 중'인 실행을 취소합니다.
+  # max 로 두면 최대 100건까지 줄을 서므로 배포가 유실되지 않습니다.
+  # (queue: max 와 cancel-in-progress: true 는 함께 쓸 수 없습니다)
+  queue: max
+  cancel-in-progress: false
+
 jobs:
   restart:
     name: Update .env and Restart Dev Container
@@ -27,45 +35,156 @@ jobs:
           ENV_CONTENT: ${{ secrets.ENV_DEV }}
           RESTART_MODE: ${{ inputs.restart_mode }}
           APP_CONTAINER_NAME: ${{ vars.APP_CONTAINER_NAME }}
+          # blue/green 이 켜져 있으면 현재 live 슬롯을 찾아 그 컨테이너를 다룹니다.
+          # 꺼져 있거나 미설정이면 기존과 동일하게 동작합니다.
+          BLUE_GREEN: ${{ vars.BLUE_GREEN_ENABLED_DEV }}
+          CONTAINER_MEM_MB: ${{ vars.CONTAINER_MEM_MB_DEV }}
+          CONTAINER_MEMSWAP_MB: ${{ vars.CONTAINER_MEMSWAP_MB_DEV }}
+          JAVA_TOOL_OPTIONS: ${{ vars.JAVA_TOOL_OPTIONS_DEV }}
         with:
           key: ${{ secrets.EC2_KEY_DEV }}
           host: ${{ secrets.EC2_HOST_DEV }}
           username: ${{ secrets.EC2_USER_DEV }}
-          envs: ENV_CONTENT,RESTART_MODE,APP_CONTAINER_NAME
+          envs: ENV_CONTENT,RESTART_MODE,APP_CONTAINER_NAME,BLUE_GREEN,CONTAINER_MEM_MB,CONTAINER_MEMSWAP_MB,JAVA_TOOL_OPTIONS
           script: |
             set -e
             : "${APP_CONTAINER_NAME:?APP_CONTAINER_NAME variable is required}"
 
-            mkdir -p /home/ubuntu/app/app-main
-            printf '%s' "$ENV_CONTENT" > /home/ubuntu/app/app-main/.env
+            UPSTREAM_CONF=/etc/nginx/conf.d/app-main-upstream.conf
+            ENV_FILE=/home/ubuntu/app/app-main/.env
+            LOG_DIR=/var/log/spring-boot/app-main
 
-            sudo systemctl start redis-server
-            sudo mkdir -p /var/log/spring-boot/app-main
-            sudo chmod -R a+rwX /var/log/spring-boot/app-main
-
-            if [ "$RESTART_MODE" = "restart" ]; then
-              docker restart "$APP_CONTAINER_NAME"
-              exit 0
-            fi
-
-            IMAGE=$(docker inspect --format='{{.Config.Image}}' "$APP_CONTAINER_NAME" 2>/dev/null || true)
-
-            if [ -z "$IMAGE" ]; then
-              echo "Could not determine current image for $APP_CONTAINER_NAME."
+            # ── 배포와의 경합 방지 ─────────────────────────────────────────
+            # blue-green-deploy.sh 와 같은 잠금 파일을 씁니다.
+            # .env 쓰기와 슬롯 판별보다 **먼저** 잡아야 합니다.
+            # 나중에 잡으면 (1) 배포 중인 .env 를 덮어쓰고,
+            #              (2) 대기 중에 슬롯이 바뀌어 옛 슬롯을 재시작합니다.
+            exec 9>"/tmp/${APP_CONTAINER_NAME}-deploy.lock"
+            if ! flock -w 600 9; then
+              echo "배포가 진행 중입니다 (잠금 대기 600초 초과). 나중에 다시 실행하세요." >&2
               exit 1
             fi
 
-            docker stop "$APP_CONTAINER_NAME" || true
-            docker rm "$APP_CONTAINER_NAME" || true
+            mkdir -p /home/ubuntu/app/app-main
+            printf '%s' "$ENV_CONTENT" > "$ENV_FILE"
+
+            sudo systemctl start redis-server
+            sudo mkdir -p "$LOG_DIR"
+            sudo chmod -R a+rwX "$LOG_DIR"
+
+            # ── 대상 컨테이너와 포트 결정 ──────────────────────────────────
+            # blue/green 이 꺼져 있으면 기존 단일 컨테이너를 그대로 씁니다.
+            TARGET="$APP_CONTAINER_NAME"
+            PORT=8080
+
+            if [ "${BLUE_GREEN:-}" = "true" ] && [ -f "$UPSTREAM_CONF" ]; then
+              # green(18080)을 먼저 검사합니다. ":8080" 으로 먼저 보면
+              # ":18080" 도 함께 걸려서 슬롯을 잘못 판단합니다.
+              if grep -qE 'server[[:space:]]+[^;]*:18080;' "$UPSTREAM_CONF"; then
+                TARGET="${APP_CONTAINER_NAME}-green"
+                PORT=18080
+              elif grep -qE 'server[[:space:]]+[^;]*:8080;' "$UPSTREAM_CONF"; then
+                TARGET="${APP_CONTAINER_NAME}-blue"
+                PORT=8080
+              else
+                echo "upstream 파일에서 슬롯을 판별할 수 없습니다: $UPSTREAM_CONF" >&2
+                exit 1
+              fi
+              echo "blue/green 활성 — 현재 live 슬롯: ${TARGET} (포트 ${PORT})"
+
+              # 최초 전환 전이라 슬롯 컨테이너가 아직 없을 수 있습니다.
+              if ! docker ps -a --format '{{.Names}}' | grep -qx "$TARGET"; then
+                if docker ps -a --format '{{.Names}}' | grep -qx "$APP_CONTAINER_NAME"; then
+                  echo "슬롯 컨테이너가 아직 없습니다 — 기존 단일 컨테이너를 대상으로 합니다"
+                  TARGET="$APP_CONTAINER_NAME"
+                  PORT=8080
+                fi
+              fi
+            fi
+
+            if ! docker ps -a --format '{{.Names}}' | grep -qx "$TARGET"; then
+              echo "대상 컨테이너를 찾을 수 없습니다: $TARGET" >&2
+              docker ps -a --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}' >&2
+              exit 1
+            fi
+
+            # ── restart 모드 ───────────────────────────────────────────────
+            if [ "$RESTART_MODE" = "restart" ]; then
+              # 주의: docker restart 는 --env-file 을 다시 읽지 않습니다.
+              #       방금 쓴 .env 를 반영하려면 recreate 모드를 써야 합니다.
+              echo "[주의] restart 모드는 .env 변경을 반영하지 않습니다 (컨테이너 생성 시점의 값 유지)"
+              docker restart "$TARGET"
+              exit 0
+            fi
+
+            # ── recreate 모드 ──────────────────────────────────────────────
+            IMAGE="$(docker inspect --format='{{.Config.Image}}' "$TARGET" 2>/dev/null || true)"
+            if [ -z "$IMAGE" ]; then
+              echo "이미지를 확인할 수 없습니다: $TARGET" >&2
+              exit 1
+            fi
+            echo "재생성: ${TARGET} (포트 ${PORT}, 이미지 ${IMAGE})"
+
+            # 배포 스크립트와 동일한 메모리 설정을 적용합니다.
+            # 값이 비어 있으면 제한 없이 기동합니다 (기존 동작).
+            MEM_ARGS=""
+            if [ -n "${CONTAINER_MEM_MB:-}" ] && [ "${CONTAINER_MEM_MB:-0}" != "0" ]; then
+              MEM_ARGS="--memory=${CONTAINER_MEM_MB}m --memory-swap=${CONTAINER_MEMSWAP_MB:-$CONTAINER_MEM_MB}m"
+              echo "메모리 한도: ${MEM_ARGS}"
+            fi
+
+            # -e VAR 형태(값 없이)로 넘기면 셸의 값이 공백 포함 그대로 전달됩니다.
+            # -e VAR=값 으로 쓰면 값에 공백이 있을 때 인자가 쪼개집니다.
+            JAVA_ARGS=""
+            if [ -n "${JAVA_TOOL_OPTIONS:-}" ]; then
+              JAVA_ARGS="-e JAVA_TOOL_OPTIONS"
+              echo "JVM 옵션: ${JAVA_TOOL_OPTIONS}"
+            fi
+
+            docker stop "$TARGET" || true
+            docker rm "$TARGET" || true
 
             docker run -d \
-              --name "$APP_CONTAINER_NAME" \
+              --name "$TARGET" \
               --restart unless-stopped \
-              -p 8080:8080 \
-              --env-file /home/ubuntu/app/app-main/.env \
-              -v /var/log/spring-boot/app-main:/app/log \
+              -p "${PORT}:8080" \
+              --env-file "$ENV_FILE" \
+              -v "${LOG_DIR}:/app/log" \
               --add-host=host.docker.internal:host-gateway \
+              $MEM_ARGS \
+              $JAVA_ARGS \
               "$IMAGE"
+
+            # ── 기동 확인 ──────────────────────────────────────────────────
+            # 죽은 컨테이너를 두고 성공으로 보고하지 않도록 헬스체크까지 봅니다.
+            echo "헬스체크 대기 (최대 600초)"
+            DEADLINE=$(( $(date +%s) + 600 ))
+            HEALTHY=0
+            while [ "$(date +%s)" -lt "$DEADLINE" ]; do
+              STATE="$(docker inspect --format='{{.State.Status}}' "$TARGET" 2>/dev/null || echo missing)"
+              if [ "$STATE" != "running" ]; then
+                CODE="$(docker inspect --format='{{.State.ExitCode}}' "$TARGET" 2>/dev/null || echo '?')"
+                OOM="$(docker inspect --format='{{.State.OOMKilled}}' "$TARGET" 2>/dev/null || echo '?')"
+                echo "컨테이너가 종료되었습니다 (상태 ${STATE}, exit ${CODE}, OOMKilled ${OOM})" >&2
+                break
+              fi
+              BODY="$(curl -s --max-time 5 "http://127.0.0.1:${PORT}/actuator/health" 2>/dev/null || true)"
+              if printf '%s' "$BODY" | grep -q '"status":"UP"'; then
+                HEALTHY=1
+                break
+              fi
+              sleep 5
+            done
+
+            if [ "$HEALTHY" -ne 1 ]; then
+              echo "기동에 실패했습니다." >&2
+              docker logs --tail 50 "$TARGET" 2>&1 | sed 's/^/  /' >&2 || true
+              exit 1
+            fi
+
+            echo "완료 — ${TARGET} 정상 기동"
+            docker ps --filter "name=${APP_CONTAINER_NAME}" \
+              --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
 
   notify:
     name: Discord Notify
