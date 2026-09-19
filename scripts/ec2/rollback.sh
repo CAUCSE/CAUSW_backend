@@ -7,6 +7,9 @@
 # EC2 에 상주시켜 두고 SSH 만 붙으면 바로 실행할 수 있어야 합니다.
 #
 # 사용법:
+#   bash rollback.sh                         # 현재 상태만 출력 (아무것도 바꾸지 않음)
+#   bash rollback.sh status                  # 위와 동일
+#   bash rollback.sh prev                    # 직전 슬롯으로 자동 복구  ← 보통 이것만 쓰면 됩니다
 #   bash rollback.sh blue                    # 8080 슬롯으로 되돌림
 #   bash rollback.sh green                   # 18080 슬롯으로 되돌림
 #   bash rollback.sh legacy                  # blue/green 이전의 단일 컨테이너로 되돌림
@@ -35,15 +38,95 @@ HEALTH_TIMEOUT_SECONDS="${HEALTH_TIMEOUT_SECONDS:-180}"
 log()  { printf '[%s] %s\n' "$(date '+%H:%M:%S')" "$*"; }
 fail() { printf '[%s] ERROR: %s\n' "$(date '+%H:%M:%S')" "$*" >&2; }
 
+# ── 현재 live 슬롯 판별 ──────────────────────────────────────────────────────
+# green(18080)을 먼저 검사합니다. ":8080" 으로 먼저 보면 ":18080" 도 걸립니다.
+detect_live() {
+  if [ ! -f "$UPSTREAM_CONF" ]; then
+    echo "none"
+  elif grep -qE "server[[:space:]]+[^;]*:${GREEN_PORT};" "$UPSTREAM_CONF"; then
+    echo "green"
+  elif grep -qE "server[[:space:]]+[^;]*:${BLUE_PORT};" "$UPSTREAM_CONF"; then
+    echo "blue"
+  else
+    echo "unknown"
+  fi
+}
+
+container_exists() {
+  docker ps -a --format '{{.Names}}' 2>/dev/null | grep -qx "$1"
+}
+
+probe() {
+  curl -s -o /dev/null -w '%{http_code}' --max-time 3 \
+    "http://127.0.0.1:${1}/actuator/health" 2>/dev/null || echo "응답없음"
+}
+
+show_status() {
+  printf '\n현재 상태\n'
+  printf '  live 슬롯      : %s\n' "$(detect_live)"
+  printf '  upstream 파일  : %s\n' "$UPSTREAM_CONF"
+  if [ -f "$UPSTREAM_CONF" ]; then
+    grep -E 'server[[:space:]]+' "$UPSTREAM_CONF" | sed 's/^/                   /'
+  else
+    printf '                   (없음 — blue/green 미적용 상태)\n'
+  fi
+  printf '\n  직접 응답 확인\n'
+  printf '    blue  (%s) : %s\n' "$BLUE_PORT"  "$(probe "$BLUE_PORT")"
+  printf '    green (%s): %s\n' "$GREEN_PORT" "$(probe "$GREEN_PORT")"
+  printf '\n  컨테이너\n'
+  docker ps -a --filter "name=${APP_CONTAINER_NAME}" \
+    --format '    {{.Names}}\t{{.Status}}\t{{.Ports}}' 2>/dev/null || true
+  printf '\n  복구하려면:  bash rollback.sh prev\n\n'
+}
+
+LIVE="$(detect_live)"
+
+case "$TARGET" in
+  ""|status)
+    show_status
+    exit 0
+    ;;
+  prev|auto)
+    # 직전 슬롯 = 지금 live 가 아닌 쪽
+    case "$LIVE" in
+      green) TARGET=blue ;;
+      blue)  TARGET=green ;;
+      *)
+        fail "현재 슬롯을 판별할 수 없어 prev 를 쓸 수 없습니다 (live=${LIVE})"
+        fail "슬롯을 직접 지정하세요:  bash rollback.sh <blue|green|legacy>"
+        show_status
+        exit 1
+        ;;
+    esac
+    # 최초 전환 직후에는 직전 슬롯 컨테이너가 없고 legacy 만 있습니다.
+    if ! container_exists "${APP_CONTAINER_NAME}-${TARGET}" \
+       && container_exists "$APP_CONTAINER_NAME"; then
+      log "직전 슬롯(${TARGET}) 컨테이너가 없어 legacy 로 복구합니다"
+      TARGET=legacy
+    fi
+    log "자동 선택: ${TARGET} (현재 live=${LIVE})"
+    ;;
+  blue|green|legacy)
+    :
+    ;;
+  *)
+    fail "사용법: bash rollback.sh [prev|blue|green|legacy|status]"
+    fail "  인자 없이 실행하면 현재 상태만 출력합니다."
+    exit 1
+    ;;
+esac
+
 case "$TARGET" in
   blue)   PORT="$BLUE_PORT";  CONTAINER="${APP_CONTAINER_NAME}-blue" ;;
   green)  PORT="$GREEN_PORT"; CONTAINER="${APP_CONTAINER_NAME}-green" ;;
   legacy) PORT="$BLUE_PORT";  CONTAINER="${APP_CONTAINER_NAME}" ;;
-  *)
-    fail "사용법: bash rollback.sh <blue|green|legacy>"
-    exit 1
-    ;;
 esac
+
+# 이미 live 인 슬롯으로 되돌리는 것은 보통 착각입니다.
+if [ "$TARGET" = "$LIVE" ]; then
+  fail "[주의] ${TARGET} 는 이미 live 슬롯입니다. 되돌릴 대상이 맞는지 확인하세요."
+  show_status
+fi
 
 log "복구 대상: ${TARGET} (컨테이너 ${CONTAINER}, 포트 ${PORT})"
 
