@@ -327,34 +327,40 @@ fi
 log "유예기간 ${GRACE_PERIOD_SECONDS}초 대기"
 sleep "$GRACE_PERIOD_SECONDS"
 
-# ── 유예기간 후 재검증 ───────────────────────────────────────────────────────
-# 트래픽은 이미 새 슬롯으로 넘어가 있습니다. 새 컨테이너가 유예기간 중에
-# 죽었다면 구 컨테이너를 지우는 순간 가장 빠른 복구 수단이 사라집니다.
-# 그래서 지우기 "전에" 한 번 더 확인합니다.
-POST_STATE="$(docker inspect --format='{{.State.Status}}' "$TARGET_CONTAINER" 2>/dev/null || echo missing)"
-POST_CODE="$(
+# ── 배포 검증 (파괴적 작업 전) ───────────────────────────────────────────────
+# 트래픽은 이미 새 슬롯으로 넘어가 있습니다.
+# 여기서 실패하면 구 컨테이너가 "아직 실행 중"이므로 upstream 만 되돌리면
+# 곧바로 복구됩니다. 그래서 구 컨테이너 종료·삭제와 이미지 정리를
+# 전부 이 검증 뒤로 미룹니다. 복구 수단은 성공이 확인된 뒤에만 버립니다.
+VERIFY_STATE="$(docker inspect --format='{{.State.Status}}' "$TARGET_CONTAINER" 2>/dev/null || echo missing)"
+VERIFY_CODE="$(
   curl -s -o /dev/null -w '%{http_code}' --max-time 5 \
     "http://127.0.0.1:${TARGET_PORT}/actuator/health" 2>/dev/null || true
 )"
 
-if [ "$POST_STATE" != "running" ] || [ "$POST_CODE" != "200" ]; then
-  fail "유예기간 후 재검증 실패 (상태 ${POST_STATE}, 헬스체크 ${POST_CODE:-응답없음})"
-  fail "구 컨테이너를 유지한 채 트래픽을 ${CURRENT_SLOT}(${CURRENT_PORT}) 로 되돌립니다"
+if [ "$VERIFY_STATE" != "running" ] || [ "$VERIFY_CODE" != "200" ]; then
+  fail "배포 검증 실패 (상태 ${VERIFY_STATE}, 헬스체크 ${VERIFY_CODE:-응답없음})"
+  fail "트래픽을 ${CURRENT_SLOT}(${CURRENT_PORT}) 로 되돌립니다 — 구 컨테이너는 아직 실행 중입니다"
   sudo cp "$BACKUP_CONF" "$UPSTREAM_CONF"
   if sudo nginx -t && sudo nginx -s reload; then
-    fail "되돌리기 완료 — 트래픽은 ${CURRENT_SLOT} 로 복귀했습니다"
+    fail "되돌리기 완료 — 트래픽은 ${CURRENT_SLOT}(${CURRENT_PORT}) 로 복귀했습니다"
   else
     fail "되돌리기 실패 — 수동 확인이 필요합니다: $UPSTREAM_CONF"
+    fail "  bash ~/app/bin/rollback.sh ${CURRENT_SLOT}"
   fi
+  fail "새 컨테이너 로그 (마지막 50줄):"
   docker logs --tail 50 "$TARGET_CONTAINER" 2>&1 | sed 's/^/  /' >&2 || true
   rm -f "$BACKUP_CONF"
+  docker ps -a --filter "name=${APP_CONTAINER_NAME}" \
+    --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}' >&2
   exit 1
 fi
 
-rm -f "$BACKUP_CONF"
-log "유예기간 후 재검증 통과"
+log "배포 검증 통과 — 구 컨테이너를 정리합니다"
 
-# ── 구 컨테이너 종료 ─────────────────────────────────────────────────────────
+# ── 여기서부터는 되돌릴 수 없는 정리 작업입니다 ──────────────────────────────
+rm -f "$BACKUP_CONF"
+
 # --time 은 graceful shutdown 이 끝날 때까지 기다리는 시간입니다.
 # application.yml 의 timeout-per-shutdown-phase(30s) 보다 넉넉해야 합니다.
 if docker ps -a --format '{{.Names}}' | grep -qx "$CURRENT_CONTAINER"; then
@@ -389,22 +395,8 @@ printf '%s\n' "$IMAGE_LIST" |
     docker image rm "$image_ref" || true
   done
 
-# ── 최종 검증 ────────────────────────────────────────────────────────────────
-# "배포 성공" 이라고 말하기 전에 실제로 살아있는지 다시 확인합니다.
-FINAL_STATE="$(docker inspect --format='{{.State.Status}}' "$TARGET_CONTAINER" 2>/dev/null || echo missing)"
-FINAL_CODE="$(
-  curl -s -o /dev/null -w '%{http_code}' --max-time 5 \
-    "http://127.0.0.1:${TARGET_PORT}/actuator/health" 2>/dev/null || true
-)"
-
+# ── 요약 ─────────────────────────────────────────────────────────────────────
 docker ps --filter "name=${APP_CONTAINER_NAME}" \
   --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
-
-if [ "$FINAL_STATE" != "running" ] || [ "$FINAL_CODE" != "200" ]; then
-  fail "최종 검증 실패 (상태 ${FINAL_STATE}, 헬스체크 ${FINAL_CODE:-응답없음})"
-  fail "트래픽은 이미 ${TARGET_SLOT} 로 전환된 상태입니다. 즉시 복구하세요:"
-  fail "  bash ~/app/bin/rollback.sh ${CURRENT_SLOT}"
-  exit 1
-fi
 
 log "배포 완료 — ${TARGET_SLOT}(${TARGET_PORT})"

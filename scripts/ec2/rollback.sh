@@ -79,13 +79,46 @@ show_status() {
   printf '\n  복구하려면:  bash rollback.sh prev\n\n'
 }
 
+# ── 인자 형식 확인 (잠금 전, 부작용 없음) ───────────────────────────────────
+case "$TARGET" in
+  ""|status|prev|auto|blue|green|legacy) : ;;
+  *)
+    fail "사용법: bash rollback.sh [prev|blue|green|legacy|status]"
+    fail "  인자 없이 실행하면 현재 상태만 출력합니다."
+    exit 1
+    ;;
+esac
+
+# 상태 조회는 아무것도 바꾸지 않으므로 잠금이 필요 없습니다.
+if [ -z "$TARGET" ] || [ "$TARGET" = "status" ]; then
+  show_status
+  exit 0
+fi
+
+# ── 배포 잠금 ────────────────────────────────────────────────────────────────
+# 잠금을 잡아보되, 못 잡아도 진행합니다.
+# 복구는 "배포가 멈췄거나 잘못됐을 때" 쓰는 도구이므로 잠금에 막히면 안 됩니다.
+# 다만 배포와 동시에 돌면 서로 upstream 을 덮어쓸 수 있으므로 경고합니다.
+# WAIT_LOCK=1 을 주면 배포가 끝날 때까지 기다린 뒤 진행합니다.
+exec 9>"/tmp/${APP_CONTAINER_NAME}-deploy.lock"
+if flock -n 9; then
+  log "배포 잠금 획득 — 경합 없음"
+elif [ "${WAIT_LOCK:-0}" = "1" ]; then
+  log "WAIT_LOCK=1 — 배포가 끝날 때까지 대기 (최대 600초)"
+  flock -w 600 9 || fail "잠금 대기 시간 초과 — 그대로 진행합니다"
+else
+  fail "!! 배포가 진행 중입니다. 잠금 없이 복구를 강행합니다."
+  fail "   배포가 끝나면서 이 복구를 덮어쓸 수 있습니다. 완료 후 반드시 확인하세요:"
+  fail "     cat ${UPSTREAM_CONF} && docker ps"
+  fail "   기다렸다 하려면:  WAIT_LOCK=1 bash rollback.sh ${TARGET}"
+fi
+
+# ── 슬롯 판별은 잠금 이후에 ─────────────────────────────────────────────────
+# 잠금보다 먼저 읽으면, 대기하는 사이 배포가 슬롯을 바꿔서
+# 엉뚱한 컨테이너를 고르거나 배포 결과를 덮어쓸 수 있습니다.
 LIVE="$(detect_live)"
 
 case "$TARGET" in
-  ""|status)
-    show_status
-    exit 0
-    ;;
   prev|auto)
     # 직전 슬롯 = 지금 live 가 아닌 쪽
     case "$LIVE" in
@@ -129,24 +162,6 @@ if [ "$TARGET" = "$LIVE" ]; then
 fi
 
 log "복구 대상: ${TARGET} (컨테이너 ${CONTAINER}, 포트 ${PORT})"
-
-# ── 배포 잠금 ────────────────────────────────────────────────────────────────
-# 잠금을 잡아보되, 못 잡아도 진행합니다.
-# 복구는 "배포가 멈췄거나 잘못됐을 때" 쓰는 도구이므로 잠금에 막히면 안 됩니다.
-# 다만 배포와 동시에 돌면 서로 upstream 을 덮어쓸 수 있으므로 경고합니다.
-# WAIT_LOCK=1 을 주면 배포가 끝날 때까지 기다린 뒤 진행합니다.
-exec 9>"/tmp/${APP_CONTAINER_NAME}-deploy.lock"
-if flock -n 9; then
-  log "배포 잠금 획득 — 경합 없음"
-elif [ "${WAIT_LOCK:-0}" = "1" ]; then
-  log "WAIT_LOCK=1 — 배포가 끝날 때까지 대기 (최대 600초)"
-  flock -w 600 9 || fail "잠금 대기 시간 초과 — 그대로 진행합니다"
-else
-  fail "!! 배포가 진행 중입니다. 잠금 없이 복구를 강행합니다."
-  fail "   배포가 끝나면서 이 복구를 덮어쓸 수 있습니다. 완료 후 반드시 확인하세요:"
-  fail "     cat ${UPSTREAM_CONF} && docker ps"
-  fail "   기다렸다 하려면:  WAIT_LOCK=1 bash rollback.sh ${TARGET}"
-fi
 
 # ── 1. 대상 컨테이너 확보 ────────────────────────────────────────────────────
 if docker ps --format '{{.Names}}' | grep -qx "$CONTAINER"; then
@@ -219,9 +234,27 @@ fi
 
 # ── 3. upstream 전환 ─────────────────────────────────────────────────────────
 BACKUP_CONF="$(mktemp)"
+UPSTREAM_EXISTED=0
 if [ -f "$UPSTREAM_CONF" ]; then
+  UPSTREAM_EXISTED=1
   sudo cp "$UPSTREAM_CONF" "$BACKUP_CONF"
 fi
+
+# 실패했을 때 upstream 을 원래 상태로 되돌립니다.
+# 원래 "없던" 파일이면 되돌리기 = 삭제입니다. 남겨두면 다음 배포의
+# 슬롯 판별이 이 파일을 읽어 실제 nginx 상태와 어긋납니다.
+restore_upstream() {
+  if [ "$UPSTREAM_EXISTED" = "1" ]; then
+    sudo cp "$BACKUP_CONF" "$UPSTREAM_CONF"
+  else
+    fail "원래 없던 upstream 파일을 삭제합니다: $UPSTREAM_CONF"
+    sudo rm -f "$UPSTREAM_CONF"
+  fi
+  if sudo nginx -t > /dev/null 2>&1; then
+    sudo nginx -s reload || true
+  fi
+  rm -f "$BACKUP_CONF"
+}
 
 sudo tee "$UPSTREAM_CONF" > /dev/null <<EOF
 # rollback.sh 가 생성했습니다.
@@ -234,10 +267,7 @@ EOF
 
 if ! sudo nginx -t; then
   fail "nginx -t 실패 — upstream 파일을 원래대로 되돌립니다"
-  if [ -s "$BACKUP_CONF" ]; then
-    sudo cp "$BACKUP_CONF" "$UPSTREAM_CONF"
-  fi
-  rm -f "$BACKUP_CONF"
+  restore_upstream
   fail "설정을 직접 확인해야 합니다: $UPSTREAM_CONF"
   exit 1
 fi
@@ -246,13 +276,7 @@ fi
 # 그냥 두면 실패해도 성공 로그를 찍고 최종 확인까지 진행합니다.
 if ! sudo nginx -s reload; then
   fail "nginx reload 실패 — upstream 파일을 원래대로 되돌립니다"
-  if [ -s "$BACKUP_CONF" ]; then
-    sudo cp "$BACKUP_CONF" "$UPSTREAM_CONF"
-    if sudo nginx -t > /dev/null 2>&1; then
-      sudo nginx -s reload || true
-    fi
-  fi
-  rm -f "$BACKUP_CONF"
+  restore_upstream
   fail "복구에 실패했습니다. 수동 확인이 필요합니다: $UPSTREAM_CONF"
   exit 1
 fi
