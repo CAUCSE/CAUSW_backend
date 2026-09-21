@@ -3,6 +3,10 @@ spring:
     virtual:
       enabled: true
 
+  # graceful shutdown 이 진행 중 요청을 기다려주는 최대 시간입니다.
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+
   servlet:
     multipart:
       max-file-size: 1000MB
@@ -186,6 +190,8 @@ app:
 
 server:
   forward-headers-strategy: framework
+  # blue/green 배포에서 구 컨테이너를 내릴 때 요청이 끊기지 않게 하는 설정입니다.
+  shutdown: graceful
 
 swagger:
   # 개발계 Swagger 접속 계정
