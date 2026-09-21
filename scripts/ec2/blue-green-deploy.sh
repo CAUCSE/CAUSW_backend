@@ -2,14 +2,10 @@
 #
 # blue/green 무중단 배포 (app-main)
 #
-# 기존 restart-container.sh 를 대체합니다. 동작 차이는 하나입니다.
 #
 # 슬롯은 호스트 포트로 구분합니다. 컨테이너 내부 포트는 언제나 8080 입니다.
 #   blue  = 8080   (기존 단일 컨테이너가 쓰던 포트)
 #   green = 18080
-#
-# nginx 는 upstream 파일 하나만 교체하고 reload 합니다.
-# 서버 블록은 upstream 을 "이름"으로 참조하므로 건드릴 필요가 없습니다.
 #
 # ── 필수 환경변수 ────────────────────────────────────────────────────────────
 #   APP_CONTAINER_NAME   컨테이너 이름 접두사 (예: causw-app)
@@ -62,7 +58,6 @@ log()  { printf '[%s] %s\n' "$(date '+%H:%M:%S')" "$*"; }
 fail() { printf '[%s] ERROR: %s\n' "$(date '+%H:%M:%S')" "$*" >&2; }
 
 # ── 동시 배포 방지 ───────────────────────────────────────────────────────────
-# 배포가 겹치면 두 실행이 같은 슬롯을 서로 차지하려 들어 상태가 깨집니다.
 exec 9>"$LOCK_FILE"
 if ! flock -n 9; then
   fail "다른 배포가 진행 중입니다. 종료합니다."
@@ -71,8 +66,6 @@ fi
 
 # ── 사전 점검 ────────────────────────────────────────────────────────────────
 # upstream 파일이 없으면 nginx 준비가 끝나지 않은 상태입니다.
-# 여기서 파일을 새로 만들면 nginx 가 include 하지 않아 반영되지 않고,
-# 배포는 성공했다고 착각하게 됩니다. 그래서 트래픽을 건드리지 않고 멈춥니다.
 if [ ! -f "$UPSTREAM_CONF" ]; then
   fail "upstream 파일이 없습니다: $UPSTREAM_CONF"
   fail "nginx 최초 준비가 필요합니다. infra/nginx/README.md 를 참고하세요."
@@ -107,7 +100,6 @@ CURRENT_CONTAINER="${APP_CONTAINER_NAME}-${CURRENT_SLOT}"
 TARGET_CONTAINER="${APP_CONTAINER_NAME}-${TARGET_SLOT}"
 
 # blue/green 이전의 단일 컨테이너가 아직 8080 을 잡고 있는지 확인합니다.
-# 첫 배포에서는 이 컨테이너가 live 이고, 슬롯 컨테이너는 아직 없습니다.
 LEGACY_RUNNING=0
 if docker ps --format '{{.Names}}' | grep -qx "$APP_CONTAINER_NAME"; then
   LEGACY_RUNNING=1
@@ -118,7 +110,6 @@ if [ "$LEGACY_RUNNING" = "1" ]; then
   log "기존 단일 컨테이너(${APP_CONTAINER_NAME})가 실행 중입니다 — 전환 후 정지합니다"
 fi
 
-# 첫 배포인데 대상이 blue(8080)라면 기존 단일 컨테이너와 포트가 충돌합니다.
 if [ "$LEGACY_RUNNING" = "1" ] && [ "$TARGET_PORT" = "$BLUE_PORT" ]; then
   fail "대상 슬롯이 blue(${BLUE_PORT})인데 기존 단일 컨테이너가 같은 포트를 쓰고 있습니다."
   fail "최초 전환은 green 으로 가야 합니다. upstream 파일이 blue 를 가리키고 있는지 확인하세요:"
@@ -148,23 +139,19 @@ CURRENT_IMAGE_ID="$(docker image inspect --format='{{.Id}}' "$IMAGE")"
 IMAGE_REPOSITORY="${IMAGE%:*}"
 
 # ── 대상 슬롯 정리 ───────────────────────────────────────────────────────────
-# 지난 배포가 중간에 실패해 컨테이너가 남아있을 수 있습니다.
 if docker ps -a --format '{{.Names}}' | grep -qx "$TARGET_CONTAINER"; then
   log "대상 슬롯에 남아있는 컨테이너를 제거합니다: $TARGET_CONTAINER"
   docker rm -f "$TARGET_CONTAINER" > /dev/null
 fi
 
 # ── 가용 메모리 점검 ─────────────────────────────────────────────────────────
-# 겹침 구간에 들어가기 전 마지막으로 되돌릴 수 있는 지점입니다.
-# 여기서 멈추면 live 컨테이너는 아무 영향도 받지 않습니다.
 MEM_AVAIL_MB="$(awk '/^MemAvailable:/ {print int($2/1024)}' /proc/meminfo 2>/dev/null || echo 0)"
 SWAP_FREE_MB="$(awk '/^SwapFree:/ {print int($2/1024)}' /proc/meminfo 2>/dev/null || echo 0)"
 log "가용 메모리: ${MEM_AVAIL_MB}MB (스왑 여유 ${SWAP_FREE_MB}MB)"
 
 if [ "$MIN_AVAILABLE_MB" != "0" ] && [ "$MEM_AVAIL_MB" -lt "$MIN_AVAILABLE_MB" ]; then
   fail "가용 메모리가 부족합니다 (${MEM_AVAIL_MB}MB < 기준 ${MIN_AVAILABLE_MB}MB)"
-  fail "겹침 구간에 들어가면 live 컨테이너까지 위험해지므로 배포를 중단합니다."
-  fail "트래픽은 ${CURRENT_SLOT}(${CURRENT_PORT}) 에 그대로 있습니다. 아무것도 바뀌지 않았습니다."
+  fail "배포를 중단합니다."
   exit 1
 fi
 
@@ -174,7 +161,7 @@ if [ "$CONTAINER_MEM_MB" = "0" ]; then
   log "새 컨테이너 기동: ${TARGET_CONTAINER} (메모리 제한 없음)"
 else
   MEMSWAP_MB="${CONTAINER_MEMSWAP_MB:-$CONTAINER_MEM_MB}"
-  # 합계 한도가 RAM 한도보다 작으면 docker 가 거부합니다. 미리 막습니다.
+  # 합계 한도가 RAM 한도보다 작으면 docker 가 거부합니다.
   if [ "$MEMSWAP_MB" -lt "$CONTAINER_MEM_MB" ]; then
     fail "CONTAINER_MEMSWAP_MB(${MEMSWAP_MB})가 CONTAINER_MEM_MB(${CONTAINER_MEM_MB})보다 작습니다"
     exit 1
@@ -194,15 +181,13 @@ if [ -n "$JAVA_TOOL_OPTIONS" ]; then
 fi
 
 # 호스트 메모리가 바닥났을 때 커널이 live 가 아니라 이쪽을 먼저 죽이게 합니다.
-# 파일 상단 "OOM 방향" 주석 참고.
 OOM_ARGS=()
 if [ -n "$NEW_OOM_SCORE_ADJ" ]; then
   OOM_ARGS=(--oom-score-adj="$NEW_OOM_SCORE_ADJ")
-  log "OOM 우선순위 가산: ${NEW_OOM_SCORE_ADJ} (전역 OOM 시 새 컨테이너가 먼저 희생)"
+  log "OOM 우선순위 가산: ${NEW_OOM_SCORE_ADJ} "
 fi
 
 # 배열이 빈 경우 set -u 때문에 "unbound variable" 이 납니다.
-# ${arr[@]+"${arr[@]}"} 는 비어있으면 아무것도 전개하지 않는 안전한 형태입니다.
 docker run -d \
   --name "$TARGET_CONTAINER" \
   --restart unless-stopped \
@@ -216,7 +201,6 @@ docker run -d \
   "$IMAGE"
 
 # ── 헬스체크 게이트 ──────────────────────────────────────────────────────────
-# 여기를 통과하지 못하면 트래픽은 그대로 구 컨테이너에 남습니다.
 log "헬스체크 대기 (최대 ${HEALTH_TIMEOUT_SECONDS}초)"
 START_TS="$(date +%s)"
 DEADLINE=$(( START_TS + HEALTH_TIMEOUT_SECONDS ))
@@ -225,7 +209,6 @@ TICK=0
 LIVE_DOWN_REPORTED=0
 
 while [ "$(date +%s)" -lt "$DEADLINE" ]; do
-  # 컨테이너가 죽었으면 더 기다릴 이유가 없습니다.
   STATE="$(docker inspect --format='{{.State.Status}}' "$TARGET_CONTAINER" 2>/dev/null || echo missing)"
   if [ "$STATE" != "running" ]; then
     EXIT_CODE="$(docker inspect --format='{{.State.ExitCode}}' "$TARGET_CONTAINER" 2>/dev/null || echo '?')"
@@ -234,22 +217,19 @@ while [ "$(date +%s)" -lt "$DEADLINE" ]; do
     break
   fi
 
-  # curl 실패는 정상적인 대기 상태입니다. set -e 에 걸리지 않도록 || true 를 붙입니다.
+  # curl 실패는 정상적인 대기 상태입니다.
   BODY="$(curl -s --max-time 5 "http://127.0.0.1:${TARGET_PORT}/actuator/health" 2>/dev/null || true)"
   if printf '%s' "$BODY" | grep -q '"status":"UP"'; then
     HEALTHY=1
     break
   fi
 
-  # 겹침 구간에서 live 컨테이너가 먼저 쓰러지는 경우를 잡아냅니다.
-  # (--oom-score-adj 로 방향을 뒤집어 두었지만 절대적이지는 않습니다)
   if [ "$LIVE_DOWN_REPORTED" = "0" ] \
     && docker ps -a --format '{{.Names}}' | grep -qx "$CURRENT_CONTAINER" \
     && [ "$(docker inspect --format='{{.State.Status}}' "$CURRENT_CONTAINER" 2>/dev/null || echo '')" != "running" ]; then
     LIVE_OOM="$(docker inspect --format='{{.State.OOMKilled}}' "$CURRENT_CONTAINER" 2>/dev/null || echo '?')"
     fail "!! live 컨테이너(${CURRENT_CONTAINER})가 내려갔습니다 (OOMKilled ${LIVE_OOM})"
-    fail "   지금 서비스가 중단된 상태입니다. 새 컨테이너 기동을 계속 기다립니다 —"
-    fail "   이 시점에서는 그것이 가장 빠른 복구 경로입니다."
+    fail "   서비스가 중단된 상태입니다. 새 컨테이너 기동을 계속 기다립니다 —"
     LIVE_DOWN_REPORTED=1
   fi
 
@@ -265,7 +245,6 @@ if [ "$HEALTHY" -ne 1 ]; then
   fail "새 컨테이너 로그 (마지막 50줄):"
   docker logs --tail 50 "$TARGET_CONTAINER" 2>&1 | sed 's/^/  /' >&2 || true
   docker rm -f "$TARGET_CONTAINER" > /dev/null 2>&1 || true
-  fail "트래픽은 ${CURRENT_SLOT}(${CURRENT_PORT}) 에 그대로 남아있습니다."
   exit 1
 fi
 
@@ -278,7 +257,6 @@ sudo cp "$UPSTREAM_CONF" "$BACKUP_CONF"
 sudo tee "$UPSTREAM_CONF" > /dev/null <<EOF
 # blue-green-deploy.sh 가 생성했습니다.
 # 이 파일은 "지금 어느 슬롯이 live 인가"를 담은 런타임 상태입니다.
-# 직접 수정하지 마세요. git 으로 관리되지 않습니다.
 # 생성 시각: $(date '+%Y-%m-%d %H:%M:%S') / slot=${TARGET_SLOT}
 upstream ${UPSTREAM_NAME} {
     server 127.0.0.1:${TARGET_PORT};
@@ -305,16 +283,13 @@ if ! sudo nginx -s reload; then
   fi
   rm -f "$BACKUP_CONF"
   docker rm -f "$TARGET_CONTAINER" > /dev/null 2>&1 || true
-  fail "트래픽은 ${CURRENT_SLOT}(${CURRENT_PORT}) 에 그대로 있습니다."
   exit 1
 fi
 log "트래픽을 ${TARGET_SLOT}(${TARGET_PORT}) 로 전환했습니다"
 
-# BACKUP_CONF 는 유예기간 후 재검증까지 보관합니다. 되돌릴 때 필요합니다.
+# BACKUP_CONF 는 유예기간 후 재검증까지 보관합니다.
 
 # upstream 파일이 실제로 대상 슬롯을 가리키는지 확인합니다.
-# nginx 를 통한 curl 은 Certbot 리다이렉트(301) 때문에 판정에 쓸 수 없어
-# 파일 내용을 직접 확인합니다.
 if ! grep -qE "server[[:space:]]+127\\.0\\.0\\.1:${TARGET_PORT};" "$UPSTREAM_CONF"; then
   fail "upstream 파일이 예상과 다릅니다 — 즉시 확인이 필요합니다: $UPSTREAM_CONF"
   sed 's/^/  /' "$UPSTREAM_CONF" >&2
@@ -327,11 +302,7 @@ fi
 log "유예기간 ${GRACE_PERIOD_SECONDS}초 대기"
 sleep "$GRACE_PERIOD_SECONDS"
 
-# ── 배포 검증 (파괴적 작업 전) ───────────────────────────────────────────────
-# 트래픽은 이미 새 슬롯으로 넘어가 있습니다.
-# 여기서 실패하면 구 컨테이너가 "아직 실행 중"이므로 upstream 만 되돌리면
-# 곧바로 복구됩니다. 그래서 구 컨테이너 종료·삭제와 이미지 정리를
-# 전부 이 검증 뒤로 미룹니다. 복구 수단은 성공이 확인된 뒤에만 버립니다.
+# ── 배포 검증  ───────────────────────────────────────────────
 VERIFY_STATE="$(docker inspect --format='{{.State.Status}}' "$TARGET_CONTAINER" 2>/dev/null || echo missing)"
 VERIFY_CODE="$(
   curl -s -o /dev/null -w '%{http_code}' --max-time 5 \
@@ -358,11 +329,9 @@ fi
 
 log "배포 검증 통과 — 구 컨테이너를 정리합니다"
 
-# ── 여기서부터는 되돌릴 수 없는 정리 작업입니다 ──────────────────────────────
 rm -f "$BACKUP_CONF"
 
 # --time 은 graceful shutdown 이 끝날 때까지 기다리는 시간입니다.
-# application.yml 의 timeout-per-shutdown-phase(30s) 보다 넉넉해야 합니다.
 if docker ps -a --format '{{.Names}}' | grep -qx "$CURRENT_CONTAINER"; then
   log "구 컨테이너 종료: $CURRENT_CONTAINER"
   docker stop --time="$STOP_TIMEOUT_SECONDS" "$CURRENT_CONTAINER" > /dev/null || true
@@ -370,10 +339,8 @@ if docker ps -a --format '{{.Names}}' | grep -qx "$CURRENT_CONTAINER"; then
 fi
 
 # 기존 단일 컨테이너는 제거하지 않고 정지만 합니다.
-# blue/green 이 잘못됐을 때 되돌아갈 마지막 수단으로 남겨둡니다.
-# (rollback.sh legacy 로 다시 살릴 수 있습니다)
 if [ "$LEGACY_RUNNING" = "1" ]; then
-  log "기존 단일 컨테이너 정지 (복구용으로 삭제하지 않고 남겨둡니다): $APP_CONTAINER_NAME"
+  log "기존 단일 컨테이너 정지 : $APP_CONTAINER_NAME"
   docker stop --time="$STOP_TIMEOUT_SECONDS" "$APP_CONTAINER_NAME" > /dev/null || true
 fi
 

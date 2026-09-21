@@ -155,7 +155,6 @@ case "$TARGET" in
   legacy) PORT="$BLUE_PORT";  CONTAINER="${APP_CONTAINER_NAME}" ;;
 esac
 
-# 이미 live 인 슬롯으로 되돌리는 것은 보통 착각입니다.
 if [ "$TARGET" = "$LIVE" ]; then
   fail "[주의] ${TARGET} 는 이미 live 슬롯입니다. 되돌릴 대상이 맞는지 확인하세요."
   show_status
@@ -197,9 +196,7 @@ elif [ -n "${IMAGE:-}" ]; then
     }
 else
   # 컨테이너 없는 포트로 전환하면 nginx 가 502 를 냅니다.
-  # 지금보다 나빠지므로 아무것도 하지 않고 멈춥니다.
   fail "컨테이너 ${CONTAINER} 가 없고 IMAGE 도 지정되지 않았습니다."
-  fail "죽은 포트로 전환하면 502 가 나므로 중단합니다."
   fail "복구할 이미지 태그를 지정해 다시 실행하세요:"
   fail "  IMAGE=<태그> bash rollback.sh ${TARGET}"
   exit 1
