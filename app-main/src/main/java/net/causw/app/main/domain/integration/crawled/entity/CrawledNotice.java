@@ -61,7 +61,7 @@ public class CrawledNotice extends BaseEntity {
 	@Column(name = "image_link", nullable = true)
 	private String imageLink;
 
-	@OneToMany(cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval = true, fetch = FetchType.LAZY)
+	@OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE}, orphanRemoval = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "crawled_notice_id", nullable = true)
 	@Builder.Default
 	private List<CrawledFileLink> crawledFileLinks = new ArrayList<>();
