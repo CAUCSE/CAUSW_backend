@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.doThrow;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.mock;
@@ -19,15 +20,20 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import net.causw.app.main.domain.community.board.entity.Board;
+import net.causw.app.main.domain.community.board.entity.BoardConfig;
 import net.causw.app.main.domain.community.board.entity.BoardGroup;
 import net.causw.app.main.domain.community.board.service.implementation.BoardAccessManager;
+import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
 import net.causw.app.main.domain.community.board.service.implementation.BoardReader;
+import net.causw.app.main.domain.community.post.enums.PostCategory;
 import net.causw.app.main.domain.notification.notification.enums.UserNotificationSettingKey;
+import net.causw.app.main.domain.notification.notification.service.dto.NewsCategorySetting;
 import net.causw.app.main.domain.notification.notification.service.dto.NotificationSettingResult;
 import net.causw.app.main.domain.notification.notification.service.dto.UpdateNotificationSettingCommand;
 import net.causw.app.main.domain.notification.notification.service.dto.UserNotificationSettingMap;
@@ -40,6 +46,8 @@ import net.causw.app.main.domain.user.account.service.implementation.UserValidat
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.AuthErrorCode;
 import net.causw.app.main.shared.exception.errorcode.BoardConfigErrorCode;
+import net.causw.app.main.shared.exception.errorcode.BoardErrorCode;
+import net.causw.app.main.shared.exception.errorcode.NotificationSettingErrorCode;
 import net.causw.app.main.shared.exception.errorcode.UserErrorCode;
 
 @ExtendWith(MockitoExtension.class)
@@ -56,6 +64,8 @@ class NotificationSettingServiceTest {
 	private BoardReader boardReader;
 	@Mock
 	private BoardAccessManager boardAccessManager;
+	@Mock
+	private BoardConfigReader boardConfigReader;
 	@Mock
 	private UserBoardSubscribeReader userBoardSubscribeReader;
 	@Mock
@@ -75,7 +85,7 @@ class NotificationSettingServiceTest {
 		private final String userId = "user-001";
 
 		@Test
-		@DisplayName("성공: 접근 가능한 게시판이 없으면 officialBoards가 빈 리스트로 반환된다")
+		@DisplayName("성공: 접근 가능한 게시판이 없으면 소식 채널 목록이 빈 리스트로 반환된다")
 		void givenNoBoardsAccessible_whenGetAllSettings_thenReturnEmptyOfficialBoards() {
 			// given
 			User mockUser = mock(User.class);
@@ -88,11 +98,11 @@ class NotificationSettingServiceTest {
 
 			// then
 			assertThat(result).isNotNull();
-			assertThat(result.officialBoards()).isEmpty();
+			assertThat(result.news().channels()).isEmpty();
 		}
 
 		@Test
-		@DisplayName("성공: 게시판이 있으면 구독 여부가 포함된 officialBoards가 반환된다")
+		@DisplayName("성공: 게시판이 있으면 구독 여부가 포함된 소식 채널 목록이 반환된다")
 		void givenAccessibleBoards_whenGetAllSettings_thenReturnOfficialBoardsWithSubscribeStatus() {
 			// given
 			User mockUser = mock(User.class);
@@ -102,17 +112,17 @@ class NotificationSettingServiceTest {
 			given(mockBoard.getId()).willReturn("board-001");
 			given(mockBoard.getName()).willReturn("공지사항");
 			given(boardAccessManager.getReadableBoards(mockUser, BoardGroup.NOTICE)).willReturn(List.of(mockBoard));
-			given(userBoardSubscribeReader.findSubscribedBoardIds(mockUser, List.of(mockBoard)))
+			given(userBoardSubscribeReader.findSubscribedBoardIds(mockUser, List.of(mockBoard), true))
 				.willReturn(Set.of("board-001"));
 
 			// when
 			NotificationSettingResult result = notificationSettingService.getAllSettings(userId);
 
 			// then
-			assertThat(result.officialBoards()).hasSize(1);
-			assertThat(result.officialBoards().get(0).boardId()).isEqualTo("board-001");
-			assertThat(result.officialBoards().get(0).name()).isEqualTo("공지사항");
-			assertThat(result.officialBoards().get(0).subscribed()).isTrue();
+			assertThat(result.news().channels()).hasSize(1);
+			assertThat(result.news().channels().get(0).boardId()).isEqualTo("board-001");
+			assertThat(result.news().channels().get(0).name()).isEqualTo("공지사항");
+			assertThat(result.news().channels().get(0).subscribed()).isTrue();
 		}
 
 		@Test
@@ -133,6 +143,60 @@ class NotificationSettingServiceTest {
 			assertThat(result.community().replyOnMyComment()).isTrue();
 			assertThat(result.ceremony().enabled()).isTrue();
 			assertThat(result.service().noticeEnabled()).isTrue();
+		}
+
+		@Test
+		@DisplayName("성공: DB에 설정이 없으면 소식 전체 토글과 성격별 알림(ETC 제외)이 모두 켜진 상태로 반환된다")
+		void givenNoStoredSettings_whenGetAllSettings_thenNewsSettingsEnabledByDefault() {
+			// given
+			User mockUser = mock(User.class);
+			given(userReader.findUserByIdNotDeleted(userId)).willReturn(mockUser);
+			given(notificationSettingReader.findSettingMap(userId)).willReturn(emptySettingMap());
+			given(boardAccessManager.getReadableBoards(mockUser, BoardGroup.NOTICE)).willReturn(List.of());
+
+			// when
+			NotificationSettingResult result = notificationSettingService.getAllSettings(userId);
+
+			// then
+			assertThat(result.news().enabled()).isTrue();
+			assertThat(result.news().categories())
+				.extracting(NewsCategorySetting::category)
+				.containsExactly(PostCategory.RECRUIT, PostCategory.ACADEMIC, PostCategory.EVENT_LECTURE,
+					PostCategory.EXTERNAL_ACTIVITY, PostCategory.RESEARCH);
+			assertThat(result.news().categories()).allMatch(NewsCategorySetting::enabled);
+		}
+
+		@Test
+		@DisplayName("성공: 소통 게시판은 기본 미구독으로 조회하고 시스템 공지 게시판은 제외한다")
+		void givenCommunityBoards_whenGetAllSettings_thenReturnCommunityBoardsExcludingSystemNotice() {
+			// given
+			User mockUser = mock(User.class);
+			Board communityBoard = mock(Board.class);
+			Board systemNoticeBoard = mock(Board.class);
+			BoardConfig communityConfig = mock(BoardConfig.class);
+			BoardConfig systemNoticeConfig = mock(BoardConfig.class);
+			given(userReader.findUserByIdNotDeleted(userId)).willReturn(mockUser);
+			given(notificationSettingReader.findSettingMap(userId)).willReturn(emptySettingMap());
+			given(boardAccessManager.getReadableBoards(mockUser, BoardGroup.NOTICE)).willReturn(List.of());
+			given(boardAccessManager.getReadableBoards(mockUser, BoardGroup.COMMUNITY))
+				.willReturn(List.of(communityBoard, systemNoticeBoard));
+			given(communityBoard.getId()).willReturn("community-001");
+			given(communityBoard.getName()).willReturn("자유게시판");
+			given(systemNoticeBoard.getId()).willReturn("system-notice");
+			given(communityConfig.isSystemNotice()).willReturn(false);
+			given(systemNoticeConfig.isSystemNotice()).willReturn(true);
+			given(boardConfigReader.getBoardConfigMapByBoardIds(List.of("community-001", "system-notice")))
+				.willReturn(Map.of("community-001", communityConfig, "system-notice", systemNoticeConfig));
+			given(userBoardSubscribeReader.findSubscribedBoardIds(mockUser, List.of(communityBoard), false))
+				.willReturn(Set.of());
+
+			// when
+			NotificationSettingResult result = notificationSettingService.getAllSettings(userId);
+
+			// then
+			assertThat(result.communityBoards()).hasSize(1);
+			assertThat(result.communityBoards().get(0).boardId()).isEqualTo("community-001");
+			assertThat(result.communityBoards().get(0).subscribed()).isFalse();
 		}
 
 		@Test
@@ -176,7 +240,7 @@ class NotificationSettingServiceTest {
 		void givenNonNullFields_whenUpdateUserSettings_thenUpsertIsCalled() {
 			// given
 			UpdateNotificationSettingCommand command = new UpdateNotificationSettingCommand(
-				true, null, false, null, null);
+				true, null, false, null, null, null, null);
 
 			// when
 			notificationSettingService.updateUserSettings(userId, command);
@@ -190,13 +254,126 @@ class NotificationSettingServiceTest {
 		void givenAllNullFields_whenUpdateUserSettings_thenUpsertIsNotCalled() {
 			// given
 			UpdateNotificationSettingCommand command = new UpdateNotificationSettingCommand(
-				null, null, null, null, null);
+				null, null, null, null, null, null, null);
 
 			// when
 			notificationSettingService.updateUserSettings(userId, command);
 
 			// then
 			verify(notificationSettingWriter, never()).upsertSettings(any(), any());
+		}
+	}
+
+	@Nested
+	@DisplayName("소식 알림 설정 업데이트 (updateUserSettings)")
+	class UpdateNewsSettingsTest {
+
+		private final String userId = "user-001";
+
+		@Test
+		@DisplayName("성공: 소식 전체 토글과 성격별 설정이 대응하는 설정 키로 upsert된다")
+		void givenNewsSettings_whenUpdateUserSettings_thenUpsertNewsKeys() {
+			// given
+			UpdateNotificationSettingCommand command = new UpdateNotificationSettingCommand(
+				null, null, null, null, null, false, Map.of(PostCategory.RECRUIT, false));
+
+			// when
+			notificationSettingService.updateUserSettings(userId, command);
+
+			// then
+			ArgumentCaptor<UserNotificationSettingMap> captor = ArgumentCaptor.forClass(
+				UserNotificationSettingMap.class);
+			verify(notificationSettingWriter).upsertSettings(eq(userId), captor.capture());
+			Map<UserNotificationSettingKey, Boolean> upserted = new EnumMap<>(UserNotificationSettingKey.class);
+			captor.getValue().forEach(upserted::put);
+			assertThat(upserted).containsExactlyInAnyOrderEntriesOf(Map.of(
+				UserNotificationSettingKey.NEWS_NOTIFICATION_ENABLED, false,
+				UserNotificationSettingKey.NEWS_CATEGORY_RECRUIT, false));
+		}
+
+		@Test
+		@DisplayName("실패: 설정 대상이 아닌 성격(ETC)이 포함되면 예외 발생")
+		void givenEtcCategory_whenUpdateUserSettings_thenThrowException() {
+			// given
+			UpdateNotificationSettingCommand command = new UpdateNotificationSettingCommand(
+				null, null, null, null, null, null, Map.of(PostCategory.ETC, false));
+
+			// when & then
+			assertThatThrownBy(() -> notificationSettingService.updateUserSettings(userId, command))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasFieldOrPropertyWithValue("errorCode", NotificationSettingErrorCode.NEWS_CATEGORY_NOT_CONFIGURABLE);
+
+			verify(notificationSettingWriter, never()).upsertSettings(any(), any());
+		}
+	}
+
+	@Nested
+	@DisplayName("게시판 알림 구독 설정 (updateBoardSubscribe)")
+	class UpdateBoardSubscribeTest {
+
+		private final String userId = "user-001";
+		private final String boardId = "board-001";
+
+		@Test
+		@DisplayName("성공: 읽을 수 있는 게시판이면 구독 상태 upsert가 호출된다")
+		void givenReadableBoard_whenUpdateBoardSubscribe_thenUpsertIsCalled() {
+			// given
+			User mockUser = mock(User.class);
+			Board mockBoard = mock(Board.class);
+			BoardConfig boardConfig = mock(BoardConfig.class);
+			given(userReader.findUserByIdNotDeleted(userId)).willReturn(mockUser);
+			given(boardReader.getById(boardId)).willReturn(mockBoard);
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
+			given(boardConfig.isSystemNotice()).willReturn(false);
+
+			// when
+			notificationSettingService.updateBoardSubscribe(userId, boardId, true);
+
+			// then
+			verify(boardAccessManager).validateCanRead(mockUser, mockBoard);
+			verify(notificationSettingWriter).upsertBoardSubscribe(mockUser, mockBoard, true);
+		}
+
+		@Test
+		@DisplayName("실패: 시스템 공지 게시판이면 예외 발생")
+		void givenSystemNoticeBoard_whenUpdateBoardSubscribe_thenThrowException() {
+			// given
+			User mockUser = mock(User.class);
+			Board mockBoard = mock(Board.class);
+			BoardConfig boardConfig = mock(BoardConfig.class);
+			given(userReader.findUserByIdNotDeleted(userId)).willReturn(mockUser);
+			given(boardReader.getById(boardId)).willReturn(mockBoard);
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
+			given(boardConfig.isSystemNotice()).willReturn(true);
+
+			// when & then
+			assertThatThrownBy(() -> notificationSettingService.updateBoardSubscribe(userId, boardId, true))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasFieldOrPropertyWithValue("errorCode", NotificationSettingErrorCode.BOARD_NOT_SUBSCRIBABLE);
+
+			verify(notificationSettingWriter, never()).upsertBoardSubscribe(any(), any(), anyBoolean());
+		}
+
+		@Test
+		@DisplayName("실패: 읽기 권한이 없는 게시판이면 예외 발생")
+		void givenUnreadableBoard_whenUpdateBoardSubscribe_thenThrowException() {
+			// given
+			User mockUser = mock(User.class);
+			Board mockBoard = mock(Board.class);
+			BoardConfig boardConfig = mock(BoardConfig.class);
+			given(userReader.findUserByIdNotDeleted(userId)).willReturn(mockUser);
+			given(boardReader.getById(boardId)).willReturn(mockBoard);
+			given(boardConfigReader.getByBoardId(boardId)).willReturn(boardConfig);
+			given(boardConfig.isSystemNotice()).willReturn(false);
+			doThrow(BoardErrorCode.BOARD_FORBIDDEN.toBaseException())
+				.when(boardAccessManager).validateCanRead(mockUser, mockBoard);
+
+			// when & then
+			assertThatThrownBy(() -> notificationSettingService.updateBoardSubscribe(userId, boardId, true))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasFieldOrPropertyWithValue("errorCode", BoardErrorCode.BOARD_FORBIDDEN);
+
+			verify(notificationSettingWriter, never()).upsertBoardSubscribe(any(), any(), anyBoolean());
 		}
 	}
 

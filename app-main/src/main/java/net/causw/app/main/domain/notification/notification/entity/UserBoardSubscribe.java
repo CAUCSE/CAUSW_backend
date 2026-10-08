@@ -10,6 +10,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,18 +22,20 @@ import lombok.NoArgsConstructor;
 @Builder(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name = "tb_user_board_subscribe")
+@Table(name = "tb_user_board_subscribe", uniqueConstraints = {
+	@UniqueConstraint(name = "uk_user_board_subscribe_user_board", columnNames = {"user_id", "board_id"})
+})
 public class UserBoardSubscribe extends BaseEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id")
+	@JoinColumn(name = "user_id", nullable = false)
 	private User user;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "board_id")
+	@JoinColumn(name = "board_id", nullable = false)
 	private Board board;
 
-	@Column(name = "is_subscribed")
+	@Column(name = "is_subscribed", nullable = false)
 	private Boolean isSubscribed;
 
 	public void setIsSubscribed(Boolean subscribed) {

@@ -21,6 +21,7 @@ import net.causw.app.main.domain.community.post.entity.Post;
 import net.causw.app.main.domain.community.post.service.implementation.PostReader;
 import net.causw.app.main.domain.notification.notification.entity.Notification;
 import net.causw.app.main.domain.notification.notification.enums.NoticeType;
+import net.causw.app.main.domain.notification.notification.enums.UserNotificationSettingKey;
 import net.causw.app.main.domain.notification.notification.event.OfficialPostEvent;
 import net.causw.app.main.domain.notification.notification.service.dto.PushNotificationData;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationPushSender;
@@ -57,14 +58,17 @@ public class OfficialPostNotificationListener {
 			return;
 		}
 
-		// UserBoardSubscribe row가 없으면 기본 구독(true)으로 간주.
-		// isSubscribed=false인 row가 명시적으로 존재하는 경우에만 알림 대상에서 제외.
-		// ACTIVE + 학적 범위 + 학과 제한 조건을 만족하며 구독 거부하지 않은 유저 목록 조회
+		// 설정 row가 없으면 켜짐(true)으로 간주. false인 row가 명시적으로 존재하는 경우에만 꺼짐.
+		// ACTIVE + 학적 범위 + 학과 제한 조건을 만족하는 유저 중
+		// 소식 전체 알림 ON AND (채널 구독 ON OR 게시글 성격 알림 ON)인 유저 목록 조회
+		// 게시글 성격이 없거나(미분류) 설정 대상이 아닌 성격(ETC)이면 채널 구독 여부만 판단.
 		// 게시판 관리자는 학적·학과 제한 없이 포함.
 		Set<String> boardAdminIds = boardConfigReader.getAdminIdSetMapByBoardIds(List.of(board.getId()))
 			.getOrDefault(board.getId(), Set.of());
+		UserNotificationSettingKey newsCategoryKey = UserNotificationSettingKey.fromNewsCategory(post.getCategory())
+			.orElse(null);
 		List<User> targets = userBoardSubscribeReader.findNotificationTargets(
-			board.getId(), boardConfig, boardAdminIds);
+			board.getId(), newsCategoryKey, boardConfig, boardAdminIds);
 
 		// 알림 발송
 		// 푸시알림 제목: 게시판 이름
