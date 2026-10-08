@@ -48,6 +48,7 @@ import net.causw.app.main.domain.community.post.service.util.PostCursorManager;
 import net.causw.app.main.domain.community.post.service.util.PostValidator;
 import net.causw.app.main.domain.community.reaction.service.implementation.LikePostReader;
 import net.causw.app.main.domain.integration.crawled.service.implementation.CrawledNoticeReader;
+import net.causw.app.main.domain.notification.notification.event.CommunityPostEvent;
 import net.causw.app.main.domain.notification.notification.event.OfficialPostEvent;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.enums.user.Role;
@@ -114,9 +115,12 @@ public class PostService {
 		}
 		Post savedPost = postWriter.save(post);
 
-		// 공식 공지글인 경우 알림 발송 이벤트
+		// 공식 공지글인 경우 소식 알림, 소통 게시판 글인 경우 게시판 구독자 알림 발송 이벤트
+		// 시스템 공지 게시판은 별도 시스템 공지 알림으로 처리
 		if (boardConfig.isNotice()) {
 			eventPublisher.publishEvent(new OfficialPostEvent(savedPost.getBoard().getId(), savedPost.getId(), null));
+		} else if (!boardConfig.isSystemNotice()) {
+			eventPublisher.publishEvent(new CommunityPostEvent(savedPost.getBoard().getId(), savedPost.getId()));
 		}
 
 		// 이미지 업로드 및 PostAttachImage 구성 (PostImageManager에 위임)
