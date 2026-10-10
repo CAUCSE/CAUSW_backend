@@ -35,10 +35,10 @@ public class ScheduleController {
 
 	@Operation(summary = "일정 조회", description = "조건에 따라 일정을 조회합니다. <br>" +
 		"from과 to가 지정되지 않으면 현재 월의 일정을 조회합니다. <br>" +
-		"types로 일정 유형을 필터링할 수 있습니다. <br><br>" +
+		"types로 캘린더 카테고리를 필터링할 수 있습니다. <br><br>" +
 		"types 사용 예시: <br>" +
-		"1) 쉼표 구분: ?types=ACADEMIC,CLUB,EXAM <br>" +
-		"2) 반복: ?types=ACADEMIC&types=CLUB&types=EXAM <br>" +
+		"1) 쉼표 구분: ?types=ACADEMIC,HOLIDAY,CEREMONY <br>" +
+		"2) 반복: ?types=ACADEMIC&types=HOLIDAY&types=CEREMONY <br>" +
 		"3) 생략: 모든 타입 조회 <br><br>" +
 		"※ 연결된 게시물(targetPostId)에 대한 읽기 권한이 없는 경우 null로 반환됩니다.")
 	@GetMapping
