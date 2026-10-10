@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import net.causw.app.main.domain.campus.schedule.api.v2.dto.response.ScheduleListResponse;
 import net.causw.app.main.domain.campus.schedule.api.v2.dto.response.ScheduleResponse;
 import net.causw.app.main.domain.campus.schedule.api.v2.mapper.ScheduleDtoMapper;
-import net.causw.app.main.domain.campus.schedule.entity.enums.ScheduleType;
+import net.causw.app.main.domain.campus.schedule.enums.ScheduleCategory;
 import net.causw.app.main.domain.campus.schedule.service.ScheduleService;
 import net.causw.app.main.domain.campus.schedule.service.dto.ScheduleDto;
 import net.causw.app.main.domain.user.account.entity.user.User;
@@ -45,7 +45,7 @@ public class ScheduleController {
 	public ApiResponse<ScheduleListResponse> readSchedules(
 		@RequestParam(required = false) LocalDateTime from,
 		@RequestParam(required = false) LocalDateTime to,
-		@RequestParam(required = false) Set<ScheduleType> types,
+		@RequestParam(required = false) Set<ScheduleCategory> types,
 		@AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
 		LocalDateTime startDate = from;

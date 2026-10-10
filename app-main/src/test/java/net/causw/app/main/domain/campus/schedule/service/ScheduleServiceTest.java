@@ -9,7 +9,9 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.never;
 import static org.mockito.BDDMockito.verify;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Set;
 
@@ -24,11 +26,18 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import net.causw.app.main.domain.campus.schedule.entity.Schedule;
 import net.causw.app.main.domain.campus.schedule.entity.enums.ScheduleType;
+import net.causw.app.main.domain.campus.schedule.enums.ScheduleCategory;
+import net.causw.app.main.domain.campus.schedule.service.dto.ScheduleCalendarDto;
 import net.causw.app.main.domain.campus.schedule.service.dto.ScheduleDto;
 import net.causw.app.main.domain.campus.schedule.service.implementation.ScheduleMaskingResolver;
 import net.causw.app.main.domain.campus.schedule.service.implementation.ScheduleReader;
 import net.causw.app.main.domain.campus.schedule.service.implementation.ScheduleWriter;
 import net.causw.app.main.domain.campus.schedule.util.ScheduleMapper;
+import net.causw.app.main.domain.community.ceremony.entity.Ceremony;
+import net.causw.app.main.domain.community.ceremony.enums.CeremonyCategory;
+import net.causw.app.main.domain.community.ceremony.enums.CeremonyType;
+import net.causw.app.main.domain.community.ceremony.enums.RelationType;
+import net.causw.app.main.domain.community.ceremony.service.implementation.CeremonyReader;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.shared.exception.BaseRunTimeV2Exception;
 import net.causw.app.main.shared.exception.errorcode.ScheduleErrorCode;
@@ -48,6 +57,9 @@ public class ScheduleServiceTest {
 
 	@Mock
 	private ScheduleMaskingResolver scheduleMaskingResolver;
+
+	@Mock
+	private CeremonyReader ceremonyReader;
 
 	private User mockUser;
 	private Schedule mockSchedule;
@@ -316,26 +328,39 @@ public class ScheduleServiceTest {
 			// given
 			LocalDateTime from = LocalDateTime.of(2026, 4, 1, 0, 0);
 			LocalDateTime to = LocalDateTime.of(2026, 4, 30, 23, 59);
-			List<ScheduleType> types = List.of(ScheduleType.ACADEMIC);
+
+			List<ScheduleCategory> categories = List.of(ScheduleCategory.ACADEMIC);
+			List<ScheduleType> scheduleTypes = List.of(ScheduleType.ACADEMIC);
+
 			User viewer = ObjectFixtures.getCertifiedUserWithId("viewer-id");
 
 			Schedule schedule = Schedule.of(
-				"일정", ScheduleType.ACADEMIC,
+				"일정",
+				ScheduleType.ACADEMIC,
 				LocalDateTime.of(2026, 4, 15, 0, 0),
 				LocalDateTime.of(2026, 4, 21, 23, 59),
-				mockUser, "post-1");
-			given(scheduleReader.findByCondition(from, to, types)).willReturn(List.of(schedule));
-			given(scheduleMaskingResolver.resolveReadablePostIds(anyList(), eq(viewer))).willReturn(Set.of("post-1"));
-			given(scheduleMaskingResolver.maskIfUnreadable(any(ScheduleDto.class), eq(Set.of("post-1"))))
+				mockUser,
+				"post-1");
+
+			given(scheduleReader.findByCondition(from, to, scheduleTypes))
+				.willReturn(List.of(schedule));
+
+			given(scheduleMaskingResolver.resolveReadablePostIds(anyList(), eq(viewer)))
+				.willReturn(Set.of("post-1"));
+
+			given(scheduleMaskingResolver.maskIfUnreadable(
+				any(ScheduleDto.class),
+				eq(Set.of("post-1"))))
 				.willAnswer(inv -> inv.getArgument(0));
 
 			// when
-			List<ScheduleDto> result = scheduleService.findByConditionWithMasking(from, to, types, viewer);
+			List<ScheduleCalendarDto> result = scheduleService.findByConditionWithMasking(from, to, categories, viewer);
 
 			// then
 			assertThat(result).hasSize(1);
 			verify(scheduleMaskingResolver).resolveReadablePostIds(anyList(), eq(viewer));
 			verify(scheduleMaskingResolver).maskIfUnreadable(any(ScheduleDto.class), any());
+			verify(ceremonyReader, never()).findAcceptedByDateRange(any(), any());
 		}
 
 		@Test
@@ -358,5 +383,248 @@ public class ScheduleServiceTest {
 			verify(scheduleMaskingResolver).resolveReadablePostIds(anyList(), eq(viewer));
 			verify(scheduleMaskingResolver).maskIfUnreadable(any(ScheduleDto.class), any());
 		}
+
+		@Test
+		@DisplayName("CEREMONY만 필터링하면 일반 일정은 조회하지 않고 경조사만 조회한다")
+		void findByConditionWithMaskingCeremonyOnly() {
+			// given
+			LocalDateTime from = LocalDateTime.of(2026, 4, 1, 0, 0);
+			LocalDateTime to = LocalDateTime.of(2026, 4, 30, 23, 59);
+			List<ScheduleCategory> categories = List.of(ScheduleCategory.CEREMONY);
+			User viewer = ObjectFixtures.getCertifiedUserWithId("viewer-id");
+
+			given(ceremonyReader.findAcceptedByDateRange(
+				from.toLocalDate(),
+				to.toLocalDate()))
+				.willReturn(List.of());
+
+			// when
+			List<ScheduleCalendarDto> result = scheduleService.findByConditionWithMasking(from, to, categories, viewer);
+
+			// then
+			assertThat(result).isEmpty();
+
+			verify(scheduleReader, never())
+				.findByCondition(any(), any(), any());
+
+			verify(ceremonyReader)
+				.findAcceptedByDateRange(from.toLocalDate(), to.toLocalDate());
+		}
+	}
+
+	@Test
+	@DisplayName("승인된 경조사는 CEREMONY 카테고리의 캘린더 일정으로 변환된다")
+	void findByConditionWithMaskingMapsCeremonyToCalendarDto() {
+		// given
+		LocalDateTime from = LocalDateTime.of(2026, 4, 1, 0, 0);
+		LocalDateTime to = LocalDateTime.of(2026, 4, 30, 23, 59);
+		List<ScheduleCategory> categories = List.of(ScheduleCategory.CEREMONY);
+		User viewer = ObjectFixtures.getCertifiedUserWithId("viewer-id");
+
+		User ceremonyUser = ObjectFixtures.getCertifiedUser();
+
+		Ceremony ceremony = Ceremony.of(
+			ceremonyUser,
+			CeremonyType.CELEBRATION,
+			CeremonyCategory.MARRIAGE,
+			null,
+			LocalDate.of(2026, 4, 10),
+			LocalDate.of(2026, 4, 10),
+			LocalTime.of(14, 0),
+			LocalTime.of(16, 0),
+			RelationType.ME,
+			null,
+			null,
+			null,
+			null,
+			"경조사 설명",
+			null,
+			null,
+			null,
+			null,
+			null,
+			true,
+			List.of());
+
+		given(ceremonyReader.findAcceptedByDateRange(
+			from.toLocalDate(),
+			to.toLocalDate()))
+			.willReturn(List.of(ceremony));
+
+		// when
+		List<ScheduleCalendarDto> result = scheduleService.findByConditionWithMasking(from, to, categories, viewer);
+
+		// then
+		assertThat(result).hasSize(1);
+
+		ScheduleCalendarDto calendarDto = result.getFirst();
+
+		assertThat(calendarDto.type()).isEqualTo(ScheduleCategory.CEREMONY);
+		assertThat(calendarDto.start()).isEqualTo(LocalDateTime.of(2026, 4, 10, 14, 0));
+		assertThat(calendarDto.end()).isEqualTo(LocalDateTime.of(2026, 4, 10, 16, 0));
+		assertThat(calendarDto.targetPostId()).isNull();
+	}
+
+	@Test
+	@DisplayName("일반 일정과 경조사를 함께 조회하면 시작 시간순으로 정렬된다")
+	void findByConditionWithMaskingMergesAndSortsSchedulesAndCeremonies() {
+		// given
+		LocalDateTime from = LocalDateTime.of(2026, 4, 1, 0, 0);
+		LocalDateTime to = LocalDateTime.of(2026, 4, 30, 23, 59);
+
+		List<ScheduleCategory> categories = List.of(
+			ScheduleCategory.ACADEMIC,
+			ScheduleCategory.CEREMONY);
+
+		List<ScheduleType> scheduleTypes = List.of(ScheduleType.ACADEMIC);
+		User viewer = ObjectFixtures.getCertifiedUserWithId("viewer-id");
+
+		// 일반 일정: 4월 20일
+		Schedule schedule = Schedule.of(
+			"중간고사",
+			ScheduleType.ACADEMIC,
+			LocalDateTime.of(2026, 4, 20, 0, 0),
+			LocalDateTime.of(2026, 4, 21, 23, 59),
+			mockUser,
+			null);
+
+		// 경조사: 4월 10일
+		User ceremonyUser = ObjectFixtures.getCertifiedUser();
+
+		Ceremony ceremony = Ceremony.of(
+			ceremonyUser,
+			CeremonyType.CELEBRATION,
+			CeremonyCategory.MARRIAGE,
+			null,
+			LocalDate.of(2026, 4, 10),
+			LocalDate.of(2026, 4, 10),
+			LocalTime.of(14, 0),
+			LocalTime.of(16, 0),
+			RelationType.ME,
+			null,
+			null,
+			null,
+			null,
+			"경조사 설명",
+			null,
+			null,
+			null,
+			null,
+			null,
+			true,
+			List.of());
+
+		given(scheduleReader.findByCondition(from, to, scheduleTypes))
+			.willReturn(List.of(schedule));
+
+		given(scheduleMaskingResolver.resolveReadablePostIds(anyList(), eq(viewer)))
+			.willReturn(Set.of());
+
+		given(scheduleMaskingResolver.maskIfUnreadable(
+			any(ScheduleDto.class),
+			eq(Set.of())))
+			.willAnswer(invocation -> invocation.getArgument(0));
+
+		given(ceremonyReader.findAcceptedByDateRange(
+			from.toLocalDate(),
+			to.toLocalDate()))
+			.willReturn(List.of(ceremony));
+
+		// when
+		List<ScheduleCalendarDto> result = scheduleService.findByConditionWithMasking(from, to, categories, viewer);
+
+		// then
+		assertThat(result).hasSize(2);
+
+		assertThat(result.get(0).type())
+			.isEqualTo(ScheduleCategory.CEREMONY);
+
+		assertThat(result.get(1).type())
+			.isEqualTo(ScheduleCategory.ACADEMIC);
+
+		assertThat(result.get(0).start())
+			.isBefore(result.get(1).start());
+
+		verify(scheduleReader)
+			.findByCondition(from, to, scheduleTypes);
+
+		verify(ceremonyReader)
+			.findAcceptedByDateRange(from.toLocalDate(), to.toLocalDate());
+	}
+
+	@Test
+	@DisplayName("카테고리 필터가 없으면 일반 일정과 경조사를 모두 조회한다")
+	void findByConditionWithMaskingWithoutCategoryFilterIncludesAll() {
+		// given
+		LocalDateTime from = LocalDateTime.of(2026, 4, 1, 0, 0);
+		LocalDateTime to = LocalDateTime.of(2026, 4, 30, 23, 59);
+		User viewer = ObjectFixtures.getCertifiedUserWithId("viewer-id");
+
+		Schedule schedule = Schedule.of(
+			"중간고사",
+			ScheduleType.ACADEMIC,
+			LocalDateTime.of(2026, 4, 20, 0, 0),
+			LocalDateTime.of(2026, 4, 21, 23, 59),
+			mockUser,
+			null);
+
+		User ceremonyUser = ObjectFixtures.getCertifiedUser();
+
+		Ceremony ceremony = Ceremony.of(
+			ceremonyUser,
+			CeremonyType.CELEBRATION,
+			CeremonyCategory.MARRIAGE,
+			null,
+			LocalDate.of(2026, 4, 10),
+			LocalDate.of(2026, 4, 10),
+			LocalTime.of(14, 0),
+			LocalTime.of(16, 0),
+			RelationType.ME,
+			null,
+			null,
+			null,
+			null,
+			"경조사 설명",
+			null,
+			null,
+			null,
+			null,
+			null,
+			true,
+			List.of());
+
+		given(scheduleReader.findByCondition(from, to, null))
+			.willReturn(List.of(schedule));
+
+		given(scheduleMaskingResolver.resolveReadablePostIds(anyList(), eq(viewer)))
+			.willReturn(Set.of());
+
+		given(scheduleMaskingResolver.maskIfUnreadable(
+			any(ScheduleDto.class),
+			eq(Set.of())))
+			.willAnswer(invocation -> invocation.getArgument(0));
+
+		given(ceremonyReader.findAcceptedByDateRange(
+			from.toLocalDate(),
+			to.toLocalDate()))
+			.willReturn(List.of(ceremony));
+
+		// when
+		List<ScheduleCalendarDto> result = scheduleService.findByConditionWithMasking(from, to, null, viewer);
+
+		// then
+		assertThat(result).hasSize(2);
+
+		assertThat(result)
+			.extracting(ScheduleCalendarDto::type)
+			.containsExactly(
+				ScheduleCategory.CEREMONY,
+				ScheduleCategory.ACADEMIC);
+
+		verify(scheduleReader)
+			.findByCondition(from, to, null);
+
+		verify(ceremonyReader)
+			.findAcceptedByDateRange(from.toLocalDate(), to.toLocalDate());
 	}
 }
