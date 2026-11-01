@@ -161,7 +161,8 @@ jobs:
       # blue/green 배포는 저장소 변수 BLUE_GREEN_ENABLED_DEV 로 켜고 끕니다.
       #   'true'  -> scripts/ec2/blue-green-deploy.sh  (무중단)
       #   그 외   -> .github/scripts/restart-container.sh (기존 방식)
-      # 문제가 생기면 변수만 false 로 되돌리면 됩니다. revert 커밋이 필요 없습니다.
+      # 끄는 법: 첫 전환 전이면 변수만 false 로 바꿉니다.
+      #         전환 후라면 EC2 에서 `rollback.sh legacy` 를 먼저 실행하고 false 로 바꿉니다.
       #
       # 아래 vars 는 비워두어도 됩니다. 스크립트에 기본값이 있습니다.
       #   CONTAINER_MEM_MB_DEV        컨테이너 RAM 한도(MB), 0 또는 미설정이면 제한 없음

@@ -10,10 +10,11 @@
 #   bash rollback.sh                         # 현재 상태만 출력 (아무것도 바꾸지 않음)
 #   bash rollback.sh status                  # 위와 동일
 #   bash rollback.sh prev                    # 직전 슬롯으로 자동 복구  ← 보통 이것만 쓰면 됩니다
+#   IMAGE=<이미지> bash rollback.sh prev     # 직전 컨테이너가 이미 지워졌을 때
 #   bash rollback.sh blue                    # 8080 슬롯으로 되돌림
 #   bash rollback.sh green                   # 18080 슬롯으로 되돌림
-#   bash rollback.sh legacy                  # blue/green 이전의 단일 컨테이너로 되돌림
-#   IMAGE=<태그> bash rollback.sh blue       # 컨테이너가 없으면 이 이미지로 새로 기동
+#   bash rollback.sh legacy                  # 단일 컨테이너 방식으로 전환 (blue/green 끄기 전에 실행)
+#   IMAGE=<이미지> bash rollback.sh blue     # 지정한 이미지로 새로 기동
 #   SKIP_HEALTH=1 bash rollback.sh blue      # 헬스체크 생략하고 즉시 전환
 #
 # 필수 환경변수:
@@ -59,6 +60,34 @@ container_exists() {
 probe() {
   curl -s -o /dev/null -w '%{http_code}' --max-time 3 \
     "http://127.0.0.1:${1}/actuator/health" 2>/dev/null || echo "응답없음"
+}
+
+is_running() {
+  [ "$(docker inspect --format='{{.State.Running}}' "$1" 2>/dev/null)" = "true" ]
+}
+
+# legacy 가 green 생성 뒤에 멈췄으면 최초 전환 직후 = legacy 가 직전 버전
+legacy_is_predecessor() {
+  container_exists "$APP_CONTAINER_NAME" || return 1
+  container_exists "${APP_CONTAINER_NAME}-green" || return 1
+  is_running "$APP_CONTAINER_NAME" && return 1
+  # 초 단위로 잘라야 문자열 비교가 맞습니다
+  local stopped created
+  stopped="$(docker inspect --format='{{.State.FinishedAt}}' "$APP_CONTAINER_NAME" 2>/dev/null | cut -c1-19)"
+  created="$(docker inspect --format='{{.Created}}' "${APP_CONTAINER_NAME}-green" 2>/dev/null | cut -c1-19)"
+  [ -n "$stopped" ] && [ -n "$created" ] && [[ "$stopped" > "$created" ]]
+}
+
+# IMAGE 로 쓸 수 있는 로컬 이미지 목록 (직전 버전은 지워지지 않고 남아 있음)
+suggest_images() {
+  local live_image
+  live_image="$(docker inspect --format='{{.Config.Image}}' "${APP_CONTAINER_NAME}-${LIVE}" 2>/dev/null \
+    || docker inspect --format='{{.Config.Image}}' "$APP_CONTAINER_NAME" 2>/dev/null || true)"
+  [ -n "$live_image" ] || return 0
+  fail "로컬에 남아 있는 이미지 (최신순, 현재 live ${live_image} 제외):"
+  docker image ls "${live_image%:*}" --format '{{.Repository}}:{{.Tag}}\t{{.CreatedSince}}' 2>/dev/null \
+    | grep -v -e '-migration' -e '<none>' | awk -F'\t' -v live="$live_image" '$1 != live' \
+    | sed 's/^/    /' >&2 || true
 }
 
 show_status() {
@@ -117,6 +146,7 @@ fi
 # 잠금보다 먼저 읽으면, 대기하는 사이 배포가 슬롯을 바꿔서
 # 엉뚱한 컨테이너를 고르거나 배포 결과를 덮어쓸 수 있습니다.
 LIVE="$(detect_live)"
+LEGACY_AS_PREV=0
 
 case "$TARGET" in
   prev|auto)
@@ -131,11 +161,13 @@ case "$TARGET" in
         exit 1
         ;;
     esac
-    # 최초 전환 직후에는 직전 슬롯 컨테이너가 없고 legacy 만 있습니다.
-    if ! container_exists "${APP_CONTAINER_NAME}-${TARGET}" \
-       && container_exists "$APP_CONTAINER_NAME"; then
-      log "직전 슬롯(${TARGET}) 컨테이너가 없어 legacy 로 복구합니다"
+    # 최초 전환 직후에만 legacy 가 blue 자리를 대신합니다 (같은 8080 포트)
+    if [ "$TARGET" = "blue" ] && [ -z "${IMAGE:-}" ] \
+       && ! container_exists "${APP_CONTAINER_NAME}-blue" \
+       && legacy_is_predecessor; then
+      log "최초 전환 직후입니다 — 직전 버전인 legacy 로 복구합니다"
       TARGET=legacy
+      LEGACY_AS_PREV=1
     fi
     log "자동 선택: ${TARGET} (현재 live=${LIVE})"
     ;;
@@ -155,6 +187,32 @@ case "$TARGET" in
   legacy) PORT="$BLUE_PORT";  CONTAINER="${APP_CONTAINER_NAME}" ;;
 esac
 
+# ── legacy: 단일 컨테이너 방식으로 전환 (버전은 현재 live 유지) ─────────────
+if [ "$TARGET" = "legacy" ] && [ "$LEGACY_AS_PREV" = "0" ] && [ -z "${IMAGE:-}" ]; then
+  if [ "$LIVE" = "blue" ] && is_running "${APP_CONTAINER_NAME}-blue"; then
+    # blue 가 8080 에서 서비스 중이면 이름만 바꿉니다 (중단 없음)
+    if container_exists "$APP_CONTAINER_NAME"; then
+      docker rm "$APP_CONTAINER_NAME" > /dev/null || {
+        fail "정지된 legacy 를 지우지 못했습니다 — 중단합니다"
+        exit 1
+      }
+    fi
+    docker rename "${APP_CONTAINER_NAME}-blue" "$APP_CONTAINER_NAME" || {
+      fail "docker rename 실패 — 중단합니다"
+      exit 1
+    }
+    log "blue 의 이름을 ${APP_CONTAINER_NAME} 로 바꿨습니다 — 서비스 중단 없음"
+  elif [ "$LIVE" = "green" ] && is_running "${APP_CONTAINER_NAME}-green"; then
+    IMAGE="$(docker inspect --format='{{.Config.Image}}' "${APP_CONTAINER_NAME}-green")"
+    log "현재 live(green) 와 같은 이미지로 띄웁니다: ${IMAGE}"
+  fi
+fi
+
+if [ "$TARGET" = "legacy" ] && [ -z "${IMAGE:-}" ] \
+   && container_exists "$APP_CONTAINER_NAME" && ! is_running "$APP_CONTAINER_NAME"; then
+  log "정지돼 있던 legacy 를 다시 띄웁니다: $(docker inspect --format='{{.Config.Image}}' "$APP_CONTAINER_NAME") (정지 $(docker inspect --format='{{.State.FinishedAt}}' "$APP_CONTAINER_NAME" | cut -c1-19) UTC)"
+fi
+
 if [ "$TARGET" = "$LIVE" ]; then
   fail "[주의] ${TARGET} 는 이미 live 슬롯입니다. 되돌릴 대상이 맞는지 확인하세요."
   show_status
@@ -165,14 +223,25 @@ log "복구 대상: ${TARGET} (컨테이너 ${CONTAINER}, 포트 ${PORT})"
 # ── 1. 대상 컨테이너 확보 ────────────────────────────────────────────────────
 if docker ps --format '{{.Names}}' | grep -qx "$CONTAINER"; then
   log "컨테이너가 이미 실행 중입니다"
-elif docker ps -a --format '{{.Names}}' | grep -qx "$CONTAINER"; then
+  if [ -n "${IMAGE:-}" ]; then
+    fail "[주의] 실행 중인 컨테이너를 그대로 씁니다 — 지정한 IMAGE 는 쓰지 않았습니다"
+  fi
+elif [ -z "${IMAGE:-}" ] && docker ps -a --format '{{.Names}}' | grep -qx "$CONTAINER"; then
   log "정지된 컨테이너를 다시 시작합니다"
   if ! docker start "$CONTAINER"; then
     fail "docker start 실패 — 죽은 포트로 전환하지 않도록 중단합니다"
     exit 1
   fi
 elif [ -n "${IMAGE:-}" ]; then
-  log "컨테이너가 없어 새로 기동합니다 (이미지: $IMAGE)"
+  # IMAGE 를 지정했으면 정지된 컨테이너를 교체합니다
+  if docker ps -a --format '{{.Names}}' | grep -qx "$CONTAINER"; then
+    log "정지된 ${CONTAINER} 를 지정한 이미지로 교체합니다"
+    docker rm "$CONTAINER" > /dev/null || {
+      fail "docker rm 실패 — 중단합니다"
+      exit 1
+    }
+  fi
+  log "새로 기동합니다 (이미지: $IMAGE)"
   MEM_ARGS=()
   if [ -n "${CONTAINER_MEM_MB:-}" ] && [ "${CONTAINER_MEM_MB:-0}" != "0" ]; then
     MEM_ARGS=(--memory="${CONTAINER_MEM_MB}m" --memory-swap="${CONTAINER_MEMSWAP_MB:-$CONTAINER_MEM_MB}m")
@@ -198,7 +267,8 @@ else
   # 컨테이너 없는 포트로 전환하면 nginx 가 502 를 냅니다.
   fail "컨테이너 ${CONTAINER} 가 없고 IMAGE 도 지정되지 않았습니다."
   fail "복구할 이미지 태그를 지정해 다시 실행하세요:"
-  fail "  IMAGE=<태그> bash rollback.sh ${TARGET}"
+  fail "  IMAGE=<이미지> bash rollback.sh ${TARGET}"
+  suggest_images
   exit 1
 fi
 
@@ -293,3 +363,8 @@ fi
 
 docker ps --filter "name=${APP_CONTAINER_NAME}" \
   --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
+
+# 다른 컨테이너는 정지하지 않으므로 안내만 합니다
+if [ "$TARGET" = "legacy" ] && container_exists "${APP_CONTAINER_NAME}-green"; then
+  log "green 컨테이너가 남아 있습니다. 확인 후 정리하세요:  docker rm -f ${APP_CONTAINER_NAME}-green"
+fi
