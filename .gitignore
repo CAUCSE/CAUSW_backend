@@ -74,6 +74,7 @@ monitoring/prometheus-data/
 monitoring/grafana-data/
 monitoring/loki-data/
 monitoring/mysqld-exporter/.my.cnf
+monitoring/tempo-data/
 
 /.claude
 docs/superpowers/
