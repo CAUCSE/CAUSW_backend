@@ -35,4 +35,15 @@ class EventTest {
 
 		assertThat(event.getLandingUrl()).isEqualTo("https://causw.net");
 	}
+
+	@Test
+	@DisplayName("이미지를 수정하면 새 이미지로 교체한다")
+	void givenNewImage_whenUpdateImage_thenReplace() {
+		UuidFile newImage = mock(UuidFile.class);
+		Event event = Event.of("제목", null, true, 0, mock(UuidFile.class));
+
+		event.updateImage(newImage);
+
+		assertThat(event.getImage()).isEqualTo(newImage);
+	}
 }
