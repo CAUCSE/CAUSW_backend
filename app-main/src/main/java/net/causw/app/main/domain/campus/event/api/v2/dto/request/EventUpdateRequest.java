@@ -12,7 +12,7 @@ public record EventUpdateRequest(
 
 	@Schema(description = "배너 이미지 UUID. 기존 이미지를 유지하려면 기존 UUID를 그대로 전달합니다.") @NotBlank String imageUuid,
 
-	@Schema(description = "배너 클릭 시 이동할 링크 (선택)", example = "https://causw.net") @Pattern(regexp = "^https?://.+", message = "랜딩 링크는 http:// 또는 https:// 로 시작해야 합니다.") String landingUrl,
+	@Schema(description = "배너 클릭 시 이동할 링크 (선택)", example = "https://causw.net") @Pattern(regexp = "^(https?://.+)?$", message = "랜딩 링크는 http:// 또는 https:// 로 시작해야 합니다.") String landingUrl,
 
 	@Schema(description = "홈 화면 노출 여부", example = "true") @NotNull Boolean isActive,
 

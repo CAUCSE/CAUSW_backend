@@ -46,7 +46,7 @@ public class Event extends BaseEntity {
 	public static Event of(String title, String landingUrl, Boolean isActive, Integer displayOrder, UuidFile image) {
 		Event event = Event.builder()
 			.title(title)
-			.landingUrl(landingUrl)
+			.landingUrl(normalizeLandingUrl(landingUrl))
 			.isActive(isActive)
 			.displayOrder(displayOrder)
 			.build();
@@ -56,7 +56,7 @@ public class Event extends BaseEntity {
 
 	public void update(String title, String landingUrl, Boolean isActive, Integer displayOrder) {
 		this.title = title;
-		this.landingUrl = landingUrl;
+		this.landingUrl = normalizeLandingUrl(landingUrl);
 		this.isActive = isActive;
 		this.displayOrder = displayOrder;
 	}
@@ -75,5 +75,9 @@ public class Event extends BaseEntity {
 
 	public boolean isDeleted() {
 		return this.deletedAt != null;
+	}
+
+	private static String normalizeLandingUrl(String landingUrl) {
+		return landingUrl == null || landingUrl.isBlank() ? null : landingUrl;
 	}
 }
