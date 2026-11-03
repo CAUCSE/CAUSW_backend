@@ -62,7 +62,7 @@ public class Event extends BaseEntity {
 	}
 
 	public void updateImage(UuidFile image) {
-		this.eventAttachImage.setUuidFile(image);
+		this.eventAttachImage.updateUuidFile(image);
 	}
 
 	public UuidFile getImage() {

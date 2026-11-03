@@ -13,7 +13,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Getter
 @Builder(access = AccessLevel.PROTECTED)
@@ -24,10 +23,9 @@ import lombok.Setter;
 public class EventAttachImage extends JoinEntity {
 
 	@Getter
-	@Setter(AccessLevel.PUBLIC)
 	@OneToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "uuid_file_id", nullable = false, unique = true)
-	public UuidFile uuidFile;
+	private UuidFile uuidFile;
 
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "event_id", nullable = false, unique = true)
@@ -38,5 +36,9 @@ public class EventAttachImage extends JoinEntity {
 			.uuidFile(uuidFile)
 			.event(event)
 			.build();
+	}
+
+	public void updateUuidFile(UuidFile uuidFile) {
+		this.uuidFile = uuidFile;
 	}
 }
