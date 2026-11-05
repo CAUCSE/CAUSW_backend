@@ -23,7 +23,7 @@ class EventTest {
 	void givenEmptyLandingUrl_whenUpdate_thenNull() {
 		Event event = Event.of("제목", "https://causw.net", true, 0, mock(UuidFile.class));
 
-		event.update("제목", "", true, 0);
+		event.update("제목", "", true);
 
 		assertThat(event.getLandingUrl()).isNull();
 	}

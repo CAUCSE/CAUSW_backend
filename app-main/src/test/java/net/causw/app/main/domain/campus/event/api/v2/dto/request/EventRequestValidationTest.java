@@ -6,6 +6,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -46,11 +47,19 @@ class EventRequestValidationTest {
 		assertThat(validator.validate(updateRequest(landingUrl))).hasSize(1);
 	}
 
+	@ParameterizedTest
+	@NullAndEmptySource
+	@DisplayName("이미지 UUID 는 등록할 때 필수이고 수정할 때 선택이다")
+	void givenBlankImageUuid_whenValidate_thenRequiredOnlyOnCreate(String imageUuid) {
+		assertThat(validator.validate(new EventCreateRequest("제목", imageUuid, null, true))).hasSize(1);
+		assertThat(validator.validate(new EventUpdateRequest("제목", imageUuid, null, true))).isEmpty();
+	}
+
 	private EventCreateRequest createRequest(String landingUrl) {
-		return new EventCreateRequest("제목", "image-uuid", landingUrl, true, 0);
+		return new EventCreateRequest("제목", "image-uuid", landingUrl, true);
 	}
 
 	private EventUpdateRequest updateRequest(String landingUrl) {
-		return new EventUpdateRequest("제목", "image-uuid", landingUrl, true, 0);
+		return new EventUpdateRequest("제목", "image-uuid", landingUrl, true);
 	}
 }
