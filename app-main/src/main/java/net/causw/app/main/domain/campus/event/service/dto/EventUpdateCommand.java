@@ -4,6 +4,5 @@ public record EventUpdateCommand(
 	String title,
 	String imageUuid,
 	String landingUrl,
-	Boolean isActive,
-	Integer displayOrder) {
+	Boolean isActive) {
 }

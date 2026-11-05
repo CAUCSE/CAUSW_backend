@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import net.causw.app.main.domain.campus.event.entity.Event;
@@ -20,4 +21,10 @@ public interface EventRepository extends JpaRepository<Event, String> {
 
 	@EntityGraph(attributePaths = {"eventAttachImage", "eventAttachImage.uuidFile"})
 	List<Event> findAllByDeletedAtIsNullOrderByDisplayOrderAscCreatedAtDesc();
+
+	@EntityGraph(attributePaths = {"eventAttachImage", "eventAttachImage.uuidFile"})
+	List<Event> findAllByIdInAndDeletedAtIsNull(List<String> ids);
+
+	@Query("SELECT MAX(e.displayOrder) FROM Event e WHERE e.deletedAt IS NULL")
+	Integer findMaxDisplayOrder();
 }

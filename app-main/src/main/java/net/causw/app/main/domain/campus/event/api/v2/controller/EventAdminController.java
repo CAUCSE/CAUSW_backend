@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import net.causw.app.main.core.aop.annotation.RequireAdminRole;
 import net.causw.app.main.core.aop.enums.AdminTarget;
 import net.causw.app.main.domain.campus.event.api.v2.dto.request.EventCreateRequest;
+import net.causw.app.main.domain.campus.event.api.v2.dto.request.EventOrderUpdateRequest;
 import net.causw.app.main.domain.campus.event.api.v2.dto.request.EventUpdateRequest;
 import net.causw.app.main.domain.campus.event.api.v2.dto.response.EventResponse;
 import net.causw.app.main.domain.campus.event.api.v2.mapper.EventDtoMapper;
@@ -49,7 +51,7 @@ public class EventAdminController {
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@Operation(summary = "이벤트 등록", description = "배너 이미지는 Presigned URL(FilePath.EVENT)로 먼저 업로드한 뒤 UUID 를 전달합니다.")
+	@Operation(summary = "이벤트 등록", description = "배너 이미지는 Presigned URL(FilePath.EVENT)로 먼저 업로드한 뒤 UUID 를 전달합니다. 노출 순서는 가장 마지막으로 자동 지정됩니다.")
 	public ApiResponse<EventResponse> createEvent(@Valid @RequestBody EventCreateRequest request) {
 		EventResult result = eventService.createEvent(eventDtoMapper.toCreateCommand(request));
 		return ApiResponse.success(eventDtoMapper.toResponse(result));
@@ -57,12 +59,20 @@ public class EventAdminController {
 
 	@PutMapping("/{eventId}")
 	@ResponseStatus(HttpStatus.OK)
-	@Operation(summary = "이벤트 수정", description = "이벤트 내용과 노출 활성화 여부를 수정합니다. 이미지 UUID 가 바뀌면 기존 이미지는 삭제됩니다.")
+	@Operation(summary = "이벤트 수정", description = "이벤트 내용과 노출 활성화 여부를 수정합니다. 이미지 UUID 를 비워두면 기존 이미지를 유지하고, 다른 UUID 를 전달하면 기존 이미지는 삭제됩니다.")
 	public ApiResponse<EventResponse> updateEvent(
 		@PathVariable("eventId") String eventId,
 		@Valid @RequestBody EventUpdateRequest request) {
 		EventResult result = eventService.updateEvent(eventId, eventDtoMapper.toUpdateCommand(request));
 		return ApiResponse.success(eventDtoMapper.toResponse(result));
+	}
+
+	@PatchMapping("/orders")
+	@ResponseStatus(HttpStatus.OK)
+	@Operation(summary = "이벤트 노출 순서 변경", description = "전달한 ID 순서대로 이벤트의 노출 순서를 변경합니다.")
+	public ApiResponse<Void> updateEventOrder(@Valid @RequestBody EventOrderUpdateRequest request) {
+		eventService.updateEventOrder(eventDtoMapper.toOrderUpdateCommand(request));
+		return ApiResponse.success();
 	}
 
 	@DeleteMapping("/{eventId}")

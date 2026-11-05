@@ -25,6 +25,8 @@ import lombok.NoArgsConstructor;
 @Table(name = "tb_event")
 public class Event extends BaseEntity {
 
+	public static final int DISPLAY_ORDER_INTERVAL = 10;
+
 	@Column(name = "title", nullable = false)
 	private String title;
 
@@ -54,10 +56,13 @@ public class Event extends BaseEntity {
 		return event;
 	}
 
-	public void update(String title, String landingUrl, Boolean isActive, Integer displayOrder) {
+	public void update(String title, String landingUrl, Boolean isActive) {
 		this.title = title;
 		this.landingUrl = normalizeLandingUrl(landingUrl);
 		this.isActive = isActive;
+	}
+
+	public void updateDisplayOrder(Integer displayOrder) {
 		this.displayOrder = displayOrder;
 	}
 

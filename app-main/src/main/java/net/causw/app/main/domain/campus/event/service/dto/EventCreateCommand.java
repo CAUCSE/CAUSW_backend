@@ -4,6 +4,5 @@ public record EventCreateCommand(
 	String title,
 	String imageUuid,
 	String landingUrl,
-	Boolean isActive,
-	Integer displayOrder) {
+	Boolean isActive) {
 }

@@ -4,12 +4,14 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.asset.file.enums.FilePath;
 import net.causw.app.main.domain.asset.file.service.implementation.FileWriter;
 import net.causw.app.main.domain.campus.event.entity.Event;
 import net.causw.app.main.domain.campus.event.service.dto.EventCreateCommand;
+import net.causw.app.main.domain.campus.event.service.dto.EventOrderUpdateCommand;
 import net.causw.app.main.domain.campus.event.service.dto.EventResult;
 import net.causw.app.main.domain.campus.event.service.dto.EventUpdateCommand;
 import net.causw.app.main.domain.campus.event.service.implementation.EventReader;
@@ -43,21 +45,27 @@ public class EventService {
 	public EventResult createEvent(EventCreateCommand command) {
 		UuidFile image = confirmImage(command.imageUuid());
 		Event event = eventWriter.create(Event.of(
-			command.title(), command.landingUrl(), command.isActive(), command.displayOrder(), image));
+			command.title(), command.landingUrl(), command.isActive(), eventReader.getNextDisplayOrder(), image));
 		return EventResult.from(event);
 	}
 
 	@Transactional
 	public EventResult updateEvent(String eventId, EventUpdateCommand command) {
 		Event event = eventReader.getById(eventId);
-		eventWriter.update(event, command.title(), command.landingUrl(), command.isActive(), command.displayOrder());
+		eventWriter.update(event, command.title(), command.landingUrl(), command.isActive());
 
 		UuidFile currentImage = event.getImage();
-		if (!currentImage.getUuid().equals(command.imageUuid())) {
+		if (StringUtils.hasText(command.imageUuid()) && !currentImage.getUuid().equals(command.imageUuid())) {
 			eventWriter.updateImage(event, confirmImage(command.imageUuid()));
 			fileWriter.delete(currentImage);
 		}
 		return EventResult.from(event);
+	}
+
+	@Transactional
+	public void updateEventOrder(EventOrderUpdateCommand command) {
+		List<Event> events = eventReader.findAllByIds(command.eventIds());
+		eventWriter.updateDisplayOrders(events, command.eventIds());
 	}
 
 	@Transactional

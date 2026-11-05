@@ -28,4 +28,13 @@ public class EventReader {
 	public List<Event> findAll() {
 		return eventRepository.findAllByDeletedAtIsNullOrderByDisplayOrderAscCreatedAtDesc();
 	}
+
+	public List<Event> findAllByIds(List<String> ids) {
+		return eventRepository.findAllByIdInAndDeletedAtIsNull(ids);
+	}
+
+	public int getNextDisplayOrder() {
+		Integer max = eventRepository.findMaxDisplayOrder();
+		return (max != null ? max : 0) + Event.DISPLAY_ORDER_INTERVAL;
+	}
 }
