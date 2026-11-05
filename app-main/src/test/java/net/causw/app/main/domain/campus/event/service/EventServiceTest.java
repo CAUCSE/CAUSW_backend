@@ -141,7 +141,8 @@ class EventServiceTest {
 			// then
 			verify(eventWriter).update(event, "새 제목", "https://causw.net", false);
 			verify(fileWriter, never()).confirmFiles(anyList(), any(FilePath.class));
-			verify(fileWriter, never()).delete(any(UuidFile.class));
+			verify(fileWriter, never()).deleteFromDb(any());
+			verify(eventWriter, never()).requestImageFileDeletion(any());
 		}
 
 		@ParameterizedTest
@@ -161,14 +162,16 @@ class EventServiceTest {
 			// then
 			assertThat(result.imageUrl()).isEqualTo("https://cdn/current.png");
 			verify(fileWriter, never()).confirmFiles(anyList(), any(FilePath.class));
-			verify(fileWriter, never()).delete(any(UuidFile.class));
+			verify(fileWriter, never()).deleteFromDb(any());
+			verify(eventWriter, never()).requestImageFileDeletion(any());
 		}
 
 		@Test
-		@DisplayName("이미지 UUID 가 바뀌면 새 이미지를 확정하고 기존 이미지를 삭제한다")
+		@DisplayName("이미지 UUID 가 바뀌면 기존 이미지를 DB 에서 지우고 파일 삭제는 이벤트로 요청한다")
 		void givenNewImageUuid_whenUpdateEvent_thenReplaceImage() {
 			// given
 			UuidFile currentImage = mockImage("current-uuid", "https://cdn/current.png");
+			given(currentImage.getId()).willReturn("current-file-id");
 			UuidFile newImage = mock(UuidFile.class);
 			Event event = Event.of("제목", null, true, 0, currentImage);
 			given(eventReader.getById("event-id")).willReturn(event);
@@ -180,7 +183,9 @@ class EventServiceTest {
 
 			// then
 			verify(eventWriter).updateImage(event, newImage);
-			verify(fileWriter).delete(currentImage);
+			verify(fileWriter).deleteFromDb("current-file-id");
+			verify(eventWriter).requestImageFileDeletion(currentImage);
+			verify(fileWriter, never()).delete(any(UuidFile.class));
 		}
 
 		@Test
