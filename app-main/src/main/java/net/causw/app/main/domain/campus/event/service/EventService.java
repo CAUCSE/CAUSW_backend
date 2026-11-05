@@ -57,7 +57,8 @@ public class EventService {
 		UuidFile currentImage = event.getImage();
 		if (StringUtils.hasText(command.imageUuid()) && !currentImage.getUuid().equals(command.imageUuid())) {
 			eventWriter.updateImage(event, confirmImage(command.imageUuid()));
-			fileWriter.delete(currentImage);
+			fileWriter.deleteFromDb(currentImage.getId());
+			eventWriter.requestImageFileDeletion(currentImage);
 		}
 		return EventResult.from(event);
 	}
