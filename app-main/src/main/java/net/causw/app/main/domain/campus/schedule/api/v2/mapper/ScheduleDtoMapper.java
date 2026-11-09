@@ -9,6 +9,9 @@ import org.mapstruct.factory.Mappers;
 import net.causw.app.main.domain.campus.schedule.api.v2.dto.request.ScheduleRequest;
 import net.causw.app.main.domain.campus.schedule.api.v2.dto.response.ScheduleListResponse;
 import net.causw.app.main.domain.campus.schedule.api.v2.dto.response.ScheduleResponse;
+import net.causw.app.main.domain.campus.schedule.entity.enums.ScheduleType;
+import net.causw.app.main.domain.campus.schedule.enums.ScheduleCategory;
+import net.causw.app.main.domain.campus.schedule.service.dto.ScheduleCalendarDto;
 import net.causw.app.main.domain.campus.schedule.service.dto.ScheduleDto;
 import net.causw.app.main.domain.user.account.entity.user.User;
 
@@ -24,8 +27,17 @@ public interface ScheduleDtoMapper {
 
 	ScheduleResponse toScheduleResponse(ScheduleDto dto);
 
-	default ScheduleListResponse toScheduleListResponse(List<ScheduleDto> dtoList) {
-		List<ScheduleResponse> data = dtoList.stream().map(this::toScheduleResponse).toList();
+	default ScheduleCategory toScheduleCategory(ScheduleType type) {
+		return ScheduleCategory.from(type);
+	}
+
+	ScheduleResponse toScheduleResponse(ScheduleCalendarDto dto);
+
+	default ScheduleListResponse toScheduleListResponse(List<ScheduleCalendarDto> dtoList) {
+		List<ScheduleResponse> data = dtoList.stream()
+			.map(this::toScheduleResponse)
+			.toList();
+
 		return ScheduleListResponse.builder()
 			.count(dtoList.size())
 			.data(data)
