@@ -67,3 +67,34 @@ services:
     ports:
       - "9100:9100"
     restart: unless-stopped
+
+  tempo:
+    image: grafana/tempo:latest
+    container_name: causw-tempo
+    env_file:
+      - ../../.env.local
+    user: "${MY_UID}:${MY_GID}"
+    command: [ "-config.file=/etc/tempo/tempo.yml" ]
+    volumes:
+      - ../tempo/tempo.yml:/etc/tempo/tempo.yml
+      - ../tempo-data:/tmp/tempo
+    ports:
+      - "3200:3200"
+    restart: unless-stopped
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    container_name: causw-otel-collector
+    env_file:
+      - ../../.env.local
+    user: "${MY_UID}:${MY_GID}"
+    command: [ "--config=/etc/otelcol-contrib/otel-collector.yml" ]
+    volumes:
+      - ../otel-collector/otel-collector.yml:/etc/otelcol-contrib/otel-collector.yml
+    ports:
+      - "4317:4317" # OTLP gRPC
+      - "4318:4318" # OTLP HTTP
+      - "8888:8888"
+    depends_on:
+      - tempo
+    restart: unless-stopped
