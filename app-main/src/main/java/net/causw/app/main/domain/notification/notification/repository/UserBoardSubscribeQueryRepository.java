@@ -44,6 +44,7 @@ public class UserBoardSubscribeQueryRepository {
 	 *   <li>소식 전체 알림({@link UserNotificationSettingKey#NEWS_NOTIFICATION_ENABLED})이 꺼져 있지 않은 사용자</li>
 	 *   <li>해당 게시판(채널) 구독이 꺼져 있지 않고, 게시글 성격 알림도 꺼져 있지 않은 사용자 (AND)
 	 *     <br>게시글 성격이 없는 경우({@code newsCategoryKey == null}) 채널 구독 여부만 판단합니다.</li>
+	 *   <li>게시글 성격을 노출하지 않는 학적의 사용자는 제외 (예: 학사 성격 글은 졸업생 제외, 게시판 관리자도 동일)</li>
 	 * </ol>
 	 *
 	 * @param boardId                알림을 발송할 게시판 ID
@@ -65,7 +66,7 @@ public class UserBoardSubscribeQueryRepository {
 		BooleanExpression channelSubscribed = boardSubscribeDisabledExists(user, boardId).not();
 		BooleanExpression channelAndCategory = newsCategoryKey == null
 			? channelSubscribed
-			: channelSubscribed.and(settingDisabledExists(user, newsCategoryKey).not());
+			: channelSubscribed.and(newsCategoryCondition(user, newsCategoryKey));
 
 		return jpaQueryFactory
 			.selectFrom(user)
@@ -136,6 +137,21 @@ public class UserBoardSubscribeQueryRepository {
 				ubs.board.id.eq(boardId),
 				ubs.isSubscribed.isFalse())
 			.exists();
+	}
+
+	/**
+	 * 게시글 성격 알림 조건: 성격 알림을 끄지 않았고, 이 성격을 노출하지 않는 학적이 아닌 사용자.
+	 * SQL에서 {@code NULL NOT IN (...)}은 참이 아니므로 학적이 없는 사용자는 명시적으로 포함한다.
+	 */
+	private BooleanExpression newsCategoryCondition(QUser user, UserNotificationSettingKey key) {
+		BooleanExpression categoryEnabled = settingDisabledExists(user, key).not();
+		Set<AcademicStatus> hiddenAcademicStatuses = key.getHiddenAcademicStatuses();
+		if (hiddenAcademicStatuses.isEmpty()) {
+			return categoryEnabled;
+		}
+		return user.academicStatus.isNull()
+			.or(user.academicStatus.notIn(hiddenAcademicStatuses))
+			.and(categoryEnabled);
 	}
 
 	/**

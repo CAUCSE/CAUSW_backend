@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import net.causw.app.main.domain.notification.notification.enums.UserNotificationSettingKey;
+import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 
 /**
  * 유저의 알림 설정 전체 조회 결과 DTO.
@@ -70,14 +71,17 @@ public record NotificationSettingResult(
 	 * @param settingMap      유저 알림 설정 맵
 	 * @param newsChannels    소식 게시판별 구독 설정 목록
 	 * @param communityBoards 소통 게시판별 구독 설정 목록
+	 * @param academicStatus  유저 학적 상태 (노출하지 않는 성격 설정을 제외하는 데 사용)
 	 * @return {@link NotificationSettingResult}
 	 */
 	public static NotificationSettingResult of(
 		UserNotificationSettingMap settingMap,
 		List<BoardSubscribeSetting> newsChannels,
-		List<BoardSubscribeSetting> communityBoards) {
+		List<BoardSubscribeSetting> communityBoards,
+		AcademicStatus academicStatus) {
 		List<NewsCategorySetting> newsCategories = Arrays.stream(UserNotificationSettingKey.values())
 			.filter(UserNotificationSettingKey::isNewsCategory)
+			.filter(key -> key.isVisibleTo(academicStatus))
 			.map(key -> new NewsCategorySetting(key.getNewsCategory(), key.getLabel(), settingMap.get(key)))
 			.toList();
 

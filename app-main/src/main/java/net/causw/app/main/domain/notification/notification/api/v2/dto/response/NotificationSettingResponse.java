@@ -46,7 +46,7 @@ public record NotificationSettingResponse(
 	public record NewsSettings(
 		@Schema(description = "소식 알림 받기 (전체 토글)") boolean enabled,
 		@Schema(description = "소식 채널(게시판)별 구독 목록") List<BoardSetting> channels,
-		@Schema(description = "소식 성격별 알림 목록") List<NewsCategorySetting> categories) {
+		@Schema(description = "소식 성격별 알림 목록. 졸업생에게는 ACADEMIC(학사)이 포함되지 않습니다.") List<NewsCategorySetting> categories) {
 	}
 
 	@Schema(description = "게시판 구독 정보")

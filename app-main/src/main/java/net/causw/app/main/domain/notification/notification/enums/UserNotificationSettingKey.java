@@ -1,9 +1,12 @@
 package net.causw.app.main.domain.notification.notification.enums;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.Optional;
+import java.util.Set;
 
 import net.causw.app.main.domain.community.post.enums.PostCategory;
+import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 
 import lombok.Getter;
 
@@ -60,5 +63,28 @@ public enum UserNotificationSettingKey {
 	 */
 	public boolean isNewsCategory() {
 		return newsCategory != null;
+	}
+
+	/**
+	 * 이 설정을 노출하지 않는 학적 상태를 반환한다.
+	 * 해당 학적의 유저는 이 설정을 조회·변경할 수 없고, 이 성격의 소식 글 알림도 받지 않는다.
+	 * 졸업생에게는 학사 성격을 노출하지 않는다. (소식 PRD 유저별 노출 정책)
+	 *
+	 * @return 노출하지 않는 학적 상태 Set (호출마다 새로 생성)
+	 */
+	public Set<AcademicStatus> getHiddenAcademicStatuses() {
+		if (this == NEWS_CATEGORY_ACADEMIC) {
+			return EnumSet.of(AcademicStatus.GRADUATED);
+		}
+		return EnumSet.noneOf(AcademicStatus.class);
+	}
+
+	/**
+	 * 해당 학적의 유저에게 노출되는 설정인지 여부.
+	 *
+	 * @param academicStatus 유저 학적 상태 (null이면 노출)
+	 */
+	public boolean isVisibleTo(AcademicStatus academicStatus) {
+		return academicStatus == null || !getHiddenAcademicStatuses().contains(academicStatus);
 	}
 }

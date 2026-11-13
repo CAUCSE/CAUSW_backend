@@ -22,6 +22,7 @@ import net.causw.app.main.domain.notification.notification.service.dto.UserNotif
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationSettingReader;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationSettingWriter;
 import net.causw.app.main.domain.notification.notification.service.implementation.UserBoardSubscribeReader;
+import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
@@ -59,7 +60,8 @@ public class NotificationSettingService {
 		return NotificationSettingResult.of(
 			settingMap,
 			getBoardSubscribeSettings(user, newsBoards, true),
-			getBoardSubscribeSettings(user, communityBoards, false));
+			getBoardSubscribeSettings(user, communityBoards, false),
+			user.getAcademicStatus());
 	}
 
 	/**
@@ -67,7 +69,7 @@ public class NotificationSettingService {
 	 */
 	@Transactional
 	public void updateUserSettings(String userId, UpdateNotificationSettingCommand command) {
-		validateNewsCategories(command.newsCategories());
+		validateNewsCategories(userId, command.newsCategories());
 		UserNotificationSettingMap settingMap = command.toSettingMap();
 		if (settingMap.isEmpty()) {
 			return;
@@ -105,15 +107,24 @@ public class NotificationSettingService {
 	}
 
 	/**
-	 * 소식 성격별 알림은 사용자 설정 대상 성격만 수정할 수 있다. (ETC 등은 불가)
+	 * 소식 성격별 알림은 사용자 설정 대상 성격만 수정할 수 있다.
+	 * 설정 키가 없는 성격(ETC 등)과 유저 학적에 노출하지 않는 성격(졸업생의 학사)은 수정할 수 없다.
 	 */
-	private void validateNewsCategories(Map<PostCategory, Boolean> newsCategories) {
-		if (newsCategories == null) {
+	private void validateNewsCategories(String userId, Map<PostCategory, Boolean> newsCategories) {
+		if (newsCategories == null || newsCategories.isEmpty()) {
 			return;
 		}
 		boolean hasNotConfigurable = newsCategories.keySet().stream()
 			.anyMatch(category -> UserNotificationSettingKey.fromNewsCategory(category).isEmpty());
 		if (hasNotConfigurable) {
+			throw NotificationSettingErrorCode.NEWS_CATEGORY_NOT_CONFIGURABLE.toBaseException();
+		}
+
+		AcademicStatus academicStatus = userReader.findUserByIdNotDeleted(userId).getAcademicStatus();
+		boolean hasHidden = newsCategories.keySet().stream()
+			.map(category -> UserNotificationSettingKey.fromNewsCategory(category).orElseThrow())
+			.anyMatch(key -> !key.isVisibleTo(academicStatus));
+		if (hasHidden) {
 			throw NotificationSettingErrorCode.NEWS_CATEGORY_NOT_CONFIGURABLE.toBaseException();
 		}
 	}

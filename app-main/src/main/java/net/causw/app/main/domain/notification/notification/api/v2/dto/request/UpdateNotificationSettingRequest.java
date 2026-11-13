@@ -36,7 +36,7 @@ public record UpdateNotificationSettingRequest(
 	@Schema(description = "소식 알림 세부 설정. 채널별 구독은 PATCH /api/v2/notification-settings/boards/{boardId}로 수정합니다.")
 	public record NewsSettings(
 		@Schema(description = "소식 알림 받기 (전체 토글)") Boolean enabled,
-		@Schema(description = "성격별 알림 수신 여부. 포함된 성격만 변경하며, ETC는 설정할 수 없습니다.", example = "{\"RECRUIT\": false, \"ACADEMIC\": true}") Map<PostCategory, Boolean> categories) {
+		@Schema(description = "성격별 알림 수신 여부. 포함된 성격만 변경하며, ETC와 졸업생의 ACADEMIC(학사)은 설정할 수 없습니다.", example = "{\"RECRUIT\": false, \"ACADEMIC\": true}") Map<PostCategory, Boolean> categories) {
 	}
 
 	public UpdateNotificationSettingCommand toCommand() {

@@ -40,6 +40,7 @@ import net.causw.app.main.domain.notification.notification.service.dto.UserNotif
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationSettingReader;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationSettingWriter;
 import net.causw.app.main.domain.notification.notification.service.implementation.UserBoardSubscribeReader;
+import net.causw.app.main.domain.user.academic.enums.userAcademicRecord.AcademicStatus;
 import net.causw.app.main.domain.user.account.entity.user.User;
 import net.causw.app.main.domain.user.account.service.implementation.UserReader;
 import net.causw.app.main.domain.user.account.service.implementation.UserValidator;
@@ -167,6 +168,26 @@ class NotificationSettingServiceTest {
 		}
 
 		@Test
+		@DisplayName("성공: 졸업생에게는 학사 성격을 제외한 4개 성격만 반환된다")
+		void givenGraduatedUser_whenGetAllSettings_thenExcludeAcademicCategory() {
+			// given
+			User mockUser = mock(User.class);
+			given(mockUser.getAcademicStatus()).willReturn(AcademicStatus.GRADUATED);
+			given(userReader.findUserByIdNotDeleted(userId)).willReturn(mockUser);
+			given(notificationSettingReader.findSettingMap(userId)).willReturn(emptySettingMap());
+			given(boardAccessManager.getReadableBoards(mockUser, BoardGroup.NOTICE)).willReturn(List.of());
+
+			// when
+			NotificationSettingResult result = notificationSettingService.getAllSettings(userId);
+
+			// then
+			assertThat(result.news().categories())
+				.extracting(NewsCategorySetting::category)
+				.containsExactly(PostCategory.RECRUIT, PostCategory.EVENT_LECTURE,
+					PostCategory.EXTERNAL_ACTIVITY, PostCategory.RESEARCH);
+		}
+
+		@Test
 		@DisplayName("성공: 소통 게시판은 기본 미구독으로 조회하고 시스템 공지 게시판은 제외한다")
 		void givenCommunityBoards_whenGetAllSettings_thenReturnCommunityBoardsExcludingSystemNotice() {
 			// given
@@ -274,6 +295,8 @@ class NotificationSettingServiceTest {
 		@DisplayName("성공: 소식 전체 토글과 성격별 설정이 대응하는 설정 키로 upsert된다")
 		void givenNewsSettings_whenUpdateUserSettings_thenUpsertNewsKeys() {
 			// given
+			User mockUser = mock(User.class);
+			given(userReader.findUserByIdNotDeleted(userId)).willReturn(mockUser);
 			UpdateNotificationSettingCommand command = new UpdateNotificationSettingCommand(
 				null, null, null, null, null, false, Map.of(PostCategory.RECRUIT, false));
 
@@ -304,6 +327,48 @@ class NotificationSettingServiceTest {
 				.hasFieldOrPropertyWithValue("errorCode", NotificationSettingErrorCode.NEWS_CATEGORY_NOT_CONFIGURABLE);
 
 			verify(notificationSettingWriter, never()).upsertSettings(any(), any());
+		}
+
+		@Test
+		@DisplayName("실패: 졸업생이 학사 성격을 변경하면 요청 전체가 거절된다")
+		void givenGraduatedUserWithAcademic_whenUpdateUserSettings_thenThrowException() {
+			// given
+			User mockUser = mock(User.class);
+			given(mockUser.getAcademicStatus()).willReturn(AcademicStatus.GRADUATED);
+			given(userReader.findUserByIdNotDeleted(userId)).willReturn(mockUser);
+			UpdateNotificationSettingCommand command = new UpdateNotificationSettingCommand(
+				null, null, null, null, null, null,
+				Map.of(PostCategory.RECRUIT, false, PostCategory.ACADEMIC, false));
+
+			// when & then
+			assertThatThrownBy(() -> notificationSettingService.updateUserSettings(userId, command))
+				.isInstanceOf(BaseRunTimeV2Exception.class)
+				.hasFieldOrPropertyWithValue("errorCode", NotificationSettingErrorCode.NEWS_CATEGORY_NOT_CONFIGURABLE);
+
+			verify(notificationSettingWriter, never()).upsertSettings(any(), any());
+		}
+
+		@Test
+		@DisplayName("성공: 재학생은 학사 성격을 변경할 수 있다")
+		void givenEnrolledUserWithAcademic_whenUpdateUserSettings_thenUpsertAcademicKey() {
+			// given
+			User mockUser = mock(User.class);
+			given(mockUser.getAcademicStatus()).willReturn(AcademicStatus.ENROLLED);
+			given(userReader.findUserByIdNotDeleted(userId)).willReturn(mockUser);
+			UpdateNotificationSettingCommand command = new UpdateNotificationSettingCommand(
+				null, null, null, null, null, null, Map.of(PostCategory.ACADEMIC, false));
+
+			// when
+			notificationSettingService.updateUserSettings(userId, command);
+
+			// then
+			ArgumentCaptor<UserNotificationSettingMap> captor = ArgumentCaptor.forClass(
+				UserNotificationSettingMap.class);
+			verify(notificationSettingWriter).upsertSettings(eq(userId), captor.capture());
+			Map<UserNotificationSettingKey, Boolean> upserted = new EnumMap<>(UserNotificationSettingKey.class);
+			captor.getValue().forEach(upserted::put);
+			assertThat(upserted)
+				.containsExactlyEntriesOf(Map.of(UserNotificationSettingKey.NEWS_CATEGORY_ACADEMIC, false));
 		}
 	}
 
