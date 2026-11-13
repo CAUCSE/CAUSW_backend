@@ -42,7 +42,7 @@ public record NotificationSettingResponse(
 		@Schema(description = "서비스 공지 알림 수신 여부") boolean noticeEnabled) {
 	}
 
-	@Schema(description = "소식 알림 세부 설정. enabled가 true이고, 채널 또는 성격 알림 중 하나라도 켜져 있으면 알림을 받습니다.")
+	@Schema(description = "소식 알림 세부 설정. enabled가 true이고, 글이 올라온 채널과 글의 성격 알림이 모두 켜져 있으면 알림을 받습니다. 성격 알림이 없는 글(미분류·기타)은 채널 알림만으로 판단합니다.")
 	public record NewsSettings(
 		@Schema(description = "소식 알림 받기 (전체 토글)") boolean enabled,
 		@Schema(description = "소식 채널(게시판)별 구독 목록") List<BoardSetting> channels,

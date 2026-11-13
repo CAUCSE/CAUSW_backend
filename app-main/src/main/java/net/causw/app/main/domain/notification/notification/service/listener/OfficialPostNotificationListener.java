@@ -60,7 +60,7 @@ public class OfficialPostNotificationListener {
 
 		// 설정 row가 없으면 켜짐(true)으로 간주. false인 row가 명시적으로 존재하는 경우에만 꺼짐.
 		// ACTIVE + 학적 범위 + 학과 제한 조건을 만족하는 유저 중
-		// 소식 전체 알림 ON AND (채널 구독 ON OR 게시글 성격 알림 ON)인 유저 목록 조회
+		// 소식 전체 알림 ON AND 채널 구독 ON AND 게시글 성격 알림 ON인 유저 목록 조회
 		// 게시글 성격이 없거나(미분류) 설정 대상이 아닌 성격(ETC)이면 채널 구독 여부만 판단.
 		// 게시판 관리자는 학적·학과 제한 없이 포함.
 		Set<String> boardAdminIds = boardConfigReader.getAdminIdSetMapByBoardIds(List.of(board.getId()))

@@ -42,7 +42,7 @@ public class UserBoardSubscribeQueryRepository {
 	 *     </ul>
 	 *   </li>
 	 *   <li>소식 전체 알림({@link UserNotificationSettingKey#NEWS_NOTIFICATION_ENABLED})이 꺼져 있지 않은 사용자</li>
-	 *   <li>해당 게시판(채널) 구독이 꺼져 있지 않거나, 게시글 성격 알림이 꺼져 있지 않은 사용자 (OR)
+	 *   <li>해당 게시판(채널) 구독이 꺼져 있지 않고, 게시글 성격 알림도 꺼져 있지 않은 사용자 (AND)
 	 *     <br>게시글 성격이 없는 경우({@code newsCategoryKey == null}) 채널 구독 여부만 판단합니다.</li>
 	 * </ol>
 	 *
@@ -63,9 +63,9 @@ public class UserBoardSubscribeQueryRepository {
 		QUser user = QUser.user;
 
 		BooleanExpression channelSubscribed = boardSubscribeDisabledExists(user, boardId).not();
-		BooleanExpression channelOrCategory = newsCategoryKey == null
+		BooleanExpression channelAndCategory = newsCategoryKey == null
 			? channelSubscribed
-			: channelSubscribed.or(settingDisabledExists(user, newsCategoryKey).not());
+			: channelSubscribed.and(settingDisabledExists(user, newsCategoryKey).not());
 
 		return jpaQueryFactory
 			.selectFrom(user)
@@ -73,7 +73,7 @@ public class UserBoardSubscribeQueryRepository {
 				user.state.eq(UserState.ACTIVE),
 				accessCondition(user, targetAcademicStatuses, allowedDepartments, boardAdminIds),
 				settingDisabledExists(user, UserNotificationSettingKey.NEWS_NOTIFICATION_ENABLED).not(),
-				channelOrCategory)
+				channelAndCategory)
 			.fetch();
 	}
 
