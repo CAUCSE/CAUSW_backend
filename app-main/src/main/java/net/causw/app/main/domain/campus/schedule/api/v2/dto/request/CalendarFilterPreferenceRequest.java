@@ -7,5 +7,5 @@ import net.causw.app.main.domain.campus.schedule.enums.ScheduleCategory;
 import jakarta.validation.constraints.NotNull;
 
 public record CalendarFilterPreferenceRequest(
-	@NotNull Set<ScheduleCategory> categories) {
+	@NotNull Set<@NotNull ScheduleCategory> categories) {
 }

@@ -627,4 +627,53 @@ public class ScheduleServiceTest {
 		verify(ceremonyReader)
 			.findAcceptedByDateRange(from.toLocalDate(), to.toLocalDate());
 	}
+
+	@Test
+	@DisplayName("요청 시간 범위와 겹치지 않는 경조사는 제외된다")
+	void findByConditionWithMaskingExcludesCeremonyOutsideTimeRange() {
+		// given
+		LocalDateTime from = LocalDateTime.of(2026, 4, 10, 9, 0);
+		LocalDateTime to = LocalDateTime.of(2026, 4, 10, 10, 0);
+		List<ScheduleCategory> categories = List.of(ScheduleCategory.CEREMONY);
+		User viewer = ObjectFixtures.getCertifiedUserWithId("viewer-id");
+
+		User ceremonyUser = ObjectFixtures.getCertifiedUser();
+
+		Ceremony ceremony = Ceremony.of(
+			ceremonyUser,
+			CeremonyType.CELEBRATION,
+			CeremonyCategory.MARRIAGE,
+			null,
+			LocalDate.of(2026, 4, 10),
+			LocalDate.of(2026, 4, 10),
+			LocalTime.of(14, 0),
+			LocalTime.of(16, 0),
+			RelationType.ME,
+			null,
+			null,
+			null,
+			null,
+			"경조사 설명",
+			null,
+			null,
+			null,
+			null,
+			null,
+			true,
+			List.of());
+
+		given(ceremonyReader.findAcceptedByDateRange(
+			from.toLocalDate(),
+			to.toLocalDate()))
+			.willReturn(List.of(ceremony));
+
+		// when
+		List<ScheduleCalendarDto> result = scheduleService.findByConditionWithMasking(from, to, categories, viewer);
+
+		// then
+		assertThat(result).isEmpty();
+
+		verify(ceremonyReader)
+			.findAcceptedByDateRange(from.toLocalDate(), to.toLocalDate());
+	}
 }

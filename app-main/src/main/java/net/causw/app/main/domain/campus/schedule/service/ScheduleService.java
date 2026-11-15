@@ -108,6 +108,7 @@ public class ScheduleService {
 		List<ScheduleCalendarDto> ceremonies = includeCeremony
 			? ceremonyReader.findAcceptedByDateRange(from.toLocalDate(), to.toLocalDate()).stream()
 				.map(this::toCalendarDto)
+				.filter(dto -> !dto.end().isBefore(from) && !dto.start().isAfter(to))
 				.toList()
 			: List.of();
 
