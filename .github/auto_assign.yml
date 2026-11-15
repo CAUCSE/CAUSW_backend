@@ -1,11 +1,13 @@
 addReviewers: true
 addAssignees: false
 reviewers:
-  - riadan710
-  - bingle625
-  - glucosei
-  - yvngyeong
-  - sopp1313
+  - riadan710    # 이우진
+  - bingle625    # 한성재
+  - glucosei     # 임재욱
+  - sopp1313     # 이예은
+  - lyemee       # 이예나
+  - yoon3660     # 김지윤
+  - Hanhoseok    # 한호석
 numberOfReviewers: 1
 useReviewGroups: false
 skipKeywords:
