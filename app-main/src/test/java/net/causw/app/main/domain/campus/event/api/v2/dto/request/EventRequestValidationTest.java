@@ -46,6 +46,17 @@ class EventRequestValidationTest {
 		assertThat(validator.validate(updateRequest(landingUrl))).isNotEmpty();
 	}
 
+	@ParameterizedTest
+	@ValueSource(ints = {2048, 2049})
+	@DisplayName("랜딩 링크는 2048자까지 허용한다")
+	void givenLongLandingUrl_whenValidate_thenLimitTo2048(int length) {
+		String landingUrl = "https://causw.net/" + "a".repeat(length - "https://causw.net/".length());
+
+		boolean valid = length <= 2048;
+		assertThat(validator.validate(createRequest(landingUrl)).isEmpty()).isEqualTo(valid);
+		assertThat(validator.validate(updateRequest(landingUrl)).isEmpty()).isEqualTo(valid);
+	}
+
 	private EventCreateRequest createRequest(String landingUrl) {
 		return new EventCreateRequest("제목", landingUrl, true);
 	}
