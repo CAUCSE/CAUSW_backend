@@ -3,7 +3,6 @@ package net.causw.app.main.domain.campus.event.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.never;
 import static org.mockito.BDDMockito.verify;
@@ -15,15 +14,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import net.causw.app.main.domain.asset.file.entity.UuidFile;
-import net.causw.app.main.domain.asset.file.enums.FilePath;
-import net.causw.app.main.domain.asset.file.service.implementation.FileWriter;
 import net.causw.app.main.domain.campus.event.entity.Event;
 import net.causw.app.main.domain.campus.event.service.dto.EventCreateCommand;
 import net.causw.app.main.domain.campus.event.service.dto.EventOrderUpdateCommand;
@@ -46,16 +40,6 @@ class EventServiceTest {
 	@Mock
 	private EventWriter eventWriter;
 
-	@Mock
-	private FileWriter fileWriter;
-
-	private UuidFile mockImage(String uuid, String fileUrl) {
-		UuidFile image = mock(UuidFile.class);
-		given(image.getUuid()).willReturn(uuid);
-		given(image.getFileUrl()).willReturn(fileUrl);
-		return image;
-	}
-
 	@Nested
 	@DisplayName("이벤트 조회 테스트")
 	class GetEventsTest {
@@ -64,9 +48,7 @@ class EventServiceTest {
 		@DisplayName("활성화된 이벤트만 결과로 변환해 반환한다")
 		void givenActiveEvents_whenGetActiveEvents_thenReturnResults() {
 			// given
-			UuidFile image = mock(UuidFile.class);
-			given(image.getFileUrl()).willReturn("https://cdn/event.png");
-			Event event = Event.of("ICT 위원회", "https://causw.net", true, 0, image);
+			Event event = Event.of("ICT 위원회", "https://causw.net", true, 10);
 			given(eventReader.findAllActive()).willReturn(List.of(event));
 
 			// when
@@ -75,7 +57,6 @@ class EventServiceTest {
 			// then
 			assertThat(results).hasSize(1);
 			assertThat(results.getFirst().title()).isEqualTo("ICT 위원회");
-			assertThat(results.getFirst().imageUrl()).isEqualTo("https://cdn/event.png");
 			assertThat(results.getFirst().landingUrl()).isEqualTo("https://causw.net");
 			assertThat(results.getFirst().isActive()).isTrue();
 		}
@@ -99,24 +80,19 @@ class EventServiceTest {
 	class CreateEventTest {
 
 		@Test
-		@DisplayName("이미지를 EVENT 경로로 확정하고 다음 노출 순서를 지정해 저장한다")
-		void givenValidCommand_whenCreateEvent_thenConfirmImageAndSave() {
+		@DisplayName("다음 노출 순서를 지정해 이벤트를 저장한다")
+		void givenValidCommand_whenCreateEvent_thenSaveWithNextDisplayOrder() {
 			// given
-			UuidFile image = mock(UuidFile.class);
-			given(image.getFileUrl()).willReturn("https://cdn/event.png");
-			given(fileWriter.confirmFiles(List.of("image-uuid"), FilePath.EVENT)).willReturn(List.of(image));
 			given(eventReader.getNextDisplayOrder()).willReturn(40);
 			given(eventWriter.create(any(Event.class))).willAnswer(invocation -> invocation.getArgument(0));
-			EventCreateCommand command = new EventCreateCommand(
-				"CCSSAA", "image-uuid", "https://causw.net", true);
+			EventCreateCommand command = new EventCreateCommand("CCSSAA", "https://causw.net", true);
 
 			// when
 			EventResult result = eventService.createEvent(command);
 
 			// then
-			verify(fileWriter).confirmFiles(List.of("image-uuid"), FilePath.EVENT);
 			assertThat(result.title()).isEqualTo("CCSSAA");
-			assertThat(result.imageUrl()).isEqualTo("https://cdn/event.png");
+			assertThat(result.landingUrl()).isEqualTo("https://causw.net");
 			assertThat(result.displayOrder()).isEqualTo(40);
 		}
 	}
@@ -126,66 +102,18 @@ class EventServiceTest {
 	class UpdateEventTest {
 
 		@Test
-		@DisplayName("이미지 UUID 가 같으면 이미지를 다시 확정하거나 삭제하지 않는다")
-		void givenSameImageUuid_whenUpdateEvent_thenKeepImage() {
+		@DisplayName("조회한 이벤트의 내용을 수정한다")
+		void givenEvent_whenUpdateEvent_thenUpdate() {
 			// given
-			UuidFile currentImage = mockImage("current-uuid", "https://cdn/current.png");
-			Event event = Event.of("이전 제목", null, true, 0, currentImage);
+			Event event = Event.of("이전 제목", "https://causw.net", true, 10);
 			given(eventReader.getById("event-id")).willReturn(event);
-			EventUpdateCommand command = new EventUpdateCommand(
-				"새 제목", "current-uuid", "https://causw.net", false);
+			EventUpdateCommand command = new EventUpdateCommand("새 제목", "https://new.causw.net", false);
 
 			// when
 			eventService.updateEvent("event-id", command);
 
 			// then
-			verify(eventWriter).update(event, "새 제목", "https://causw.net", false);
-			verify(fileWriter, never()).confirmFiles(anyList(), any(FilePath.class));
-			verify(fileWriter, never()).deleteFromDb(any());
-			verify(eventWriter, never()).requestImageFileDeletion(any());
-		}
-
-		@ParameterizedTest
-		@NullAndEmptySource
-		@DisplayName("이미지 UUID 를 비워두면 기존 이미지를 유지한다")
-		void givenBlankImageUuid_whenUpdateEvent_thenKeepImage(String imageUuid) {
-			// given
-			UuidFile currentImage = mock(UuidFile.class);
-			given(currentImage.getFileUrl()).willReturn("https://cdn/current.png");
-			Event event = Event.of("제목", null, true, 10, currentImage);
-			given(eventReader.getById("event-id")).willReturn(event);
-			EventUpdateCommand command = new EventUpdateCommand("제목", imageUuid, null, true);
-
-			// when
-			EventResult result = eventService.updateEvent("event-id", command);
-
-			// then
-			assertThat(result.imageUrl()).isEqualTo("https://cdn/current.png");
-			verify(fileWriter, never()).confirmFiles(anyList(), any(FilePath.class));
-			verify(fileWriter, never()).deleteFromDb(any());
-			verify(eventWriter, never()).requestImageFileDeletion(any());
-		}
-
-		@Test
-		@DisplayName("이미지 UUID 가 바뀌면 기존 이미지를 DB 에서 지우고 파일 삭제는 이벤트로 요청한다")
-		void givenNewImageUuid_whenUpdateEvent_thenReplaceImage() {
-			// given
-			UuidFile currentImage = mockImage("current-uuid", "https://cdn/current.png");
-			given(currentImage.getId()).willReturn("current-file-id");
-			UuidFile newImage = mock(UuidFile.class);
-			Event event = Event.of("제목", null, true, 0, currentImage);
-			given(eventReader.getById("event-id")).willReturn(event);
-			given(fileWriter.confirmFiles(List.of("new-uuid"), FilePath.EVENT)).willReturn(List.of(newImage));
-			EventUpdateCommand command = new EventUpdateCommand("제목", "new-uuid", null, true);
-
-			// when
-			eventService.updateEvent("event-id", command);
-
-			// then
-			verify(eventWriter).updateImage(event, newImage);
-			verify(fileWriter).deleteFromDb("current-file-id");
-			verify(eventWriter).requestImageFileDeletion(currentImage);
-			verify(fileWriter, never()).delete(any(UuidFile.class));
+			verify(eventWriter).update(event, "새 제목", "https://new.causw.net", false);
 		}
 
 		@Test
@@ -193,7 +121,7 @@ class EventServiceTest {
 		void givenUnknownEventId_whenUpdateEvent_thenThrow() {
 			// given
 			given(eventReader.getById("unknown")).willThrow(EventErrorCode.EVENT_NOT_FOUND.toBaseException());
-			EventUpdateCommand command = new EventUpdateCommand("제목", "uuid", null, true);
+			EventUpdateCommand command = new EventUpdateCommand("제목", "https://causw.net", true);
 
 			// when & then
 			assertThatThrownBy(() -> eventService.updateEvent("unknown", command))
@@ -230,7 +158,7 @@ class EventServiceTest {
 		@DisplayName("이벤트를 소프트 삭제한다")
 		void givenEvent_whenDeleteEvent_thenSoftDelete() {
 			// given
-			Event event = Event.of("제목", null, true, 0, mock(UuidFile.class));
+			Event event = Event.of("제목", "https://causw.net", true, 10);
 			given(eventReader.getById("event-id")).willReturn(event);
 
 			// when
