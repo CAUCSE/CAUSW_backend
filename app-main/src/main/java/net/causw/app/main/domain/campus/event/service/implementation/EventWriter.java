@@ -4,12 +4,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
-import net.causw.app.main.domain.asset.file.entity.UuidFile;
 import net.causw.app.main.domain.campus.event.entity.Event;
-import net.causw.app.main.domain.campus.event.event.EventImageDeletionRequestedEvent;
 import net.causw.app.main.domain.campus.event.repository.EventRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -19,7 +16,6 @@ import lombok.RequiredArgsConstructor;
 public class EventWriter {
 
 	private final EventRepository eventRepository;
-	private final ApplicationEventPublisher applicationEventPublisher;
 
 	public Event create(Event event) {
 		return eventRepository.save(event);
@@ -39,14 +35,6 @@ public class EventWriter {
 				event.updateDisplayOrder((i + 1) * Event.DISPLAY_ORDER_INTERVAL);
 			}
 		}
-	}
-
-	public void updateImage(Event event, UuidFile image) {
-		event.updateImage(image);
-	}
-
-	public void requestImageFileDeletion(UuidFile image) {
-		applicationEventPublisher.publishEvent(new EventImageDeletionRequestedEvent(image.getFileKey()));
 	}
 
 	public void softDelete(Event event) {

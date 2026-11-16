@@ -2,14 +2,10 @@ package net.causw.app.main.domain.campus.event.entity;
 
 import java.time.LocalDateTime;
 
-import net.causw.app.main.domain.asset.file.entity.UuidFile;
-import net.causw.app.main.domain.asset.file.entity.joinEntity.EventAttachImage;
 import net.causw.app.main.shared.entity.BaseEntity;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -30,7 +26,7 @@ public class Event extends BaseEntity {
 	@Column(name = "title", nullable = false)
 	private String title;
 
-	@Column(name = "landing_url", columnDefinition = "TEXT")
+	@Column(name = "landing_url", nullable = false, columnDefinition = "TEXT")
 	private String landingUrl;
 
 	@Column(name = "is_active", nullable = false)
@@ -39,39 +35,26 @@ public class Event extends BaseEntity {
 	@Column(name = "display_order", nullable = false)
 	private Integer displayOrder;
 
-	@OneToOne(mappedBy = "event", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-	private EventAttachImage eventAttachImage;
-
 	@Column(name = "deleted_at")
 	private LocalDateTime deletedAt;
 
-	public static Event of(String title, String landingUrl, Boolean isActive, Integer displayOrder, UuidFile image) {
-		Event event = Event.builder()
+	public static Event of(String title, String landingUrl, Boolean isActive, Integer displayOrder) {
+		return Event.builder()
 			.title(title)
-			.landingUrl(normalizeLandingUrl(landingUrl))
+			.landingUrl(landingUrl)
 			.isActive(isActive)
 			.displayOrder(displayOrder)
 			.build();
-		event.eventAttachImage = EventAttachImage.of(event, image);
-		return event;
 	}
 
 	public void update(String title, String landingUrl, Boolean isActive) {
 		this.title = title;
-		this.landingUrl = normalizeLandingUrl(landingUrl);
+		this.landingUrl = landingUrl;
 		this.isActive = isActive;
 	}
 
 	public void updateDisplayOrder(Integer displayOrder) {
 		this.displayOrder = displayOrder;
-	}
-
-	public void updateImage(UuidFile image) {
-		this.eventAttachImage.updateUuidFile(image);
-	}
-
-	public UuidFile getImage() {
-		return this.eventAttachImage.getUuidFile();
 	}
 
 	public void softDelete() {
@@ -80,9 +63,5 @@ public class Event extends BaseEntity {
 
 	public boolean isDeleted() {
 		return this.deletedAt != null;
-	}
-
-	private static String normalizeLandingUrl(String landingUrl) {
-		return landingUrl == null || landingUrl.isBlank() ? null : landingUrl;
 	}
 }

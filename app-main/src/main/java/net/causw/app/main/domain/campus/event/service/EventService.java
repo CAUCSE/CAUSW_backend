@@ -4,11 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
-import net.causw.app.main.domain.asset.file.entity.UuidFile;
-import net.causw.app.main.domain.asset.file.enums.FilePath;
-import net.causw.app.main.domain.asset.file.service.implementation.FileWriter;
 import net.causw.app.main.domain.campus.event.entity.Event;
 import net.causw.app.main.domain.campus.event.service.dto.EventCreateCommand;
 import net.causw.app.main.domain.campus.event.service.dto.EventOrderUpdateCommand;
@@ -25,7 +21,6 @@ public class EventService {
 
 	private final EventReader eventReader;
 	private final EventWriter eventWriter;
-	private final FileWriter fileWriter;
 
 	@Transactional(readOnly = true)
 	public List<EventResult> getActiveEvents() {
@@ -43,9 +38,8 @@ public class EventService {
 
 	@Transactional
 	public EventResult createEvent(EventCreateCommand command) {
-		UuidFile image = confirmImage(command.imageUuid());
 		Event event = eventWriter.create(Event.of(
-			command.title(), command.landingUrl(), command.isActive(), eventReader.getNextDisplayOrder(), image));
+			command.title(), command.landingUrl(), command.isActive(), eventReader.getNextDisplayOrder()));
 		return EventResult.from(event);
 	}
 
@@ -53,13 +47,6 @@ public class EventService {
 	public EventResult updateEvent(String eventId, EventUpdateCommand command) {
 		Event event = eventReader.getById(eventId);
 		eventWriter.update(event, command.title(), command.landingUrl(), command.isActive());
-
-		UuidFile currentImage = event.getImage();
-		if (StringUtils.hasText(command.imageUuid()) && !currentImage.getUuid().equals(command.imageUuid())) {
-			eventWriter.updateImage(event, confirmImage(command.imageUuid()));
-			fileWriter.deleteFromDb(currentImage.getId());
-			eventWriter.requestImageFileDeletion(currentImage);
-		}
 		return EventResult.from(event);
 	}
 
@@ -73,9 +60,5 @@ public class EventService {
 	public void deleteEvent(String eventId) {
 		Event event = eventReader.getById(eventId);
 		eventWriter.softDelete(event);
-	}
-
-	private UuidFile confirmImage(String imageUuid) {
-		return fileWriter.confirmFiles(List.of(imageUuid), FilePath.EVENT).getFirst();
 	}
 }

@@ -51,7 +51,7 @@ public class EventAdminController {
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@Operation(summary = "이벤트 등록", description = "배너 이미지는 Presigned URL(FilePath.EVENT)로 먼저 업로드한 뒤 UUID 를 전달합니다. 노출 순서는 가장 마지막으로 자동 지정됩니다.")
+	@Operation(summary = "이벤트 등록", description = "제목과 랜딩 링크로 이벤트를 등록합니다. 노출 순서는 가장 마지막으로 자동 지정됩니다.")
 	public ApiResponse<EventResponse> createEvent(@Valid @RequestBody EventCreateRequest request) {
 		EventResult result = eventService.createEvent(eventDtoMapper.toCreateCommand(request));
 		return ApiResponse.success(eventDtoMapper.toResponse(result));
@@ -59,7 +59,7 @@ public class EventAdminController {
 
 	@PutMapping("/{eventId}")
 	@ResponseStatus(HttpStatus.OK)
-	@Operation(summary = "이벤트 수정", description = "이벤트 내용과 노출 활성화 여부를 수정합니다. 이미지 UUID 를 비워두면 기존 이미지를 유지하고, 다른 UUID 를 전달하면 기존 이미지는 삭제됩니다.")
+	@Operation(summary = "이벤트 수정", description = "이벤트 제목, 랜딩 링크, 노출 활성화 여부를 수정합니다.")
 	public ApiResponse<EventResponse> updateEvent(
 		@PathVariable("eventId") String eventId,
 		@Valid @RequestBody EventUpdateRequest request) {

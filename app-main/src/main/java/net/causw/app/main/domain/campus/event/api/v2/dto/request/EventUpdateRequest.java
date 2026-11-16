@@ -7,11 +7,9 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record EventUpdateRequest(
-	@Schema(description = "이벤트 제목", example = "ICT 위원회 모집") @NotBlank @Size(max = 255) String title,
+	@Schema(description = "이벤트 제목", example = "2학기 ICT 위원회 백엔드 신청") @NotBlank @Size(max = 255) String title,
 
-	@Schema(description = "교체할 배너 이미지 UUID. 비워두면 기존 이미지를 유지합니다.") String imageUuid,
-
-	@Schema(description = "배너 클릭 시 이동할 링크 (선택)", example = "https://causw.net") @Pattern(regexp = "^(https?://.+)?$", message = "랜딩 링크는 http:// 또는 https:// 로 시작해야 합니다.") String landingUrl,
+	@Schema(description = "이벤트 클릭 시 이동할 링크", example = "https://causw.net") @NotBlank @Pattern(regexp = "^https?://.+", message = "랜딩 링크는 http:// 또는 https:// 로 시작해야 합니다.") String landingUrl,
 
 	@Schema(description = "홈 화면 노출 여부", example = "true") @NotNull Boolean isActive) {
 }
