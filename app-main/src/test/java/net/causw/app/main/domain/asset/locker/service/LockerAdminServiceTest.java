@@ -14,6 +14,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -262,8 +263,8 @@ class LockerAdminServiceTest {
 	class ReleaseLocker {
 
 		@Test
-		@DisplayName("성공: 사용 중인 사물함을 회수하고 로그를 남긴다")
-		void givenInUseLocker_whenReleaseLockerByAdmin_thenReturnsLockerAndLogs() {
+		@DisplayName("성공: 만료일이 지워지기 전에 감사 로그를 남기고 사물함을 회수한다")
+		void givenInUseLocker_whenReleaseLockerByAdmin_thenLogsBeforeReturningLocker() {
 			// given
 			String lockerId = "locker-1";
 			String adminId = "admin-1";
@@ -283,8 +284,10 @@ class LockerAdminServiceTest {
 
 			// then
 			verify(lockerValidator).validateInUse(locker);
-			verify(lockerWriter).releaseLocker(locker, admin, lockerUser.getEmail(), lockerUser.getName());
-			verify(adminAuditLogEventPublisher).publishLockerRelease(locker, admin, lockerUser);
+
+			InOrder inOrder = inOrder(adminAuditLogEventPublisher, lockerWriter);
+			inOrder.verify(adminAuditLogEventPublisher).publishLockerRelease(locker, admin, lockerUser);
+			inOrder.verify(lockerWriter).releaseLocker(locker, admin, lockerUser.getEmail(), lockerUser.getName());
 		}
 
 		@Test
@@ -347,8 +350,8 @@ class LockerAdminServiceTest {
 	class DisableLocker {
 
 		@Test
-		@DisplayName("성공: 사물함을 비활성화하고, 사용 중이면 회수 후 로그를 남긴다")
-		void givenInUseLocker_whenDisableLocker_thenReturnsLockerDisablesAndLogs() {
+		@DisplayName("성공: 사용 중이면 감사 로그를 먼저 남기고 회수한 뒤 비활성화한다")
+		void givenInUseLocker_whenDisableLocker_thenLogsReturnsLockerAndDisables() {
 			// given
 			String lockerId = "locker-1";
 			String adminId = "admin-1";
@@ -368,9 +371,10 @@ class LockerAdminServiceTest {
 			// then
 			verify(lockerValidator).validateDisableable(locker);
 
-			verify(lockerWriter).releaseLocker(locker, admin, currentUser.getEmail(), currentUser.getName());
-			verify(lockerWriter).disableLocker(locker, admin);
-			verify(adminAuditLogEventPublisher).publishLockerDisable(locker, admin, Optional.of(currentUser));
+			InOrder inOrder = inOrder(adminAuditLogEventPublisher, lockerWriter);
+			inOrder.verify(adminAuditLogEventPublisher).publishLockerDisable(locker, admin, Optional.of(currentUser));
+			inOrder.verify(lockerWriter).releaseLocker(locker, admin, currentUser.getEmail(), currentUser.getName());
+			inOrder.verify(lockerWriter).disableLocker(locker, admin);
 		}
 
 		@Test

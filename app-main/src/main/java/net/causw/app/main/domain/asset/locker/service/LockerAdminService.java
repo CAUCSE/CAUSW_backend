@@ -132,8 +132,9 @@ public class LockerAdminService {
 
 		User user = locker.getUser().orElseThrow(UserErrorCode.USER_NOT_FOUND::toBaseException);
 
-		lockerWriter.releaseLocker(locker, admin, user.getEmail(), user.getName());
+		// 반납 시 expireDate가 초기화되므로 감사 로그를 먼저 발행
 		adminAuditLogEventPublisher.publishLockerRelease(locker, admin, user);
+		lockerWriter.releaseLocker(locker, admin, user.getEmail(), user.getName());
 	}
 
 	/**
@@ -164,12 +165,14 @@ public class LockerAdminService {
 
 		lockerValidator.validateDisableable(locker);
 
-		// locker user 존재할 시에 반환
 		var currentUser = locker.getUser();
+		// 반납 시 expireDate가 초기화되므로 감사 로그를 먼저 발행
+		adminAuditLogEventPublisher.publishLockerDisable(locker, admin, currentUser);
+
+		// locker user 존재할 시에 반환
 		currentUser.ifPresent(user -> lockerWriter.releaseLocker(locker, admin, user.getEmail(), user.getName()));
 
 		lockerWriter.disableLocker(locker, admin);
-		adminAuditLogEventPublisher.publishLockerDisable(locker, admin, currentUser);
 	}
 
 	/**
