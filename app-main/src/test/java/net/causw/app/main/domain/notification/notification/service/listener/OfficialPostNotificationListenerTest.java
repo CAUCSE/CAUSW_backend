@@ -27,9 +27,11 @@ import net.causw.app.main.domain.community.board.entity.BoardVisibility;
 import net.causw.app.main.domain.community.board.service.implementation.BoardConfigReader;
 import net.causw.app.main.domain.community.board.service.implementation.BoardReader;
 import net.causw.app.main.domain.community.post.entity.Post;
+import net.causw.app.main.domain.community.post.enums.PostCategory;
 import net.causw.app.main.domain.community.post.service.implementation.PostReader;
 import net.causw.app.main.domain.notification.notification.entity.Notification;
 import net.causw.app.main.domain.notification.notification.enums.NoticeType;
+import net.causw.app.main.domain.notification.notification.enums.UserNotificationSettingKey;
 import net.causw.app.main.domain.notification.notification.event.OfficialPostEvent;
 import net.causw.app.main.domain.notification.notification.service.dto.PushNotificationData;
 import net.causw.app.main.domain.notification.notification.service.implementation.NotificationPushSender;
@@ -75,7 +77,7 @@ class OfficialPostNotificationListenerTest {
 			given(postReader.findById("postId")).willReturn(post);
 			given(boardConfigReader.getByBoardId("boardId")).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdSetMapByBoardIds(any())).willReturn(Map.of());
-			given(userBoardSubscribeReader.findNotificationTargets("boardId", boardConfig, Set.of()))
+			given(userBoardSubscribeReader.findNotificationTargets("boardId", null, boardConfig, Set.of()))
 				.willReturn(targets);
 			// 성공 경로에서만 사용되는 stub
 			given(post.getContent()).willReturn("공지 내용입니다.");
@@ -151,7 +153,7 @@ class OfficialPostNotificationListenerTest {
 			given(postReader.findById("postId")).willReturn(post);
 			given(boardConfigReader.getByBoardId("boardId")).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdSetMapByBoardIds(any())).willReturn(Map.of());
-			given(userBoardSubscribeReader.findNotificationTargets("boardId", boardConfig, Set.of()))
+			given(userBoardSubscribeReader.findNotificationTargets("boardId", null, boardConfig, Set.of()))
 				.willReturn(List.of());
 			// 성공 경로 stub
 			given(post.getContent()).willReturn("공지 내용입니다.");
@@ -188,7 +190,7 @@ class OfficialPostNotificationListenerTest {
 			given(postReader.findById("postId")).willReturn(post);
 			given(boardConfigReader.getByBoardId("boardId")).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdSetMapByBoardIds(any())).willReturn(Map.of());
-			given(userBoardSubscribeReader.findNotificationTargets("boardId", boardConfig, Set.of()))
+			given(userBoardSubscribeReader.findNotificationTargets("boardId", null, boardConfig, Set.of()))
 				.willReturn(filteredTargets);
 			given(post.getContent()).willReturn("공지 내용입니다.");
 			given(board.getName()).willReturn("공지 게시판");
@@ -224,7 +226,7 @@ class OfficialPostNotificationListenerTest {
 			given(postReader.findById("postId")).willReturn(post);
 			given(boardConfigReader.getByBoardId("boardId")).willReturn(boardConfig);
 			given(boardConfigReader.getAdminIdSetMapByBoardIds(any())).willReturn(Map.of());
-			given(userBoardSubscribeReader.findNotificationTargets("boardId", boardConfig, Set.of()))
+			given(userBoardSubscribeReader.findNotificationTargets("boardId", null, boardConfig, Set.of()))
 				.willReturn(targets);
 
 			// 크롤링 글은 post.getContent()를 읽지 않으므로 해당 stub 불필요
@@ -250,6 +252,76 @@ class OfficialPostNotificationListenerTest {
 			verify(notificationPushSender).sendToUsers(eq(targets), eq("공지 게시판"), eq(crawledTitle), eq(expectedData),
 				eq(logIdsByUserId));
 			verify(notificationWriter).saveLogs(eq(targets), any());
+		}
+	}
+
+	@Nested
+	@DisplayName("게시글 성격별 발송 대상 조회 (handle)")
+	class NewsCategoryTest {
+
+		@Test
+		@DisplayName("성공: 성격이 분류된 글이면 해당 성격 설정 키로 발송 대상을 조회한다")
+		void givenCategorizedPost_whenHandle_thenFindTargetsWithCategoryKey() {
+			// given
+			Board board = mockBoard("boardId");
+			Post post = mockPost();
+			BoardConfig boardConfig = mockVisibleNoticeConfig();
+			given(post.getCategory()).willReturn(PostCategory.RECRUIT);
+			stubSuccessPath(board, post, boardConfig);
+
+			// when
+			handler.handle(new OfficialPostEvent("boardId", "postId", null));
+
+			// then
+			verify(userBoardSubscribeReader).findNotificationTargets(
+				"boardId", UserNotificationSettingKey.NEWS_CATEGORY_RECRUIT, boardConfig, Set.of());
+		}
+
+		@Test
+		@DisplayName("성공: 설정 대상이 아닌 성격(ETC)이면 성격 키 없이 채널 구독 여부만으로 조회한다")
+		void givenEtcCategoryPost_whenHandle_thenFindTargetsWithoutCategoryKey() {
+			// given
+			Board board = mockBoard("boardId");
+			Post post = mockPost();
+			BoardConfig boardConfig = mockVisibleNoticeConfig();
+			given(post.getCategory()).willReturn(PostCategory.ETC);
+			stubSuccessPath(board, post, boardConfig);
+
+			// when
+			handler.handle(new OfficialPostEvent("boardId", "postId", null));
+
+			// then
+			verify(userBoardSubscribeReader).findNotificationTargets("boardId", null, boardConfig, Set.of());
+		}
+
+		@Test
+		@DisplayName("성공: 미분류(null) 글이면 성격 키 없이 채널 구독 여부만으로 조회한다")
+		void givenUncategorizedPost_whenHandle_thenFindTargetsWithoutCategoryKey() {
+			// given
+			Board board = mockBoard("boardId");
+			Post post = mockPost();
+			BoardConfig boardConfig = mockVisibleNoticeConfig();
+			given(post.getCategory()).willReturn(null);
+			stubSuccessPath(board, post, boardConfig);
+
+			// when
+			handler.handle(new OfficialPostEvent("boardId", "postId", null));
+
+			// then
+			verify(userBoardSubscribeReader).findNotificationTargets("boardId", null, boardConfig, Set.of());
+		}
+
+		private void stubSuccessPath(Board board, Post post, BoardConfig boardConfig) {
+			given(boardReader.getById("boardId")).willReturn(board);
+			given(postReader.findById("postId")).willReturn(post);
+			given(boardConfigReader.getByBoardId("boardId")).willReturn(boardConfig);
+			given(boardConfigReader.getAdminIdSetMapByBoardIds(any())).willReturn(Map.of());
+			given(userBoardSubscribeReader.findNotificationTargets(any(), any(), any(), any())).willReturn(List.of());
+			given(post.getContent()).willReturn("공지 내용입니다.");
+			given(board.getName()).willReturn("공지 게시판");
+			given(post.getId()).willReturn("postId");
+			given(notificationWriter.save(any())).willReturn(mock(Notification.class));
+			given(notificationWriter.saveLogs(any(), any())).willReturn(Map.of());
 		}
 	}
 
