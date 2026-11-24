@@ -9,6 +9,7 @@ CREATE TABLE tb_calendar_filter_preference (
 
     CONSTRAINT fk_calendar_filter_preference_user
         FOREIGN KEY (user_id) REFERENCES tb_user (id)
+        ON DELETE CASCADE
 )
 CHARACTER SET utf8mb4
 COLLATE utf8mb4_0900_ai_ci;
