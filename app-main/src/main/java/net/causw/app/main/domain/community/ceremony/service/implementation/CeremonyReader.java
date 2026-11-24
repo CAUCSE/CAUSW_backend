@@ -2,6 +2,7 @@ package net.causw.app.main.domain.community.ceremony.service.implementation;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -56,5 +57,9 @@ public class CeremonyReader {
 
 	public long countAwaitCeremony() {
 		return ceremonyRepository.countByCeremonyState(CeremonyState.AWAIT);
+	}
+
+	public List<Ceremony> findAcceptedByDateRange(LocalDate fromDate, LocalDate toDate) {
+		return ceremonyQueryRepository.findAcceptedByDateRange(fromDate, toDate);
 	}
 }
