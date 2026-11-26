@@ -15,3 +15,15 @@ app:
     local-run-on-start: false
     zone: Asia/Seoul
     cron: "0 0 * * * *"
+  email-campaign:
+    enabled: ${EMAIL_CAMPAIGN_ENABLED:false}
+    region: ${EMAIL_CAMPAIGN_SES_REGION:ap-northeast-2}
+    from-address: ${EMAIL_CAMPAIGN_FROM_ADDRESS:}
+    reply-to-address: ${EMAIL_CAMPAIGN_REPLY_TO_ADDRESS:}
+    batch-size: ${EMAIL_CAMPAIGN_BATCH_SIZE:50}
+    max-concurrency: ${EMAIL_CAMPAIGN_MAX_CONCURRENCY:5}
+    max-send-rate: ${EMAIL_CAMPAIGN_MAX_SEND_RATE:1.0}
+    max-attempts: ${EMAIL_CAMPAIGN_MAX_ATTEMPTS:3}
+    initial-backoff-seconds: ${EMAIL_CAMPAIGN_INITIAL_BACKOFF_SECONDS:30}
+    claim-timeout-seconds: ${EMAIL_CAMPAIGN_CLAIM_TIMEOUT_SECONDS:300}
+    recovery-interval-ms: ${EMAIL_CAMPAIGN_RECOVERY_INTERVAL_MS:30000}

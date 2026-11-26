@@ -71,6 +71,13 @@ dependencies {
     // S3
     implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3:4.0.0'
 
+    // SES
+    implementation platform('software.amazon.awssdk:bom:2.41.5')
+    implementation 'software.amazon.awssdk:sesv2'
+
+    // Rate limiting
+    implementation 'com.google.guava:guava:33.5.0-jre'
+
     // Redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.redisson:redisson-spring-boot-starter:4.6.1'

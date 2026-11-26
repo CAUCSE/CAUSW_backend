@@ -34,10 +34,15 @@ public class AdminAuditLogService {
 		"ADMISSION_REJECT",
 		"ACADEMIC_RECORD_ACCEPT",
 		"ACADEMIC_RECORD_REJECT");
+	private static final Set<String> EMAIL_CAMPAIGN_ACTION_TYPES = Set.of(
+		"EMAIL_CAMPAIGN_CREATE",
+		"EMAIL_CAMPAIGN_SEND_REQUEST",
+		"EMAIL_CAMPAIGN_COMPLETE");
 	private static final Map<AdminAuditLogCategory, Set<String>> ACTION_TYPES_BY_CATEGORY = Map.of(
 		AdminAuditLogCategory.USER, USER_ACTION_TYPES,
 		AdminAuditLogCategory.LOCKER, LOCKER_ACTION_TYPES,
-		AdminAuditLogCategory.ACADEMIC, ACADEMIC_ACTION_TYPES);
+		AdminAuditLogCategory.ACADEMIC, ACADEMIC_ACTION_TYPES,
+		AdminAuditLogCategory.EMAIL_CAMPAIGN, EMAIL_CAMPAIGN_ACTION_TYPES);
 
 	private final AdminAuditLogReader adminAuditLogReader;
 
