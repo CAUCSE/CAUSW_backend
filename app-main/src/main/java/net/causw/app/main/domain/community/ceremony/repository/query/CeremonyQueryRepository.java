@@ -200,4 +200,21 @@ public class CeremonyQueryRepository {
 
 		return noTimeCondition.or(withTimeCondition);
 	}
+
+	public List<Ceremony> findAcceptedByDateRange(LocalDate fromDate, LocalDate toDate) {
+		QCeremony ceremony = QCeremony.ceremony;
+
+		return jpaQueryFactory
+			.selectFrom(ceremony)
+			.join(ceremony.user).fetchJoin()
+			.where(
+				ceremony.ceremonyState.eq(CeremonyState.ACCEPT),
+				ceremony.startDate.loe(toDate),
+				ceremony.endDate.isNull()
+					.and(ceremony.startDate.goe(fromDate))
+					.or(ceremony.endDate.isNotNull()
+						.and(ceremony.endDate.goe(fromDate))))
+			.orderBy(ceremony.startDate.asc(), ceremony.startTime.asc())
+			.fetch();
+	}
 }
