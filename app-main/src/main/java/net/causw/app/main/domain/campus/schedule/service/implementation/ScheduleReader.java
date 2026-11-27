@@ -45,9 +45,4 @@ public class ScheduleReader {
 	public List<Schedule> findByCondition(LocalDateTime from, LocalDateTime to, Collection<ScheduleType> types) {
 		return scheduleRepository.findAllByCondition(from, to, types);
 	}
-
-	public boolean existsByTypeAndTitleAndStartAndEnd(ScheduleType type, String title, LocalDateTime start,
-		LocalDateTime end) {
-		return scheduleRepository.existsByTypeAndTitleAndStartAndEnd(type, title, start, end);
-	}
 }
