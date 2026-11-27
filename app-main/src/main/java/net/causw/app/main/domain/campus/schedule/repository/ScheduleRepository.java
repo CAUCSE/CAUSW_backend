@@ -25,6 +25,4 @@ public interface ScheduleRepository extends JpaRepository<Schedule, String> {
 		""")
 	List<Schedule> findAllByCondition(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to,
 		@Param("types") Collection<ScheduleType> types);
-
-	boolean existsByTypeAndTitleAndStartAndEnd(ScheduleType type, String title, LocalDateTime start, LocalDateTime end);
 }

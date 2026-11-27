@@ -1,11 +1,15 @@
 package net.causw.app.main.domain.campus.schedule.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
@@ -57,36 +61,18 @@ public class HolidayScheduleSyncService {
 			return;
 		}
 
-		Set<String> duplicateFilter = new HashSet<>();
-		int savedCount = 0;
-		int skippedCount = 0;
+		// 동기화 대상 기간의 기존 공휴일을 한 번에 조회하고, API 응답 내 중복 확인에도 같은 Set을 사용
+		Set<HolidayKey> knownKeys = findExistingHolidayKeys(currentYear);
+		List<Schedule> newSchedules = new ArrayList<>();
 		for (HolidayInfo holiday : holidays) {
-			if (!duplicateFilter.add(uniqueKey(holiday))) {
-				skippedCount++;
-				continue;
+			HolidayKey key = HolidayKey.from(holiday);
+			if (knownKeys.add(key)) {
+				newSchedules.add(Schedule.of(key.title(), ScheduleType.HOLIDAY, key.start(), key.end(), null, null));
 			}
+		}
 
-			LocalDateTime start = holiday.date().atStartOfDay();
-			LocalDateTime end = holiday.date().atTime(23, 59, 59);
-			boolean exists = scheduleReader.existsByTypeAndTitleAndStartAndEnd(
-				ScheduleType.HOLIDAY,
-				holiday.name(),
-				start,
-				end);
-
-			if (exists) {
-				skippedCount++;
-				continue;
-			}
-
-			scheduleWriter.save(Schedule.of(
-				holiday.name(),
-				ScheduleType.HOLIDAY,
-				start,
-				end,
-				null,
-				null));
-			savedCount++;
+		if (!newSchedules.isEmpty()) {
+			scheduleWriter.saveAll(newSchedules);
 		}
 
 		log.info("공휴일 동기화를 완료했습니다. trigger={}, 대상년도={}-{}, 조회={}, 저장={}, 스킵={}",
@@ -94,18 +80,37 @@ public class HolidayScheduleSyncService {
 			currentYear,
 			currentYear + 1,
 			holidays.size(),
-			savedCount,
-			skippedCount);
+			newSchedules.size(),
+			holidays.size() - newSchedules.size());
 	}
 
 	private List<HolidayInfo> collectHolidays(int currentYear) {
 		List<HolidayInfo> currentYearHolidays = holidayApiClient.fetchHolidaysByYear(currentYear);
 		List<HolidayInfo> nextYearHolidays = holidayApiClient.fetchHolidaysByYear(currentYear + 1);
-		return java.util.stream.Stream.concat(currentYearHolidays.stream(), nextYearHolidays.stream())
+		return Stream.concat(currentYearHolidays.stream(), nextYearHolidays.stream())
 			.toList();
 	}
 
-	private String uniqueKey(HolidayInfo holiday) {
-		return holiday.date() + ":" + holiday.name();
+	private Set<HolidayKey> findExistingHolidayKeys(int currentYear) {
+		LocalDateTime from = LocalDate.of(currentYear, 1, 1).atStartOfDay();
+		LocalDateTime to = LocalDate.of(currentYear + 1, 12, 31).atTime(23, 59, 59);
+		return scheduleReader.findByCondition(from, to, List.of(ScheduleType.HOLIDAY))
+			.stream()
+			.map(HolidayKey::from)
+			.collect(Collectors.toCollection(HashSet::new));
+	}
+
+	record HolidayKey(String title, LocalDateTime start, LocalDateTime end) {
+
+		static HolidayKey from(HolidayInfo holiday) {
+			return new HolidayKey(
+				holiday.name(),
+				holiday.date().atStartOfDay(),
+				holiday.date().atTime(23, 59, 59));
+		}
+
+		static HolidayKey from(Schedule schedule) {
+			return new HolidayKey(schedule.getTitle(), schedule.getStart(), schedule.getEnd());
+		}
 	}
 }

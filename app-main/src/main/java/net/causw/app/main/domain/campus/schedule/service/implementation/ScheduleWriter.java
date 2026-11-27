@@ -1,5 +1,7 @@
 package net.causw.app.main.domain.campus.schedule.service.implementation;
 
+import java.util.List;
+
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +28,16 @@ public class ScheduleWriter {
 	 */
 	public Schedule save(Schedule schedule) {
 		return scheduleRepository.save(schedule);
+	}
+
+	/**
+	 * Schedule Entity 목록을 한 번에 저장합니다.
+	 *
+	 * @param schedules 저장할 Schedule Entity 목록
+	 * @return 저장된 Schedule Entity 목록
+	 */
+	public List<Schedule> saveAll(List<Schedule> schedules) {
+		return scheduleRepository.saveAll(schedules);
 	}
 
 	/**
